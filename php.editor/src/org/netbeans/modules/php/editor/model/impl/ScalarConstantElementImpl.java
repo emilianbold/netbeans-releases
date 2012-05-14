@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -59,11 +60,11 @@ class ScalarConstantElementImpl extends ModelElementImpl implements ConstantElem
         StringBuilder sb = new StringBuilder();
         final QualifiedName qualifiedName = QualifiedName.create(getName());
         final String name = qualifiedName.getName();
-        sb.append(name.toLowerCase()).append(";");//NOI18N
-        sb.append(name).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        sb.append(qualifiedName.getNamespaceName()).append(";");//NOI18N
-        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
+        sb.append(name.toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(name).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
+        sb.append(qualifiedName.getNamespaceName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getValue() != null ? getValue() : "?").append(Signature.ITEM_DELIMITER);//NOI18N
         return sb.toString();
     }
 
