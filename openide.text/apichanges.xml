@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
         <api name="text"/>
         <summary>Added NbDocument.getEditToBeUndoneOfType</summary>
         <version major="6" minor="49"/>
-        <date day="24" month="4" year="2011"/>
+        <date day="10" month="5" year="2011"/>
         <author login="mmetelka"/>
         <compatibility addition="yes"/>
         <description>
@@ -64,8 +64,8 @@ made subject to such option by the copyright holder.
                 undoable edits.
             </p>
         </description>
-        <class package="org.openide.text" name="CloneableEditorSupport"/>
-        <issue number="199568"/>
+        <class package="org.openide.text" name="NbDocument"/>
+        <issue number="204828"/>
     </change>
       <change id="NbDocument.openDocument">
           <api name="text"/>
