@@ -229,14 +229,16 @@ public final class OperationContainer<Support> {
      * <br><p>See the difference between {@link #createForInstall} and {@link #createForDirectInstall} for example</p>
      */                        
     public Support getSupport() {
-        if (upToDate) {
+        if (upToDate != null && upToDate) {
             return support;
         } else {
             if (listAll().size() > 0 && listInvalid().isEmpty()) {
                 upToDate = true;
                 return support;
             } else {
-                OperationContainerImpl.LOGGER.info("Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]");
+                if (upToDate != null) {
+                    OperationContainerImpl.LOGGER.info("Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]");
+                }
                 return null;
             }
         }
@@ -321,7 +323,9 @@ public final class OperationContainer<Support> {
      * @return <tt>true</tt> if succesfully added
      */
     public boolean remove(UpdateElement updateElement) {
-        upToDate = false;
+        if (upToDate != null) {
+            upToDate = false;
+        }
         return impl.remove(updateElement);
     }
     
@@ -357,7 +361,9 @@ public final class OperationContainer<Support> {
      * @param op
      */
     public void remove(OperationInfo<Support> op) {
-        upToDate = false;
+        if (upToDate != null) {
+            upToDate = false;
+        }
         impl.remove (op);
     }
     
@@ -366,7 +372,9 @@ public final class OperationContainer<Support> {
      * Removes all content
      */
     public void removeAll() {
-        upToDate = false;
+        if (upToDate != null) {
+            upToDate = false;
+        }
         impl.removeAll ();
     }
     
@@ -409,7 +417,7 @@ public final class OperationContainer<Support> {
     
     OperationContainerImpl<Support> impl;
     private Support support;
-    private boolean upToDate = false;
+    private Boolean upToDate = null;
     
     @Override
     public String toString() {
