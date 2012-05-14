@@ -52,6 +52,8 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Marek Fukala
  */
 public class Signature {
+        public static final char ITEM_DELIMITER = ';';
+        public static final String ITEM_DELIMITER_ALTERNATIVE = "**NB_SEMI**"; //NOI18N
         private static final Logger LOGGER = Logger.getLogger(Signature.class.getName());
         //shared array for better performance,
         //access is supposed from one thread so perf
@@ -76,8 +78,8 @@ public class Signature {
         @NonNull
         public String string(int index) {
             assert index >= 0 && index < positions.length;
-
-            return signature.substring(positions[index], index == positions.length - 1 ? signature.length() : positions[index + 1] - 1);
+            String subString = signature.substring(positions[index], index == positions.length - 1 ? signature.length() : positions[index + 1] - 1);
+            return subString.replace(ITEM_DELIMITER_ALTERNATIVE, String.valueOf(ITEM_DELIMITER));
         }
 
         public int integer(int index) {
@@ -98,7 +100,7 @@ public class Signature {
             synchronized(SHARED) {
                 int count = 0;
                 for (int i = 0; i < signature.length(); i++) {
-                    if(signature.charAt(i) == ';') {
+                    if(signature.charAt(i) == ITEM_DELIMITER) {
                         SHARED[++count] = i + 1;
                     }
                 }

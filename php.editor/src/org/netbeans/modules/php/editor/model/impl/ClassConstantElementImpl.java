@@ -45,6 +45,7 @@ import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -83,7 +84,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         sb.append(getName().toLowerCase()).append(";");//NOI18N
         sb.append(getName()).append(";");//NOI18N
         sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
+        sb.append(getValue() != null ? getValue().replace(String.valueOf(Signature.ITEM_DELIMITER), Signature.ITEM_DELIMITER_ALTERNATIVE) : "?").append(";");//NOI18N
         return sb.toString();
     }
 

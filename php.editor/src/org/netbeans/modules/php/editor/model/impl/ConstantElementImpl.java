@@ -48,6 +48,7 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -79,7 +80,7 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(";");//NOI18N
-        sb.append(getValue() != null ? getValue() : "?").append(";");//NOI18N
+        sb.append(getValue() != null ? getValue().replace(String.valueOf(Signature.ITEM_DELIMITER), Signature.ITEM_DELIMITER_ALTERNATIVE) : "?").append(";");//NOI18N
         return sb.toString();
     }
 
