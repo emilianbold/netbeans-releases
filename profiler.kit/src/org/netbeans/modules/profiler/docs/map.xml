@@ -101,6 +101,9 @@ made subject to such option by the copyright holder.
         <mapID target="RenameConfiguration.HelpCtx" url="helppages/csh/csh_customconfiguration_rename.html"/>
         <mapID target="PreferredInstrFilterPanel.HelpCtx" url="helppages/csh/csh_filters_value.html"/>
         
+        <!-- CSH topic for Rename Snapshot dialog in Profiler control panel -->
+        <mapID target="ProfilerControlPanel.RenameSnapshot.HelpCtx" url="helppages/csh/csh_snapshot_rename.html"/>
+        
         
         
         
@@ -153,6 +156,8 @@ made subject to such option by the copyright holder.
         <mapID target="OQLQueryCustomizer.SaveQuery.HelpCtx" url="helppages/csh/csh_oql_querysave.html"/>
         <!--CSH ID for Choose Heap Destination dialog -->
         <mapID target="ChooseHeapdumpTargetPanel.HelpCtx" url="helppages/csh/csh_heap_save.html"/>
+        <!--CSH ID for Select Heap Dump to Compare dialog in Classes tab of Heapwalker -->
+        <mapID target="SelectSecondSnapshot.HelpCtx" url="helppages/csh/csh_select_heapcompare.html"/>
         
         
         <!--CSH ID for Snapshot windows -->
@@ -164,6 +169,12 @@ made subject to such option by the copyright holder.
         <mapID target="SelectExternalSnapshotsPanel.HelpCtx" url="helppages/csh/csh_select_memorycompare.html"/>
         <!--CSH ID for Find Results dialog invoked from Combined tab in CPU Snapshot window -->
         <mapID target="ProfilerUiFindDialog.HelpCtx" url="helppages/csh/csh_snap_cpu_find.html"/>
+        <!--CSH ID for Find Results dialog invoked from Combined tab in CPU Snapshot window -->
+        <mapID target="ProfilerUiFindDialog.HelpCtx" url="helppages/csh/csh_snap_cpu_find.html"/>
+        <!--CSH ID for Select Configuration dialog for adding roots methods, invoked from CPU snapshot -->
+        <mapID target="SelectSettingsConfiguration.HelpCtx" url="helppages/csh/csh_snap_selectsettings.html"/>
+        <!--CSH ID for Edit Comments dialog invoked from Info tab in CPU Snapshot window -->
+        <mapID target="EditUserComments.HelpCtx" url="helppages/csh/csh_snap_editcomments.html"/>
         
         
         <!-- ++++++ The following help ids and topics are not used by JDev ++++++ -->
