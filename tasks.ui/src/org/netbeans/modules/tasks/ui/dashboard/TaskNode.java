@@ -111,7 +111,6 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         lblName.setText(Utils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), hasFocus));
         lblName.setToolTipText(task.getTooltip());
         lblName.setForeground(foreground);
-        fireContentChanged();
         return panel;
     }
 

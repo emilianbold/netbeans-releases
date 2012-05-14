@@ -153,10 +153,22 @@ public class Actions {
     public static List<Action> getCategoryPopupActions(CategoryNode categoryNode) {
         Category category = categoryNode.getCategory();
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new DeleteCategoryAction(category));
-        actions.add(new RenameCategoryAction(category));
-        actions.add(new NotificationCategoryAction(category));
-        actions.add(new RefreshCategoryAction(categoryNode));
+        
+        DeleteCategoryAction deleteCategoryAction = new DeleteCategoryAction(category);
+        deleteCategoryAction.setEnabled(categoryNode.isOpened());
+        actions.add(deleteCategoryAction);
+
+        RenameCategoryAction renameCategoryAction = new RenameCategoryAction(category);
+        renameCategoryAction.setEnabled(categoryNode.isOpened());
+        actions.add(renameCategoryAction);
+
+        NotificationCategoryAction notificationCategoryAction = new NotificationCategoryAction(category);
+        notificationCategoryAction.setEnabled(categoryNode.isOpened());
+        actions.add(notificationCategoryAction);
+
+        RefreshCategoryAction refreshCategoryAction = new RefreshCategoryAction(categoryNode);
+        refreshCategoryAction.setEnabled(categoryNode.isOpened());
+        actions.add(refreshCategoryAction);
         return actions;
     }
 
@@ -187,7 +199,7 @@ public class Actions {
         }
     }
 
-    private static class RefreshCategoryAction extends AbstractAction {
+    public static class RefreshCategoryAction extends AbstractAction {
 
         private final CategoryNode categoryNode;
 
@@ -220,12 +232,27 @@ public class Actions {
     public static List<Action> getRepositoryPopupActions(RepositoryNode repositoryNode) {
         Repository repository = repositoryNode.getRepository();
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new RemoveRepositoryAction(repositoryNode));
-        actions.add(new RefreshRepositoryAction(repositoryNode));
-        actions.add(new PropertiesRepositoryAction(repository));
+        RemoveRepositoryAction removeRepositoryAction = new RemoveRepositoryAction(repositoryNode);
+        removeRepositoryAction.setEnabled(repositoryNode.isOpened());
+        actions.add(removeRepositoryAction);
+
+        RefreshRepositoryAction refreshRepositoryAction = new RefreshRepositoryAction(repositoryNode);
+        refreshRepositoryAction.setEnabled(repositoryNode.isOpened());
+        actions.add(refreshRepositoryAction);
+
+        PropertiesRepositoryAction propertiesRepositoryAction = new PropertiesRepositoryAction(repository);
+        propertiesRepositoryAction.setEnabled(repositoryNode.isOpened());
+        actions.add(propertiesRepositoryAction);
+
         actions.add(null);
-        actions.add(new CreateTaskAction(repository));
-        actions.add(new SearchRepositoryAction(repository));
+        CreateTaskAction createTaskAction = new CreateTaskAction(repository);
+        createTaskAction.setEnabled(repositoryNode.isOpened());
+        actions.add(createTaskAction);
+
+        SearchRepositoryAction searchRepositoryAction = new SearchRepositoryAction(repository);
+        searchRepositoryAction.setEnabled(repositoryNode.isOpened());
+        actions.add(searchRepositoryAction);
+
         return actions;
     }
 

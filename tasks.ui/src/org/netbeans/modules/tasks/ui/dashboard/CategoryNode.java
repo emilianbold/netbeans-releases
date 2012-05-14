@@ -50,14 +50,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
@@ -78,7 +75,6 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     private List<JLabel> labels;
     private CloseCategoryNodeAction closeCategoryAction;
     private OpenCategoryNodeAction openCategoryAction;
-    private boolean opened;
     private TreeLabel lblTotal;
     private TreeLabel lblChanged;
 
@@ -87,17 +83,19 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     public CategoryNode(Category category, boolean opened) {
-        super(true, null);
+        super(opened, null);
         this.category = category;
-        this.opened = opened;
         labels = new ArrayList<JLabel>();
         updateNodes();
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (isRefresh()) {
-            refreshTasks();
+        if (!category.isLoaded()) {
+            DashboardViewer.getInstance().loadCategory(category);
+            updateNodes();
+        } else if (isRefresh()) {
+            category.refresh();
             updateNodes();
             setRefresh(false);
         }
@@ -128,6 +126,11 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             lblTotal.setText(getTotalString());
             lblChanged.setText(getChangedString());
         }
+    }
+
+    @Override
+    boolean isLoaded() {
+        return category.isLoaded();
     }
 
     @Override
@@ -174,7 +177,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
                 labels.add(lblProgress);
                 panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
+                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshCategoryAction(this)); //NOI18N
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                 panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
@@ -187,7 +190,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     private Action getCategoryAction() {
-        if (opened) {
+        if (isOpened()) {
             if (closeCategoryAction == null) {
                 closeCategoryAction = new CloseCategoryNodeAction(this);
             }
@@ -205,11 +208,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     public boolean isOpened() {
-        return opened;
-    }
-
-    public void setOpened(boolean opened) {
-        this.opened = opened;
+        return true;
     }
 
     @Override
@@ -259,7 +258,11 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     public int compareTo(CategoryNode toCompare) {
-        return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+        if (this.isOpened() != toCompare.isOpened()) {
+            return this.isOpened() ? -1 : 1;
+        } else {
+            return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+        }
     }
 
     @Override
@@ -275,29 +278,5 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             }
         }
         return -1;
-    }
-
-    private void refreshTasks() {
-        Map<Repository, List<String>> map = getTasksToRepository(category.getTasks());
-        Set<Repository> repositoryKeys = map.keySet();
-        for (Repository repository : repositoryKeys) {
-            List<String> ids = map.get(repository);
-            repository.getIssues(ids.toArray(new String[ids.size()]));
-        }
-    }
-
-    private Map<Repository, List<String>> getTasksToRepository(List<Issue> tasks) {
-        Map<Repository, List<String>> map = new HashMap<Repository, List<String>>();
-        for (Issue issue : tasks) {
-            Repository repositoryKey = issue.getRepository();
-            if (map.containsKey(repositoryKey)) {
-                map.get(repositoryKey).add(issue.getID());
-            } else {
-                ArrayList<String> list = new ArrayList<String>();
-                list.add(issue.getID());
-                map.put(repositoryKey, list);
-            }
-        }
-        return map;
     }
 }

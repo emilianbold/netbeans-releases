@@ -88,6 +88,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     @Override
     protected List<TreeListNode> createChildren() {
         if (isRefresh()) {
+            removeTaskListeners();
             query.refresh();
             updateNodes();
             setRefresh(false);
@@ -120,6 +121,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     void adjustTaskNode(TaskNode taskNode) {
+    }
+
+    @Override
+    boolean isLoaded() {
+        return true;
     }
 
     @Override
