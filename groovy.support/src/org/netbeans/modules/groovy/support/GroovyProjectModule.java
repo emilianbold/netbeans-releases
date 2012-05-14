@@ -92,4 +92,26 @@ public class GroovyProjectModule {
                 LBL_DebugFile_Action(), // NOI18N
                 null);
     }
+
+    @Messages("LBL_TestFile_Action=Test File")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.test", category = "Groovy")
+    @ActionRegistration(lazy = false, displayName = "#LBL_TestFile_Action")
+    @ActionReference(path = "Loaders/text/x-groovy/Actions", position = 580)
+    public static Action test() {
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_TEST_SINGLE,
+                LBL_TestFile_Action(), // NOI18N
+                null);
+    }
+
+    @Messages("LBL_DebugTestFile_Action=Debug Test File")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.debug.test", category = "Groovy")
+    @ActionRegistration(lazy = false, displayName = "#LBL_DebugTestFile_Action")
+    @ActionReference(path = "Loaders/text/x-groovy/Actions", position = 590)
+    public static Action debugTest() {
+        return FileSensitiveActions.fileCommandAction(
+                ActionProvider.COMMAND_DEBUG_TEST_SINGLE,
+                LBL_DebugTestFile_Action(), // NOI18N
+                null);
+    }
 }
