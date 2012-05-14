@@ -108,13 +108,13 @@ public class InstallManager extends InstalledFileLocator{
 
             // global or local
             if ((targetCluster != null && targetCluster.length () > 0) || isGlobal) {
-                res = checkTargetCluster(update, targetCluster, useUserdirAsFallback);
+                res = checkTargetCluster(update, targetCluster, isGlobal, useUserdirAsFallback);
                 
                 // handle non-existing clusters
                 if (res == null && targetCluster != null) {
                     res = createNonExistingCluster (targetCluster);
                     if (res != null) {
-                        res = checkTargetCluster(update, targetCluster, useUserdirAsFallback);
+                        res = checkTargetCluster(update, targetCluster, isGlobal, useUserdirAsFallback);
                     }
                 }
                 
@@ -124,10 +124,10 @@ public class InstallManager extends InstalledFileLocator{
                     // create UpdateTracking.EXTRA_CLUSTER_NAME
                     res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
                     if (res != null) {
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, useUserdirAsFallback);
+                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
                     } else {
                         // check writable installation
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, useUserdirAsFallback);
+                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
                     }
                     
                     // no new cluster was created => use userdir
@@ -151,7 +151,7 @@ public class InstallManager extends InstalledFileLocator{
         return res;
     }
 
-    private static File checkTargetCluster(UpdateElementImpl update, String targetCluster, boolean useUserdirAsFallback) throws OperationException {
+    private static File checkTargetCluster(UpdateElementImpl update, String targetCluster, boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
         if (targetCluster == null || targetCluster.length () == 0) {
             return null;
         }
@@ -169,7 +169,7 @@ public class InstallManager extends InstalledFileLocator{
                     res = cluster;
                 } else {
                     ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement ());
-                    if (! useUserdirAsFallback) {
+                    if (! useUserdirAsFallback && isGlobal) {
                         throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION);
                     }
                 }
