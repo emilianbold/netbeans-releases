@@ -744,8 +744,8 @@ public class Utilities {
         }
     }
 
-    public static void setGlobalInstallation(boolean isGlobal) {
-        getPreferences ().putBoolean (PLUGIN_MANAGER_SHARED_INSTALLATION, isGlobal);
+    public static void setGlobalInstallation(Boolean isGlobal) {
+        getPreferences ().put(PLUGIN_MANAGER_SHARED_INSTALLATION, isGlobal == null ? "null" : isGlobal.toString());
     }
     
     public static boolean modulesOnly () {

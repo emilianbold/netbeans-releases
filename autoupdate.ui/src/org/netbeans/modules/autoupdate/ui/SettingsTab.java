@@ -89,6 +89,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author  Radek Matous, Jirka Rechtacek
@@ -107,6 +109,9 @@ public class SettingsTab extends javax.swing.JPanel {
     private boolean refreshModel;
     
     /** Creates new form UnitTab */
+    @Messages({"cbLocation_InstallDefault=<Default>",
+        "cbLocation_InstallGlobal=Force install into shared directories",
+        "cbLocation_InstallLocal=Force install into user directory"})
     public SettingsTab(PluginManagerUI manager) {
         this.manager = manager;
         initComponents();
@@ -138,9 +143,12 @@ public class SettingsTab extends javax.swing.JPanel {
             cbCheckPeriod.addItem (getMessage("CTL_Update_custom"));
         }
         cbCheckPeriod.setSelectedIndex (getAutoUpdatePeriod ());
-        //cbModules.setSelected(Utilities.modulesOnly());
-        //cbPlugins.setSelected(!Utilities.modulesOnly());
-        cbGlobalInstall.setSelected(Utilities.isGlobalInstallation() == null ? false : Utilities.isGlobalInstallation());
+        cbLocation.setModel(new DefaultComboBoxModel(new String[] {
+            cbLocation_InstallDefault(),
+            cbLocation_InstallGlobal(),
+            cbLocation_InstallLocal(),
+        }));
+        cbLocation.setSelectedIndex(Utilities.isGlobalInstallation() == null ? 0 : Utilities.isGlobalInstallation() ? 1 : 2);
         getSettingsTableModel ().setSettingsTab (this);
         TableColumn activeColumn = table.getColumnModel ().getColumn (0);
         activeColumn.setMaxWidth (table.getTableHeader ().getHeaderRect (0).width);
@@ -236,8 +244,9 @@ public class SettingsTab extends javax.swing.JPanel {
         cbCheckPeriod = new javax.swing.JComboBox();
         bProxy = new javax.swing.JButton();
         lGeneral = new javax.swing.JLabel();
-        cbGlobalInstall = new javax.swing.JCheckBox();
         jSeparatorAdvanced = new javax.swing.JSeparator();
+        lLocation = new javax.swing.JLabel();
+        cbLocation = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(lUpdateCenters, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lUpdateCenters.text")); // NOI18N
 
@@ -268,11 +277,12 @@ public class SettingsTab extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lGeneral, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lGeneral.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbGlobalInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
-        cbGlobalInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbGlobalInstall.addActionListener(new java.awt.event.ActionListener() {
+        lLocation.setLabelFor(cbLocation);
+        org.openide.awt.Mnemonics.setLocalizedText(lLocation, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lLocation.text")); // NOI18N
+
+        cbLocation.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbGlobalInstallActionPerformed(evt);
+                cbLocationActionPerformed(evt);
             }
         });
 
@@ -284,20 +294,10 @@ public class SettingsTab extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(cbGlobalInstall))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(addButton)
                             .addComponent(spTab, javax.swing.GroupLayout.DEFAULT_SIZE, 871, Short.MAX_VALUE))
                         .addGap(1, 1, 1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(lCheckPeriod)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbCheckPeriod, 0, 548, Short.MAX_VALUE)
-                        .addGap(58, 58, 58)
-                        .addComponent(bProxy))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lGeneral)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -306,7 +306,21 @@ public class SettingsTab extends javax.swing.JPanel {
                         .addComponent(lConnection)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparatorConnection, javax.swing.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE))
-                    .addComponent(lUpdateCenters))
+                    .addComponent(lUpdateCenters)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lLocation)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(lCheckPeriod)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cbCheckPeriod, 0, 548, Short.MAX_VALUE)
+                                .addGap(58, 58, 58)
+                                .addComponent(bProxy)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -315,7 +329,7 @@ public class SettingsTab extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(lUpdateCenters)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTab, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE)
+                .addComponent(spTab, javax.swing.GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE)
                 .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
@@ -332,46 +346,13 @@ public class SettingsTab extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lGeneral, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jSeparatorAdvanced, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbGlobalInstall)
+                .addGap(7, 7, 7)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lLocation)
+                    .addComponent(cbLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void cbGlobalInstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGlobalInstallActionPerformed
-    if (cbGlobalInstall.isSelected ()) {
-        // check write permissions
-        Collection<File> dirs = Utilities.sharedDirs ();
-        if (dirs.isEmpty ()) {
-            NotifyDescriptor nd = new NotifyDescriptor (NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.NoSharedMessage"),
-                    NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.NoSharedTitle"),
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    new Object [] { NotifyDescriptor.OK_OPTION }, // options
-                    null); // default option
-            DialogDisplayer.getDefault ().notifyLater (nd);
-            cbGlobalInstall.setSelected (false);
-            return ;
-        } else {
-            for (File f : dirs) {
-                if (f.exists () && f.isDirectory () && ! Utilities.canWriteInCluster (f)) {
-                    NotifyDescriptor nd = new NotifyDescriptor (NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyMessage", f),
-                            NbBundle.getMessage (SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyTitle"),
-                            NotifyDescriptor.ERROR_MESSAGE,
-                            NotifyDescriptor.ERROR_MESSAGE,
-                            new Object [] { NotifyDescriptor.OK_OPTION }, // options
-                            null); // default option
-                    DialogDisplayer.getDefault ().notifyLater (nd);
-                    cbGlobalInstall.setSelected (false);
-                    return ;
-                }
-            }
-            Utilities.setGlobalInstallation (true);
-        }
-    } else {
-        Utilities.setGlobalInstallation (false);
-    }
-}//GEN-LAST:event_cbGlobalInstallActionPerformed
 
 private void cbCheckPeriodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCheckPeriodActionPerformed
     setAutoUpdatePeriod (cbCheckPeriod.getSelectedIndex ());
@@ -380,6 +361,49 @@ private void cbCheckPeriodActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bProxyActionPerformed
     OptionsDisplayer.getDefault ().open ("General"); //NOI18N
 }//GEN-LAST:event_bProxyActionPerformed
+
+    private void cbLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbLocationActionPerformed
+
+        switch (cbLocation.getSelectedIndex()) {
+            case 0: // default
+                Utilities.setGlobalInstallation(null);
+                break;
+            case 1: // global
+                // check write permissions
+                Collection<File> dirs = Utilities.sharedDirs();
+                if (dirs.isEmpty()) {
+                    NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.NoSharedMessage"),
+                            NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.NoSharedTitle"),
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            NotifyDescriptor.ERROR_MESSAGE,
+                            new Object[]{NotifyDescriptor.OK_OPTION}, // options
+                            null); // default option
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                    cbLocation.setSelectedIndex(0);
+                } else {
+                    for (File f : dirs) {
+                        if (f.exists() && f.isDirectory() && !Utilities.canWriteInCluster(f)) {
+                            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyMessage", f),
+                                    NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.ReadOnlyTitle"),
+                                    NotifyDescriptor.ERROR_MESSAGE,
+                                    NotifyDescriptor.ERROR_MESSAGE,
+                                    new Object[]{NotifyDescriptor.OK_OPTION}, // options
+                                    null); // default option
+                            DialogDisplayer.getDefault().notifyLater(nd);
+                            cbLocation.setSelectedIndex(0);
+                            break;
+                        }
+                        Utilities.setGlobalInstallation(true);
+                    }
+                }
+                break;
+            case 2: // local
+                Utilities.setGlobalInstallation(false);
+                break;
+            default:
+                assert false : "Unknow index";
+        }
+    }//GEN-LAST:event_cbLocationActionPerformed
 
     public SettingsTableModel getSettingsTableModel() {
         return ((SettingsTableModel) table.getModel());
@@ -691,12 +715,13 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JButton addButton;
     private javax.swing.JButton bProxy;
     private javax.swing.JComboBox cbCheckPeriod;
-    private javax.swing.JCheckBox cbGlobalInstall;
+    private javax.swing.JComboBox cbLocation;
     private javax.swing.JSeparator jSeparatorAdvanced;
     private javax.swing.JSeparator jSeparatorConnection;
     private javax.swing.JLabel lCheckPeriod;
     private javax.swing.JLabel lConnection;
     private javax.swing.JLabel lGeneral;
+    private javax.swing.JLabel lLocation;
     private javax.swing.JLabel lUpdateCenters;
     private javax.swing.ButtonGroup pluginsViewGroup;
     private javax.swing.JSplitPane spTab;
