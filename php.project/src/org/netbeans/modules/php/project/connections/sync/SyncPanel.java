@@ -215,7 +215,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         "# {1} - remote configuration name",
         "SyncPanel.title=Remote Synchronization for {0}: {1}",
         "SyncPanel.button.titleWithMnemonics=S&ynchronize",
-        "SyncPanel.pleaseWait=Please wait..."
+        "SyncPanel.collectingInformation=Collecting information, please wait..."
     })
     public boolean open() {
         assert SwingUtilities.isEventDispatchThread();
@@ -715,7 +715,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     void invalidatePanel() {
         assert SwingUtilities.isEventDispatchThread();
-        messagesTextPane.setText(Bundle.SyncPanel_pleaseWait());
+        messagesTextPane.setText(Bundle.SyncPanel_collectingInformation());
         descriptor.setValid(false);
         okButton.setEnabled(false);
     }
@@ -751,7 +751,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     })
     void updateSyncInfo() {
         assert SwingUtilities.isEventDispatchThread();
-        syncInfoLabel.setText(Bundle.SyncPanel_pleaseWait());
+        syncInfoLabel.setText(Bundle.SyncPanel_collectingInformation());
         final List<SyncItem> selectedItems = new CopyOnWriteArrayList<SyncItem>(getSelectedItems(false));
         RP.post(new Runnable() {
             @Override
