@@ -212,7 +212,7 @@ public final class ProjectActionEvent {
         }
 
         if (configuration.getPlatformInfo().isLocalhost()) {
-            command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
+            command = CndPathUtilitities.expandAllMacroses(command, "${OUTPUT_PATH}", outputValue); // NOI18N
         } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
             if (!outputValue.isEmpty()) {
                 PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
@@ -226,7 +226,7 @@ public final class ProjectActionEvent {
                 }
             }
 
-            command = CndPathUtilitities.expandMacro(command, "${OUTPUT_PATH}", outputValue); // NOI18N
+            command = CndPathUtilitities.expandAllMacroses(command, "${OUTPUT_PATH}", outputValue); // NOI18N
         }
 
         return configuration.expandMacros(command);
