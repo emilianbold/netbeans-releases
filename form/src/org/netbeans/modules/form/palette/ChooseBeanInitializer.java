@@ -74,15 +74,8 @@ class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
                     DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_InvalidClassName"), // NOI18N
                                                      NotifyDescriptor.WARNING_MESSAGE));
-                } else if (className.indexOf('.') == -1) { // Issue 79573
-                    ClassPath cp = ClassPath.getClassPath(classPathRep,  ClassPath.SOURCE);
-                    String resName = cp != null ? cp.getResourceName(classPathRep) : null;
-                    if (resName != null && resName.indexOf('/') > 0) {
-                        invalidInput = true;
-                        DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(FormUtils.getBundleString("MSG_DefaultPackageBean"), // NOI18N
-                                                         NotifyDescriptor.WARNING_MESSAGE));
-                    }
+                } else if (!PaletteItem.checkDefaultPackage(className, classPathRep)) {
+                    invalidInput = true;
                 }
                 item.setClassFromCurrentProject(className, classPathRep);
             } else {

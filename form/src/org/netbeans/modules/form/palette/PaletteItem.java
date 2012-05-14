@@ -48,12 +48,15 @@ import java.beans.*;
 import java.awt.Image;
 
 import java.util.Collections;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.project.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -202,6 +205,10 @@ public final class PaletteItem implements Node.Cookie {
         if (componentInitializer != null) {
             return componentInitializer.prepare(this, classPathRep);
         }
+        String className = getComponentClassName();
+        if (className != null) {
+            checkDefaultPackage(className, classPathRep);
+        }
         return true;
     }
 
@@ -303,6 +310,20 @@ public final class PaletteItem implements Node.Cookie {
         itemDataObject.tooltip = null;
         itemDataObject.icon16 = null;
         itemDataObject.icon32 = null;
+    }
+
+    static boolean checkDefaultPackage(String className, FileObject classPathRep) {
+        if (className.indexOf('.') == -1) { // Issue 79573
+            ClassPath cp = ClassPath.getClassPath(classPathRep,  ClassPath.SOURCE);
+            String resName = cp != null ? cp.getResourceName(classPathRep) : null;
+            if (resName != null && resName.indexOf('/') > 0) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(FormUtils.getBundleString("MSG_DefaultPackageBean"), // NOI18N
+                                                 NotifyDescriptor.WARNING_MESSAGE));
+                return false;
+            }
+        }
+        return true;
     }
 
     // -------
