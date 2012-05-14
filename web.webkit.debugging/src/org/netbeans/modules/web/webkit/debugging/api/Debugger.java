@@ -208,7 +208,7 @@ public final class Debugger {
         params.put("columnNumber", columnNumber);
         Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointByUrl", params));
         if (resp != null) {
-            Breakpoint b = APIFactory.createBreakpoint(resp.getResponse(), webkit);
+            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
             currentBreakpoints.add(b);
             return b;
         }
@@ -219,7 +219,7 @@ public final class Debugger {
     public void removeLineBreakpoint(Breakpoint b) {
         JSONObject params = new JSONObject();
         params.put("breakpointId", b.getBreakpointID());
-        transport.sendCommand(new Command("Debugger.removeBreakpoint", params));
+        transport.sendBlockingCommand(new Command("Debugger.removeBreakpoint", params));
         currentBreakpoints.remove(b);
     }
     

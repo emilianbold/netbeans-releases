@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.api.debugger.*;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -57,6 +58,8 @@ import org.openide.filesystems.FileObject;
  */
 public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
 
+    private static final RequestProcessor RP = new RequestProcessor("Breakpoint updater");
+            
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.LazyDebuggerManagerListener#getProperties()
      */
@@ -74,8 +77,13 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
             return;
         }
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
-        LineBreakpoint lb = (LineBreakpoint)breakpoint;
-        addBreakpoint(lb);
+        final LineBreakpoint lb = (LineBreakpoint)breakpoint;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                addBreakpoint(lb);
+            }
+        });
     }
     
     private static void addBreakpoint(LineBreakpoint lb) {
@@ -114,8 +122,17 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
         if (!(breakpoint instanceof LineBreakpoint)) {
             return;
         }
-        LineBreakpoint lb = (LineBreakpoint)breakpoint;
         breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        final LineBreakpoint lb = (LineBreakpoint)breakpoint;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                removeBreakpoint(lb);
+            }
+        });
+    }
+    
+    private void removeBreakpoint(LineBreakpoint lb) {
         for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
             Debugger d = de.lookupFirst("", Debugger.class);
             if (d != null) {

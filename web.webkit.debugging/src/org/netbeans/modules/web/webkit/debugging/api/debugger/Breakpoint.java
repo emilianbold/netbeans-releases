@@ -54,8 +54,8 @@ public class Breakpoint extends AbstractObject {
         super(object, webkit);
     }
     
-    public JSONObject getBreakpointID() {
-        return (JSONObject)getObject().get("breakpointId");
+    public String getBreakpointID() {
+        return (String)getObject().get("breakpointId");
     }
 
     public JSONObject getBreakpointLocation() {
