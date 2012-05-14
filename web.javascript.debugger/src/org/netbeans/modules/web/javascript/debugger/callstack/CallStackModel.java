@@ -363,7 +363,6 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
 
     @Override
     public void reset() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }
