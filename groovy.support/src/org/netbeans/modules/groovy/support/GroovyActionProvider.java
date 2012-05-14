@@ -85,7 +85,8 @@ import org.openide.util.NbBundle;
  * There's no API to hook into project's Run file action implementations,
  * so this is extract from J2SEActionProvider to support:
  * - Run File
- * - Debug File (not implemented yet)
+ * - Debug File
+ * - Compile File
  * Basically only modification is changing hardcoded .java to .groovy plus
  * some changes needed to solve lack of J2SE project internals
  * 
@@ -95,34 +96,36 @@ import org.openide.util.NbBundle;
 @ProjectServiceProvider(service=ActionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
 public class GroovyActionProvider implements ActionProvider {
 
+    private static class GroovyAntAction {
+        private String[] antTargetName;
+        private boolean isScanSensitive;
+
+        public GroovyAntAction(String[] antTargetName, boolean isScanSensitive) {
+            this.antTargetName = antTargetName;
+            this.isScanSensitive = isScanSensitive;
+        }
+    }
+
     // from J2SEProjectProperties
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
     // from J2SEConfigurationProvider
     public static final String PROP_CONFIG = "config"; // NOI18N
 
-    /** Map from commands to ant targets */
-    private static final Map<String,String[]> supportedActions;
+    /** Map from commands to groovy targets */
+    private static final Map<String, GroovyAntAction> supportedActions;
     static {
         // treated specially: COMMAND_{,RE}BUILD
-        supportedActions = new HashMap<String, String[]>();
-        supportedActions.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
-        supportedActions.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
-        supportedActions.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
+        supportedActions = new HashMap<String, GroovyAntAction>();
+        supportedActions.put(COMMAND_COMPILE_SINGLE, new GroovyAntAction(new String[] {"compile-single"}, true)); // NOI18N
+        supportedActions.put(COMMAND_DEBUG_SINGLE, new GroovyAntAction(new String[] {"debug-single"}, true)); // NOI18N
+        supportedActions.put(COMMAND_RUN_SINGLE, new GroovyAntAction(new String[] {"run-single"}, true)); // NOI18N
     };
 
 
-
     private final Project project;
-    /**Set of commands which are affected by background scanning*/
-    final Set<String> bkgScanSensitiveActions;
     
     public GroovyActionProvider(Project project) {
         this.project = project;
-        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
-            COMMAND_COMPILE_SINGLE,
-            COMMAND_RUN_SINGLE,
-            COMMAND_DEBUG_SINGLE
-        ));
     }
     
     @Override
@@ -166,17 +169,26 @@ public class GroovyActionProvider implements ActionProvider {
             }
         };
 
-        if (this.bkgScanSensitiveActions.contains(command)) {
+        if (getScanSensitiveActions().contains(command)) {
             ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (GroovyActionProvider.class,"ACTION_"+command));   //NOI18N
-        }
-        else {
+        } else {
             action.run();
         }
     }
 
+    private Set<String> getScanSensitiveActions() {
+        Set<String> scanSensitiveActions = new HashSet<String>();
+        for (Map.Entry<String, GroovyAntAction> entry : supportedActions.entrySet()) {
+            if (entry.getValue().isScanSensitive) {
+                scanSensitiveActions.add(entry.getKey());
+            }
+        }
+        return scanSensitiveActions;
+    }
+
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_COMPILE_SINGLE)) {
+        if (supportedActions.keySet().contains(command)) {
             FileObject fos[] = findSources(context);
             return fos != null && fos.length == 1;
         }
@@ -184,44 +196,47 @@ public class GroovyActionProvider implements ActionProvider {
     }
 
     private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        Map<String,String[]> targetsFromConfig = loadTargetsFromConfig();
-        String[] targetNames = new String[0];
-        if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_COMPILE_SINGLE)) {
-            FileObject[] files = findTestSources(context, false);
-            if (files != null) {
-                if (command.equals(COMMAND_RUN_SINGLE)) {
-                    targetNames = setupTestSingle(p, files);
-                } else {
-                    targetNames = setupDebugTestSingle(p, files);
-                }
-            } else {
-                FileObject file = findSources(context)[0];
-                Sources sources = ProjectUtils.getSources(project);
-                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                String clazz = FileUtil.getRelativePath(getRoot(sourceGroups, file), file);
-                p.setProperty("javac.includes", clazz); // NOI18N
-                // Convert foo/FooTest.java -> foo.FooTest
-                if (clazz.endsWith(".groovy")) { // NOI18N
-                    clazz = clazz.substring(0, clazz.length() - 7);
-                }
-                clazz = clazz.replace('/','.');
-                if (command.equals (COMMAND_RUN_SINGLE)) {
-                    p.setProperty("run.class", clazz); // NOI18N
-                    String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : supportedActions.get(COMMAND_RUN_SINGLE);
-                } else if (command.equals (COMMAND_DEBUG_SINGLE)) {
-                    p.setProperty("debug.class", clazz); // NOI18N
-                    String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : supportedActions.get(COMMAND_DEBUG_SINGLE);
-                } else {
-                    p.setProperty("compile.class", clazz); // NOI18N
-                    String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : supportedActions.get(COMMAND_COMPILE_SINGLE);
-                }
-            }
+        if (!supportedActions.keySet().contains(command)) {
+            return new String[0];
         }
 
-        return targetNames;
+        FileObject[] testSources = findTestSources(context);
+        if (testSources != null) {
+            if (command.equals(COMMAND_RUN_SINGLE)) {
+                return setupTestSingle(p, testSources);
+            } else {
+                return setupDebugTestSingle(p, testSources);
+            }
+        } else {
+            FileObject file = findSources(context)[0];
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String clazz = FileUtil.getRelativePath(getRoot(sourceGroups, file), file);
+            p.setProperty("javac.includes", clazz); // NOI18N
+            // Convert foo/FooTest.java -> foo.FooTest
+            if (clazz.endsWith(".groovy")) { // NOI18N
+                clazz = clazz.substring(0, clazz.length() - 7);
+            }
+            clazz = clazz.replace('/','.');
+
+            String[] targets = loadTargetsFromConfig().get(command);
+            if (command.equals(COMMAND_RUN_SINGLE)) {
+                p.setProperty("run.class", clazz); // NOI18N
+            } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
+                p.setProperty("debug.class", clazz); // NOI18N
+            } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
+                p.setProperty("compile.class", clazz); // NOI18N
+            }
+            return getTargetNamesForCommand(targets, command);
+        }
+    }
+
+    private String[] getTargetNamesForCommand(String[] targetsFromConfig, String commandName) {
+        if (targetsFromConfig != null) {
+            return targetsFromConfig;
+        } else {
+            return supportedActions.get(commandName).antTargetName;
+        }
     }
     
     private FileObject getRoot (SourceGroup[] groups, FileObject file) {
@@ -253,9 +268,8 @@ public class GroovyActionProvider implements ActionProvider {
 
     private FileObject[] findSources(Lookup context) {
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (int i=0; i< sourceGroups.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, sourceGroups[i].getRootFolder(), ".groovy", true); // NOI18N
+        for (SourceGroup sourceGroup : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, sourceGroup.getRootFolder(), ".groovy", true); // NOI18N
             if (files != null) {
                 return files;
             }
@@ -263,13 +277,12 @@ public class GroovyActionProvider implements ActionProvider {
         return null;
     }
 
-    /** Find either selected tests or tests which belong to selected source files
+    /**
+     * Find either selected tests or tests which belong to selected source files
      */
-    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPath = getTestSourceRoots(project);
-        for (int i=0; i< testSrcPath.length; i++) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".groovy", true); // NOI18N
+    private FileObject[] findTestSources(Lookup context) {
+        for (FileObject testSourceRoot : getTestSourceRoots(project)) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSourceRoot, ".groovy", true); // NOI18N
             if (files != null) {
                 return files;
             }
@@ -392,10 +405,4 @@ public class GroovyActionProvider implements ActionProvider {
         }
         return targets;
     }
-
-    private static final class MainClassChooser {
-        private static Boolean unitTestingSupport_hasMainMethodResult;
-
-    }
-
 }
