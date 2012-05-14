@@ -47,6 +47,7 @@ package org.netbeans.modules.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -63,6 +64,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -526,6 +528,26 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
             return FileUtil.getConfigObject("Editors/private/GlobalFormatAction.instance", Action.class);
         }
 
+        @Override
+        protected KeyStroke getDefaultAccelerator(){
+            Lookup ml = MimeLookup.getLookup(MimePath.EMPTY); //NOI18N
+            KeyBindingSettings kbs = (KeyBindingSettings) ml.lookup(KeyBindingSettings.class);
+            if (kbs != null){
+                List lst = kbs.getKeyBindings();
+                if (lst != null){
+                    for (int i=0; i<lst.size(); i++){
+                        MultiKeyBinding mkb = (MultiKeyBinding)lst.get(i);
+                        String an = mkb.getActionName();
+                        if (an != null && an.equals(getActionName())){
+                            if (mkb.getKeyStrokeCount() == 1){// we do not support multi KB in mnemonics
+                                return mkb.getKeyStroke(0);
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
     } // end of FormatAction
     
     /** Shift Left action in Source main menu, wrapper for BaseKit.shiftLineLeftAction
