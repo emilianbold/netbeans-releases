@@ -116,17 +116,19 @@ public class ProblemPanel extends javax.swing.JPanel {
         taTitle.setToolTipText (problem);
         if (isWarning) {
             if (buttons.length == 2) { // XXX: called from InstallStep
-                taMessage.setText (proxy_taMessage_WarningTextWithReload()); // NOI18N
+                tpMessage.setText (proxy_taMessage_WarningTextWithReload()); // NOI18N
             } else {
-                taMessage.setText(proxy_taMessage_WarningText()); // NOI18N
+                tpMessage.setText(proxy_taMessage_WarningText()); // NOI18N
             }
         } else {
-            taMessage.setText(proxy_taMessage_ErrorText()); // NOI18N
+            tpMessage.setText(proxy_taMessage_ErrorText()); // NOI18N
         }
     }
     
     @Messages({"write_taTitle_Text=You don`t have permission to install plugin(s) into the installation directory.",
-        "write_taMessage_WarningText=To perform installation into the shared directory, you should run the application as a user with administrative privilege or install the plugin(s) into your user directory."})
+        "write_taMessage_WarningText=To perform installation into the shared directory, you should run the application "
+            + "as a user with administrative privilege or install the plugin(s) into your user directory.<br>"
+            + "You can also change <i>Plugin Install Location</i> in Settings tab of <i>Tools|Plugins</i> dialog."})
     private void initWriteProblem(String problemDescription) {
         problem = problemDescription == null ?
             write_taTitle_Text() : // NOI18N
@@ -135,7 +137,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         cbShowAgain.setVisible(true);
         taTitle.setToolTipText (problem);
         assert isWarning : problem + " is just a warning";
-        taMessage.setText(write_taMessage_WarningText()); // NOI18N
+        tpMessage.setText(write_taMessage_WarningText()); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -148,9 +150,9 @@ public class ProblemPanel extends javax.swing.JPanel {
 
         spTitle = new javax.swing.JScrollPane();
         taTitle = new javax.swing.JTextArea (problem);
-        spMessage = new javax.swing.JScrollPane();
-        taMessage = new javax.swing.JTextArea();
         cbShowAgain = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tpMessage = new javax.swing.JTextPane();
 
         spTitle.setBorder(null);
 
@@ -164,19 +166,6 @@ public class ProblemPanel extends javax.swing.JPanel {
         taTitle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taTitle_ACN")); // NOI18N
         taTitle.getAccessibleContext().setAccessibleDescription(problem);
 
-        spMessage.setBorder(null);
-
-        taMessage.setEditable(false);
-        taMessage.setLineWrap(true);
-        taMessage.setRows(3);
-        taMessage.setWrapStyleWord(true);
-        taMessage.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        taMessage.setOpaque(false);
-        taMessage.setPreferredSize(new java.awt.Dimension(400, 100));
-        spMessage.setViewportView(taMessage);
-        taMessage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "NetworkProblemPanel_taMessage")); // NOI18N
-        taMessage.getAccessibleContext().setAccessibleDescription(problem);
-
         org.openide.awt.Mnemonics.setLocalizedText(cbShowAgain, org.openide.util.NbBundle.getMessage(ProblemPanel.class, "ProblemPanel.cbShowAgain.text")); // NOI18N
         cbShowAgain.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -184,20 +173,26 @@ public class ProblemPanel extends javax.swing.JPanel {
             }
         });
 
+        tpMessage.setEditable(false);
+        tpMessage.setContentType("text/html"); // NOI18N
+        tpMessage.setOpaque(false);
+        tpMessage.setPreferredSize(new java.awt.Dimension(400, 100));
+        jScrollPane1.setViewportView(tpMessage);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(spTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
-            .addComponent(spMessage)
             .addComponent(cbShowAgain, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(spTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 106, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbShowAgain))
         );
@@ -213,10 +208,10 @@ public class ProblemPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JCheckBox cbShowAgain;
-    javax.swing.JScrollPane spMessage;
+    javax.swing.JScrollPane jScrollPane1;
     javax.swing.JScrollPane spTitle;
-    javax.swing.JTextArea taMessage;
     javax.swing.JTextArea taTitle;
+    javax.swing.JTextPane tpMessage;
     // End of variables declaration//GEN-END:variables
     
     public Object showNetworkProblemDialog () {
