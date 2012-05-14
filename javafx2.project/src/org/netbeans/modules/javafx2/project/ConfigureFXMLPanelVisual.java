@@ -452,7 +452,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(ConfigureFXMLPanelVisual.class);
+            return null;
         }
 
         @Override

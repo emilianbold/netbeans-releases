@@ -488,7 +488,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(ConfigureFXMLPanelVisual.class);
+            return null;
         }
 
         @Override

@@ -350,7 +350,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(PanelSourceFolders.class);
+            return null;
         }
 
         private void fireChangeEvent() {

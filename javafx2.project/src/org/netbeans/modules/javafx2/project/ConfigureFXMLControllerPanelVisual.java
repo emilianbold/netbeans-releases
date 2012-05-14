@@ -502,7 +502,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(ConfigureFXMLPanelVisual.class);
+            return null;
         }
 
         @Override
