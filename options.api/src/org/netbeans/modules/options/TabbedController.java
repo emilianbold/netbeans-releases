@@ -50,13 +50,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.AdvancedOption;
@@ -281,6 +281,10 @@ public class TabbedController extends OptionsPanelController {
             Lookup lookup = controller.getLookup();
             if (lookup != null && lookup != Lookup.EMPTY) {
                 lookups.add(lookup);
+            }
+            if (lookup == null) {
+                LOGGER.log(Level.WARNING, "{0}.getLookup() should never return null. Please, see Bug #194736.", controller.getClass().getName()); // NOI18N
+                throw new NullPointerException(controller.getClass().getName() + ".getLookup() should never return null. Please, see Bug #194736."); // NOI18N
             }
         }
         if (lookups.isEmpty()) {
