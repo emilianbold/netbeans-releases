@@ -119,7 +119,12 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            task.refresh();
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    task.refresh();
+                }
+            });
         }
     }
 
