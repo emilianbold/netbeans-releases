@@ -718,8 +718,9 @@ final class ViewBuilder {
         this.factoryStates = new FactoryState[viewFactories.length];
         for (int i = 0; i < viewFactories.length; i++) {
             FactoryState state = new FactoryState(viewFactories[i]);
-            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
             factoryStates[i] = state;
+            // Note: if init() fails with exception state.finish() will be called.
+            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
         }
         allReplaces = new ArrayList<ViewReplace<ParagraphView, EditorView>>(2);
 
@@ -1264,7 +1265,9 @@ final class ViewBuilder {
         // Finish factories
         if (factoryStates != null) {
             for (FactoryState factoryState : factoryStates) {
-                factoryState.finish();
+                if (factoryState != null) { // Prevents NPE in case of early failure of state.init()
+                    factoryState.finish();
+                }
             }
         }
     }

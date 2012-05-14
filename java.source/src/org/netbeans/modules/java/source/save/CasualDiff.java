@@ -183,7 +183,7 @@ public class CasualDiff {
             current = t;
         }
 
-        if (oldTree.getKind() == Kind.METHOD || (!td.parameterPrint && oldTree.getKind() == Kind.VARIABLE)) {
+        if (oldTree.getKind() == Kind.MODIFIERS || oldTree.getKind() == Kind.METHOD || (!td.parameterPrint && oldTree.getKind() == Kind.VARIABLE)) {
             td.tokenSequence.move(start);
             if (td.tokenSequence.movePrevious() && td.tokenSequence.token().id() == JavaTokenId.WHITESPACE) {
                 String text = td.tokenSequence.token().text().toString();

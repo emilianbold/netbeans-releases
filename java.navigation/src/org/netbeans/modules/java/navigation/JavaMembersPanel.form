@@ -56,7 +56,7 @@
                   <Component id="filterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="splitPane" pref="304" max="32767" attributes="0"/>
+              <Component id="splitPane" pref="293" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="signatureEditorPane" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -151,6 +151,7 @@
     </Container>
     <Component class="javax.swing.JEditorPane" name="signatureEditorPane">
       <Properties>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
             <LineBorder>
@@ -158,8 +159,7 @@
             </LineBorder>
           </Border>
         </Property>
-        <Property name="contentType" type="java.lang.String" value="text/x-java"/>
-        <Property name="editable" type="boolean" value="false"/>
+        <Property name="contentType" type="java.lang.String" value="text/x-java" noResource="true"/>
         <Property name="nextFocusableComponent" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="filtersToolbar"/>
         </Property>
@@ -208,8 +208,8 @@
           <Properties>
             <Property name="icon" postCode="showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);"/>
             <Property name="selected" type="boolean" value="true"/>
-            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showFQNToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(JavaHierarchyPanel.class, &quot;TOOLTIP_showFQNToggleButton&quot;, Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q)))" type="code"/>
             </Property>
           </Properties>
         </Component>
@@ -217,8 +217,8 @@
           <Properties>
             <Property name="icon" postCode="showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);"/>
             <Property name="selected" type="boolean" value="true"/>
-            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/java/navigation/Bundle.properties" key="TOOLTIP_showInnerToggleButton" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="NbBundle.getMessage(JavaHierarchyPanel.class, &quot;TOOLTIP_showInnerToggleButton&quot;, Utilities.keyToString(getKeyStroke(KeyEvent.VK_I)))" type="code"/>
             </Property>
           </Properties>
         </Component>

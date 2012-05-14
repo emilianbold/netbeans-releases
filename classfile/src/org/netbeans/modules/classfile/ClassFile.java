@@ -190,6 +190,10 @@ public class ClassFile {
             attributes = AttributeMap.load(in, constantPool);
         } catch (IOException ioe) {
 	    throw new InvalidClassFormatException(ioe);
+        } catch (ClassCastException cce) {
+            //May throw CCE when the class file format is broken,
+            //see issue #211402 - the MethodInfo is on place of ClassInfo
+            throw new InvalidClassFormatException(cce);
         }
     }
 

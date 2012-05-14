@@ -39,53 +39,60 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form.palette;
+package org.netbeans.modules.editor.search;
 
-import javax.lang.model.SourceVersion;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.form.FormUtils;
-import org.netbeans.modules.form.RADComponent;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import java.util.Map;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 
-/**
- * Initializer for the "Choose Bean" palette item, letting the user enter the
- * component class to use.
- *
- * @author Tomas Pavek
- */
-class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
+public class SearchPropertiesSupport {
+    
+    private static SearchProperties searchProps;
+    private static SearchProperties replaceProps;
 
-    @Override
-    public boolean prepare(PaletteItem item, FileObject classPathRep) {
-        NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-            NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_Choose_Bean"), // NOI18N
-            NbBundle.getMessage(ChooseBeanInitializer.class, "TITLE_Choose_Bean")); // NOI18N
-        boolean invalidInput;
-        do {
-            invalidInput = false;
-            DialogDisplayer.getDefault().notify(desc);
-            if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                String className = desc.getInputText();
-                if (!SourceVersion.isName(className)) {
-                    invalidInput = true;
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_InvalidClassName"), // NOI18N
-                                                     NotifyDescriptor.WARNING_MESSAGE));
-                } else if (!PaletteItem.checkDefaultPackage(className, classPathRep)) {
-                    invalidInput = true;
-                }
-                item.setClassFromCurrentProject(className, classPathRep);
-            } else {
-                return false;
-            }
-        } while (invalidInput);
-        return true;
+    private SearchPropertiesSupport() {
     }
 
-    @Override
-    public void initializeComponent(RADComponent metacomp) {
+    public static SearchProperties getSearchProperties() {
+        if (searchProps == null) {
+            searchProps = createDefaultSearchProperties();
+        }
+        return searchProps;
+    }
+    
+    public static SearchProperties getReplaceProperties() {
+        if (replaceProps == null) {
+            replaceProps = createDefaultReplaceProperties();
+        }
+        return replaceProps;
+    }
+    
+    private static SearchProperties createDefaultSearchProperties() {
+        Map<String, Object> props = EditorFindSupport.getInstance().createDefaultFindProperties();
+        return new SearchProperties(props);
+    }
+
+    private static SearchProperties createDefaultReplaceProperties() {
+        Map<String, Object> props = EditorFindSupport.getInstance().createDefaultFindProperties();
+        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.TRUE);
+        return new SearchProperties(props);
+    }
+    
+    public static class SearchProperties {
+        private Map<String, Object> props;
+        private SearchProperties(Map<String, Object> props) {            
+            this.props = props;
+        }
+        
+        public void setProperty(String editorFindSupportProperty, Object value) {
+            props.put(editorFindSupportProperty, value);
+        }
+        
+        public Object getProperty(String editorFindSupportProperty) {
+            return props.get(editorFindSupportProperty);
+        }
+        
+        public Map<String, Object> getProperties() {
+            return props;
+        }
     }
 }
