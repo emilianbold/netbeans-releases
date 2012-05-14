@@ -41,8 +41,6 @@ package org.netbeans.modules.editor.search;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
@@ -51,9 +49,7 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
@@ -336,6 +332,7 @@ public final class ReplaceBar extends JPanel {
         searchBar.getMatchCaseCheckBox().removeActionListener(getActionListenerForPreserveCase());
         searchBar.setFocusTraversalPolicy(null);
         searchBar.looseFocus();
+        searchBar.setSearchProperties(SearchPropertiesSupport.getSearchProperties());
     }
 
     private void changeSearchBarToBePartOfReplaceBar() {
@@ -350,6 +347,7 @@ public final class ReplaceBar extends JPanel {
         searchBar.setFocusTraversalPolicy(searchBarFocusTraversalPolicy);
         setFocusTraversalPolicy(searchBarFocusTraversalPolicy);
         searchBar.getPreferredSize();
+        searchBar.setSearchProperties(SearchPropertiesSupport.getReplaceProperties());
     }
 
     public void looseFocus() {
@@ -386,7 +384,7 @@ public final class ReplaceBar extends JPanel {
 
         EditorFindSupport findSupport = EditorFindSupport.getInstance();
         Map<String, Object> findProps = new HashMap<String, Object>();
-        findProps.putAll(searchBar.getFindProps());
+        findProps.putAll(searchBar.getSearchProperties());
         findProps.put(EditorFindSupport.FIND_REPLACE_WITH, replaceTextField.getText());
         findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, backwardsCheckBox.isSelected());
         findProps.put(EditorFindSupport.FIND_PRESERVE_CASE, preserveCaseCheckBox.isSelected() && preserveCaseCheckBox.isEnabled());
