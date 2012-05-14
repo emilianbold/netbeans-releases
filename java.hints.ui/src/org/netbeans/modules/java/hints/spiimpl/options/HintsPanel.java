@@ -686,10 +686,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
             DataObject template = DataObject.find(tempFO);
             DataObject newIfcDO = template.createFromTemplate(folder, null);
             RulesManager.getInstance().reload();
+            cpBased.reset();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
             errorTree.setModel(errorTreeModel);
             logic.errorTreeModel = errorTreeModel;
-            select(getHintByName(newIfcDO.getPrimaryFile().getNameExt()));
+            HintMetadata newHint = getHintByName(newIfcDO.getPrimaryFile().getNameExt());
+            HintsSettings.setEnabled(logic.getCurrentPrefernces(newHint.id), true);
+            select(newHint);
             hasNewHints = true;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -755,6 +758,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             Exceptions.printStackTrace(ex);
         }
         RulesManager.getInstance().reload();
+        cpBased.reset();
         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
         errorTree.setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
@@ -1123,6 +1127,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         HintMetadata hint = (HintMetadata) o.getUserObject();
                         getDataObject(hint).rename((String) newValue);
                         RulesManager.getInstance().reload();
+                        cpBased.reset();
                         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
                         errorTree.setModel(errorTreeModel);
                         select(getHintByName((String) newValue));
@@ -1258,6 +1263,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         JOptionPane.YES_NO_OPTION)) {
                     getDataObject(hint).delete();
                     RulesManager.getInstance().reload();
+                    cpBased.reset();
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
                     errorTree.setModel(errorTreeModel);
