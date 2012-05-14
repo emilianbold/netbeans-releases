@@ -2,17 +2,17 @@ Code completion result for source line:
 jQuery('#f-emblem').a|ddClass('.has-menu');
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     add(jQuery object): jQuery      [PUBLIC]   add
-METHOD     addClass(className): jQuery     [PUBLIC]   addClass
-METHOD     after(content): jQuery          [PUBLIC]   after
-METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   ajaxComplete
-METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   ajaxError
-METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   ajaxSend
-METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   ajaxStart
-METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   ajaxStop
-METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   ajaxSuccess
-METHOD     andSelf(): jQuery               [PUBLIC]   andSelf
-METHOD     animate(properties, options):   [PUBLIC]   animate
-METHOD     append(function(index, html)):  [PUBLIC]   append
-METHOD     appendTo(target): jQuery        [PUBLIC]   appendTo
-METHOD     attr(map): jQuery               [PUBLIC]   attr
+METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
+METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
+METHOD     after(content): jQuery          [PUBLIC]   jquery-api.xml
+METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   jquery-api.xml
+METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   jquery-api.xml
+METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   jquery-api.xml
+METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   jquery-api.xml
+METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   jquery-api.xml
+METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   jquery-api.xml
+METHOD     andSelf(): jQuery               [PUBLIC]   jquery-api.xml
+METHOD     animate(properties, options):   [PUBLIC]   jquery-api.xml
+METHOD     append(function(index, html)):  [PUBLIC]   jquery-api.xml
+METHOD     appendTo(target): jQuery        [PUBLIC]   jquery-api.xml
+METHOD     attr(map): jQuery               [PUBLIC]   jquery-api.xml

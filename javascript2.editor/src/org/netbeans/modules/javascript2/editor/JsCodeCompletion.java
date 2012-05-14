@@ -773,9 +773,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
     
     private Collection<JsObject> getLibrariesGlobalObjects() {
         Collection<JsObject> result = new ArrayList<JsObject>();
-        JsObject libGlobal = new JsFunctionImpl(null, null, new IdentifierImpl("Library", OffsetRange.NONE), Collections.EMPTY_LIST, OffsetRange.NONE);
-        JQueryModel.getGlobalProperties(libGlobal);
-        result.add(libGlobal);
+        JsObject libGlobal = JQueryModel.getGlobalObject();
+        if (libGlobal != null) {
+            result.add(libGlobal);
+        }
         return result;
     }
 }

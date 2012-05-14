@@ -2,5 +2,5 @@ Code completion result for source line:
 $('#test').ad|dClass('.myClass');
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     add(jQuery object): jQuery      [PUBLIC]   add
-METHOD     addClass(className): jQuery     [PUBLIC]   addClass
+METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
+METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
