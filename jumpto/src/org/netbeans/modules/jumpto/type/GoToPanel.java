@@ -462,8 +462,8 @@ public class GoToPanel extends javax.swing.JPanel {
         // See BasicListUI, MetalLookAndFeel:
         return "selectPreviousRow".equals(action) || // NOI18N
         "selectNextRow".equals(action) || // NOI18N
-        // "selectFirstRow".equals(action) || // NOI18N
-        // "selectLastRow".equals(action) || // NOI18N
+        "selectPreviousRowExtendSelection".equals(action) ||    //NOI18N
+        "selectNextRowExtendSelection".equals(action) || //NOI18N
         "scrollUp".equals(action) || // NOI18N
         "scrollDown".equals(action); // NOI18N
     }
@@ -484,8 +484,7 @@ public class GoToPanel extends javax.swing.JPanel {
             matchesList.setSelectedIndex(last);
             matchesList.ensureIndexIsVisible(last);
             return;
-        }
-        
+        }        
         // Plain delegation        
         Action a = matchesList.getActionMap().get(action);
         if (a != null) {
