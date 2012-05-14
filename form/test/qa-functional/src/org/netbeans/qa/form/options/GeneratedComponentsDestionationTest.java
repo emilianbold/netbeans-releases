@@ -53,6 +53,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
+import org.netbeans.qa.form.OptionsForFormOperator;
 
 /**
  * Componentes declaration test
@@ -102,12 +103,12 @@ public class GeneratedComponentsDestionationTest extends ExtJellyTestCase {
      * @param local "Local Variables" settings
      */
     private void testGeneratedComponentsDestionation(Boolean local) {
-        OptionsOperator.invoke();
+        OptionsForFormOperator.invoke();
         //add timeout
         waitNoEvent(1000);
         log("Option dialog was opened");
 
-        OptionsOperator options = new OptionsOperator();
+        OptionsForFormOperator options = new OptionsForFormOperator();
 
 
         //add timeout
