@@ -233,7 +233,7 @@ public class FormatToken {
 
     @Override
     public String toString() {
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 	sb.append(id.name());
 	sb.append(" offset: ").append(offset);
 	if (oldText != null)
