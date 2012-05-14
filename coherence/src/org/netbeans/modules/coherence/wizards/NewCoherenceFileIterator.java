@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.coherence.project.CoherenceProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.spi.project.ui.templates.support.Templates.SimpleTargetChooserBuilder;
 import org.openide.WizardDescriptor;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Iterator for creation of all Coherence related templates.
@@ -117,6 +119,8 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+        index = 0;
+        getPanels();
     }
 
     @Override
@@ -182,12 +186,11 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
             } else {
                 sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             }
-            SimpleTargetChooserBuilder simpleTargetChooser = Templates.buildSimpleTargetChooser(project, sourceGroups);
             WizardDescriptor.Panel bottom = new BottomWizardDescriptorPanel();
             bottomPanel = (BottomWizardDescriptorPanel) bottom;
-            simpleTargetChooser.bottomPanel(bottom);
+            SimpleTargetChooserBuilder simpleTargetChooser = Templates.buildSimpleTargetChooser(project, sourceGroups).bottomPanel(bottom);
             WizardDescriptor.Panel generalPanel = simpleTargetChooser.create();
-            panels = new Panel[]{generalPanel};
+            panels = new WizardDescriptor.Panel[]{generalPanel};
 
             for (int i = 0; i < panels.length; i++) {
                 JComponent jc = (JComponent) panels[i].getComponent();
@@ -202,7 +205,7 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
         private BottomWizardPanel panel;
 
         @Override
-        public Component getComponent() {
+        public synchronized Component getComponent() {
             if (panel == null) {
                 panel = new BottomWizardPanel(wizard);
             }
@@ -232,7 +235,18 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
 
         @Override
         public boolean isValid() {
-            return getComponent().isValid();
+            if (wizard == null) {
+                return false;
+            }
+            Project project = Templates.getProject(wizard);
+            if (!CoherenceProjectUtils.isCoherenceProject(project)) {
+                wizard.putProperty(
+                        WizardDescriptor.PROP_WARNING_MESSAGE,
+                        NbBundle.getMessage(NewCoherenceFileIterator.class, "WRN_NoCoherenceOnClassPath")); //NOI18N
+            } else {
+                wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+            }
+            return true;
         }
 
         public Library getSelectedLibrary() {
