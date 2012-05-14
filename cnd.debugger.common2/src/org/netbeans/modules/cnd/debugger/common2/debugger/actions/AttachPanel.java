@@ -566,7 +566,7 @@ public final class AttachPanel extends TopComponent {
         Object cmdobj = processModel.getValueAt(selectedRow, cmdIndex);
 
         if (cmdobj instanceof String) {
-            executableProjectPanel.setExecutablePath((String) cmdobj);
+            executableProjectPanel.setExecutablePath(getHostName(), (String) cmdobj);
 	}
     }
     
@@ -599,7 +599,7 @@ public final class AttachPanel extends TopComponent {
 
             if (path != null) {
                 executable = path.toString();
-                executableProjectPanel.setExecutablePath(executable);
+                executableProjectPanel.setExecutablePath(getHostName(), executable);
 //                executablePickList.addElement(executable);
 //                executableProjectPanel.setExecutablePaths(
 //                        executablePickList.getElementsDisplayName());
@@ -1054,12 +1054,12 @@ public final class AttachPanel extends TopComponent {
                 return false;
             }
             String selectedProject = props.getString(SELECTED_PROJECT_PROP, "");  //NOI18N
-            if (!executableProjectPanel.containsProjectWithPath(selectedProject)) {
+            if (!executableProjectPanel.containsProjectWithPath(getHostName(), selectedProject)) {
                 return false;
             }
-            executableProjectPanel.setSelectedProjectByPath(selectedProject);
+            executableProjectPanel.setSelectedProjectByPath(getHostName(), selectedProject);
             loadedPID = processes.get(0).get(psData.pidColumnIdx());
-            executableProjectPanel.setExecutablePath(props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
+            executableProjectPanel.setExecutablePath(getHostName(), props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
             engine = new EngineDescriptor(et);
             return true;
         }
