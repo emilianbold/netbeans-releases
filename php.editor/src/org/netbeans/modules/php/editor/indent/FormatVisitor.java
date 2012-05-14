@@ -1261,7 +1261,6 @@ public class FormatVisitor extends DefaultVisitor {
         addRestOfLine();
         super.visit(node);
     }
-
     private int lastIndex = -1;
 
     private void showAssertionFor188809() {
@@ -1499,7 +1498,7 @@ public class FormatVisitor extends DefaultVisitor {
                 } else if ("!".equals(text)) {
                     int origOffset = ts.offset();
                     if (ts.movePrevious()) {
-                        Token <? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
+                        Token<? extends PHPTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE));
                         if (previous.id() == PHPTokenId.PHP_RETURN) {
                             tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_KEYWORD, origOffset));
                         }
@@ -1802,7 +1801,8 @@ public class FormatVisitor extends DefaultVisitor {
 
     /**
      *
-     * @param node and identifier that is before the operator that is aligned in the group
+     * @param node and identifier that is before the operator that is aligned in
+     * the group
      */
     private void handleGroupAlignment(ASTNode node) {
 

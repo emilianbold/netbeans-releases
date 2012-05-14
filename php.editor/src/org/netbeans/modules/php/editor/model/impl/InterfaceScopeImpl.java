@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.index.Signature;
 
 
 /**
@@ -158,9 +159,9 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         List<? extends String> superInterfaces = getSuperInterfaceNames();
         for (int i = 0; i < superInterfaces.size(); i++) {
             String iface = superInterfaces.get(i);
@@ -181,10 +182,10 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
             }
             sb.append(fqIfaceSb);
         }
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

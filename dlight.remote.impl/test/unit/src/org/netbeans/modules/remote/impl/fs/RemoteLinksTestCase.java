@@ -324,6 +324,29 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         }
     }
     
+    @ForAllEnvironments
+    public void testLinkLastModificationTime() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String linkName = "link";
+            String fileName = "data";
+            String script = 
+                    "cd " + baseDir + "; " +
+                    "touch " + baseDir + "/" + fileName + ";" +
+                    "sleep 10;" +
+                    "ln -s " + fileName + ' ' + linkName;
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+           
+            FileObject linkFO = getFileObject(baseDir + '/' + linkName);
+            FileObject fileFO = getFileObject(baseDir + '/' + fileName);
+            assertEquals("Link and it's target modification time should be the same (as with java.io.File)", linkFO.lastModified(), fileFO.lastModified());            
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }        
+    }
+    
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteLinksTestCase.class);
     }

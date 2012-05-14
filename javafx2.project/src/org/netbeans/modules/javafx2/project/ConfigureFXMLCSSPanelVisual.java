@@ -471,7 +471,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
         return cssCheckBox.isSelected() && createNewRadioButton.isSelected();
     }
 
-    static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
+    static class Panel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
         
         private ConfigureFXMLCSSPanelVisual component;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -488,7 +488,7 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(ConfigureFXMLPanelVisual.class);
+            return null;
         }
 
         @Override
@@ -545,6 +545,11 @@ public class ConfigureFXMLCSSPanelVisual extends JPanel implements DocumentListe
 
         private void fireChangeEvent() {
             changeSupport.fireChange();
+        }
+
+        @Override
+        public boolean isFinishPanel() {
+            return true;
         }
     }
 }
