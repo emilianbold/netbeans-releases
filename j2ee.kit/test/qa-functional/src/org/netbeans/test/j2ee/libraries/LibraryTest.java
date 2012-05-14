@@ -53,13 +53,14 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -70,7 +71,6 @@ import org.netbeans.test.j2ee.lib.ContentComparator;
 import org.netbeans.test.j2ee.lib.FilteringLineDiff;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.netbeans.test.j2ee.wizard.WizardUtils;
-import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *
@@ -259,7 +259,7 @@ public class LibraryTest extends J2eeTestCase {
             for (Iterator i = newFiles.iterator(); i.hasNext();) {
                 File newFile = (File) i.next();
                 try {
-                    if (newFile.getName().endsWith(".xml") && !newFile.getName().startsWith("sun-")) {
+                    if (newFile.getName().endsWith(".xml") && !newFile.getName().startsWith("glassfish-")) {
                         assertTrue(ContentComparator.equalsXML(getGoldenFile(getName() + "/" + newFile.getName() + ".pass"), newFile));
                     } else if (!newFile.getName().endsWith(".mf")) {
                         assertFile(newFile, getGoldenFile(getName() + "/" + newFile.getName() + ".pass"),

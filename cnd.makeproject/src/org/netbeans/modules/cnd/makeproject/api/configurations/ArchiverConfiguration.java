@@ -43,19 +43,19 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class ArchiverConfiguration implements AllOptionsProvider {
+public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
 
     private MakeConfiguration makeConfiguration;
     private StringConfiguration output;

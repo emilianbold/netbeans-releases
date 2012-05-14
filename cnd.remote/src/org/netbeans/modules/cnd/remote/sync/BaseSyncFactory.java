@@ -42,14 +42,15 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 
 /**
 *
@@ -61,14 +62,12 @@ public abstract class BaseSyncFactory extends RemoteSyncFactory {
    public RemoteSyncWorker createNew(Project project, PrintWriter out, PrintWriter err) {
        ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
        if (execEnv.isRemote()) {
-                   File privateStorageFile = RemoteProjectSupport.getPrivateStorage(project);
-                   if (!privateStorageFile.exists()) {
-                       if (!privateStorageFile.mkdirs()) {
-                           System.err.printf("Error creating directory %s\n", privateStorageFile.getAbsolutePath());
-                       }
+                   FileObject privateStorageFile = RemoteProjectSupport.getPrivateStorage(project);
+                   if (privateStorageFile == null || !privateStorageFile.isValid()) {
+                       System.err.printf("Error creating directory %s\n", privateStorageFile.getPath());
                    }
                    AtomicReference<String> runDir = new AtomicReference<String>();
-                   File[] sourceRoots = RemoteProjectSupport.getProjectSourceDirs(project, runDir);
+                   FSPath[] sourceRoots = RemoteProjectSupport.getProjectSourceDirs(project, runDir);
                    return createNew(execEnv, out, err, privateStorageFile, runDir.get(), sourceRoots);
        }
        return null;

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -281,7 +282,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         }
     }
     
-    private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>> {
+    private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>>, Serializable {
         @Override
         public int compare(java.util.Map.Entry<CsmProject, SortedName> o1, java.util.Map.Entry<CsmProject, SortedName> o2) {
             if (o1.getKey().isArtificial() != o2.getKey().isArtificial()){

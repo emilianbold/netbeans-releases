@@ -117,7 +117,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
 
     @Override
     public void execute(InputOutput io) {
-        File execLog = null;
+        File execLog;
         String remoteExecLog = null;
         try {
             execLog = File.createTempFile("exec", ".log"); // NOI18N
@@ -133,7 +133,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         }
         if (execLog != null) {
             Env env = pae.getProfile().getEnvironment();
-            env.putenv(BuildTraceSupport.CND_TOOLS,BuildTraceSupport.CND_TOOLS_VALUE);
+            env.putenv(BuildTraceSupport.CND_TOOLS,BuildTraceSupport.getTools(pae.getConfiguration()));
             if (execEnv.isRemote()) {
                 env.putenv(BuildTraceSupport.CND_BUILD_LOG,remoteExecLog);
             } else {
@@ -251,7 +251,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             this.execEnv = execEnv;
         }
 
-        private synchronized void downloadExecLog() {
+        private void downloadExecLog() {
             if (execLog != null && !downloadedExecLog.get()) {
                 if (execEnv.isRemote()) {
                     try {
@@ -280,7 +280,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
             return buildLog;
         }
         
-        public String getExecLog() {
+        public synchronized String getExecLog() {
             downloadExecLog();
             if (execLog != null) {
                 return execLog.getAbsolutePath();

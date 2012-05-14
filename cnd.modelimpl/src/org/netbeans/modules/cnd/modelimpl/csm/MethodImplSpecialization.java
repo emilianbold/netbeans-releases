@@ -81,8 +81,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
-            return null;
+            AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         

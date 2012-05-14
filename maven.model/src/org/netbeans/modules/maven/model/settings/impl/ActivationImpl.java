@@ -69,42 +69,51 @@ public class ActivationImpl extends SettingsComponentImpl implements Activation 
     // attributes
 
     // child elements
+    @Override
     public ActivationOS getActivationOS() {
         return getChild(ActivationOS.class);
     }
 
+    @Override
     public void setActivationOS(ActivationOS activationOS) {
         List<Class<? extends SettingsComponent>> empty = Collections.emptyList();
         setChild(ActivationOS.class, getModel().getSettingsQNames().ACTIVATIONOS.getName(), activationOS, empty);
     }
 
+    @Override
     public ActivationProperty getActivationProperty() {
         return getChild(ActivationProperty.class);
     }
 
+    @Override
     public void setActivationProperty(ActivationProperty activationProperty) {
         List<Class<? extends SettingsComponent>> empty = Collections.emptyList();
         setChild(ActivationProperty.class, getModel().getSettingsQNames().ACTIVATIONPROPERTY.getName(), activationProperty, empty);
     }
 
+    @Override
     public ActivationFile getActivationFile() {
         return getChild(ActivationFile.class);
     }
 
+    @Override
     public void setActivationFile(ActivationFile activationFile) {
         List<Class<? extends SettingsComponent>> empty = Collections.emptyList();
         setChild(ActivationFile.class, getModel().getSettingsQNames().ACTIVATIONFILE.getName(), activationFile, empty);
     }
 
+    @Override
     public ActivationCustom getActivationCustom() {
         return getChild(ActivationCustom.class);
     }
 
+    @Override
     public void setActivationCustom(ActivationCustom activationCustom) {
         List<Class<? extends SettingsComponent>> empty = Collections.emptyList();
         setChild(ActivationCustom.class, getModel().getSettingsQNames().ACTIVATIONCUSTOM.getName(), activationCustom, empty);
     }
 
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

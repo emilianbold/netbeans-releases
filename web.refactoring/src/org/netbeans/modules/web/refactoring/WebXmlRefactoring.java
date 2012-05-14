@@ -33,8 +33,12 @@ package org.netbeans.modules.web.refactoring;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -55,19 +59,25 @@ import org.openide.util.NbBundle;
  * @author Erno Mononen
  */
 public abstract class WebXmlRefactoring implements WebRefactoring{
-    
-    protected final WebApp webModel;
+
+    private static final Logger LOGGER = Logger.getLogger(WebXmlRefactoring.class.getName());
+
     protected final FileObject webDD;
-    
-    protected WebXmlRefactoring(FileObject webDD, WebApp webModel) {
+
+    private AtomicReference<WebApp> webModel = new AtomicReference<WebApp>();
+
+    protected WebXmlRefactoring(FileObject webDD) {
         this.webDD = webDD;
-        this.webModel = webModel;
     }
     
+    @Override
     public Problem preCheck() {
-        if (webModel.getStatus() == WebApp.STATE_INVALID_UNPARSABLE){
+        WebApp model = getWebModel();
+        if (model == null) {
+            return new Problem(false, NbBundle.getMessage(WebXmlRefactoring.class, "TXT_WebXmlNotReadable"));
+        } else if (model.getStatus() == WebApp.STATE_INVALID_UNPARSABLE){
             return new Problem(false, NbBundle.getMessage(WebXmlRefactoring.class, "TXT_WebXmlInvalidProblem"));
-        } else if (webModel.getStatus() == WebApp.STATE_INVALID_OLD_VERSION){
+        } else if (model.getStatus() == WebApp.STATE_INVALID_OLD_VERSION){
             return new Problem(false, NbBundle.getMessage(WebXmlRefactoring.class, "TXT_WebXmlOldVersion"));
         }
         return null;
@@ -76,7 +86,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     
     protected List<Servlet> getServlets(String clazz){
         List<Servlet> result = new ArrayList<Servlet>();
-        for(Servlet servlet : webModel.getServlet())
+        for(Servlet servlet : getWebModel().getServlet())
             if (clazz.equals(servlet.getServletClass())){
                 result.add(servlet);
             }
@@ -85,7 +95,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     
     protected List<Filter> getFilters(String clazz){
         List<Filter> result = new ArrayList<Filter>();
-        for (Filter filter : webModel.getFilter()){
+        for (Filter filter : getWebModel().getFilter()){
             if (clazz.equals(filter.getFilterClass())){
                 result.add(filter);
             }
@@ -95,7 +105,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     
     protected List<Listener> getListeners(String clazz){
         List<Listener> result = new ArrayList<Listener>();
-        for (Listener listener : webModel.getListener()){
+        for (Listener listener : getWebModel().getListener()){
             if (clazz.equals(listener.getListenerClass())){
                 result.add(listener);
             }
@@ -105,7 +115,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     
     protected List<EjbRef> getEjbRefs(String clazz, boolean remote){
         List<EjbRef> result = new ArrayList<EjbRef>();
-        for (EjbRef ejbRef : webModel.getEjbRef()){
+        for (EjbRef ejbRef : getWebModel().getEjbRef()){
             if (remote && clazz.equals(ejbRef.getRemote())){
                 result.add(ejbRef);
             } else if (clazz.equals(ejbRef.getHome())){
@@ -117,7 +127,7 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
     
     protected List<EjbLocalRef> getEjbLocalRefs(String clazz, boolean localHome){
         List<EjbLocalRef> result = new ArrayList<EjbLocalRef>();
-        for (EjbLocalRef ejbLocalRef : webModel.getEjbLocalRef()){
+        for (EjbLocalRef ejbLocalRef : getWebModel().getEjbLocalRef()){
             if (localHome && clazz.equals(ejbLocalRef.getLocalHome())){
                 result.add(ejbLocalRef);
             } else if (clazz.equals(ejbLocalRef.getLocal())){
@@ -126,15 +136,26 @@ public abstract class WebXmlRefactoring implements WebRefactoring{
         }
         return result;
     }
-    
-    private boolean packageEquals(String pkg, String fqn){
-        int lastDot = fqn.lastIndexOf(".");
-        if (lastDot <= 0){
-            return false;
+
+    protected WebApp getWebModel() {
+        if (webDD == null) {
+            return null;
         }
-        return pkg.equals(fqn.substring(lastDot));
+
+        WebApp model = webModel.get();
+        if (model != null) {
+            return model;
+        }
+
+        try {
+            model = DDProvider.getDefault().getDDRoot(webDD);
+            webModel.compareAndSet(null, model);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.INFO, null, ioe);
+        }
+        return model;
     }
-    
+
     protected abstract static class WebRefactoringElement extends SimpleRefactoringElementImplementation{
         
         protected final WebApp webApp;

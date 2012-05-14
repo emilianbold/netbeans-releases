@@ -48,10 +48,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -149,16 +149,9 @@ class IndexBinaryWorkPool {
                 @NonNull final Callable<Boolean> cancel,
                 @NonNull final Collection<? extends URL> binaries) {
             final CompletionService<URL> cs = new ExecutorCompletionService<URL>(RP);
-            final AtomicBoolean stop = new AtomicBoolean();
-            final Callable<Boolean> cancelExt = new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return stop.get() || cancel.call();
-                }
-            };
             int submitted = 0;
             for (URL binary : binaries) {
-                cs.submit(new Task(binary,fnc, cancelExt));
+                cs.submit(new Task(binary,fnc, cancel));
                 submitted++;
             }
             final Collection<URL> result = new ArrayDeque<URL>();
@@ -169,17 +162,15 @@ class IndexBinaryWorkPool {
             for (int i=0; i< submitted; i++) {
                 try {
                     if (cancel.call()) {
-                        stop.set(success=false);
+                        success = false;
                     }
                     final Future<URL> becomeURL = cs.take();
                     final URL url = becomeURL.get();
                     if (url != null) {
                         result.add(url);
-                    } else {
-                        stop.set(success=false);
                     }
                 } catch (Exception ex) {
-                    stop.set(success = false);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             LOG.log(Level.FINER, "Canceled: {0}", !success);  //NOI18N

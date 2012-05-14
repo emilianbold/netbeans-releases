@@ -54,7 +54,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
@@ -95,6 +95,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -117,6 +120,7 @@ import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -154,6 +158,7 @@ final public class WebProjectProperties {
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
     public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; //NOI18N
     public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; //NOI18N
+    public static final String J2EE_COPY_STATIC_FILES_ON_SAVE = "j2ee.copy.static.files.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -253,6 +258,7 @@ final public class WebProjectProperties {
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
+    JToggleButton.ToggleButtonModel COPY_STATIC_RESOURCE_ON_SAVE_MODEL;
     
     // CustomizerWar
     Document WAR_NAME_MODEL; 
@@ -445,11 +451,13 @@ final public class WebProjectProperties {
                 }
             }
         });
+        COPY_STATIC_RESOURCE_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_COPY_STATIC_FILES_ON_SAVE);
         DEPLOY_ON_SAVE_MODEL.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (DEPLOY_ON_SAVE_MODEL.isSelected()) {
                     COMPILE_ON_SAVE_MODEL.setSelected(true);
+                    COPY_STATIC_RESOURCE_ON_SAVE_MODEL.setSelected(true);
                 }
             }
         });
@@ -530,24 +538,8 @@ final public class WebProjectProperties {
                 DDHelper.createWebXml(j2eeProfile, webInf);
             }
 
-            if (newExtenders != null) {
-                for (int i = 0; i < newExtenders.size(); i++) {
-                    ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
-                }
-                newExtenders.clear();
-                project.resetTemplates();
-            }
-
-             // try to save already included extenders
-            if (existingExtenders != null) {
-                for (WebModuleExtender webModuleExtender : existingExtenders) {
-                    if (webModuleExtender instanceof WebModuleExtender.Savable) {
-                        ((WebModuleExtender.Savable) webModuleExtender).save(project.getAPIWebModule());
-                    }
-                }
-                existingExtenders.clear();
-                project.resetTemplates();
-            }
+            // handle new and existing extenders
+            handleExtenders(newExtenders, existingExtenders);
 
             // ui logging of the added frameworks
             if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
@@ -1027,7 +1019,92 @@ final public class WebProjectProperties {
         Parameters.notNull("al", al);   //NOI18N
         optionListeners.remove(al);
     }
-     
+
+    @Messages({
+        "WebProjectProperties.label.adding.project.frameworks=Adding project frameworks",
+        "WebProjectProperties.label.saving.project.frameworks=Saving project frameworks"
+    })
+    private void handleExtenders(final List newExtenders, final List<WebModuleExtender> existingExtenders) {
+        if (newExtenders != null && !newExtenders.isEmpty()) {
+            // in case that new extenders should be included
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    // it mostly results into lenghty opperation, show progress dialog
+                    ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                        @Override
+                        public void run() {
+                            // include newly added extenders into webmodule
+                            for (int i = 0; i < newExtenders.size(); i++) {
+                                ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
+                            }
+
+                            // save all already included extenders
+                            saveExistingExtenders(existingExtenders);
+
+                            newExtenders.clear();
+                            project.resetTemplates();
+                        }
+                    }, Bundle.WebProjectProperties_label_adding_project_frameworks());
+                }
+            });
+        } else if (existingExtenders != null && !existingExtenders.isEmpty()) {
+            // in case that webModule contains some extenders which should be saved
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    final FutureTask<Void> future = new FutureTask<Void>(new Callable<Void>() {
+                        @Override
+                        public Void call() throws Exception {
+                            // save all already included extenders
+                            saveExistingExtenders(existingExtenders);
+                            project.resetTemplates();
+                            return null;
+                        }
+                    });
+                    try {
+                        // start the extenders saving task
+                        RequestProcessor.getDefault().post(future);
+                        // When the task doesn't finish shortly, run it with progress dialog to inform user
+                        // that lenghty opperation is happening. BTW, initial waiting time is used to prevent
+                        // dialogs flickering.
+                        future.get(300, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (TimeoutException ex) {
+                        // End of the 300ms period, continue in processing but display progress dialog
+                        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    // Wait for finishing of the future
+                                    future.get();
+                                } catch (InterruptedException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (ExecutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }, Bundle.WebProjectProperties_label_saving_project_frameworks());
+                    }
+                }
+            });
+        }
+    }
+
+    private void saveExistingExtenders(List<WebModuleExtender> existingExtenders) {
+        if (existingExtenders != null) {
+            for (WebModuleExtender webModuleExtender : existingExtenders) {
+                if (webModuleExtender instanceof WebModuleExtender.Savable) {
+                    ((WebModuleExtender.Savable) webModuleExtender).save(project.getAPIWebModule());
+                }
+            }
+        }
+    }
+
     private static class CallbackImpl implements J2EEProjectProperties.Callback {
 
         private WebProject project;

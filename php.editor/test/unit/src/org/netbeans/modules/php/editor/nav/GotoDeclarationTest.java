@@ -848,6 +848,14 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), " * @method Foo|B^ar method() This is my cool magic method description.", "class ^Bar {");
     }
 
+    public void testIssue186553_01() throws Exception {
+        checkDeclaration(getTestPath(), "$object1->do^Something();", "public function ^doSomething() {} //obj1");
+    }
+
+    public void testIssue186553_02() throws Exception {
+        checkDeclaration(getTestPath(), "$this->do^Something();", "public function ^doSomething() //so");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

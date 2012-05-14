@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.css.lib;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
+import org.antlr.runtime.Lexer;
 import org.antlr.runtime.Token;
 import org.netbeans.junit.NbTestCase;
 
@@ -58,8 +57,7 @@ public class Css3LexerTest extends NbTestCase {
 
     public void testUnrecognizedTokenLexing() {
         String source = "@";
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
         
         Token t = lexer.nextToken();
         assertNotNull(t);
@@ -84,8 +82,7 @@ public class Css3LexerTest extends NbTestCase {
         String source = "u ";
         
         //now do the same with the netbeans lexer
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
 
         assertANTLRToken("u", Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
@@ -96,8 +93,7 @@ public class Css3LexerTest extends NbTestCase {
         String source = "@import xxx";
         
         //now do the same with the netbeans lexer
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
 
         assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
@@ -109,8 +105,7 @@ public class Css3LexerTest extends NbTestCase {
         String source = "div::before";
         
         //now do the same with the netbeans lexer
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
 
         assertANTLRToken("div", Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken("::", Css3Lexer.DCOLON, lexer.nextToken());
@@ -121,16 +116,13 @@ public class Css3LexerTest extends NbTestCase {
         String source = "200 ";
         
         //now do the same with the netbeans lexer
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
 
         assertANTLRToken("200", Css3Lexer.NUMBER, lexer.nextToken());
         
         source = "200px ";
-        
         //now do the same with the netbeans lexer
-        charstream = new ANTLRStringStream(source);
-        lexer = new ExtCss3Lexer(charstream);
+        lexer = createLexer(source);
 
         assertANTLRToken("200px", Css3Lexer.LENGTH, lexer.nextToken());
     }
@@ -145,8 +137,7 @@ public class Css3LexerTest extends NbTestCase {
         */
         String source = "padding: .5em; ";
      
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
         
         assertANTLRToken("padding", Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken(":", Css3Lexer.COLON, lexer.nextToken());
@@ -159,8 +150,7 @@ public class Css3LexerTest extends NbTestCase {
     public void testMediaQueriesTokens() throws Exception {
         String source = "AND NOT ONLY 100dpi 50dpcm ";
      
-        CharStream charstream = new ANTLRStringStream(source);
-        ExtCss3Lexer lexer = new ExtCss3Lexer(charstream);
+        ExtCss3Lexer lexer = createLexer(source);
         
         assertANTLRToken(null ,Css3Lexer.AND, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
@@ -171,6 +161,34 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
+        
+    }
+    
+    public void testCaseInsensivityOfSomeAtTokens() throws Exception {
+        String source = "@FONT-face @charset @CHARSET @charSeT ";
+     
+        Lexer lexer = createLexer(source);
+        
+        assertANTLRToken("@FONT-face" ,Css3Lexer.FONT_FACE_SYM, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("@charset" ,Css3Lexer.CHARSET_SYM, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("@CHARSET" ,Css3Lexer.CHARSET_SYM, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("@charSeT" ,Css3Lexer.CHARSET_SYM, lexer.nextToken());
+        
+    }
+    
+    public void testRemUnit() throws Exception {
+        String source = "10rad 20rem ";
+     
+        Lexer lexer = createLexer(source);
+        
+        assertANTLRToken(null ,Css3Lexer.ANGLE, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
+        
+        assertANTLRToken(null ,Css3Lexer.REM, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
         
     }
     
@@ -191,7 +209,6 @@ public class Css3LexerTest extends NbTestCase {
     }
     
     private ExtCss3Lexer createLexer(String source) {
-        CharStream charstream = new ANTLRStringStream(source);
-        return new ExtCss3Lexer(charstream);
+        return new ExtCss3Lexer(source);
     }
 }

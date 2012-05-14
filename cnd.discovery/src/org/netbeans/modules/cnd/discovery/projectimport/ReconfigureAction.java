@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -58,7 +56,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -104,6 +101,13 @@ public class ReconfigureAction extends NodeAction implements Presenter.Popup {
         return presenter;
     }
     
+    private synchronized void setEnabledImpl(boolean enabled) {
+        if (inited) {
+            getPresenter().setEnabled(enabled);
+            getPresenter().invalidate();
+        }
+    }
+    
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
@@ -145,10 +149,7 @@ public class ReconfigureAction extends NodeAction implements Presenter.Popup {
         }
 
         putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/wizard/resources/waitNode.gif", false)); // NOI18N
-        if (inited) {
-            getPresenter().setEnabled(false);
-            getPresenter().invalidate();
-        }
+        setEnabledImpl(false);
 
         RP.post(new Runnable() {
             private boolean enabled;
@@ -157,10 +158,7 @@ public class ReconfigureAction extends NodeAction implements Presenter.Popup {
                 if (SwingUtilities.isEventDispatchThread()) {
                     setEnabled(enabled);
                     putValue(Action.SMALL_ICON, null);
-                    if (inited) {
-                        getPresenter().setEnabled(enabled);
-                        getPresenter().invalidate();
-                    }
+                    setEnabledImpl(enabled);
                 } else {
                     enabled = enableImpl(nodes);
                     SwingUtilities.invokeLater(this);
@@ -223,10 +221,10 @@ public class ReconfigureAction extends NodeAction implements Presenter.Popup {
 
     private String getLegend(ReconfigureProject reconfigurator){
         CompilerOptions options = reconfigurator.getLastCompilerOptions();
-        if (options != null && options.CFlags != null && options.CppFlags != null &&
-            options.CCompiler != null && options.CppCompiler != null) {
-            String linker = options.LinkerFlags == null ? "" : options.LinkerFlags;
-            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.CCompiler, options.CppCompiler, options.CFlags, options.CppFlags, linker); // NOI18N
+        if (options != null && options.cFlags != null && options.cppFlags != null &&
+            options.cCompiler != null && options.cppCompiler != null) {
+            String linker = options.linkerFlags == null ? "" : options.linkerFlags;
+            return NbBundle.getMessage(getClass(), "ReconfigureLegend", options.cCompiler, options.cppCompiler, options.cFlags, options.cppFlags, linker); // NOI18N
         }
         return ""; // NOI18N
     }

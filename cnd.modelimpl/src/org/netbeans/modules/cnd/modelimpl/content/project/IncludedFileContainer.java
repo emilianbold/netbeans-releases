@@ -47,7 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,6 +66,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 
 /**
  * container to keep files included from project.
@@ -105,6 +105,12 @@ public final class IncludedFileContainer {
             factory.writeUID(entry.prjUID, aStream);
             entry.getStorage().write(aStream);
 //            keyFactory.writeKey(entry.storageKey, aStream);
+        }
+    }
+
+    public void clear() {
+        synchronized (list) {
+            list.clear();
         }
     }
 
@@ -150,10 +156,13 @@ public final class IncludedFileContainer {
         return null;
     }
 
-    public void putStorage(ProjectBase includedProject) {
+    public boolean putStorage(ProjectBase includedProject) {
         Storage storage = getStorageForProject(includedProject);
-        assert storage != null : "no storage for " + srorageListOwner + " and included " + includedProject;
-        storage.put();
+        if (storage != null) {
+            storage.put();
+            return true;
+        }
+        return false;
     }
 
     public FileEntry getOrCreateEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, FileImpl includedFile) {
@@ -186,6 +195,7 @@ public final class IncludedFileContainer {
 
     public void invalidate(Object lock, ProjectBase includedFileOwner, CharSequence fileKey) {
         assert Thread.holdsLock(lock) : "does not hold lock for " + fileKey;
+        fileKey = FileContainer.getFileKey(fileKey, false);
         Storage storage = getStorageForProject(includedFileOwner);
         if (storage != null) {
             storage.invalidate(fileKey);
@@ -193,8 +203,21 @@ public final class IncludedFileContainer {
         }
     }
 
+    public boolean remove(Object lock, ProjectBase includedFileOwner, CharSequence fileKey) {
+        assert Thread.holdsLock(lock) : "does not hold lock for " + fileKey;
+        fileKey = FileContainer.getFileKey(fileKey, false);
+        boolean out = false;
+        Storage storage = getStorageForProject(includedFileOwner);
+        if (storage != null) {
+            out = storage.remove(fileKey) != null;
+            storage.put();
+        }
+        return out;
+    }
+
     public FileContainer.FileEntry getIncludedFileEntry(Object lock, ProjectBase includedFileOwner, CharSequence fileKey) {
         assert Thread.holdsLock(lock) : "does not hold lock for " + fileKey;
+        fileKey = FileContainer.getFileKey(fileKey, false);
         Storage storage = getStorageForProject(includedFileOwner);
         FileEntry fileEntry = null;
         if (storage != null) {
@@ -206,6 +229,7 @@ public final class IncludedFileContainer {
     public final static class Storage extends ProjectComponent  {
 
         private FileEntry getFileEntry(CharSequence fileKey) {
+            assert CharSequences.isCompact(fileKey);
             return myFiles.get(fileKey);
         }
 
@@ -228,10 +252,16 @@ public final class IncludedFileContainer {
         }
 
         private void invalidate(CharSequence fileKey) {
+            assert CharSequences.isCompact(fileKey);
             FileEntry entry = myFiles.get(fileKey);
             if (entry != null) {
                 entry.invalidateStates();
             }
+        }
+
+        private FileEntry remove(CharSequence fileKey) {
+            assert CharSequences.isCompact(fileKey);
+            return myFiles.remove(fileKey);
         }
 
         private FileEntry getOrCreateFileEntry(FileImpl includedFile) {

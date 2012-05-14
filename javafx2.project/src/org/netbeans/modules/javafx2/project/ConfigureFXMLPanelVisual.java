@@ -97,6 +97,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
             srcRoots[i] = FileUtil.toFile(groups[i].getRootFolder());
         }
         
+        setName(NbBundle.getMessage(ConfigureFXMLPanelVisual.class,"TXT_FXMLNameAndLoc")); // NOI18N
         initComponents(); // Matisse
         initComponents2(); // My own
     }
@@ -290,6 +291,12 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
                     .addComponent(resultTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(204, Short.MAX_VALUE))
         );
+
+        fxmlNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLPanelVisual.class, "ConfigureFXMLPanelVisual.fxmlNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLPanelVisual.class, "ConfigureFXMLPanelVisual.projectLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        locationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLPanelVisual.class, "ConfigureFXMLPanelVisual.locationLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        packageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLPanelVisual.class, "ConfigureFXMLPanelVisual.packageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        resultLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigureFXMLPanelVisual.class, "ConfigureFXMLPanelVisual.resultLabel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

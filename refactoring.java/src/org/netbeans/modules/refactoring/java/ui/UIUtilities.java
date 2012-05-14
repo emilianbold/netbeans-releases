@@ -77,7 +77,8 @@ import org.openide.xml.XMLUtil;
  */
 public final class UIUtilities {
 
-    private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
+    // XXX: Remove "test_" when #211651 is fixed
+    private static final String TEST_JAVA_MIME_TYPE = "test_text/x-java"; // NOI18N
     /**
      * Element.Kind values allowed to be used when calling ElementHandle.create
      *
@@ -241,9 +242,9 @@ public final class UIUtilities {
     }
 
     public static String getHtml(String text) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         TokenHierarchy tokenH = TokenHierarchy.create(text, JavaTokenId.language());
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(JAVA_MIME_TYPE));
+        Lookup lookup = MimeLookup.getLookup(MimePath.get(TEST_JAVA_MIME_TYPE));
         FontColorSettings settings = lookup.lookup(FontColorSettings.class);
         TokenSequence tok = tokenH.tokenSequence();
         while (tok.moveNext()) {

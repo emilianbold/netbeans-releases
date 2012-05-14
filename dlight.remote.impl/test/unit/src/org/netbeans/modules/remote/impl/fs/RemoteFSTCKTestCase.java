@@ -115,7 +115,10 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
     protected void tearDown() throws Exception {
         super.tearDown();
         if (tmpDir != null) {
-            CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
+            if (CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err)).get() != 0) {
+                // let's try once more as directory needs to be removed
+                CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
+            }
         }
     }
 

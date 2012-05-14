@@ -60,13 +60,11 @@ import org.netbeans.api.whitelist.WhiteListQuery.RuleDescription;
 import org.netbeans.api.whitelist.WhiteListQuery.WhiteList;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.whitelist.WhiteListQueryImplementationMerged;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -102,11 +100,11 @@ public class WhiteListQueryTest extends NbTestCase {
         //Test for root1 (CORBA white list should be enabled)
         WhiteList wl = WhiteListQuery.getWhiteList(root1);
         assertNotNull(wl);
-        Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
+        Result res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
         assertTrue(res.getViolatedRules().isEmpty());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         assertEquals(1,res.getViolatedRules().size());
@@ -133,15 +131,15 @@ public class WhiteListQueryTest extends NbTestCase {
         //Test for root1 (both whitelists are enabled)
         WhiteList wl = WhiteListQuery.getWhiteList(root1);
         assertNotNull(wl);
-        Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
+        Result res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         assertEquals(1,res.getViolatedRules().size());
         assertEquals("RMI-Disabled", res.getViolatedRules().iterator().next().getRuleName());   //NOI18N
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         assertEquals(1,res.getViolatedRules().size());
@@ -150,15 +148,15 @@ public class WhiteListQueryTest extends NbTestCase {
         //Test for root2 (only RMI whitelist should be enabled)
         wl = WhiteListQuery.getWhiteList(root2);
         assertNotNull(wl);
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         assertEquals(1,res.getViolatedRules().size());
         assertEquals("RMI-Disabled", res.getViolatedRules().iterator().next().getRuleName());   //NOI18N
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
     }
@@ -178,10 +176,10 @@ public class WhiteListQueryTest extends NbTestCase {
         //Test for root1 (both whitelists are enabled)
         WhiteList wl = WhiteListQuery.getWhiteList(root1);
         assertNotNull(wl);
-        Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
+        Result res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         assertViolations(new String[]{"RMI-Disabled","RMI-Disabled-2"},res.getViolatedRules());     //NOI18N
@@ -189,10 +187,10 @@ public class WhiteListQueryTest extends NbTestCase {
         //Test for root2 (only RMI whitelist should be enabled)
         wl = WhiteListQuery.getWhiteList(root2);
         assertNotNull(wl);
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.lang.String.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         assertEquals(1,res.getViolatedRules().size());
@@ -213,10 +211,10 @@ public class WhiteListQueryTest extends NbTestCase {
                 );
         final WhiteList wl = WhiteListQuery.getWhiteList(root1);
         assertNotNull(wl);
-        WhiteListQuery.Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        WhiteListQuery.Result res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA_2_3.ORB.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA_2_3.ORB.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
 
@@ -237,9 +235,9 @@ public class WhiteListQueryTest extends NbTestCase {
                     "org.omg.CORBA_2_3"     //NOI18N
                 );
         assertEquals(1, called.get());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertFalse(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA_2_3.ORB.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA_2_3.ORB.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
     }
@@ -267,10 +265,10 @@ public class WhiteListQueryTest extends NbTestCase {
         lkp.setServices(q1);
         final WhiteListQueryImplementation.WhiteListImplementation wl = mergedWLQ.getWhiteList(root1);
         assertNotNull(wl);
-        WhiteListQuery.Result res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        WhiteListQuery.Result res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertTrue(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
         final AtomicInteger cc = new AtomicInteger();
@@ -282,10 +280,10 @@ public class WhiteListQueryTest extends NbTestCase {
         });
         lkp.setServices(q1, q2);
         assertEquals(1, cc.get());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, org.omg.CORBA.BAD_OPERATION.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
-        res = wl.check(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
+        res = wl.check(ElementHandle.createTypeElementHandle(ElementKind.CLASS, java.rmi.Remote.class.getName()), Operation.USAGE);
         assertNotNull(res);
         assertFalse(res.isAllowed());
     }

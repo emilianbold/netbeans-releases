@@ -279,7 +279,7 @@ public class TabbedController extends OptionsPanelController {
         List<Lookup> lookups = new ArrayList<Lookup>();
         for (OptionsPanelController controller : getControllers()) {
             Lookup lookup = controller.getLookup();
-            if (lookup != Lookup.EMPTY) {
+            if (lookup != null && lookup != Lookup.EMPTY) {
                 lookups.add(lookup);
             }
         }

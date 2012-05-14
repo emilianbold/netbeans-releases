@@ -129,6 +129,7 @@ public final class ModuleManager extends Modules {
 
     private final Events ev;
     private final ModuleDataCache mdc = new ModuleDataCache();
+    private final NetigsoHandle netigso;
 
     /** Create a manager, initially with no managed modules.
      * The handler for installing modules is given.
@@ -137,6 +138,7 @@ public final class ModuleManager extends Modules {
     public ModuleManager(ModuleInstaller installer, Events ev) {
         this.installer = installer;
         this.ev = ev;
+        this.netigso = new NetigsoHandle(this);
         String patches = System.getProperty("netbeans.systemclassloader.patches");
         if (patches != null) {
             // Probably temporary helper for XTest. By setting this system property
@@ -553,6 +555,18 @@ public final class ModuleManager extends Modules {
         }
     }
 
+    final NetigsoFramework netigso() {
+        return netigso.getDefault();
+    }
+
+    final void netigsoLoaderUp(NetigsoModule nm) throws IOException {
+        netigso.classLoaderUp(nm);
+    }
+
+    final void netigsoLoaderDown(NetigsoModule nm) {
+        netigso.classLoaderDown(nm);
+    }
+
     private class ProvidersOf {
         private Map<String,Set<Module>> providersOf;
         
@@ -639,7 +653,7 @@ public final class ModuleManager extends Modules {
             } else {
                 InputStream is = super.getResourceAsStream(name);
                 if (is == null) {
-                    ClassLoader l = NetigsoFramework.findFallbackLoader();
+                    ClassLoader l = netigso.findFallbackLoader();
                     if (l != null && l != this) {
                         is = l.getResourceAsStream(name);
                     }
@@ -652,7 +666,7 @@ public final class ModuleManager extends Modules {
         final URL getResourceImpl(String name) {
             URL u = super.getResourceImpl(name);
             if (u == null) {
-                ClassLoader l = NetigsoFramework.findFallbackLoader();
+                ClassLoader l = netigso.findFallbackLoader();
                 if (l != null && l != this) {
                     u = l.getResource(name);
                 }
@@ -663,7 +677,7 @@ public final class ModuleManager extends Modules {
         @Override
         synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
             Enumeration<URL> first = super.getResourcesImpl(name);
-            ClassLoader l = NetigsoFramework.findFallbackLoader();
+            ClassLoader l = netigso.findFallbackLoader();
             if (l != null && l != this) {
                 return Enumerations.removeDuplicates(
                     Enumerations.concat(first, l.getResources(name))
@@ -696,7 +710,7 @@ public final class ModuleManager extends Modules {
             try {
                 return super.loadClass(name, resolve);
             } catch (ClassNotFoundException ex) {
-                ClassLoader l = NetigsoFramework.findFallbackLoader();
+                ClassLoader l = netigso.findFallbackLoader();
                 if (l == null || l == this) {
                     throw ex;
                 }
@@ -1017,7 +1031,7 @@ public final class ModuleManager extends Modules {
         ev.log(Events.PERF_TICK, "verified dependencies"); // NOI18N
 
         ev.log(Events.START_ENABLE_MODULES, toEnable);
-        NetigsoFramework.willEnable(toEnable);
+        netigso.willEnable(toEnable);
         for (;;) {
             // Actually turn on the listed modules.
             // List of modules that need to be "rolled back".
@@ -1148,7 +1162,7 @@ public final class ModuleManager extends Modules {
             Util.err.fine("enable: fixing classloader");
             installer.classLoaderUp(classLoader);
             Util.err.fine("enable: continuing to installation");
-            Set<Module> enableMore = NetigsoFramework.turnOn(this, classLoader, Collections.unmodifiableCollection(new ArrayList<Module>(this.modules)));
+            Set<Module> enableMore = netigso.turnOn(classLoader, Collections.unmodifiableCollection(new ArrayList<Module>(this.modules)));
             if (!enableMore.isEmpty()) {
                 Util.err.log(Level.FINE, "netigso needs additional modules: {0}", enableMore);
                 List<Module> toEnableMore = simulateEnable(enableMore, false);
@@ -1161,7 +1175,7 @@ public final class ModuleManager extends Modules {
                 throw new InvalidException("No module could be enabled: " + toEnable);
             }
             installer.load(toEnable);
-            NetigsoFramework.startFramework();
+            netigso.startFramework();
             break;
         }
         {
@@ -1927,7 +1941,7 @@ public final class ModuleManager extends Modules {
                 Util.err.log(Level.WARNING, null, e);
             }
         }
-        NetigsoFramework.shutdownFramework();
+        netigso.shutdownFramework();
         installer.close(sortedModules);
         return true;
     }

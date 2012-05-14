@@ -72,7 +72,7 @@ public class MvnJEE5Suite extends J2eeTestCase {
                     "testPropAccess", //NOI18N
                     "testRun", //NOI18N
                     "testCreateRestClient", //NOI18N
-                    "testRun"
+                    "testUndeploy"
                     ), MvnPatternsTest.class,
                     "testSingletonDef", //NOI18N
                     "testContainerIDef", //NOI18N

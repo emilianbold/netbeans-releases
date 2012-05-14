@@ -731,7 +731,10 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             for (int sign : new int[] { 1, -1 }) {
                 File file = fileTable.getNeighbouringFile(currentFile, sign * i);
                 if (file != null) {
-                    toRefresh.add(setups.get(file));
+                    Setup s = setups.get(file);
+                    if (s != null) {
+                        toRefresh.add(s);
+                    }
                 }
             }
         }
@@ -907,6 +910,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
         public DiffPrepareTask(Setup[] prepareSetups) {
             assert EventQueue.isDispatchThread();
+            assert !Arrays.asList(prepareSetups).contains(null);
             this.prepareSetups = prepareSetups;
         }
 

@@ -41,7 +41,6 @@ package org.netbeans.installer.wizard.components.sequences.netbeans;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,7 +53,6 @@ import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
@@ -123,6 +121,15 @@ public class NbMainSequence extends WizardSequence {
 
         @Override
         public void execute() {
+            File tmpUserDir = new File(SystemUtils.getTempDirectory(), "tmpnb"); // NOI18N
+            LogManager.log("try temporary directory for sure : ");
+            try {                    
+                if (tmpUserDir.exists()) {
+                    FileUtils.deleteFile(tmpUserDir, true);
+                }
+            } catch (Exception ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+            }
             LogManager.log("running headless NetBeans IDE : ");
             getWizardUi().setProgress(compositeProgress);
             compositeProgress.setTitle(ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.title")); // NOI18N
@@ -140,7 +147,6 @@ public class NbMainSequence extends WizardSequence {
                 runIDE += File.separator + "netbeans"; // NOI18N
             }
             
-            File tmpUserDir = new File(SystemUtils.getTempDirectory(), "tmpnb"); // NOI18N
             File tmpCacheDir = new File(tmpUserDir, "var" + File.separator + "cache"); // NOI18N
             
             String[] commands = new String [] {
@@ -157,7 +163,7 @@ public class NbMainSequence extends WizardSequence {
             try {
                 SystemUtils.executeCommand(nbInstallLocation, commands);
                 LogManager.log("    .... success ");
-            } catch (IOException ioe) {
+            } catch (Exception ioe) {
                 LogManager.log("    .... exception ", ioe);
                 return ;
             } finally {
@@ -176,7 +182,7 @@ public class NbMainSequence extends WizardSequence {
                 FileUtils.zip(new File (tmpCacheDir, "netigso"), zos, tmpCacheDir, new ArrayList <File> ());
                 zos.close();
                 LogManager.log("    .... success ");
-            } catch (IOException ioe) {
+            } catch (Exception ioe) {
                 LogManager.log("    .... exception " + ioe.getMessage());
                 return ;
             } finally {
@@ -184,10 +190,13 @@ public class NbMainSequence extends WizardSequence {
                 countdownProgress.stop();
             }
             
+            
             // remove useless files
             LogManager.log("    remove useless files from cache");
+            
             Progress removeUselessFileProgress = new Progress();
-            compositeProgress.addChild(removeUselessFileProgress, 25);
+            compositeProgress.addChild(removeUselessFileProgress, 8);                       
+            
             removeUselessFileProgress.setDetail((ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.cleaning"))); // NOI18N
             try {
                 FileUtils.deleteFile(new File(tmpCacheDir, "netigso"), true, removeUselessFileProgress);
@@ -206,39 +215,79 @@ public class NbMainSequence extends WizardSequence {
                         FileUtils.deleteFile(new File(tmpCacheDir, name), removeUselessFileProgress);
                     }
                 }
-            } catch (IOException ioe) {
+                LogManager.log("    .... success ");
+            } catch (Exception ioe) {
                 LogManager.log("    .... exception " + ioe.getMessage());
                 return ;
             } finally {
                 LogManager.log("    .... done. ");
             }
             
-            LogManager.log("copying pupulate caches : ");
-            File populateCacheDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "cache");
-            LogManager.log("    pupulate cache location = " + populateCacheDir);
-            try {
-                FileUtils.copyFile(tmpCacheDir, populateCacheDir, true, removeUselessFileProgress);
-            } catch (IOException ioe) {
+            
+            // copy populate caches and delete temp files
+            LogManager.log("copying NB log and populated caches : ");
+            
+            Progress populeteCacheDirProgress = new Progress();
+            compositeProgress.addChild(populeteCacheDirProgress, 8);
+            
+            Progress deleteTempDirProgress = new Progress();
+            compositeProgress.addChild(deleteTempDirProgress, 9);
+                        
+            File populateLogDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "log");
+            File tmpMessagesLog = new File(tmpUserDir, "var" + File.separator + "log" + File.separator + "messages.log");
+            LogManager.log("    NB log location = " + populateLogDir);
+            try {                
+                FileUtils.copyFile(tmpMessagesLog, new File(populateLogDir, "messages.log"), true, populeteCacheDirProgress);
+                LogManager.log("    .... success ");
+            } catch (Exception ioe) {
                 LogManager.log("    .... exception " + ioe.getMessage());
                 return ;
             } finally {
                 LogManager.log("    .... done. ");
-                try {
-                    FileUtils.deleteFile(tmpUserDir, true, removeUselessFileProgress);
-                } catch (IOException ioe) {
+            }
+            
+            // adding log into list of installed files
+            LogManager.log("add NB log in installed list: ");
+            try {
+                for (File f : populateLogDir.listFiles()) {
+                    nbBase.getInstalledFiles().add(f);
+                }
+                nbBase.getInstalledFiles().add(populateLogDir);
+                LogManager.log("    .... success ");
+            } catch (Exception ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            File populateCacheDir = new File(nbInstallLocation, "nb"/*nb cluster*/ + File.separator + "var" + File.separator + "cache");
+            LogManager.log("    populated cache location = " + populateCacheDir);
+            try {                
+                FileUtils.copyFile(tmpCacheDir, populateCacheDir, true, populeteCacheDirProgress);
+                LogManager.log("    .... success ");
+            } catch (Exception ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+                try {                    
+                    FileUtils.deleteFile(tmpUserDir, true, deleteTempDirProgress);
+                    LogManager.log("    .... success ");
+                } catch (Exception ioe) {
                     LogManager.log("    .... exception " + ioe.getMessage());
                 }
             }
             
-            
+                        
             // adding files into list of installed files
-            LogManager.log("add pupulate caches in installed list: ");
+            LogManager.log("add populated caches in installed list: ");
             try {
                 for (File f : populateCacheDir.listFiles()) {
                     nbBase.getInstalledFiles().add(f);
                 }
                 nbBase.getInstalledFiles().add(populateCacheDir);
-            } catch (IOException ioe) {
+                LogManager.log("    .... success ");
+            } catch (Exception ioe) {
                 LogManager.log("    .... exception " + ioe.getMessage());
             } finally {
                 LogManager.log("    .... done. ");
@@ -247,7 +296,8 @@ public class NbMainSequence extends WizardSequence {
             // save installed files list
             try {
                 nbBase.getInstalledFiles().saveXmlGz(nbBase.getInstalledFilesList());
-            } catch (XMLException xmle) {
+                LogManager.log("    .... success ");
+            } catch (Exception xmle) {
                 LogManager.log("    .... exception " + xmle.getMessage());
             }
         }        
@@ -264,6 +314,7 @@ public class NbMainSequence extends WizardSequence {
                 Executors.newScheduledThreadPool(1);
         private int current;
         private ScheduledFuture<?> ticTac;
+        private Progress countdown;
 
         public CountdownProgress(CompositeProgress main, long time, int percentage, String title) {
             this.main = main;
@@ -274,7 +325,7 @@ public class NbMainSequence extends WizardSequence {
         }
 
         public void countdown() {
-            final Progress countdown = new Progress();
+            countdown = new Progress();
             countdown.setDetail(title);
             main.addChild(countdown, percentage);
             current = 0;
@@ -292,6 +343,7 @@ public class NbMainSequence extends WizardSequence {
 
                 @Override
                 public void run() {
+                    countdown.setPercentage(Progress.COMPLETE);
                     ticTac.cancel(true);
                 }
             }, time, TimeUnit.MILLISECONDS);
@@ -301,6 +353,7 @@ public class NbMainSequence extends WizardSequence {
 
         public void stop() {
             if (!ticTac.isDone() && !ticTac.isCancelled()) {
+                countdown.setPercentage(Progress.COMPLETE);
                 ticTac.cancel(true);
             }
         }

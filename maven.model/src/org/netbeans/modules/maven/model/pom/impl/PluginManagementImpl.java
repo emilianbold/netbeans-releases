@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.*;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,6 +62,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
     // attributes
 
     // child elements
+    @Override
     public List<Plugin> getPlugins() {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs != null) {
@@ -71,6 +71,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
         return null;
     }
 
+    @Override
     public void addPlugin(Plugin plugin) {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs == null) {
@@ -84,6 +85,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
         childs.addListChild(plugin);
     }
 
+    @Override
     public void removePlugin(Plugin plugin) {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs != null) {
@@ -91,6 +93,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
         }
     }
 
+    @Override
     public Plugin findPluginById(String groupId, String artifactId) {
         assert groupId != null;
         assert artifactId != null;
@@ -110,6 +113,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
     }
 
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

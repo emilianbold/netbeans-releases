@@ -1011,16 +1011,26 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             refreshName();
         }
         private void refreshName() {
-            String name;
+            final String name;
             if(HistorySettings.getInstance().getLoadAll()) {
                 name = NbBundle.getMessage(HistoryRootNode.class,  "LBL_LoadAll"); // NOI18N
             } else {
                 name = NbBundle.getMessage(HistoryRootNode.class,  "LBL_LoadNext", HistorySettings.getInstance().getIncrements()); // NOI18N
             }
-            putValue(Action.NAME, name);
-            HistoryRootNode rootNode = getRootNode();
-            if(rootNode != null) {
-                rootNode.refreshLoadNextName();
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    putValue(Action.NAME, name);
+                    HistoryRootNode rootNode = getRootNode();
+                    if(rootNode != null) {
+                        rootNode.refreshLoadNextName();
+                    }
+                }
+            };
+            if(EventQueue.isDispatchThread()) {
+                r.run();
+            } else {
+                EventQueue.invokeLater(r);
             }
         }
         @Override

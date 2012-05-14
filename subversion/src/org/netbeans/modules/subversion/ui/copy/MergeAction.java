@@ -197,7 +197,7 @@ public class MergeAction extends ContextAction {
             } else {
                 // XXX is this the only way we can do it?
                 startUrl = endUrl;
-                ISVNLogMessage[] log = client.getLogMessages(startUrl, new SVNRevision.Number(0), new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
+                ISVNLogMessage[] log = client.getLogMessages(startUrl, null, new SVNRevision.Number(0), SVNRevision.HEAD, true, false, 0L);
                 startRevision = log[0].getRevision();
             }                        
             if(support.isCanceled()) {

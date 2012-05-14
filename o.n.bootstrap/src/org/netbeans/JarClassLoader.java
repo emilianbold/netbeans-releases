@@ -89,6 +89,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
+import org.openide.util.Utilities;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -795,7 +796,14 @@ public class JarClassLoader extends ProxyClassLoader {
         public String getIdentifier() {
             String tmp = getURL().toExternalForm();
             if (tmp.startsWith("jar:file:") && tmp.endsWith("!/")) {
-                return Stamps.findRelativePath(tmp.substring(9));
+                String path = tmp.substring(9, tmp.length() - 2);
+                if (Utilities.isWindows()) {
+                    if (path.startsWith("/")) { // NOI18N
+                        path = path.substring(1);
+                    }
+                    path = path.replace('/', File.separatorChar);
+                }
+                return Stamps.findRelativePath(path) + "!/";
             }
             return tmp;
         }

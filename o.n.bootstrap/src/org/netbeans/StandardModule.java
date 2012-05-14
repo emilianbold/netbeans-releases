@@ -71,6 +71,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.netbeans.LocaleVariants.FileWithSuffix;
 import org.openide.modules.Dependency;
@@ -87,7 +88,7 @@ import org.openide.util.NbBundle;
  * @author Jesse Glick, Allan Gregersen
  */
 class StandardModule extends Module {
-    
+
     /** JAR file holding the module */
     private final File jar;
     /** if reloadable, temporary JAR file actually loaded from */
@@ -606,6 +607,7 @@ class StandardModule extends Module {
         return moduleJARs.contains(f);
     }
 
+    private static final Logger CL_LOG = Logger.getLogger(OneModuleClassLoader.class.getName());
     /** Class loader to load a single module.
      * Auto-localizing, multi-parented, permission-granting, the works.
      */
@@ -641,19 +643,29 @@ class StandardModule extends Module {
         protected @Override String findLibrary(String libname) {
             InstalledFileLocator ifl = InstalledFileLocator.getDefault();
             String arch = System.getProperty("os.arch"); // NOI18N
-            String system = System.getProperty("os.name").toLowerCase(); // NOI18N
+            String system = System.getProperty("os.name").toLowerCase(Locale.ENGLISH); // NOI18N
             String mapped = System.mapLibraryName(libname);
             File lib;
 
             lib = ifl.locate("modules/lib/" + mapped, getCodeNameBase(), false); // NOI18N
-            if (lib != null) return lib.getAbsolutePath();
+            if (lib != null) {
+                CL_LOG.log(Level.FINE, "found {0}", lib);
+                return lib.getAbsolutePath();
+            }
 
             lib = ifl.locate("modules/lib/" + arch + "/" + mapped, getCodeNameBase(), false); // NOI18N
-            if (lib != null) return lib.getAbsolutePath();
+            if (lib != null) {
+                CL_LOG.log(Level.FINE, "found {0}", lib);
+                return lib.getAbsolutePath();
+            }
 
             lib = ifl.locate("modules/lib/" + arch + "/" + system + "/" + mapped, getCodeNameBase(), false); // NOI18N
-            if (lib != null) return lib.getAbsolutePath();
+            if (lib != null) {
+                CL_LOG.log(Level.FINE, "found {0}", lib);
+                return lib.getAbsolutePath();
+            }
 
+            CL_LOG.log(Level.FINE, "found nothing like modules/lib/{0}/{1}/{2}", new Object[] {arch, system, mapped});
             return null;
         }
 

@@ -77,10 +77,11 @@ final class FileObjectCrawler extends Crawler {
     private final FileObject root;
     private final ClassPath.Entry entry;
     private final FileObject[] files;
+    
 
     FileObjectCrawler(
             @NonNull final FileObject root,
-            final boolean checkTimeStamps,
+            final Set<? extends TimeStampAction> checkTimeStamps,
             @NullAllowed final ClassPath.Entry entry,
             @NonNull final CancelRequest cancelRequest,
             @NonNull final SuspendStatus suspendStatus) throws IOException {
@@ -93,7 +94,7 @@ final class FileObjectCrawler extends Crawler {
     FileObjectCrawler(
             @NonNull final FileObject root,
             @NullAllowed final FileObject[] files,
-            final boolean checkTimeStamps,
+            final Set<? extends TimeStampAction> checkTimeStamps,
             @NullAllowed final ClassPath.Entry entry,
             @NonNull final CancelRequest cancelRequest,
             @NonNull final SuspendStatus suspendStatus) throws IOException {

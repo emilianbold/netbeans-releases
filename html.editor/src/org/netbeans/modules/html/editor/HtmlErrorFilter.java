@@ -45,6 +45,8 @@ package org.netbeans.modules.html.editor;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
@@ -97,19 +99,43 @@ public class HtmlErrorFilter implements ErrorFilter {
         
         List<Error> filtered = new ArrayList<Error>(hints.size());
         for(Hint h : hints) {
+            
+
+            Rule rule = h.getRule();
+            if(!rule.showInTasklist()) {
+                continue;
+            }
+            
+            //use the severity defined in the hints settings
+            //HintSeverity hseverity = HintsSettings.getSeverity((GsfHintsManager)htmlHintsManager, (UserConfigurableRule)h);
             //TODO fix the severity somehow - now it seems there's no away how to get 
             //the severity set to a particular hint by the hint options.
             
-//            //use the severity defined in the hints settings
-//            HintSeverity hseverity = HintsSettings.getSeverity((GsfHintsManager)htmlHintsManager, (UserConfigurableRule)h);
-
+            //use at least the default severity
+            HintSeverity hs = rule.getDefaultSeverity();
+            Severity severity;
+            switch(hs) {
+                case ERROR:
+                    severity = Severity.ERROR;
+                    break;
+                case WARNING:
+                    severity = Severity.WARNING;
+                    break;
+                case INFO:
+                    severity = Severity.INFO;
+                    break;
+                default:
+                    //ignore
+                    continue;
+            }
+            
             DefaultError e = new DefaultError("error", //NOI18N
                     h.getDescription(), 
                     h.getDescription(), 
                     h.getFile(),
                     h.getRange().getStart(), 
                     h.getRange().getEnd(), 
-                    Severity.WARNING);
+                    severity);
             
             filtered.add(e);
         }

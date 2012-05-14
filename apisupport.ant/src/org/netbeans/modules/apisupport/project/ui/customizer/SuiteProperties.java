@@ -97,6 +97,8 @@ public final class SuiteProperties extends ModuleProperties {
     public static final String CLUSTER_PATH_WDC_PROPERTY = "cluster.path.with.disabled.clusters";    // NOI18N
     public static final String CLUSTER_SRC_PREFIX = "extcluster.";    // NOI18N
 
+    private static final String PLATFORM_PROPERTIES = "nbproject/platform.properties";
+
     private @NullAllowed NbPlatform activePlatform;
     private JavaPlatform activeJavaPlatform;
     
@@ -124,6 +126,8 @@ public final class SuiteProperties extends ModuleProperties {
     private final BrandingModel brandingModel;
     private Set<ClusterInfo> clusterPath;
     private boolean refreshBuildScripts;
+    private EditableProperties platformProperties;
+    private boolean platformPropertiesChanged;
     
     /**
      * Creates a new instance of SuiteProperties
@@ -149,6 +153,12 @@ public final class SuiteProperties extends ModuleProperties {
         }
         brandingModel = new SuiteBrandingModel(this);
         brandingModel.init();
+    }
+
+    @Override public void reloadProperties() {
+        super.reloadProperties();
+        platformProperties = getHelper().getProperties(PLATFORM_PROPERTIES);
+        platformPropertiesChanged = false;
     }
     
     void refresh(Set<NbModuleProject> subModules) {
@@ -205,7 +215,8 @@ public final class SuiteProperties extends ModuleProperties {
             firePropertyChange(JAVA_PLATFORM_PROPERTY, old, nue);
         }
     }
-    
+
+    // XXX these methods could perhaps read/write directly from/to platformProperties instead
     String[] getEnabledClusters() {
         return enabledClusters;
     }
@@ -256,14 +267,13 @@ public final class SuiteProperties extends ModuleProperties {
             SuiteUtils.replaceSubModules(this);
         }
         
-        if (changedDisabledModules || changedEnabledClusters || clusterPathChanged) {
-            EditableProperties ep = getHelper().getProperties("nbproject/platform.properties"); // NOI18N
+        if (changedDisabledModules || changedEnabledClusters || clusterPathChanged || platformPropertiesChanged) {
             if (changedDisabledModules) {
                 String[] separated = disabledModules.clone();
                 for (int i = 0; i < disabledModules.length - 1; i++) {
                     separated[i] = disabledModules[i] + ',';
                 }
-                ep.setProperty(DISABLED_MODULES_PROPERTY, separated);
+                platformProperties.setProperty(DISABLED_MODULES_PROPERTY, separated);
                 // Do not want it left in project.properties if it was there before (from 5.0):
                 setProperty(DISABLED_MODULES_PROPERTY, (String) null);
             }
@@ -275,7 +285,7 @@ public final class SuiteProperties extends ModuleProperties {
                         separated[i] = separated[i] + ',';
                     }
                 }
-                ep.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
+                platformProperties.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
                 setProperty(ENABLED_CLUSTERS_PROPERTY, (String) null);
                 if ((plaf == null || plaf.getHarnessVersion().compareTo(HarnessVersion.V50u1) < 0) && activePlatform != null) {
                     // Compatibility.
@@ -289,14 +299,14 @@ public final class SuiteProperties extends ModuleProperties {
                     for (int i = 0; i < separated.length - 1; i++) {
                         separated[i] = separated[i] + ',';
                     }
-                    ep.setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
-                    ep.setComment(DISABLED_CLUSTERS_PROPERTY, new String[] {"# Deprecated since 5.0u1; for compatibility with 5.0:"}, false); // NOI18N
+                    platformProperties.setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
+                    platformProperties.setComment(DISABLED_CLUSTERS_PROPERTY, new String[] {"# Deprecated since 5.0u1; for compatibility with 5.0:"}, false); // NOI18N
                 }
             }
             if (clusterPathChanged) {
-                storeClusterPath(ep);
+                storeClusterPath(platformProperties);
             }
-            getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
+            getHelper().putProperties(PLATFORM_PROPERTIES, platformProperties);
             if (refreshBuildScripts) {
                 // setting cluster.path for the 1st time, needs to adjust build-impl.xm alul of all sub-projects
                 try {
@@ -312,6 +322,7 @@ public final class SuiteProperties extends ModuleProperties {
             changedDisabledModules = false;
             changedEnabledClusters = false;
             clusterPathChanged = false;
+            platformPropertiesChanged = false;
             refreshBuildScripts = false;
         }
         
@@ -423,6 +434,20 @@ public final class SuiteProperties extends ModuleProperties {
         }
         ep.setProperty(CLUSTER_PATH_PROPERTY, SuiteUtils.getAntProperty(cp));
         ep.remove(ENABLED_CLUSTERS_PROPERTY);
+    }
+
+    public void setPlatformProperty(String key, String value) {
+        if (value != null) {
+            platformProperties.put(key, value);
+        } else {
+            platformProperties.remove(key);
+        }
+        platformPropertiesChanged = true;
+        firePropertyChange(key, null, value);
+    }
+
+    public String getPlatformProperty(String key) {
+        return platformProperties.get(key);
     }
 
 }

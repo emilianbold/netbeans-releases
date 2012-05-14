@@ -1252,7 +1252,7 @@ final class XMLMapAttr implements Map {
     
     private static final class FileMap extends AbstractMap<String,Object> {
         private FileObject fo;
-        
+
         private FileMap (FileObject fo) {
             this.fo = fo;
         }
@@ -1296,6 +1296,10 @@ final class XMLMapAttr implements Map {
             int hash = 7;
             hash = 37 * hash + (this.fo != null ? this.fo.hashCode() : 0);
             return hash;
+        }
+        @Override
+        public String toString() {
+            return "FileMap@" + Integer.toHexString(System.identityHashCode(this)) + "{" + "fo=" + fo + '}'; // NOI18N
         }
     }
     private static final class AttrFileSet extends AbstractSet<Map.Entry<String,Object>> {

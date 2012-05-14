@@ -44,10 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.values;
 
-import org.openide.util.NbBundle;
-
-// This class is immutable
-
 public final class CountLimit {
     public static final String Keyword_INFINITY =
 	Catalog.get("CountLimitKeyword_INFINITY");		// NOI18N
@@ -111,10 +107,11 @@ public final class CountLimit {
 	} else if (text.equals(Action_DISABLE) ||
 		   text.trim().equals("")) { // NOI18N
 	    text = null;
-	} else {
-	    // Let Node, validateText2(0, do further validation
-	    text = text;
 	}
+//        else {
+//	    // Let Node, validateText2(0, do further validation
+//	    text = text;
+//	}
 
 	// Step II
 	if (text == null) {
@@ -174,6 +171,7 @@ public final class CountLimit {
 	return errorMessage;
     }
 
+    @Override
     public String toString() {
 	if (count == -3)
 	    return null;

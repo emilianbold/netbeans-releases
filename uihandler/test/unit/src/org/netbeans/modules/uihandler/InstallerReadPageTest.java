@@ -60,6 +60,7 @@ import javax.swing.JButton;
 import java.util.Locale;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -179,9 +180,10 @@ public class InstallerReadPageTest extends NbTestCase {
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
-                JScrollPane pane = (JScrollPane)DD.d.getMessage();
+                JPanel jp = (JPanel) DD.d.getMessage();
+                JScrollPane pane = (JScrollPane) jp.getComponent(0); //pane at idx 0
                 Component c = pane.getViewport().getView();
-                assertEquals("Dimension is small", new Dimension(450, 50), c.getPreferredSize());
+                assertEquals("Dimension is small", new Dimension(350, 50), c.getPreferredSize());
             }
         });
         

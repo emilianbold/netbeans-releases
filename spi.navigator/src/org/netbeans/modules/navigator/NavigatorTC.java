@@ -336,20 +336,6 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         return controller;
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        getController().makeActive(true);
-    }
-
-    @Override
-    public void removeNotify() {
-        getController().makeActive(false);
-        super.removeNotify();
-    }
-
-
-    
     /*************** private stuff ************/
     
     /** Removes regular UI content and sets UI to empty state */

@@ -190,6 +190,8 @@ public class TestMethodNode extends AbstractNode {
         switch (testcase.getStatus()) {
         case PASSED:
             return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_16.png"); //NOI18N
+        case PASSEDWITHERRORS:
+            return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/ok_withErrors_16.png"); //NOI18N
         case FAILED:
             return ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/warning_16.png"); //NOI18N
         case ERROR:
@@ -219,6 +221,7 @@ public class TestMethodNode extends AbstractNode {
         private static Map< Status,String> initNoTimeKeys() {
             Map< Status,String> result = new HashMap< Status,String>(4);
             result.put(Status.PASSED, "MSG_TestMethodPassed_HTML"); //NOI18N
+            result.put(Status.PASSEDWITHERRORS, "MSG_TestMethodPassedWithErrors_HTML"); //NOI18N
             result.put(Status.ERROR, "MSG_TestMethodError_HTML"); //NOI18N
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML"); //NOI18N
@@ -229,6 +232,7 @@ public class TestMethodNode extends AbstractNode {
         private static Map< Status,String> initTimeKeys() {
             Map< Status,String> result = new HashMap< Status,String>(4);
             result.put(Status.PASSED, "MSG_TestMethodPassed_HTML_time"); //NOI18N
+            result.put(Status.PASSEDWITHERRORS, "MSG_TestMethodPassedWithErrors_HTML_time"); //NOI18N
             result.put(Status.ERROR, "MSG_TestMethodError_HTML_time"); //NOI18N
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_time"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time"); //NOI18N
@@ -239,6 +243,7 @@ public class TestMethodNode extends AbstractNode {
         private static Map< Status,String> initCauseKeys() {
             Map< Status,String> result = new HashMap< Status,String>(4);
             result.put(Status.PASSED, "MSG_TestMethodPassed_HTML_cause"); //NOI18N
+            result.put(Status.PASSEDWITHERRORS, "MSG_TestMethodPassedWithErrors_HTML_cause"); //NOI18N
             result.put(Status.ERROR, "MSG_TestMethodError_HTML_cause"); //NOI18N
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_cause"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_cause"); //NOI18N

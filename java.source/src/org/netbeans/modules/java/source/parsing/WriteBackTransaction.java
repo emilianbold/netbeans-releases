@@ -62,11 +62,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.util.Iterators;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -155,11 +155,6 @@ class WriteBackTransaction extends FileManagerTransaction {
         return new ArrayList<JavaFileObject>(content.values());
     }
 
-    void clear() {
-        LOG.log(Level.FINE, "Cache cleared for workdir:{0}", getRootDir());
-        contentCache.clear();
-    }
-
     void maybeFlush() throws IOException {
         if (disableCache || memExhausted) {
             LOG.log(Level.FINE, "Memory exhausted:{0}", getRootDir());
@@ -205,14 +200,19 @@ class WriteBackTransaction extends FileManagerTransaction {
         return Iterators.chained(chain);
     }
 
+    @Override
     JavaFileObject createFileObject(@NonNull final File file, @NonNull final File root, @NullAllowed final JavaFileFilterImplementation filter, @NullAllowed final Charset encoding) {
         final String[] pkgNamePair = FileObjects.getFolderAndBaseName(FileObjects.getRelativePath(root, file), File.separatorChar);
         String pname = FileObjects.convertFolder2Package(pkgNamePair[0], File.separatorChar);
+        CachedFileObject cfo = getFileObject(pname, pkgNamePair[1]);
+        if (cfo != null) {
+            return cfo;
+        }
         String relPath = FileObjects.getRelativePath(root, file);
         File shadowRoot = new File(root.getParent(), root.getName() + WORK_SUFFIX);
         File shadowFile = new File(shadowRoot, relPath);
         workDirs.add(shadowRoot);
-        CachedFileObject cfo = new CachedFileObject(this, file, pname, pkgNamePair[1], filter, encoding);
+        cfo = new CachedFileObject(this, file, pname, pkgNamePair[1], filter, encoding);
         cfo.setShadowFile(shadowFile);
         if (!shadowRoot.mkdirs() && !shadowRoot.exists() && !shadowRoot.isDirectory()) {
             throw new IllegalStateException();
@@ -220,11 +220,14 @@ class WriteBackTransaction extends FileManagerTransaction {
         return cfo;
     }
 
-    CachedFileObject getFileObject(String dir, String file) {
-        Map<File, CachedFileObject> content = contentCache.get(dir);
-        for (Map.Entry<File, CachedFileObject> en : content.entrySet()) {
-            if (file.equals(en.getKey().getName())) {
-                return en.getValue();
+    @CheckForNull
+    CachedFileObject getFileObject(@NonNull final String dir, @NonNull final String file) {
+        final Map<File, CachedFileObject> content = contentCache.get(dir);
+        if (content != null) {
+            for (Map.Entry<File, CachedFileObject> en : content.entrySet()) {
+                if (file.equals(en.getKey().getName())) {
+                    return en.getValue();
+                }
             }
         }
         return null;
@@ -316,7 +319,8 @@ class WriteBackTransaction extends FileManagerTransaction {
      * The CacheFO may be "flushed" (written to shadowFile) or "committed" (moved to the final dest).
      */
     static class CachedFileObject extends FileObjects.FileBase {
-        static final byte[] NOTHING = new byte[0];
+
+        private static final byte[] NOTHING = new byte[0];
         
         byte[] content = NOTHING;
         WriteBackTransaction   writer;
@@ -447,7 +451,7 @@ class WriteBackTransaction extends FileManagerTransaction {
             } else {
                 return new ByteArrayInputStream(content);
             }
-        }
+        } 
 
         @Override
         public OutputStream openOutputStream() throws IOException {

@@ -1162,12 +1162,14 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         @Override
         public Sharability getSharability(URI file) {
             String path = file.getPath();
-            if (contains(path, excludePaths, false)) {
-                return Sharability.NOT_SHARABLE;
+            synchronized (this) {
+                if (contains(path, excludePaths, false)) {
+                    return Sharability.NOT_SHARABLE;
+                }
+                return contains(path, includePaths, false)
+                        ? (contains(path, excludePaths, true) ? Sharability.MIXED : Sharability.SHARABLE)
+                        : Sharability.UNKNOWN;
             }
-            return contains(path, includePaths, false)
-                    ? (contains(path, excludePaths, true) ? Sharability.MIXED : Sharability.SHARABLE)
-                    : Sharability.UNKNOWN;
         }
 
         /**

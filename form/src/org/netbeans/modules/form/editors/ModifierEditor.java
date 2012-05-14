@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import org.openide.ErrorManager;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** Property editors for java modifiers.
@@ -110,8 +111,9 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     public ModifierEditor(int mask) {
         modifier = 0;
         setMask(mask & ModifierPanel.EDITABLE_MASK);
+        HelpCtx.setHelpIDString(this, "org.openide.explorer.propertysheet.editors.ModifierEditor"); // NOI18N
     }
-    
+
     private Component customComponent;
     
     @Override

@@ -166,6 +166,78 @@ public class UnbalancedTest extends NbTestCase {
                 .run(Unbalanced.Array.class)
                 .assertWarnings();
     }
+    
+    public void testNeg211248a() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final String aa[] = \"\".split(\";\");\n" +
+                       "  public void get() {\n" +
+                       "     System.err.println(aa[0]);\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertWarnings();
+    }
+    
+    public void testNeg211248b() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final String aa[] = \"\".split(\";\");\n" +
+                       "  public void get() {\n" +
+                       "     String str;\n" +
+                       "     str = aa[0];\n" +
+                       "     System.err.println(str);\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertWarnings();
+    }
+    
+    public void testNeg211248c() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final String aa[] = \"\".split(\";\");\n" +
+                       "  public void get() {\n" +
+                       "     String str = \"\";\n" +
+                       "     str += aa[0];\n" +
+                       "     System.err.println(str);\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertWarnings();
+    }
+    
+    public void testInit1() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final String aa[] = \"\".split(\";\");\n" +
+                       "  public void get() {\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertWarnings("2:23-2:25:verifier:ERR_UnbalancedArrayWRITE aa");
+    }
+    
+    public void testInit2() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final String aa[] = new String[] {\";\"};\n" +
+                       "  public void get() {\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertWarnings("2:23-2:25:verifier:ERR_UnbalancedArrayWRITE aa");
+    }
 
     public void testCollectionWriteOnly1() throws Exception {
         HintTest

@@ -65,13 +65,8 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
         checkDir(incl1);
         checkDir(incl2);
         List<String> sysIncludes = Arrays.asList(incl1.getAbsolutePath(), incl2.getAbsolutePath());
-        super.setSysIncludes(sysIncludes);
+        super.setSysIncludes(srcDir.getAbsolutePath(), sysIncludes);
         return new File[] {srcDir};
-    }
-
-    private void checkDir(File srcDir) {
-        assertTrue("Not existing directory" + srcDir, srcDir.exists());
-        assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
 
     public void testGlobalFunsWithPrefix() throws Exception {

@@ -46,8 +46,7 @@ package org.openide.nodes;
 import java.lang.ref.Reference;
 import java.lang.reflect.Method;
 import org.openide.nodes.Children.Entry;
-import org.openide.nodes.EntrySupport.Default;
-import org.openide.nodes.EntrySupport.Lazy;
+import org.openide.nodes.EntrySupportLazyState.EntryInfo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -1349,7 +1348,7 @@ public class FilterNode extends Node {
                     return getEntrySupport();
                 }
                 lazySupport = osIsLazy;
-                EntrySupport es = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                EntrySupport es = lazySupport ? new LazySupport(this, (EntrySupportLazy) os) : new DefaultSupport(this, (EntrySupportDefault) os);
                 setEntrySupport(es);
                 postInitializeEntrySupport(es);
                 return getEntrySupport();
@@ -1628,11 +1627,11 @@ public class FilterNode extends Node {
             }
         }
         
-        private class DefaultSupport extends EntrySupport.Default implements FilterChildrenSupport {
+        private class DefaultSupport extends EntrySupportDefault implements FilterChildrenSupport {
             
-            EntrySupport.Default origSupport;
+            EntrySupportDefault origSupport;
 
-            public DefaultSupport(org.openide.nodes.Children ch, Default origSupport) {
+            public DefaultSupport(org.openide.nodes.Children ch, EntrySupportDefault origSupport) {
                 super(ch);
                 this.origSupport = origSupport;
             }
@@ -1717,10 +1716,10 @@ public class FilterNode extends Node {
             }            
         }
 
-        private class LazySupport extends EntrySupport.Lazy implements FilterChildrenSupport {
-            EntrySupport.Lazy origSupport;
+        private class LazySupport extends EntrySupportLazy implements FilterChildrenSupport {
+            EntrySupportLazy origSupport;
 
-            public LazySupport(org.openide.nodes.Children ch, Lazy origSupport) {
+            public LazySupport(org.openide.nodes.Children ch, EntrySupportLazy origSupport) {
                 super(ch);
                 this.origSupport = origSupport;
             }

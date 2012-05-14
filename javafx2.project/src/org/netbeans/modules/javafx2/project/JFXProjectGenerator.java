@@ -58,6 +58,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -72,8 +73,11 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.*;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -82,7 +86,11 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.*;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -94,10 +102,37 @@ import org.w3c.dom.NodeList;
  */
 public class JFXProjectGenerator {
 
-    static final String METRICS_LOGGER = "org.netbeans.ui.metrics.jfx"; //NOI18N
-    static final String PROJECT_CREATE = "USG_PROJECT_CREATE_JFX";      //NOI18N
-    static final String PROJECT_OPEN = "USG_PROJECT_OPEN_JFX";          //NOI18N
-    static final String PROJECT_CLOSE = "USG_PROJECT_CLOSE_JFX";        //NOI18N
+    private static final String METRICS_LOGGER = "org.netbeans.ui.metrics.projects"; //NOI18N
+    private static final String JFX_METRICS_LOGGER = "org.netbeans.ui.metrics.jfx";  //NOI18N
+    private static final String PROJECT_TYPE = "org.netbeans.modules.javafx2.project.JFXProject";   //NOI18N
+    
+    enum Action {
+        CREATE("USG_PROJECT_CREATE", "USG_PROJECT_CREATE_JFX"),   //NOI18N
+        OPEN("USG_PROJECT_OPEN", "USG_PROJECT_OPEN_JFX"),       //NOI18N
+        CLOSE("USG_PROJECT_CLOSE", "USG_PROJECT_CLOSE_JFX");     //NOI18N
+        
+        private final String genericLogMessage;
+        private final String specificLogMessage;
+        
+        private Action(
+            @NonNull final String genericLogMessage,
+            @NonNull final String specificLogMessage) {
+            assert genericLogMessage != null;
+            assert specificLogMessage != null;
+            this.genericLogMessage = genericLogMessage;
+            this.specificLogMessage = specificLogMessage;
+        }
+        
+        @NonNull
+        public String getGenericLogMessage() {
+            return genericLogMessage;
+        }
+        
+        @NonNull
+        public String getSpecificLogMessage() {
+            return specificLogMessage;
+        }
+    }
 
     private JFXProjectGenerator() {
     }
@@ -505,7 +540,7 @@ public class JFXProjectGenerator {
         ep.setComment("javac.compilerargs", new String[]{ // NOI18N
                     "# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
                 }, false);
-        SpecificationVersion sourceLevel = getDefaultSourceLevel();
+        SpecificationVersion sourceLevel = getPlatformSourceLevel(platformName);
         ep.setProperty("javac.source", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
@@ -563,7 +598,7 @@ public class JFXProjectGenerator {
         }
         JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.ASWEBSTART, false);
         JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.INBROWSER, false);
-        logUsage();
+        logUsage(Action.CREATE);
         return h;
     }
 
@@ -573,10 +608,20 @@ public class JFXProjectGenerator {
      * Todo: Should log also J2SE project usage? The JFX project is de facto J2SE project,
      * most of this class should be replaced by J2SEProjectBuider.
      */
-    private static void logUsage() {
-        final LogRecord logRecord = new LogRecord(Level.INFO, PROJECT_CREATE);
-        logRecord.setLoggerName(METRICS_LOGGER);
-        Logger.getLogger(METRICS_LOGGER).log(logRecord);
+    static void logUsage(@NonNull Action action) {
+        assert action != null;
+        Logger logger = Logger.getLogger(JFXProjectGenerator.METRICS_LOGGER);
+        LogRecord logRecord = new LogRecord(Level.INFO, action.getGenericLogMessage());
+        logRecord.setLoggerName(logger.getName());
+        logRecord.setParameters(new Object[]{
+            PROJECT_TYPE
+        });
+        logger.log(logRecord);
+        
+        logger = Logger.getLogger(JFXProjectGenerator.JFX_METRICS_LOGGER);
+        logRecord = new LogRecord(Level.INFO, action.getSpecificLogMessage());
+        logRecord.setLoggerName(logger.getName());
+        logger.log(logRecord);
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {
@@ -789,6 +834,24 @@ public class JFXProjectGenerator {
         mt.createFromTemplate(pDf, mName);
     }
     
+    private static SpecificationVersion getPlatformSourceLevel(String fxPlatformName) {
+        JavaPlatform platform = null;
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+        for (JavaPlatform javaPlatform : platforms) {
+            String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+            if (JFXProjectProperties.isEqual(platformName, fxPlatformName)) {
+                platform = javaPlatform;
+                break;
+            }
+        }
+        if(platform == null) {
+            // default JavaFX2 specification version is 1.6
+            return new SpecificationVersion("1.6"); // NOI18N
+        }
+        SpecificationVersion v = platform.getSpecification().getVersion();
+        return v;
+    }
+
     //------------ Used by unit tests -------------------
     private static SpecificationVersion defaultSourceLevel;
 

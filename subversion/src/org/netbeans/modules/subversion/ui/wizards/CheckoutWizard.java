@@ -201,5 +201,8 @@ public final class CheckoutWizard implements ChangeListener {
     public boolean isExport() {
         return checkoutStep.isExport();
     }
+    public boolean isOldFormatPreferred() {
+        return checkoutStep.isOldFormatPreferred();
+    }
 }
 

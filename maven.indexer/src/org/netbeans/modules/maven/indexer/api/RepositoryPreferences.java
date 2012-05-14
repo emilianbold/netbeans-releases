@@ -101,10 +101,6 @@ public final class RepositoryPreferences {
     private final RepositoryInfo central;
     private final ChangeSupport cs = new ChangeSupport(this);
     
-    //for tests to change
-    static boolean CONSIDER_MIRRORS = true;
-    
-
     private RepositoryPreferences() {
         try {
             central = new RepositoryInfo(RepositorySystem.DEFAULT_REMOTE_REPO_ID, /* XXX pull display name from superpom? */RepositorySystem.DEFAULT_REMOTE_REPO_ID, null, RepositorySystem.DEFAULT_REMOTE_REPO_URL);
@@ -244,7 +240,6 @@ public final class RepositoryPreferences {
                 }
             }
         }
-        if (CONSIDER_MIRRORS) {
             MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
             DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
             DefaultMirrorSelector selectorWithoutGroups = new DefaultMirrorSelector();
@@ -279,9 +274,6 @@ public final class RepositoryPreferences {
                 }
             }
             return semiTreed;
-        } else {
-            return toRet;
-        }
     }
     
     /**
@@ -434,7 +426,7 @@ public final class RepositoryPreferences {
      */
     public List<ArtifactRepository> remoteRepositories(MavenEmbedder embedder) {
         List<ArtifactRepository> remotes = new ArrayList<ArtifactRepository>();
-        for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
+        for (RepositoryInfo info : getRepositoryInfos()) {
             // XXX should there be a String preferredId parameter to limit the remote repositories used in case we have a "reference" ID somehow?
             if (!info.isLocal()) {
                 remotes.add(embedder.createRemoteRepository(info.getRepositoryUrl(), info.getId()));

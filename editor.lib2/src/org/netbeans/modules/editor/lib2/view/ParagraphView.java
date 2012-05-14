@@ -247,7 +247,6 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
         if (children == null) {
             assert (removeLength == 0) : "Attempt to remove from null children length=" + removeLength; // NOI18N
             children = new ParagraphViewChildren(addViews.length);
-            getDocumentView().op.getTextLayoutCache().activate(this);
         }
         children.replace(this, index, removeLength, addViews);
     }

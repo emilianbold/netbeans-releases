@@ -56,7 +56,7 @@ public class Obsolete extends PatternRule {
         "The .*? attribute on the .*? element is obsolete", 
         "The .*? element is obsolete",
         "The .*? attribute is obsolete",
-        "The ?Content-Language? state is obsolete. Consider", 
+        "The \"Content-Language\" state is obsolete.", 
     }; //NOI18N
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);

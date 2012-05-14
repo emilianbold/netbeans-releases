@@ -42,27 +42,29 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Misc project related utility functions
@@ -92,34 +94,42 @@ public class RemoteProjectSupport {
         return false;
     }
 
-    public static File getPrivateStorage(Project project) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
+    public static FileObject getPrivateStorage(Project project) {
+        FileObject baseDir = project.getProjectDirectory();
         if (baseDir == null) {
             return null;
         }
-        baseDir = baseDir.getAbsoluteFile();
-        final File privProjectStorage = CndFileUtils.createLocalFile(new File(baseDir, "nbproject"), "private"); //NOI18N
-        return privProjectStorage;
+        try {
+            return FileUtil.createFolder(baseDir, "nbproject/private"); //NOI18N
+        } catch (IOException ex) {
+            RemoteUtil.LOGGER.log(Level.INFO, ex.getMessage(), ex); //NOI18N
+            return null;
+        }
     }
 
-    public static File[] getProjectSourceDirs(Project project, AtomicReference<String> runDir) {
+    public static FSPath[] getProjectSourceDirs(Project project, AtomicReference<String> runDir) {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+        FileSystem fs;
+        try {
+            fs = project.getProjectDirectory().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+            return new FSPath[0];
+        }
         if (conf == null) {
-            File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
-            return new File[] { baseDir };
+            return new FSPath[] { FSPath.toFSPath(project.getProjectDirectory()) };
         } else {
             return getProjectSourceDirs(project, conf, runDir);
         }
     }
 
-    public static File[] getProjectSourceDirs(Project project, MakeConfiguration conf, AtomicReference<String> runDir) {
-        File baseDir = CndFileUtils.toFile(project.getProjectDirectory());
+    public static FSPath[] getProjectSourceDirs(Project project, MakeConfiguration conf, AtomicReference<String> runDir) {
+        FileObject baseDir = project.getProjectDirectory();
         if (baseDir == null) {
-            return new File[0];
+            return new FSPath[0];
         }
-        baseDir = baseDir.getAbsoluteFile();
         if (conf == null) {
-            return new File[] { baseDir };
+            return new FSPath[] { FSPath.toFSPath(baseDir) };
         }
         if (runDir != null) {
             String d = conf.getMakefileConfiguration().getBuildCommandWorkingDirValue();
@@ -131,23 +141,23 @@ public class RemoteProjectSupport {
             runDir.set(d);
         }
         // the project itself
-        Set<File> sourceFilesAndDirs = new HashSet<File>();
+        Set<FSPath> sourceFilesAndDirs = new HashSet<FSPath>();
         if (!conf.isMakefileConfiguration()) {
-            sourceFilesAndDirs.add(baseDir);
+            sourceFilesAndDirs.add(FSPath.toFSPath(baseDir));
         }
 
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         if (mcs == null) {
-            return new File[0];
+            return new FSPath[0];
         }
-        if (FileUtil.toFile(mcs.getBaseDirFileObject()) == null) {
+        if (!mcs.getBaseDirFileObject().isValid()) {
             // no disk files
-            return sourceFilesAndDirs.toArray(new File[sourceFilesAndDirs.size()]);
+            return sourceFilesAndDirs.toArray(new FSPath[sourceFilesAndDirs.size()]);
         }
         for(String soorceRoot : mcs.getSourceRoots()) {
-            String path = CndPathUtilitities.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
-            File file = CndFileUtils.createLocalFile(path); // or canonical?
-            sourceFilesAndDirs.add(file);
+            // not sure whether they are absolute and normalized, so:
+            FileObject fo = FileSystemProvider.getFileObject(baseDir, soorceRoot);
+            sourceFilesAndDirs.add(FSPath.toFSPath(fo));
         }
         addExtraFiles(mcs, sourceFilesAndDirs);
         List<Project> subProjects = new ArrayList<Project>(conf.getSubProjects());
@@ -160,51 +170,48 @@ public class RemoteProjectSupport {
         }        
         // Then go trough open subprojects and add their external source roots
         for (Project subProject : subProjects) {
-            File projectDirFile = FileUtil.toFile(subProject.getProjectDirectory());
-            if (projectDirFile != null) {
-                sourceFilesAndDirs.add(projectDirFile);
+            if (subProject.getProjectDirectory().isValid()) {
+                sourceFilesAndDirs.add(FSPath.toFSPath(subProject.getProjectDirectory()));
+                MakeConfigurationDescriptor subMcs =
+                        MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
+                for(String soorceRoot : mcs.getSourceRoots()) {
+                    FileObject fo = FileSystemProvider.getFileObject(subProject.getProjectDirectory(), soorceRoot);
+                    sourceFilesAndDirs.add(FSPath.toFSPath(fo));
+                }
+                addExtraFiles(subMcs, sourceFilesAndDirs);
             }
-            MakeConfigurationDescriptor subMcs =
-                    MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
-            for(String soorceRoot : mcs.getSourceRoots()) {
-                File file = CndFileUtils.createLocalFile(soorceRoot).getAbsoluteFile(); // or canonical?
-                sourceFilesAndDirs.add(file);
-            }
-            addExtraFiles(subMcs, sourceFilesAndDirs);
         }
-        return sourceFilesAndDirs.toArray(new File[sourceFilesAndDirs.size()]);
+        return sourceFilesAndDirs.toArray(new FSPath[sourceFilesAndDirs.size()]);
     }
 
-    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync) {
+    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<FSPath> filesToSync) {
         addExtraFiles(subMcs, filesToSync, subMcs.getProjectItems());
         addExtraFiles(subMcs, filesToSync, subMcs.getExternalFileItemsAsArray());
     }
     
-    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync, Item[] items) {
-        FileFilter filter = new SharabilityFilter();
+    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<FSPath> filesToSync, Item[] items) {
+        SharabilityFilter filter = new SharabilityFilter();
         for (Item item : items) {
-            File normFile = item.getNormalizedFile();
-            if (!filter.accept(normFile)) {
-                // user explicitely added file -> copy it even
-                filesToSync.add(normFile);
-            } else if (!isContained(normFile, filesToSync)) {
-                // directory containing file is not yet added => copy it
-                filesToSync.add(normFile);
-            } else if (!normFile.exists()) {
+            FileObject fo = item.getFileObject();
+            if (fo == null || !fo.isValid()) {
                 // it won't be added while recursin into directories
-                filesToSync.add(normFile);
+                filesToSync.add(item.getFSPath());
+            } else if (!filter.accept(fo)) {
+                // !normFO.isValid() is for inexistent file - we won't get it via directories recursion
+                // !filter.accept(normFO) means that we'll filter it out, but it's explicitely in project
+                filesToSync.add(item.getFSPath());
+            } else if (!isContained(item.getNormalizedPath(), filesToSync)) {
+                // directory containing file is not yet added => copy it
+                filesToSync.add(item.getFSPath());
             }
         }
     }
 
-    private static boolean isContained(File normFile, Set<File> files) {
-        String itemAbsPath = normFile.getAbsolutePath();
-        for (File dir : files) {
-            if (dir.isDirectory()) {
-                String alreadyAddedPath = dir.getAbsolutePath() + File.separatorChar;
-                if (itemAbsPath.startsWith(alreadyAddedPath)) {
-                    return true;
-                }
+    private static boolean isContained(String itemAbsPath, Set<FSPath> paths) {
+        for (FSPath dir : paths) {
+            String alreadyAddedPath = dir.getPath() + '/';
+            if (itemAbsPath.startsWith(alreadyAddedPath)) {
+                return true;
             }
         }
         return false;

@@ -91,6 +91,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                 true, Configuration.HintSeverity.WARNING);
     }
 
+    @Override
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
             int selectionStart, int selectionEnd) {
         List<ErrorDescription> err = new ArrayList<ErrorDescription>();
@@ -115,10 +116,12 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         return err;
     }
 
+    @Override
     public JComponent getCustomizer(Preferences preferences) {
         return null;
     }
 
+    @Override
     public Configuration getConfiguration() {
         return configuration;
     }
@@ -134,10 +137,12 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
             end = selectionEnd;
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(OverrideDependencyManagementError.class, "TIT_MoveToDependencyManagementHint");
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
 
             ChangeInfo info = new ChangeInfo();
@@ -234,6 +239,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
 
     private static void openParent(final int offset, final POMModel model) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 Line line = NbEditorUtilities.getLine(model.getBaseDocument(), offset, false);
                 line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);

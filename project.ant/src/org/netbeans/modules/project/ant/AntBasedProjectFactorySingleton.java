@@ -65,8 +65,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-import java.util.zip.CRC32;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,6 +76,7 @@ import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -85,7 +84,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -214,7 +212,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(AntBasedProjectFactorySingleton.class.getName()).log(Level.FINE, "Failed to load the project.xml file.", ex);
+            LOG.log(Level.FINE, "Failed to load the project.xml file.", ex);
         }
         // better have false positives than false negatives (according to the ProjectManager.isProject/isProject2 javadoc.
         return new ProjectManager.Result(null);
@@ -370,31 +368,12 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
                         new Object[] {projectDiskFile, projectEl.getLocalName(), baos});
                 return null;
             }
-            // #142680: try to cache CRC-32s of project.xml files known to be valid, since validation can be slow.
-            Preferences prefs = NbPreferences.forModule(AntBasedProjectFactorySingleton.class);
-            String key = "knownValidProjectXmlCRC32s"; // NOI18N
-            List<Long> knownHashes = new ArrayList<Long>();
-            String knownHashesS = prefs.get(key, null);
-            if (knownHashesS != null) {
-                for (String knownHash : knownHashesS.split(",")) { // NOI18N
-                    try {
-                        knownHashes.add(Long.valueOf(knownHash, 16));
-                    } catch (NumberFormatException x) {/* forget it */}
-                }
-            }
-            CRC32 crc = new CRC32();
-            crc.update(data);
-            long hash = crc.getValue();
-            if (!knownHashes.contains(hash)) {
-                Logger.getLogger(AntBasedProjectFactorySingleton.class.getName()).log(Level.FINE, "Validating: {0}", projectDiskFile);
+            ProjectXMLKnownChecksums checksums = new ProjectXMLKnownChecksums();
+            if (!checksums.check(data)) {
+                LOG.log(Level.FINE, "Validating: {0}", projectDiskFile);
                 try {
                     ProjectXMLCatalogReader.validate(projectEl);
-                    StringBuilder newKnownHashes = new StringBuilder(Long.toString(hash, 16));
-                    for (int i = 0; i < knownHashes.size() && i < /* max size */100; i++) {
-                        newKnownHashes.append(',');
-                        newKnownHashes.append(Long.toString(knownHashes.get(i), 16));
-                    }
-                    prefs.put(key, newKnownHashes.toString());
+                    checksums.save();
                 } catch (SAXException x) {
                     Element corrected = ProjectXMLCatalogReader.autocorrect(projectEl, x);
                     if (corrected != null) {

@@ -16,17 +16,18 @@
             <li>JavaFX Application</li>
             <li>JavaFX Preloader</li>
             <li>JavaFX FXML Application</li>
+            <li>JavaFX in Swing Application</li>
         </ul>
-        <p>All 3 projects are created in the New Java Project wizard (Ctrl-Shift-N) from the JavaFX category.</p>
+        <p>All 4 projects are created in the New Java Project wizard (Ctrl-Shift-N) from the JavaFX category.</p>
         <h3>Requirements</h3>
         <p>To work with JavaFX in NetBeans IDE, you need the following:</p>
         <ul>
-            <li>Installed JavaFX 2.0 SDK and Runtime</li>
+            <li>Installed JavaFX 2 SDK and Runtime</li>
             <li>A JavaFX-enabled <a href="../project/proj_jdk.html">Java Platform</a> within the IDE</li>
         </ul>
         <p>For details, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://netbeans.org/kb/docs/java/javafx-setup.html">
-                <param name="text" value="<html>Setting Up NetBeans IDE With JavaFX 2.0</html>">
+                <param name="text" value="<html>Setting Up NetBeans IDE With JavaFX 2</html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
             </object>.</p>
@@ -37,7 +38,7 @@
             and actions are defined in a controller Java 
             class. The controller class implements the interface 
             <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                <param name="content" value="http://download.oracle.com/javafx/2.0/api/javafx/fxml/Initializable.html">
+                <param name="content" value="http://download.oracle.com/javafx/2/api/javafx/fxml/Initializable.html">
                 <param name="text" value="<html>javafx.fxml.Initializable</html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
@@ -50,9 +51,22 @@
         <h3>Editing JavaFX Applications</h3>
         <p>Edit JavaFX Java source code as you edit any other Java source code in the IDE. See 
             <a href="../editing/editing_about.html">About Editing Java Source Files</a>.</p>
-        <p>Edit FXML files as you edit any XML document in the IDE. See 
+        <p>Edit FXML files in one of two ways, depending on whether you have SceneBuilder installed.</p>
+            <ul>
+                <li>If SceneBuilder is installed, go to the Projects window and either double-click the
+                FXML file's node or right-click the FXML file's node and select Open. SceneBuilder opens
+                automatically, focused on that FXML file. For information about installing and using
+                SceneBuilder, see <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://docs.oracle.com/javafx/scenebuilder/1/get_started/jsbpub-get_started.htm">
+                    <param name="text" value="<html><u>JavaFX SceneBuilder documentation</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object>.</li>
+                <li>If SceneBuilder is not installed, edit the FXML file as you edit any XML document 
+                    in the IDE. If SceneBuilder is installed, you can choose to use the IDE's XML editor
+                    instead by right-clicking the FXML file's node and selecting Edit. See 
             <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/xml/xml_about.html">
-                About Editing XML Documents</a>.</p>
+                About Editing XML Documents</a>.</li></ul>
         <h3>Building and Running JavaFX Applications</h3>
         <p>Build and run a JavaFX application as you build and run a standard Java application, 
             with the difference that you can configure a JavaFX project to run in the following ways:</p>
@@ -82,8 +96,8 @@
             <dd><a href="../run/run_about.html">About Running Java Projects</a></dd>
             <dd><a href="../debug/debug_about.html">About Debugging Java Projects</a></dd>
             <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-                    <param name="content" value="http://download.oracle.com/javafx/index.html">
-                    <param name="text" value="<html>JavaFX 2.0 Documentation</html>">
+                    <param name="content" value="http://docs.oracle.com/javafx/">
+                    <param name="text" value="<html>JavaFX 2 Documentation</html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
                 </object></dd>

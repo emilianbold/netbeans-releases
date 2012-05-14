@@ -73,7 +73,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
@@ -659,7 +658,7 @@ public final class SourceAnalyzerFactory {
                     // index only simple name, not FQN for classes
                     addIdent(name, simpleName, p, true);
                     if (newTypes !=null) {
-                        newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS,className));
+                        newTypes.add ((ElementHandle<TypeElement>)ElementHandle.createTypeElementHandle(ElementKind.CLASS,className));
                     }
                 }
             }

@@ -51,8 +51,7 @@ public class OpenedTaskFilter implements DashboardFilter<Issue> {
 
     @Override
     public boolean isInFilter(Issue task) {
-        //TODO task.isFinished is not in the API
-        return true;
+        return !task.isFinished();
     }
 
     @Override

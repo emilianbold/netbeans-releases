@@ -53,6 +53,8 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
@@ -64,6 +66,7 @@ import org.openide.util.Exceptions;
  */
 public final class FQN2Files implements DuplicateClassChecker {
 
+    private static final Logger LOG = Logger.getLogger(FQN2Files.class.getName());
     private static final String FQN2FILES_FILE = "fqn2files.properties"; //NOI18N
 
     public static FQN2Files forRoot(final URL root) throws IOException {
@@ -107,9 +110,12 @@ public final class FQN2Files implements DuplicateClassChecker {
     }
 
     private void load() throws IOException {
-        InputStream in = new BufferedInputStream(new FileInputStream(propFile));
+        final InputStream in = new BufferedInputStream(new FileInputStream(propFile));
         try {
             props.load(in);
+        } catch (IllegalArgumentException iae) {
+            props.clear();
+            LOG.log(Level.WARNING, "Broken {0}, ignoring.", propFile.getAbsolutePath());    //NOI18N
         } finally {
             in.close();
         }

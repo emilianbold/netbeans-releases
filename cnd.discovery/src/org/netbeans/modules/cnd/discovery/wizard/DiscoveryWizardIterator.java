@@ -116,7 +116,7 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     @Override
-    public WizardDescriptor.Panel<WizardDescriptor> current() {
+    public synchronized WizardDescriptor.Panel<WizardDescriptor> current() {
         if (wizard.isSimpleMode()){
             return simple[index];
         } else {
@@ -130,7 +130,7 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     @Override
-    public boolean hasNext() {
+    public synchronized boolean hasNext() {
         if (wizard.isSimpleMode()){
             return index < (simple.length - 1);
         } else {
@@ -139,7 +139,7 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     }
     
     @Override
-    public boolean hasPrevious() {
+    public synchronized boolean hasPrevious() {
         return index > 0;
     }
     

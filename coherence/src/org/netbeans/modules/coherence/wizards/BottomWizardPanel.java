@@ -65,7 +65,9 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -73,10 +75,15 @@ import org.openide.util.NbBundle;
  */
 public class BottomWizardPanel extends javax.swing.JPanel {
 
-    private static final Logger LOGGER = Logger.getLogger(BottomWizardPanel.class.getName());
-    private final List<Library> coherenceLibraries = new ArrayList<Library>();
+    protected static final String SELECTED_COHERENCE = "selectedCoherenceLibrary"; //NOI18N
+
+    @Messages("BottomWizardPanel.label.none.library=None")
+    private static final String NONE_LIBRARY = Bundle.BottomWizardPanel_label_none_library();
+
+    @Messages("BottomWizardPanel.label.new.coherence.library=New Cohrence Library ...")
+    private static final String CREATE_NEW_LIBRARY = Bundle.BottomWizardPanel_label_new_coherence_library();
+
     private final WizardDescriptor wizard;
-    private boolean initialized;
 
     /**
      * Creates new form BottomWizardPanel.
@@ -96,60 +103,17 @@ public class BottomWizardPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        libraryPanel = new javax.swing.JPanel();
+        coherenceInProjectLabel = new javax.swing.JLabel();
         librariesComboBox = new javax.swing.JComboBox();
-        classPathWarningLabel = new javax.swing.JLabel();
-        addToProjectButton = new javax.swing.JButton();
-        registerCoherenceLabel = new javax.swing.JLabel();
+
+        coherenceInProjectLabel.setText(org.openide.util.NbBundle.getMessage(BottomWizardPanel.class, "BottomWizardPanel.coherenceInProjectLabel.text")); // NOI18N
 
         librariesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Loading libraries..." }));
-
-        classPathWarningLabel.setFont(new java.awt.Font("Dialog", 0, 11)); // NOI18N
-        classPathWarningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/coherence/resources/icons/warning.gif"))); // NOI18N
-        classPathWarningLabel.setText(org.openide.util.NbBundle.getMessage(BottomWizardPanel.class, "BottomWizardPanel.classPathWarningLabel.text")); // NOI18N
-
-        addToProjectButton.setText(org.openide.util.NbBundle.getMessage(BottomWizardPanel.class, "BottomWizardPanel.addToProjectButton.text")); // NOI18N
-        addToProjectButton.addActionListener(new java.awt.event.ActionListener() {
+        librariesComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addToProjectButtonActionPerformed(evt);
+                librariesComboBoxActionPerformed(evt);
             }
         });
-
-        registerCoherenceLabel.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
-        registerCoherenceLabel.setForeground(new java.awt.Color(204, 102, 0));
-        registerCoherenceLabel.setText(org.openide.util.NbBundle.getMessage(BottomWizardPanel.class, "BottomWizardPanel.registerCoherenceLabel.text")); // NOI18N
-        registerCoherenceLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        registerCoherenceLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                registerCoherenceLabelMousePressed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout libraryPanelLayout = new javax.swing.GroupLayout(libraryPanel);
-        libraryPanel.setLayout(libraryPanelLayout);
-        libraryPanelLayout.setHorizontalGroup(
-            libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(libraryPanelLayout.createSequentialGroup()
-                .addGroup(libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(classPathWarningLabel)
-                    .addGroup(libraryPanelLayout.createSequentialGroup()
-                        .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addToProjectButton))
-                    .addComponent(registerCoherenceLabel))
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        libraryPanelLayout.setVerticalGroup(
-            libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, libraryPanelLayout.createSequentialGroup()
-                .addComponent(classPathWarningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(libraryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addToProjectButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(registerCoherenceLabel))
-        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -157,50 +121,32 @@ public class BottomWizardPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(libraryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(coherenceInProjectLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(librariesComboBox, 0, 154, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 233, Short.MAX_VALUE)
-                .addComponent(libraryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(50, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(coherenceInProjectLabel)
+                    .addComponent(librariesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addToProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToProjectButtonActionPerformed
+    private void librariesComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesComboBoxActionPerformed
         Object selectedItem = librariesComboBox.getSelectedItem();
-        if (selectedItem instanceof LibraryItem) {
-            LibraryItem libraryItem = (LibraryItem) selectedItem;
-            Project project = Templates.getProject(wizard);
-            try {
-                SourceGroup[] group = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if (group.length == 0) {
-                    return;
-                }
-                ProjectClassPathModifier.addLibraries(
-                        new Library[]{libraryItem.getLibrary()},
-                        group[0].getRootFolder(),
-                        ClassPath.COMPILE);
-                initLibrariesPanel();
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Libraries required for the Coherence project not added", ioe);
-            } catch (UnsupportedOperationException uoe) {
-                LOGGER.log(Level.WARNING, "This project does not support adding these types of libraries to the classpath", uoe);
-            }
+        if (selectedItem == CREATE_NEW_LIBRARY) {
+            registerCoherence();
         }
-    }//GEN-LAST:event_addToProjectButtonActionPerformed
-
-    private void registerCoherenceLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_registerCoherenceLabelMousePressed
-        registerCoherence();
-    }//GEN-LAST:event_registerCoherenceLabelMousePressed
+    }//GEN-LAST:event_librariesComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addToProjectButton;
-    private javax.swing.JLabel classPathWarningLabel;
+    private javax.swing.JLabel coherenceInProjectLabel;
     private javax.swing.JComboBox librariesComboBox;
-    private javax.swing.JPanel libraryPanel;
-    private javax.swing.JLabel registerCoherenceLabel;
     // End of variables declaration//GEN-END:variables
 
     @NbBundle.Messages(
@@ -220,44 +166,76 @@ public class BottomWizardPanel extends javax.swing.JPanel {
             if (panel.getLibraryChecked()) {
                 Library library = LibrariesCustomizer.showCreateNewLibraryCustomizer(LibraryManager.getDefault());
                 if (library != null) {
-                    cleanInitialized();
                     initLibrariesPanel();
                 }
             } else {
                 ServerInstance serverInstance = CommonServerUIs.showAddServerInstanceWizard();
                 if (serverInstance != null) {
-                    cleanInitialized();
                     initLibrariesPanel();
                 }
             }
+        } else if (ret == DialogDescriptor.CANCEL_OPTION) {
+            setSelectedLibrariesItem(NONE_LIBRARY);
         }
     }
 
-    private void cleanInitialized() {
-        initialized = false;
-        coherenceLibraries.clear();
+    public Library getSelectedLibrary() {
+        Object selectedItem = librariesComboBox.getSelectedItem();
+        if (selectedItem instanceof LibraryItem) {
+            return ((LibraryItem) selectedItem).getLibrary();
+        }
+        return null;
     }
 
+//    @Override
+//    public boolean isValid() {
+//        if (wizard == null) {
+//            return true;
+//        }
+//        Project project = Templates.getProject(wizard);
+//        if (CoherenceProjectUtils.isCoherenceProject(project)) {
+//            wizard.putProperty(
+//                    WizardDescriptor.PROP_WARNING_MESSAGE,
+//                    NbBundle.getMessage(BottomWizardPanel.class, "WRN_NoCoherenceOnClassPath")); //NOI18N
+//        }
+//        return true;
+//    }
+
     private void initLibrariesPanel() {
-        if (CoherenceProjectUtils.isCoherenceProject(Templates.getProject(wizard))) {
-            libraryPanel.setVisible(false);
-        } else {
-            libraryPanel.setVisible(true);
-            if (!initialized) {
-                coherenceLibraries.addAll(LibraryUtils.getRegisteredCoherenceLibraries());
-                initialized = true;
-                librariesComboBox.removeAllItems();
-                if (coherenceLibraries.isEmpty()) {
-                    librariesComboBox.addItem(NbBundle.getMessage(BottomWizardPanel.class, "LBL_NoCoherenceLibraryFound")); //NOI18N
-                    addToProjectButton.setEnabled(false);
-                } else {
-                    addToProjectButton.setEnabled(true);
-                    for (Library library : coherenceLibraries) {
-                        librariesComboBox.addItem(new LibraryItem(library));
+        librariesComboBox.removeAllItems();
+        // add None option
+        librariesComboBox.addItem(NONE_LIBRARY);
+        // add all registered Coherence libraries
+        for (Library library : LibraryUtils.getRegisteredCoherenceLibraries()) {
+            librariesComboBox.addItem(new LibraryItem(library));
+        }
+        // add Create New Library option
+        librariesComboBox.addItem(CREATE_NEW_LIBRARY);
+
+        Project project = Templates.getProject(wizard);
+        if (CoherenceProjectUtils.isCoherenceProject(project)) {
+            Library includedLibrary = LibraryUtils.getCoherenceLibraryOnProjectClasspath(project);
+            for (int i = 0; i < librariesComboBox.getItemCount(); i++) {
+                Object item = librariesComboBox.getItemAt(i);
+                if (item instanceof LibraryItem) {
+                    if (((LibraryItem) item).getLibrary() == includedLibrary) {
+                        setSelectedLibrariesItem(item);
                     }
                 }
             }
+            librariesComboBox.setEnabled(false);
+        } else {
+            setSelectedLibrariesItem(NONE_LIBRARY);
         }
+    }
+
+    private void setSelectedLibrariesItem(final Object item) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                librariesComboBox.setSelectedItem(item);
+            }
+        });
     }
 
     private static class LibraryItem {

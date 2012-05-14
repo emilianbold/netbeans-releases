@@ -94,6 +94,7 @@ public class testCC extends GeneralGroovy {
         file.setCaretPosition("Bar {", false);
         type(file, "\n ");
         type(file, " Foo f = new F");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
@@ -115,6 +116,7 @@ public class testCC extends GeneralGroovy {
         file.setCaretPosition("UndefinedField {", false);
         type(file, "\n ");
         type(file, " private Integ");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
@@ -143,9 +145,10 @@ public class testCC extends GeneralGroovy {
         file.setCaretPosition("BBB {", false);
         type(file, "\n ");
         type(file, "AAA aaa = new AAA");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-
+        
         CompletionInfo completion = getCompletion();
         assertEquals(2, completion.listItems.size());
         String[] res = {"AAA", "AAA"}; // TODO: should be AAA() and AAA(int)
@@ -164,6 +167,7 @@ public class testCC extends GeneralGroovy {
         file.setCaretPosition("CCC {", false);
         type(file, "\n ");
         type(file, " String ");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
@@ -184,6 +188,7 @@ public class testCC extends GeneralGroovy {
         file.setCaretPosition("DDD {", false);
         type(file, "\n ");
         type(file, " in");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
@@ -209,12 +214,14 @@ public class testCC extends GeneralGroovy {
         type(file, "\n ");
         type(file, " String test(){\n");
         type(file, "String s = new String");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
         CompletionInfo completion = getCompletion();
         List listA = completion.listItems;
         type(file, "(\"aaa\"");
+        waitScanFinished();
         file.setCaretPosition("(\"a", true);
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
@@ -255,11 +262,11 @@ public class testCC extends GeneralGroovy {
         type(file, "class Test2 {\n");
         type(file, "def test={\n");
         type(file, "new GGG().in");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
         CompletionInfo completion = getCompletion();
-        assertEquals(3, completion.listItems.size());
         String[] res = {"inject()", "inspect()", "invokeMethod()"};
         checkCompletionItems(completion.listItself, res);
         completion.listItself.hideAll();

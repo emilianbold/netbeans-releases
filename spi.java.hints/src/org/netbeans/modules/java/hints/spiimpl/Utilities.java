@@ -654,6 +654,14 @@ public class Utilities {
                 return name;
             }
         }
+        
+        if (t.getKind() == Kind.TYPE_PARAMETER) {
+            String name = ((TypeParameterTree) t).getName().toString();
+
+            if (name.startsWith("$")) {
+                return name;
+            }
+        }
 
         return null;
     }

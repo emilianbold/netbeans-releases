@@ -46,14 +46,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.modules.analysis.AnalysisResult;
+import org.netbeans.modules.analysis.DescriptionReader;
 import org.netbeans.modules.analysis.RunAnalysis;
+import org.netbeans.modules.analysis.RunAnalysisPanel.DialogState;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
@@ -64,6 +67,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -74,7 +78,7 @@ import org.openide.windows.WindowManager;
 autostore = false)
 @TopComponent.Description(preferredID = AnalysisResultTopComponent.PREFERRED_ID,
 //iconBase="SET/PATH/TO/ICON/HERE", 
-persistenceType = TopComponent.PERSISTENCE_NEVER)
+persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position=12000)
 @ActionID(category = "Window", id = "org.netbeans.modules.analysis.ui.AnalysisResultTopComponent")
 @ActionReference(path = "Menu/Window/Output", position = 330)
@@ -91,6 +95,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     private final ExplorerManager manager = new ExplorerManager();
 
     private Lookup context;
+    private DialogState dialogState;
     private BeanTreeView btv;
     
     public AnalysisResultTopComponent() {
@@ -113,7 +118,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
-        setData(Lookup.EMPTY, Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap());
+        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<Node>emptyList()));
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);
@@ -130,8 +135,8 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
                 Node[] selectedNodes = manager.getSelectedNodes();
 
                 if (selectedNodes.length == 1) {
-                    ErrorDescription ed = selectedNodes[0].getLookup().lookup(ErrorDescription.class);
-                    CharSequence description = ed != null ? ed.getDetails() : null;
+                    DescriptionReader rd = selectedNodes[0].getLookup().lookup(DescriptionReader.class);
+                    CharSequence description = rd != null ? rd.getDescription() : null;
                     descriptionPanel.setText(description != null ? description.toString() : null);
                 }
             }
@@ -263,7 +268,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        RunAnalysis.showDialogAndRunAnalysis();
+        RunAnalysis.showDialogAndRunAnalysis(context, dialogState);
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void nextErrorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextErrorActionPerformed
@@ -275,7 +280,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     }//GEN-LAST:event_previousErrorActionPerformed
 
     private void byCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_byCategoryActionPerformed
-        manager.setRootContext(Nodes.constructSemiLogicalView(hints, byCategory.isSelected()));
+        manager.setRootContext(Nodes.constructSemiLogicalView(analysisResult, byCategory.isSelected()));
     }//GEN-LAST:event_byCategoryActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -321,18 +326,19 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     final PreviousError prevAction;
     final NextError nextAction;
 
-    Map<AnalyzerFactory, List<ErrorDescription>> hints;
+    AnalysisResult analysisResult;
 
-    public void setData(Lookup context, Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints) {
+    public void setData(Lookup context, DialogState dialogState, AnalysisResult analysisResult) {
         this.context = context;
-        this.hints = provider2Hints;
-        manager.setRootContext(Nodes.constructSemiLogicalView(provider2Hints, byCategory.isSelected()));
+        this.dialogState = dialogState;
+        this.analysisResult = analysisResult;
+        manager.setRootContext(Nodes.constructSemiLogicalView(analysisResult, byCategory.isSelected()));
         if (btv != null) {
             btv.expandAll();
         }
         refreshButton.setEnabled(context != Lookup.EMPTY);
         nodesForNext = null;
-        empty = provider2Hints.isEmpty();
+        empty = analysisResult.provider2Hints.isEmpty();
         fireActionEnabledChange();
     }
 
@@ -343,13 +349,25 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
     public static synchronized AnalysisResultTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
-        if (win == null) {
-            return new AnalysisResultTopComponent();
-        }
         if (win instanceof AnalysisResultTopComponent) {
             return (AnalysisResultTopComponent) win;
         }
-            throw new IllegalStateException();
+        if (win == null) {
+            Logger.getLogger(AnalysisResultTopComponent.class.getName()).warning(
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+        } else {
+            Logger.getLogger(AnalysisResultTopComponent.class.getName()).warning(
+                    "There seem to be multiple components with the '" + PREFERRED_ID +
+                    "' ID. That is a potential source of errors and unexpected behavior.");
+        }
+        
+        AnalysisResultTopComponent result = new AnalysisResultTopComponent();
+        Mode outputMode = WindowManager.getDefault().findMode("output");
+        
+        if (outputMode != null) {
+            outputMode.dockInto(result);
+        }
+        return result;
     }
 
 

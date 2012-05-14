@@ -77,6 +77,11 @@ if [ -z "$BUILD_NBJDK7" ] ; then
     BUILD_NBJDK7=0
 fi
 
+if [ -z "$BUNDLE_JDK_PLATFORM" ] ; then
+    #build NetBeans/JDK for windows,solaris-x86,solaris-sparc,linux by default (Mac has own native build)
+    BUNDLE_JDK_PLATFORM="windows,solaris-x86,solaris-sparc,linux"
+fi
+
 if [ -z "$EN_BUILD" ] ; then
     EN_BUILD=1
 fi
@@ -217,6 +222,7 @@ run() {
             \"-Dbuild.jdk5=${BUILD_NBJDK5}\" \
             \"-Dbuild.jdk6=${BUILD_NBJDK6}\" \
             \"-Dbuild.jdk7=${BUILD_NBJDK7}\" \
+            \"-Dbundle.jdk.platform=${BUNDLE_JDK_PLATFORM}\" \
             \"-Dbuild.jtb=${BUILD_JTB}\" \
             \"-Dbuild.mysql=${BUILD_MYSQL}\" \
             \"-Dbuild.weblogic=${BUILD_WEBLOGIC}\" \

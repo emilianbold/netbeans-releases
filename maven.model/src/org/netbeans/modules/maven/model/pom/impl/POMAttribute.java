@@ -79,14 +79,17 @@ public enum POMAttribute implements Attribute {
         return name; 
     }
 
+    @Override
     public Class getType() {
         return type;
     }
 
+    @Override
     public String getName() { 
         return name; 
     }
 
+    @Override
     public Class getMemberType() { 
         return subtype; 
     }

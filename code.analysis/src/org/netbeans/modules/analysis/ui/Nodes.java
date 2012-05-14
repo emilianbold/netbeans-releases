@@ -58,6 +58,8 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.analysis.AnalysisResult;
+import org.netbeans.modules.analysis.DescriptionReader;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
@@ -91,12 +93,12 @@ import org.openide.util.lookup.Lookups;
  */
 public class Nodes {
 
-    public static Node constructSemiLogicalView(Map<AnalyzerFactory, List<ErrorDescription>> errors, boolean byCategory) {
+    public static Node constructSemiLogicalView(AnalysisResult errors, boolean byCategory) {
         if (!byCategory) {
-            return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors, BY_FILE)));
+            return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors.provider2Hints, BY_FILE), errors.extraNodes));
         } else {
-            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors, BY_CATEGORY);
-            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size());
+            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, BY_CATEGORY);
+            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size() + errors.extraNodes.size());
 
             for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
                 Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
@@ -115,7 +117,7 @@ public class Nodes {
                     }
 
                     final String typeHtmlDisplayName = (typeDisplayName != null ? translate(typeDisplayName) : "Unknown") + " <b>(" + typeWarnings + ")</b>";
-                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE))) {
+                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE), Collections.<Node>emptyList())) {
                         @Override public Image getIcon(int type) {
                             return icon;
                         }
@@ -160,6 +162,14 @@ public class Nodes {
                     return o1.getDisplayName().compareTo(o2.getDisplayName());
                 }
             });
+
+            List<Node> extraNodesCopy = new ArrayList<Node>(errors.extraNodes.size());
+            
+            for (Node n : errors.extraNodes) {
+                extraNodesCopy.add(n.cloneNode());
+            }
+            
+            categoryNodes.addAll(0, extraNodesCopy);
 
             return new AbstractNode(new DirectChildren(categoryNodes));
         }
@@ -233,9 +243,12 @@ public class Nodes {
         return null;
     }
 
-    private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors, final Collection<Node> extraNodes) {
         return Children.create(new ChildFactory<Node>() {
             @Override protected boolean createKeys(List<Node> toPopulate) {
+                for (Node n : extraNodes) {
+                    toPopulate.add(n.cloneNode());
+                }
                 toPopulate.addAll(constructSemiLogicalViewNodes(errors));
                 return true;
             }
@@ -533,15 +546,19 @@ public class Nodes {
 
         private final Image icon;
 
-        public ErrorDescriptionNode(AnalyzerFactory provider, ErrorDescription ed) {
-            super(Children.LEAF, Lookups.fixed(ed, new OpenErrorDescription(provider, ed)));
+        public ErrorDescriptionNode(AnalyzerFactory provider, final ErrorDescription ed) {
+            super(Children.LEAF, Lookups.fixed(ed, new OpenErrorDescription(provider, ed), new DescriptionReader() {
+                @Override public CharSequence getDescription() {
+                    return ed.getDetails();
+                }
+            }));
             int line = -1;
             try {
                 line = ed.getRange().getBegin().getLine();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            setDisplayName((line != (-1) ? (line + ":") : "") + ed.getDescription());
+            setDisplayName((line != (-1) ? (line + 1 + ":") : "") + ed.getDescription());
             icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(provider));
         }
 

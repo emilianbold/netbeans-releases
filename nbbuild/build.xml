@@ -1833,6 +1833,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <patternset id="module.files">
             <!-- include name="${module.jar}"/ -->
             <include name="**/*.jar"/>
+            <include name="docs/*.zip"/>
             <include name="config/Modules/${code.name.base.dashes}.xml"/>
         </patternset>
 

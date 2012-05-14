@@ -209,7 +209,7 @@ final class DefaultTopComponentLookup extends ProxyLookup implements LookupListe
         }
 
         protected boolean instanceOf(Class c) {
-            return Node.class.isAssignableFrom(c);
+            return c.isAssignableFrom(Node.class);
         }
     }
      // end of NoNodesPair

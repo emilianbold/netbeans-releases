@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
@@ -65,7 +67,8 @@ import org.openide.util.Utilities;
 /**
  * Wizard to create a new FXML file and optionally Java Controller and CSS file.
  *
- * @author Anton Chechel <anton.chechel@oracle.com>
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 // TODO register via annotations instead of layer.xml
 public class FXMLTemplateWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
@@ -74,6 +77,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     static final String PROP_ROOT_FOLDER = "rootFolder"; // NOI18N
     static final String PROP_JAVA_CONTROLLER_CREATE = "javaControllerCreate"; // NOI18N
     static final String PROP_JAVA_CONTROLLER_NAME_PROPERTY = "javaController"; // NOI18N
+    static final String PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY = "javaControllerFull"; // NOI18N
     static final String PROP_CSS_CREATE = "cssCreate"; // NOI18N
     static final String PROP_CSS_NAME_PROPERTY = "CSS"; // NOI18N
 
@@ -129,6 +133,23 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 
         index = 0;
         panels = createPanels(project, groups);
+        String[] steps = createSteps();
+        for (int i = 0; i < panels.length; i++) {
+            Component c = panels[i].getComponent();
+            if (steps[i] == null) {
+                // Default step name to component name of panel.
+                // Mainly useful for getting the name of the target
+                // chooser to appear in the list of steps.
+                steps[i] = c.getName();
+            }
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent)c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+            }
+        }
     }
 
     private WizardDescriptor.Panel[] createPanels(Project project, SourceGroup[] groups) {
@@ -139,6 +160,15 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                 };
     }
 
+    private String[] createSteps() {
+        return new String[] {
+            NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep0"),
+            NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep1"),
+            NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep2"),
+            NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_FXMLStep3"),
+        };
+    }
+    
     @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
@@ -148,16 +178,17 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         Set<FileObject> set = new HashSet<FileObject>(3);
         FileObject dir = Templates.getTargetFolder(wizard);
         DataFolder df = DataFolder.findFolder(dir);
-
+        
         String targetName = Templates.getTargetName(wizard);
         boolean createController = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_CREATE);
-        String controller = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
+        String controllerName = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
+        String controllerFullName = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY);
         boolean createCSS = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE);
         String css = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY);
         
         Map<String, String> params = new HashMap<String, String>();
-        if (controller != null) {
-            params.put("controller", controller); // NOI18N
+        if (controllerFullName != null) {
+            params.put("controller", controllerFullName); // NOI18N
         }
         if (css != null) {
             //remove file extension from name
@@ -173,10 +204,10 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName, params);
         set.add(dobj.getPrimaryFile());
 
-        if (createController && controller != null) {
+        if (createController && controllerName != null) {
             FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMLController.java"); // NOI18N
             DataObject dJavaTemplate = DataObject.find(javaTemplate);
-            DataObject dobj2 = dJavaTemplate.createFromTemplate(df, controller);
+            DataObject dobj2 = dJavaTemplate.createFromTemplate(df, controllerName);
             set.add(dobj2.getPrimaryFile());
         }
 

@@ -123,7 +123,11 @@ public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescr
         this.errMessage = message;
         if (oldValid != valid || oldMessage != null && !oldMessage.equals(message) || message != null && !message.equals(oldMessage)) {
             ChangeEvent evt = new ChangeEvent(this);
-            for (ChangeListener list : listeners) {
+            ChangeListener[] lists;
+            synchronized (listeners) {
+                lists = listeners.toArray(new ChangeListener[listeners.size()]);
+            }
+            for (ChangeListener list : lists) {
                 list.stateChanged(evt);
             }
         }

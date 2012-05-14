@@ -43,18 +43,17 @@
  */
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -112,7 +111,7 @@ public class RunDialogAction extends NodeAction {
         FileObject executableFO = null;
         boolean isRun = true;
         if (activatedNodes != null && activatedNodes.length == 1) {
-            DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
+            DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
             String mime = getMime(dataObject);
             if (dataObject != null  && dataObject.isValid() && MIMENames.isBinary(mime)) {
                 FileObject fo = dataObject.getPrimaryFile();
@@ -124,7 +123,9 @@ public class RunDialogAction extends NodeAction {
             executableFO = contextFileObject;
             isRun = false;
         }
-        perform(executableFO, isRun);
+        if (executableFO != null) {
+            perform(executableFO, isRun);
+        }
     }
 
     protected String getMime(DataObject dob) {
@@ -138,7 +139,7 @@ public class RunDialogAction extends NodeAction {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
         }
-        DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
+        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
         String mime = getMime(dataObject);
         // disabled for core files, see issue 136696
         if (!MIMENames.isBinary(mime) || MIMENames.ELF_CORE_MIME_TYPE.equals(mime)) {

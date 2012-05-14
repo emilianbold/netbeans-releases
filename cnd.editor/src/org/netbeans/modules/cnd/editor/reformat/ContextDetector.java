@@ -53,8 +53,8 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  */
 public class ContextDetector extends ExtendedTokenSequence {
     private BracesStack braces;
-    /*package local*/ ContextDetector(TokenSequence<CppTokenId> ts, DiffLinkedList diffs, BracesStack braces, int tabSize){
-        super(ts, diffs, tabSize);
+    /*package local*/ ContextDetector(TokenSequence<CppTokenId> ts, DiffLinkedList diffs, BracesStack braces, int tabSize, boolean expandTabToSpaces){
+        super(ts, diffs, tabSize, expandTabToSpaces);
         this.braces = braces;
     }
     
@@ -120,7 +120,7 @@ public class ContextDetector extends ExtendedTokenSequence {
         int index = index();
         try {
             boolean back = current.id() == GT;
-            Token<CppTokenId> head = null;
+            Token<CppTokenId> head;
             if (!back){
                 head = lookPreviousImportant();
                 if (head == null || head.id() != IDENTIFIER){

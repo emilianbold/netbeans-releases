@@ -61,17 +61,17 @@ import org.openide.util.NbBundle;
 
 public final class JsfTable extends EntityClass implements ActiveEditorDrop, PaletteItem {
     private static String [] BEGIN = {
-        "<$HTML$:form>\n <$HTML$:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
-        "<$HTML$:form>\n <h1><$HTML$:outputText value=\"List\"/></h1>\n <$HTML$:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
+        "<__HTML__:form>\n <__HTML__:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
+        "<__HTML__:form>\n <h1><__HTML__:outputText value=\"List\"/></h1>\n <__HTML__:dataTable value=\"#'{'{0}'}'\" var=\"{1}\">\n",
     };
     private static String [] END = {
-        "</$HTML$:dataTable>\n </$HTML$:form>\n",
-        "</$HTML$:dataTable>\n </$HTML$:form>\n",
+        "</__HTML__:dataTable>\n </__HTML__:form>\n",
+        "</__HTML__:dataTable>\n </__HTML__:form>\n",
     };
     private static String [] ITEM = {
         "",
-        "<$HTML$:column>\n <f:facet name=\"header\">\n <$HTML$:outputText value=\"{0}\"/>\n </f:facet>\n <$HTML$:outputText value=\"#'{'{3}.{2}'}'\"/>\n</$HTML$:column>\n",
-        "<$HTML$:column>\n <f:facet name=\"header\">\n <$HTML$:outputText value=\"{0}\"/>\n </f:facet>\n <$HTML$:outputText value=\"#'{'{5}.{2}'}'\">\n <f:convertDateTime pattern=\"{4}\" />\n</$HTML$:outputText>\n</$HTML$:column>\n"
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'{3}.{2}'}'\"/>\n</h:column>\n",
+        "<h:column>\n <f:facet name=\"header\">\n <h:outputText value=\"{0}\"/>\n </f:facet>\n <h:outputText value=\"#'{'{5}.{2}'}'\">\n <f:convertDateTime pattern=\"{4}\" />\n</h:outputText>\n</h:column>\n"
     };
     
     public JsfTable() {
@@ -99,10 +99,10 @@ public final class JsfTable extends EntityClass implements ActiveEditorDrop, Pal
             stringBuffer.append(PaletteUtils.createViewTag(target, false)).append("\n"); // NOI18N
         }
         stringBuffer.append(MessageFormat.format(
-                BEGIN[formType].replaceAll("\\$HTML\\$", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N,
+                BEGIN[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML)), //NOI18N,
                 new Object [] {variable, "item"})); //NOI18N
         
-        stringBuffer.append(END[formType].replaceAll("\\$HTML\\$", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
+        stringBuffer.append(END[formType].replaceAll("__HTML__", jsfLibrariesSupport.getLibraryPrefix(DefaultLibraryInfo.HTML))); //NOI18N
         if (surroundWithFView) {
             stringBuffer.append(PaletteUtils.createViewTag(target, true)).append("\n"); // NOI18N
         }

@@ -55,8 +55,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
+import org.openide.util.Lookup.Provider;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -119,12 +121,7 @@ class ContextManager extends Object {
             // TBD: a.updateState(new ActionMap(), actionMap.get());
             
             if (a.selectMode == ContextSelection.ALL) {
-                if (selectionAll == null) {
-                    Lookup.Result<Lookup.Provider> result = createResult(
-                        lookup.lookupResult(Lookup.Provider.class)
-                    );
-                    selectionAll = new LSet<Lookup.Provider>(result, Lookup.Provider.class);
-                }
+                initSelectionAll();
                 selectionAll.add(a);
             }
         }
@@ -141,7 +138,7 @@ class ContextManager extends Object {
             }
             if (a.selectMode == ContextSelection.ALL && selectionAll != null) {
                 selectionAll.remove(a);
-                if (selectionAll.isEmpty()) {
+                if (selectionAll.isEmpty() && !isSurvive()) {
                     selectionAll = null;
                 }
             }
@@ -264,8 +261,16 @@ class ContextManager extends Object {
         return all;
     }
 
-    
+    private Lookup.Result<Lookup.Provider> initSelectionAll() {
+        assert Thread.holdsLock(CACHE);
+        if (selectionAll == null) {
+            Lookup.Result<Lookup.Provider> result = lookup.lookupResult(Lookup.Provider.class);
+            selectionAll = new LSet<Lookup.Provider>(result, Lookup.Provider.class);
+        }
+        return selectionAll.result;
+    }
 
+    
     private static final class GMReference extends WeakReference<ContextManager> 
     implements Runnable {
         private LookupRef context;
@@ -296,55 +301,91 @@ class ContextManager extends Object {
 
         @Override
         protected <T> Result<T> createResult(Result<T> res) {
-            return new NeverEmptyResult<T>(res);
+            return new NeverEmptyResult<T>(res, super.initSelectionAll());
         }
     }
     
-    private static final class NeverEmptyResult<T> extends Lookup.Result<T> {
+    private static final class NeverEmptyResult<T> extends Lookup.Result<T> 
+    implements LookupListener {
         private final Lookup.Result<T> delegate;
-        private Collection<? extends Item<T>> allItems = Collections.emptyList();
-        private Collection<? extends T> allInstances = Collections.emptyList();
-        private Set<Class<? extends T>> allClasses = Collections.emptySet();
+        private final Lookup.Result<Provider> nodes;
+        private final Collection<LookupListener> listeners;
+        private Collection<? extends Item<T>> allItems;
+        private Collection<? extends T> allInstances;
+        private Set<Class<? extends T>> allClasses;
 
-        public NeverEmptyResult(Result<T> delegate) {
+        public NeverEmptyResult(Result<T> delegate, Result<Provider> nodes) {
             this.delegate = delegate;
+            this.nodes = nodes;
+            this.listeners = new CopyOnWriteArrayList<LookupListener>();
+            this.delegate.addLookupListener(this);
+            this.nodes.addLookupListener(this);
+            initValues();
         }
 
         @Override
         public void addLookupListener(LookupListener l) {
-            delegate.addLookupListener(l);
+            listeners.add(l);
         }
 
         @Override
         public void removeLookupListener(LookupListener l) {
-            delegate.removeLookupListener(l);
+            listeners.remove(l);
         }
 
         @Override
         public Collection<? extends Item<T>> allItems() {
             Collection<? extends Item<T>> res = delegate.allItems();
-            if (!res.isEmpty()) {
-                allItems = res;
+            synchronized (this) {
+                if (!res.isEmpty()) {
+                    allItems = res;
+                }
+                return allItems;
             }
-            return allItems;
         }
 
         @Override
         public Collection<? extends T> allInstances() {
             Collection<? extends T> res = delegate.allInstances();
-            if (!res.isEmpty()) {
-                allInstances = res;
+            synchronized (this) {
+                if (!res.isEmpty()) {
+                    allInstances = res;
+                }
+                return allInstances;
             }
-            return allInstances;
         }
 
         @Override
         public Set<Class<? extends T>> allClasses() {
             Set<Class<? extends T>> res = delegate.allClasses();
-            if (!res.isEmpty()) {
-                allClasses = res;
+            synchronized (this) {
+                if (!res.isEmpty()) {
+                    allClasses = res;
+                }
+                return allClasses;
             }
-            return allClasses;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            if (ev.getSource() == nodes) {
+                Collection<? extends Item<Provider>> arr = nodes.allItems();
+                if (arr.size() == 1 && arr.iterator().next().getInstance() == null) {
+                    return;
+                }
+                initValues();
+                return;
+            }
+            final LookupEvent mev = new LookupEvent(this);
+            for (LookupListener ll : listeners) {
+                ll.resultChanged(mev);
+            }
+        }
+
+        private synchronized void initValues() {
+            allItems = Collections.emptyList();
+            allInstances = Collections.emptyList();
+            allClasses = Collections.emptySet();
         }
 
     } // end of NeverEmptyResult

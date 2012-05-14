@@ -46,13 +46,18 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.spi.project.ui.templates.support.Templates.SimpleTargetChooserBuilder;
 import org.openide.WizardDescriptor;
@@ -69,14 +74,37 @@ import org.openide.util.HelpCtx;
  */
 public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingIterator {
 
+    private static final Logger LOGGER = Logger.getLogger(NewCoherenceFileIterator.class.getName());
+
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
+
+    BottomWizardDescriptorPanel bottomPanel;
 
     @Override
     public Set instantiate() throws IOException {
         final FileObject targetFolder = Templates.getTargetFolder(wizard);
         final String targetName = Templates.getTargetName(wizard);
+
+        // add Coherence library to the project classpath if choosen
+        Library selectedLibrary = bottomPanel.getSelectedLibrary();
+        if (selectedLibrary != null) {
+            Project project = Templates.getProject(wizard);
+            try {
+                SourceGroup[] group = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (group.length > 0) {
+                    ProjectClassPathModifier.addLibraries(
+                            new Library[]{selectedLibrary},
+                            group[0].getRootFolder(),
+                            ClassPath.COMPILE);
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, "Libraries required for the Coherence project not added", ioe);
+            } catch (UnsupportedOperationException uoe) {
+                LOGGER.log(Level.WARNING, "This project does not support adding these types of libraries to the classpath", uoe);
+            }
+        }
 
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
         FileObject templateFO = Templates.getTemplate(wizard);
@@ -155,8 +183,9 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
                 sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             }
             SimpleTargetChooserBuilder simpleTargetChooser = Templates.buildSimpleTargetChooser(project, sourceGroups);
-            WizardDescriptor.Panel bottomPanel = new BottomWizardDescriptorPanel();
-            simpleTargetChooser.bottomPanel(bottomPanel);
+            WizardDescriptor.Panel bottom = new BottomWizardDescriptorPanel();
+            bottomPanel = (BottomWizardDescriptorPanel) bottom;
+            simpleTargetChooser.bottomPanel(bottom);
             WizardDescriptor.Panel generalPanel = simpleTargetChooser.create();
             panels = new Panel[]{generalPanel};
 
@@ -204,6 +233,10 @@ public class NewCoherenceFileIterator implements WizardDescriptor.InstantiatingI
         @Override
         public boolean isValid() {
             return getComponent().isValid();
+        }
+
+        public Library getSelectedLibrary() {
+            return panel.getSelectedLibrary();
         }
     }
 }

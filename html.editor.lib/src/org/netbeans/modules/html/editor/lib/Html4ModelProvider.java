@@ -134,7 +134,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
         private static HashMap<DTD.Element, HtmlTag> MAP = new HashMap<DTD.Element, HtmlTag>();
         private static HashMap<DTD.Attribute, HtmlTagAttribute> ATTRS_MAP = new HashMap<DTD.Attribute, HtmlTagAttribute>();
 
-        public static synchronized HtmlTag getTagForElement(DTD dtd, DTD.Element elementName) {
+        private static synchronized HtmlTag getTagForElement(DTD dtd, DTD.Element elementName) {
             HtmlTag impl = MAP.get(elementName);
             if (impl == null) {
                 impl = new DTDElement2HtmlTagAdapter(dtd, elementName);
@@ -143,9 +143,10 @@ public class Html4ModelProvider implements HtmlModelProvider {
             return impl;
         }
 
-        public static synchronized Collection<HtmlTag> convert(DTD dtd, Collection<DTD.Element> elements) {
+        private static Collection<HtmlTag> convert(DTD dtd, Collection<DTD.Element> elements) {
             Collection<HtmlTag> converted = new ArrayList<HtmlTag>();
             for (DTD.Element element : elements) {
+                assert element != null;
                 converted.add(getTagForElement(dtd, element));
             }
             return converted;
@@ -167,7 +168,7 @@ public class Html4ModelProvider implements HtmlModelProvider {
             private Collection<HtmlTagAttribute> attrs;
             private Collection<HtmlTag> children;
 
-            public DTDElement2HtmlTagAdapter(DTD dtd, DTD.Element element) {
+            private DTDElement2HtmlTagAdapter(DTD dtd, DTD.Element element) {
                 this.dtd = dtd;
                 this.element = element;
                 this.attrs = wrap(element.getAttributeList(null));
@@ -250,7 +251,10 @@ public class Html4ModelProvider implements HtmlModelProvider {
                     }
                     if (element.getName().equalsIgnoreCase("HTML")) {
                         // XXXXXXXXXXXXXXXXX TODO:
-                        set.add(dtd.getElement("BODY"));
+                        DTD.Element bodyElement = dtd.getElement("BODY");
+                        if(bodyElement != null) {
+                            set.add(bodyElement);
+                        }
                     }
                     children = convert(dtd, set);
                 }

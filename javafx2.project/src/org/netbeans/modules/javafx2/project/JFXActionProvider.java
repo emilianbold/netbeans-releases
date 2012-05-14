@@ -42,12 +42,21 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
@@ -62,6 +71,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Skeleton of JFX Action Provider
@@ -77,6 +87,7 @@ public class JFXActionProvider implements ActionProvider {
         {
             put(COMMAND_RUN,"run"); //NOI18N
             put(COMMAND_DEBUG,"debug"); //NOI18N
+            put(COMMAND_PROFILE,"profile"); //NOI18N
         }
     };
 
@@ -112,7 +123,11 @@ public class JFXActionProvider implements ActionProvider {
                         target = "jfxbe-".concat(command); //NOI18N
                     }
                 }
-                ActionUtils.runTarget(buildFo, new String[] {target}, null).addTaskListener(new TaskListener() {
+                
+                Properties props = new Properties();
+                collectStartupExtenderArgs(props, command, context);
+                
+                ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
                     @Override public void taskFinished(Task task) {
                         listener.finished(((ExecutorTask) task).result() == 0);
                     }
@@ -156,5 +171,40 @@ public class JFXActionProvider implements ActionProvider {
     @CheckForNull
     private static String findTarget(@NonNull final String command) {
         return ACTIONS.get(command);
+    }
+    
+    private void collectStartupExtenderArgs(Map<? super String,? super String> p, String command, Lookup context) {
+        StringBuilder b = new StringBuilder();
+        for (String arg : runJvmargsIde(command, context)) {
+            b.append(' ').append(arg);
+        }
+        if (b.length() > 0) {
+            p.put("run.jvmargs.ide", b.toString());
+        }
+    }
+    
+    private List<String> runJvmargsIde(String command, Lookup context) {
+        StartupExtender.StartMode mode;
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE)) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            return Collections.emptyList();
+        }
+        List<String> args = new ArrayList<String>();
+
+        for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
+            args.addAll(group.getArguments());
+        }
+        return args;
     }
 }

@@ -175,6 +175,30 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
                     managedTypes.put(name, new Entity(persistentType, this));
                 }
             }
+            for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable persistentType : mappings.getEmbeddable()) {
+
+                if (persistentType != null) {
+                    String name = persistentType.getClass2();
+
+                    if (managedTypes.containsKey(name)) {
+                        continue;
+                    }
+
+                    managedTypes.put(name, new Embeddable(persistentType, this));
+                }
+            }
+            for (org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass persistentType : mappings.getMappedSuperclass()) {
+
+                if (persistentType != null) {
+                    String name = persistentType.getClass2();
+
+                    if (managedTypes.containsKey(name)) {
+                        continue;
+                    }
+
+                    managedTypes.put(name, new MappedSuperclass(persistentType, this));
+                }
+            }
         }
     }
 }

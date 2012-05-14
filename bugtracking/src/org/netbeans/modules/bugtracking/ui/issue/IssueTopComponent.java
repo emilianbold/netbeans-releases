@@ -314,8 +314,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }// </editor-fold>//GEN-END:initComponents
 
     private void onNewClick() {
-        RepositoryImpl repo = BugtrackingUtil.createRepository();
-        if(repo != null) {
+        RepositoryImpl repoImpl = BugtrackingUtil.createRepository();
+        if(repoImpl != null) {
+            Repository repo = repoImpl.getRepository();
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
         }
