@@ -981,6 +981,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean changed = (newEntries.size() != storage.listAll().size()) || (storage == DirectoryStorage.EMPTY);
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
+            List<DirEntry> entriesToFireChangedRO = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
             DirEntry expectedCreated = null;
             List<RemoteFileObject> filesToFireDeleted = new ArrayList<RemoteFileObject>();
@@ -1033,7 +1034,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         } else {
                             changed = true;
                             getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
-                            entriesToFireChanged.add(newEntry);
+                            if (oldEntry.isLink() && newEntry.isPlainFile() && newEntry.canWrite(getExecutionEnvironment())) {
+                                entriesToFireChangedRO.add(newEntry);
+                            } else {
+                                entriesToFireChanged.add(newEntry);
+                            }
                             cacheName = null; // unchanged
                         }
                     }
@@ -1128,6 +1133,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                         } else {
                             fireFileChangedEvent(getListeners(), new FileEvent(fo.getOwnerFileObject(), fo.getOwnerFileObject(), expected));
+                        }
+                    }
+                }
+                for (DirEntry entry : entriesToFireChangedRO) {
+                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+                    if (fo != null) {
+                        if (fo.isPendingRemoteDelivery()) {
+                            RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
+                        } else {
+                            fo.fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
                         }
                     }
                 }

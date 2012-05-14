@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -180,6 +181,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
             return delegate.lockImpl(orig);
         } else {
             throw fileNotFoundException("lock"); //NOI18N
+        }
+    }
+
+    @Override
+    public Date lastModified() {
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null) {
+            return delegate.lastModified();
+        } else {
+            return new Date(0); // consistent with File.lastModified(), which returns 0 for inexistent file
         }
     }
 
