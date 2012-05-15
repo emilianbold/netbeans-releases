@@ -757,6 +757,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (request.prefix == null || request.prefix.isEmpty()) {
             filter = false;
         }
+        JsObject prototype = jsObject.getProperty("prototype"); // NOI18N
+        if (prototype != null) {
+            // at first add all prototype properties
+            // if the same property is declared in the project directly, then this is replaced.
+            addObjectPropertiesToCC(prototype, request, addedProperties);
+        }
         for (JsObject property : jsObject.getProperties().values()) {
             String propertyName = property.getName();
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
@@ -769,6 +775,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
+        
     }
     
     private Collection<JsObject> getLibrariesGlobalObjects() {
