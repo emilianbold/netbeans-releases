@@ -55,6 +55,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
@@ -70,6 +72,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.xml.multiview.Error;
@@ -204,122 +207,128 @@ public class PortPanel extends SaveableSectionInnerPanel {
     public void setValue(JComponent jComponent, Object object) {
         List <PortCustomization> ee =
                 port.getExtensibilityElements(PortCustomization.class);
-        if(jComponent == providerCB){
-            if(ee.size() == 1){ //there is a PortCustomization element
-                PortCustomization pc = ee.get(0);
-                Provider provider = pc.getProvider();
-                if(isProvider()){ //provider is selected
-                    if(provider == null){ //there is no provider
+        try {
+            if(jComponent == providerCB){
+                if(ee.size() == 1){ //there is a PortCustomization element
+                    PortCustomization pc = ee.get(0);
+                    Provider provider = pc.getProvider();
+                    if(isProvider()){ //provider is selected
+                        if(provider == null){ //there is no provider
+                            try{
+                                provider = (Provider) model.getFactory().create(pc, JAXWSQName.PROVIDER.getQName());
+                                model.startTransaction();
+                                provider.setEnabled(true);
+                                pc.setProvider(provider);
+                                wsdlDirty = true;
+                            } finally{
+                                model.endTransaction();
+                            }
+                        }
+                    } else{ //provider is not selected, remove the Provider element
+                        if(provider != null){
+                            try{
+                                model.startTransaction();
+                                pc.removeProvider(provider);
+                                //if there are no more children, remove PortCustomization
+                                if(pc.getChildren().size() == 0){
+                                    port.removeExtensibilityElement(pc);
+                                }
+                                wsdlDirty = true;
+                            } finally{
+                                model.endTransaction();
+                            }
+                        }
+                    }
+                } else{  //no port customization
+                    //if provider is set, create extensibility element and add Provider
+                    if(isProvider()){
+                        WSDLComponentFactory factory = model.getFactory();
+                        PortCustomization pc = (PortCustomization) factory.create(port,
+                                JAXWSQName.BINDINGS.getQName());
+                        Provider provider = (Provider) factory.create(pc, JAXWSQName.PROVIDER.getQName());
                         try{
-                            provider = (Provider) model.getFactory().create(pc, JAXWSQName.PROVIDER.getQName());
                             model.startTransaction();
                             provider.setEnabled(true);
                             pc.setProvider(provider);
+                            port.addExtensibilityElement(pc);
                             wsdlDirty = true;
                         } finally{
                             model.endTransaction();
                         }
+                    } 
+                }
+            } else if(jComponent == portAccessMethodText
+                    || jComponent == defaultMethodCB ){
+                String text = portAccessMethodText.getText();
+                if(text != null && !text.trim().equals("")
+                && !defaultMethodCB.isSelected()){ //Java method was specified
+                    if(!JaxWsUtils.isJavaIdentifier(text)){
+                        return;
                     }
-                } else{ //provider is not selected, remove the Provider element
-                    if(provider != null){
-                        try{
-                            model.startTransaction();
-                            pc.removeProvider(provider);
-                            //if there are no more children, remove PortCustomization
-                            if(pc.getChildren().size() == 0){
-                                port.removeExtensibilityElement(pc);
+                    if(ee.size() == 1){  //there is existing extensibility element
+                        PortCustomization pc = ee.get(0);
+                        JavaMethod jm = pc.getJavaMethod();
+                        if(jm == null){ //no JavaMethod
+                            try{
+                                jm = (JavaMethod) model.getFactory().create(pc, JAXWSQName.METHOD.getQName());
+                                model.startTransaction();
+                                jm.setName(text); //TODO Need to validate this before setting it
+                                pc.setJavaMethod(jm);
+                                wsdlDirty = true;
+                            } finally{
+                                model.endTransaction();
                             }
-                            wsdlDirty = true;
-                        } finally{
-                            model.endTransaction();
+                        } else{ //javamethod already exists
+                            //reset the JavaMethod
+                            try{
+                                model.startTransaction();
+                                jm.setName(text);
+                                wsdlDirty = true;
+                            }finally{
+                                model.endTransaction();
+                            }
                         }
-                    }
-                }
-            } else{  //no port customization
-                //if provider is set, create extensibility element and add Provider
-                if(isProvider()){
-                    WSDLComponentFactory factory = model.getFactory();
-                    PortCustomization pc = (PortCustomization) factory.create(port,
-                            JAXWSQName.BINDINGS.getQName());
-                    Provider provider = (Provider) factory.create(pc, JAXWSQName.PROVIDER.getQName());
-                    try{
-                        model.startTransaction();
-                        provider.setEnabled(true);
-                        pc.setProvider(provider);
-                        port.addExtensibilityElement(pc);
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                } 
-            }
-        } else if(jComponent == portAccessMethodText
-                || jComponent == defaultMethodCB ){
-            String text = portAccessMethodText.getText();
-            if(text != null && !text.trim().equals("")
-            && !defaultMethodCB.isSelected()){ //Java method was specified
-                if(!JaxWsUtils.isJavaIdentifier(text)){
-                    return;
-                }
-                if(ee.size() == 1){  //there is existing extensibility element
-                    PortCustomization pc = ee.get(0);
-                    JavaMethod jm = pc.getJavaMethod();
-                    if(jm == null){ //no JavaMethod
-                        try{
-                            jm = (JavaMethod) model.getFactory().create(pc, JAXWSQName.METHOD.getQName());
-                            model.startTransaction();
-                            jm.setName(text); //TODO Need to validate this before setting it
-                            pc.setJavaMethod(jm);
-                            wsdlDirty = true;
-                        } finally{
-                            model.endTransaction();
-                        }
-                    } else{ //javamethod already exists
-                        //reset the JavaMethod
+                    }else{  //there is no ExtensibilityElement
+                        //create extensibility element and add JavaMethod
+                        WSDLComponentFactory factory = model.getFactory();
+                        PortCustomization pc = (PortCustomization) factory.create(port,
+                                JAXWSQName.BINDINGS.getQName());
+                        JavaMethod jm = (JavaMethod) factory.create(pc, JAXWSQName.METHOD.getQName());
                         try{
                             model.startTransaction();
                             jm.setName(text);
+                            pc.setJavaMethod(jm);
+                            port.addExtensibilityElement(pc);
+                            
                             wsdlDirty = true;
                         }finally{
                             model.endTransaction();
                         }
                     }
-                }else{  //there is no ExtensibilityElement
-                    //create extensibility element and add JavaMethod
-                    WSDLComponentFactory factory = model.getFactory();
-                    PortCustomization pc = (PortCustomization) factory.create(port,
-                            JAXWSQName.BINDINGS.getQName());
-                    JavaMethod jm = (JavaMethod) factory.create(pc, JAXWSQName.METHOD.getQName());
-                    try{
-                        model.startTransaction();
-                        jm.setName(text);
-                        pc.setJavaMethod(jm);
-                        port.addExtensibilityElement(pc);
-                        
-                        wsdlDirty = true;
-                    }finally{
-                        model.endTransaction();
-                    }
-                }
-            } else{ //text is empty, use default
-                if(ee.size() == 1){
-                    PortCustomization pc = ee.get(0);
-                    JavaMethod jm = pc.getJavaMethod();
-                    if(jm != null){
-                        try{
-                            model.startTransaction();
-                            pc.removeJavaMethod(jm);
-                            //if there are no more children, remove PortCustomization
-                            if(pc.getChildren().size() == 0){
-                                port.removeExtensibilityElement(pc);
+                } else{ //text is empty, use default
+                    if(ee.size() == 1){
+                        PortCustomization pc = ee.get(0);
+                        JavaMethod jm = pc.getJavaMethod();
+                        if(jm != null){
+                            try{
+                                model.startTransaction();
+                                pc.removeJavaMethod(jm);
+                                //if there are no more children, remove PortCustomization
+                                if(pc.getChildren().size() == 0){
+                                    port.removeExtensibilityElement(pc);
+                                }
+                                wsdlDirty = true;
+                            }finally{
+                                model.endTransaction();
                             }
-                            wsdlDirty = true;
-                        }finally{
-                            model.endTransaction();
                         }
                     }
                 }
             }
+        }
+        catch(IllegalStateException ex){
+            Exceptions.attachSeverity(ex, Level.WARNING);
+            Exceptions.printStackTrace(ex);
         }
     }
     
