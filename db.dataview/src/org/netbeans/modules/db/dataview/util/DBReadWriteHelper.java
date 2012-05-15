@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -90,11 +91,23 @@ public class DBReadWriteHelper {
                 }
             }
             case Types.DATE: {
-                Date ddata = rs.getDate(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    return ddata;
+                try {
+                    Date ddata = rs.getDate(index);
+                    if (rs.wasNull()) {
+                        return null;
+                    } else {
+                        return ddata;
+                    }
+                } catch (SQLException e) {
+                    if (e.getMessage() != null
+                            && e.getMessage().endsWith(
+                            "not be represented as java.sql.Date")) { //NOI18N
+                        // mysql zero date value, see #183440
+                        return "0000-00-00";                            //NOI18N
+                    } else {
+                        Exceptions.printStackTrace(e);
+                        return null;
+                    }
                 }
             }
             case Types.TIMESTAMP:
@@ -376,7 +389,11 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.DATE:
-                    ps.setDate(index, DateType.convert (valueObj));
+                    if ("0000-00-00".equals(valueObj)) { //NOI18N
+                        ps.setString(index, (String) valueObj); // #183440
+                    } else {
+                        ps.setDate(index, DateType.convert(valueObj));
+                    }
                     break;
 
                 case Types.TIME:

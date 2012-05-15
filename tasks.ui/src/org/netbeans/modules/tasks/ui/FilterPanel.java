@@ -195,7 +195,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
         });
-        rbAllStatuses.setSelected(true);
+        
         groupStatus.add(rbAllStatuses);
         popup.add(rbAllStatuses);
 
@@ -214,6 +214,13 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
         groupStatus.add(rbOpenedStatus);
+        //TODO load filter settings
+        rbOpenedStatus.setSelected(true);
+        if (rbOpenedStatus.isSelected()) {
+            DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
+            DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
+            DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, false);
+        }
         popup.add(rbOpenedStatus);
 
         popup.addSeparator();

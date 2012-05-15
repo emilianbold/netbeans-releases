@@ -52,11 +52,8 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.extexecution.startup.StartupExtender;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
@@ -64,14 +61,16 @@ import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Skeleton of JFX Action Provider
@@ -88,6 +87,9 @@ public class JFXActionProvider implements ActionProvider {
             put(COMMAND_RUN,"run"); //NOI18N
             put(COMMAND_DEBUG,"debug"); //NOI18N
             put(COMMAND_PROFILE,"profile"); //NOI18N
+            put(COMMAND_RUN_SINGLE,"run-single"); //NOI18N
+            put(COMMAND_DEBUG_SINGLE,"debug-single"); //NOI18N
+            put(COMMAND_PROFILE_SINGLE,"profile-single"); //NOI18N
         }
     };
 
@@ -104,7 +106,27 @@ public class JFXActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        if (command != null) {
+        String c = command;
+        if (c != null) {
+            if (c.equals(COMMAND_RUN_SINGLE) || c.equals(COMMAND_DEBUG_SINGLE) || c.equals(COMMAND_PROFILE_SINGLE)) {
+                NotifyDescriptor d =
+                    new NotifyDescriptor(NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupported", // NOI18N
+                        ProjectUtils.getInformation(prj).getDisplayName()), 
+                        NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupportedDialogTitle"), // NOI18N
+                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
+                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
+                    return;
+                }
+                if(c.equals(COMMAND_RUN_SINGLE)) {
+                    c = COMMAND_RUN;
+                } else {
+                    if(c.equals(COMMAND_DEBUG_SINGLE)) {
+                        c = COMMAND_DEBUG;
+                    } else {
+                        c = COMMAND_PROFILE;
+                    }
+                }
+            }
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
             String runAs = JFXProjectUtils.getFXProjectRunAs(prj);
@@ -115,17 +137,17 @@ public class JFXActionProvider implements ActionProvider {
             try {
                 String target;
                 if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
-                    target = "jfxsa-".concat(command); //NOI18N
+                    target = "jfxsa-".concat(c); //NOI18N
                 } else {
                     if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                        target = "jfxws-".concat(command); //NOI18N
+                        target = "jfxws-".concat(c); //NOI18N
                     } else { //JFXProjectProperties.RunAsType.INBROWSER
-                        target = "jfxbe-".concat(command); //NOI18N
+                        target = "jfxbe-".concat(c); //NOI18N
                     }
                 }
                 
                 Properties props = new Properties();
-                collectStartupExtenderArgs(props, command, context);
+                collectStartupExtenderArgs(props, c, context);
                 
                 ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
                     @Override public void taskFinished(Task task) {
@@ -137,7 +159,7 @@ public class JFXActionProvider implements ActionProvider {
                 listener.finished(false);
             }
         } else {
-            throw new IllegalArgumentException(command);
+            throw new IllegalArgumentException(c);
         }
     }
 

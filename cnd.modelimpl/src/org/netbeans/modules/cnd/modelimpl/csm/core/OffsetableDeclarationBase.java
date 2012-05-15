@@ -44,13 +44,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -128,11 +132,6 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     @Override
     protected CsmUID<? extends CsmOffsetableDeclaration> createUID() {
         return UIDUtilities.<CsmOffsetableDeclaration>createDeclarationUID(this);
-    }
-
-    @Override
-    public boolean isValid() {
-        return CsmBaseUtilities.isValid(getContainingFileImpl(false));
     }
 
     protected static TemplateDescriptor createTemplateDescriptor(AST node, CsmFile file, CsmScope scope, StringBuilder classTemplateSuffix, boolean global) {

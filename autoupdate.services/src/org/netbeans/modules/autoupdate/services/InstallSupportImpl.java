@@ -726,7 +726,7 @@ public class InstallSupportImpl {
             return toUpdateImpl.getDownloadSize ();
         }
 
-        int c = 0;
+        int c;
         
         // download
         try {
@@ -761,9 +761,11 @@ public class InstallSupportImpl {
                                     }
                                     check.update(arr, 0, len);
                                     fos.write(arr, 0, len);
-                                    assert progressRunning;
-                                    if ((c += len) <= toUpdateImpl.getDownloadSize())
-                                        progress.progress(aggregateDownload + c);
+                                    if (progressRunning) {
+                                        if ((c += len) <= toUpdateImpl.getDownloadSize()) {
+                                            progress.progress(aggregateDownload + c);
+                                        }
+                                    }
                                 }
                             } finally {
                                 fos.close();

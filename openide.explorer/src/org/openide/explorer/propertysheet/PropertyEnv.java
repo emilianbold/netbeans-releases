@@ -51,7 +51,10 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.InplaceEditor.Factory;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -262,7 +265,16 @@ public class PropertyEnv {
             getChange().firePropertyChange(PROP_STATE, null, newState);
         } catch (PropertyVetoException pve) {
             // and notify the user that the change cannot happen
-            PropertyDialogManager.notify(pve);
+            String msg = Exceptions.findLocalizedMessage(pve);
+            if (msg == null) {
+                msg = pve.getLocalizedMessage();
+            }
+            if (msg != null) {
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            } else { // no message for the user, log the exception the standard way
+                PropertyDialogManager.notify(pve);
+            }
         }
     }
 

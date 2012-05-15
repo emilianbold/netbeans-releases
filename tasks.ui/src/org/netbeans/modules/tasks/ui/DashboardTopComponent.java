@@ -340,15 +340,16 @@ public final class DashboardTopComponent extends TopComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == filterTimer) {
+                DashboardViewer dashboard = DashboardViewer.getInstance();
                 filterTimer.stop();
                 if (!filterPanel.getFilterText().isEmpty()) {
                     DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
-                    int hits = DashboardViewer.getInstance().updateTaskFilter(displayTextTaskFilter, newTaskFilter);
+                    int hits = dashboard.updateTaskFilter(displayTextTaskFilter, newTaskFilter);
                     displayTextTaskFilter = newTaskFilter;
                     filterPanel.setHitsCount(hits);
                 } else {
                     if (displayTextTaskFilter != null) {
-                        DashboardViewer.getInstance().removeTaskFilter(displayTextTaskFilter, true);
+                        dashboard.removeTaskFilter(displayTextTaskFilter, true);
                         displayTextTaskFilter = null;
                     }
                     filterPanel.clear();
