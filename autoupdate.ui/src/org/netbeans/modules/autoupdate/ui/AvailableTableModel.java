@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,10 +54,10 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.autoupdate.ui.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -77,6 +77,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         setUnits(units);
     }
     
+    @Override
     public final void setUnits (List<UpdateUnit> units) {
         setData(Utilities.makeAvailableCategories (units, false));
     }
@@ -118,6 +119,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         }
     }
 
+    @Override
     public Object getValueAt(int row, int col) {
         Object res = null;
         if (isExpansionControlAtRow(row)) return "";//NOI18N
@@ -144,10 +146,12 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         return res;
     }
 
+    @Override
     public int getColumnCount() {
         return 4;
     }
     
+    @Override
     public Class getColumnClass(int c) {
         Class res = null;
         
@@ -219,17 +223,21 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         return minWidth;
     }
     
+    @Override
     public Type getType () {
         return UnitCategoryTableModel.Type.AVAILABLE;
     }
     
+    @Override
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isInstall = getColumnName(0).equals(columnIdentifier);
         return isInstall  ? false : true;
     }
 
+    @Override
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
         return new Comparator<Unit>(){
+            @Override
             public int compare(Unit o1, Unit o2) {
                 Unit unit1 = sortAscending ? o1 : o2;
                 Unit unit2 = sortAscending ? o2 : o1;
@@ -248,6 +256,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     }
 
     @SuppressWarnings ("unchecked")
+    @Override
     public int getDownloadSize () {
         int res = 0;
         assert container != null || containerCustom != null: "OperationContainer found when asking for download size.";
@@ -277,10 +286,12 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         return NbBundle.getMessage(PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_ToolTip");
     }
     
+    @Override
     public String getTabTitle() {
         return NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Available_Title");//NOI18N
     }
 
+    @Override
     public int getTabIndex() {
         return PluginManagerUI.INDEX_OF_AVAILABLE_TAB;
     }
@@ -290,6 +301,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         return true;//getRawItemCount() > 0;
     }
 
+    @Override
     public boolean needsRestart () {
         return false;
     }
