@@ -124,7 +124,7 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
         return new HelpCtx("org.netbeans.core.actions.ViewRuntimeTabAction"); // NOI18N
     }
 
-    private static class ServicesNode extends AbstractNode {
+    static class ServicesNode extends AbstractNode {
 
         ServicesNode() {
             super(Children.create(new ServicesChildren(), true));
@@ -159,7 +159,7 @@ public class ServicesTab extends TopComponent implements ExplorerManager.Provide
             }
 
             protected @Override Node createNodeForKey(Node key) {
-                return key;
+                return key.cloneNode();
             }
 
             protected boolean createKeys(List<Node> toPopulate) {

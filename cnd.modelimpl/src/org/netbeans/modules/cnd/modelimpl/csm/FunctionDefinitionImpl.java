@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -213,6 +212,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     private CsmFunction findDeclaration() {
+        if (!isValid()) {
+            return null;
+        }
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         Collection<? extends CsmDeclaration> prjDecls = getContainingFile().getProject().findDeclarations(uname);
         if (prjDecls.isEmpty()) {

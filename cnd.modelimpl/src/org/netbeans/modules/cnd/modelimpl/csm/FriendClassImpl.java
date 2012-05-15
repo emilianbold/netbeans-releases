@@ -243,6 +243,9 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     
     private CsmObject resolve() {
         CsmObject result = null;
+        if (!isValid()) {
+            return result;
+        }
         Resolver aResolver = ResolverFactory.createResolver(this);
         try {
             result = aResolver.resolve(nameParts, Resolver.CLASS);

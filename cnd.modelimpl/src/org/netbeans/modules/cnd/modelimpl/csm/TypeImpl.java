@@ -44,29 +44,44 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
-import java.util.*;
-
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -75,6 +90,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 
 /**
@@ -610,6 +626,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     
     protected CsmClassifier renderClassifier(CharSequence[] qname) {
         CsmClassifier result = null;
+        if (!isValid()) {
+            return result;
+        }
         Resolver resolver = ResolverFactory.createResolver(this);
         try {
             if (isInstantiationOrSpecialization()) {
@@ -762,7 +781,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return classifier;
     }
 
-    public void initClassifier(CsmClassifier classifier) {
+    public final void initClassifier(CsmClassifier classifier) {
         this.classifierUID = UIDCsmConverter.declarationToUID(classifier);
         assert (classifierUID != null || classifier == null);
     }

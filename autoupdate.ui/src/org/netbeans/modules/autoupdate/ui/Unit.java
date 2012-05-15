@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -125,13 +125,16 @@ public abstract class Unit {
     
     private Iterable<String> details () {
         Iterable<String> retval = new Iterable<String>(){
+            @Override
             public Iterator<String> iterator () {
                 return new Iterator<String>() {
                     int step = 0;
+                    @Override
                     public boolean hasNext () {
                         return step <= 7;
                     }
                     
+                    @Override
                     public String next () {
                         String next = null;
                         switch(step++) {
@@ -155,6 +158,7 @@ public abstract class Unit {
                         return next != null ? next : "";//NOI18N
                     }
                     
+                    @Override
                     public void remove () {
                         throw new UnsupportedOperationException ("Not supported yet.");
                     }
@@ -287,7 +291,7 @@ public abstract class Unit {
                 assert installEl != null : "Installed UpdateUnit " + unit + " has Installed UpdateElement.";
             }
             this.backupEl = unit.getBackup ();
-            OperationContainer<OperationSupport> container = null;
+            OperationContainer<OperationSupport> container;
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
                 container = Containers.forCustomUninstall ();
             } else {
@@ -310,9 +314,10 @@ public abstract class Unit {
             return activationAllowed;
         }
         
+        @Override
         public boolean isMarked () {
             boolean uninstallMarked;
-            OperationContainer container = null;
+            OperationContainer container;
             if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
                 container = Containers.forCustomUninstall ();
             } else {
@@ -324,10 +329,11 @@ public abstract class Unit {
             return deactivateMarked || uninstallMarked || activateMarked;
         }
         
+        @Override
         public void setMarked (boolean marked) {
             assert marked != isMarked ();
             if (isUninstallAllowed()) {
-                OperationContainer container = null;
+                OperationContainer container;
                 if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
                     container = Containers.forCustomUninstall ();
                 } else {
@@ -401,14 +407,17 @@ public abstract class Unit {
             return null;
         }
         
+        @Override
         public UpdateElement getRelevantElement () {
             return installEl;
         }
         
+        @Override
         public int getCompleteSize () {
             return -1;
         }
 
+        @Override
         public Type getModelType() {
             return UnitCategoryTableModel.Type.INSTALLED;
         }
@@ -480,6 +489,7 @@ public abstract class Unit {
             return size;
         }
 
+        @Override
         public String getSize () {
             return Utilities.getDownloadSizeAsString (getCompleteSize());
         }
@@ -510,8 +520,9 @@ public abstract class Unit {
             initState();
         }
         
+        @Override
         public boolean isMarked () {
-            OperationContainer container = null;
+            OperationContainer container;
             if (isNbms) {
                 container = Containers.forUpdateNbms ();
             } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
@@ -527,7 +538,7 @@ public abstract class Unit {
             if (marked == isMarked()) {
                 return;
             }
-            OperationContainer container = null;
+            OperationContainer container;
             if (isNbms) {
                 container = Containers.forUpdateNbms ();
             } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
@@ -577,10 +588,12 @@ public abstract class Unit {
             return Utilities.getDownloadSizeAsString (updateEl.getDownloadSize ());
         }
         
+        @Override
         public UpdateElement getRelevantElement () {
             return updateEl;
         }
         
+        @Override
         public int getCompleteSize () {
             if (size == -1) {
                 size = 0;
@@ -596,6 +609,7 @@ public abstract class Unit {
             return size;
         }
 
+        @Override
         public Type getModelType() {
             return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.UPDATE;            
         }
@@ -616,8 +630,9 @@ public abstract class Unit {
             initState();
         }
         
+        @Override
         public boolean isMarked () {
-            OperationContainer container = null;
+            OperationContainer container;
             if (isNbms) {
                 container = Containers.forAvailableNbms();
             } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
@@ -628,9 +643,10 @@ public abstract class Unit {
             return container.contains (updateEl);
         }
         
+        @Override
         public void setMarked (boolean marked) {
             assert marked != isMarked ();
-            OperationContainer container = null;
+            OperationContainer container;
             if (isNbms) {
                 container = Containers.forAvailableNbms();
             } else if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == updateUnit.getType ()) {
@@ -676,10 +692,12 @@ public abstract class Unit {
             return Utilities.getDownloadSizeAsString (updateEl.getDownloadSize ());
         }
         
+        @Override
         public UpdateElement getRelevantElement () {
             return updateEl;
         }
         
+        @Override
         public int getCompleteSize () {
             if (size == -1) {
                 size = 0;
@@ -695,6 +713,7 @@ public abstract class Unit {
             return size;
         }
 
+        @Override
         public Type getModelType() {
             return (isNbms) ? UnitCategoryTableModel.Type.LOCAL : UnitCategoryTableModel.Type.AVAILABLE;
         }        
