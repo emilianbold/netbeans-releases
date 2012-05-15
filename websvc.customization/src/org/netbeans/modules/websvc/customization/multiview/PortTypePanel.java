@@ -57,6 +57,8 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
@@ -72,6 +74,7 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.xml.multiview.Error;
 import org.openide.nodes.Node;
@@ -271,143 +274,149 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
         List <PortTypeCustomization> ee =
                 portType.getExtensibilityElements(PortTypeCustomization.class);
         CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
-        if(jComponent == javaClassText ||
-                jComponent == defaultJavaClassCB){
-            String text = javaClassText.getText();
-            if(text != null && !text.trim().equals("")
-            && !defaultJavaClassCB.isSelected()){
-                if(!JaxWsUtils.isJavaIdentifier(text)){
-                    return;
-                }
-                if(ee.size() == 1){  //there is existing extensibility element
-                    PortTypeCustomization pc = ee.get(0);
-                    JavaClass jc = pc.getJavaClass();
-                    if(jc == null){
-                        try{
-                            jc = factory.createJavaClass(model);
-                            model.startTransaction();
-                            jc.setName(text); //TODO Need to validate this before setting it
-                            pc.setJavaClass(jc);
-                            wsdlDirty = true;
-                        } finally{
-                                model.endTransaction();
+        try {
+            if(jComponent == javaClassText ||
+                    jComponent == defaultJavaClassCB){
+                String text = javaClassText.getText();
+                if(text != null && !text.trim().equals("")
+                && !defaultJavaClassCB.isSelected()){
+                    if(!JaxWsUtils.isJavaIdentifier(text)){
+                        return;
+                    }
+                    if(ee.size() == 1){  //there is existing extensibility element
+                        PortTypeCustomization pc = ee.get(0);
+                        JavaClass jc = pc.getJavaClass();
+                        if(jc == null){
+                            try{
+                                jc = factory.createJavaClass(model);
+                                model.startTransaction();
+                                jc.setName(text); //TODO Need to validate this before setting it
+                                pc.setJavaClass(jc);
+                                wsdlDirty = true;
+                            } finally{
+                                    model.endTransaction();
+                            }
+                        } else{ //javaclass already exists
+                            //reset the JavaClass
+                            try{
+                                model.startTransaction();
+                                jc.setName(text);
+                                wsdlDirty = true;
+                            } finally{
+                                    model.endTransaction();
+                            }
                         }
-                    } else{ //javaclass already exists
-                        //reset the JavaClass
+                    }else{  //there is no ExtensibilityElement
+                        //create extensibility element and add JavaClass
+                        PortTypeCustomization pc = factory.createPortTypeCustomization(model);
+                        JavaClass jc = factory.createJavaClass(model);
                         try{
                             model.startTransaction();
                             jc.setName(text);
+                            pc.setJavaClass(jc);
+                            portType.addExtensibilityElement(pc);
                             wsdlDirty = true;
                         } finally{
                                 model.endTransaction();
                         }
                     }
-                }else{  //there is no ExtensibilityElement
-                    //create extensibility element and add JavaClass
+                } else{ //no JavaClass specified, use default
+                    try{
+                        if(ee.size() == 1){
+                            PortTypeCustomization pc = ee.get(0);
+                            JavaClass jc = pc.getJavaClass();
+                            if(jc != null){
+                                model.startTransaction();
+                                pc.removeJavaClass(jc);
+                                if(pc.getChildren().size() == 0){
+                                    portType.removeExtensibilityElement(pc);
+                                }
+                                wsdlDirty = true;
+                            }
+                        }
+                    } finally{
+                            model.endTransaction();
+                    }
+                }
+            } else if(jComponent == enableWrapperStyleCB){
+                if(ee.size() == 1){ //there is an extensibility element
+                    PortTypeCustomization pc = ee.get(0);
+                    EnableWrapperStyle ews = pc.getEnableWrapperStyle();
+                    if(ews == null){ //there is no EnableWrapperStyle, create one
+                        try{
+                            model.startTransaction();
+                            ews = factory.createEnableWrapperStyle(model);
+                            ews.setEnabled(this.getEnableWrapperStyle());
+                            pc.setEnableWrapperStyle(ews);
+                            wsdlDirty = true;
+                        }finally{
+                                model.endTransaction();
+                        }
+                    } else{ //there is an EnableWrapperStyle, reset it
+                        try{
+                            model.startTransaction();
+                            ews.setEnabled(this.getEnableWrapperStyle());
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    }
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //wrapper style element
                     PortTypeCustomization pc = factory.createPortTypeCustomization(model);
-                    JavaClass jc = factory.createJavaClass(model);
+                    EnableWrapperStyle ews = factory.createEnableWrapperStyle(model);
                     try{
                         model.startTransaction();
-                        jc.setName(text);
-                        pc.setJavaClass(jc);
+                        ews.setEnabled(this.getEnableWrapperStyle());
+                        pc.setEnableWrapperStyle(ews);
                         portType.addExtensibilityElement(pc);
                         wsdlDirty = true;
                     } finally{
                             model.endTransaction();
                     }
                 }
-            } else{ //no JavaClass specified, use default
-                try{
-                    if(ee.size() == 1){
-                        PortTypeCustomization pc = ee.get(0);
-                        JavaClass jc = pc.getJavaClass();
-                        if(jc != null){
+            } else if(jComponent == this.enableAsyncMappingCB){
+                if(ee.size() == 1){ //there is an extensibility element
+                    PortTypeCustomization pc = ee.get(0);
+                    EnableAsyncMapping eam = pc.getEnableAsyncMapping();
+                    if(eam == null){ //there is no EnableAsyncMapping, create one
+                        try{
                             model.startTransaction();
-                            pc.removeJavaClass(jc);
-                            if(pc.getChildren().size() == 0){
-                                portType.removeExtensibilityElement(pc);
-                            }
+                            eam = factory.createEnableAsyncMapping(model);
+                            eam.setEnabled(this.getEnableAsyncMapping());
+                            pc.setEnableAsyncMapping(eam);
                             wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    } else{ //there is an EnableAsyncMapping, reset it
+                        try{
+                            model.startTransaction();
+                            eam.setEnabled(this.getEnableAsyncMapping());
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
                         }
                     }
-                } finally{
-                        model.endTransaction();
-                }
-            }
-        } else if(jComponent == enableWrapperStyleCB){
-            if(ee.size() == 1){ //there is an extensibility element
-                PortTypeCustomization pc = ee.get(0);
-                EnableWrapperStyle ews = pc.getEnableWrapperStyle();
-                if(ews == null){ //there is no EnableWrapperStyle, create one
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //enable asyncmapping element
+                    PortTypeCustomization pc =  factory.createPortTypeCustomization(model);
+                    EnableAsyncMapping eam = factory.createEnableAsyncMapping(model);
                     try{
                         model.startTransaction();
-                        ews = factory.createEnableWrapperStyle(model);
-                        ews.setEnabled(this.getEnableWrapperStyle());
-                        pc.setEnableWrapperStyle(ews);
-                        wsdlDirty = true;
-                    }finally{
-                            model.endTransaction();
-                    }
-                } else{ //there is an EnableWrapperStyle, reset it
-                    try{
-                        model.startTransaction();
-                        ews.setEnabled(this.getEnableWrapperStyle());
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //wrapper style element
-                PortTypeCustomization pc = factory.createPortTypeCustomization(model);
-                EnableWrapperStyle ews = factory.createEnableWrapperStyle(model);
-                try{
-                    model.startTransaction();
-                    ews.setEnabled(this.getEnableWrapperStyle());
-                    pc.setEnableWrapperStyle(ews);
-                    portType.addExtensibilityElement(pc);
-                    wsdlDirty = true;
-                } finally{
-                        model.endTransaction();
-                }
-            }
-        } else if(jComponent == this.enableAsyncMappingCB){
-            if(ee.size() == 1){ //there is an extensibility element
-                PortTypeCustomization pc = ee.get(0);
-                EnableAsyncMapping eam = pc.getEnableAsyncMapping();
-                if(eam == null){ //there is no EnableAsyncMapping, create one
-                    try{
-                        model.startTransaction();
-                        eam = factory.createEnableAsyncMapping(model);
                         eam.setEnabled(this.getEnableAsyncMapping());
                         pc.setEnableAsyncMapping(eam);
+                        portType.addExtensibilityElement(pc);
                         wsdlDirty = true;
                     } finally{
                             model.endTransaction();
                     }
-                } else{ //there is an EnableAsyncMapping, reset it
-                    try{
-                        model.startTransaction();
-                        eam.setEnabled(this.getEnableAsyncMapping());
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //enable asyncmapping element
-                PortTypeCustomization pc =  factory.createPortTypeCustomization(model);
-                EnableAsyncMapping eam = factory.createEnableAsyncMapping(model);
-                try{
-                    model.startTransaction();
-                    eam.setEnabled(this.getEnableAsyncMapping());
-                    pc.setEnableAsyncMapping(eam);
-                    portType.addExtensibilityElement(pc);
-                    wsdlDirty = true;
-                } finally{
-                        model.endTransaction();
                 }
             }
+        }
+        catch (IllegalStateException ex) {
+            Exceptions.attachSeverity(ex, Level.WARNING);
+            Exceptions.printStackTrace(ex);
         }
     }
     

@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+
 import javax.swing.AbstractAction;
 import javax.swing.JComboBox;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
@@ -58,6 +60,7 @@ import org.netbeans.api.visual.widget.ComponentWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.rest.wadl.model.*;
 import org.netbeans.modules.websvc.rest.wadl.design.view.actions.RemoveMethodAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -172,7 +175,13 @@ public class MethodWidget extends WadlComponentWidget {
                 getModel().startTransaction();
                 setMethodName(MethodType.GET.value().toUpperCase());
             } finally {
-                getModel().endTransaction();
+                try {
+                    getModel().endTransaction();
+                }
+                catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                            Level.WARNING));
+                }
             }
         }
         cb.setSelectedItem(getMethodName());
@@ -183,7 +192,13 @@ public class MethodWidget extends WadlComponentWidget {
                     getModel().startTransaction();
                     setMethodName((String) tf.getSelectedItem());
                 } finally {
-                    getModel().endTransaction();
+                    try {
+                        getModel().endTransaction();
+                    }
+                    catch (IllegalStateException ex) {
+                        Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                                Level.WARNING));
+                    }
                 }
             }
         });
