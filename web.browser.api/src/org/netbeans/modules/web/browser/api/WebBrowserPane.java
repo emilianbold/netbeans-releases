@@ -129,7 +129,12 @@ public final class WebBrowserPane {
             // below constructor sets some TopComponent properties and needs
             // to be therefore called in AWT thread:
             topComponent = new HtmlBrowserComponent(descriptor.getFactory(), 
-                    false, false);
+                false, false) {
+                    @Override
+                    protected void componentClosed() {
+                        topComponent = null;
+                    }
+                };
         }
         return topComponent;
     }
