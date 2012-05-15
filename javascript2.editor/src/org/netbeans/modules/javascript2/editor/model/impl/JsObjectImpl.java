@@ -61,7 +61,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     private String documentation;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), false,  offsetRange, EnumSet.of(Modifier.PUBLIC));
+        super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
         this.properties = new HashMap<String, JsObject>();
         this.declarationName = name;
         this.parent = parent;
