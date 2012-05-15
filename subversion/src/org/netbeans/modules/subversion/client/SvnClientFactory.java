@@ -90,6 +90,7 @@ public class SvnClientFactory {
     public static final String FACTORY_TYPE_JAVAHL = "javahl"; //NOI18N
     public static final String FACTORY_TYPE_SVNKIT = "svnkit"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_JAVAHL; // javahl is default
+    private static boolean cli16Version;
 
     public enum ConnectionType {
         javahl,
@@ -134,6 +135,10 @@ public class SvnClientFactory {
         if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.cli;
+    }
+
+    public static boolean isCLIOldFormat () {
+        return cli16Version;
     }
 
     public static boolean isJavaHl() {
@@ -477,7 +482,7 @@ public class SvnClientFactory {
         CommandlineClient cc = new CommandlineClient();
         try {
             setConfigDir(cc);
-            cc.checkSupportedVersion();
+            cli16Version = cc.checkSupportedVersion();
         } catch (SVNClientException e) {
             LOG.log(Level.FINE, "checking version", e);
             throw e;

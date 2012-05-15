@@ -29,12 +29,22 @@
 <p>In the Compiling page, you can set the following properties:
 </p>
 <ul>
-	<li><b>Copy Static Resources on Save.</b> When selected, files that do not
-        need to be compiled are copied when saved and Deploy on Save is enabled.
-        When deselected, the files are not redeployed as part of the Deploy on Save 
-        command. </li>
-        <li><b>Compile on Save</b>. If selected, files are compiled when you save them.
-            This option saves you time when you run or debug your application in the IDE.</li>
+	<li><b>Copy Static Resources on Save.</b> This option enables you to choose
+            how the IDE handles non-Java files when the files are modified and saved.
+            When selected, the files are automatically copied to the build directory of the
+            project when the files are saved.
+            When not selected the non-Java files are not copied when you save the files.
+            You can invoke the Build command to copy the files to the build directory.
+            This option is automatically enabled if Deploy on Save is enabled.</li>
+        <li><b>Compile on Save</b>. This option enables you to choose
+            how the IDE handles Java files when the files are modified and saved.
+            When selected, Java files are compiled when you save them
+            and generated class files are stored in the build directory of the project.
+            When not selected the Java files are not compiled when you save the files.
+            You can invoke the Build command to compile the files.
+            This option is automatically enabled if Deploy on Save is enabled.
+            This option saves you time when you run or debug your application in the IDE.
+        </li>
         <li><b>Generate Debugging Info</b>. If selected, the compiled classes will
             include information necessary for stopping at breakpoints and stepping through
             the application with the debugger.</li>

@@ -1240,6 +1240,17 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitApply(JCMethodInvocation tree) {
         int prevPrec = this.prec;
         this.prec = TreeInfo.postfixPrec;
+        printMethodSelect(tree);
+        this.prec = prevPrec;
+	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
+        if (cs.spaceWithinMethodCallParens() && tree.args.nonEmpty())
+            print(' ');
+	wrapTrees(tree.args, cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs()
+                ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+	print(cs.spaceWithinMethodCallParens() && tree.args.nonEmpty() ? " )" : ")");
+    }
+
+    public void printMethodSelect(JCMethodInvocation tree) {
         if (tree.meth.getTag() == JCTree.SELECT) {
             JCFieldAccess left = (JCFieldAccess)tree.meth;
             printExpr(left.selected);
@@ -1268,15 +1279,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 printTypeArguments(tree.typeargs);
             printExpr(tree.meth);
         }
-        this.prec = prevPrec;
-	print(cs.spaceBeforeMethodCallParen() ? " (" : "(");
-        if (cs.spaceWithinMethodCallParens() && tree.args.nonEmpty())
-            print(' ');
-	wrapTrees(tree.args, cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs()
-                ? out.col : out.leftMargin + cs.getContinuationIndentSize());
-	print(cs.spaceWithinMethodCallParens() && tree.args.nonEmpty() ? " )" : ")");
     }
-
     @Override
     public void visitNewClass(JCNewClass tree) {
 	if (tree.encl != null) {
@@ -2431,9 +2434,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 JCMethodInvocation mit = (JCMethodInvocation) est.getExpression();
                 if (mit.meth.getKind() == Kind.IDENTIFIER) {
                     JCIdent it = (JCIdent) mit.getMethodSelect();
-                    if (it.name == names._super && !diffContext.notSyntheticTrees.contains(tree)) {
-                        return TreeInfo.getEndPos(tree, diffContext.origUnit.endPositions) < 0 && tree.pos != 0 && tree.pos != NOPOS;
-                    }
+                    return it.name == names._super && diffContext.syntheticTrees.contains(tree);
                 }
             }
         }

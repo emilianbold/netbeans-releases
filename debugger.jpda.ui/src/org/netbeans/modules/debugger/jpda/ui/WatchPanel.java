@@ -368,26 +368,29 @@ public class WatchPanel {
             return;
         }
         //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
-        Runnable bindComponentToDocument = new Runnable() {
-            public void run() {
-                String origText = editorPane.getText();
-                DialogBinding.bindComponentToFile(file, (line >= 0) ? line : 0, 0, 0, editorPane);
-                Document editPaneDoc = editorPane.getDocument();
-                editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
-                editPaneDoc.putProperty(WrapperFactory.class,
-                        debugger != null ? new MyWrapperFactory(debugger, file) : null);
-                editorPane.setText(origText);
-            }
-        };
-        if (EventQueue.isDispatchThread()) {
-            bindComponentToDocument.run();
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(bindComponentToDocument);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
+        // Do the binding for Java files only:
+        if ("text/x-java".equals(file.getMIMEType())) { // NOI18N
+            Runnable bindComponentToDocument = new Runnable() {
+                public void run() {
+                    String origText = editorPane.getText();
+                    DialogBinding.bindComponentToFile(file, (line >= 0) ? line : 0, 0, 0, editorPane);
+                    Document editPaneDoc = editorPane.getDocument();
+                    editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
+                    editPaneDoc.putProperty(WrapperFactory.class,
+                            debugger != null ? new MyWrapperFactory(debugger, file) : null);
+                    editorPane.setText(origText);
+                }
+            };
+            if (EventQueue.isDispatchThread()) {
+                bindComponentToDocument.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(bindComponentToDocument);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         setupUI(editorPane);

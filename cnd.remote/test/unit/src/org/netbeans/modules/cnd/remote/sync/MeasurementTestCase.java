@@ -42,14 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,11 +52,14 @@ import junit.framework.TestResult;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test for ScpSyncWorker
@@ -100,7 +96,6 @@ public class MeasurementTestCase extends RemoteTestBase {
 
    
     private void do_test(boolean removeFileStampsStorage) throws Exception {
-        File privProjectStorageDir = null;
         try {
             ExecutionEnvironment execEnv = getTestExecutionEnvironment();
             String dst = getDestDir(execEnv);
@@ -108,14 +103,16 @@ public class MeasurementTestCase extends RemoteTestBase {
             PrintWriter err = new PrintWriter(System.err);
             System.out.printf("testUploadFile: %s to %s:%s\n", srcDir.getAbsolutePath(), execEnv.getDisplayName(), dst);
 
-            File tmp = new File(System.getProperty("java.io.tmpdir"));
-            tmp = new File(tmp, System.getProperty("user.name"));
-            tmp = new File(tmp, "testdata");
-            privProjectStorageDir = new File(tmp, srcDir.getName() + "-nbproject-private");
+            FileObject tmp = FileUtil.toFileObject(FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"))));
+            tmp = FileUtil.createFolder(tmp, System.getProperty("user.name"));
+            tmp = FileUtil.createFolder(tmp, "testdata");
+            FileObject privProjectStorageDir = FileUtil.createFolder(tmp, srcDir.getName() + "-nbproject-private");
             //removeDirectoryContent(privProjectStorageDir);
 
-            ZipSyncWorker worker = new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, srcDir);
+            ZipSyncWorker worker = new ZipSyncWorker(execEnv, out, err, privProjectStorageDir,
+                    FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(srcDir))));
             long time = System.currentTimeMillis();
+
             worker.startup(Collections.<String, String>emptyMap());
             worker.shutdown();
             time = System.currentTimeMillis() - time;

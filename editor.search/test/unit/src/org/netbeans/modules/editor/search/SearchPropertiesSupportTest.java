@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.search;
 
-package org.netbeans.modules.java.source.parsing;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.netbeans.modules.editor.search.SearchPropertiesSupport.SearchProperties;
 
-import java.net.URL;
-import javax.tools.JavaFileManager;
-import org.netbeans.api.annotations.common.NonNull;
-
-/**
- * TODO: Probably not needed in transactinal cache and
- * can be fully replaced by ProcessorGenerated.
- * 
- * @author Tomas Zezula
- */
-public interface GeneratedFileMarker {
-
-    enum Type {
-        SOURCE,
-        RESOURCE
+public class SearchPropertiesSupportTest {
+    
+    public SearchPropertiesSupportTest() {
     }
-
-    void mark (@NonNull javax.tools.FileObject generated, @NonNull Type type);
-    void finished(@NonNull URL source, @NonNull JavaFileManager owner);
-    boolean allowsWrite();
+    
+    @Test
+    public void testSearchReplacePropertiesDifference() {
+        SearchProperties searchProperties = SearchPropertiesSupport.getSearchProperties();
+        assertFalse((Boolean) searchProperties.getProperty(EditorFindSupport.FIND_MATCH_CASE));
+        searchProperties = SearchPropertiesSupport.getReplaceProperties();
+        assertTrue((Boolean) searchProperties.getProperty(EditorFindSupport.FIND_MATCH_CASE));
+    }
 }

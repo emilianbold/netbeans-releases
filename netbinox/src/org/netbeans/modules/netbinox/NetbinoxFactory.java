@@ -135,11 +135,16 @@ public class NetbinoxFactory implements FrameworkFactory {
         return ia;
     }
 
-    private static int findCommonPrefix(String s1, String s2) {
+    static int findCommonPrefix(String s1, String s2) {
         int len = Math.min(s1.length(), s2.length());
+        int max = 0;
         for (int i = 0; i < len; i++) {
-            if (s1.charAt(i) != s2.charAt(i)) {
-                return i;
+            final char ch = s1.charAt(i);
+            if (ch != s2.charAt(i)) {
+                return max;
+            }
+            if (ch == '/' || ch == File.separatorChar) {
+                max = i + 1;
             }
         }
         return len;

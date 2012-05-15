@@ -39,41 +39,60 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.openide.text;
+package org.netbeans.modules.editor.search;
 
-import java.util.Collection;
-import org.openide.cookies.EditorCookie;
-import org.openide.text.NbDocument;
+import java.util.Map;
+import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 
-/**
- * * TODO: will be removed after API review
- */
-public class NbDocumentRefactoringHack {
+public class SearchPropertiesSupport {
+    
+    private static SearchProperties searchProps;
+    private static SearchProperties replaceProps;
 
-    public static abstract class APIAccessor {
+    private SearchPropertiesSupport() {
+    }
 
-        static {
-            Class c = NbDocument.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+    public static SearchProperties getSearchProperties() {
+        if (searchProps == null) {
+            searchProps = createDefaultSearchProperties();
         }
+        return searchProps;
+    }
+    
+    public static SearchProperties getReplaceProperties() {
+        if (replaceProps == null) {
+            replaceProps = createDefaultReplaceProperties();
+        }
+        return replaceProps;
+    }
+    
+    private static SearchProperties createDefaultSearchProperties() {
+        Map<String, Object> props = EditorFindSupport.getInstance().createDefaultFindProperties();
+        return new SearchProperties(props);
+    }
 
+    private static SearchProperties createDefaultReplaceProperties() {
+        Map<String, Object> props = EditorFindSupport.getInstance().createDefaultFindProperties();
+        props.put(EditorFindSupport.FIND_MATCH_CASE, Boolean.TRUE);
+        return new SearchProperties(props);
+    }
+    
+    public static class SearchProperties {
+        private Map<String, Object> props;
+        private SearchProperties(Map<String, Object> props) {            
+            this.props = props;
+        }
         
-        public static APIAccessor DEFAULT;
-
-        public abstract <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type);
-
-        public abstract <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type);
-    }
-
-    public static <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
-        return APIAccessor.DEFAULT.getEditToBeUndoneOfType(ec, type);
-    }
-
-    public static <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
-        return APIAccessor.DEFAULT.getEditToBeRedoneOfType(ec, type);
+        public void setProperty(String editorFindSupportProperty, Object value) {
+            props.put(editorFindSupportProperty, value);
+        }
+        
+        public Object getProperty(String editorFindSupportProperty) {
+            return props.get(editorFindSupportProperty);
+        }
+        
+        public Map<String, Object> getProperties() {
+            return props;
+        }
     }
 }

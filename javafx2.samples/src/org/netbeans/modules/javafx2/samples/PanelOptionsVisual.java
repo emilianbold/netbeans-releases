@@ -55,11 +55,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
 
 
 /**
@@ -74,6 +70,7 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
     private volatile RequestProcessor.Task task;
     private DetectPlatformTask detectPlatformTask;
+    boolean detectPlatformTaskPerformed = false;
     
     private ComboBoxModel platformsModel;
     private ListCellRenderer platformsCellRenderer;
@@ -194,8 +191,9 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, detectPlatformTaskPerformed ?
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform") : // NOI18N
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.creatingDefaultFXPlatform") ); // NOI18N
             return false;
         }
         return true;
@@ -240,6 +238,8 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
 
                     // select javafx platform
                     selectJavaFXEnabledPlatform();
+                    detectPlatformTaskPerformed = true;
+                    panel.fireChangeEvent();
                 }
             }
         });

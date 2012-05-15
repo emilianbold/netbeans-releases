@@ -160,7 +160,16 @@ public final class JavaIndex {
                     storeProperties(root, p);
                 }
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue + " checkOnly: " + checkOnly); //NOI18N
+                    LOG.log (
+                        Level.FINE,
+                        "ensureAttributeValue attr: {0} current: {1} new: {2} checkOnly: {3}",  //NOI18N
+                        new Object[]{
+                            attributeName,
+                            current,
+                            attributeValue,
+                            checkOnly
+                        }
+                    );
                 }
                 return true;
             } else {
@@ -179,7 +188,15 @@ public final class JavaIndex {
             storeProperties(root, p);
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue + " checkOnly: " + checkOnly); //NOI18N
+            LOG.log (
+                Level.FINE,
+                "ensureAttributeValue attr: {0} current: {1} new: {2} checkOnly: {3}", //NOI18N
+                new Object[]{
+                    attributeName,
+                    current,
+                    attributeValue,
+                    checkOnly
+                });
         }
         return true;
     }
@@ -200,47 +217,48 @@ public final class JavaIndex {
     }
 
     private static Properties loadProperties(URL root) throws IOException {
-        Properties result;
         synchronized (cacheLock) {
+            Properties result;
             if (cacheRoot != null && cacheRoot.equals(root)) {
                 result = cacheValue == null ? null : cacheValue.get();
                 if (result != null) {
                     return result;
                 }
             }
-        }
-        File f = getAttributeFile(root);
-        result = new Properties();
-        if (!f.exists())
-            return result;
-        InputStream in = new BufferedInputStream(new FileInputStream(f));
-        try {
-            result.load(in);
-        } catch (IllegalArgumentException iae) {
-            //Issue #138704: Invalid unicode encoding in attribute file.
-            //Return newly constructed Properties, the result
-            //may already contain some pairs.
-            LOG.warning("Broken attribute file: " + f.getAbsolutePath()); //NOI18N
+            final File f = getAttributeFile(root);
             result = new Properties();
-        } finally {
-            in.close();
-        }
-        synchronized (cacheLock) {
+            if (!f.exists())
+                return result;
+            final InputStream in = new BufferedInputStream(new FileInputStream(f));
+            try {
+                result.load(in);
+            } catch (IllegalArgumentException iae) {
+                //Issue #138704: Invalid unicode encoding in attribute file.
+                //Return newly constructed Properties, the result
+                //may already contain some pairs.
+                LOG.log(
+                    Level.WARNING,
+                    "Broken attribute file: {0}",   //NOI18N
+                    f.getAbsolutePath());
+                result = new Properties();
+            } finally {
+                in.close();
+            }
             cacheRoot = root;
-            cacheValue = new SoftReference<Properties>(result);
+            cacheValue = new SoftReference<Properties>(result);        
+            return result;
         }
-        return result;
     }
 
     private static void storeProperties(URL root, Properties p) throws IOException {
-        File f = getAttributeFile(root);
-        OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
-        try {
-            p.store(out, ""); //NOI18N
-        } finally {
-            out.close();
-        }
         synchronized (cacheLock) {
+            final File f = getAttributeFile(root);
+            final OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
+            try {
+                p.store(out, ""); //NOI18N
+            } finally {
+                out.close();
+            }
             cacheRoot = root;
             cacheValue = new SoftReference<Properties>(p);
         }

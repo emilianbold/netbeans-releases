@@ -222,7 +222,7 @@ public class JSPELPlugin implements ELPlugin {
 
         try {
             FileObject tldFile = null;
-            if (tldPath.endsWith(jarPath)) {
+            if (tldPath != null && tldPath.endsWith(jarPath)) {
                 // tld is not inside any .JAR file
                 tldFile = FileUtil.toFileObject(new File(tldPath));
             } else {

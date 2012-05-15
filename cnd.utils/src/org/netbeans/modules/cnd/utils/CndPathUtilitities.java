@@ -776,4 +776,12 @@ public class CndPathUtilitities {
         }
         return string;
     }
+    
+    public static String expandAllMacroses(String string, String macro, String value) {
+        while (string.indexOf(macro) > -1) {
+            string = expandMacro(string, macro, value);
+        }
+        return string;
+    }
+    
 }

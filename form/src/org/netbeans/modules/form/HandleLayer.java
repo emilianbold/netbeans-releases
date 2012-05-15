@@ -417,13 +417,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
         if (layoutDesigner != null) {
             Component topComp = formDesigner.getTopDesignComponentView();
-            Point convertPoint = convertPointFromComponent(0, 0, topComp);
-            g.translate(convertPoint.x, convertPoint.y);
-            Color oldColor = g.getColor();
-            g.setColor(formSettings.getGuidingLineColor());
-            layoutDesigner.paintSelection(g);
-            g.setColor(oldColor);
-            g.translate(-convertPoint.x, -convertPoint.y);
+            if (topComp != null) {
+                Point convertPoint = convertPointFromComponent(0, 0, topComp);
+                g.translate(convertPoint.x, convertPoint.y);
+                Color oldColor = g.getColor();
+                g.setColor(formSettings.getGuidingLineColor());
+                layoutDesigner.paintSelection(g);
+                g.setColor(oldColor);
+                g.translate(-convertPoint.x, -convertPoint.y);
+            }
         }
     }
 
@@ -2097,14 +2099,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
-                if ((item.getComponentClassName().indexOf('.') == -1) // Issue 79573
-                    && (!FormJavaSource.isInDefaultPackage(getFormModel()))) {
-                    String message = FormUtils.getBundleString("MSG_DefaultPackageBean"); // NOI18N
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    formDesigner.toggleSelectionMode();
-                    return;
-                }
                 draggedComponent = new NewComponentDrag( item );
             }
             draggedComponent.move(e);

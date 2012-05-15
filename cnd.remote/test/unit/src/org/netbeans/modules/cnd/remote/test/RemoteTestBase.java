@@ -70,12 +70,15 @@ import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.windows.IOProvider;
 
 /**
@@ -302,5 +305,9 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         if (value != null && value.length() > 0) {
             System.setProperty(varName, value);
         }
+    }
+
+    protected static FileSystem getLocalFileSystem() {
+        return FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
     }
 }

@@ -52,9 +52,7 @@ import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
-import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionLayers;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
@@ -65,8 +63,6 @@ import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-
-
 
 /**
  * This class helps with Balloon evaluation and is associated with editor
@@ -434,7 +430,9 @@ public final class EvalAnnotation extends Annotation {
         if (lastAnnotation != null) {
             lastAnnotation.firePropertyChange(PROP_SHORT_DESCRIPTION,
                     null, tipText);
-            lastAnnotation = null;
+            // See bug 207390
+            // If we make it null futher notifications will not appear
+            //lastAnnotation = null;
         }
     }
 }

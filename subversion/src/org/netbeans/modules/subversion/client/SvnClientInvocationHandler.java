@@ -82,13 +82,15 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_STATUS = "getStatus"; // NOI18N
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
+    private static final String DISPOSE_METHOD = "dispose"; //NOI18N
     private static final HashSet<String> PARALLELIZABLE_METHODS = new HashSet<String>(Arrays.asList(new String[] {
         "setConfigDirectory",                                           //NOI18N
         "getSvnUrl",                                                    //NOI18N
         "addNotifyListener",                                            //NOI18N
         "getIgnoredPatterns",                                           //NOI18N
         "getStatus",                                                    //NOI18N
-        "removeNotifyListener"                                          //NOI18N
+        "removeNotifyListener",                                         //NOI18N
+        DISPOSE_METHOD
     }));
     
     private static final Object semaphor = new Object();
@@ -100,6 +102,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private final int handledExceptions;
     private static boolean metricsAlreadyLogged = false;
     private final ConnectionType connectionType;
+    private volatile boolean disposed;
     
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
@@ -171,6 +174,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     }
                 }
             };
+            if (DISPOSE_METHOD.equals(method.getName())) {
+                disposed = true;
+            }
             if (fsReadOnlyAction) {
                 return c.call();
             } else {
@@ -391,6 +397,18 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, connectionType);
         eh.setMethod(methodName);
         return eh.handleException();        
+    }
+
+    @Override
+    protected void finalize () throws Throwable {
+        if (!disposed) {
+            try {
+                adapter.dispose();
+            } catch (Throwable t) {
+                // 
+            }
+        }
+        super.finalize();
     }
     
 }

@@ -24,7 +24,7 @@
             
         <p>You can use the validation constraints that are defined as part of the
             Bean Validation API or create custom constraints by
-            specifying any validation constraints for the field or property 
+            specifying the constraints for the field or property 
             and the annotation that is associated with the custom constraints.
             You can specify the constraints in the validation constraint class
             or create a validator class for the constraint.</p>
@@ -39,7 +39,7 @@
         
         <p>You use the New Validation Constraint wizard to generate a custom validation constraint class.
         You can select the Generate Validator Class option in the wizard if you want
-        the IDE to also generate a validator class for the validation constraint.</p>
+        the IDE to also generate a constraint validator class for the validation constraint.</p>
         
         <p>You open the wizard by opening the New File wizard and selecting Validation Constraint
             in the Bean Validation category.</p>
@@ -48,23 +48,23 @@
         <p>In the Name and Location page you set the following properties:</p>
 
         <ul>
-            <li><strong>Class Name:</strong> Specifies the name of validator constraint class.</li>
+            <li><strong>Class Name:</strong> Specifies the name of the constraint class.</li>
 
-            <li><strong>Project:</strong> Specifies the project in which the validator constraint
+            <li><strong>Project:</strong> Specifies the project in which the constraint class
                 will be located.</li>
 
-            <li><strong>Location:</strong> Specifies a folder to house the validator constraint.</li>
+            <li><strong>Location:</strong> Specifies a folder to house the constraint class.</li>
 
             <li><strong>Package:</strong> Specifies a package within the location to house the
-                validator constraint.</li>
+                constraint class.</li>
 
-            <li><strong>Created File:</strong> Displays the full path to the new validator constraint.</li>
+            <li><strong>Created File:</strong> Displays the full path to the new constraint class.</li>
 
-            <li><strong>Generate Validator Class.</strong> Select this option if you want the IDE to generate
-                a validator class. 
+            <li><strong>Generate Validator Class.</strong> Select this option if you want the IDE to also generate
+                a constraint validator class. 
                 <p>If you select this option you need to supply the following details for the generated class.</p>
                 <ul>
-                    <li><b>Validator Class Name.</b> Type the name of the validator class.</li>
+                    <li><b>Validator Class Name.</b> Type the name of the constraint validator class.</li>
                     <li><b>Java type to Validate.</b> Type the Java type that is to be validated.</li>
                 </ul>
             </li>
@@ -76,6 +76,8 @@
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../create-managed-bean.html">Creating Managed Beans</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/persistence/general/persistence_entityclasses.html">Creating an Entity Class</a></dd>
             <dd><a href="../about.html">About JavaServer Faces Framework Support</a></dd>
             <dd><a href="../../about_framework.html">About Web Application Frameworks</a></dd>
         </dl>

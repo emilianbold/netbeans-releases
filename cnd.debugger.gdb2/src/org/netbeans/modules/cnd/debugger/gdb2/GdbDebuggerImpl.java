@@ -2174,6 +2174,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 // do nothing
                             }
                         }
+                    } else if (value_string.startsWith("@0x")) { //NOI18N
+                        // See bug 206736 - tooltip for reference-based variable shows address instead of value
+                        balloonEvaluate(-1, "*&" + expr); //NOI18N
+                        finish();
+                        return;
                     } else {
                         value_string = ValuePresenter.getValue(value_string);
                     }

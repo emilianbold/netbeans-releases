@@ -122,30 +122,13 @@ public class InsertTabAction extends BaseAction {
             assert caretOffset > rowStart;
             final String indentString = baseDocument.getText(rowStart, caretOffset - rowStart);
             if (indentString.contains(TAB_CHARACTER)) {
-                final String newIndentString = indentString.replace(TAB_CHARACTER, getIndentString(getIndentSize()));
+                final String newIndentString = indentString.replace(TAB_CHARACTER, IndentUtils.getIndentString(IndentUtils.getIndentSize()));
                 baseDocument.replace(rowStart, caretOffset - rowStart, newIndentString, null);
             }
         }
 
         private static boolean shouldBeReplaced(final int firstNonWhiteCharOffset, final int caretOffset) {
             return firstNonWhiteCharOffset >= caretOffset || firstNonWhiteCharOffset == -1;
-        }
-
-        private static int getIndentSize() {
-            Preferences prefs = MimeLookup.getLookup(MimePath.get(YamlTokenId.YAML_MIME_TYPE)).lookup(Preferences.class);
-            return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
-        }
-
-        public static void indent(final StringBuilder sb, final int indent) {
-            for (int i = 0; i < indent; i++) {
-                sb.append(' ');
-            }
-        }
-
-        public static String getIndentString(final int indent) {
-            StringBuilder sb = new StringBuilder(indent);
-            indent(sb, indent);
-            return sb.toString();
         }
 
     }

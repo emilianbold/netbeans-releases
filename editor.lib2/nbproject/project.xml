@@ -189,6 +189,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.api.editor</package>
                 <package>org.netbeans.api.editor.document</package>
                 <package>org.netbeans.spi.editor.codegen</package>
+                <package>org.netbeans.spi.editor.document</package>
                 <package>org.netbeans.spi.editor.highlighting</package>
                 <package>org.netbeans.spi.editor.highlighting.support</package>
                 <package>org.netbeans.spi.editor.typinghooks</package>

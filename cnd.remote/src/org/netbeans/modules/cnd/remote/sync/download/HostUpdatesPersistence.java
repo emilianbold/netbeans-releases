@@ -44,33 +44,28 @@
 
 package org.netbeans.modules.cnd.remote.sync.download;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Properties;
 import org.netbeans.api.annotations.common.SuppressWarnings;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 class HostUpdatesPersistence {
 
     private final Properties data;
-    private final File dataFile;
+    private final FileObject dataFile;
     private static final String VERSION = "1.0"; // NOI18N
     // NOI18N
     private static final String VERSION_KEY = "____VERSION"; // NOI18N
 
-    public HostUpdatesPersistence(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+    public HostUpdatesPersistence(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
         super();
         data = new Properties();
         String dataFileName = "downloads-" + executionEnvironment.getHost() + '-' + executionEnvironment.getUser() + '-' + executionEnvironment.getSSHPort(); // NOI18N
         //NOI18N
-        dataFile = CndFileUtils.createLocalFile(privProjectStorageDir, dataFileName);
+        dataFile = FileUtil.createData(privProjectStorageDir, dataFileName);
         try {
             load();
             if (!VERSION.equals(data.get(VERSION_KEY))) {
@@ -83,8 +78,8 @@ class HostUpdatesPersistence {
     }
 
     private void load() throws IOException {
-        if (dataFile.exists()) {
-            final FileInputStream is = new FileInputStream(dataFile);
+        if (dataFile.isValid()) {
+            InputStream is = dataFile.getInputStream();
             BufferedInputStream bs = new BufferedInputStream(is);
             try {
                 data.load(bs);
@@ -96,21 +91,17 @@ class HostUpdatesPersistence {
 
     @SuppressWarnings(value = "RV")
     public void store() {
-        File dir = dataFile.getParentFile();
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                System.err.printf("Error creating directory %s\n", dir.getAbsolutePath());
-            }
-        }
         try {
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
+            OutputStream os = new BufferedOutputStream(dataFile.getOutputStream());
             data.setProperty(VERSION_KEY, VERSION);
             data.store(os, null);
             os.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            if (!dataFile.delete()) {
-                System.err.printf("Error deleting file %s\n", dataFile.getAbsolutePath());
+            try {
+                dataFile.delete();
+            } catch (IOException ex2) {
+                System.err.printf("Error deleting file %s\n", dataFile.getPath());
             }
         }
     }
