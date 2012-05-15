@@ -776,11 +776,11 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
-        return (appliedTaskFilters.isEmpty() || !categoryNode.getFilteredTaskNodes().isEmpty()) && appliedCategoryFilters.isInFilter(categoryNode);
+        return appliedCategoryFilters.isInFilter(categoryNode);
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
-        return (appliedTaskFilters.isEmpty() || !repositoryNode.getFilteredQueryNodes().isEmpty()) && appliedRepositoryFilters.isInFilter(repositoryNode);
+        return appliedRepositoryFilters.isInFilter(repositoryNode);
     }
 
     private void removeNodesFromModel(Class nodeClass) {
