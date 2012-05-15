@@ -154,6 +154,9 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     @Override
     public CsmFunction getDeclaration() {
+        if (!isValid()) {
+            return this;
+        }
         if( isCStyleStatic() ) {
             CharSequence name = getName();
             CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
