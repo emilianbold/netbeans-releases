@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -83,7 +84,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
 
     @Override
     public Collection<CsmReference> getSubTypes(CsmClass referencedClass, boolean directSubtypesOnly) {
-        if (referencedClass == null) {
+        if (!CsmBaseUtilities.isValid(referencedClass)) {
             return Collections.<CsmReference>emptySet();
         }
         return getSubTypesImpl(referencedClass, directSubtypesOnly);
@@ -141,23 +142,25 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         if (res != null) {
             return res;
         }
-        CsmFile file = referencedClass.getContainingFile();
-        CsmProject project = file.getProject();
         res = new HashSet<CsmUID<CsmClass>>();
-        for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
-            CsmClassifier classifier = inh.getClassifier();
-            if (classifier != null) {
-                if (CsmKindUtilities.isInstantiation(classifier)) {
-                    CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
-                    if (CsmKindUtilities.isClassifier(template)) {
-                        classifier = (CsmClassifier) template;
+        if (CsmBaseUtilities.isValid(referencedClass)) {
+            CsmFile file = referencedClass.getContainingFile();
+            CsmProject project = file.getProject();
+            for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
+                CsmClassifier classifier = inh.getClassifier();
+                if (classifier != null) {
+                    if (CsmKindUtilities.isInstantiation(classifier)) {
+                        CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
+                        if (CsmKindUtilities.isClassifier(template)) {
+                            classifier = (CsmClassifier) template;
+                        }
                     }
-                }
-                CsmUID<CsmClassifier> classifierUID = UIDs.get(classifier);
-                if (referencedClassUID.equals(classifierUID)) {
-                    CsmScope scope = inh.getScope();
-                    if (CsmKindUtilities.isClass(scope)) {
-                        res.add(UIDs.get((CsmClass)scope));
+                    CsmUID<CsmClassifier> classifierUID = UIDs.get(classifier);
+                    if (referencedClassUID.equals(classifierUID)) {
+                        CsmScope scope = inh.getScope();
+                        if (CsmKindUtilities.isClass(scope)) {
+                            res.add(UIDs.get((CsmClass)scope));
+                        }
                     }
                 }
             }

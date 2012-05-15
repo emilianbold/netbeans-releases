@@ -131,7 +131,9 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      */
     synchronized static void unregister (JComponent comp) {
         ViewTooltips inst = (ViewTooltips) comp.getClientProperty(KEY);
-        assert inst != null : "Trying to deregister from " + comp;
+        if (inst == null) {
+            return;
+        }
         int zero = inst.detachFrom(comp);
         assert zero == 0 : "The " + inst + " should no longer be needed, was: " + zero;
         inst.hide();
