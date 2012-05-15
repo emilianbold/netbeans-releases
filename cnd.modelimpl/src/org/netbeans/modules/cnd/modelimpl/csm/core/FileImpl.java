@@ -228,7 +228,7 @@ public final class FileImpl implements CsmFile,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private FileContent currentFileContent;
+    private volatile FileContent currentFileContent;
     private FileContentSignature lastFileBasedSignature;
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
