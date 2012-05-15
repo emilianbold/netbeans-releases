@@ -125,11 +125,6 @@ public final class NbURLDisplayer extends URLDisplayer {
                 // Fallback.
                 browser = new SwingBrowser();
             }
-            // try if an internal browser is set and possibly try to reuse an
-            // existing component
-            if (browser.createHtmlBrowserImpl().getComponent() != null) {
-                brComp = findOpenedBrowserComponent();
-            }
             if (brComp == null) {
                 brComp = new HtmlBrowserComponent(browser, true, true);
                 brComp.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
