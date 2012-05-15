@@ -89,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -241,6 +242,25 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                 },
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    showFQNToggleButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_Q),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    showInnerToggleButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_I),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         filterTextField.getDocument().addDocumentListener(
                 new DocumentListener() {
@@ -545,6 +565,11 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                         close();
                     }
                 });
+    }
+    
+    private static KeyStroke getKeyStroke(int baseKey) {
+        final int mask =  Utilities.isMac() ? KeyEvent.CTRL_MASK : KeyEvent.ALT_MASK;
+        return KeyStroke.getKeyStroke (baseKey, mask, true);
     }
     //</editor-fold>
 
@@ -857,9 +882,9 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         splitPane.setLeftComponent(javaMembersTreeScrollPane);
 
-        signatureEditorPane.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
-        signatureEditorPane.setContentType("text/x-java");
         signatureEditorPane.setEditable(false);
+        signatureEditorPane.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
+        signatureEditorPane.setContentType("text/x-java"); // NOI18N
         signatureEditorPane.setNextFocusableComponent(filtersToolbar);
 
         org.openide.awt.Mnemonics.setLocalizedText(filtersLabel, org.openide.util.NbBundle.getMessage(JavaMembersPanel.class, "LABEL_filtersLabel")); // NOI18N
@@ -877,12 +902,12 @@ public class JavaMembersPanel extends javax.swing.JPanel {
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
         showFQNToggleButton.setSelected(true);
-        showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
+        showFQNToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showFQNToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q))));
         filtersToolbar.add(showFQNToggleButton);
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
         showInnerToggleButton.setSelected(true);
-        showInnerToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaMembersPanel.class).getString("TOOLTIP_showInnerToggleButton")); // NOI18N
+        showInnerToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showInnerToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_I))));
         filtersToolbar.add(showInnerToggleButton);
 
         showConstructorsToggleButton.setIcon(JavaMembersAndHierarchyIcons.CONSTRUCTOR_ICON);
@@ -957,7 +982,7 @@ public class JavaMembersPanel extends javax.swing.JPanel {
                     .addComponent(caseSensitiveFilterCheckBox)
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(signatureEditorPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
