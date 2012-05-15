@@ -357,10 +357,9 @@ public final class FavoritesNode extends FilterNode implements Index {
             FileObject fo = node.getLookup().lookup(FileObject.class);
             if (fo == null) {
                 DataObject obj = node.getLookup().lookup(DataObject.class);
-                if (obj == null) {
-                    return null;
+                if (obj != null) {
+                    fo = obj.getPrimaryFile();
                 }
-                fo = obj.getPrimaryFile();
             }
             if (hideHidden) {
                 if (fo != null && !VisibilityQuery.getDefault().isVisible(fo)) {
