@@ -57,6 +57,8 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -80,6 +82,9 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     }
     
     @Override
+    @Messages({
+        "# {0} - file path",
+        "unit_already_installed=Plugin {0} is already installed."})
     public void setValueAt(Object anValue, int row, int col) {
         // second column is editable but doesn't want to edit its value
         if (isExpansionControlAtRow(row)) return;//NOI18N        
@@ -99,9 +104,16 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             if (u.isMarked() != beforeMarked) {
                 fireButtonsChange();
             } else {
-                //TODO: message should contain spec.version
-                String message = getBundle ("NotificationAlreadyPreparedToIntsall", u.getDisplayName ()); // NOI18N
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+                if (u.getRelevantElement().getUpdateUnit().getInstalled() != null) {
+                    // already installed => refresh model
+                    fireUpdataUnitChange();
+                    DialogDisplayer.getDefault().notifyLater(
+                            new NotifyDescriptor.Message(unit_already_installed(u.getDisplayName()), NotifyDescriptor.WARNING_MESSAGE));
+                } else {
+                    //TODO: message should contain spec.version
+                    String message = getBundle ("NotificationAlreadyPreparedToIntsall", u.getDisplayName ()); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+                }
             }
         }
     }
