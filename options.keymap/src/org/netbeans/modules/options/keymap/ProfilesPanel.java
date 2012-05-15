@@ -51,6 +51,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
@@ -77,7 +79,8 @@ import org.xml.sax.SAXException;
  * @author Max Sauer
  */
 public class ProfilesPanel extends javax.swing.JPanel {
-
+    private static final Logger LOG = Logger.getLogger(ProfilesPanel.class.getName());
+    
     private ProfileListModel model;
     private KeymapPanel keymapPanel;
 
@@ -395,6 +398,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
     private void importButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importButtonActionPerformed
         JFileChooser chooser = getFileChooser();
         int ret = chooser.showOpenDialog(this);
+        final boolean[] notFound  = new boolean[1];
         
         if(ret == JFileChooser.APPROVE_OPTION) {
             try {
@@ -425,7 +429,13 @@ public class ProfilesPanel extends javax.swing.JPanel {
                             shortcuts.add(portableRepresentationToShortcut(sc));
                         }
                     }
-                    kmodel.setShortcuts(sca, shortcuts);
+                    if (sca == null) {
+                        notFound[0] = true;
+                        LOG.log(Level.WARNING, "Failed to import binding for: {0}, keys: {1}", new Object[] { id, shortcuts });
+                        continue;
+                    } else {
+                        kmodel.setShortcuts(sca, shortcuts);
+                    }
                 }
 
             } catch (IOException ex) {
@@ -433,6 +443,16 @@ public class ProfilesPanel extends javax.swing.JPanel {
             } catch (SAXException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+        
+        if (notFound[0]) {
+            NotifyDescriptor nd = new NotifyDescriptor(
+                    NbBundle.getMessage(ProfilesPanel.class, "Import.failed.unknown.id"), 
+                    NbBundle.getMessage(ProfilesPanel.class, "Import.failed.title"), 
+                    NotifyDescriptor.DEFAULT_OPTION, 
+                    NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION);
+        
+            DialogDisplayer.getDefault().notify(nd);
         }
 
     }//GEN-LAST:event_importButtonActionPerformed

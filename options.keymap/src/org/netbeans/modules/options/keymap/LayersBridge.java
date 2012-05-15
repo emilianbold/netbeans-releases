@@ -155,7 +155,7 @@ public class LayersBridge extends KeymapManager {
                 initActions ((DataFolder) dataObject, name, category);
                 continue;
             }
-            GlobalAction action = createAction (dataObject);
+            GlobalAction action = createAction (dataObject, name);
             if (actions.contains (action)) continue;
             if (action == null) continue;
             actions.add (action);
@@ -312,7 +312,7 @@ public class LayersBridge extends KeymapManager {
         while (en.hasMoreElements ()) {
             DataObject dataObject = en.nextElement ();
             if (dataObject instanceof DataFolder) continue;
-            GlobalAction action = createAction (dataObject);
+            GlobalAction action = createAction (dataObject, null);
             if (action == null) continue;
             String shortcut = dataObject.getName ();
             
@@ -379,7 +379,7 @@ public class LayersBridge extends KeymapManager {
             DataObject dataObject = (DataObject) en.nextElement ();
             GlobalAction a1 = (GlobalAction) shortcutToAction.get (dataObject.getName ());
             if (a1 != null) {
-                GlobalAction action = createAction (dataObject);
+                GlobalAction action = createAction (dataObject, null);
                 if (action == null) continue;
                 if (action.equals (a1)) {
                     // shortcut already saved
@@ -436,14 +436,14 @@ public class LayersBridge extends KeymapManager {
     /**
      * Returns instance of GlobalAction encapsulating action, or null.
      */
-    private GlobalAction createAction (DataObject dataObject) {
+    private GlobalAction createAction (DataObject dataObject, String prefix) {
         InstanceCookie ic = dataObject.getCookie(InstanceCookie.class);
         if (ic == null) return null;
         try {
             Object action = ic.instanceCreate ();
             if (action == null) return null;
             if (!(action instanceof Action)) return null;
-            return new GlobalAction ((Action) action);
+            return new GlobalAction ((Action) action, prefix, dataObject.getPrimaryFile().getName());
         } catch (Exception ex) {
             ex.printStackTrace ();
             return null;
@@ -485,14 +485,34 @@ public class LayersBridge extends KeymapManager {
         return false;
     }
     
+    /* package */ static String getOrigActionClass(ShortcutAction sa) {
+        if (!(sa instanceof GlobalAction)) {
+            return null;
+        }
+        return ((GlobalAction)sa).action.getClass().getName();
+    }
     
     private static class GlobalAction implements ShortcutAction {
         private Action action;
         private String name;
         private String id;
         
-        private GlobalAction (Action a) {
+        /**
+         * 
+         * @param a the action to be delegated to
+         * @param prefix prefix for the name, e.g. category where the action is defined
+         * @param n name / id of the action, usually a declaring filename
+         */
+        private GlobalAction (Action a, String prefix, String n) {
             action = a;
+            /*
+            if (prefix != null) {
+                this.id = prefix + "/" + n; // NOI18N
+            } else {
+                this.id = n;
+            }
+            */
+            this.id = n;
         }
         
         public String getDisplayName () {
@@ -501,13 +521,13 @@ public class LayersBridge extends KeymapManager {
                 if (name == null) {
                     name = ""; // #185619: not intended for presentation in this dialog
                 }
-                name = name.replaceAll ("&", "").trim ();
+                name = name.replaceAll ("&", "").trim (); // NOI18N
             }
             return name;
         }
         
         public String getId () {
-            if (id == null)
+            if (id == null) 
                 id = action.getClass ().getName ();
             return id;
         }

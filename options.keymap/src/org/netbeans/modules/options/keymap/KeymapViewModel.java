@@ -410,18 +410,38 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         return result [0];
     }
     
-    private ShortcutAction findActionForId (String actionId, String category) {
+    private ShortcutAction findActionForId(String actionId, String category) {
+        if (model.isDuplicateId(actionId)) {
+            return null;
+        }
+        ShortcutAction ac = findActionForId(actionId, category, false);
+        if (ac == null) {
+            ac = findActionForId(actionId, category, true);
+        }
+        return ac;
+    }
+    
+    private ShortcutAction findActionForId (String actionId, String category, boolean delegate) {
+        // check whether the ID is not a duplicate one -> no action found:
         Iterator it = getItems (category).iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
             if (o instanceof String) {
-                ShortcutAction result = findActionForId (actionId, (String) o);
+                ShortcutAction result = findActionForId (actionId, (String) o, delegate);
                 if (result != null) return result;
                 continue;
             }
-            String id = ((ShortcutAction) o).getId ();
-            if (actionId.equals (id)) 
+            String id;
+            
+            if (delegate) {
+                // fallback for issue #197068 - try to find actions also by their classname:
+                id = LayersBridge.getOrigActionClass((ShortcutAction)o);
+            } else {
+                id = ((ShortcutAction) o).getId ();
+            }
+            if (id != null && actionId.equals (id)) { 
                 return (ShortcutAction) o;
+            }
         }
         return null;
     }
