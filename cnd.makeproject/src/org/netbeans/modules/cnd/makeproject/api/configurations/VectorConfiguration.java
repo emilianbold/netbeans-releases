@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VectorConfiguration<E> {
+public class VectorConfiguration<E> implements Cloneable {
 
     private VectorConfiguration<E> master;
     private List<E> value;

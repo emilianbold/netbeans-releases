@@ -78,6 +78,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
         enableAPTCheckBoxActionPerformed(null);
         additionalJavacParamsJTextField.setDocument( uiProperties.JAVAC_COMPILER_ARG_MODEL );                 
         jCheckBoxCompileOnSave.setModel(uiProperties.COMPILE_ON_SAVE_MODEL);
+        jCopyOnSaveCheckBox.setModel(uiProperties.COPY_STATIC_RESOURCE_ON_SAVE_MODEL);
     }
 
     /** This method is called from within the constructor to
@@ -105,6 +106,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
         annotationProcessorsLabel = new javax.swing.JLabel();
         addProcessorButton = new javax.swing.JButton();
         enableAPTEditorCheckBox = new javax.swing.JCheckBox();
+        jCopyOnSaveCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDebugInfo, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_DebugInfo_JCheckBox")); // NOI18N
 
@@ -192,45 +194,43 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeProcessorButton)
                         .addGap(41, 41, 41))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
+
+        org.openide.awt.Mnemonics.setLocalizedText(jCopyOnSaveCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_CopyOnSave_JCheckBox")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(processorsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jCheckBoxCompileOnSave)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jCheckBoxDebugInfo)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jCheckBoxDeprecation)
-                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(enableAPTCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(0, 0, 0)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(additionalJavacParamsJLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(additionalJavacParamsJTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                                    .addComponent(additionalJavacParamsExampleJLabel)))
-                            .addComponent(jCheckBoxCompileJSP))))
-                .addGap(0, 0, 0))
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(processorsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(additionalJavacParamsJLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(additionalJavacParamsJTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                    .addComponent(additionalJavacParamsExampleJLabel)))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(enableAPTCheckBox)
+                    .addComponent(jCheckBoxCompileJSP)
+                    .addComponent(jCheckBoxCompileOnSave)
+                    .addComponent(jCheckBoxDebugInfo)
+                    .addComponent(jCheckBoxDeprecation)
+                    .addComponent(jCopyOnSaveCheckBox))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(jCopyOnSaveCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckBoxCompileOnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(dosDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -314,6 +314,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JCheckBox jCheckBoxCompileOnSave;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
+    private javax.swing.JCheckBox jCopyOnSaveCheckBox;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel processorsPanel;

@@ -46,7 +46,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test for ScpSyncWorker
@@ -60,8 +63,9 @@ public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
     @Override
     BaseSyncWorker createWorker(File src, ExecutionEnvironment execEnv, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir) {
-        return new ZipSyncWorker(execEnv, out, err, privProjectStorageDir, src);
+            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir) {
+        return new ZipSyncWorker(execEnv, out, err, privProjectStorageDir,
+                FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(src))));
     }
 
     @Override

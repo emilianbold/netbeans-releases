@@ -41,9 +41,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -73,6 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=JavadocForBinaryQueryImplementation.class, position=11000)
 public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementation, PropertyChangeListener {
 
+    private static final Logger LOG = Logger.getLogger(JavaFXPlatformJavadoc.class.getName());
     //@GuardedBy("this")
     private List<JavaFXSDK> sdks;
     //@GuaredBy("this")
@@ -160,6 +164,7 @@ public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementatio
 
         public static final String PROP_RUNTIME = "runtime";    //NOI18N
         public static final String PROP_JAVADOC = "javadoc";    //NOI18N
+        public static final String ONLINE_PREFIX = "http://";    //NOI18N
 
         private final PropertyEvaluator eval;
         private final PropertyChangeSupport support;
@@ -198,7 +203,10 @@ public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementatio
                 //xxx: Don't use JavaFXPlatformUtils.getJavaFXClassPath() as it's an nonsense.
                 final String val = eval.getProperty(rtPropName);
                 if (val != null) {
-                    res.addAll(Utils.getRuntimeClassPath(new File(val)));
+                    File f = new File(val);
+                    if(f.exists()) {
+                        res.addAll(Utils.getRuntimeClassPath(new File(val)));
+                    }
                 }
                 rt.set(res);
             }
@@ -212,16 +220,24 @@ public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementatio
                 res = new ArrayList<URL>();
                 final String val = eval.getProperty(jdocPropName);
                 if (val != null) {
-                    for (final String path : PropertyUtils.tokenizePath(val)) {
-                        final URL root = FileUtil.urlForArchiveOrDir(new File(path));
-                        if (root != null) {
-                            final FileObject rootFo = JavadocAndSourceRootDetection.findJavadocRoot(
-                                    URLMapper.findFileObject(root));
-                            if (rootFo != null) {
-                                try {
-                                    res.add(rootFo.getURL());
-                                } catch (FileStateInvalidException ex) {
-                                    Exceptions.printStackTrace(ex);
+                    if(val.startsWith(ONLINE_PREFIX)) { //NOI18N
+                        try {
+                            URL remote = new URL(adjustOnlineJavaDocURL(val));
+                            res.add(remote);
+                        } catch (MalformedURLException ex) {
+                            LOG.log(Level.WARNING, "JavaFX JavaDoc URL \"{0}\" is invalid.", val); // NOI18N
+                        }
+                    } else {
+                        for (final String path : PropertyUtils.tokenizePath(val)) {
+                            File f = new File(path);
+                            if(f.exists()) {
+                                final URL root = FileUtil.urlForArchiveOrDir(f);
+                                if (root != null) {
+                                    final FileObject rootFo = JavadocAndSourceRootDetection.findJavadocRoot(
+                                            URLMapper.findFileObject(root));
+                                    if (rootFo != null) {
+                                        res.add(rootFo.toURL());
+                                    }
                                 }
                             }
                         }
@@ -230,6 +246,23 @@ public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementatio
                 jdoc.set(res);
             }
             return res;
+        }
+        
+        @NonNull
+        private String adjustOnlineJavaDocURL(@NonNull String u) {
+            String r = u.trim();
+            if(!r.startsWith(ONLINE_PREFIX)) { //NOI18N
+                r = ONLINE_PREFIX + r; //NOI18N
+            }
+            if(r.endsWith("/")) { //NOI18N
+                return r;
+            } else {
+                if(r.endsWith("htm") || r.endsWith("html")) { //NOI18N
+                    return r.substring(0, r.lastIndexOf("/") + 1); //NOI18N
+                } else {
+                    return r + "/"; //NOI18N
+                }
+            }
         }
 
         @NonNull

@@ -1967,6 +1967,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
+                    boolean alreadyInvoked = false;
 
                     Callable<ReturnTree> ret = null;
                     final VariableElement returnAssignTo;
@@ -1989,7 +1990,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         };
                         if (declareVariableForReturnValue) {
                             nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
-                            invocation = null;
+                            alreadyInvoked = true;
                         } else {
                             invocation = make.Assignment(make.Identifier(returnAssignTo.getSimpleName()), invocation);
                         }
@@ -2059,14 +2060,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             }
                         }
 
-                        invocation = null;
+                        alreadyInvoked = true;
                     } else {
                         if (ret != null) {
                             methodStatements.add(ret.call());
                         }
                     }
 
-                    if (invocation != null)
+                    if (!alreadyInvoked)
                         nueStatements.add(make.ExpressionStatement(invocation));
 
                     nueStatements.addAll(statements.subList(to + 1, statements.size()));

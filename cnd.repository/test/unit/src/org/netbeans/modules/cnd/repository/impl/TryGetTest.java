@@ -43,158 +43,17 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.*;
 import org.netbeans.junit.*;
-import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  * Tests Repository.tryGet()
  * @author Vladimir Kvashin
  */
-public class TryGetTest extends CndBaseTestCase {
-
-    private abstract class BaseKey implements Key {
-
-        private String key;
-
-        public BaseKey(String key) {
-            this.key = key;
-        }
-
-        @Override
-        public int getSecondaryAt(int level) {
-            return 0;
-        }
-
-        @Override
-        public String getAt(int level) {
-            return key;
-        }
-
-        @Override
-        public String getUnit() {
-            return "Repository_Test_Unit";
-        }
-
-        @Override
-        public int getUnitId() {
-            return 1;
-        }
-
-        @Override
-        public int getSecondaryDepth() {
-            return 0;
-        }
-
-        @Override
-        public PersistentFactory getPersistentFactory() {
-            return factory;
-        }
-
-        @Override
-        public int getDepth() {
-            return 1;
-        }
-    }
-
-    private class SmallKey extends BaseKey {
-
-        public SmallKey(String key) {
-            super(key);
-        }
-
-        @Override
-        public Key.Behavior getBehavior() {
-            return Key.Behavior.Default;
-        }
-
-        @Override
-        public boolean hasCache() {
-            return false;
-        }
-
-        @Override
-        public KeyDataPresentation getDataPresentation() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
-    private class LargeKey extends BaseKey {
-
-        public LargeKey(String key) {
-            super(key);
-        }
-
-        @Override
-        public Key.Behavior getBehavior() {
-            return Key.Behavior.LargeAndMutable;
-        }
-
-        @Override
-        public boolean hasCache() {
-            return false;
-        }
-
-        @Override
-        public KeyDataPresentation getDataPresentation() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
-    private static class Value implements Persistent {
-
-        private String value;
-
-        public Value(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return value + " @" + hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Value) {
-                return value.equals(((Value) obj).value);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return value.hashCode();
-        }
-    }
-
-    private class Factory implements PersistentFactory {
-
-        @Override
-        public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
-            assert obj instanceof Value;
-            out.writeUTF(((Value) obj).value);
-        }
-
-        @Override
-        public Persistent read(RepositoryDataInput in) throws IOException {
-            readFlag = true;
-            String value = in.readUTF();
-            return new Value(value);
-        }
-    }
-    private PersistentFactory factory;
-    private Repository repository;
-    private boolean readFlag;
+public class TryGetTest extends GetPutTestBase {
 
     public TryGetTest(java.lang.String testName) {
         super(testName);
@@ -210,14 +69,6 @@ public class TryGetTest extends CndBaseTestCase {
     }
 
     @Override
-    protected void setUp() throws Exception {
-        repository = RepositoryAccessor.getRepository();
-        factory = new Factory();
-        readFlag = false;
-        super.setUp();
-    }
-
-    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -226,6 +77,13 @@ public class TryGetTest extends CndBaseTestCase {
         _test(new SmallKey("small_1"), new Value("small_obj_1"));
         _test(new LargeKey("large_1"), new Value("large_obj_1"));
 
+    }
+    
+    private final AtomicBoolean readFlag = new AtomicBoolean(false);
+
+    @Override
+    protected void onReadHook(Factory factory, Persistent obj) {
+        readFlag.set(true);
     }
 
     private void _test(Key key, Value value) {
@@ -237,7 +95,7 @@ public class TryGetTest extends CndBaseTestCase {
         assertNotNull(v2);
         assertEquals(value, v2);
 
-        readFlag = false;
+        readFlag.set(false);
 
         v2 = _tryGet(key);
         assertNotNull(v2);
@@ -248,18 +106,11 @@ public class TryGetTest extends CndBaseTestCase {
     //v2 = _tryGet(key);
     //assertNull(v2);
     }
-
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ex) {
-        }
-    }
-
+    
     private Persistent _tryGet(Key key) {
-        readFlag = false;
+        readFlag.set(false);
         Persistent p = repository.tryGet(key);
-        assertFalse("tryGet shouldn't cause reading object from disk", readFlag);
+        assertFalse("tryGet shouldn't cause reading object from disk", readFlag.get());
         return p;
     }
 }

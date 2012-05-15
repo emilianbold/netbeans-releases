@@ -71,10 +71,12 @@ public class ChildComponentUpdateVisitor<T extends SettingsComponent>
         return canAdd;
     }
     
+    @Override
     public void update(SettingsComponent target, SettingsComponent child, Operation operation) {
         update(target, child, -1, operation);
     }
     
+    @Override
     public void update(SettingsComponent target, SettingsComponent child, int index, Operation operation) {
         assert target != null;
         assert child != null;
@@ -86,7 +88,6 @@ public class ChildComponentUpdateVisitor<T extends SettingsComponent>
             if (operation == Operation.REMOVE) {
                 //TODO what property shall be fired? is it important?
                 removeChild("XXX", child);
-                return;
             } else {
                 //TODO what property shall be fired? is it important?
                 addChild("XXX", child);

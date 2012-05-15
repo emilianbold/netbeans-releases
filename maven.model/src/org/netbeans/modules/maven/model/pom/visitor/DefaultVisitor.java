@@ -93,162 +93,202 @@ import org.netbeans.modules.maven.model.pom.StringList;
  */
 public class DefaultVisitor implements POMComponentVisitor {
         
+    @Override
     public void visit(Project target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Parent target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Organization target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(DistributionManagement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Site target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(DeploymentRepository target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Prerequisites target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Contributor target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Scm target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(IssueManagement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(CiManagement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Notifier target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Repository target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(RepositoryPolicy target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Profile target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(BuildBase target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Plugin target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Dependency target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Exclusion target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(PluginExecution target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Resource target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(PluginManagement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Reporting target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ReportPlugin target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ReportSet target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Activation target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationProperty target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationOS target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationFile target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ActivationCustom target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(DependencyManagement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Build target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Extension target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(License target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(MailingList target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Developer target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(POMExtensibilityElement target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(ModelList target) {
         visitComponent(target);
     }
     
+    @Override
     public void visit(Configuration target) {
         visitComponent(target);
     }
 
+    @Override
     public void visit(Properties target) {
         visitComponent(target);
     }
@@ -256,6 +296,7 @@ public class DefaultVisitor implements POMComponentVisitor {
     protected void visitComponent(POMComponent target) {
     }
 
+    @Override
     public void visit(StringList target) {
         visitComponent(target);
     }

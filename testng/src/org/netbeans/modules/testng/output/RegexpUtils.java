@@ -68,7 +68,7 @@ final class RegexpUtils {
             = JAVA_ID_REGEX + "(?:\\." + JAVA_ID_REGEX + ")*";          //NOI18N
 
     static final String RUNNING_SUITE_REGEX = "[^\"]*\"([^\"]+)\" [a-z]+ \"(\\d+)\"[^:]*: ([^\\)]*)\\)";
-    static final String TEST_REGEX = "[^\"]*\"([^\"]+)\" - ([^\\(]+)(\\(([^\\)]*)\\)([^:]+: (.*)\\))?( finished in (\\d+) ms)?)?";
+    static final String TEST_REGEX = "[^\"]*\"([^\"]+)\" - ([^\\(]+)(\\(([^\\)]*)\\)([^:]+: (.*)\\))?( finished in (\\d+) ms)?)?( \\((\\d+) of (\\d+)\\))?( success: (\\d+)%)?";
     static final String TEST_REGEX_2 = "[^\"]*\"([^\"]+)\" - ([^\\(]+)(\\(([^\\)]*)\\))(.)*";
     static final String STATS_REGEX = "\\D+(\\d+)\\D+(\\d+)(\\D+(\\d+))?";
 

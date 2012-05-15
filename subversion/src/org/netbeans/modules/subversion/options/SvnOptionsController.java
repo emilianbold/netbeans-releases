@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
@@ -294,14 +295,14 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onBrowseClick () {
         File oldFile = getExecutableFile();
-        onBrowse(oldFile, panel.executablePathTextField,
+        onBrowse(oldFile, allowedExecutables, panel.executablePathTextField,
                 NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseFolder"), //NOI18N
                 NbBundle.getMessage(SvnOptionsController.class, "Browse_title"), //NOI18N
                 NbBundle.getMessage(SvnOptionsController.class, "FileChooser.SvnExecutables.desc") //NOI18N
                 );
     }
                 
-    private void onBrowse (File oldFile, JTextField textField, String acsd, String browseTitle, final String fileTypeDesc) {
+    private void onBrowse (File oldFile, final Set<String> allowedFileNames, JTextField textField, String acsd, String browseTitle, final String fileTypeDesc) {
         JFileChooser fileChooser = new AccessibleJFileChooser(acsd, oldFile);
         fileChooser.setDialogTitle(browseTitle);
         fileChooser.setMultiSelectionEnabled(false);
@@ -309,7 +310,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         fileChooser.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return f.isDirectory() || allowedExecutables.contains(f.getName());
+                return f.isDirectory() || allowedFileNames.contains(f.getName());
             }
             @Override
             public String getDescription() {
@@ -327,7 +328,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
 
     private void onBrowseJavahlClick () {
-        onBrowse(getJavahlFolder(), panel.javahlPathTextField,
+        onBrowse(getJavahlFolder(), allowedLibs, panel.javahlPathTextField,
                 NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseJavahlFolder"), //NOI18N
                 NbBundle.getMessage(SvnOptionsController.class, "Browse_Javahl_title"), //NOI18N
                 NbBundle.getMessage(SvnOptionsController.class, "FileChooser.SvnLibs.desc") //NOI18N

@@ -46,15 +46,14 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -99,6 +98,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private String currentCommand;
     private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
     private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
+    private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 1); //NOI18N
 
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -127,7 +127,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             //TODO: show warning dialog
             return;
         }
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
@@ -193,19 +193,13 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         options[OPTION_CANCEL].addActionListener(optionsListener);
         options[OPTION_APPLY].addActionListener(optionsListener);
 
-        String dialogTitle = null;
+        String dialogTitle;
         if (item != null) {
-            dialogTitle = MessageFormat.format(
-                    NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title"),
-                    new Object[]{item.getName()}); // NOI18N 
+            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title", item.getName()); // NOI18N 
         } else if (folder != null) {
-            dialogTitle = MessageFormat.format(
-                    NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title"),
-                    new Object[]{folder.getName()}); // NOI18N 
+            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title", folder.getName()); // NOI18N 
         } else {
-            dialogTitle = MessageFormat.format(
-                    NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Project_Customizer_Title"),
-                    new Object[]{ProjectUtils.getInformation(project).getDisplayName()}); // NOI18N 
+            dialogTitle = NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Project_Customizer_Title", ProjectUtils.getInformation(project).getDisplayName()); // NOI18N 
         }
 
         dialogDescriptor = new DialogDescriptor(
@@ -364,6 +358,6 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getBundle(MakeCustomizerProvider.class).getString(s);
+        return NbBundle.getMessage(MakeCustomizerProvider.class, s);
     }
 }

@@ -193,7 +193,9 @@ public class UnlockAction extends ContextAction {
 
         @Override
         public void logError (String error) {
-            if (error.contains("is not locked in this working copy")) { //NOI18N
+            if (error == null) {
+                // not interested
+            } else if (error.contains("is not locked in this working copy")) { //NOI18N
                 for (Iterator<Map.Entry<File, String>> it = paths.entrySet().iterator(); it.hasNext(); ) {
                     Map.Entry<File, String> e = it.next();
                     String path = e.getValue();

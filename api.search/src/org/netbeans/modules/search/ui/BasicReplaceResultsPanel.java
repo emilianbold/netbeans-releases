@@ -174,8 +174,8 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
     public void displayIssues(IssuesPanel issuesPanel) {
         if (issuesPanel != null) {
             showRefreshButton();
-            removeButtons(nextButton, prevButton, treeViewButton,
-                    flatViewButton, expandButton, showDetailsButton);
+            removeButtons(btnNext, btnPrev, btnFlatView, btnTreeView,
+                    btnExpand, showDetailsButton);
             Container p = getContentPanel();
             p.removeAll();
             p.add(issuesPanel);
@@ -214,11 +214,11 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
                 getExplorerManager().setRootContext(an);
                 getOutlineView().validate();
                 getOutlineView().repaint();
-                nextButton.setEnabled(false);
-                prevButton.setEnabled(false);
-                treeViewButton.setEnabled(false);
-                flatViewButton.setEnabled(false);
-                expandButton.setEnabled(false);
+                btnNext.setEnabled(false);
+                btnPrev.setEnabled(false);
+                btnTreeView.setEnabled(false);
+                btnFlatView.setEnabled(false);
+                btnExpand.setEnabled(false);
             }
         });
     }

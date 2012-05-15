@@ -469,7 +469,7 @@ public class RefactoringPanel extends JPanel {
         String displayName = representedObject.getText(isLogical);
         Icon icon = representedObject.getIcon();
         
-        node = new CheckNode(representedObject, displayName, icon);
+        node = new CheckNode(representedObject, displayName, icon, isQuery);
         final CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
  
         parentNode.add(node);
@@ -481,8 +481,10 @@ public class RefactoringPanel extends JPanel {
 
                     @Override
                     public void run() {
-                        if (tree!=null)
+                        if (tree!=null) {
                             ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{childCount-1});
+                            tree.expandPath(new TreePath(parentNode.getPath()));
+                        }
                     }
                 });
             } catch (InterruptedException ex) {
@@ -684,11 +686,13 @@ public class RefactoringPanel extends JPanel {
             session = tempSession;
         }
         
+        final RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
+        cont.makeBusy(true);
         initialize();
 
         cancelRequest.set(false);
         stopButton.setVisible(isQuery);
-        stopButton.setEnabled(true);
+        stopButton.setEnabled(showParametersPanel);
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection<RefactoringElement> elements = session.getRefactoringElements();
@@ -713,6 +717,7 @@ public class RefactoringPanel extends JPanel {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    setTreeControlsEnabled(false);
                     Set<FileObject> fileObjects = new HashSet<FileObject>();
                     int errorsNum = 0;
                     if (!isQuery) {
@@ -724,7 +729,7 @@ public class RefactoringPanel extends JPanel {
                         }
                     }
                     StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size:elements.size());
-                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false), isQuery);
                     final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
                     if (isQuery && showParametersPanel) {
@@ -738,8 +743,6 @@ public class RefactoringPanel extends JPanel {
                     } else {
                         progressHandle.start(elements.size()/10);
                     }
-                    RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
-                    cont.makeBusy(true);
 
                     int i=0;
                     try {
@@ -757,27 +760,6 @@ public class RefactoringPanel extends JPanel {
                                     tree.expandRow(0);
 
                                     final int in = i;
-                                    if (i==0) {
-                                        try {
-                                            SwingUtilities.invokeAndWait(new Runnable() {
-
-                                                @Override
-                                                public void run() {
-                                                    TreeNode current = root;
-                                                    int i=0;
-                                                    while (!current.isLeaf()) {
-                                                        tree.expandRow(i++);
-                                                        current = current.getChildAt(0);
-                                                    }
-                                                }
-                                                
-                                            });
-                                        } catch (InterruptedException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        } catch (InvocationTargetException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
                                     final boolean last = !it.hasNext();
                                     final int occurrences = i + 1;
                                     size = occurrences;
@@ -788,7 +770,6 @@ public class RefactoringPanel extends JPanel {
                                             public void run() {
                                                 root.setNodeLabel(description + getErrorDesc(0, occurrences));
                                                 if (last) {
-                                                    stopButton.setEnabled(false);
                                                     tree.repaint();
                                                 }
                                                 
@@ -820,6 +801,13 @@ public class RefactoringPanel extends JPanel {
                     } finally {
                         progressHandle.finish();
                         cont.makeBusy(false);
+                        setTreeControlsEnabled(true);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopButton.setEnabled(false);
+                            }
+                        });
                     }
                     
                     if (!(isQuery && showParametersPanel)) {
@@ -851,12 +839,10 @@ public class RefactoringPanel extends JPanel {
                     return errorsDesc;
                 }
 
-
             });
         }
         if (!isVisible) {
             // dock it into output window area and display
-            RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
             cont.open();
             cont.requestActive();
             if (isQuery && parametersPanel!=null && !parametersPanel.isCreateNewTab()) {
@@ -868,6 +854,21 @@ public class RefactoringPanel extends JPanel {
         if (!isQuery)
             setRefactoringEnabled(false, true);
     }
+    
+    private void setTreeControlsEnabled(final boolean b) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                expandButton.setEnabled(b);
+                logicalViewButton.setEnabled(b);
+                physicalViewButton.setEnabled(b);
+                if (customViewButton != null)
+                    customViewButton.setEnabled(b);
+            }
+        });
+    }
+    
     
     private void setupTree(final CheckNode root, final boolean showParametersPanel, final int size) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -973,6 +974,8 @@ public class RefactoringPanel extends JPanel {
             @Override
             public void run() {
                 createTree(root);
+                tree.setSelectionRow(0);
+                requestFocus();
             }
         });
     }    

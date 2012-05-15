@@ -87,8 +87,6 @@ public class LddService {
     }
     public static SharedLibraries getPubNames(BufferedReader out) throws IOException {
         SharedLibraries res = new SharedLibraries();
-        List<String> dlls = new ArrayList<String>();
-        List<String> paths = new ArrayList<String>();
         String line;
         while ((line=out.readLine())!= null){
             line = line.trim();

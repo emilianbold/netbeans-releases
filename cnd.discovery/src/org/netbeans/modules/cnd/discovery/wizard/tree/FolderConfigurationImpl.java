@@ -65,12 +65,13 @@ public class FolderConfigurationImpl extends NodeConfigurationImpl implements Fo
     }
 
     public FolderConfigurationImpl cut(){
-        if (folders.size() == 1 && files.size() == 0){
+        if (folders.size() == 1 && files.isEmpty()){
             return folders.values().iterator().next();
         }
         return null;
     }
     
+    @Override
     public List<FolderConfiguration> getFolders() {
         return new ArrayList<FolderConfiguration>(folders.values());
     }
@@ -83,6 +84,7 @@ public class FolderConfigurationImpl extends NodeConfigurationImpl implements Fo
         return folders.get(name);
     }
 
+    @Override
     public List<FileConfiguration> getFiles() {
         return new ArrayList<FileConfiguration>(files);
     }
@@ -91,10 +93,12 @@ public class FolderConfigurationImpl extends NodeConfigurationImpl implements Fo
         files.add(file);
     }
 
+    @Override
     public String getFolderPath() {
         return path;
     }
 
+    @Override
     public String getFolderName() {
         int i = path.lastIndexOf("/"); // NOI18N
         if(i>=0){

@@ -49,8 +49,10 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -73,8 +75,7 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
     }
     
     public GroovyToggleBreakpointActionProvider (ContextProvider contextProvider) {
-        debugger = (JPDADebugger) contextProvider.lookupFirst 
-                (null, JPDADebugger.class);
+        debugger = (JPDADebugger) contextProvider.lookupFirst(null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         Context.addPropertyChangeListener (this);
         setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
@@ -85,6 +86,7 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
         Context.removePropertyChangeListener (this);
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         FileObject fo = Context.getCurrentFile();
         boolean isGroovyFile = fo != null && 
@@ -97,34 +99,33 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
             destroy ();
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
     
+    @Override
     public void doAction (Object action) {
-        DebuggerManager d = DebuggerManager.getDebuggerManager ();
+        DebuggerManager debugManager = DebuggerManager.getDebuggerManager ();
         
         // 1) get source name & line number
-        int ln = Context.getCurrentLineNumber ();
+        int lineNumber = Context.getCurrentLineNumber ();
         String url = Context.getCurrentURL ();
         if (url == null) return;
                 
         // 2) find and remove existing line breakpoint
-        GroovyLineBreakpoint lb = getGroovyBreakpointAnnotationListener().findBreakpoint(url, ln);
-        if (lb != null) {
-            d.removeBreakpoint(lb);
-            return;
+        for (Breakpoint breakpoint : debugManager.getBreakpoints()) {
+            if (breakpoint instanceof LineBreakpoint) {
+                
+                LineBreakpoint lineBreakpoint = ((LineBreakpoint) breakpoint);
+                if (lineNumber == lineBreakpoint.getLineNumber() && url.equals(lineBreakpoint.getURL())) {
+                    debugManager.removeBreakpoint(breakpoint);
+                    return;
+                }
+            }
         }
-        lb = GroovyLineBreakpoint.create(url, ln);
-        d.addBreakpoint(lb);
-    }
 
-    private GroovyBreakpointAnnotationListener GroovyBreakpointAnnotationListener;
-    private GroovyBreakpointAnnotationListener getGroovyBreakpointAnnotationListener () {
-        if (GroovyBreakpointAnnotationListener == null)
-            GroovyBreakpointAnnotationListener = (GroovyBreakpointAnnotationListener)
-                DebuggerManager.getDebuggerManager ().lookupFirst 
-                (null, GroovyBreakpointAnnotationListener.class);
-        return GroovyBreakpointAnnotationListener;
+        // 3) Add new groovy line breakpoint
+        debugManager.addBreakpoint(GroovyLineBreakpointFactory.create(url, lineNumber));
     }
 }

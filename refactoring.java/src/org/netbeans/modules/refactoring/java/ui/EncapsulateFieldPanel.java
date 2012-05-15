@@ -141,6 +141,12 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess.setSelected(RefactoringModule.getOption(ENCAPSULATE_FIELDS_USE_ACCESSORS_PREF, true));
         boundCheckBox.setSelected(RefactoringModule.getOption(PROPERTY_SUPPORT_PREF, false));
         vetoableCheckBox.setSelected(RefactoringModule.getOption(VETOABLE_SUPPORT_PREF, false));
+        jTableFields.requestFocus();
+    }
+
+    @Override
+    public void requestFocus() {
+        jTableFields.requestFocus();
     }
 
     @Override
@@ -366,6 +372,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jCheckAccess.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(jCheckAccess, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_AccessorsEven")); // NOI18N
 
+        jTableFields.setAutoCreateRowSorter(true);
         jTableFields.setModel(model);
         jTableFields.setCellSelectionEnabled(true);
         jTableFields.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -968,7 +975,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             String toolTip = ai != null && table.isCellEditable(row, column)
                     ? ai.accessorToolTip
                     : null;
-            boolean isEnabled = (Boolean) table.getModel().getValueAt(row, column - 1);
+            boolean isEnabled = (Boolean) table.getModel().getValueAt(
+                    table.convertRowIndexToModel(row),
+                    table.convertColumnIndexToModel(column) - 1);
             setEnabled(isEnabled);
             if (isEnabled && ai != null && !ai.isGetter
                     && ((MemberInfo) table.getValueAt(row, 0)).getModifiers().contains(Modifier.FINAL)) {

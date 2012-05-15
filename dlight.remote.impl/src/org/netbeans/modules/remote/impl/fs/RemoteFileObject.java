@@ -213,8 +213,8 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Delegating all methods. Keep collapsed.">
     
     @Override
-    public int hashCode() {
-        return getImplementor().hashCode();
+    public final int hashCode() {
+        return System.identityHashCode(this);
     }
 
     @Override

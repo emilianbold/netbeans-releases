@@ -70,9 +70,8 @@ import org.openide.util.Utilities;
  */
 public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
 
+    private static final Logger LOGGER = Logger.getLogger(GrailsTargetChooserPanel.class.getName());
     private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
-
-    private static Logger LOGGER = Logger.getLogger(GrailsTargetChooserPanel.class.getName());
 
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private GrailsTargetChooserPanelGUI gui;
@@ -93,6 +92,7 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
         }
     }
 
+    @Override
     public Component getComponent() {
         if (gui == null) {
             gui = new GrailsTargetChooserPanelGUI(project, folder, bottomPanel == null ? null : bottomPanel.getComponent());
@@ -101,6 +101,7 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
         return gui;
     }
 
+    @Override
     public HelpCtx getHelp() {
         if (bottomPanel != null) {
             HelpCtx bottomHelp = bottomPanel.getHelp();
@@ -114,6 +115,7 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
 
     }
 
+    @Override
     public boolean isValid() {
         if (gui == null) {
            setErrorMessage(null);
@@ -164,10 +166,12 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
         return returnValue;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
@@ -180,6 +184,7 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
         }
     }
 
+    @Override
     public void readSettings(WizardDescriptor wizard) {
         this.wizard = wizard;
         if (gui != null) {
@@ -203,6 +208,7 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
         }
     }
 
+    @Override
     public void storeSettings(WizardDescriptor wizard) {
         Object value = wizard.getValue();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(value) || WizardDescriptor.CANCEL_OPTION.equals(value)
@@ -223,6 +229,7 @@ public final class GrailsTargetChooserPanel implements WizardDescriptor.Panel<Wi
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChange();
     }

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,12 +34,11 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import org.netbeans.api.lexer.Token;
@@ -48,37 +47,36 @@ import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
-
 /**
  *
  * @author Tor Norbye
  */
 public final class YamlLexer implements Lexer<YamlTokenId> {
+
     private static final int EOF = LexerInput.EOF;
     private final LexerInput input;
     private final TokenFactory<YamlTokenId> tokenFactory;
-
     //main internal lexer state
     private int state = ISI_WHITESPACE;
-
     // Internal analyzer states
-    private static final int ISI_WHITESPACE           = 0;  // initial lexer state = content language, no whitespace seen
-    private static final int ISA_LT                   = 1; // after '<' char
-    private static final int ISA_LT_PC                = 2; // after '<%' - comment or directive or scriptlet
-    private static final int ISI_SCRIPTLET            = 3; // inside Ruby scriptlet
-    private static final int ISI_SCRIPTLET_PC         = 4; // just after % in scriptlet
-    private static final int ISI_COMMENT_SCRIPTLET    = 5; // Inside a Ruby comment scriptlet
+    private static final int ISI_WHITESPACE = 0;  // initial lexer state = content language, no whitespace seen
+    private static final int ISA_LT = 1; // after '<' char
+    private static final int ISA_LT_PC = 2; // after '<%' - comment or directive or scriptlet
+    private static final int ISI_SCRIPTLET = 3; // inside Ruby scriptlet
+    private static final int ISI_SCRIPTLET_PC = 4; // just after % in scriptlet
+    private static final int ISI_COMMENT_SCRIPTLET = 5; // Inside a Ruby comment scriptlet
     private static final int ISI_COMMENT_SCRIPTLET_PC = 6; // just after % in a Ruby comment scriptlet
-    private static final int ISI_EXPR_SCRIPTLET       = 7; // inside Ruby expression scriptlet
-    private static final int ISI_EXPR_SCRIPTLET_PC    = 8; // just after % in an expression scriptlet
-    private static final int ISI_RUBY_LINE            = 9; // just after % in an %-line
-    private static final int ISI_NONWHITESPACE        = 10; // after seeing non space characters on a line
-    private static final int ISI_PHP                  = 11; // after <?
+    private static final int ISI_EXPR_SCRIPTLET = 7; // inside Ruby expression scriptlet
+    private static final int ISI_EXPR_SCRIPTLET_PC = 8; // just after % in an expression scriptlet
+    private static final int ISI_RUBY_LINE = 9; // just after % in an %-line
+    private static final int ISI_NONWHITESPACE = 10; // after seeing non space characters on a line
+    private static final int ISI_PHP = 11; // after <?
 
     /**
      * A Lexer for ruby strings
-     * @param substituting If true, handle substitution rules for double quoted strings, otherwise
-     *    single quoted strings.
+     *
+     * @param substituting If true, handle substitution rules for double quoted
+     * strings, otherwise single quoted strings.
      */
     public YamlLexer(LexerRestartInfo<YamlTokenId> info) {
         this.input = info.input();
@@ -103,7 +101,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
             actChar = input.read();
 
             if (actChar == EOF) {
-                if(input.readLengthEOF() == 1) {
+                if (input.readLengthEOF() == 1) {
                     return null; //just EOL is read
                 } else {
                     //there is something else in the buffer except EOL
@@ -119,8 +117,8 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                         state = ISI_WHITESPACE;
                         return token(YamlTokenId.TEXT);
                     }
-                    // Fallthrough
-                    
+                // Fallthrough
+
                 case ISI_WHITESPACE:
                     switch (actChar) {
                         case '#': {
@@ -143,7 +141,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                             }
                         }
                         break;
- 
+
                         case '<':
                             state = ISA_LT;
                             break;
@@ -165,7 +163,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                             }
                             CharSequence cs = input.readText();
                             // -2: skip the final %
-                            for (int i = cs.length()-2; i >= 0; i--) {
+                            for (int i = cs.length() - 2; i >= 0; i--) {
                                 char c = cs.charAt(i);
                                 if (c == '\n') {
                                     // We're in a new line: Finish this token as HTML.
@@ -187,8 +185,8 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                                 state = ISI_NONWHITESPACE;
                             }
                             break;
-                }
-                break;
+                    }
+                    break;
 
                 case ISA_LT:
                     switch (actChar) {
@@ -212,7 +210,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                 case ISA_LT_PC:
                     switch (actChar) {
                         case '=':
-                            if(input.readLength() == 3) {
+                            if (input.readLength() == 3) {
                                 // just <%! or <%= read
                                 state = ISI_EXPR_SCRIPTLET;
                                 return token(YamlTokenId.DELIMITER);
@@ -229,7 +227,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                             }
                             if (peek != '>') {
                                 // Handle <%% == <%
-                                if(input.readLength() == 3) {
+                                if (input.readLength() == 3) {
                                     // <%% is just an escape for <% in HTML...
                                     state = ISI_WHITESPACE;
                                     break;
@@ -253,7 +251,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                         }
 
                         case '#':
-                            if(input.readLength() == 3) {
+                            if (input.readLength() == 3) {
                                 // just <%! or <%= read
                                 state = ISI_COMMENT_SCRIPTLET;
                                 return token(YamlTokenId.DELIMITER);
@@ -264,7 +262,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                                 return token(YamlTokenId.TEXT); //return CL token
                             }
                         case '-':
-                            if(input.readLength() == 3) {
+                            if (input.readLength() == 3) {
                                 // just read <%-
                                 state = ISI_SCRIPTLET;
                                 return token(YamlTokenId.DELIMITER);
@@ -275,7 +273,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                                 return token(YamlTokenId.TEXT); //return CL token
                             }
                         default:  // RHTML scriptlet delimiter '<%'
-                            if(input.readLength() == 3) {
+                            if (input.readLength() == 3) {
                                 // just <% + something != [=,#] read
                                 state = ISI_SCRIPTLET;
                                 input.backup(1); //backup the third character, it is a part of the Ruby scriptlet
@@ -290,7 +288,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                     break;
 
                 case ISI_COMMENT_SCRIPTLET:
-                    switch(actChar) {
+                    switch (actChar) {
                         case '%':
                             state = ISI_COMMENT_SCRIPTLET_PC;
                             break;
@@ -299,7 +297,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
 
 
                 case ISI_SCRIPTLET:
-                    switch(actChar) {
+                    switch (actChar) {
                         case '%':
                             state = ISI_SCRIPTLET_PC;
                             break;
@@ -308,9 +306,9 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
 
 
                 case ISI_SCRIPTLET_PC:
-                    switch(actChar) {
+                    switch (actChar) {
                         case '>':
-                            if(input.readLength() == 2) {
+                            if (input.readLength() == 2) {
                                 //just the '%>' symbol read
                                 state = ISI_WHITESPACE;
                                 return token(YamlTokenId.DELIMITER);
@@ -343,7 +341,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                     break;
 
                 case ISI_EXPR_SCRIPTLET:
-                    switch(actChar) {
+                    switch (actChar) {
                         case '%':
                             state = ISI_EXPR_SCRIPTLET_PC;
                             break;
@@ -352,9 +350,9 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
 
 
                 case ISI_EXPR_SCRIPTLET_PC:
-                    switch(actChar) {
+                    switch (actChar) {
                         case '>':
-                            if(input.readLength() == 2) {
+                            if (input.readLength() == 2) {
                                 //just the '%>' symbol read
                                 state = ISI_WHITESPACE;
                                 return token(YamlTokenId.DELIMITER);
@@ -371,9 +369,9 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                     break;
 
                 case ISI_COMMENT_SCRIPTLET_PC:
-                    switch(actChar) {
+                    switch (actChar) {
                         case '>':
-                            if(input.readLength() == 2) {
+                            if (input.readLength() == 2) {
                                 //just the '%>' symbol read
                                 state = ISI_WHITESPACE;
                                 return token(YamlTokenId.DELIMITER);
@@ -389,7 +387,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
                     }
                     break;
                 case ISI_PHP:
-                    if (actChar == '>' && input.readText().charAt(input.readLength()-2) == '?') {
+                    if (actChar == '>' && input.readText().charAt(input.readLength() - 2) == '?') {
                         state = ISI_WHITESPACE;
                         return token(YamlTokenId.PHP);
                     }
@@ -401,7 +399,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
         // Scanner first checks whether this is completely the last
         // available buffer.
 
-        switch(state) {
+        switch (state) {
             case ISI_NONWHITESPACE:
             case ISI_WHITESPACE:
                 if (input.readLength() == 0) {

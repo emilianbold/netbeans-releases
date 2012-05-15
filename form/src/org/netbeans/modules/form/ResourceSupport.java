@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.JEditorPane;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
@@ -923,8 +924,9 @@ public class ResourceSupport {
             } else if (propOwner instanceof FormProperty) {
                 type = ((FormProperty)propOwner).getValueType();
             }
-            boolean excl = java.awt.Component.class.isAssignableFrom(type)
-                           && "name".equals(prop.getName()); // NOI18N
+            String propName = prop.getName();
+            boolean excl = (Component.class.isAssignableFrom(type) && "name".equals(propName)) // NOI18N
+                    || (JEditorPane.class.isAssignableFrom(type) && "contentType".equals(propName)); // NOI18N
             prop.setValue(EXCLUDE_FROM_RESOURCING, excl);
             return excl;
         }

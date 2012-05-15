@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
+import java.util.Map;
 import org.eclipse.persistence.jpa.jpql.spi.IEmbeddable;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeProvider;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
+import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EmbeddableAttributes;
+import org.netbeans.modules.j2ee.persistence.spi.jpql.support.JPAAttribute;
 
 /**
  *
@@ -74,8 +79,23 @@ public class Embeddable extends ManagedType implements IEmbeddable{
     }
 
     @Override
+    Map<String, IMapping> initMappings() {
+        Map<String, IMapping> mappings = super.initMappings();
+        org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable eb = (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable) getPersistentObject();
+        EmbeddableAttributes attrs = eb.getAttributes();
+        if(attrs != null){
+            Basic[] bs = attrs.getBasic();
+            if(bs != null){
+                for(Basic b1:bs){
+                    mappings.put(b1.getName(), new Mapping(this, new JPAAttribute(getPersistentObject(), b1)));
+                }
+            }        
+        }
+        return mappings;
+    }
+    
+    @Override
     Attributes getAttributes() {
-        org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable em = (org.netbeans.modules.j2ee.persistence.api.metadata.orm.Embeddable) getPersistentObject();
         return null;//TODO embeddable attributes?
     }
 

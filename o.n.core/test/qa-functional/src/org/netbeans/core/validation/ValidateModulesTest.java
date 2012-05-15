@@ -79,6 +79,11 @@ public class ValidateModulesTest extends NbTestCase {
         super(n);
     }
 
+    @Override
+    protected int timeOut() {
+        return 60000;
+    }
+
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new ValidateModulesTest("clusterVersions"));

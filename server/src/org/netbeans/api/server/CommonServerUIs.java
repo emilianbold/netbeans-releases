@@ -105,7 +105,7 @@ public final class CommonServerUIs {
                 new Object[] {close},
                 close,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(CommonServerUIs.class),
+                registry.isCloud() ? new HelpCtx("org.netbeans.api.server.CommonCloudUIs"): new HelpCtx("org.netbeans.api.server.CommonServerUIs"),
                 null);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);

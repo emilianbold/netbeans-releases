@@ -109,7 +109,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalTest.class);
         conf = addServerTests(Server.GLASSFISH, conf, TESTS);
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return conf.suite();
     }
 
     @Override
@@ -156,7 +156,7 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         frameworkStep.txtServletURLMapping().typeText("/faces/*", 0);
         frameworkStep.selectPageLibraries();
         frameworkStep.rbCreateNewLibrary().push();
-        assertEquals("\"\" is not valid path for a folder.", frameworkStep.getErrorMessage());
+        assertEquals("\"\" does not contain JavaServer Faces API classes.", frameworkStep.getErrorMessage());
         frameworkStep.rbRegisteredLibraries().push();
         frameworkStep.rbServerLibrary().push();
         frameworkStep.finish();

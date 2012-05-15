@@ -111,13 +111,14 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     
     private static final RequestProcessor RP = new RequestProcessor(MavenCommandLineExecutor.class.getName(),1);
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public MavenCommandLineExecutor(RunConfig conf) {
         super(conf);
         handle = ProgressHandleFactory.createHandle(conf.getTaskDisplayName(), this);
     }
     
     /**
-     * not to be called directrly.. use execute();
+     * not to be called directly.. use execute();
      */
     @Override
     public void run() {
@@ -281,7 +282,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
             if (!entry.getKey().startsWith(ENV_PREFIX)) {
                 //skip envs, these get filled in later.
-                toRet.add("-D" + entry.getKey() + "=" + (Utilities.isWindows() ? entry.getValue().replace(quote, escaped) : entry.getValue().replace(quote, "'")));
+                String s = "-D" + entry.getKey() + "=" + (Utilities.isWindows() ? entry.getValue().replace(quote, escaped) : entry.getValue().replace(quote, "'"));
+                if (Utilities.isWindows() && s.endsWith("\"")) {
+                    //#201132 property cannot end with 2 double quotes, add a space to the end after our quote to prevent the state
+                    s = s + " ";
+                }
+                toRet.add(s);
             }
         }
 

@@ -58,6 +58,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.qa.form.ExtJellyTestCase;
+import org.netbeans.qa.form.OptionsForFormOperator;
 
 /**
  * Automatic internationalization test
@@ -115,12 +116,12 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
      */
     public void testAutomaticInternationalizationEnabled() {
         //testAutomaticInternationalization(true);
-        OptionsOperator.invoke();
+        OptionsForFormOperator.invoke();
         //add timeout
         waitNoEvent(1000);
         log("Option dialog was opened");
 
-        OptionsOperator options = new OptionsOperator();
+        OptionsForFormOperator options = new OptionsForFormOperator();
 
 
         //add timeout
@@ -168,12 +169,12 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
      */
     public void testAutomaticInternationalizationDisabled() {
         //testAutomaticInternationalization(false);
-        OptionsOperator.invoke();
+        OptionsForFormOperator.invoke();
         //add timeout
         waitNoEvent(1000);
         log("Option dialog was opened");
 
-        OptionsOperator options = new OptionsOperator();
+        OptionsForFormOperator options = new OptionsForFormOperator();
 
         //add timeout
         waitNoEvent(1000);

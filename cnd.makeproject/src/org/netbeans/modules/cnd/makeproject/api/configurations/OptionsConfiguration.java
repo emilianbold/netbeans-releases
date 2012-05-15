@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 
-public class OptionsConfiguration {
+public class OptionsConfiguration implements Cloneable {
     private String preDefined = ""; // NOI18N
     private boolean dirty = false;
 

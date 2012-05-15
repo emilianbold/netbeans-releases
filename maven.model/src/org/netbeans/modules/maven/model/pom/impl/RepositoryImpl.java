@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.*;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -64,46 +63,56 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
     // attributes
 
     // child elements
+    @Override
     public RepositoryPolicy getReleases() {
         return getChild(RepositoryPolicy.class);
     }
 
+    @Override
     public void setReleases(RepositoryPolicy releases) {
         setChild(RepositoryPolicy.class, getModel().getPOMQNames().RELEASES.getName(), releases,
                 Collections.<Class<? extends POMComponent>>emptyList());
     }
 
+    @Override
     public RepositoryPolicy getSnapshots() {
         return getChild(RepositoryPolicy.class);
     }
 
+    @Override
     public void setSnapshots(RepositoryPolicy snapshots) {
         setChild(RepositoryPolicy.class, getModel().getPOMQNames().SNAPSHOTS.getName(), snapshots,
                 Collections.<Class<? extends POMComponent>>emptyList());
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getUrl() {
         return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public void setUrl(String url) {
         setChildElementText(getModel().getPOMQNames().URL.getName(), url,
                 getModel().getPOMQNames().URL.getQName());
     }
 
+    @Override
     public String getLayout() {
         return getChildElementText(getModel().getPOMQNames().LAYOUT.getQName());
     }
 
+    @Override
     public void setLayout(String layout) {
         setChildElementText(getModel().getPOMQNames().LAYOUT.getName(), layout,
                 getModel().getPOMQNames().LAYOUT.getQName());
@@ -119,6 +128,7 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
         }
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

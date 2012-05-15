@@ -52,11 +52,13 @@ public class Configuration {
     
     private String displayName;
     private String id;
+    private final Preferences overlayPreferences;
     
-    Configuration(String id, String displayName) {
+    Configuration(String id, String displayName, Preferences overlayPreferences) {
         this.displayName = displayName;
         this.id = id;
-        Preferences prefs = NbPreferences.forModule(this.getClass()).node(id());
+        this.overlayPreferences = overlayPreferences;
+        Preferences prefs = getPreferences();
         prefs.put("display.name", displayName);
     }
     
@@ -70,7 +72,7 @@ public class Configuration {
     }
 
     public void setDisplayName(String displayName) {
-        Preferences oldPrefs = NbPreferences.forModule(this.getClass()).node(id());
+        Preferences oldPrefs = getPreferences();
         oldPrefs.put("display.name", displayName);
         this.displayName = displayName;
     }
@@ -78,6 +80,10 @@ public class Configuration {
     @Override
     public String toString() {
         return displayName;
+    }
+    
+    public final Preferences getPreferences() {
+        return overlayPreferences == null ? ConfigurationsManager.getConfigurationsRoot().node(id()) : overlayPreferences;
     }
 
 }

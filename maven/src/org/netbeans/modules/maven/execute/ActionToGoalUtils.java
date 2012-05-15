@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -105,6 +106,19 @@ public final class ActionToGoalUtils {
     private ActionToGoalUtils() {
     }
 
+    /**
+     * Finds all action providers for a project (usually differentiated by packaging type).
+     * @param project a Maven project
+     * @return a list of action providers, type-specific first, then general from global lookup
+     * @since 2.50
+     */
+    public static @NonNull List<? extends MavenActionsProvider> actionProviders(@NonNull Project project) {
+        List<MavenActionsProvider> providers = new ArrayList<MavenActionsProvider>();
+        providers.addAll(project.getLookup().lookupAll(MavenActionsProvider.class));
+        providers.addAll(Lookup.getDefault().lookupAll(MavenActionsProvider.class));
+        return providers;
+    }
+
     public static RunConfig createRunConfig(String action, NbMavenProjectImpl project, Lookup lookup) {
         M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
         RunConfig rc = configs.getActiveConfiguration().createConfigForDefaultAction(action, project, lookup);
@@ -136,7 +150,7 @@ public final class ActionToGoalUtils {
             }
         }
         if(rc==null){
-            for (MavenActionsProvider add : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
+            for (MavenActionsProvider add : actionProviders(project)) {
                         if (add.isActionEnable(action, project, lookup)) {
                             rc = add.createConfigForDefaultAction(action, project, lookup);
                             if (rc != null) {
@@ -179,7 +193,7 @@ public final class ActionToGoalUtils {
             }
         }
         
-        for (MavenActionsProvider add : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
+        for (MavenActionsProvider add : actionProviders(project)) {
             if (add.isActionEnable(action, project, lookup)) {
                 return true;
             }
@@ -213,23 +227,18 @@ public final class ActionToGoalUtils {
                 names.add(map.getActionName());
             }
         }
-        for (MavenActionsProvider prov : Lookup.getDefault().lookupAll(MavenActionsProvider.class)) {
-            if (prov instanceof NbGlobalActionGoalProvider) {
                 // check the global actions defined, include only if not the same name as project-specific one.
-                for (NetbeansActionMapping map : ((NbGlobalActionGoalProvider) prov).getCustomMappings()) {
+                for (NetbeansActionMapping map : Lookup.getDefault().lookup(NbGlobalActionGoalProvider.class).getCustomMappings()) {
                     if (!names.contains(map.getActionName())) {
                         toRet.add(map);
                     }
                 }
-            }
-        }
         return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
     }
 
     public static NetbeansActionMapping getDefaultMapping(String action, Project project) {
         NetbeansActionMapping na = null;
-        Lookup.Result<MavenActionsProvider> res = Lookup.getDefault().lookupResult(MavenActionsProvider.class);
-        for (MavenActionsProvider add : res.allInstances()) {
+        for (MavenActionsProvider add : actionProviders(project)) {
             na = add.getMappingForAction(action, project);
             if (na != null) {
                 break;

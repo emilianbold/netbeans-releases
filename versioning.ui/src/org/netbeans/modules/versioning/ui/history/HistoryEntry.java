@@ -88,6 +88,7 @@ class HistoryEntry {
 
     public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
         entry.getRevisionFile(originalFile, revisionFile);
+        org.netbeans.modules.versioning.util.Utils.associateEncoding(originalFile.toFileObject(), revisionFile.toFileObject());
     }
 
     public String getRevision() {

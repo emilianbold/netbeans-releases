@@ -44,14 +44,10 @@ package org.netbeans.modules.languages.yaml;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -66,8 +62,9 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.util.Exceptions;
 
 /**
- * Keystroke handler for YAML; handle newline indentation, auto matching of <% %> etc.
- * 
+ * Keystroke handler for YAML; handle newline indentation, auto matching of <%
+ * %> etc.
+ *
  * @author Tor Norbye
  */
 public class YamlKeystrokeHandler implements KeystrokeHandler {
@@ -156,10 +153,12 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
+    @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
         return false;
     }
 
+    @Override
     public boolean charBackspaced(Document doc, int dotPos, JTextComponent target, char ch) throws BadLocationException {
         if (ch == '%' && dotPos > 0 && dotPos <= doc.getLength() - 2) {
             String s = doc.getText(dotPos - 1, 3);
@@ -183,6 +182,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
 //
 //        return true;
 //    }
+    @Override
     public int beforeBreak(Document document, int offset, JTextComponent target) throws BadLocationException {
 
         Caret caret = target.getCaret();
@@ -207,7 +207,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         String lineSuffix = doc.getText(offset, lineEnd + 1 - offset);
         if (linePrefix.trim().endsWith(":") && lineSuffix.trim().length() == 0) {
             // Yes, new key: increase indent
-            indent += getIndentSize(doc);
+            indent += IndentUtils.getIndentSize();
         } else {
             // No, just use same indent as parent
         }
@@ -226,17 +226,19 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         if (remove > 0) {
             doc.remove(offset, remove);
         }
-        String str = getIndentString(indent);
+        String str = IndentUtils.getIndentString(indent);
         int newPos = offset + str.length();
         doc.insertString(offset, str, null);
         caret.setDot(offset);
         return newPos + 1;
     }
 
+    @Override
     public OffsetRange findMatching(Document doc, int caretOffset) {
         return OffsetRange.NONE;
     }
 
+    @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
         YamlParserResult result = (YamlParserResult) info;
         if (result == null) {
@@ -244,7 +246,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
 
         List<? extends StructureItem> items = result.getItems();
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return Collections.emptyList();
         }
 
@@ -274,6 +276,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
     }
 
+    @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
@@ -299,21 +302,4 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         }
     }
 
-    public static int getIndentSize(BaseDocument doc) {
-        Preferences prefs = MimeLookup.getLookup(MimePath.get(YamlTokenId.YAML_MIME_TYPE)).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
-    }
-
-    public static void indent(StringBuilder sb, int indent) {
-        for (int i = 0; i < indent; i++) {
-            sb.append(' ');
-        }
-    }
-
-    public static String getIndentString(int indent) {
-        StringBuilder sb = new StringBuilder(indent);
-        indent(sb, indent);
-
-        return sb.toString();
-    }
 }

@@ -87,6 +87,11 @@ public class DesignMultiViewElement extends TopComponent
     private transient DesignView designView;
     private transient DataObject dataObject;
     private transient Lookup myLookup;
+    
+    public DesignMultiViewElement() {
+        super();
+        initialize();
+    }
 
     /**
      * 

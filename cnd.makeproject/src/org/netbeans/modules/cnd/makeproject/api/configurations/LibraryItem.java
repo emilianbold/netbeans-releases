@@ -47,18 +47,18 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class LibraryItem {
+public class LibraryItem implements Cloneable {
     public static final int PROJECT_ITEM = 0;
     public static final int STD_LIB_ITEM = 1;
     public static final int LIB_ITEM = 2;
@@ -124,7 +124,7 @@ public class LibraryItem {
 	return this;
     }
 
-    public static class ProjectItem extends LibraryItem {
+    public static class ProjectItem extends LibraryItem implements Cloneable {
 	private MakeArtifact makeArtifact;
 	private Project project; // Just for caching
 
@@ -162,7 +162,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-            String ret = getString("ProjectTxt") + " " + getMakeArtifact().getProjectLocation(); // NOI18N
+            String ret = NbBundle.getMessage(LibraryItem.class, "ProjectTxt", getMakeArtifact().getProjectLocation()); // NOI18N
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
             }
@@ -219,7 +219,7 @@ public class LibraryItem {
 	}
     }
 
-    public static class StdLibItem extends LibraryItem {
+    public static class StdLibItem extends LibraryItem implements Cloneable {
 	private final String name;
 	private final String displayName;
 	private final String[] libs;
@@ -245,7 +245,14 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("StandardLibraryTxt") + " " + getDisplayName() + " (" + getOption(null) + ")"; // NOI18N
+            StringBuilder options = new StringBuilder();
+            for (int i = 0; i < libs.length; i++) {
+                if (options.length()>0) {
+                    options.append(' '); // NOI18N
+                }
+                options.append(libs[i]); // NOI18N
+            }
+	    return NbBundle.getMessage(LibraryItem.class, "StandardLibraryTxt", getDisplayName(), options.toString()); // NOI18N
 	}
 
         @Override
@@ -266,9 +273,18 @@ public class LibraryItem {
         @Override
         public String getOption(MakeConfiguration conf) {
             StringBuilder options = new StringBuilder();
+            String flag = null;
             for (int i = 0; i < libs.length; i++) {
                 if (libs[i].charAt(0) != '-') {
-                    options.append("-l").append(libs[i]).append(" "); // NOI18N
+                    if (flag == null) {
+                        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+                        if (cs != null) {
+                            flag = cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag();
+                        }
+                    }
+                    if (flag != null) {
+                        options.append(flag).append(libs[i]).append(" "); // NOI18N
+                    }
                 } else {
                     options.append(libs[i]).append(" "); // NOI18N
                 }
@@ -288,7 +304,7 @@ public class LibraryItem {
 	}
     }
 
-    public static class LibItem extends LibraryItem {
+    public static class LibItem extends LibraryItem implements Cloneable {
 	private String libName;
 
 	public LibItem(String libName) {
@@ -306,7 +322,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryTxt") + "  " + getLibName() + " (" + getOption(null) + ")"; // NOI18N
+	    return NbBundle.getMessage(LibraryItem.class, "LibraryTxt", getLibName()); // NOI18N
 	}
 
         @Override
@@ -326,7 +342,11 @@ public class LibraryItem {
 
         @Override
 	public String getOption(MakeConfiguration conf) {
-	    return "-l" + getLibName(); // NOI18N
+            CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+            if (cs != null) {
+                return cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() + getLibName();
+            }
+	    return ""; // NOI18N
 	}
 
         @Override
@@ -340,7 +360,7 @@ public class LibraryItem {
 	}
     }
 
-    public static class LibFileItem extends LibraryItem {
+    public static class LibFileItem extends LibraryItem implements Cloneable {
 	private String path;
 
 	public LibFileItem(String path) {
@@ -359,7 +379,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryFileTxt") + " "  + getPath() + " (" + getOption(null) + ")"; // NOI18N
+	    return NbBundle.getMessage(LibraryItem.class, "LibraryFileTxt", getPath()); // NOI18N
 	}
 
         @Override
@@ -404,7 +424,7 @@ public class LibraryItem {
 	}
     }
 
-    public static class OptionItem extends LibraryItem {
+    public static class OptionItem extends LibraryItem implements Cloneable {
 	private String libraryOption;
 
 	public OptionItem(String libraryOption) {
@@ -422,7 +442,7 @@ public class LibraryItem {
 
         @Override
 	public String getToolTip() {
-	    return getString("LibraryOptionTxt") + " "  + getLibraryOption() + " (" + getOption(null) + ")"; // NOI18N
+	    return NbBundle.getMessage(LibraryItem.class, "LibraryOptionTxt", getLibraryOption()); // NOI18N
 	}
 
         @Override
@@ -454,10 +474,5 @@ public class LibraryItem {
 	public OptionItem clone() {
 	    return new OptionItem(getLibraryOption());
 	}
-    }
-    
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(LibraryItem.class, s);
     }
 }

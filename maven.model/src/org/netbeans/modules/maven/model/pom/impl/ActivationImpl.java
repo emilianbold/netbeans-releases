@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+import java.util.*;	
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,42 +62,51 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
     // attributes
 
     // child elements
+    @Override
     public ActivationOS getActivationOS() {
         return getChild(ActivationOS.class);
     }
 
+    @Override
     public void setActivationOS(ActivationOS activationOS) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(ActivationOS.class, getModel().getPOMQNames().ACTIVATIONOS.getName(), activationOS, empty);
     }
 
+    @Override
     public ActivationProperty getActivationProperty() {
         return getChild(ActivationProperty.class);
     }
 
+    @Override
     public void setActivationProperty(ActivationProperty activationProperty) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(ActivationProperty.class, getModel().getPOMQNames().ACTIVATIONPROPERTY.getName(), activationProperty, empty);
     }
 
+    @Override
     public ActivationFile getActivationFile() {
         return getChild(ActivationFile.class);
     }
 
+    @Override
     public void setActivationFile(ActivationFile activationFile) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(ActivationFile.class, getModel().getPOMQNames().ACTIVATIONFILE.getName(), activationFile, empty);
     }
 
+    @Override
     public ActivationCustom getActivationCustom() {
         return getChild(ActivationCustom.class);
     }
 
+    @Override
     public void setActivationCustom(ActivationCustom activationCustom) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(ActivationCustom.class, getModel().getPOMQNames().ACTIVATIONCUSTOM.getName(), activationCustom, empty);
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

@@ -246,9 +246,9 @@ public class VisualizerNodeTest extends NbTestCase {
         assertEquals(vn.getShortDescription(), "<html><br>test</html>");
     }
 
-    final boolean isDummyNode(TreeNode visNode) {
+    static boolean isDummyNode(TreeNode visNode) {
         Node node = ((VisualizerNode)(visNode)).node;
-        return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
+        return node.getClass().getName().endsWith("EntrySupportLazy$DummyNode");
     }
     
     static class LazyChildren extends Children.Keys<String> {

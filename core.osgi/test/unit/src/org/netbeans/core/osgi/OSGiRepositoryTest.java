@@ -44,8 +44,10 @@ package org.netbeans.core.osgi;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
@@ -55,6 +57,14 @@ public class OSGiRepositoryTest extends NbTestCase {
 
     public OSGiRepositoryTest(String n) {
         super(n);
+    }
+    
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+    
+    @Override protected String logRoot() {
+        return "org.netbeans.core.osgi";
     }
 
     protected @Override void setUp() throws Exception {
@@ -69,7 +79,7 @@ public class OSGiRepositoryTest extends NbTestCase {
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + LayersInstall.class.getName(),
                 "OpenIDE-Module-Layer: custom/layer.xml",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run(false);
         assertEquals("whatever", System.getProperty("my.file"));
     }
     public static class LayersInstall extends ModuleInstall {
@@ -103,7 +113,7 @@ public class OSGiRepositoryTest extends NbTestCase {
                 "}",
                 "}").done().
                 module("org.netbeans.modules.settings").
-                run();
+                run(false);
         String settings = System.getProperty("my.settings");
         assertNotNull(settings);
         assertTrue(settings, settings.contains("<string>hello</string>"));
@@ -113,12 +123,13 @@ public class OSGiRepositoryTest extends NbTestCase {
         new OSGiProcess(getWorkDir()).newModule().clazz(DynamicInstall.class).clazz(DynLayer.class).service(FileSystem.class, DynLayer.class).manifest(
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + DynamicInstall.class.getName(),
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run(false);
         assertEquals("5", System.getProperty("dyn.file.length"));
     }
     public static class DynamicInstall extends ModuleInstall {
         public @Override void restored() {
-            System.setProperty("dyn.file.length", Long.toString(FileUtil.getConfigFile("whatever").getSize()));
+            FileObject f = FileUtil.getConfigFile("whatever");
+            System.setProperty("dyn.file.length", f != null ? Long.toString(f.getSize()) : "missing");
         }
     }
     public static class DynLayer extends MultiFileSystem {
@@ -147,7 +158,7 @@ public class OSGiRepositoryTest extends NbTestCase {
                 "OpenIDE-Module: m2",
                 "OpenIDE-Module-Install: " + MasksInstall.class.getName(),
                 "OpenIDE-Module-Layer: m2/layer.xml",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems, m1").done().backwards().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems, m1").done().backwards().run(false);
         assertEquals("false", System.getProperty("original.visible"));
         assertEquals("true", System.getProperty("substitute.visible"));
         assertEquals("false", System.getProperty("mask.visible"));
@@ -171,7 +182,7 @@ public class OSGiRepositoryTest extends NbTestCase {
                 "OpenIDE-Module: m1",
                 "OpenIDE-Module-Layer: m1/layer.xml",
                 "OpenIDE-Module-Install: " + BrandingLayersInstall.class.getName()
-                ).clazz(BrandingLayersInstall.class).done().run();
+                ).clazz(BrandingLayersInstall.class).done().run(false);
         assertEquals("true", System.getProperty("branded.out"));
     }
     public static class BrandingLayersInstall extends ModuleInstall {
@@ -187,13 +198,13 @@ public class OSGiRepositoryTest extends NbTestCase {
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + URLsInstall.class.getName(),
                 "OpenIDE-Module-Layer: custom/layer.xml",
-                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run();
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules, org.openide.filesystems").done().run(false);
         assertEquals("5", System.getProperty("hello.contents.length"));
     }
     public static class URLsInstall extends ModuleInstall {
         public @Override void restored() {
             try {
-                System.setProperty("hello.contents.length", Integer.toString(FileUtil.getConfigFile("hello").getURL().openConnection().getContentLength()));
+                System.setProperty("hello.contents.length", Integer.toString(FileUtil.getConfigFile("hello").toURL().openConnection().getContentLength()));
             } catch (IOException x) {
                 System.setProperty("hello.contents.length", x.toString());
             }

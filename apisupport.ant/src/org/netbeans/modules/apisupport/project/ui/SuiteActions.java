@@ -77,8 +77,6 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -341,13 +339,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (COMMAND_BRANDING.equals(command)) {
-            boolean enabled = false;
-            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            if( null != properties ) {
-                String brandingToken = properties.get(SuiteBrandingModel.BRANDING_TOKEN_PROPERTY);
-                enabled = null != brandingToken;
-            }
-            return enabled;
+            return project.getEvaluator().getProperty(SuiteBrandingModel.BRANDING_TOKEN_PROPERTY) != null;
         } else if (ActionProvider.COMMAND_DELETE.equals(command) ||
                 ActionProvider.COMMAND_RENAME.equals(command) ||
                 ActionProvider.COMMAND_MOVE.equals(command)) {

@@ -69,8 +69,8 @@ public class Reformatter implements ReformatTask {
     private CodeStyle codeStyle;
     private int carret = -1;
     private JTextComponent currentComponent;
-    private static boolean expandTabToSpaces = true;
-    private static int tabSize = 8;
+    private boolean expandTabToSpaces = true;
+    private int tabSize = 8;
 
 
     public Reformatter(Context context) {
@@ -97,6 +97,9 @@ public class Reformatter implements ReformatTask {
         }
 	expandTabToSpaces = codeStyle.expandTabToSpaces();
         tabSize = codeStyle.getTabSize();
+        if (tabSize <= 1) {
+            tabSize = 8;
+        }
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);
@@ -174,7 +177,7 @@ public class Reformatter implements ReformatTask {
                 if (startOffset > curEnd || endOffset < curStart) {
                     continue;
                 }
-                String curText = diff.getText();
+                String curText = diff.getText(expandTabToSpaces, tabSize);
                 if (carret != -1) {
                     if (carret >= curStart) {
                         carret += curText.length() - (curEnd - curStart);
@@ -213,7 +216,7 @@ public class Reformatter implements ReformatTask {
                     res.addFirst(buf.substring(end + GAP_SIZE));
                     buf.setLength(end + GAP_SIZE);
                 }
-                String text = diff.getText();
+                String text = diff.getText(expandTabToSpaces, tabSize);
                 if (startOffset > end || endOffset < start) {
                     System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
                     continue;
@@ -350,8 +353,8 @@ public class Reformatter implements ReformatTask {
             return end;
         }
 
-        public String getText() {
-            return repeatChar(newLines, '\n', false)+repeatChar(spaces, ' ', isIndent); // NOI18N
+        public String getText( boolean expandTabToSpaces, int tabSize) {
+            return repeatChar(newLines, '\n', false, expandTabToSpaces, tabSize)+repeatChar(spaces, ' ', isIndent, expandTabToSpaces, tabSize); // NOI18N
         }
 
         public void setText(int newLines, int spaces, boolean isIndent) {
@@ -378,7 +381,7 @@ public class Reformatter implements ReformatTask {
             return "Diff<" + start + "," + end + ">: newLines="+newLines+" spaces="+spaces; //NOI18N
         }
 
-        public static String repeatChar(int length, char c, boolean indent) {
+        private static String repeatChar(int length, char c, boolean indent, boolean expandTabToSpaces, int tabSize) {
             if (length == 0) {
                 return ""; //NOI18N
             } else if (length == 1) {
@@ -389,10 +392,10 @@ public class Reformatter implements ReformatTask {
                 }
             }
             StringBuilder buf = new StringBuilder(length);
-            if (c == ' '  && indent && !Reformatter.expandTabToSpaces && Reformatter.tabSize > 1) {
-                while (length >= Reformatter.tabSize) {
+            if (c == ' '  && indent && !expandTabToSpaces && tabSize > 1) {
+                while (length >= tabSize) {
                     buf.append('\t'); //NOI18N
-                    length -= Reformatter.tabSize;
+                    length -= tabSize;
                 }
             }
             for (int i = 0; i < length; i++) {
@@ -401,8 +404,8 @@ public class Reformatter implements ReformatTask {
             return buf.toString();
         }
 
-        public static boolean equals(String text, int newLines, int spaces, boolean isIndent){
-           String space = repeatChar(newLines, '\n', false)+repeatChar(spaces, ' ', isIndent); // NOI18N
+        public static boolean equals(String text, int newLines, int spaces, boolean isIndent, boolean expandTabToSpaces, int tabSize){
+           String space = repeatChar(newLines, '\n', false, expandTabToSpaces, tabSize)+repeatChar(spaces, ' ', isIndent, expandTabToSpaces, tabSize); // NOI18N
            return text.equals(space);
         }
     }

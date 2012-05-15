@@ -121,7 +121,7 @@ public class OracleWizardIterator implements WizardDescriptor.AsynchronousInstan
     }
 
     @Override
-    public Panel current() {
+    public Panel<WizardDescriptor> current() {
         switch (count) {
             case 0:
                 if (panel == null) {

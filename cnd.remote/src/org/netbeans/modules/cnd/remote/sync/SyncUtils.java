@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -51,7 +52,15 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,4 +91,47 @@ public class SyncUtils {
             }
         });
     }
+
+    /*package*/ static boolean isDoubleRemote(ExecutionEnvironment buildEnvironment, FileSystem sourceFileSystem) {
+        ExecutionEnvironment sourceExecutionEnvironment = FileSystemProvider.getExecutionEnvironment(sourceFileSystem);
+        if (sourceExecutionEnvironment.isRemote()) {
+            return ! buildEnvironment.equals(sourceExecutionEnvironment);
+        }
+        return false;
+    }
+
+    static void warnDoubleRemote(ExecutionEnvironment buildEnv, FileSystem sourceFileSystem) {
+        ExecutionEnvironment sourceEnv = FileSystemProvider.getExecutionEnvironment(sourceFileSystem);
+        String message = NbBundle.getMessage(SyncUtils.class, "ErrorDoubleRemote", buildEnv, sourceFileSystem);
+        DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(message, DialogDescriptor.ERROR_MESSAGE));
+    }
+
+    public static File[] toFiles(FSPath[] paths) {
+        List<File> l = new ArrayList<File>(paths.length);
+        for (FSPath path : paths) {
+            if (FileSystemProvider.getExecutionEnvironment(path.getFileSystem()).isLocal()) {
+                l.add(new File(path.getPath()));
+            }
+        }
+        return l.toArray(new File[l.size()]);
+    }
+
+    public static FileSystem getSingleFileSystem(FSPath[] paths) {
+        FileSystem fs = null;
+        for (FSPath fsp : paths) {
+            if (fs == null) {
+                fs = fsp.getFileSystem();
+            } else {
+                CndUtils.assertTrue(fs == fsp.getFileSystem(),
+                        "Different file systems are unsupported: " + fs + ", " + fsp.getFileSystem() ); //NOI18N
+                break;
+            }
+        }
+        if (fs == null) {
+            CndUtils.getLogger().warning("Defaulting file systems to a local one"); //NOI18N
+            fs = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+        }
+        return fs;
+    }
+
 }

@@ -256,10 +256,11 @@ final class ViewBuilder {
      *
      * @param startRebuildIndex index of first paragraph where the rebuilding occurs.
      * @param endRebuildIndex
-     * @param startOffset start offset of first paragraph to rebuild.
-     * @param endOffset ending offset of the last paragraph to be rebuilt.
      */
-    void initParagraphs(int startRebuildIndex, int endRebuildIndex, int startOffset, int endOffset) {
+    void initParagraphs(int startRebuildIndex, int endRebuildIndex) {
+        DocumentView docView = docReplace.view;
+        int startOffset = docView.getParagraphView(startRebuildIndex).getStartOffset();
+        int endOffset = docView.getParagraphView(endRebuildIndex - 1).getEndOffset();
         rebuildCause = RebuildCause.INIT_PARAGRAPHS;
         modOffset = endModOffset = Integer.MIN_VALUE; // No mod
         forceCreateLocalViews = true;
@@ -717,8 +718,9 @@ final class ViewBuilder {
         this.factoryStates = new FactoryState[viewFactories.length];
         for (int i = 0; i < viewFactories.length; i++) {
             FactoryState state = new FactoryState(viewFactories[i]);
-            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
             factoryStates[i] = state;
+            // Note: if init() fails with exception state.finish() will be called.
+            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
         }
         allReplaces = new ArrayList<ViewReplace<ParagraphView, EditorView>>(2);
 
@@ -1197,8 +1199,9 @@ final class ViewBuilder {
             if (forceCreateLocalViews) { // Ensure there will be enough space in TLCache
                 // Respect any previously set limit
                 TextLayoutCache tlCache = docView.op.getTextLayoutCache();
-                int newCapacity = Math.max(tlCache.capacity(), allReplacesSize);
-                tlCache.setCapacityOrDefault(newCapacity);
+                if (allReplacesSize > tlCache.capacity()) {
+                    tlCache.setCapacityOrDefault(allReplacesSize);
+                }
             }
             // Replace contents of each added paragraph view (if the contents are built too).
             for (int i = 0; i < allReplacesSize; i++) {
@@ -1262,7 +1265,9 @@ final class ViewBuilder {
         // Finish factories
         if (factoryStates != null) {
             for (FactoryState factoryState : factoryStates) {
-                factoryState.finish();
+                if (factoryState != null) { // Prevents NPE in case of early failure of state.init()
+                    factoryState.finish();
+                }
             }
         }
     }

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.languages.yaml;
 
 import java.util.Collections;
@@ -57,6 +56,7 @@ import org.openide.filesystems.FileUtil;
  * @author Tor Norbye
  */
 public class YamlParserTest extends YamlTestBase {
+
     public YamlParserTest(String testName) {
         super(testName);
     }
@@ -76,7 +76,7 @@ public class YamlParserTest extends YamlTestBase {
     public void testHuge() throws Exception {
         StringBuilder sb = new StringBuilder();
         String s = readFile(getTestFile("testfiles/database.yml"));
-        while (sb.length() < 1024*1024) {
+        while (sb.length() < 1024 * 1024) {
             sb.append(s);
         }
         String huge = sb.toString();
@@ -88,7 +88,9 @@ public class YamlParserTest extends YamlTestBase {
         Source source = Source.create(f);
 
         ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
+
+            public @Override
+            void run(ResultIterator resultIterator) throws Exception {
                 YamlParserResult result = (YamlParserResult) resultIterator.getParserResult();
 
                 assertNotNull(result);
@@ -112,6 +114,7 @@ public class YamlParserTest extends YamlTestBase {
         Source source = Source.create(fo);
 
         YamlParser parser = new YamlParser() {
+
             YamlParserResult parse(String source, Snapshot snapshot) {
                 throw new RuntimeException("Very bad thing");
             }
@@ -153,6 +156,6 @@ public class YamlParserTest extends YamlTestBase {
         long time = System.currentTimeMillis() - start;
         // takes about 30 ms on my laptop, so I suppose 300 ms should
         // be enough pretty much on any machine
-        assertTrue("Slow replacing of php fragments: " + time + " ms" , time < 300);
+        assertTrue("Slow replacing of php fragments: " + time + " ms", time < 300);
     }
 }

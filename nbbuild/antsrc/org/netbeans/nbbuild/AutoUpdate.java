@@ -394,7 +394,7 @@ public class AutoUpdate extends Task {
     }
     
     private InputStream externalDownload(InputStream is, AtomicLong crc) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         URLConnection conn;
         crc.set(-1L);
         for (;;) {

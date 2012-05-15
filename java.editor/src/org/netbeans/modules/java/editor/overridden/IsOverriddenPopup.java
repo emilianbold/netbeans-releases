@@ -175,13 +175,7 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
         ElementDescription desc = (ElementDescription) jList1.getSelectedValue();
         
         if (desc != null) {
-            FileObject file = desc.getSourceFile();
-            
-            if (file != null) {
-                ElementOpen.open(file, desc.getHandle());
-            } else {
-                Toolkit.getDefaultToolkit().beep();
-            }
+            desc.open();
         }
         
         PopupUtil.hidePopup();

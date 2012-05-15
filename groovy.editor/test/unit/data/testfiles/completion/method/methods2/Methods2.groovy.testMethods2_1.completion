@@ -10,6 +10,7 @@ METHOD     any(Closure)                               boolean
 METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
 METHOD     byteValue()                     [PUBLIC]   byte
+METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(Byte)                 [PUBLIC]   int

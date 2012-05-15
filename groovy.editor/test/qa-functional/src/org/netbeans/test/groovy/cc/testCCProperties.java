@@ -90,6 +90,7 @@ public class testCCProperties extends GeneralGroovy {
         type(file, "\n ");
         file.setCaretPositionToLine(file.getLineNumber() - 1);
         type(file, "class BB {\n def BB(){ \n");
+        waitScanFinished();
         type(file, "foo = new AA().");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
@@ -117,6 +118,7 @@ public class testCCProperties extends GeneralGroovy {
         file = new EditorOperator("CC.groovy");
         file.setCaretPosition("CC {", false);
         type(file, "\n def CC(){ \n");
+        waitScanFinished();
         type(file, "foo = new DD().");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);

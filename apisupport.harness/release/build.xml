@@ -241,7 +241,11 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
 
-    <target name="test-lib-init" depends="init">
+    <target name="-test-branding" if="branding.token"><!-- #197066 -->
+        <property name="test-unit-sys-prop.branding.token" value="${branding.token}"/>
+        <property name="test-qa-functional-sys-prop.branding.token" value="${branding.token}"/>
+    </target>
+    <target name="test-lib-init" depends="init,-test-branding">
         <!-- NbModuleSuite must be made to ignore disabled.modules during a test; see discussion in #136621: -->
         <delete failonerror="false">
             <fileset dir="${suite.build.dir}">

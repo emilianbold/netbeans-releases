@@ -50,15 +50,19 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -848,6 +852,18 @@ public class AntProjectHelperTest extends NbTestCase {
     }
     private String currentName() {
         return h.getPrimaryConfigurationData(true).getElementsByTagName("*").item(0).getChildNodes().item(0).getNodeValue();
+    }
+
+    public void testKnownValidProjectXmlCRC32s() throws Exception { // #195029
+        CharSequence log = Log.enable(AntBasedProjectFactorySingleton.class.getName(), Level.FINE);
+        h.createAuxiliaryConfiguration().putConfigurationFragment(XMLUtil.createDocument("stuff", "urn:test", null, null).getDocumentElement(), true);
+        ProjectManager.getDefault().saveProject(p);
+        assertNotNull(new AntBasedProjectFactorySingleton().loadProject(projdir, new ProjectState() {
+            @Override public void markModified() {}
+            @Override public void notifyDeleted() throws IllegalStateException {}
+        }));
+        String logS = log.toString();
+        assertFalse(logS, logS.contains("Validating: "));
     }
 
 }

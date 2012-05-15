@@ -111,7 +111,8 @@ public class MoveClassTransformer extends RefactoringVisitor {
         CompilationUnitTree cut = node;
         for (Tree clazz : typeDecls) {
             TypeMirror type = workingCopy.getTrees().getTypeMirror(new TreePath(getCurrentPath(), clazz));
-            if (workingCopy.getTypes().isSameType(type, elementHandle.resolve(workingCopy).asType())) {
+            TypeMirror sourceType = elementHandle.resolve(workingCopy).asType();
+            if (type != null && sourceType != null && workingCopy.getTypes().isSameType(type, sourceType)) {
                 cut = make.removeCompUnitTypeDecl(cut, clazz);
 
                 try {

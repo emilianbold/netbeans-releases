@@ -371,6 +371,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         return workdirPanel.exportCheckBox.isSelected();
     }
 
+    public boolean isOldFormatPreferred () {
+        return workdirPanel.preferOldFormatCheckBox.isSelected();
+    }
+
     private void repositoryFoldersChanged() {
         if (getRepositoryPath().equals("")) {
             resetWorkingDirLevelCheckBox();

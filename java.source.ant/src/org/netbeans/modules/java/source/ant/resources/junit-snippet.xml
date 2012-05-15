@@ -112,6 +112,7 @@ made subject to such option by the copyright holder.
                 </condition>
                 <property name="work.dir" value="${basedir}"/>
                 <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
+                    <jvmarg value="-ea"/>
                     <jvmarg line="${run.jvmargs}"/>
                     <classpath path="${classpath-translated}" />
                     <syspropertyset>

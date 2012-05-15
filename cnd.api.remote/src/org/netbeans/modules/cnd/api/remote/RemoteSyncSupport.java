@@ -177,7 +177,7 @@ public final class RemoteSyncSupport {
         void close();
     }
 
-    public static Worker createUploader(Project project, ExecutionEnvironment execEnv) {
+    public static Worker createUploader(Project project, ExecutionEnvironment execEnv) throws IOException {
         RemoteSyncService rss = Lookup.getDefault().lookup(RemoteSyncService.class);
         return (rss == null) ? null : rss.getUploader(project, execEnv);
     }

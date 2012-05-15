@@ -42,29 +42,19 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  *
  * @author schmidtm
  */
-public class CollectionsCCTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/collections/";
+public class CollectionsCCTest extends GroovyCCTestBase {
 
     public CollectionsCCTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    @Override
+    protected String getTestType() {
+        return "collections";
     }
 
     // testing proper creation of constructor-call proposals
@@ -72,27 +62,27 @@ public class CollectionsCCTest extends GroovyTestBase {
     //     * groovy.lang.*
     //     * groovy.util.*
 
-    public void testCollections1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
+    public void testCollections1_1() throws Exception {
+        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
     }
 
-    public void testCollections2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
+    public void testCollections1_2() throws Exception {
+        checkCompletion(BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
     }
 
-    public void testCollections3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
+    public void testCollections1_3() throws Exception {
+        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
     }
 
-    public void testCollections4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    1..10.d^", false);
+    public void testCollections1_4() throws Exception {
+        checkCompletion(BASE + "" + "Collections1.groovy", "    1..10.d^", false);
     }
 
-    public void testCollections5() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).^", false);
+    public void testCollections1_5() throws Exception {
+        checkCompletion(BASE + "" + "Collections1.groovy", "    (1..10).^", false);
     }
 
-    public void testCollections6() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
+    public void testCollections1_6() throws Exception {
+        checkCompletion(BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
     }
 }

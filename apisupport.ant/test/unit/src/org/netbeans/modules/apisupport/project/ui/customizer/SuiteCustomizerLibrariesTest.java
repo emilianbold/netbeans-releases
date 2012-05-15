@@ -47,12 +47,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.EventQueue;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
@@ -180,12 +175,12 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         assertEquals(1, m.getReleaseVersion());
         assertEquals(new SpecificationVersion("1.0"), m.getSpecificationVersion());
         assertEquals("foo-1", m.getImplementationVersion());
-        assertEquals(new HashSet<String>(Arrays.asList("tok1", "tok1a")), m.getProvidedTokens());
+        assertEquals(new TreeSet<String>(Arrays.asList("tok1", "tok1a")), assertProvidedTokens(m));
         assertEquals(Collections.EMPTY_SET, m.getRequiredTokens());
         assertEquals(Collections.EMPTY_SET, m.getModuleDependencies());
         m = modulesByName.get("bar");
         assertNotNull(m);
-        assertEquals(Collections.EMPTY_SET, m.getProvidedTokens());
+        assertEquals(Collections.EMPTY_SET, assertProvidedTokens(m));
         assertEquals(Collections.singleton("tok1"), m.getRequiredTokens());
         m = modulesByName.get("baz");
         assertNotNull(m);
@@ -197,7 +192,7 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         assertEquals(2, m.getReleaseVersion());
         assertEquals(new SpecificationVersion("2.0"), m.getSpecificationVersion());
         assertNull(m.getImplementationVersion());
-        assertEquals(Collections.singleton("tok2"), m.getProvidedTokens());
+        assertEquals(Collections.singleton("tok2"), assertProvidedTokens(m));
         assertEquals(Collections.EMPTY_SET, m.getRequiredTokens());
         assertEquals(Collections.EMPTY_SET, m.getModuleDependencies());
         m = modulesByName.get("org.example.module2");
@@ -205,14 +200,14 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         assertEquals(-1, m.getReleaseVersion());
         assertNull(m.getSpecificationVersion());
         assertNull(m.getImplementationVersion());
-        assertEquals(Collections.EMPTY_SET, m.getProvidedTokens());
+        assertEquals(Collections.EMPTY_SET, assertProvidedTokens(m));
         assertEquals(Collections.singleton("tok2"), m.getRequiredTokens());
         m = modulesByName.get("org.example.module3");
         assertNotNull(m);
         assertEquals(Dependency.create(Dependency.TYPE_MODULE, "org.example.module2, bar"), m.getModuleDependencies());
         m = modulesByName.get("bunnel");
         assertNotNull(m);
-        assertEquals("[bunnel, bunnel.api, bunnel.spi]", m.getProvidedTokens().toString());
+        assertEquals("[bunnel, bunnel.api, bunnel.spi]", assertProvidedTokens(m).toString());
         assertEquals("[]", m.getRequiredTokens().toString());
     }
 
@@ -325,6 +320,13 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         } else {
             return null;
         }
+    }
+    private static Set<String> assertProvidedTokens(SuiteCustomizerLibraries.UniverseModule mm) {
+        Set<String> arr = new TreeSet<String>(mm.getProvidedTokens());
+        if (!arr.remove("cnb." + mm.getCodeNameBase())) {
+            fail("There should be cnb." + mm.getCodeNameBase() + " in " + arr);
+        }
+        return arr;
     }
     
 }

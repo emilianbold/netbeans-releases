@@ -42,9 +42,8 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.*;
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -63,41 +62,62 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
     // attributes
 
     // child elements
+    @Override
     public DeploymentRepository getRepository() {
-        return getChild(DeploymentRepository.class);
+        List<DeploymentRepository> childs = getChildren(DeploymentRepository.class);
+        for (DeploymentRepository repo : childs) {
+            if (getModel().getPOMQNames().DIST_REPOSITORY.getName().equals(repo.getPeer().getLocalName())) {
+                return repo;
+            }
+        }
+        return null;
     }
 
+    @Override
     public void setRepository(DeploymentRepository distRepository) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(DeploymentRepository.class, getModel().getPOMQNames().DIST_REPOSITORY.getName(), distRepository, empty);
     }
 
+    @Override
     public DeploymentRepository getSnapshotRepository() {
-        return getChild(DeploymentRepository.class);
+        List<DeploymentRepository> childs = getChildren(DeploymentRepository.class);
+        for (DeploymentRepository repo : childs) {
+            if (getModel().getPOMQNames().DIST_SNAPSHOTREPOSITORY.getName().equals(repo.getPeer().getLocalName())) {
+                return repo;
+            }
+        }
+        return null;
     }
 
+    @Override
     public void setSnapshotRepository(DeploymentRepository distSnapshotRepository) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(DeploymentRepository.class, getModel().getPOMQNames().DIST_SNAPSHOTREPOSITORY.getName(), distSnapshotRepository, empty);
     }
 
+    @Override
     public Site getSite() {
         return getChild(Site.class);
     }
 
+    @Override
     public void setSite(Site site) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(Site.class, getModel().getPOMQNames().SITE.getName(), site, empty);
     }
 
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getDownloadUrl() {
         return getChildElementText(getModel().getPOMQNames().DOWNLOADURL.getQName());
     }
 
+    @Override
     public void setDownloadUrl(String url) {
         setChildElementText(getModel().getPOMQNames().DOWNLOADURL.getName(), url,
                 getModel().getPOMQNames().DOWNLOADURL.getQName());

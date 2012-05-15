@@ -1966,10 +1966,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                                         token = token.getNext();
                                         end = token.getOffset()+token.getImage().length();
 
-                                        //add ending > or /> into the selection
+                                        // add everything up to ending > or /> into the selection
                                         TokenItem next = token.getNext();
-                                        if(next != null && next.getTokenID() == JspTagTokenContext.SYMBOL && next.getImage().endsWith(">"))
+                                        while (next != null &&
+                                                !((next.getTokenID() == JspTagTokenContext.SYMBOL && next.getImage().endsWith(">"))
+                                                || next.getTokenID() == JspTagTokenContext.EOL)) {
                                             end += next.getImage().length();
+                                            next = next.getNext();
+                                        }
+                                        if (next != null && next.getTokenID() != JspTagTokenContext.EOL) {
+                                            end += next.getImage().length();
+                                        }
 
                                         return new int[] {start, end};
                                     } else {

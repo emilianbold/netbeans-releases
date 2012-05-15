@@ -61,11 +61,11 @@ public class ALT_UnchangedDimension03Test extends LayoutTestCase {
     }
 
     /**
-     * Move the labels horizontally next to the buttons, while dragging snap
-     * at top (or bottom) with the other components. Vertical layout should
-     * be kept unchanged (i.e. each label stays on its baseline) even though
-     * the dragging does not suggest baseline snap and components snap at top
-     * or bottom which several pixels off the original vertical position.
+     * Move the labels horizontally next to the buttons, vertically snap at top
+     * (or bottom) with the other components. As a result, the vertical layout
+     * should be kept unchanged (i.e. each label stays on its baseline) even
+     * though the dragging does not suggest baseline snap and the components snap
+     * at top or bottom which is several pixels off the original vertical position.
      */
     public void doChanges0() {
         lm.setChangeRecording(true);

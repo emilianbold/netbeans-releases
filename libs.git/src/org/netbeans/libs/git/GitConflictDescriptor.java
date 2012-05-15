@@ -70,7 +70,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_DELETED.shortDesc"); //NOI18N
+                return "Deleted by both"; //NOI18N
             }
         },
         /**
@@ -84,7 +84,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_ADDED_BY_US.shortDesc"); //NOI18N
+                return "Added by us"; //NOI18N
             }
         },
         /**
@@ -98,7 +98,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_THEM.shortDesc"); //NOI18N
+                return "Deleted by them"; //NOI18N
             }
         },
         /**
@@ -112,7 +112,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_ADDED_BY_THEM.shortDesc"); //NOI18N
+                return "Added by them"; //NOI18N
             }
         },
         /**
@@ -126,7 +126,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_DELETED_BY_US.shortDesc"); //NOI18N
+                return "Deleted by us"; //NOI18N
             }
         },
         /**
@@ -140,7 +140,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_ADDED.shortDesc"); //NOI18N
+                return "Added by both"; //NOI18N
             }
         },
         /**
@@ -154,7 +154,7 @@ public final class GitConflictDescriptor {
 
             @Override
             public String toString () {
-                return Utils.getBundle(GitConflictDescriptor.class).getString("MSG_GitConflictDescriptor_BOTH_MODIFIED.shortDesc"); //NOI18N
+                return "Modified by both"; //NOI18N
             }
         };
 

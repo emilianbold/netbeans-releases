@@ -659,7 +659,9 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
                 break;
 
         }
-        setSomeDefaults();
+        if (activePlatform == null && activeDevice == null && servletMapping == null && packageName == null) { // starting from scratch
+            setSomeDefaults();
+        }
         inUpdate = false;
         dontUpdateWcp = false;
         dontUpdateServletMapping = false;

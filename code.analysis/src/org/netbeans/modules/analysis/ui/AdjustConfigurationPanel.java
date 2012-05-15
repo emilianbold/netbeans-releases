@@ -56,7 +56,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import org.netbeans.modules.analysis.Configuration;
-import org.netbeans.modules.analysis.RunAnalysis;
+import org.netbeans.modules.analysis.ConfigurationsManager;
 import org.netbeans.modules.analysis.RunAnalysisPanel.ConfigurationRenderer;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
@@ -131,10 +131,13 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void updateConfiguration() {
+        if (currentPreferencesOverlay != null && currentPreferences != null) {
+            currentPreferencesOverlay.store(currentPreferences);
+        }
         if (preselected == null) {
-            currentPreferences = RunAnalysis.getConfigurationSettingsRoot(((Configuration) configurationCombo.getSelectedItem()).id());
+            currentPreferences = ((Configuration) configurationCombo.getSelectedItem()).getPreferences();
         } else {
-            currentPreferences = RunAnalysis.getConfigurationSettingsRoot("internal-temporary"); //TODO: better temporary name
+            currentPreferences = ConfigurationsManager.getDefault().getTemporaryConfiguration().getPreferences();
             try {
                 for (String c : currentPreferences.childrenNames()) {
                     currentPreferences.node(c).removeNode();

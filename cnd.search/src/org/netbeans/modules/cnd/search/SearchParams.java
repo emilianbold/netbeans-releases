@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.search;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.SearchRoot;
 
 /**
@@ -52,42 +53,24 @@ import org.netbeans.api.search.SearchRoot;
 public final class SearchParams {
 
     private final String fileNamePattern;
-    private final String searchText;
-    private boolean caseSensitive = false;
+    private final SearchPattern searchPattern;
     private final List<SearchRoot> roots;
-    private boolean wholeWords;
 
-    public SearchParams(List<SearchRoot> roots, String fileNamePattern, String searchText) {
+    public SearchParams(List<SearchRoot> roots, String fileNamePattern, SearchPattern searchPattern) {
         this.roots = roots;
         this.fileNamePattern = fileNamePattern;
-        this.searchText = searchText;
+        this.searchPattern = searchPattern;
     }
 
     public List<SearchRoot> getSearchRoots() {
         return Collections.unmodifiableList(roots);
     }
 
-    public String getSearchText() {
-        return searchText;
+    public SearchPattern getSearchPattern() {
+        return searchPattern;
     }
 
     public String getFileNamePattern() {
         return fileNamePattern;
-    }
-
-    public void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
-    }
-
-    public boolean isCaseSensitive() {
-        return caseSensitive;
-    }
-
-    public void setWholeWords(boolean wholeWords) {
-        this.wholeWords = wholeWords;
-    }
-
-    public boolean isWholeWords() {
-        return wholeWords;
     }
 }

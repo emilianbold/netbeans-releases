@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.LambdaFunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -258,9 +259,9 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         List<? extends ParameterElement> parameters = getParameters();
         for (int idx = 0; idx < parameters.size(); idx++) {
             ParameterElementImpl parameter = (ParameterElementImpl) parameters.get(idx);
@@ -270,14 +271,14 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             sb.append(parameter.getSignature());
 
         }
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
             sb.append(returnType);
         }
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -50,12 +50,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import org.netbeans.api.autoupdate.*;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -65,10 +65,9 @@ import org.openide.modules.ModuleInfo;
  * @author Radek Matous, Jiri Rechtacek
  */
 public final class OperationContainerImpl<Support> {
-    private OperationContainer<Support> container;
     private boolean upToDate = false;
     private OperationContainerImpl () {}
-    private static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
+    public static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
     private List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
     private Throwable lastModified;
     private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
@@ -177,10 +176,6 @@ public final class OperationContainerImpl<Support> {
         return find (updateElement) != null;
     }
     
-    public void setOperationContainer (OperationContainer<Support> container) {
-        this.container = container;
-    }
-
     private OperationInfo<Support> find (UpdateElement updateElement) {
         OperationInfo<Support> toRemove = null;
         for (OperationInfo<Support> info : listAll ()) {
@@ -226,14 +221,9 @@ public final class OperationContainerImpl<Support> {
 
         if ((type == OperationType.INSTALL || type == OperationType.UPDATE || type==OperationType.INTERNAL_UPDATE) && checkEagers) {
             Collection<UpdateElement> all = new HashSet<UpdateElement> (operations.size ());
-            Collection<ModuleInfo> allModuleInfos = new HashSet<ModuleInfo> (operations.size ());
             for (OperationInfo<?> i : operations) {
                 all.add (i.getUpdateElement ());
                 all.addAll (i.getRequiredElements());
-                UpdateElementImpl elImpl = Trampoline.API.impl (i.getUpdateElement ());
-                if (elImpl instanceof ModuleUpdateElementImpl) {
-                    allModuleInfos.add (((ModuleUpdateElementImpl) elImpl).getModuleInfo ());
-                }
                 //TODO: what if elImpl instanceof FeatureUpdateElementImpl ?
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
@@ -341,7 +331,7 @@ public final class OperationContainerImpl<Support> {
         } else if (updateUnit == null) {
             throw new IllegalArgumentException ("UpdateUnit cannot be null for UpdateElement " + updateElement);
         }
-        boolean isValid = false;
+        boolean isValid;
         switch (type) {
         case INSTALL :
             isValid = OperationValidator.isValidOperation (type, updateUnit, updateElement);

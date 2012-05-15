@@ -189,6 +189,21 @@ public class StandardLoggerTest extends NbTestCase {
         assertEquals("correct text printed", expectedMessages.toString(), session.messages.toString());
         
     }
+
+    public void testIsImportant() {
+        assertImportance(true, "error: missing stuff");
+        assertImportance(true, "something went wrong");
+        assertImportance(false, "Build stopped.");
+        assertImportance(false, "[deprecation] Some.method is now deprecated.");
+        assertImportance(false, "warning: missing stuff");
+        // workaround for javac #6403465 (fixed in JDK 7): AP-generated sources initially not found
+        assertImportance(false, "cannot find symbol: pkg.Generated");
+        // https://bugs.launchpad.net/ubuntu/+source/appmenu-gtk/+bug/783073
+        assertImportance(false, "/usr/lib/gtk-2.0/2.10.0/menuproxies/libappmenu.so: wrong ELF class: ELFCLASS64");
+    }
+    private static void assertImportance(boolean important, String message) {
+        assertTrue(message, important == StandardLogger.isImportant(message));
+    }
     
     // XXX testVerbosityLevels
     // XXX testThrownErrors

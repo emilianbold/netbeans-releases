@@ -10,6 +10,7 @@ METHOD     charAt(int)                     [PUBLIC]   char
 METHOD     codePointAt(int)                [PUBLIC]   int
 METHOD     codePointBefore(int)            [PUBLIC]   int
 METHOD     codePointCount(int, int)        [PUBLIC]   int
+METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(String)               [PUBLIC]   int

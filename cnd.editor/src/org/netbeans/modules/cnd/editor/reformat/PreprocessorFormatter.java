@@ -186,7 +186,7 @@ public class PreprocessorFormatter {
             }
         }
         if (previous != null && previous.id() == WHITESPACE) {
-            if (!Diff.equals(previous.text().toString(), 0, spaces, isIndent)){
+            if (!Diff.equals(previous.text().toString(), 0, spaces, isIndent, context.expandTabToSpaces, context.tabSize)){
                 ts.replacePrevious(previous, 0, spaces, isIndent);
             }
         } else {
@@ -198,7 +198,7 @@ public class PreprocessorFormatter {
 
     private void indentAfter(TokenSequence<CppTokenId> prep, Token<CppTokenId> next, int spaces) {
         if (next.id() == WHITESPACE) {
-            if (!Diff.equals(next.text().toString(), 0, spaces, false)){
+            if (!Diff.equals(next.text().toString(), 0, spaces, false, context.expandTabToSpaces, context.tabSize)){
                 diffs.addFirst(prep.offset() + prep.token().length(),
                                prep.offset() + prep.token().length() + next.length(), 0, spaces, false);
             }

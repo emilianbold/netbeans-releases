@@ -53,6 +53,7 @@ import org.netbeans.modules.netbinox.ContextClassLoaderTest.Compile;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.NetigsoFramework;
+import org.netbeans.core.netigso.NetigsoUtil;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -102,10 +103,7 @@ public class BundleURLConnectionTest extends NbTestCase {
         assertTrue("OSGi module is now enabled", m1.isEnabled());
         mgr.mutexPrivileged().exitWriteAccess();
 
-        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
-        final Method m = obj.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        Framework w = (Framework) m.invoke(obj);
+        Framework w = NetigsoUtil.framework(mgr);
         assertNotNull("Framework found", w);
         assertEquals("Felix is not in its name", -1, w.getClass().getName().indexOf("felix"));
         StringBuilder sb = new StringBuilder();

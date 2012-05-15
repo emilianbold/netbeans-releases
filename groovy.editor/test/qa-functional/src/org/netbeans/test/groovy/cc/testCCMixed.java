@@ -98,6 +98,7 @@ public class testCCMixed extends GeneralGroovy {
 
         file = new EditorOperator(TEST_BASE_NAME + (name_iterator - 1));
         file.setCaretPosition("args) {", false);
+        waitScanFinished();
         type(file, "\n BBB b = new BBB");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
@@ -128,6 +129,7 @@ public class testCCMixed extends GeneralGroovy {
 
         file = new EditorOperator(TEST_BASE_NAME + (name_iterator - 1));
         file.setCaretPosition("args) {", false);
+        waitScanFinished();
         type(file, "\n BBBB b = new BBBB");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
@@ -153,6 +155,7 @@ public class testCCMixed extends GeneralGroovy {
 
         file = new EditorOperator(TEST_BASE_NAME + (name_iterator - 1));
         file.setCaretPosition("args) {", false);
+        waitScanFinished();
         type(file, "\n F");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
@@ -172,6 +175,7 @@ public class testCCMixed extends GeneralGroovy {
         type(file, "import foo.bar.test.*;");
         file.setCaretPosition("args) {", false);
         type(file, "\n F");
+        waitScanFinished();
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
 
@@ -189,6 +193,7 @@ public class testCCMixed extends GeneralGroovy {
         EditorOperator file = new EditorOperator("EE.groovy");
         file.setCaretPosition("EE {", false);
         type(file, "\n  def EE(){\n");
+        waitScanFinished();
         type(file, "\n  def d = new java.util.Date() \n d.");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
@@ -215,6 +220,7 @@ public class testCCMixed extends GeneralGroovy {
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "EEE", "org.netbens.groovy");
         file = new EditorOperator("EEE.groovy");
         file.setCaretPosition("package org.netbens.groovy", false);
+        waitScanFinished();
         type(file, "\n import o");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
@@ -235,6 +241,7 @@ public class testCCMixed extends GeneralGroovy {
 
         file.setCaretPosition("EEE {", false);
         type(file, "\n  def EEE(){\n");
+        waitScanFinished();
         type(file, "\n  def d = new F");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
@@ -252,6 +259,7 @@ public class testCCMixed extends GeneralGroovy {
 
         EditorOperator file = new EditorOperator("EEE.groovy");
         file.setCaretPosition("def d = new F", false);
+        waitScanFinished();
         type(file, "oo() \n d.");
         file.typeKey(' ', InputEvent.CTRL_MASK);        
         new EventTool().waitNoEvent(1000);

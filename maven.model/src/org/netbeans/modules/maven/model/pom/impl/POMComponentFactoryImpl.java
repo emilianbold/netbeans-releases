@@ -79,6 +79,7 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         }
     }
 
+    @Override
     public POMComponent create(Element element, POMComponent context) {
         // return new SCAComponentCreateVisitor().create(element, context);
         QName qName = getQName(element, (POMComponentImpl)context);
@@ -94,6 +95,7 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         }
     }
     
+    @Override
     public POMComponent create(POMComponent context, QName qName) {
        String prefix = qName.getPrefix();
        if (prefix == null || prefix.length() == 0) {
@@ -107,177 +109,220 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
        return create(factory, element, context);
     }
     
+    @Override
     public Project createProject() {
         return new ProjectImpl(model);
     }
 
+    @Override
     public Parent createParent() {
         return new ParentImpl(model);
     }
 
+    @Override
     public Organization createOrganization() {
         return new OrganizationImpl(model);
     }
 
+    @Override
     public DistributionManagement createDistributionManagement() {
         return new DistributionManagementImpl(model);
     }
 
+    @Override
     public Site createSite() {
         return new SiteImpl(model);
     }
 
+    @Override
     public DeploymentRepository createDistRepository() {
         return new DeploymentRepositoryImpl(model, model.getPOMQNames().DIST_REPOSITORY);
     }
 
+    @Override
     public DeploymentRepository createDistSnapshotRepository() {
         return new DeploymentRepositoryImpl(model, model.getPOMQNames().DIST_SNAPSHOTREPOSITORY);
     }
 
+    @Override
     public Prerequisites createPrerequisites() {
         return new PrerequisitesImpl(model);
     }
 
+    @Override
     public Contributor createContributor() {
         return new ContributorImpl(model);
     }
 
+    @Override
     public Scm createScm() {
         return new ScmImpl(model);
     }
 
+    @Override
     public IssueManagement createIssueManagement() {
         return new IssueManagementImpl(model);
     }
 
+    @Override
     public CiManagement createCiManagement() {
         return new CiManagementImpl(model);
     }
 
+    @Override
     public Notifier createNotifier() {
         return new NotifierImpl(model);
     }
 
+    @Override
     public Repository createRepository() {
         return new RepositoryImpl(model, false);
     }
 
+    @Override
     public Repository createPluginRepository() {
         return new RepositoryImpl(model, true);
     }
 
+    @Override
     public RepositoryPolicy createReleaseRepositoryPolicy() {
         return new RepositoryPolicyImpl(model, model.getPOMQNames().RELEASES);
     }
 
+    @Override
     public RepositoryPolicy createSnapshotRepositoryPolicy() {
         return new RepositoryPolicyImpl(model, model.getPOMQNames().SNAPSHOTS);
     }
 
 
+    @Override
     public Profile createProfile() {
         return new ProfileImpl(model);
     }
 
+    @Override
     public BuildBase createBuildBase() {
         return new BuildBaseImpl(model);
     }
 
+    @Override
     public Plugin createPlugin() {
         return new PluginImpl(model);
     }
 
+    @Override
     public Dependency createDependency() {
         return new DependencyImpl(model);
     }
     
 
+    @Override
     public Exclusion createExclusion() {
         return new ExclusionImpl(model);
     }
 
+    @Override
     public PluginExecution createExecution() {
         return new PluginExecutionImpl(model);
     }
 
+    @Override
     public Resource createResource() {
         return new ResourceImpl(model, false);
     }
 
+    @Override
     public Resource createTestResource() {
         return new ResourceImpl(model, true);
     }
 
+    @Override
     public PluginManagement createPluginManagement() {
         return new PluginManagementImpl(model);
     }
 
+    @Override
     public Reporting createReporting() {
         return new ReportingImpl(model);
     }
 
+    @Override
     public ReportPlugin createReportPlugin() {
         return new ReportPluginImpl(model);
     }
 
+    @Override
     public ReportSet createReportSet() {
         return new ReportSetImpl(model);
     }
 
+    @Override
     public Activation createActivation() {
         return new ActivationImpl(model);
     }
 
+    @Override
     public ActivationProperty createActivationProperty() {
         return new ActivationPropertyImpl(model);
     }
 
+    @Override
     public ActivationOS createActivationOS() {
         return new ActivationOSImpl(model);
     }
 
+    @Override
     public ActivationFile createActivationFile() {
         return new ActivationFileImpl(model);
     }
 
+    @Override
     public ActivationCustom createActivationCustom() {
         return new ActivationCustomImpl(model);
     }
 
+    @Override
     public DependencyManagement createDependencyManagement() {
         return new DependencyManagementImpl(model);
     }
 
+    @Override
     public Build createBuild() {
         return new BuildImpl(model);
     }
 
+    @Override
     public Extension createExtension() {
         return new ExtensionImpl(model);
     }
 
+    @Override
     public License createLicense() {
         return new LicenseImpl(model);
     }
 
+    @Override
     public MailingList createMailingList() {
         return new MailingListImpl(model);
     }
 
 
+    @Override
     public Developer createDeveloper() {
         return new DeveloperImpl(model);
     }
 
+    @Override
     public Configuration createConfiguration() {
         return new ConfigurationImpl(model);
     }
 
+    @Override
     public Properties createProperties() {
         return new PropertiesImpl(model);
     }
 
+    @Override
     public POMExtensibilityElement createPOMExtensibilityElement(QName name) {
         return new POMExtensibilityElementBase(model, name);
     }

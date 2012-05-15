@@ -44,6 +44,7 @@
 
 package org.netbeans.api.project;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.util.Arrays;
@@ -247,6 +248,9 @@ public final class ProjectManager {
                                         throw new IllegalStateException("Attempt to call ProjectManager.findProject within the body of ProjectFactory.loadProject (hint: try using ProjectManager.mutex().postWriteRequest(...) within the body of your Project's constructor to prevent this)"); // NOI18N
                                     }
                                     LOG.log(Level.FINE, "findProject({0}) in {1}: waiting for LOADING_PROJECT...", new Object[] {projectDirectory, Thread.currentThread().getName()});
+                                    if (LOG.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
+                                        LOG.log(Level.WARNING, "loading " + projectDirectory, new IllegalStateException("trying to load a prpject from EQ"));
+                                    }
                                     dir2Proj.wait();
                                     LOG.log(Level.FINE, "findProject({0}) in {1}: ...done waiting for LOADING_PROJECT", new Object[] {projectDirectory, Thread.currentThread().getName()});
                                 } catch (InterruptedException e) {
@@ -384,7 +388,7 @@ public final class ProjectManager {
      * on a large number of directories.
      * <p>The result is not guaranteed to be accurate; there may be false positives
      * (directories for which <code>isProject</code> is true but {@link #findProject}
-     * will return false), for example if there is trouble loading the project.
+     * will return null), for example if there is trouble loading the project.
      * False negatives are possible only if there are bugs in the project factory.</p>
      * <p>Acquires read access.</p>
      * <p class="nonnormative">
@@ -409,8 +413,8 @@ public final class ProjectManager {
      * Should be faster and use less memory than {@link #findProject} when called
      * on a large number of directories.
      * <p>The result is not guaranteed to be accurate; there may be false positives
-     * (directories for which <code>isProject</code> is true but {@link #findProject}
-     * will return false), for example if there is trouble loading the project.
+     * (directories for which <code>isProject2</code> is non-null but {@link #findProject}
+     * will return null), for example if there is trouble loading the project.
      * False negatives are possible only if there are bugs in the project factory.</p>
      * <p>Acquires read access.</p>
      * <p class="nonnormative">
@@ -449,6 +453,10 @@ public final class ProjectManager {
                     do {
                         o = dir2Proj.get(projectDirectory);
                         if (LoadStatus.LOADING_PROJECT.is(o)) {
+                            if (EventQueue.isDispatchThread()) {
+                                // #183192: permitted false positive; better than blocking EQ
+                                return new Result(null);
+                            }
                             try {
                                 dir2Proj.wait();
                             } catch (InterruptedException e) {

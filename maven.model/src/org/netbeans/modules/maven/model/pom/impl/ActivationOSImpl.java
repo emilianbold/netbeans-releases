@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -62,41 +61,50 @@ public class ActivationOSImpl extends POMComponentImpl implements ActivationOS {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
 
+    @Override
     public String getName() {
         return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public void setName(String name) {
         setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
                 getModel().getPOMQNames().NAME.getQName());
     }
 
+    @Override
     public String getFamily() {
         return getChildElementText(getModel().getPOMQNames().FAMILY.getQName());
     }
 
+    @Override
     public void setFamily(String family) {
         setChildElementText(getModel().getPOMQNames().FAMILY.getName(), family,
                 getModel().getPOMQNames().FAMILY.getQName());
     }
 
+    @Override
     public String getArch() {
         return getChildElementText(getModel().getPOMQNames().ARCH.getQName());
     }
 
+    @Override
     public void setArch(String arch) {
         setChildElementText(getModel().getPOMQNames().ARCH.getName(), arch,
                 getModel().getPOMQNames().ARCH.getQName());
     }
 
+    @Override
     public String getVersion() {
         return getChildElementText(getModel().getPOMQNames().VERSION.getQName());
     }
 
+    @Override
     public void setVersion(String version) {
         setChildElementText(getModel().getPOMQNames().VERSION.getName(), version,
                 getModel().getPOMQNames().VERSION.getQName());

@@ -32,7 +32,6 @@ package org.netbeans.modules.web.refactoring.rename;
 
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.web.refactoring.RefactoringUtil;
@@ -48,8 +47,8 @@ public class WebXmlRename extends BaseWebXmlRename{
     private final String oldFqn;
     private final RenameRefactoring rename;
 
-    public WebXmlRename(String oldFqn, RenameRefactoring rename, WebApp webModel, FileObject webDD) {
-        super(webDD, webModel);
+    public WebXmlRename(String oldFqn, RenameRefactoring rename, FileObject webDD) {
+        super(webDD);
         this.oldFqn = oldFqn;
         this.rename = rename;
     }

@@ -375,6 +375,8 @@ public class StartTask extends BasicTask<OperationState> {
 
             // if we are profiling, we need to lie about the status?
             if (null != jvmArgs) {
+                // save process to be able to stop process waiting for profiler to attach
+                support.setLocalStartProcess(serverProcess);
                 // try to sync the states after the profiler attaches
                 NODE_REFRESHER.post(new Runnable () {
 

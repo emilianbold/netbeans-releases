@@ -207,7 +207,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
     static final Map<Bundle,ModuleInstall> installers = new HashMap<Bundle,ModuleInstall>();
 
     private void load(List<Bundle> bundles) {
-        if (bundles.isEmpty()) {
+        if (bundles.isEmpty() || bundles.size() == 1 && bundles.iterator().next().getBundleId() == 0) {
             return;
         }
         LOG.log(Level.FINE, "loading: {0}", bundles);
@@ -236,6 +236,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             ModuleInstall mi = installerFor(bundle);
             if (mi != null) {
                 installers.put(bundle, mi);
+                LOG.log(Level.FINE, "restored: {0}", bundle.getSymbolicName());
                 mi.restored();
             }
         }
@@ -243,6 +244,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
         // (but it does run them in parallel, which may be desirable)
         for (Runnable r : Lookups.forPath("Modules/Start").lookupAll(Runnable.class)) {
             if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
+                LOG.log(Level.FINE, "starting {0}", r.getClass().getName());
                 r.run();
             }
         }

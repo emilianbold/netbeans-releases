@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,14 +45,13 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.net.URL;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
@@ -78,10 +77,15 @@ public class SettingsTableModel extends AbstractTableModel {
     private Set<String> originalProviders;
     private SettingsTab settingsTab = null;
     
-    private final Logger logger = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.SettingsTableModel");
     /** Creates a new instance of SettingsTableModel */
     public SettingsTableModel () {
-        refreshModel ();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                refreshModel();
+            }
+        });
     }
     
     void setSettingsTab (SettingsTab settingsTab) {
@@ -109,6 +113,7 @@ public class SettingsTableModel extends AbstractTableModel {
         if (! forRefresh.isEmpty ()) {
             getSettingsTab ().setWaitingState (true);
             Utilities.startAsWorkerThread (new Runnable () {
+                @Override
                 public void run () {
                     try {
                         Utilities.presentRefreshProviders (forRefresh, getSettingsTab ().getPluginManager (), true);
@@ -156,10 +161,12 @@ public class SettingsTableModel extends AbstractTableModel {
         return columnIndex == 0;
     }
     
+    @Override
     public int getRowCount () {
         return updateProviders.size ();
     }
     
+    @Override
     public int getColumnCount () {
         return COLUMN_NAME_KEYS.length;
     }
@@ -186,6 +193,7 @@ public class SettingsTableModel extends AbstractTableModel {
         }
     }
     
+    @Override
     public Object getValueAt (int rowIndex, int columnIndex) {
         Object retval = null;
         UpdateUnitProvider unitProvider = updateProviders.get (rowIndex);
@@ -210,9 +218,9 @@ public class SettingsTableModel extends AbstractTableModel {
     }
     private static void sortAlphabetically (List<UpdateUnitProvider> res) {
         Collections.sort (res, new Comparator<UpdateUnitProvider>() {
-            Collator COLL = Collator.getInstance();
+            @Override
             public int compare(UpdateUnitProvider p1, UpdateUnitProvider p2) {
-                return COLL.compare(p1.getDisplayName(), p2.getDisplayName());
+                return p1.getDisplayName().compareTo(p2.getDisplayName());
             }
         });
         

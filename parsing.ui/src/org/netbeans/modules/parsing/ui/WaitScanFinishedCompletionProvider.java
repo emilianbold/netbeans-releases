@@ -157,7 +157,7 @@ public final class WaitScanFinishedCompletionProvider implements CompletionProvi
         }
     }
 
-    @NbBundle.Messages("LBL_IncompleteResults=May be incomplete while scanning in progress...")
+    @NbBundle.Messages("LBL_IncompleteResults=Searching for suggestions...")
     private static final class Item implements CompletionItem {
 
         @Override

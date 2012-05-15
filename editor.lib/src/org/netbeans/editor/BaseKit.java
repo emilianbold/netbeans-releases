@@ -3365,13 +3365,15 @@ public class BaseKit extends DefaultEditorKit {
 
                     int lineStartOffset = Utilities.getRowStart(doc, startPos );
                     int lineCount = Utilities.getRowCount(doc, startPos, end);
+                    Integer delta = null;
                     for (int i = lineCount - 1; i >= 0; i--) {
                         int indent = Utilities.getRowIndent(doc, lineStartOffset);
-                        int newIndent = (indent == -1) ? 0 : // Zero indent if row is white
-                                ((indent + indentDelta +
-                                    ((shiftCnt < 0) ? shiftWidth - 1 : 0))
-                                    / shiftWidth * shiftWidth);
-                                
+                        if (indent >= 0 && delta == null) {
+                            delta = ((indent + indentDelta + (shiftCnt < 0 ? shiftWidth - 1 : 0))
+                                        / shiftWidth * shiftWidth) - indent;
+                        }
+                        int newIndent = (indent < 0) ? 0 : // Zero indent if row is white
+                                indent + delta;                               
                         changeRowIndent(doc, lineStartOffset, Math.max(newIndent, 0));
                         lineStartOffset = Utilities.getRowStart(doc, lineStartOffset, +1);
                     }

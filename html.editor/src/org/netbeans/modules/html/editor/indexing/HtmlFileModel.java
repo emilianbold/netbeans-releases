@@ -227,6 +227,38 @@ public class HtmlFileModel {
                         CloseTag closeTag = tnode.matchingCloseTag();
                         if(closeTag != null) {
                             int to = closeTag.from();
+                            
+                            //Bug 212445 - AssertionError: Invalid start:591 end:583
+                            if(from > to) {
+                                //it looks like under some circumstances the <style> open
+                                //tag end offset "to()" points to the end of the subsequent
+                                //close tag </style>. Since in most of the reports 
+                                //negative difference is -8 which is "</style>".length()
+                                //it looks like the errorneous case happens 
+                                //for <style></style> element's pair. But since I cannot 
+                                //reproduce it I'll just add here a new assertion which
+                                //shows the text causing the issue.
+                                StringBuilder msg = new StringBuilder();
+                                msg.append("A bug #212445 just happended for source text \"");//NOI18N
+                                CharSequence source = getSnapshot().getText();
+                                CharSequence sample = source.subSequence(
+                                        Math.max(0, from - 50),
+                                        Math.min(source.length(), from + 50));
+                                
+                                msg.append(sample);
+                                msg.append("\". ");//NOI18N
+                                msg.append("Please report a new bug or reopen the existing issue #212445 "
+                                        + "and attach this exception + ideally the whole file \"");//NOI18N
+                                
+                                FileObject file = getSnapshot().getSource().getFileObject();
+                                msg.append(file == null ? "???" : file.getPath());
+                                
+                                msg.append("\" there. Thank you for your help!");//NOI18N
+                                
+                                throw new IllegalStateException(msg.toString()); 
+                            }
+                            
+                            
                             getEmbeddedCssSectionsCollectionInstance().add(new OffsetRange(from, to));
                         }
                     } else {
@@ -240,3 +272,6 @@ public class HtmlFileModel {
 
     }
 }
+
+//</style>
+//0123456789

@@ -63,11 +63,13 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,7 +90,7 @@ import org.openide.util.NbBundle;
         private final FileData fileData;
         private final SharabilityFilter delegate;
 
-        public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+        public TimestampAndSharabilityFilter(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
             fileData = FileData.get(privProjectStorageDir, executionEnvironment);
             delegate = new SharabilityFilter();
         }
@@ -132,8 +134,9 @@ import org.openide.util.NbBundle;
         }
     }
 
-    public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
-        super(executionEnvironment, out, err, privProjectStorageDir, files);
+    public ZipSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, FSPath... paths) {
+        super(executionEnvironment, out, err, privProjectStorageDir, paths);
     }
 
     private static File getTemp() {
@@ -324,6 +327,12 @@ import org.openide.util.NbBundle;
 
     @Override
     public boolean startup(Map<String, String> env2add) {
+
+        if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
+            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            return false;
+        }
+
         // Later we'll allow user to specify where to copy project files to
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
         if (remoteRoot == null) {

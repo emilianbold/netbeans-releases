@@ -56,7 +56,6 @@ import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -81,6 +80,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
     }
 
 
+    @Override
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
@@ -88,7 +88,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
             return toRet;
         }
         Map<String, String> managed = collectManaged(prj);
-        if (managed.size() == 0) {
+        if (managed.isEmpty()) {
             return toRet;
         }
 
@@ -127,10 +127,12 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
     }
 
 
+    @Override
     public JComponent getCustomizer(Preferences preferences) {
         return null;
     }
 
+    @Override
     public Configuration getConfiguration() {
         return configuration;
     }
@@ -160,10 +162,12 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
             dependency = dep;
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(OverrideDependencyManagementError.class, "TEXT_OverrideDependencyFix");
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             ChangeInfo info = new ChangeInfo();
             POMModel mdl = dependency.getModel();

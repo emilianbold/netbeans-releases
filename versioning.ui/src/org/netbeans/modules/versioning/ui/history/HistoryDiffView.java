@@ -50,9 +50,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
@@ -69,9 +69,11 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor.Task;
@@ -87,8 +89,8 @@ public class HistoryDiffView implements PropertyChangeListener {
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
-    private Task prepareDiffTask = null;
     private PreparingDiffHandler preparingDiffPanel;
+    private DiffTask diffTask;
         
     /** Creates a new instance of HistoryDiffView */
     public HistoryDiffView(HistoryComponent tc) {
@@ -179,13 +181,12 @@ public class HistoryDiffView implements PropertyChangeListener {
         scheduleTask(new CurrentDiffPrepareTask(entry, file, onSelectionLastDifference));
     }        
 
-    private void scheduleTask(Runnable runnable) {          
-        if(prepareDiffTask != null) {
-            prepareDiffTask.cancel();
-            getPreparingDiffHandler().finish();
+    private void scheduleTask(DiffTask newTask) {          
+        if(diffTask != null) {
+            diffTask.cancel();
         }
-        prepareDiffTask = History.getInstance().getRequestProcessor().create(runnable);
-        prepareDiffTask.schedule(500);        
+        diffTask = newTask;
+        diffTask.schedule();        
     }
 
     private PreparingDiffHandler getPreparingDiffHandler() {
@@ -205,7 +206,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         onSelectionLastDifference = true;
     }
 
-    private class CurrentDiffPrepareTask implements Runnable {
+    private class CurrentDiffPrepareTask extends DiffTask {
         
         private final HistoryEntry entry;
         private final VCSFileProxy file;
@@ -219,18 +220,37 @@ public class HistoryDiffView implements PropertyChangeListener {
 
         @Override
         public void run() {
-            DiffController dv = getView(entry);
+            
+            History.LOG.log(
+                Level.FINE, 
+                "preparing current diff for: {0} - {1}", // NOI18N        
+                new Object[]{entry, file}); 
+            
+            DiffController dv = getView(entry, file);
+            if(isCancelled()) {
+                return;
+            }            
             if(dv != null) {
+                History.LOG.log(Level.FINE, "setting cached diff view for {0} - {1}", new Object[]{entry.getRevision(), file});
                 setDiffView(dv, selectLast);
                 return;
             }
             
             File tmpFile;
             getPreparingDiffHandler().start();
+            if(isCancelled()) {
+                return;
+            }   
+            FileObject tmpFo;
             try {
                 File tempFolder = Utils.getTempFolder();
                 tmpFile = new File(tempFolder, file.getName()); // XXX
                 entry.getRevisionFile(file, VCSFileProxy.createFileProxy(tmpFile));
+                tmpFo = FileUtil.toFileObject(tmpFile);
+                History.LOG.log(Level.FINE, "retrieved revision file for {0} {1}", new Object[]{entry.getRevision(), file});
+                if(isCancelled()) {
+                    return;
+                }                
             } finally {
                 getPreparingDiffHandler().finish();
             }
@@ -242,51 +262,56 @@ public class HistoryDiffView implements PropertyChangeListener {
                 title2 = NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_FileDeleted"); // NOI18N
             }            
             
-            dv = prepareDiffView(VCSFileProxy.createFileProxy(tmpFile), file, title1, title2, true, selectLast);
+            dv = prepareDiffView(tmpFo, file.toFileObject(), true, file.exists(), title1, title2, true, selectLast);
+            if(isCancelled()) {
+                return;
+            }            
             if(dv != null) {
+                History.LOG.log(Level.FINE, "setting diff view for {0} - {1}", new Object[]{entry.getRevision(), file});
                 setDiffView(dv, selectLast);
-                putView(dv, entry);
+                putView(dv, entry, file);
             }
         }
     }        
 
-    private Map<String, DiffController> views = new HashMap<String, DiffController>();
-    private DiffController getView(HistoryEntry entry) {
+    private Map<String, DiffController> views = new ConcurrentHashMap<String, DiffController>();
+    private DiffController getView(HistoryEntry entry, VCSFileProxy file) {
         assert entry != null;
         if(entry == null) {
             return null;
         }
-        return views.get(getKey(entry));
+        return views.get(getKey(entry, file));
     }
     
-    private DiffController getView(HistoryEntry entry1, HistoryEntry entry2) {
+    private DiffController getView(HistoryEntry entry1, VCSFileProxy file1, HistoryEntry entry2) {
         assert entry1 != null && entry2 != null;
         if(entry1 == null && entry2 == null) {
             return null;
         }
-        return views.get(getKey(entry1, entry2));
+        return views.get(getKey(entry1, file1, entry2));
     }
     
-    private void putView(DiffController dv, HistoryEntry entry1, HistoryEntry entry2) {
-        views.put(getKey(entry1, entry2), dv);
+    private void putView(DiffController dv, HistoryEntry entry1, VCSFileProxy file1, HistoryEntry entry2) {
+        views.put(getKey(entry1, file1, entry2), dv);
     }
     
-    private void putView(DiffController dv, HistoryEntry entry) {
-        views.put(getKey(entry), dv);
+    private void putView(DiffController dv, HistoryEntry entry, VCSFileProxy file) {
+        views.put(getKey(entry, file), dv);
     }
 
-    private String getKey(HistoryEntry entry1, HistoryEntry entry2) {
-        return getKey(entry1) + "_" +                                           // NOI18N
+    private String getKey(HistoryEntry entry1, VCSFileProxy file1, HistoryEntry entry2) {
+        return getKey(entry1, file1) + "_" +                                    // NOI18N
                entry2.getRevision() + "_" +                                     // NOI18N
                entry2.getDateTime().getTime();
     }
 
-    private String getKey(HistoryEntry entry) {
+    private String getKey(HistoryEntry entry, VCSFileProxy file) {
         return entry.getRevision() + "_" +                                      // NOI18N
-               entry.getDateTime().getTime();
+               entry.getDateTime().getTime() + "_" +
+               file;
     }
     
-    private class RevisionDiffPrepareTask implements Runnable {
+    private class RevisionDiffPrepareTask extends DiffTask {
         
         private final HistoryEntry entry1;
         private HistoryEntry entry2;
@@ -304,15 +329,27 @@ public class HistoryDiffView implements PropertyChangeListener {
 
         @Override
         public void run() {
+            
+            History.LOG.log(
+                Level.FINE, 
+                "preparing previous diff for: {0} - {1} and {2} - {3}", // NOI18N        
+                new Object[]{entry1, file1, entry2, file2}); 
+            
             getPreparingDiffHandler().start();
             
-            VCSFileProxy revisionFile1;
-            VCSFileProxy revisionFile2;
+            if(isCancelled()) {
+                return;
+            }
+            FileObject revisionFo1;
+            FileObject revisionFo2;
             try {
                 if(entry2 == null && file2 == null) {
                     entry2 = entry1.getParent(file1);
                     if(entry2 == null) {
                         entry2 = tc.getParentEntry(entry1);
+                        if(isCancelled()) {
+                            return;
+                        }
                     }
                     file2 = file1;
                     if (entry2 == null) {
@@ -325,34 +362,54 @@ public class HistoryDiffView implements PropertyChangeListener {
                         return;
                     }                
                 }
-                
-                DiffController dv = getView(entry1, entry2);
+                DiffController dv = getView(entry1, file1, entry2);
+                if(isCancelled()) {
+                    return;
+                }                
                 if(dv != null) {
+                    History.LOG.log(
+                        Level.FINE, 
+                        "setting cached diff view for: {0} - {1} and {2} - {3}", // NOI18N        
+                        new Object[]{entry1, file1, entry2, file2}); 
                     setDiffView(dv, selectLast);
                     return;
                 }
                 
-                revisionFile1 = getRevisionFile(entry1, file1);
-                revisionFile2 = getRevisionFile(entry2, file2);
+                revisionFo1 = getRevisionFile(entry1, file1);
+                History.LOG.log(Level.FINE, "retrieved revision file for {0} - {1}", new Object[]{entry1.getRevision(), file1});
+                if(isCancelled()) {
+                    return;
+                }                
+                revisionFo2 = getRevisionFile(entry2, file2);
+                History.LOG.log(Level.FINE, "retrieved revision file for {0} - {1}", new Object[]{entry2.getRevision(), file2});
+                if(isCancelled()) {
+                    return;
+                }                
             } finally {
                 getPreparingDiffHandler().finish();
             }
             
-            
             String title1 = getTitle(entry1, file1);
             String title2 = getTitle(entry2, file2);
-            DiffController dv = prepareDiffView(revisionFile1, revisionFile2, title1, title2, false, selectLast);
-            if(dv != null) {
-                setDiffView(dv, selectLast);
-                putView(dv, entry1, entry2);
+            DiffController dv = prepareDiffView(revisionFo1, revisionFo2, true, true, title1, title2, false, selectLast);
+            if(isCancelled()) {
+                return;
             }            
+            if(dv != null) {
+                History.LOG.log(
+                    Level.FINE, 
+                    "setting diff view for: {0} - {1} and {2} - {3}", // NOI18N        
+                    new Object[]{entry1, file1, entry2, file2}); 
+                setDiffView(dv, selectLast);
+                putView(dv, entry1, file1, entry2);
+            }    
         }
 
-        private VCSFileProxy getRevisionFile(HistoryEntry entry, VCSFileProxy file) {
+        private FileObject getRevisionFile(HistoryEntry entry, VCSFileProxy file) {
             File tempFolder = Utils.getTempFolder();
             File revFile = new File(tempFolder, file.getName()); // XXX
             entry.getRevisionFile(file, VCSFileProxy.createFileProxy(revFile));
-            return VCSFileProxy.createFileProxy(revFile);
+            return FileUtil.toFileObject(revFile);
         }
 
     }  
@@ -393,12 +450,22 @@ public class HistoryDiffView implements PropertyChangeListener {
         return title1;
     }
 
-    private DiffController prepareDiffView(final VCSFileProxy file1, final VCSFileProxy file2, final String title1, final String title2, final boolean editable, final boolean selectLast) {
+    private DiffController prepareDiffView(final FileObject file1, final FileObject file2, boolean file1Exists, boolean file2Exists, final String title1, final String title2, final boolean editable, final boolean selectLast) {
         
-        StreamSource ss1 = new LHStreamSource(file1, title1, getMimeType(file2), editable);
+        History.LOG.log(
+                Level.FINE, 
+                "preparing diff view for: {0} - {1} and {2} - {3}", // NOI18N        
+                new Object[]{title1, file1, title2, file2}); // NOI18N
+        
+        StreamSource ss1;
+        if(file1Exists) {
+            ss1 = new LHStreamSource(file1, title1, getMimeType(file2), editable);
+        } else {
+            ss1 = StreamSource.createSource("currentfile", title1, getMimeType(file1), new StringReader("")); // NOI18N
+        }
 
         StreamSource ss2;                        
-        if(file2.exists()) {
+        if(file2Exists) {
             ss2 = new LHStreamSource(file2, title2, getMimeType(file2), editable);
         } else {
             ss2 = StreamSource.createSource("currentfile", title2, getMimeType(file2), new StringReader("")); // NOI18N
@@ -426,8 +493,8 @@ public class HistoryDiffView implements PropertyChangeListener {
         return dv;
     }
     
-    private String getMimeType(VCSFileProxy file) {
-        FileObject fo = file.toFileObject();
+    private String getMimeType(FileObject file) {
+        FileObject fo = file;
         if(fo != null) {
             return fo.getMIMEType();   
         } else {
@@ -469,7 +536,10 @@ public class HistoryDiffView implements PropertyChangeListener {
     private void setDiffComponent(Component component) {
         if(diffComponent != null) {
             panel.diffPanel.remove(diffComponent);     
-        }       
+            History.LOG.finer("replaced current diff component"); // NOI18N
+        } else {
+            History.LOG.finer("added diff component"); // NOI18N
+        }
         panel.diffPanel.add(component, BorderLayout.CENTER);
         diffComponent = component;   
         panel.diffPanel.revalidate();
@@ -501,18 +571,21 @@ public class HistoryDiffView implements PropertyChangeListener {
     }
     
     private void setCurrentDifference(int idx) {
+        if(diffView == null) {
+            return;
+        }
         diffView.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, idx);    
         tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
     }
     
     private class LHStreamSource extends StreamSource {
         
-        private final VCSFileProxy file;
+        private final FileObject file;
         private final String title;
         private final String mimeType;
         private final boolean editable;
 
-        public LHStreamSource(VCSFileProxy file, String title, String mimeType, boolean editable) {
+        public LHStreamSource(FileObject file, String title, String mimeType, boolean editable) {
             this.file = file;
             this.title = title;
             this.mimeType = mimeType;
@@ -520,7 +593,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         @Override
         public boolean isEditable() {
-            return editable && isPrimary(file.toFileObject());
+            return editable && isPrimary(file);
         }
         
         private boolean isPrimary(FileObject fo) {            
@@ -537,9 +610,8 @@ public class HistoryDiffView implements PropertyChangeListener {
     
         @Override
         public Lookup getLookup() {
-            FileObject fo = file.toFileObject();
-            if (fo != null && isPrimary(fo)) {
-                return Lookups.fixed(fo);                 
+            if (file != null && isPrimary(file)) {
+                return Lookups.fixed(file);                 
             } else {
                 return Lookups.fixed(); 
             }
@@ -562,9 +634,8 @@ public class HistoryDiffView implements PropertyChangeListener {
 
         @Override
         public Reader createReader() throws IOException {
-            FileObject fo = file.toFileObject();
-            if(fo != null) {
-                return new InputStreamReader(fo.getInputStream());
+            if(file != null) {
+                return new InputStreamReader(file.getInputStream());
             }
             return new StringReader(""); // NOI18N
         }
@@ -575,6 +646,34 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
     }
 
+    private abstract class DiffTask implements Runnable, Cancellable {
+        private Task task = null;
+        private boolean cancelled = false;
+
+        @Override
+        public boolean cancel() {
+            cancelled = true;
+            if(task != null) {
+                task.cancel();
+                getPreparingDiffHandler().finish();
+            }
+            History.LOG.finer("cancelling DiffTask");
+            return true;
+        }
+
+        void schedule() {          
+            task = History.getInstance().getRequestProcessor().create(this);
+            task.schedule(500);        
+        }
+        
+        protected boolean isCancelled() {
+            if(cancelled) {
+                History.LOG.finer("DiffTask is cancelled");
+            }
+            return cancelled;
+        }
+        
+    }
     private class PreparingDiffHandler extends JPanel implements ActionListener {
 
         private JLabel label = new JLabel();
@@ -594,6 +693,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         
         void start() {
+            History.LOG.fine("starting prepare diff handler");
             timer.start();
         }
         
@@ -606,6 +706,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         }
         
         synchronized void finish() {
+            History.LOG.fine("finishing prepare diff handler");
             timer.stop();
             if(handle != null) {
                 handle.finish();

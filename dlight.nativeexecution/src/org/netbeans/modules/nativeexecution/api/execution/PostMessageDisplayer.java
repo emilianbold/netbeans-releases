@@ -86,7 +86,7 @@ public interface PostMessageDisplayer {
 
             if (rc != 0) {
                 res.append(NbBundle.getMessage(PostMessageDisplayer.class, "EXIT_VALUE", rc));
-                res.append(' ');
+                res.append(", "); // NOI18N
             }
 
             res.append(NbBundle.getMessage(PostMessageDisplayer.class, "TOTAL_TIME", formatTime(timeMilliseconds)));
