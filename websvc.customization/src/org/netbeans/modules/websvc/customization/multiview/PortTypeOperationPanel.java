@@ -55,6 +55,8 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
@@ -72,6 +74,7 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.xml.multiview.Error;
 import org.openide.nodes.Node;
@@ -304,145 +307,151 @@ public class PortTypeOperationPanel extends SaveableSectionInnerPanel{
         List <PortTypeOperationCustomization> ee =
                 operation.getExtensibilityElements(PortTypeOperationCustomization.class);
         CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
-        if(jComponent == javaMethodName ||
-                jComponent == defaultMethodCB){
-            String text = javaMethodName.getText();
-            if(text != null && !text.trim().equals("")
-            && !defaultMethodCB.isSelected()){
-                 if(!JaxWsUtils.isJavaIdentifier(text)){
-                     return;
-                 }
-                if(ee.size() > 0){  //there is existing extensibility element
-                    PortTypeOperationCustomization ptoc = ee.get(0);
-                    JavaMethod jm = ptoc.getJavaMethod();
-                    if(jm == null){  //there is no JavaMethod, create one
-                        try{
-                            jm = factory.createJavaMethod(model);
-                            model.startTransaction();
-                            jm.setName(text); //TODO Need to validate this before setting it
-                            ptoc.setJavaMethod(jm);
-                            wsdlDirty = true;
-                        }finally{
-                                model.endTransaction();
+        try {
+            if(jComponent == javaMethodName ||
+                    jComponent == defaultMethodCB){
+                String text = javaMethodName.getText();
+                if(text != null && !text.trim().equals("")
+                && !defaultMethodCB.isSelected()){
+                     if(!JaxWsUtils.isJavaIdentifier(text)){
+                         return;
+                     }
+                    if(ee.size() > 0){  //there is existing extensibility element
+                        PortTypeOperationCustomization ptoc = ee.get(0);
+                        JavaMethod jm = ptoc.getJavaMethod();
+                        if(jm == null){  //there is no JavaMethod, create one
+                            try{
+                                jm = factory.createJavaMethod(model);
+                                model.startTransaction();
+                                jm.setName(text); //TODO Need to validate this before setting it
+                                ptoc.setJavaMethod(jm);
+                                wsdlDirty = true;
+                            }finally{
+                                    model.endTransaction();
+                            }
+                        } else{ //javamethod already exists
+                            //reset the JavaMethod
+                            try{
+                                model.startTransaction();
+                                jm.setName(text);
+                                
+                                wsdlDirty = true;
+                            } finally{
+                                    model.endTransaction();
+                            }
                         }
-                    } else{ //javamethod already exists
-                        //reset the JavaMethod
+                    }else{  //there is no ExtensibilityElement
+                        //create extensibility element and add JavaMethod
+                        PortTypeOperationCustomization ptoc = factory.createPortTypeOperationCustomization(model);
+                        JavaMethod jm = factory.createJavaMethod(model);
                         try{
                             model.startTransaction();
                             jm.setName(text);
-                            
+                            ptoc.setJavaMethod(jm);
+                            operation.addExtensibilityElement(ptoc);
                             wsdlDirty = true;
                         } finally{
                                 model.endTransaction();
                         }
                     }
-                }else{  //there is no ExtensibilityElement
-                    //create extensibility element and add JavaMethod
-                    PortTypeOperationCustomization ptoc = factory.createPortTypeOperationCustomization(model);
-                    JavaMethod jm = factory.createJavaMethod(model);
-                    try{
-                        model.startTransaction();
-                        jm.setName(text);
-                        ptoc.setJavaMethod(jm);
-                        operation.addExtensibilityElement(ptoc);
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                }
-            } else{ //no javamethod is specified
-                if(ee.size() == 1){
-                    try{
-                        PortTypeOperationCustomization ptoc = ee.get(0);
-                        JavaMethod jm = ptoc.getJavaMethod();
-                        if(jm != null){
-                            model.startTransaction();
-                            ptoc.removeJavaMethod(jm);
-                            //if(ptoc has no more children, remove it as well)
-                            if(ptoc.getChildren().size() == 0){
-                                operation.removeExtensibilityElement(ptoc);
+                } else{ //no javamethod is specified
+                    if(ee.size() == 1){
+                        try{
+                            PortTypeOperationCustomization ptoc = ee.get(0);
+                            JavaMethod jm = ptoc.getJavaMethod();
+                            if(jm != null){
+                                model.startTransaction();
+                                ptoc.removeJavaMethod(jm);
+                                //if(ptoc has no more children, remove it as well)
+                                if(ptoc.getChildren().size() == 0){
+                                    operation.removeExtensibilityElement(ptoc);
+                                }
+                                wsdlDirty = true;
                             }
-                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
                         }
-                    } finally{
-                            model.endTransaction();
                     }
                 }
-            }
-        } else if(jComponent == enableWrapperStyleCB){
-            if(ee.size() > 0){ //there is an extensibility element
-                PortTypeOperationCustomization poc = ee.get(0);
-                EnableWrapperStyle ews = poc.getEnableWrapperStyle();
-                if(ews == null){ //there is no EnableWrapperStyle, create one
+            } else if(jComponent == enableWrapperStyleCB){
+                if(ee.size() > 0){ //there is an extensibility element
+                    PortTypeOperationCustomization poc = ee.get(0);
+                    EnableWrapperStyle ews = poc.getEnableWrapperStyle();
+                    if(ews == null){ //there is no EnableWrapperStyle, create one
+                        try{
+                            model.startTransaction();
+                            ews = factory.createEnableWrapperStyle(model);
+                            ews.setEnabled(this.getEnableWrapperStyle());
+                            poc.setEnableWrapperStyle(ews);
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    } else{ //there is an EnableWrapperStyle, reset it
+                        try{
+                            model.startTransaction();
+                            ews.setEnabled(this.getEnableWrapperStyle());
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    }
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //wrapper style element
+                    PortTypeOperationCustomization poc = factory.createPortTypeOperationCustomization(model);
+                    EnableWrapperStyle ews = factory.createEnableWrapperStyle(model);
                     try{
                         model.startTransaction();
-                        ews = factory.createEnableWrapperStyle(model);
                         ews.setEnabled(this.getEnableWrapperStyle());
                         poc.setEnableWrapperStyle(ews);
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                } else{ //there is an EnableWrapperStyle, reset it
-                    try{
-                        model.startTransaction();
-                        ews.setEnabled(this.getEnableWrapperStyle());
+                        operation.addExtensibilityElement(poc);
                         wsdlDirty = true;
                     } finally{
                             model.endTransaction();
                     }
                 }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //wrapper style element
-                PortTypeOperationCustomization poc = factory.createPortTypeOperationCustomization(model);
-                EnableWrapperStyle ews = factory.createEnableWrapperStyle(model);
-                try{
-                    model.startTransaction();
-                    ews.setEnabled(this.getEnableWrapperStyle());
-                    poc.setEnableWrapperStyle(ews);
-                    operation.addExtensibilityElement(poc);
-                    wsdlDirty = true;
-                } finally{
-                        model.endTransaction();
-                }
-            }
-        } else if(jComponent == this.enableAsyncMappingCB){
-            if(ee.size() > 0){ //there is an extensibility element
-                PortTypeOperationCustomization poc = ee.get(0);
-                EnableAsyncMapping eam = poc.getEnableAsyncMapping();
-                if(eam == null){ //there is no EnableAsyncMapping, create one
+            } else if(jComponent == this.enableAsyncMappingCB){
+                if(ee.size() > 0){ //there is an extensibility element
+                    PortTypeOperationCustomization poc = ee.get(0);
+                    EnableAsyncMapping eam = poc.getEnableAsyncMapping();
+                    if(eam == null){ //there is no EnableAsyncMapping, create one
+                        try{
+                            model.startTransaction();
+                            eam = factory.createEnableAsyncMapping(model);
+                            eam.setEnabled(this.getEnableAsyncMapping());
+                            poc.setEnableAsyncMapping(eam);
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    } else{ //there is an EnableAsyncMapping, reset it
+                        try{
+                            model.startTransaction();
+                            eam.setEnabled(this.getEnableAsyncMapping());
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    }
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //enable asyncmapping element
+                    PortTypeOperationCustomization poc =  factory.createPortTypeOperationCustomization(model);
+                    EnableAsyncMapping eam = factory.createEnableAsyncMapping(model);
                     try{
                         model.startTransaction();
-                        eam = factory.createEnableAsyncMapping(model);
                         eam.setEnabled(this.getEnableAsyncMapping());
                         poc.setEnableAsyncMapping(eam);
+                        operation.addExtensibilityElement(poc);
                         wsdlDirty = true;
                     } finally{
                             model.endTransaction();
                     }
-                } else{ //there is an EnableAsyncMapping, reset it
-                    try{
-                        model.startTransaction();
-                        eam.setEnabled(this.getEnableAsyncMapping());
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //enable asyncmapping element
-                PortTypeOperationCustomization poc =  factory.createPortTypeOperationCustomization(model);
-                EnableAsyncMapping eam = factory.createEnableAsyncMapping(model);
-                try{
-                    model.startTransaction();
-                    eam.setEnabled(this.getEnableAsyncMapping());
-                    poc.setEnableAsyncMapping(eam);
-                    operation.addExtensibilityElement(poc);
-                    wsdlDirty = true;
-                } finally{
-                        model.endTransaction();
                 }
             }
+        }
+        catch (IllegalStateException ex) {
+            Exceptions.attachSeverity(ex, Level.WARNING);
+            Exceptions.printStackTrace(ex);
         }
     }
     

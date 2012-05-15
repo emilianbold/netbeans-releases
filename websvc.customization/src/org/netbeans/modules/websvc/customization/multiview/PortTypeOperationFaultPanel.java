@@ -52,6 +52,8 @@ package org.netbeans.modules.websvc.customization.multiview;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
@@ -64,6 +66,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.xml.multiview.Error;
 
@@ -151,73 +154,79 @@ public class PortTypeOperationFaultPanel extends SaveableSectionInnerPanel {
     public void setValue(JComponent jComponent, Object object) {
         List <PortTypeOperationFaultCustomization> ee =
                 fault.getExtensibilityElements(PortTypeOperationFaultCustomization.class);
-        CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
-        if(jComponent == javaClassText ||
-                jComponent == defaultJavaClassCB ){
-            String text = javaClassText.getText();
-            if(text != null && !text.trim().equals("")
-            && !defaultJavaClassCB.isSelected()){
-                if(!JaxWsUtils.isJavaIdentifier(text)){
-                    return;
-                }
-                if(ee.size() == 1){  //there is existing extensibility element
-                    PortTypeOperationFaultCustomization ptofc = ee.get(0);
-                    JavaClass jc = ptofc.getJavaClass();
-                    if(jc == null){  //there is no JavaClass, create one
-                        try{
-                            jc = factory.createJavaClass(model);
-                            model.startTransaction();
-                            jc.setName(text); //TODO Need to validate this before setting it
-                            ptofc.setJavaClass(jc);
-                            wsdlDirty = true;
-                        }finally{
-                                model.endTransaction();
+        try {
+            CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
+            if(jComponent == javaClassText ||
+                    jComponent == defaultJavaClassCB ){
+                String text = javaClassText.getText();
+                if(text != null && !text.trim().equals("")
+                && !defaultJavaClassCB.isSelected()){
+                    if(!JaxWsUtils.isJavaIdentifier(text)){
+                        return;
+                    }
+                    if(ee.size() == 1){  //there is existing extensibility element
+                        PortTypeOperationFaultCustomization ptofc = ee.get(0);
+                        JavaClass jc = ptofc.getJavaClass();
+                        if(jc == null){  //there is no JavaClass, create one
+                            try{
+                                jc = factory.createJavaClass(model);
+                                model.startTransaction();
+                                jc.setName(text); //TODO Need to validate this before setting it
+                                ptofc.setJavaClass(jc);
+                                wsdlDirty = true;
+                            }finally{
+                                    model.endTransaction();
+                            }
+                        } else{ //javaclass already exists
+                            //reset the JavaClass
+                            try{
+                                model.startTransaction();
+                                jc.setName(text);
+                                wsdlDirty = true;
+                            } finally{
+                                    model.endTransaction();
+                            }
                         }
-                    } else{ //javaclass already exists
-                        //reset the JavaClass
+                    }else{  //there is no ExtensibilityElement
+                        //create extensibility element and add JavaClass
+                        PortTypeOperationFaultCustomization ptofc =
+                                factory.createPortTypeOperationFaultCustomization(model);
+                        JavaClass jc = factory.createJavaClass(model);
                         try{
                             model.startTransaction();
                             jc.setName(text);
+                            ptofc.setJavaClass(jc);
+                            fault.addExtensibilityElement(ptofc);
                             wsdlDirty = true;
                         } finally{
                                 model.endTransaction();
                         }
                     }
-                }else{  //there is no ExtensibilityElement
-                    //create extensibility element and add JavaClass
-                    PortTypeOperationFaultCustomization ptofc =
-                            factory.createPortTypeOperationFaultCustomization(model);
-                    JavaClass jc = factory.createJavaClass(model);
-                    try{
-                        model.startTransaction();
-                        jc.setName(text);
-                        ptofc.setJavaClass(jc);
-                        fault.addExtensibilityElement(ptofc);
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                }
-            } else{ //no JavaClass is specified, remove from the model if it is there
-                if(ee.size() == 1){
-                    try{
-                        PortTypeOperationFaultCustomization ptofc = ee.get(0);
-                        JavaClass jc = ptofc.getJavaClass();
-                        if(jc != null){
-                            model.startTransaction();
-                            ptofc.removeJavaClass(jc);
-                            //if(ptofc has no more children, remove it as well)
-                            if(ptofc.getChildren().size() == 0){
-                                fault.removeExtensibilityElement(ptofc);
+                } else{ //no JavaClass is specified, remove from the model if it is there
+                    if(ee.size() == 1){
+                        try{
+                            PortTypeOperationFaultCustomization ptofc = ee.get(0);
+                            JavaClass jc = ptofc.getJavaClass();
+                            if(jc != null){
+                                model.startTransaction();
+                                ptofc.removeJavaClass(jc);
+                                //if(ptofc has no more children, remove it as well)
+                                if(ptofc.getChildren().size() == 0){
+                                    fault.removeExtensibilityElement(ptofc);
+                                }
+                                
+                                wsdlDirty = true;
                             }
-                            
-                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
                         }
-                    } finally{
-                            model.endTransaction();
                     }
                 }
             }
+        }
+        catch(IllegalStateException ex){
+            Exceptions.attachSeverity(ex, Level.WARNING);
+            Exceptions.printStackTrace(ex);
         }
     }
     
