@@ -49,6 +49,7 @@ import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.MatteBorder;
 import org.netbeans.swing.plaf.LFCustoms;
 
@@ -122,6 +123,8 @@ public final class NimbusLFCustoms extends LFCustoms {
             "NbSlideBar.GroupSeparator.Gap.Before", 12,
             "NbSlideBar.GroupSeparator.Gap.After", 4,
             "NbSlideBar.RestoreButton.Gap", 8,
+            //#212453
+            "Nb.EmptyEditorArea.border", BorderFactory.createEtchedBorder( EtchedBorder.LOWERED ),
         };
         /*Object[] result = {
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),
