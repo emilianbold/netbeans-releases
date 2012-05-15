@@ -256,7 +256,11 @@ public class PrimefacesCustomizerPanel extends javax.swing.JPanel implements Hel
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            ((JLabel) component).setText(((Library) value).getDisplayName());
+            if (value instanceof Library) {
+                ((JLabel) component).setText(((Library) value).getDisplayName());
+            } else {
+                ((JLabel) component).setText((String) value);
+            }
             return component;
         }
 

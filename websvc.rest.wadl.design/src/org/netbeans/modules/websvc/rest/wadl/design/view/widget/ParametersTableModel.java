@@ -47,8 +47,11 @@ package org.netbeans.modules.websvc.rest.wadl.design.view.widget;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.rest.wadl.model.*;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -179,7 +182,13 @@ public class ParametersTableModel implements TableModel<Param> {
                         throw new IllegalArgumentException("");
                 }
             } finally {
-                wadlModel.endTransaction();
+                try {
+                    wadlModel.endTransaction();
+                }
+                catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                            Level.WARNING));
+                }
             }
         }
     }
