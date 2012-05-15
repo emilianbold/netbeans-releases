@@ -72,6 +72,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
@@ -98,8 +99,23 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     /**
      * Reference to the last result of parsing processed into structure.
      */
-    private final Map<Snapshot, Reference<Parser.Result>> lastResults = 
-            new WeakHashMap<Snapshot, Reference<Parser.Result>>();
+    private final Map<Snapshot, Reference<ResultStructure>> lastResults = 
+            new WeakHashMap<Snapshot, Reference<ResultStructure>>();
+
+    /**
+     * Cache the parser result and the resulting structure.
+     */
+    private static class ResultStructure {
+        private Parser.Result result;
+        private List<? extends StructureItem> structure;
+
+        public ResultStructure(Result result, List<? extends StructureItem> structure) {
+            this.result = result;
+            this.structure = structure;
+        }
+        
+        
+    }
 
     public ElementScanningTask(ClassMemberPanelUI ui) {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);
@@ -108,19 +124,27 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     }
     
     // not synchronized as the Task invocation itself is synced by parsing API
-    private boolean isProcessed(Snapshot s, Parser.Result r) {
-        Reference<Parser.Result> previousRef;
+    private List<? extends StructureItem> findCachedStructure(Snapshot s, Parser.Result r) {
+        if (!(r instanceof ParserResult)) {
+            return null;
+        }
+        Reference<ResultStructure> previousRef;
         previousRef = lastResults.get(s);
         if (previousRef == null) {
-            return false;
+            return null;
         }
-        Parser.Result prevResult = previousRef.get();
-        return prevResult == r;
+        ResultStructure cached = previousRef.get();
+        if (cached == null || cached.result != r) {
+            // remove from cache:
+            lastResults.remove(s);
+            return null;
+        }
+        return cached.structure;
     }
     
     // not synchronized as the Task invocation itself is synced by parsing API
-    private void markProcessed(Parser.Result r) {
-        lastResults.put(r.getSnapshot(), new WeakReference(r));
+    private void markProcessed(Parser.Result r, List<? extends StructureItem> structure) {
+        lastResults.put(r.getSnapshot(), new WeakReference(new ResultStructure(r, structure)));
     }
 
     public @Override void run(ParserResult result, SchedulerEvent event) {
@@ -143,18 +167,20 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
                     if(language != null) { //check for non csl results
                         StructureScanner scanner = language.getStructure();
                         if (scanner != null) {
-                            long startTime = System.currentTimeMillis();
                             Parser.Result r = resultIterator.getParserResult();
-                            if (r instanceof ParserResult && !isProcessed(resultIterator.getSnapshot(), r)) {
-                                List<? extends StructureItem> children = scanner.scan((ParserResult) r);
-                                markProcessed(r);
-                                long endTime = System.currentTimeMillis();
-                                Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
-                                        new Object[]{fileObject, endTime - startTime});
-
+                            if (r instanceof ParserResult) {
+                                List<? extends StructureItem> children = findCachedStructure(resultIterator.getSnapshot(), r);
+                                if (children == null) {
+                                    long startTime = System.currentTimeMillis();
+                                    children = scanner.scan((ParserResult) r);
+                                    long endTime = System.currentTimeMillis();
+                                    Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
+                                            new Object[]{fileObject, endTime - startTime});
+                                }
                                 if (children.size() > 0) {
                                     mimetypesWithElements[0]++;
                                 }
+                                markProcessed(r, children);
                                 roots.add(new MimetypeRootNode(language, children, resultIterator.getSnapshot().getMimePath()));
                             }
                         }
