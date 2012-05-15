@@ -102,7 +102,7 @@ public class TargetClusterTest extends TargetClusterTestCase {
         // Otherwise (global="false" or unspecified), put it in user dir
         assertEquals ("Goes into " + userDir.getName (),
                 userDir.getName (),
-                getTargetCluster (null, false).getName ());
+                getTargetCluster (null, null).getName ());
     }
     
     public void testInstallNoDeclaredGlobalNew () throws IOException, OperationException {
@@ -112,4 +112,18 @@ public class TargetClusterTest extends TargetClusterTestCase {
                 getTargetCluster (null, null).getName ());
     }
     
+    public void testInstallDeclaredClusterForceLocal() throws IOException, OperationException {
+        // Otherwise (global="false" or unspecified), put it in user dir
+        assertEquals("Goes into " + userDir.getName(),
+                userDir.getName(),
+                getTargetCluster(UpdateTracking.EXTRA_CLUSTER_NAME, false).getName());
+    }
+
+    public void testInstallDeclaredClusterDefaultLocation() throws IOException, OperationException {
+        // Otherwise (global="false" or unspecified), put it in user dir
+        assertEquals("Goes into " + userDir.getName(),
+                UpdateTracking.EXTRA_CLUSTER_NAME,
+                getTargetCluster(UpdateTracking.EXTRA_CLUSTER_NAME, null).getName());
+    }
+
 }
