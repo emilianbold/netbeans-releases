@@ -283,7 +283,7 @@ public class AutoupdateSettings {
         if (exp != null && ! forImport.contains (exp)) {
             try {
                 final int period = getPeriod();
-                boolean shared = Utilities.isGlobalInstallation();
+                boolean shared = Utilities.isGlobalInstallation() == null ? false : Utilities.isGlobalInstallation();
                 p.removeNode ();
                 getPreferences ().put (IMPORTED, Boolean.toString (true));
                 getPreferences ().putInt(PROP_PERIOD, period);

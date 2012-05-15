@@ -438,6 +438,7 @@ made subject to such option by the copyright holder.
                  distribution="${nbm.distribution}"
                  needsrestart="${nbm.needs.restart}"
                  global="${nbm.is.global}"
+                 preferredupdate="${nbm.is.preferredupdate}"
                  usepack200="${use.pack200}"
                  pack200excludes="${pack200.excludes}"
                  targetcluster="${nbm.target.cluster}"
