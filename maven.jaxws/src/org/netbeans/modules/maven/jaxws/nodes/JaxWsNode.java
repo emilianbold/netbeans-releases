@@ -738,7 +738,10 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         // getting port and host name
         ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
-            ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
+            ServerInstance.Descriptor instanceDescriptor = null;
+            if ( serverInstance != null ){
+                instanceDescriptor = serverInstance.getDescriptor();
+            }
             if (instanceDescriptor != null) {
                 int port = instanceDescriptor.getHttpPort();
                 portNumber = port == 0 ? "8080" : String.valueOf(port); //NOI18N

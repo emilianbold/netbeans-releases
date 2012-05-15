@@ -78,6 +78,15 @@ public class WebWsitProvider extends WsitProvider {
     protected static final String SERVLET_NAME = "ServletName";
     protected static final String SERVLET_CLASS = "ServletClass";
     protected static final String URL_PATTERN = "UrlPattern";
+    
+    private static final String WS_SERVLET = "com.sun.xml.ws.transport.http.servlet.WSServlet";// NOI18N
+    
+    private static final String WS_LISTENER = 
+        "com.sun.xml.ws.transport.http.servlet.WSServletContextListener";           // NOI18N
+    
+    private static final String LISTENER = "Listener";                              // NOI18N
+    
+    private static final String LISTENER_CLASS= "ListenerClass";                    // NOI18N
 
     public WebWsitProvider(Project p) {
         this.project = p;
@@ -119,7 +128,7 @@ public class WebWsitProvider extends WsitProvider {
                 Servlet servlet = Util.getServlet(wApp, serviceImplPath);
                 if (servlet == null) {
                     try {
-                        if (isGlassFish) {
+                        /*if (isGlassFish) {
                             servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
                                     new String[]{SERVLET_NAME,SERVLET_CLASS},
                                     new Object[]{serviceImplPath, serviceImplPath},SERVLET_NAME);
@@ -149,7 +158,25 @@ public class WebWsitProvider extends WsitProvider {
                             wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,URL_PATTERN}, //NOI18N
                                     new Object[]{Util.MEX_NAME, mexUrl},URL_PATTERN);  //NOI18N
                             wApp.write(wm.getDeploymentDescriptor());
-                        }
+                        }*/
+                        wApp.addBean(LISTENER,              //NOI18N
+                                new String[]{LISTENER_CLASS},
+                                new Object[]{WS_LISTENER},
+                                LISTENER_CLASS);
+                        servlet = (Servlet)wApp.addBean("Servlet",              //NOI18N
+                                new String[]{SERVLET_NAME,SERVLET_CLASS},
+                                new Object[]{serviceImplPath, WS_SERVLET},
+                                SERVLET_NAME);
+                        servlet.setLoadOnStartup(new java.math.BigInteger("1"));               //NOI18N
+                        wApp.addBean("ServletMapping", new String[]{
+                                SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                new Object[]{serviceImplPath, "/" + targetName + 
+                                    "Service"},URL_PATTERN);      //NOI18N
+                        wApp.addBean("ServletMapping", new String[]{
+                                SERVLET_NAME,URL_PATTERN}, //NOI18N
+                                new Object[]{serviceImplPath, "/" + 
+                                    targetName + "Service/mex"},URL_PATTERN);      //NOI18N
+                        wApp.write(wm.getDeploymentDescriptor());
                     } catch (NameAlreadyUsedException ex) {
                         ex.printStackTrace();
                     } catch (ClassNotFoundException ex) {
