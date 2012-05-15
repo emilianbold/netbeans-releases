@@ -51,22 +51,17 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Collection;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import javax.swing.*;
-import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.ui.history.HistoryComponent.CompareMode;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,9 +84,10 @@ public class HistoryDiffView implements PropertyChangeListener {
     private DiffPanel panel;
     private Component diffComponent;
     private DiffController diffView;                
-    private PreparingDiffHandler preparingDiffPanel;
     private DiffTask diffTask;
-        
+    
+    private final Object VIEW_LOCK = new Object();
+    
     /** Creates a new instance of HistoryDiffView */
     public HistoryDiffView(HistoryComponent tc) {
         this.tc = tc;
@@ -103,20 +99,19 @@ public class HistoryDiffView implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             tc.disableNavigationButtons();
-            selectionChanged(evt);            
+            refresh(((Node[]) evt.getNewValue()));
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
-            tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
+            synchronized(VIEW_LOCK) {
+                if(diffView != null) {
+                    tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
+                }
+            }
         } 
     }
       
     JPanel getPanel() {
         return panel;
     }    
-    
-    private void selectionChanged(PropertyChangeEvent evt) {
-        Node[] newSelection = ((Node[]) evt.getNewValue());        
-        refresh(newSelection);
-    }
     
     private void refresh(Node[] newSelection) {
         if(newSelection != null) {
@@ -189,13 +184,6 @@ public class HistoryDiffView implements PropertyChangeListener {
         diffTask.schedule();        
     }
 
-    private PreparingDiffHandler getPreparingDiffHandler() {
-        if(preparingDiffPanel == null) {
-            preparingDiffPanel = new PreparingDiffHandler();
-    }
-        return preparingDiffPanel;
-    }
-
     private VCSFileProxy getFile(Node node, HistoryEntry entry) {
         Collection<? extends VCSFileProxy> proxies = node.getLookup().lookupAll(VCSFileProxy.class);
         return proxies != null && proxies.size() == 1 ? proxies.iterator().next() : entry.getFiles()[0];
@@ -237,10 +225,10 @@ public class HistoryDiffView implements PropertyChangeListener {
             }
             
             File tmpFile;
-            getPreparingDiffHandler().start();
             if(isCancelled()) {
                 return;
             }   
+            startPrepareProgress();
             FileObject tmpFo;
             try {
                 File tempFolder = Utils.getTempFolder();
@@ -252,7 +240,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                     return;
                 }                
             } finally {
-                getPreparingDiffHandler().finish();
+                finishPrepareProgress();
             }
             String title1 = getTitle(entry, file);
             String title2;
@@ -335,11 +323,8 @@ public class HistoryDiffView implements PropertyChangeListener {
                 "preparing previous diff for: {0} - {1} and {2} - {3}", // NOI18N        
                 new Object[]{entry1, file1, entry2, file2}); 
             
-            getPreparingDiffHandler().start();
-            
-            if(isCancelled()) {
-                return;
-            }
+            startPrepareProgress();
+
             FileObject revisionFo1;
             FileObject revisionFo2;
             try {
@@ -386,7 +371,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                     return;
                 }                
             } finally {
-                getPreparingDiffHandler().finish();
+                finishPrepareProgress();
             }
             
             String title1 = getTitle(entry1, file1);
@@ -415,19 +400,24 @@ public class HistoryDiffView implements PropertyChangeListener {
     }  
     
     private void setDiffView(final DiffController dv, final boolean selectLast) {
-        diffView = dv;
+        final int diffCount = dv.getDifferenceCount();
+        final int diffIdx = dv.getDifferenceIndex();
+        synchronized(VIEW_LOCK) {
+            diffView = dv;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {            
+                History.LOG.finer("invoked set diff view"); // NOI18N
                 JComponent c = dv.getJComponent();
                 setDiffComponent(c);
                 tc.setDiffView(c);
 
                 // in case the diffview listener did not fire
                 if(dv.getDifferenceCount() > 0) {
-                    setCurrentDifference(selectLast ? dv.getDifferenceCount() - 1 : 0);
+                    setCurrentDifference(selectLast ? diffCount - 1 : 0);
                 } else {
-                    tc.refreshNavigationButtons(dv.getDifferenceIndex(), dv.getDifferenceCount());
+                    tc.refreshNavigationButtons(diffIdx, diffCount);
                 }
 
                 panel.revalidate();
@@ -502,33 +492,6 @@ public class HistoryDiffView implements PropertyChangeListener {
         }                
     }        
 
-    private void setBaseLocation(VCSFileProxy file) {
-        try {
-            FileObject fo = file.toFileObject();
-            DataObject dao = fo != null ? DataObject.find(fo) : null;
-            EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
-            if(cookie != null) {
-                // find an editor
-                JEditorPane[] panes = cookie.getOpenedPanes();
-                if(panes != null && panes.length > 0) {
-                    int p = panes[0].getCaretPosition();
-                    if(p > 0) {
-                        try {
-                            int row = Utilities.getLineOffset((BaseDocument)panes[0].getDocument(), p);
-                            if(row > 0) {
-                                diffView.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, row);
-                            } 
-                        } catch (BadLocationException ex) {
-                            History.LOG.log(Level.WARNING, null, ex);
-                        }
-                    }
-                }
-            }
-        } catch (IOException ioe)  {
-            History.LOG.log(Level.SEVERE, null, ioe);
-        }  
-    }
-
     private void showNoContent(String s) {
         setDiffComponent(new NoContentPanel(s));
     }
@@ -536,34 +499,37 @@ public class HistoryDiffView implements PropertyChangeListener {
     private void setDiffComponent(Component component) {
         if(diffComponent != null) {
             panel.diffPanel.remove(diffComponent);     
-            History.LOG.finer("replaced current diff component"); // NOI18N
-        } else {
-            History.LOG.finer("added diff component"); // NOI18N
-        }
+            History.LOG.log(Level.FINEST, "replaced current diff component {0}", diffComponent); // NOI18N
+        } 
         panel.diffPanel.add(component, BorderLayout.CENTER);
         diffComponent = component;   
+        History.LOG.log(Level.FINEST, "added diff component {0}", diffComponent); // NOI18N
         panel.diffPanel.revalidate();
         panel.diffPanel.repaint();
     }       
     
     void onNextButton() {
-        if(diffView == null) {
-            return;
-        }          
-        int nextDiffernce = diffView.getDifferenceIndex() + 1;        
-        if(nextDiffernce < diffView.getDifferenceCount()) {
-            setCurrentDifference(nextDiffernce);    
-        }                       
+        synchronized(VIEW_LOCK) {
+            if(diffView == null) {
+                return;
+            }          
+            int nextDiffernce = diffView.getDifferenceIndex() + 1;        
+            if(nextDiffernce < diffView.getDifferenceCount()) {
+                setCurrentDifference(nextDiffernce);    
+            }                   
+        }
     }
 
     void onPrevButton() {
-        if(diffView == null) {
-            return;
+        synchronized(VIEW_LOCK) {
+            if(diffView == null) {
+                return;
+            }
+            int prevDiffernce = diffView.getDifferenceIndex() - 1;
+            if(prevDiffernce > -1) {
+                setCurrentDifference(prevDiffernce);                
+            }
         }
-        int prevDiffernce = diffView.getDifferenceIndex() - 1;
-        if(prevDiffernce > -1) {
-            setCurrentDifference(prevDiffernce);                
-        }            
     }    
     
     void modeChanged() {
@@ -571,11 +537,13 @@ public class HistoryDiffView implements PropertyChangeListener {
     }
     
     private void setCurrentDifference(int idx) {
-        if(diffView == null) {
-            return;
+        synchronized(VIEW_LOCK) {
+            if(diffView == null) {
+                return;
+            }
+            diffView.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, idx);    
+            tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
         }
-        diffView.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, idx);    
-        tc.refreshNavigationButtons(diffView.getDifferenceIndex(), diffView.getDifferenceCount());
     }
     
     private class LHStreamSource extends StreamSource {
@@ -649,89 +617,98 @@ public class HistoryDiffView implements PropertyChangeListener {
     private abstract class DiffTask implements Runnable, Cancellable {
         private Task task = null;
         private boolean cancelled = false;
-
+        private PreparingDiffHandler preparingDiffPanel;
+            
+        void startPrepareProgress() {
+            preparingDiffPanel = new PreparingDiffHandler();
+            preparingDiffPanel.startPrepareProgress();
+        }
+        
+        void finishPrepareProgress() {
+            preparingDiffPanel.finishPrepareProgress();
+        }
+        
         @Override
-        public boolean cancel() {
+        public synchronized boolean cancel() {
             cancelled = true;
+            if(preparingDiffPanel != null) {
+                preparingDiffPanel.finishPrepareProgress();
+            }
             if(task != null) {
                 task.cancel();
-                getPreparingDiffHandler().finish();
             }
-            History.LOG.finer("cancelling DiffTask");
+            History.LOG.finer("cancelling DiffTask"); // NOI18N
             return true;
         }
 
-        void schedule() {          
+        synchronized void schedule() {          
             task = History.getInstance().getRequestProcessor().create(this);
             task.schedule(500);        
         }
         
-        protected boolean isCancelled() {
+        synchronized protected boolean isCancelled() {
             if(cancelled) {
-                History.LOG.finer("DiffTask is cancelled");
+                History.LOG.finer("DiffTask is cancelled"); // NOI18N
             }
             return cancelled;
         }
         
-    }
-    private class PreparingDiffHandler extends JPanel implements ActionListener {
+        private class PreparingDiffHandler extends JPanel implements ActionListener {
+            private JLabel label = new JLabel();
+            private Component progressComponent;
+            private ProgressHandle handle;
+            private final Timer timer = new Timer(0, this);;
+            public PreparingDiffHandler() {
+                label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
+                this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
 
-        private JLabel label = new JLabel();
-        private Component progressComponent;
-        private ProgressHandle handle;
-        private final Timer timer;
-        public PreparingDiffHandler() {
-            label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
-            this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
-
-            setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            add(label, c);
-            label.setEnabled(false);
-            timer = new Timer(0, this);
-            timer.setRepeats(false);
-        }
-        
-        void start() {
-            History.LOG.fine("starting prepare diff handler");
-            timer.start();
-        }
-        
-        private synchronized void startProgress() throws MissingResourceException {
-            handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
-            setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
-            handle.start();
-            handle.switchToIndeterminate();                    
-            setDiffComponent(PreparingDiffHandler.this);
-        }
-        
-        synchronized void finish() {
-            History.LOG.fine("finishing prepare diff handler");
-            timer.stop();
-            if(handle != null) {
-                handle.finish();
-                handle = null;
+                setLayout(new GridBagLayout());
+                GridBagConstraints c = new GridBagConstraints();
+                add(label, c);
+                label.setEnabled(false);
+                timer.setRepeats(false);
             }
-        }
-        
-        void setProgressComponent(Component component) {
-            if(progressComponent != null) remove(progressComponent);
-            if(component != null) {
-                this.progressComponent = component;
-                GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-                gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-                add(component, gridBagConstraints);
-            } 
-        }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    startProgress();
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(isCancelled()) {
+                    return;
                 }
-            });
+                synchronized(timer) {
+                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
+                    setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
+                    handle.start();
+                    handle.switchToIndeterminate();   
+                    setDiffComponent(PreparingDiffHandler.this);
+                }
+            }        
+
+            void startPrepareProgress() {
+                History.LOG.fine("starting prepare diff handler"); // NOI18N
+                synchronized(timer) {
+                    timer.start();
+                }
+            }
+
+            void finishPrepareProgress() {
+                History.LOG.fine("finishing prepare diff handler"); // NOI18N
+                synchronized(timer) {
+                    timer.stop();
+                    if(handle != null) {
+                        handle.finish();
+                    }
+                }
+            }
+
+            private void setProgressComponent(Component component) {
+                if(progressComponent != null) remove(progressComponent);
+                if(component != null) {
+                    this.progressComponent = component;
+                    GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+                    gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+                    add(component, gridBagConstraints);
+                } 
+            }
         }        
     }
 }
