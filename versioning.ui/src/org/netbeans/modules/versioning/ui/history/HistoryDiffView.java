@@ -502,33 +502,6 @@ public class HistoryDiffView implements PropertyChangeListener {
         }                
     }        
 
-    private void setBaseLocation(VCSFileProxy file) {
-        try {
-            FileObject fo = file.toFileObject();
-            DataObject dao = fo != null ? DataObject.find(fo) : null;
-            EditorCookie cookie = dao != null ? dao.getLookup().lookup(EditorCookie.class) : null;
-            if(cookie != null) {
-                // find an editor
-                JEditorPane[] panes = cookie.getOpenedPanes();
-                if(panes != null && panes.length > 0) {
-                    int p = panes[0].getCaretPosition();
-                    if(p > 0) {
-                        try {
-                            int row = Utilities.getLineOffset((BaseDocument)panes[0].getDocument(), p);
-                            if(row > 0) {
-                                diffView.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, row);
-                            } 
-                        } catch (BadLocationException ex) {
-                            History.LOG.log(Level.WARNING, null, ex);
-                        }
-                    }
-                }
-            }
-        } catch (IOException ioe)  {
-            History.LOG.log(Level.SEVERE, null, ioe);
-        }  
-    }
-
     private void showNoContent(String s) {
         setDiffComponent(new NoContentPanel(s));
     }
