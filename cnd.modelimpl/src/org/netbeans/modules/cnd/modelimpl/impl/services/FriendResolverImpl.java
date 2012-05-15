@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFriendResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  *
@@ -154,9 +154,11 @@ public final class FriendResolverImpl extends CsmFriendResolver {
      */
     @Override
     public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl) {
-        CsmProject prj = decl.getContainingFile().getProject();
-        if (prj instanceof ProjectBase) {
-            return ((ProjectBase)prj).findFriendDeclarations(decl);
+        if (decl.isValid()) {
+            CsmProject prj = decl.getContainingFile().getProject();
+            if (prj instanceof ProjectBase) {
+                return ((ProjectBase)prj).findFriendDeclarations(decl);
+            }
         }
         return Collections.<CsmFriend>emptyList();
     }
