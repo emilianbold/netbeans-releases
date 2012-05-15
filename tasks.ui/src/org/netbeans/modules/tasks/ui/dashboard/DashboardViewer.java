@@ -241,8 +241,10 @@ public final class DashboardViewer implements PropertyChangeListener {
             taskNode = categorizedTaskNode;
         }
         CategoryNode destCategoryNode = mapCategoryToNode.get(category);
+        final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
+        final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
         TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
-        if (destCategoryNode.addTaskNode(toAdd, appliedTaskFilters.isInFilter(toAdd.getTask()))) {
+        if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
             //remove from old category
             if (taskNode.isCategorized()) {
                 removeTask(taskNode);
@@ -255,16 +257,24 @@ public final class DashboardViewer implements PropertyChangeListener {
             model.contentChanged(destCategoryNode);
             destCategoryNode.updateContent();
         }
+        if (isTaskInFilter && !isCatInFilter) {
+            addCategoryToModel(destCategoryNode);
+        }
         storeCategory(category);
     }
 
     public void removeTask(TaskNode taskNode) {
         CategoryNode categoryNode = mapCategoryToNode.get(taskNode.getCategory());
+        final boolean isOldInFilter = isCategoryInFilter(categoryNode);
         taskNode.setCategory(null);
         categoryNode.removeTaskNode(taskNode);
         model.contentChanged(categoryNode);
-        //TODO only remove that child, dont updateContent all
-        categoryNode.updateContent();
+        if (!isCategoryInFilter(categoryNode) && isOldInFilter) {
+            model.removeRoot(categoryNode);
+        } else {
+            //TODO only remove that child, dont updateContent all
+            categoryNode.updateContent();
+        }
         storeCategory(categoryNode.getCategory());
     }
 
@@ -302,9 +312,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         //add category to the model - sorted
         CategoryNode newCategoryNode = new CategoryNode(category, true);
         categoryNodes.add(newCategoryNode);
-        int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         mapCategoryToNode.put(category, newCategoryNode);
-        addCategoryToModel(index, newCategoryNode);
+        addCategoryToModel(newCategoryNode);
         storeCategory(category);
     }
 
@@ -335,9 +344,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         categoryNodes.add(newNode);
         mapCategoryToNode.put(category, newNode);
-        int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         if (isCategoryInFilter(newNode)) {
-            addCategoryToModel(index, newNode);
+            addCategoryToModel(newNode);
         }
         storeClosedCategories();
         if (newNode.isOpened()) {
@@ -350,7 +358,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void addCategoryToModel(int index, CategoryNode categoryNode) {
+    private void addCategoryToModel(CategoryNode categoryNode) {
+        int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
         for (; index < size; index++) {
@@ -751,9 +760,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             Collections.sort(categoryNodes);
             int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
+                mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                 if (isCategoryInFilter(categoryNode)) {
                     taskHits += categoryNode.getTotalTaskCount();
-                    mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                     addRootToModel(index++, categoryNode);
                 }
             }
@@ -776,11 +785,11 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
-        return appliedCategoryFilters.isInFilter(categoryNode);
+        return expandNodes() ? !categoryNode.getFilteredTaskNodes().isEmpty() && appliedCategoryFilters.isInFilter(categoryNode) : appliedCategoryFilters.isInFilter(categoryNode);
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
-        return appliedRepositoryFilters.isInFilter(repositoryNode);
+        return expandNodes() ? !repositoryNode.getFilteredQueryNodes().isEmpty() && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
     }
 
     private void removeNodesFromModel(Class nodeClass) {
