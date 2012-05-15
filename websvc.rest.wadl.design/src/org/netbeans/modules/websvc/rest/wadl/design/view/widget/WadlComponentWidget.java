@@ -45,9 +45,12 @@
 package org.netbeans.modules.websvc.rest.wadl.design.view.widget;
 
 import java.io.IOException;
+import java.util.logging.Level;
+
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.modules.websvc.rest.wadl.model.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -84,7 +87,13 @@ public class WadlComponentWidget<T extends WadlComponent> extends AbstractTitled
                 doc = model.getFactory().createDoc();
                 component.setDoc(doc);
             } finally {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                }
+                catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                            Level.WARNING));
+                }
             }
         }
         return doc;
@@ -97,7 +106,13 @@ public class WadlComponentWidget<T extends WadlComponent> extends AbstractTitled
             doc.setTitle(title);
             doc.setContent(text);
         } finally {
-            model.endTransaction();
+            try {
+                model.endTransaction();
+            }
+            catch (IllegalStateException ex) {
+                Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                        Level.WARNING));
+            }
         }
     }
     
