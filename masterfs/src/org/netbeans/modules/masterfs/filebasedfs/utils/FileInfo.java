@@ -108,7 +108,11 @@ public final class FileInfo {
 
     public boolean  exists() {
         if (exists == -1) {
-            exists = (FileChangedManager.getInstance().exists(getFile())) ? 1 : 0;
+            if (getFile().getPath().equals("\\\\")) { // UNC root
+                exists = 1;
+            } else {
+                exists = (FileChangedManager.getInstance().exists(getFile())) ? 1 : 0;
+            }
         }
         return (exists == 0) ? false : true;
     }
