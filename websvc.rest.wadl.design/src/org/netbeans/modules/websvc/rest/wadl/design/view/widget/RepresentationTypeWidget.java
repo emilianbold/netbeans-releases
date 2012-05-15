@@ -51,6 +51,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Level;
+
 import javax.swing.JComboBox;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -59,6 +61,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.rest.wadl.design.MediaType;
 import org.netbeans.modules.websvc.rest.wadl.design.view.actions.RemoveBodyElementAction;
 import org.netbeans.modules.websvc.rest.wadl.model.*;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -151,7 +154,13 @@ public abstract class RepresentationTypeWidget extends WadlComponentWidget {
                         getModel().startTransaction();
                         getRepresentationType().setMediaType((String) tf.getSelectedItem());
                     } finally {
-                        getModel().endTransaction();
+                        try {
+                            getModel().endTransaction();
+                        }
+                        catch (IllegalStateException ex) {
+                            Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                                    Level.WARNING));
+                        }
                     }
                 }
             });
