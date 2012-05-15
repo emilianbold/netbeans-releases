@@ -129,6 +129,9 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
             f = new Font(f.getName(), Font.BOLD, f.getSize());
         }
         g.setFont (f);
+        if( g instanceof Graphics2D ) {
+            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         FontMetrics fontMetrics = g.getFontMetrics();
         if (this.fm == null) {
             this.fm = fontMetrics;
@@ -136,7 +139,7 @@ class AquaToolBarButtonUI extends BasicButtonUI implements ChangeListener {
         int x = 0;
         Icon ic = b.getIcon();
         if (ic != null) {
-            x = ic.getIconWidth() + 2;
+            x = ic.getIconWidth() + b.getIconTextGap() + 2;
         } else {
             int w = fontMetrics.stringWidth (s);
             if (w <= r.width) {
