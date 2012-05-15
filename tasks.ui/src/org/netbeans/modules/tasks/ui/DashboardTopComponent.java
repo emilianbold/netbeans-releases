@@ -65,8 +65,6 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.netbeans.modules.tasks.ui.filter.NoEmptyCategoryFilter;
-import org.netbeans.modules.tasks.ui.filter.NoEmptyRepositoryFilter;
 
 /**
  * Top component which displays something.
@@ -338,8 +336,6 @@ public final class DashboardTopComponent extends TopComponent {
     }
 
     private class FilterTimerListener implements ActionListener {
-        private NoEmptyCategoryFilter noEmptyCat;
-        private NoEmptyRepositoryFilter noEmptyRepo;
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -347,22 +343,12 @@ public final class DashboardTopComponent extends TopComponent {
                 DashboardViewer dashboard = DashboardViewer.getInstance();
                 filterTimer.stop();
                 if (!filterPanel.getFilterText().isEmpty()) {
-                    // on first activationg of DisplayTextTaskFilter add EmptyNode filter
-                    if (displayTextTaskFilter == null) {
-                        noEmptyCat = new NoEmptyCategoryFilter();
-                        noEmptyRepo = new NoEmptyRepositoryFilter();
-                        dashboard.applyCategoryFilter(noEmptyCat, false);
-                        dashboard.applyRepositoryFilter(noEmptyRepo, false);
-                    }
-
                     DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
                     int hits = dashboard.updateTaskFilter(displayTextTaskFilter, newTaskFilter);
                     displayTextTaskFilter = newTaskFilter;
                     filterPanel.setHitsCount(hits);
                 } else {
                     if (displayTextTaskFilter != null) {
-                        dashboard.removeCategoryFilter(noEmptyCat, false);
-                        dashboard.removeRepositoryFilter(noEmptyRepo, false);
                         dashboard.removeTaskFilter(displayTextTaskFilter, true);
                         displayTextTaskFilter = null;
                     }

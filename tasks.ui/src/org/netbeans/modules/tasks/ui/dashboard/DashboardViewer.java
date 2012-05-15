@@ -785,11 +785,11 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
-        return appliedCategoryFilters.isInFilter(categoryNode);
+        return expandNodes() ? !categoryNode.getFilteredTaskNodes().isEmpty() && appliedCategoryFilters.isInFilter(categoryNode) : appliedCategoryFilters.isInFilter(categoryNode);
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
-        return appliedRepositoryFilters.isInFilter(repositoryNode);
+        return expandNodes() ? !repositoryNode.getFilteredQueryNodes().isEmpty() && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
     }
 
     private void removeNodesFromModel(Class nodeClass) {
