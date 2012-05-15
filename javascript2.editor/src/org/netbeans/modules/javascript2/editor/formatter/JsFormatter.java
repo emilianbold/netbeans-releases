@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -93,14 +94,16 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
+                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                        compilationInfo.getSnapshot(), context.startOffset());
+                
                 FormatTokenStream tokenStream = FormatTokenStream.create(
-                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot(), context.startOffset()),
-                        context.startOffset(), context.endOffset());
+                        ts, context.startOffset(), context.endOffset());
                 LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
-                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot(), context.startOffset()), context.endOffset());
+                        ts, context.endOffset());
 
                 FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
                 if (root != null) {
