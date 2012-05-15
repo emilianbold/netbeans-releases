@@ -66,6 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -197,6 +198,14 @@ public class GroovyActionProvider implements ActionProvider {
 
             // Action invoked on file from "test" folder
             if (testSources != null && testSources.length == 1) {
+                // Currently there is a problem with ant build script integration
+                // We need to improve build.xml to enable running groovy tests together with java tests
+                // See issue #159256 - Groovy Unit tests cannot be run
+                // And related issue #170252 - Allow execution of non-java test cases
+
+                if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_TEST_SINGLE)) {
+                    return false;
+                }
                 return true;
             }
 
@@ -216,7 +225,7 @@ public class GroovyActionProvider implements ActionProvider {
             FileObject[] testSources = findTestSources(context);
             if (testSources != null) {
                 if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_TEST_SINGLE)) {
-                    return setupTestSingle(p, testSources);
+                     return setupTestSingle(p, testSources);
                 } else if (command.equals(COMMAND_DEBUG_SINGLE) || (command.equals(COMMAND_DEBUG_TEST_SINGLE))) {
                     return setupDebugTestSingle(p, testSources);
                 } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
