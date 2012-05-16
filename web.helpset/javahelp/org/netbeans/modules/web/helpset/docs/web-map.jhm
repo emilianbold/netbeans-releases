@@ -173,5 +173,8 @@
         
         <!-- CSH : Bean Validation Constraint wizard -->
         <mapID target="org.netbeans.modules.javaee.beanvalidation.ConstraintPanel" url="web/framework/jsf/csh/file_beanvalidationconstraint.html"/>
+
+<!-- Cloud support CSH topics -->
+<mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="cloud/csh/add-cloud-provider-oracle.html" />
 </map>
 
