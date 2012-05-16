@@ -63,8 +63,8 @@ public final class Response {
         return ((Number)o).intValue();
     }
 
-    public String getResult() {
-        return (String)response.get(Command.COMMAND_RESULT);
+    public JSONObject getResult() {
+        return (JSONObject)response.get(Command.COMMAND_RESULT);
     }
 
     public String getMethod() {

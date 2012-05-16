@@ -39,75 +39,53 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.debugging.api;
+package org.netbeans.modules.web.webkit.debugging.api.dom;
 
-import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
-import org.netbeans.modules.web.webkit.debugging.APIFactory;
-import org.netbeans.modules.web.webkit.debugging.TransportHelper;
+import java.awt.Color;
+import org.json.simple.JSONObject;
 
 /**
- * Main API entry point for Remote WebKit Debugging support. Instance of this
- * class will be available in browser's lookup if browser supports Remote WebKit 
- * Debugging.
+ * Configuration data for the highlighting of page elements.
+ * See {@code DOM.HighlightConfig} in WebKit Remote Debugging Protocol.
+ *
+ * @author Jan Stola
  */
-public class WebKitDebugging {
+public class HighlightConfig {
+    public Boolean showInfo;
+    public Color contentColor;
+    public Color paddingColor;
+    public Color borderColor;
+    public Color marginColor;
 
-    static {
-        APIFactory.Accessor.DEFAULT = new APIFactory.Accessor() {
-            
-            @Override
-            public WebKitDebugging createWebKitDebugging(TransportHelper transport) {
-                return new WebKitDebugging(transport);
-            }
-        };
-    }
-    
-    private TransportHelper transport;
-    private Debugger debugger;
-    private Runtime runtime;
-    private DOM dom;
-
-    private WebKitDebugging(TransportHelper transport) {
-        this.transport = transport;
-    }
-
-    public String getConnectionName() {
-        return transport.getConnectionName();
-    }
-
-    /**
-     * Get debugger part of Remote WebKit Debugging.
-     */
-    public synchronized Debugger getDebugger() {
-        if (debugger == null) {
-            debugger = new Debugger(transport, this);
+    JSONObject toJSONObject() {
+        JSONObject object = new JSONObject();
+        if (showInfo != null) {
+            object.put("showInfo", showInfo); // NOI18N
         }
-        return debugger;
-    }
-    
-    /**
-     * Get runtime part of Remote WebKit Debugging.
-     */
-    public synchronized Runtime getRuntime() {
-        if (runtime == null) {
-            runtime = new Runtime(transport, this);
+        if (contentColor != null) {
+            object.put("contentColor", colorToJSONObject(contentColor)); // NOI18N
         }
-        return runtime;
+        if (paddingColor != null) {
+            object.put("paddingColor", colorToJSONObject(paddingColor)); // NOI18N
+        }
+        if (borderColor != null) {
+            object.put("borderColor", colorToJSONObject(borderColor)); // NOI18N
+        }
+        if (marginColor != null) {
+            object.put("marginColor", colorToJSONObject(marginColor)); // NOI18N
+        }
+        return object;
     }
 
-    /**
-     * Returns DOM part of Remote WebKit Debugging.
-     * 
-     * @return DOM part of Remote WebKit Debugging.
-     */
-    public synchronized DOM getDOM() {
-        if (dom == null) {
-            dom = new DOM(transport);
+    static JSONObject colorToJSONObject(Color color) {
+        JSONObject object = new JSONObject();
+        object.put("r", color.getRed()); // NOI18N
+        object.put("g", color.getGreen()); // NOI18N
+        object.put("b", color.getBlue()); // NOI18N
+        if (color.getAlpha() != 255) {
+            object.put("a", color.getAlpha()/255.0); // NOI18N
         }
-        return dom;
+        return object;
     }
-    
-    // other parts of Remote WebKit Debugging like CSS, DOMDebugger, 
-    // Inspector will be introduced here in time
     
 }

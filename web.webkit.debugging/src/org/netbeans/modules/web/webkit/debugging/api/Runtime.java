@@ -53,6 +53,7 @@ import org.netbeans.modules.web.webkit.debugging.TransportHelper;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
+import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.openide.util.Exceptions;
 
 /**
@@ -90,6 +91,30 @@ public class Runtime {
             res.add(APIFactory.createPropertyDescriptor((JSONObject)o, webkit));
         }
         return res;
+    }
+
+    public RemoteObject evaluate(String expression) {
+        RemoteObject remoteObject = null;
+        JSONObject params = new JSONObject();
+        params.put("expression", expression); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("Runtime.evaluate", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                JSONObject expressionResult = (JSONObject)result.get("result"); // NOI18N
+                remoteObject = new RemoteObject(expressionResult, webkit);
+            }
+        }
+        return remoteObject;
+    }
+
+    public void releaseObject(RemoteObject object) {
+        String objectId = object.getObjectID();
+        if (objectId != null) {
+            JSONObject params = new JSONObject();
+            params.put("objectId", objectId); // NOI18N
+            transport.sendCommand(new Command("Runtime.releaseObject", params)); // NOI18N
+        }
     }
 
     @SuppressWarnings("unchecked")    

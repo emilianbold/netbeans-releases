@@ -88,7 +88,7 @@ public class RemoteObject extends AbstractObject {
     private JSONObject property;
     private List<PropertyDescriptor> properties;
 
-    RemoteObject(JSONObject remoteObject, WebKitDebugging webkit) {
+    public RemoteObject(JSONObject remoteObject, WebKitDebugging webkit) {
         this(remoteObject, webkit, null);
     }
     
@@ -171,6 +171,10 @@ public class RemoteObject extends AbstractObject {
         }
         properties = getWebkit().getRuntime().getRemoteObjectProperties(this, true);
         return properties;
+    }
+
+    public void release() {
+        getWebkit().getRuntime().releaseObject(this);
     }
 
 }
