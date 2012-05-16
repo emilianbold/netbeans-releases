@@ -2113,15 +2113,17 @@ public class FormDesigner {
                 baseLinePos = 0;
             }
 
-            if (baseLinePos == -1) {
-                if (comp != null && height >= 0) {
+            if (baseLinePos == -1 && comp != null && height >= 0) {
+                Insets insets = comp.getInsets();
+                if (insets == null || height - insets.top - insets.bottom >= 0) {
                     if (width < 0) {
                         width = 0;
                     }
                     baseLinePos = comp.getBaseline(width, height);
-                } else {
-                    baseLinePos = 0;
                 }
+            }
+            if (baseLinePos == -1) {
+                baseLinePos = 0;
             }
 
             if (getLayoutDesigner().logTestCode()) {
