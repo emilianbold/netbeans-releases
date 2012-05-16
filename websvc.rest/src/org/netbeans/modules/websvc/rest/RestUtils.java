@@ -44,6 +44,7 @@
 package org.netbeans.modules.websvc.rest;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
@@ -71,6 +72,7 @@ import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -480,6 +482,11 @@ public class RestUtils {
                 JavaSourceHelper.addClassAnnotation(workingCopy, 
                         new String[]{"javax.ws.rs.ApplicationPath"}, 
                         new String[]{"webresources"});         // NOI18N
+                ClassTree tree = JavaSourceHelper.getTopLevelClassTree(workingCopy);
+                TreeMaker maker = workingCopy.getTreeMaker();
+                ClassTree newTree = maker.setExtends(tree, 
+                        maker.QualIdent("javax.ws.rs.core.Application")); // NOI18N
+                workingCopy.rewrite( tree, newTree);
             }
             
         }).commit();
