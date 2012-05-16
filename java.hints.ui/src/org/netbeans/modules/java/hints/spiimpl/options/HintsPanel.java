@@ -296,7 +296,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             toSelect = null;
         }
         
-        boolean editEnabled = useConfigCombo && FileUtil.getConfigFile(DECLARATIVE_HINT_TEMPLATE_LOCATION)!=null;
+        boolean editEnabled = showOkCancel && FileUtil.getConfigFile(DECLARATIVE_HINT_TEMPLATE_LOCATION)!=null;
         newButton.setVisible(editEnabled);
         importButton.setVisible(false);
         exportButton.setVisible(false);
