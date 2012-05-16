@@ -120,11 +120,7 @@ public class MainClassChooser extends JPanel {
     }
     
     public MainClassChooser (final Collection<ElementHandle<TypeElement>> mainClassesInFile) {
-        assert mainClassesInFile != null;
-        this.initComponents();
-        jMainClassList.setCellRenderer(new MainClassRenderer());
-        initClassesView();
-        initClassesModel (mainClassesInFile);
+        this(mainClassesInFile, null);
     }
     
     public MainClassChooser (final Collection<ElementHandle<TypeElement>> mainClassesInFile, final String subtitle) {
@@ -263,6 +259,7 @@ public class MainClassChooser extends JPanel {
         possibleMainClasses = mainClasses;
         jMainClassList.setListData(sortedMainClasses.toArray());
         jMainClassList.setSelectedIndex (0);
+        scanningLabel.setVisible(false);
     }
     
     private Object[] getWarmupList () {        

@@ -43,10 +43,12 @@ package org.netbeans.modules.php.project.copysupport;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,11 +108,14 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     final AtomicInteger closed = new AtomicInteger();
     final Stack<Exception> callStack = new Stack<Exception>();
 
+    final AtomicBoolean sourcesValid = new AtomicBoolean(true);
+
     private final ProxyOperationFactory proxyOperationFactory;
     // @GuardedBy(this)
     private FileSystem fileSystem;
     // @GuardedBy(this)
     private FileChangeListener fileChangeListener;
+
 
     private CopySupport(final PhpProject project) {
         assert project != null;
@@ -311,7 +316,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     @Override
     public void fileFolderCreated(FileEvent fe) {
-        FileObject source = getValidProjectSource(fe);
+        FileObject source = getValidProjectSource(fe, true);
         if (source == null) {
             return;
         }
@@ -381,8 +386,36 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     private FileObject getValidProjectSource(FileEvent fileEvent) {
-        LOGGER.log(Level.FINEST, "Getting source file for project {0} from {1}", new Object[] {project.getName(), fileEvent});
+        return getValidProjectSource(fileEvent, false);
+    }
+
+    private FileObject getValidProjectSource(FileEvent fileEvent, boolean folderCreated) {
+        if (!isSourceRootValid()) {
+            LOGGER.log(Level.INFO, "Source root not valid for project {0} -> ignoring FS event {1}", new Object[] {project.getName(), fileEvent});
+            if (sourcesValid.compareAndSet(true, false)) {
+                warnInvalidSourceRoot();
+            }
+            return null;
+        }
         FileObject source = fileEvent.getFile();
+        if (sourcesValid.compareAndSet(false, true)) {
+            boolean ignoreEvent = false;
+            if (folderCreated) {
+                File oldSources = FileUtil.toFile(getSources());
+                if (FileUtil.toFile(source).equals(oldSources)) {
+                    // ignore this event since the sources were just restored (otherwise all files would be copied to the server)
+                    ignoreEvent = true;
+                }
+            }
+            // need to get file object once more since the current one is invalid
+            project.resetSourcesDirectory();
+            if (ignoreEvent) {
+                LOGGER.log(Level.INFO, "Previously invalid source root restored for project {0} -> to avoid copying all files to the server ignoring FS event {1}",
+                        new Object[] {project.getName(), fileEvent});
+                return null;
+            }
+        }
+        LOGGER.log(Level.FINEST, "Getting source file for project {0} from {1}", new Object[] {project.getName(), fileEvent});
         if (!PhpProjectUtils.isVisible(phpVisibilityQuery, source)) {
             LOGGER.finest("\t-> null (invisible source)");
             return null;
@@ -395,9 +428,29 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         return source;
     }
 
+    // #212495 - project files deleted on server when network drive is unmapped
+    private boolean isSourceRootValid() {
+        File sources = FileUtil.toFile(getSources());
+        return sources != null && sources.isDirectory();
+    }
+
     FileObject getSources() {
         return ProjectPropertiesSupport.getSourcesDirectory(project);
     }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "# {1} - source directory",
+        "CopySupport.warn.invalidSources=<html>Source Files of project \"{0}\" do not exist, file changes are not propagated to the server.<br><br>"
+            + "Restore directory \"{1}\" (and possibly reopen the project)."
+    })
+    private void warnInvalidSourceRoot() {
+        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                Bundle.CopySupport_warn_invalidSources(project.getName(), FileUtil.toFile(getSources()).getAbsolutePath()),
+                NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
+    }
+
 
     private static class ProxyOperationFactory extends FileOperationFactory {
 
