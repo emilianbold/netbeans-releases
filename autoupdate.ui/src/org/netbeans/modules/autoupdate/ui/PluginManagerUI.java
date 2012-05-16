@@ -69,6 +69,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
@@ -284,8 +286,24 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         UnitTable table = new UnitTable(model);
         selectFirstRow(table);
         
-        UnitTab tab = new UnitTab(table, new UnitDetails(), this);
+        final UnitTab tab = new UnitTab(table, new UnitDetails(), this);
         tpTabs.add(tab, model.getTabIndex());
+        if (initTask != null) {
+            tab.setWaitingState(! initTask.isFinished());
+            initTask.addTaskListener(new TaskListener() {
+
+                @Override
+                public void taskFinished(Task task) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            tab.setWaitingState(false);
+                        }
+                    });
+                }
+            });
+        }
         decorateTabTitle(table);
         return table;
     }
