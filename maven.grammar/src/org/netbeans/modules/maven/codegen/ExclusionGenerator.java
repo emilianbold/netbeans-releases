@@ -43,13 +43,10 @@
  */
 package org.netbeans.modules.maven.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -57,20 +54,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.codegen.Bundle.*;
-import org.netbeans.modules.maven.model.pom.DependencyContainer;
 import org.netbeans.modules.maven.model.pom.Exclusion;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.netbeans.modules.maven.spi.grammar.DialogFactory;
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -78,7 +69,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Milos Kleint
  */
 @Messages("NAME_Exclusion=Dependency Exclusion...")
-public class ExclusionGenerator implements CodeGenerator {
+public class ExclusionGenerator extends AbstractGenerator<POMModel> {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=150)
     public static class Factory implements CodeGenerator.Factory {
@@ -94,13 +85,9 @@ public class ExclusionGenerator implements CodeGenerator {
             return toRet;
         }
     }
-
-    private POMModel model;
-    private JTextComponent component;
     
     private ExclusionGenerator(POMModel model, JTextComponent component) {
-        this.model = model;
-        this.component = component;
+        super(model, component);
     }
 
     @Override
@@ -109,28 +96,18 @@ public class ExclusionGenerator implements CodeGenerator {
     }
 
     @Override
-    public void invoke() {
-        try {
-            model.sync();
-        } catch (IOException ex) {
-            Logger.getLogger(ExclusionGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
-        }
-        if (!model.getState().equals(State.VALID)) {
-            //TODO report somehow, status line?
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExclusionGenerator.class, "MSG_Cannot_Parse"));
-            return;
-        }
-
+    protected void doInvoke() {
         FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
         assert fo != null;
-        org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
+        final org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
         assert prj != null;
         int pos = component.getCaretPosition();
         DocumentComponent c = model.findComponent(pos);
-        Map<Artifact, List<Artifact>> excludes = DialogFactory.showDependencyExcludeDialog(prj);
+        final Map<Artifact, List<Artifact>> excludes = DialogFactory.showDependencyExcludeDialog(prj);
         if (excludes != null) {
-            try {
-                if (model.startTransaction()) {
+            writeModel(new ModelWriter() {
+                @Override
+                public int write() {
                     for (Artifact exclude : excludes.keySet()) {
                         for (Artifact directArt : excludes.get(exclude)) {
                             org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
@@ -171,17 +148,9 @@ public class ExclusionGenerator implements CodeGenerator {
                             }
                         }
                     }
+                    return -1;
                 }
-            } finally {
-                try {
-                    model.endTransaction();
-                } catch (IllegalStateException ex) {
-                    StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(ExclusionGenerator.class, "ERR_CannotWriteModel", 
-                            Exceptions.findLocalizedMessage(ex)), 
-                            StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                }
-            }
+            });
         }
     }
 }
