@@ -133,5 +133,16 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
         checkCompletion("testfiles/model/person.js", "Person.p^rototype.shower=function(){ ", false);
     }
     
+    public void testPrototype04() throws Exception {
+        checkCompletion("testfiles/model/person.js", "Person.prototype.beCool = function(){ this.c^lothing=\"khakis and black shirt\" } ", false);
+    }
 
+    public void testPrototype05() throws Exception {
+        checkCompletion("testfiles/model/person.js", "Person.prototype.shower = function(){ this.^dirtFactor=2 }", false);
+    }
+
+    public void testPrototype06() throws Exception {
+        checkCompletion("testfiles/model/person.js", "Person.prototype.amputate = function(){ this.l^egs-- } ", false);
+    }
+   
 }
