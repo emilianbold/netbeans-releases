@@ -184,15 +184,4 @@ public class ExclusionGenerator implements CodeGenerator {
             }
         }
     }
-
-    private DependencyContainer findContainer(int pos, POMModel model) {
-        Component dc = model.findComponent(pos);
-        while (dc != null) {
-            if (dc instanceof DependencyContainer) {
-                return (DependencyContainer) dc;
-            }
-            dc = dc.getParent();
-        }
-        return model.getProject();
-    }
 }
