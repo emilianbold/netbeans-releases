@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -654,30 +653,33 @@ public class WebProjectValidation extends J2eeTestCase {
         //wait for editor update
         new EventTool().waitNoEvent(300);
         int startCaretPos = eOperator.txtEditorPane().getCaretPosition();
-        NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
+        final NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
         assertNotNull(navigatorOperator);
-        final JTreeOperator treeOperator = navigatorOperator.getTree();
-        TreeModel model = treeOperator.getModel();
-        Object root = model.getRoot();
-        assertNotNull(root);
-        // wait until please wait node dismiss
-        treeOperator.waitState(new ComponentChooser() {
+        new Waiter(new Waitable() {
 
             @Override
-            public boolean checkComponent(Component comp) {
-                Object root = treeOperator.getModel().getRoot();
-                if (root.toString() != null) {
-                    return !root.toString().contains("Wait");
+            public Object actionProduced(Object obj) {
+                JTreeOperator treeOper = navigatorOperator.getTree();
+                Object root = treeOper.getModel().getRoot();
+                if (root != null) {
+                    if (root.toString() != null && root.toString().contains("Wait")) {
+                        // still please wait node
+                        return null;
+                    } else if (treeOper.getChildCount(root) > 0) {
+                        return Boolean.TRUE;
+                    }
                 }
-                return true;
+                return null;
             }
 
             @Override
             public String getDescription() {
-                return "nodes initialized";
+                return "root node in navigator tree has one child";
             }
-        });
-        dumpNode(model, root, 0);
+        }).waitAction(null);
+        JTreeOperator treeOperator = navigatorOperator.getTree();
+        Object root = treeOperator.getModel().getRoot();
+        dumpNode(treeOperator.getModel(), root, 0);
         assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML
         assertNotNull(htmlChild);
@@ -688,9 +690,6 @@ public class WebProjectValidation extends J2eeTestCase {
         assertEquals(2, treeOperator.getChildCount(tableChild));// 2 rows
         Object[] pathObjects = {root, htmlChild, bodyChild, tableChild};
         TreePath path = new TreePath(pathObjects);
-        if (root.toString() != null && root.toString().contains("Wait")) {
-            new EventTool().waitNoEvent(3000);
-        }
         treeOperator.clickOnPath(path, 2);
         // wait for editor update
         new EventTool().waitNoEvent(300);
