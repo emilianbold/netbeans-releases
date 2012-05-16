@@ -76,13 +76,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * This is an implementation of a Firefox(TM) style Incremental Search Side Bar.
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
-public final class SearchBar extends JPanel {
+public final class SearchBar extends JPanel implements PropertyChangeListener{
     private static SearchBar searchbarInstance = null;
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
@@ -209,6 +210,7 @@ public final class SearchBar extends JPanel {
         add(regexpCheckBox);
         highlightCheckBox = createCheckBox("CTL_Highlight", EditorFindSupport.FIND_HIGHLIGHT_SEARCH); // NOI18N
         add(highlightCheckBox);
+        EditorFindSupport.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(this, EditorFindSupport.getInstance()));
         wrapAroundCheckBox = createCheckBox("CTL_WrapAround", EditorFindSupport.FIND_WRAP_SEARCH); // NOI18N
         add(wrapAroundCheckBox);
         selectCheckBoxes();
@@ -248,6 +250,14 @@ public final class SearchBar extends JPanel {
         expMenu.addAllToBarOrder(Arrays.asList(this.getComponents()));
         remove(getExpandButton());
         getExpandButton().setVisible(false);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt == null || evt.getPropertyName() == null || evt.getPropertyName().equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
+            Boolean value = (Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
+            highlightCheckBox.setSelected(value == null ? false : value.booleanValue());
+        }
     }
     
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
@@ -863,7 +873,7 @@ public final class SearchBar extends JPanel {
         searchProps.setProperty(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
         searchProps.setProperty(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
         searchProps.setProperty(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !incSearchTextField.getText().isEmpty() && highlightCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, highlightCheckBox.isSelected());
         searchProps.setProperty(EditorFindSupport.FIND_WRAP_SEARCH, wrapAroundCheckBox.isSelected());
         return searchProps.getProperties();
     }
