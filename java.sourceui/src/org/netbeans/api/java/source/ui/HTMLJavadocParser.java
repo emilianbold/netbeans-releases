@@ -259,6 +259,7 @@ class HTMLJavadocParser {
             int nextHRPos = -1;
             int lastHRPos = -1;
 
+            @Override
             public void handleSimpleTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.HR){
                     if (state[0] == TEXT_START){
@@ -268,6 +269,7 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.P && state[0] == CLASS_DATA_START){
                     if (offset[0] != -1 && offset[1] == -1)
@@ -287,7 +289,7 @@ class HTMLJavadocParser {
                 } else if (t == HTML.Tag.A && state[0] == TEXT_START) {
                     String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
                     if (attrName!=null && attrName.length()>0){
-                        if (nextHRPos!=-1){
+                        if (nextHRPos!=-1 && nextHRPos > offset[2]){
                             offset[3] = nextHRPos;
                         }else{
                             offset[3] = pos;
@@ -297,6 +299,7 @@ class HTMLJavadocParser {
                 }
             }
 
+            @Override
             public void handleEndTag(Tag t, int pos) {
                 if (t == HTML.Tag.DIV && state[0] == INSIDE_DIV) {
                     if (--div_counter == 0) {
@@ -320,8 +323,9 @@ class HTMLJavadocParser {
                 if (comment!=null){
                     if (comment.indexOf("START OF CLASS DATA")>0){ //NOI18N
                         state[0] = CLASS_DATA_START;
-                    } else if (comment.indexOf("NESTED CLASS SUMMARY")>0){ //NOI18N
-                        if (lastHRPos!=-1){
+                    } else if (comment.indexOf("NESTED CLASS SUMMARY")>0 //NOI18N
+                            && offset[3] == -1){
+                        if (lastHRPos!=-1 && lastHRPos > offset[2]){
                             offset[3] = lastHRPos;
                         }else{
                             offset[3] = pos;
@@ -384,7 +388,6 @@ class HTMLJavadocParser {
 
             @Override
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
-
                 if (t == HTML.Tag.A) {
                     String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
                     if (name.equals(attrName)){
@@ -403,7 +406,7 @@ class HTMLJavadocParser {
                     li_counter++;
                 } else if (t == HTML.Tag.DD && state[0] == PRE_CLOSE && offset[0] < 0){
                         offset[0] = pos;
-                } else if (t == HTML.Tag.DIV && (state[0] == PRE_CLOSE || state[0] == INSIDE_DIV)){
+                } else if (t == HTML.Tag.DIV && (state[0] == PRE_CLOSE || state[0] == A_CLOSE || state[0] == INSIDE_DIV)){
                     state[0] = INSIDE_DIV;
                     div_counter++;
                     if (offset[0] < 0) {
@@ -430,8 +433,10 @@ class HTMLJavadocParser {
                     if (--li_counter < 0)
                         hrPos = pos;
                 } else if (t == HTML.Tag.DIV && state[0] == INSIDE_DIV) {
-                    if (--div_counter == 0)
+                    if (--div_counter == 0) {
                         state[0] = PRE_CLOSE;
+                        hrPos = pos;
+                    }
                 }
             }
 
@@ -444,7 +449,20 @@ class HTMLJavadocParser {
                     }
                 }
             }
-
+            
+            @Override
+            public void handleComment(char[] data, int pos){
+                String comment = String.valueOf(data);
+                if (comment!=null){
+                    if (comment.indexOf("END OF CLASS DATA")>0){ //NOI18N
+                        if ((state[0] == PRE_CLOSE) && hrPos != -1){
+                            // reach the end of retrieved javadoc info
+                            state[0] = INIT;
+                            offset[1] = hrPos;
+                        }
+                    }
+                }
+            }
         };
 
         parser.parse(reader, callback, ignoreCharset);
