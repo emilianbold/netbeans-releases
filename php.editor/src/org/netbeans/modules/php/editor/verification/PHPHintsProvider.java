@@ -166,6 +166,9 @@ public class PHPHintsProvider implements HintsProvider {
                 phpParseResult.getProgram().accept(php54Visitor);
                 unhandled.addAll(php54Visitor.getErrors());
             }
+            LoopOnlyKeywordsUnhandledError loopOnlyKeywords = new LoopOnlyKeywordsUnhandledError(fobj);
+            phpParseResult.getProgram().accept(loopOnlyKeywords);
+            unhandled.addAll(loopOnlyKeywords.getErrors());
         }
     }
 
