@@ -284,7 +284,9 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         copyResourcesOnSave = null;
 
-        transRepos.unregister();
+        if (transRepos != null) { // XXX #212555 projectOpened was not called first?
+            transRepos.unregister();
+        }
     }
    
    private void checkBinaryDownloads() {
