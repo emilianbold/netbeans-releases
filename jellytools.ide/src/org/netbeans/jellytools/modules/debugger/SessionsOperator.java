@@ -104,6 +104,8 @@ public class SessionsOperator extends TopComponentOperator {
             faa.perform(this);
         } catch (TimeoutExpiredException tee) {
             // try it once more because it randomly fails for no apparent reason
+            close();
+            invoke();
             faa.perform(this);
         }
     }

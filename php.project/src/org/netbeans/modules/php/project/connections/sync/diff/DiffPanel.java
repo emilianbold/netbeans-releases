@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,6 +131,7 @@ public final class DiffPanel extends JPanel {
             dialog.setVisible(true);
         } finally {
             dialog.dispose();
+            DiffFileEncodingQueryImpl.clear();
         }
         boolean ok = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
         boolean fileModified = false;
@@ -189,6 +191,7 @@ public final class DiffPanel extends JPanel {
                     // some error, already processed
                     return;
                 }
+                // local stream
                 editableTmpLocalFileStreamSource = getLocalStreamSource(name, mimeType);
                 if (editableTmpLocalFileStreamSource == null) {
                     // some error, already processed
@@ -249,6 +252,7 @@ public final class DiffPanel extends JPanel {
         remoteTmpFile = TmpLocalFile.onDisk(getExtension(name));
         try {
             if (remoteClient.downloadTemporary(remoteTmpFile, transferFile)) {
+                rememberEncoding(remoteTmpFile);
                 return new TmpLocalFileStreamSource(name, remoteTmpFile, mimeType, charsetName, true);
             } else {
                 showError(Bundle.DiffPanel_error_cannotDownload(name));
@@ -284,6 +288,7 @@ public final class DiffPanel extends JPanel {
             return null;
         }
         try {
+            rememberEncoding(localTmpFile);
             return new EditableTmpLocalFileStreamSource(name, localTmpFile, mimeType, charsetName, false);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
@@ -315,6 +320,20 @@ public final class DiffPanel extends JPanel {
             }
         } finally {
             inputStream.close();
+        }
+    }
+
+    void rememberEncoding(TmpLocalFile tmpLocalFile) {
+        if (tmpLocalFile != null) {
+            String path = tmpLocalFile.getAbsolutePath();
+            assert path != null;
+            if (path != null) {
+                FileObject fo = FileUtil.toFileObject(new File(path));
+                assert fo != null;
+                if (fo != null) {
+                    DiffFileEncodingQueryImpl.addCharset(fo, Charset.forName(charsetName));
+                }
+            }
         }
     }
 
