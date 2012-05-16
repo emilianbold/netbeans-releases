@@ -749,7 +749,7 @@ public abstract class BasicTabDisplayerUI extends AbstractTabDisplayerUI {
                     displayer.repaint();
                     performCommand (TabDisplayer.COMMAND_POPUP_REQUEST, idx, e);
                     return;
-                } else if (e.getID() == MouseEvent.MOUSE_CLICKED && e.getClickCount() >= 2) {
+                } else if (e.getID() == MouseEvent.MOUSE_CLICKED && e.getClickCount() >= 2 && e.getButton() == MouseEvent.BUTTON1 ) {
                     performCommand (TabDisplayer.COMMAND_MAXIMIZE, idx, e);
                     return;
                 }
