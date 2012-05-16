@@ -366,18 +366,22 @@ public final class NavigatorController implements LookupListener, PropertyChange
             }
         }
         loadingProviders = true;
-        requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        showProviders(providers, force);
-                    }
-                });
-            }
-        });
+        if (navigatorTC.allowAsyncUpdate()) {
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProviders(providers, force);
+                        }
+                    });
+                }
+            });
+        } else {
+            showProviders(obtainProviders(nodes, panelsPolicy, lkpHints), force);
+        }
         } finally {
             if (!loadingProviders) {
                 inUpdate = false;
