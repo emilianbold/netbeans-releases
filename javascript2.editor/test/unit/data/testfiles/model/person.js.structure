@@ -14,6 +14,7 @@ Person:CONSTRUCTOR:[PUBLIC]:ESCAPED{Person}ESCAPED{(}PARAMETERS{ESCAPED{n}ESCAPE
   muchTimePasses:METHOD:[PROTECTED]:ESCAPED{muchTimePasses}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   myName:VARIABLE:[PRIVATE]:ESCAPED{myName}:
   population:FIELD:[PUBLIC, STATIC]:ESCAPED{population}<font color="#999999">ESCAPED{ : }Number</font>:
+  prototype:CLASS:[PUBLIC]:ESCAPED{prototype}:
   toString:METHOD:[PROTECTED]:ESCAPED{toString}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
   weigh:METHOD:[PROTECTED]:ESCAPED{weigh}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
   weight:VARIABLE:[PRIVATE]:ESCAPED{weight}<font color="#999999">ESCAPED{ : }Number</font>:
