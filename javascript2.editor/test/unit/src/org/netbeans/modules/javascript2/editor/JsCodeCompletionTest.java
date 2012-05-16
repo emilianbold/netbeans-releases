@@ -120,4 +120,18 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testGetterSettterInObjectLiteral() throws Exception {
         checkCompletion("testfiles/model/getterSettterInObjectLiteral.js", "formatter.println(\"The dos is old \" + Dog.^years + \" years.\");", false);
     }
+    
+    public void testPrototype01() throws Exception {
+        checkCompletion("testfiles/model/person.js", "gk.s^howLegs(); lk.showLegs();", false);
+    }
+    
+    public void testPrototype02() throws Exception {
+        checkCompletion("testfiles/model/person.js", "gk.showLegs(); lk.^showLegs();", false);
+    }
+    
+    public void testPrototype03() throws Exception {
+        checkCompletion("testfiles/model/person.js", "Person.p^rototype.shower=function(){ ", false);
+    }
+    
+
 }
