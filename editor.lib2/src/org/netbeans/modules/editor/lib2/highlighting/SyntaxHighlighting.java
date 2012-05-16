@@ -776,7 +776,9 @@ implements TokenHierarchyListener, ChangeListener {
                 if (tokenEndOffset <= limitStartOffset) {
                     // Must move the sequence forward by bin-search
                     ts.move(limitStartOffset);
-                    assert ts.moveNext() : "No token at limitStartOffset=" + limitStartOffset; // NOI18N
+                    if (!ts.moveNext()) { // limitStartOffset above tokens (in tail section)
+                        return false;
+                    }
                     token = ts.token();
                     tokenOffset = ts.offset();
                     tokenEndOffset = tokenOffset + token.length();

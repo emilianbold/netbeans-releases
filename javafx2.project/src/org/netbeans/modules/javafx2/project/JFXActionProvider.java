@@ -108,6 +108,13 @@ public class JFXActionProvider implements ActionProvider {
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
         String c = command;
         if (c != null) {
+            if(JFXProjectUtils.isFXPreloaderProject(prj)) {
+                NotifyDescriptor d =
+                    new NotifyDescriptor.Message(NbBundle.getMessage(JFXActionProvider.class,"WARN_PreloaderExecutionUnsupported", // NOI18N
+                        ProjectUtils.getInformation(prj).getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            }
             if (c.equals(COMMAND_RUN_SINGLE) || c.equals(COMMAND_DEBUG_SINGLE) || c.equals(COMMAND_PROFILE_SINGLE)) {
                 NotifyDescriptor d =
                     new NotifyDescriptor(NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupported", // NOI18N

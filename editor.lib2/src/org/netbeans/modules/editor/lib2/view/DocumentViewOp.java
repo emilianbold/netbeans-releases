@@ -409,9 +409,12 @@ public final class DocumentViewOp
             docView.setAllocationHeight(newAllocationHeight);
         }
         if (isAnyStatusBit(ALLOCATION_WIDTH_CHANGE)) {
-            clearStatusBits(ALLOCATION_WIDTH_CHANGE);
-            docView.setAllocationHeight(newAllocationWidth);
-            updateVisibleDimension();
+            docView.setAllocationWidth(newAllocationWidth);
+            // Updating of visible dimension can only be performed in EDT (acquires AWT treelock)
+            if (SwingUtilities.isEventDispatchThread()) {
+                clearStatusBits(ALLOCATION_WIDTH_CHANGE);
+                updateVisibleDimension();
+            }
         }
     }
 
@@ -612,7 +615,7 @@ public final class DocumentViewOp
     }
 
     void updateVisibleDimension() { // Called only with textComponent != null
-        // Must be called under mutex
+        // Must be called under mutex and in EDT (getViewRect() acquires AWT treelock)
         JTextComponent textComponent = docView.getTextComponent();
         Component parent = textComponent.getParent();
         Rectangle newRect;
