@@ -418,6 +418,8 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.MoveMembersUI" url="refactor/csh/move-members_db.html" />
 <!--Introduce Local Extension dialog box: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceLocalExtensionUI" url="refactor/csh/intro-local-extension_db.html" />
+<!--Inspect dialog box: -->
+<mapID target="org.netbeans.modules.analysis.RunAnalysis" url="editing/csh/java-inspect.html" />
 
 
 
