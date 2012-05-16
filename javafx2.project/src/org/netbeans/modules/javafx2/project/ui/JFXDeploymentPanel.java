@@ -633,7 +633,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(JFXDeploymentPanel.class);
+        return new HelpCtx(JFXDeploymentPanel.class.getName());
     }
 
     private static class IconFileFilter extends FileFilter {
