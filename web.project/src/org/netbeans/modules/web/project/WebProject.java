@@ -1507,7 +1507,7 @@ public final class WebProject implements Project {
         }
         
     }
-
+    
     /**
      * This class handle copying of web resources to appropriate place in build
      * dir. User is not forced to perform redeploy on JSP change. This
@@ -1516,7 +1516,8 @@ public final class WebProject implements Project {
      * Class should not request project lock from FS listener methods
      * (deadlock prone).
      */
-    private class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
+    private class CopyOnSaveSupport extends FileChangeAdapter 
+        implements PropertyChangeListener,  DeployOnSaveListener {
 
         private static final String META_INF = "META-INF";      // NOI18N
 
@@ -1535,23 +1536,14 @@ public final class WebProject implements Project {
         private String buildWeb = null;
         
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
-
+        
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
             super();
-            webModule.getConfigSupport().addDeployOnSaveListener( new DeployOnSaveListener(){
-                public void deployed(Iterable<Artifact> artifacts){
-                    for( Artifact artifact : artifacts ){
-                        FileObject fileObject = getReloadFileObject(artifact);
-                        if ( fileObject!= null ){
-                            URL u = getBrowserSupport().getBrowserURL(fileObject, true);
-                            if (u != null) {
-                                getBrowserSupport().reload(u);
-                            }
-                        }
-                    }
-                }
-            });
+        }
+        
+        private boolean isCopyOnSaveEnabled() {
+            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE));
         }
         
         public void addArtifactListener(ArtifactListener listener) {
@@ -1561,10 +1553,6 @@ public final class WebProject implements Project {
         public void removeArtifactListener(ArtifactListener listener) {
             listeners.remove(listener);
         }
-
-        private boolean isCopyOnSaveEnabled() {
-            return Boolean.parseBoolean(WebProject.this.evaluator().getProperty(WebProjectProperties.J2EE_COPY_STATIC_FILES_ON_SAVE));
-        }
         
         public void initialize() throws FileStateInvalidException {
             WebProject.this.evaluator().addPropertyChangeListener(this);
@@ -1572,6 +1560,9 @@ public final class WebProject implements Project {
             if (!isCopyOnSaveEnabled()) {
                 return;
             }
+            
+            // Add deployed resources notification listener 
+            webModule.getConfigSupport().addDeployOnSaveListener( this);
             
             docBase = getWebModule().getDocumentBase();
             docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
@@ -1618,6 +1609,7 @@ public final class WebProject implements Project {
             }
 
             WebProject.this.evaluator().removePropertyChangeListener(this);
+            webModule.getConfigSupport().removeDeployOnSaveListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -1780,6 +1772,19 @@ public final class WebProject implements Project {
             }
         }
         
+        public void deployed( Iterable<Artifact> artifacts ) {
+            for (Artifact artifact : artifacts) {
+                FileObject fileObject = getReloadFileObject(artifact);
+                if (fileObject != null) {
+                    URL u = getBrowserSupport().getBrowserURL(
+                            fileObject, true);
+                    if (u != null) {
+                        getBrowserSupport().reload(u);
+                    }
+                }
+            }
+        }
+        
         private FileObject getReloadFileObject( Artifact artifact ) {
             File file = artifact.getFile();
             FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
@@ -1796,14 +1801,15 @@ public final class WebProject implements Project {
         
         private FileObject getWebDocFileObject( FileObject artifact ){
             String path = artifact.getPath();
-            if ( path.contains( WEB_INF)){
-                if( path.contains(META_INF)){
+            if ( path.contains( CopyOnSaveSupport.WEB_INF)){
+                if( path.contains(CopyOnSaveSupport.META_INF)){
                     FileObject persistenceXmlDir = getWebModule().
                         getPersistenceXmlDir();
                     if ( persistenceXmlDir == null ){
                         return null;
                     }
-                    String meta = WEB_INF+"/classes/"+META_INF+"/";     // NOI18N
+                    String meta = CopyOnSaveSupport.WEB_INF+"/classes/"+
+                        CopyOnSaveSupport.META_INF+"/";     // NOI18N
                     int index = path.indexOf( meta );
                     if ( index == -1){
                         return null;
@@ -1812,11 +1818,11 @@ public final class WebProject implements Project {
                     return persistenceXmlDir.getFileObject(path);
                 }
                 else {
-                    int index = path.indexOf( WEB_INF+'/' );
+                    int index = path.indexOf( CopyOnSaveSupport.WEB_INF+'/' );
                     if ( index == -1){
                         return null;
                     }
-                    path = path.substring(index+WEB_INF.length()+1);
+                    path = path.substring(index+CopyOnSaveSupport.WEB_INF.length()+1);
                     FileObject webInf = getWebModule().resolveWebInf(docBaseValue, 
                             webInfValue, true, true);
                     if ( webInf != null ){
