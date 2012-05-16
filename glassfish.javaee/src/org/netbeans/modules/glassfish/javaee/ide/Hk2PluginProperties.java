@@ -249,6 +249,11 @@ public class Hk2PluginProperties {
             // work around http://java.net/jira/browse/GLASSFISH-16919
             //  remove this once the javaee.jar manifest is corrected
             jars.add("javax.mail"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            
+            // jstl library changes in 3.1.2 and somebody forgot to update the 
+            // javaee.jar MANIFEST.MF
+            //
+            jars.add("javax.servlet.jsp.jstl"+ServerUtilities.GFV3_VERSION_MATCHER);
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);

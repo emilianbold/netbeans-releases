@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -84,3 +84,4 @@ var CDDL_GPLV2_LINK = "http://netbeans.org/cddl-gplv2.html";
 var LICENSE_3RD_PARTY_LINK = "http://www.netbeans.info/downloads/licence/netbeans-3rd-party.txt";
 
 var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. See the <a href=\"{1}\">third-party readme</a> for external components included in NetBeans and their associated licenses.";
+var LEGAL_WARNING_MESSAGE = "<b>WARNING:</b> These builds are still under development and could contain defects that lead to data loss. They are meant for evaluation of new features. As always, be sure to back up your changes if you use these builds on your production code.";

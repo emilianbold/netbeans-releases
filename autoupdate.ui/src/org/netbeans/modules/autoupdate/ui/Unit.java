@@ -655,7 +655,11 @@ public abstract class Unit {
                 container = Containers.forAvailable ();
             }
             if (marked) {
-                container.add (updateUnit, updateEl);
+                try {
+                    container.add (updateUnit, updateEl);
+                } catch (IllegalArgumentException iae) {
+                    log.warning(iae.getMessage());
+                }
             } else {
                 container.remove (updateEl);
             }
