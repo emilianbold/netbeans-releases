@@ -14,81 +14,77 @@
         <h2>Working With Cloud Applications</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
         <p>The following table shows how to work with applications on the cloud.</p>
-<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
-   process step. The right column contains detail information to accomplish that process.">
-  <tr valign="top"> 
-    <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
-      <b>Create the application client project</b></td>
-    <td> 
-      <ol>
-        <li><a href="../server/server_register.html">Register</a> a Java EE application 
-          server. You cannot deploy enterprise applications to the Tomcat server.</li>
-        <li><a href="appclient_create.html">Create the application client project</a>.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../images/circle2.gif" alt="Number two"><br>
-      <b>Code the application client</b></td>
-    <td> 
-      <ol>
-        <li>Configure the classpath of the application client project to add the Java class library project that contains the required remote interfaces.</li>
-        <li><a href="../ejb/editing/call_ejb.html">Call the remote interfaces of the enterprise beans</a> from the application client.</li>
-        <li><a href="../webservice/consume/wsc_create.html">Access web services</a> in the application client.</li>
-        </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"><img src="../images/circle3.gif" alt="Number three"><br>
-      <b>Configure the application</b></td>
-    <td> 
-      <ol>
-        <li><a href="appclient_edit_dd.html">Edit the application client's deployment descriptors</a>, if necessary.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"> <img src="../images/circle4.gif" alt="Number four"><br>
-      <b>Build the project</b> </td>
-    <td> 
-      <ol>
-        <li>Set the project as the <a href="nbdocs:/org.netbeans.modules.java.helpset/org.netbeans.modules.java.helpset/docs/project/proj_main.html">main project</a>
-        and choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_project.html">Build
-        Main Project</a> (F11) from the main menu<br>or<br> right-click the project node in the Projects window and choose Build.</li>
-      </ol>
-    </td>
-  </tr>
-  <tr> 
-    <td colspan="2"> 
-      <hr align="center" width="80%">
-    </td>
-  </tr>
-  <tr valign="top"> 
-    <td align="center"> <img src="../images/circle5.gif" alt="Number five"><br>
-      <b>Deploy the module</b> </td>
-    <td> 
-      <ol>
-        <li>Right-click the application client and choose 
-          <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/run/run_app.html">Run</a>.</li>
-        </ol>
-    </td>
-  </tr>
-</table>
+        <table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+               process step. The right column contains detail information to accomplish that process.">
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle1.gif" alt="Number one"><br>
+                    <b>Set up the cloud account</b></td>
+                <td> 
+                    For Oracle Cloud:
+                    <ol>
+                        <li>Go to the <a href="https://cloud.oracle.com">Oracle Cloud homepage</a> and
+                            register for an Oracle Java Cloud Service.</li>
+                        <li>After your Oracle Java Cloud Service is registered, go to the service's Overview
+                            page and download the Oracle Java Cloud Service SDK.</li>
+                    </ol>
+                    <p>For Amazon Beanstalk, sign up for Elastic Beanstalk from the AWS Management Console.</p>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle2.gif" alt="Number two"><br>
+                    <b>Register your cloud account in the IDE</b></td>
+                <td> 
+                    <ol><li>Open the Services window</li>
+                        <li>Right-click the Cloud node</li>
+                        <li>Select Add Cloud</li>
+                        <li>Enter your cloud account details</li></ol> 
+                    <p>See <a href="register-cloud.html">Registering a Cloud Account in NetBeans IDE</a>.</p>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"><img src="../images/circle3.gif" alt="Number three"><br>
+                    <b>Develop your application locally</b></td>
+                <td> 
+                    <ol>
+                        <li>Set up your local environment (application and database server) to match the cloud environment.</li>
+                        <li>Create the web application in the local environment, selecting a local server that matches the cloud environment.</li>
+                        <li>Test, debug, and tweak your application using NetBeans IDE tools.</li>
+                    </ol>
+                    <p>See <a href="develop-locally.html">Developing Cloud Applications Locally</a>.</p>
+                </td>
+            </tr>
+            <tr> 
+                <td colspan="2"> 
+                    <hr align="center" width="80%">
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td align="center"> <img src="../images/circle4.gif" alt="Number four"><br>
+                    <b>Deploy and run the application on the cloud</b> </td>
+                <td> 
+                    <ol>
+                        <li>In the Projects window, right-click the application's node and select Properties.</li>
+            <li>In the Project Properties, select the Run category.</li>
+            <li>From the Server drop-down list, select a cloud-based server.(If you registered a cloud
+                account with NetBeans IDE, the servers associated with that account are listed.)</li>
+            <li>In the Projects window, right-click the project's root node and select Run. The IDE
+            builds the project and deploys it to the cloud, and the application's landing page opens
+            in a browser window.</li>
+                    </ol>
+                </td>
+            </tr>
+            
+        </table>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
