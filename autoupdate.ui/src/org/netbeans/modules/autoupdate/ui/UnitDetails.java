@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -75,7 +75,7 @@ import org.openide.xml.XMLUtil;
  */
 public class UnitDetails extends DetailsPanel {
 
-    private final Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.ui.UnitDetails");
+    private static final Logger err = Logger.getLogger("org.netbeans.modules.autoupdate.ui.UnitDetails");
     private RequestProcessor.Task unitDetailsTask = null;
     static final RequestProcessor UNIT_DETAILS_PROCESSOR = new RequestProcessor("unit-details-processor", 1, true);
 
@@ -109,10 +109,12 @@ public class UnitDetails extends DetailsPanel {
             if (u instanceof Unit.Update) {
                 unitDetailsTask = UNIT_DETAILS_PROCESSOR.post(new Runnable() {
 
+                    @Override
                     public void run() {
                         final StringBuilder text = getUnitText(u, true);
                         SwingUtilities.invokeLater(new Runnable() {
 
+                            @Override
                             public void run() {
                                 setUnitText(u, text);
                             }
@@ -131,49 +133,49 @@ public class UnitDetails extends DetailsPanel {
             String categoryName = u1.getSourceDescription();
             text.append("<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr>");
             if (url instanceof URL) {
-                text.append("<td><img src=\"" + url + "\"></img></td>");
+                text.append("<td><img src=\"").append(url).append("\"></img></td>");
             }
             text.append("<td></td>");
             text.append("<td>&nbsp;&nbsp;</td>");
-            text.append("<td><b>" + categoryName + "</b></td>");
+            text.append("<td><b>").append(categoryName).append("</b></td>");
             text.append("</tr></table><br>");
         }
 
         if (Utilities.modulesOnly() || Utilities.showExtendedDescription()) {
-            text.append("<b>" + getBundle("UnitDetails_Plugin_CodeName") + "</b>" + u.updateUnit.getCodeName()); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_CodeName")).append("</b>").append(u.updateUnit.getCodeName()); // NOI18N
             text.append("<br>");
 
         }
         String desc = null;
         if (u instanceof Unit.Update) {
             Unit.Update uu = ((Unit.Update) u);
-            text.append("<b>" + getBundle("UnitDetails_Plugin_InstalledVersion") + "</b>" + uu.getInstalledVersion() + "<br>"); // NOI18N
-            text.append("<b>" + getBundle("UnitDetails_Plugin_AvailableVersion") + "</b>" + uu.getAvailableVersion() + "<br>"); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_InstalledVersion")).append("</b>").append(uu.getInstalledVersion()).append("<br>"); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_AvailableVersion")).append("</b>").append(uu.getAvailableVersion()).append("<br>"); // NOI18N
             desc = getDependencies(uu, collectDependencies);
         } else {
-            text.append("<b>" + getBundle("UnitDetails_Plugin_Version") + "</b>" + u.getDisplayVersion() + "<br>"); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_Version")).append("</b>").append(u.getDisplayVersion()).append("<br>"); // NOI18N
         }
         if (u.getAuthor() != null && u.getAuthor().length() > 0) {
-            text.append("<b>" + getBundle("UnitDetails_Plugin_Author") + "</b>" + u.getAuthor() + "<br>"); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_Author")).append("</b>").append(u.getAuthor()).append("<br>"); // NOI18N
         }
         if (u.getDisplayDate() != null && u.getDisplayDate().length() > 0) {
-            text.append("<b>" + getBundle("UnitDetails_Plugin_Date") + "</b>" + u.getDisplayDate() + "<br>"); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_Date")).append("</b>").append(u.getDisplayDate()).append("<br>"); // NOI18N
         }
-        text.append("<b>" + getBundle("UnitDetails_Plugin_Source") + "</b>" + u.getSource() + "<br>"); // NOI18N
+        text.append("<b>").append(getBundle("UnitDetails_Plugin_Source")).append("</b>").append(u.getSource()).append("<br>"); // NOI18N
 
         if (u.getHomepage() != null && u.getHomepage().length() > 0) {
-            text.append("<b>" + getBundle("UnitDetails_Plugin_Homepage") + "</b><a href=\"" + u.getHomepage() + "\">" + u.getHomepage() + "</a><br>"); // NOI18N
+            text.append("<b>").append(getBundle("UnitDetails_Plugin_Homepage")).append("</b><a href=\"").append(u.getHomepage()).append("\">").append(u.getHomepage()).append("</a><br>"); // NOI18N
         }
 
         if (u.getNotification() != null && u.getNotification().length() > 0) {
-            text.append("<br><h3>" + getBundle("UnitDetails_Plugin_Notification") + "</h3>"); // NOI18N
+            text.append("<br><h3>").append(getBundle("UnitDetails_Plugin_Notification")).append("</h3>"); // NOI18N
             text.append("<font color=\"red\">"); // NOI18N
             text.append(u.getNotification());
             text.append("</font><br>");  // NOI18N
         }
 
         if (u.getDescription() != null && u.getDescription().length() > 0) {
-            text.append("<br><h3>" + getBundle("UnitDetails_Plugin_Description") + "</h3>"); // NOI18N
+            text.append("<br><h3>").append(getBundle("UnitDetails_Plugin_Description")).append("</h3>"); // NOI18N
             String description = u.getDescription();
             if(description.toLowerCase().startsWith("<html>")) {
                 text.append(description.substring(6));
@@ -182,7 +184,7 @@ public class UnitDetails extends DetailsPanel {
             }
         }
         if (desc != null && desc.length() > 0) {
-            text.append("<br><br><h4>" + getBundle("Unit_InternalUpdates_Title") + "</h4>"); // NOI18N
+            text.append("<br><br><h4>").append(getBundle("Unit_InternalUpdates_Title")).append("</h4>"); // NOI18N
             text.append(desc);
         }
     }
@@ -261,7 +263,7 @@ public class UnitDetails extends DetailsPanel {
                 }
             }
 
-            if (required.size() != 0) {
+            if (!required.isEmpty()) {
                 List<UpdateElement> visibleRequirements = new ArrayList<UpdateElement>();
                 for (UpdateElement ue : required) {
                     if (ue.getUpdateUnit().getType().equals(UpdateManager.TYPE.KIT_MODULE)) {
@@ -338,6 +340,7 @@ public class UnitDetails extends DetailsPanel {
         
             Set <UpdateElement> sorted = new TreeSet <UpdateElement> (new Comparator<UpdateElement> () {
 
+                @Override
                     public int compare(UpdateElement o1, UpdateElement o2) {
                         return o1.getDisplayName().compareTo(o2.getDisplayName());
                     }
@@ -358,9 +361,9 @@ public class UnitDetails extends DetailsPanel {
         desc.append("&nbsp;&nbsp;&nbsp;&nbsp;");
         desc.append(ue.getDisplayName());
         if (ue.getUpdateUnit().getInstalled() != null) {
-            desc.append(" [" + ue.getUpdateUnit().getInstalled().getSpecificationVersion() + "->");
+            desc.append(" [").append(ue.getUpdateUnit().getInstalled().getSpecificationVersion()).append("->");
         } else {
-            desc.append(" <span color=\"red\">" + getBundle("UnitDetails_New_Internal_Update_Mark") + "</span> [");
+            desc.append(" <span color=\"red\">").append(getBundle("UnitDetails_New_Internal_Update_Mark")).append("</span> [");
         }
 
         desc.append(ue.getUpdateUnit().getAvailableUpdates().get(0).getSpecificationVersion());
