@@ -178,6 +178,20 @@ final class JavaMoveCodeElementAction extends BaseAction {
         int startOffset = getLineStart(doc, bounds[0]);
         int endOffset = getLineEnd(doc, bounds[1]);
         while (true) {
+            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cInfo.getTokenHierarchy(), startOffset);
+            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                if (ts.offset() < startOffset && ts.token().id() != JavaTokenId.WHITESPACE) {
+                    startOffset = getLineStart(doc, ts.offset());
+                    continue;
+                }
+            }
+            ts = SourceUtils.getJavaTokenSequence(cInfo.getTokenHierarchy(), endOffset);
+            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                if (ts.offset() < endOffset && ts.token().id() != JavaTokenId.WHITESPACE) {
+                    endOffset = getLineEnd(doc, ts.offset() + ts.token().length());
+                    continue;
+                }
+            }
             boolean finish = true;
             TreePath tp = tu.pathFor(startOffset);
             while (tp != null) {
@@ -236,11 +250,13 @@ final class JavaMoveCodeElementAction extends BaseAction {
             if (doc instanceof GuardedDocument && ((GuardedDocument)doc).isPosGuarded(destinationOffset)) {
                 return -1;
             }
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cInfo.getTokenHierarchy(), destinationOffset);
-            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
-                if (ts.offset() < destinationOffset && ts.token().id() != JavaTokenId.WHITESPACE) {
-                    offset = downward ? ts.offset() + ts.token().length() : ts.offset();
-                    continue;
+            if (destinationOffset < doc.getLength()) {
+                TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(cInfo.getTokenHierarchy(), destinationOffset);
+                if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                    if (ts.offset() < destinationOffset && ts.token().id() != JavaTokenId.WHITESPACE) {
+                        offset = downward ? ts.offset() + ts.token().length() : ts.offset();
+                        continue;
+                    }
                 }
             }
             TreePath destinationPath = tu.pathFor(destinationOffset);

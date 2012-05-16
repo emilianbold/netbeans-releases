@@ -102,10 +102,11 @@ public class PofConfigVisitorImpl implements PofConfigVisitor {
     }
 
     PofConfigComponent create(PofConfigComponent context, Element element) {
-        QName qName = AbstractDocumentComponent.getQName(element);
-        if (!PofConfigComponent.NAMESPACE.equals(qName.getNamespaceURI())) {
-            return null;
-        }
+        // see #212465 - hot fix - Andrew will know sense of this code piece
+//        QName qName = AbstractDocumentComponent.getQName(element);
+//        if (!PofConfigComponent.NAMESPACE.equals(qName.getNamespaceURI())) {
+//            return null;
+//        }
         if (context == null) {
             return new PofConfigImpl(getModel(), element);
         } else {

@@ -72,6 +72,7 @@ import org.openide.cookies.CloseCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 import org.openide.util.WeakListeners;
@@ -377,20 +378,25 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     }
 
     private void refreshName () {
-        String name = org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title");
-        Component[] panels;
-        synchronized (this) {
-            panels = mergeTabbedPane.getComponents();
-        }
-        for (int i = 0; i < panels.length; i++) {
-            MergePanel panel = (MergePanel) panels[i];
-            MergeNode node = nodesForPanels.get(panel);
-            if (node.getLookup().lookup(SaveCookie.class) != null) {
-                name = "<html><b>" + name + "*</b></html>"; //NOI18N
-                break;
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                String name = org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title");
+                Component[] panels;
+                synchronized (MergeDialogComponent.this) {
+                    panels = mergeTabbedPane.getComponents();
+                }
+                for (int i = 0; i < panels.length; i++) {
+                    MergePanel panel = (MergePanel) panels[i];
+                    MergeNode node = nodesForPanels.get(panel);
+                    if (node.getLookup().lookup(SaveCookie.class) != null) {
+                        name = "<html><b>" + name + "*</b></html>"; //NOI18N
+                        break;
+                    }
+                }
+                setName(name);
             }
-        }
-        setName(name);
+        });
     }
 
     private boolean beforeClose () {

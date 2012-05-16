@@ -107,15 +107,17 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         // Entry for the important file: by default, is preserved
         // during all operations.
-        return new CndFormat(obj, primaryFile);
+        return new CndFormat(obj, primaryFile, getMimeType());
     }
 
 // Inner class: Substitute important template parameters...
     /*package*/
     private static class CndFormat extends FileEntry.Format {
+        private final String mime;
 
-        public CndFormat(MultiDataObject obj, FileObject primaryFile) {
+        public CndFormat(MultiDataObject obj, FileObject primaryFile, String mime) {
             super(obj, primaryFile);
+            this.mime = mime;
         }
 
         @Override
@@ -209,7 +211,7 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
             // we don't want extension to be taken from template filename for our customized dialog
             String ext;
-            if (MIMEExtensions.isCustomizableExtensions(getFile().getMIMEType())) {
+            if (MIMEExtensions.isCustomizableExtensions(mime)) {
                 ext = FileUtil.getExtension(name);
                 if (ext.length() != 0) {
                     name = name.substring(0, name.length() - ext.length() - 1);
@@ -223,8 +225,9 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
 
             java.text.Format frm = createFormat(f, name, ext);
 
-            EditorKit kit = createEditorKit(getFile().getMIMEType());
+            EditorKit kit = createEditorKit(mime);
             Document doc = kit.createDefaultDocument();
+            doc.putProperty("mimeType", mime); //NOI18N
 
             String lsType = (String)doc.getProperty(DefaultEditorKit.EndOfLineStringProperty);
             if (lsType == null) {

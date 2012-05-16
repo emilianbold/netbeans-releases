@@ -110,7 +110,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitTestFinishedHandler extends TestRecognizerHandler {
 
         public CUnitTestFinishedHandler() {
-            super("Test: (.*) \\.\\.\\. passed"); //NOI18N
+            super("Test: (.*) \\.\\.\\.( )?passed"); //NOI18N
         }
 
         @Override
@@ -128,7 +128,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitTestFailedHandler extends TestRecognizerHandler {
 
         public CUnitTestFailedHandler() {
-            super("Test: (.*) \\.\\.\\. FAILED"); //NOI18N
+            super("Test: (.*) \\.\\.\\.( )?FAILED"); //NOI18N
         }
 
         @Override
@@ -146,7 +146,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
         public CUnitSuiteFinishedHandler() {
-            super("--Run Summary: "); //NOI18N
+            super("(--)?Run Summary: "); //NOI18N
         }
 
         @Override

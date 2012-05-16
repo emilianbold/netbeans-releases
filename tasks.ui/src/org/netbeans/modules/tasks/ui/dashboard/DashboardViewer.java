@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author S. Aubrecht
  */
-public final class DashboardViewer implements PropertyChangeListener{
+public final class DashboardViewer implements PropertyChangeListener {
 
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
@@ -174,14 +174,14 @@ public final class DashboardViewer implements PropertyChangeListener{
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(RepositoryManager.EVENT_REPOSITORIES_CHANGED)) {
             requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                //TODO needs to be optimalized
-                titleRepositoryNode.setProgressVisible(true);
-                loadRepositories();
-                titleRepositoryNode.setProgressVisible(false);
-            }
-        });
+                @Override
+                public void run() {
+                    //TODO needs to be optimalized
+                    titleRepositoryNode.setProgressVisible(true);
+                    loadRepositories();
+                    titleRepositoryNode.setProgressVisible(false);
+                }
+            });
         }
     }
 
@@ -241,8 +241,10 @@ public final class DashboardViewer implements PropertyChangeListener{
             taskNode = categorizedTaskNode;
         }
         CategoryNode destCategoryNode = mapCategoryToNode.get(category);
+        final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
+        final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
         TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
-        if (destCategoryNode.addTaskNode(toAdd, appliedTaskFilters.isInFilter(toAdd.getTask()))) {
+        if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
             //remove from old category
             if (taskNode.isCategorized()) {
                 removeTask(taskNode);
@@ -255,16 +257,24 @@ public final class DashboardViewer implements PropertyChangeListener{
             model.contentChanged(destCategoryNode);
             destCategoryNode.updateContent();
         }
+        if (isTaskInFilter && !isCatInFilter) {
+            addCategoryToModel(destCategoryNode);
+        }
         storeCategory(category);
     }
 
     public void removeTask(TaskNode taskNode) {
         CategoryNode categoryNode = mapCategoryToNode.get(taskNode.getCategory());
+        final boolean isOldInFilter = isCategoryInFilter(categoryNode);
         taskNode.setCategory(null);
         categoryNode.removeTaskNode(taskNode);
         model.contentChanged(categoryNode);
-        //TODO only remove that child, dont updateContent all
-        categoryNode.updateContent();
+        if (!isCategoryInFilter(categoryNode) && isOldInFilter) {
+            model.removeRoot(categoryNode);
+        } else {
+            //TODO only remove that child, dont updateContent all
+            categoryNode.updateContent();
+        }
         storeCategory(categoryNode.getCategory());
     }
 
@@ -302,9 +312,8 @@ public final class DashboardViewer implements PropertyChangeListener{
         //add category to the model - sorted
         CategoryNode newCategoryNode = new CategoryNode(category, true);
         categoryNodes.add(newCategoryNode);
-        int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         mapCategoryToNode.put(category, newCategoryNode);
-        addCategoryToModel(index, newCategoryNode);
+        addCategoryToModel(newCategoryNode);
         storeCategory(category);
     }
 
@@ -322,14 +331,35 @@ public final class DashboardViewer implements PropertyChangeListener{
     }
 
     public void setCategoryOpened(CategoryNode categoryNode, boolean opened) {
-        categoryNode.setOpened(opened);
-        if (!isCategoryInFilter(categoryNode)) {
+        categoryNodes.remove(categoryNode);
+        if (isCategoryInFilter(categoryNode)) {
             model.removeRoot(categoryNode);
         }
+        Category category = categoryNode.getCategory();
+        final CategoryNode newNode;
+        if (opened) {
+            newNode = new CategoryNode(category);
+        } else {
+            newNode = new ClosedCategoryNode(category);
+        }
+        categoryNodes.add(newNode);
+        mapCategoryToNode.put(category, newNode);
+        if (isCategoryInFilter(newNode)) {
+            addCategoryToModel(newNode);
+        }
         storeClosedCategories();
+        if (newNode.isOpened()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    newNode.setExpanded(true);
+                }
+            });
+        }
     }
 
-    private void addCategoryToModel(int index, CategoryNode categoryNode) {
+    private void addCategoryToModel(CategoryNode categoryNode) {
+        int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
         for (; index < size; index++) {
@@ -394,7 +424,7 @@ public final class DashboardViewer implements PropertyChangeListener{
 
     public void addRepository(Repository repository) {
         //add repository to the model - sorted
-        RepositoryNode repositoryNode = new RepositoryNode(repository);
+        RepositoryNode repositoryNode = new RepositoryNode(repository, false);
         repositoryNodes.add(repositoryNode);
         int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
         addRepositoryToModel(index, repositoryNode);
@@ -413,11 +443,31 @@ public final class DashboardViewer implements PropertyChangeListener{
     }
 
     public void setRepositoryOpened(RepositoryNode repositoryNode, boolean opened) {
-        repositoryNode.setOpened(opened);
-        if (!isRepositoryInFilter(repositoryNode)) {
+        repositoryNodes.remove(repositoryNode);
+        if (isRepositoryInFilter(repositoryNode)) {
             model.removeRoot(repositoryNode);
         }
+        Repository repository = repositoryNode.getRepository();
+        final RepositoryNode newNode;
+        if (opened) {
+            newNode = new RepositoryNode(repository, repositoryNode.isLoaded());
+        } else {
+            newNode = new ClosedRepositoryNode(repository, repositoryNode.isLoaded());
+        }
+        repositoryNodes.add(newNode);
+        if (isRepositoryInFilter(newNode)) {
+            int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
+            addRepositoryToModel(index, newNode);
+        }
         storeClosedRepositories();
+        if (newNode.isOpened()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    newNode.setExpanded(true);
+                }
+            });
+        }
     }
 
     private void addRepositoryToModel(int index, RepositoryNode repositoryNode) {
@@ -562,6 +612,12 @@ public final class DashboardViewer implements PropertyChangeListener{
         });
     }
 
+    void loadCategory(Category category) {
+        DashboardStorage storage = DashboardStorage.getInstance();
+        List<TaskEntry> taskEntries = storage.readCategory(category.getName());
+        category.setTasks(loadTasks(taskEntries));
+    }
+
     private void loadCategories() {
         DashboardStorage storage = DashboardStorage.getInstance();
         List<CategoryEntry> categoryEntries = storage.readCategories();
@@ -569,10 +625,14 @@ public final class DashboardViewer implements PropertyChangeListener{
 
         final List<CategoryNode> catNodes = new ArrayList<CategoryNode>(categoryEntries.size());
         for (CategoryEntry categoryEntry : categoryEntries) {
-            List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
-            // was category closed
+            // was category opened
             boolean open = !names.contains(categoryEntry.getCategoryName());
-            catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks), open));
+            if (open) {
+                List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
+                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks)));
+            } else {
+                catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
+            }
         }
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -589,7 +649,7 @@ public final class DashboardViewer implements PropertyChangeListener{
         Map<String, List<String>> m = new HashMap<String, List<String>>();
         for (TaskEntry taskEntry : taskEntries) {
             List<String> l = m.get(taskEntry.getRepositoryId());
-            if(l == null) {
+            if (l == null) {
                 l = new LinkedList<String>();
                 m.put(taskEntry.getRepositoryId(), l);
             }
@@ -603,7 +663,7 @@ public final class DashboardViewer implements PropertyChangeListener{
                 if (issues != null) {
                     tasks.addAll(Arrays.asList(issues));
                 }
-            }        
+            }
         }
         return tasks;
     }
@@ -626,10 +686,13 @@ public final class DashboardViewer implements PropertyChangeListener{
         for (Repository repository : allRepositories) {
             RepositoryNode repositoryNode;
             boolean open = !closedIds.contains(repository.getId());
-            //TODO uncommit when the query refresh bug is fixed
-//            refreshQueries(repository.getQueries());
-            repositoryNode = new RepositoryNode(repository, false, open);
-            repoNodes.add(repositoryNode);
+            if (open) {
+                //TODO uncommit when the query refresh bug is fixed
+                //refreshQueries(repository.getQueries());
+                repoNodes.add(new RepositoryNode(repository, false));
+            } else {
+                repoNodes.add(new ClosedRepositoryNode(repository, false));
+            }
         }
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -697,9 +760,9 @@ public final class DashboardViewer implements PropertyChangeListener{
             Collections.sort(categoryNodes);
             int index = model.getRootNodes().indexOf(titleCategoryNode) + 1;
             for (CategoryNode categoryNode : categoryNodes) {
+                mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                 if (isCategoryInFilter(categoryNode)) {
                     taskHits += categoryNode.getTotalTaskCount();
-                    mapCategoryToNode.put(categoryNode.getCategory(), categoryNode);
                     addRootToModel(index++, categoryNode);
                 }
             }
@@ -722,11 +785,11 @@ public final class DashboardViewer implements PropertyChangeListener{
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
-        return (appliedTaskFilters.isEmpty() || !categoryNode.getFilteredTaskNodes().isEmpty()) && appliedCategoryFilters.isInFilter(categoryNode);
+        return expandNodes() ? !categoryNode.getFilteredTaskNodes().isEmpty() && appliedCategoryFilters.isInFilter(categoryNode) : appliedCategoryFilters.isInFilter(categoryNode);
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
-        return (appliedTaskFilters.isEmpty() || !repositoryNode.getFilteredQueryNodes().isEmpty()) && appliedRepositoryFilters.isInFilter(repositoryNode);
+        return expandNodes() ? !repositoryNode.getFilteredQueryNodes().isEmpty() && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
     }
 
     private void removeNodesFromModel(Class nodeClass) {

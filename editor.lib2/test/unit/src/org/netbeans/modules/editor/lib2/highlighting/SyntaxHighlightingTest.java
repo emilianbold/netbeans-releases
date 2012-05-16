@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2.highlighting;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
@@ -55,6 +56,7 @@ import junit.textui.TestRunner;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.Filter;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.lib.lexer.lang.TestTokenId;
@@ -75,6 +77,20 @@ public class SyntaxHighlightingTest extends NbTestCase {
     /** Creates a new instance of SyntaxHighlightingTest */
     public SyntaxHighlightingTest(String name) {
         super(name);
+        List<String> includes = new ArrayList<String>();
+//        includes.add("testSimple");
+//        includes.add("testEmbedded");
+//        filterTests(includes);
+    }
+
+    private void filterTests(List<String> includeTestNames) {
+        List<Filter.IncludeExclude> includeTests = new ArrayList<Filter.IncludeExclude>();
+        for (String testName : includeTestNames) {
+            includeTests.add(new Filter.IncludeExclude(testName, ""));
+        }
+        Filter filter = new Filter();
+        filter.setIncludes(includeTests.toArray(new Filter.IncludeExclude[includeTests.size()]));
+        setFilter(filter);
     }
 
     @Override
@@ -129,6 +145,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
         layer.addHighlightsChangeListener(listener);
 
         assertHighlights(
+            text,
             TokenHierarchy.create(text, TestTokenId.language()).tokenSequence(),
             layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE),
             true,
@@ -188,7 +205,7 @@ public class SyntaxHighlightingTest extends NbTestCase {
 
         HighlightsSequence hs = layer.getHighlights(Integer.MIN_VALUE, Integer.MAX_VALUE);
         TokenHierarchy<?> tokens = TokenHierarchy.create(text, lang);
-        assertHighlights(tokens.tokenSequence(), hs, true, "");
+        assertHighlights(text, tokens.tokenSequence(), hs, true, "");
         assertFalse("Unexpected highlights at the end of the sequence", hs.moveNext());
         System.out.println("------------------------\n");
     }
@@ -205,15 +222,20 @@ public class SyntaxHighlightingTest extends NbTestCase {
         }
     }
     
-    private void assertHighlights(TokenSequence<?> ts, HighlightsSequence hs, boolean moveHs, String indent) {
+    private void assertHighlights(String text, TokenSequence<?> ts, HighlightsSequence hs, boolean moveHs, String indent) {
+        int newlineOffset = Integer.MIN_VALUE;
         while (ts.moveNext()) {
-            boolean hasHighlight;
-            if (moveHs) {
-                hasHighlight = hs.moveNext();
-            } else {
-                hasHighlight = moveHs = true;
+            if (newlineOffset == Integer.MIN_VALUE) { // Init
+                newlineOffset = Integer.MAX_VALUE;
+                int tokenOffset = ts.offset();
+                while (tokenOffset < text.length()) {
+                    if (text.charAt(tokenOffset) == '\n') {
+                        newlineOffset = tokenOffset;
+                        break;
+                    }
+                    tokenOffset++;
+                }
             }
-            assertTrue("Wrong number of highlights", hasHighlight);
             
             System.out.println(indent + "Token    : <" + 
                 ts.offset() + ", " + 
@@ -222,37 +244,174 @@ public class SyntaxHighlightingTest extends NbTestCase {
                 ts.token().id().name() + ">");
             
             TokenSequence<?> embeddedSeq = ts.embedded();
+            int tokenOffset = ts.offset();
+            int tokenEndOffset = tokenOffset + ts.token().length();
+            int hiEOffset = tokenOffset;
             if (embeddedSeq == null) {
-                System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
-                assertEquals("Wrong starting offset", ts.offset(), hs.getStartOffset());
-                assertEquals("Wrong ending offset", ts.offset() + ts.token().length(), hs.getEndOffset());
+                int limitOffset = tokenEndOffset;
+                do {
+                    int hiSOffset = hiEOffset;
+                    int nlState = 0; // No initial newlines
+                    if (hiSOffset == newlineOffset) {
+                        newlineOffset++;
+                        hiSOffset = hiEOffset = newlineOffset;
+                        nlState = 1; // Initial char is newline
+                        while (nlState <= 2 && newlineOffset < text.length()) {
+                            if (text.charAt(newlineOffset) == '\n') {
+                                if (nlState == 1 && newlineOffset < limitOffset) {
+                                    hiSOffset = hiEOffset = newlineOffset + 1;
+                                } else {
+                                    nlState = 3;
+                                    break;
+                                }
+                            } else {
+                                nlState = 2;
+                            }
+                            newlineOffset++;
+                        }
+                    }
+                    if (nlState > 0) { // Found NL(s) at token begining
+                        // hiEOffset already set
+                    } else {
+                        hiEOffset = Math.min(limitOffset, newlineOffset);
+                    }
+                    if (hiEOffset > hiSOffset) {
+                        if (moveHs) {
+                            assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
+                        }
+                        moveHs = true;
+                        System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
+                        assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
+                        assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
+                    }
+                } while (hiEOffset < limitOffset);
                 // XXX: compare attributes as well
             } else {
                 int prologueLength = embeddedPrologLength(ts, embeddedSeq);
                 int epilogLength = embeddedEpilogLength(ts, embeddedSeq);
                 
-                if (prologueLength != -1 && epilogLength != -1) {
+                if (prologueLength != -1 && epilogLength != -1) { // Tokens exist in embedded sequence
                     if (prologueLength > 0) {
-                        System.out.println(indent + "Prolog   : <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
-                        assertEquals("Wrong starting offset", ts.offset(), hs.getStartOffset());
-                        assertEquals("Wrong ending offset", ts.offset() + prologueLength, hs.getEndOffset());
+                        int limitOffset = tokenOffset + prologueLength;
+                        do {
+                            int hiSOffset = hiEOffset;
+                            int nlState = 0; // No initial newlines
+                            if (hiSOffset == newlineOffset) {
+                                newlineOffset++;
+                                hiSOffset = hiEOffset = newlineOffset;
+                                nlState = 1; // Initial char is newline
+                                while (nlState <= 2 && newlineOffset < text.length()) {
+                                    if (text.charAt(newlineOffset) == '\n') {
+                                        if (nlState == 1 && newlineOffset < limitOffset) {
+                                            hiSOffset = hiEOffset = newlineOffset + 1;
+                                        } else {
+                                            nlState = 3;
+                                            break;
+                                        }
+                                    } else {
+                                        nlState = 2;
+                                    }
+                                    newlineOffset++;
+                                }
+                            }
+                            if (nlState > 0) { // Found NL(s) at token begining
+                                // hiEOffset already set
+                            } else {
+                                hiEOffset = Math.min(limitOffset, newlineOffset);
+                            }
+                            if (hiEOffset > hiSOffset) {
+                                if (moveHs) {
+                                    assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
+                                }
+                                moveHs = true;
+                                System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
+                                assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
+                                assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
+                            }
+                        } while (hiEOffset < limitOffset);
                         // XXX: compare attributes as well
                     }
                     
-                    assertHighlights(ts.embedded(), hs, prologueLength > 0, indent + "  ");
-                    
+                    assertHighlights(text, ts.embedded(), hs, prologueLength > 0, indent + "  ");
+                    hiEOffset = tokenEndOffset - epilogLength;
                     if (epilogLength > 0) {
-                        assertTrue("Wrong number of highlights", hs.moveNext());
-                        System.out.println(indent + "Epilog   : <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
-                        
-                        assertEquals("Wrong starting offset", ts.offset() + ts.token().length() - epilogLength, hs.getStartOffset());
-                        assertEquals("Wrong ending offset", ts.offset() + ts.token().length(), hs.getEndOffset());
+                        int limitOffset = tokenEndOffset;
+                        do {
+                            int hiSOffset = hiEOffset;
+                            int nlState = 0; // No initial newlines
+                            if (hiSOffset == newlineOffset) {
+                                newlineOffset++;
+                                hiSOffset = hiEOffset = newlineOffset;
+                                nlState = 1; // Initial char is newline
+                                while (nlState <= 2 && newlineOffset < text.length()) {
+                                    if (text.charAt(newlineOffset) == '\n') {
+                                        if (nlState == 1 && newlineOffset < limitOffset) {
+                                            hiSOffset = hiEOffset = newlineOffset + 1;
+                                        } else {
+                                            nlState = 3;
+                                            break;
+                                        }
+                                    } else {
+                                        nlState = 2;
+                                    }
+                                    newlineOffset++;
+                                }
+                            }
+                            if (nlState > 0) { // Found NL(s) at token begining
+                                // hiEOffset already set
+                            } else {
+                                hiEOffset = Math.min(limitOffset, newlineOffset);
+                            }
+                            if (hiEOffset > hiSOffset) {
+                                if (moveHs) {
+                                    assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
+                                }
+                                moveHs = true;
+                                System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
+                                assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
+                                assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
+                            }
+                        } while (hiEOffset < limitOffset);
                         // XXX: compare attributes as well
                     }
-                } else {
-                    System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
-                    assertEquals("Wrong starting offset", ts.offset(), hs.getStartOffset());
-                    assertEquals("Wrong ending offset", ts.offset() + ts.token().length(), hs.getEndOffset());
+                } else { // No tokens in embeddedSeq
+                    int limitOffset = tokenEndOffset;
+                    do {
+                        int hiSOffset = hiEOffset;
+                        int nlState = 0; // No initial newlines
+                        if (hiSOffset == newlineOffset) {
+                            newlineOffset++;
+                            hiSOffset = hiEOffset = newlineOffset;
+                            nlState = 1; // Initial char is newline
+                            while (nlState <= 2 && newlineOffset < text.length()) {
+                                if (text.charAt(newlineOffset) == '\n') {
+                                    if (nlState == 1 && newlineOffset < limitOffset) {
+                                        hiSOffset = hiEOffset = newlineOffset + 1;
+                                    } else {
+                                        nlState = 3;
+                                        break;
+                                    }
+                                } else {
+                                    nlState = 2;
+                                }
+                                newlineOffset++;
+                            }
+                        }
+                        if (nlState > 0) { // Found NL(s) at token begining
+                            // hiEOffset already set
+                        } else {
+                            hiEOffset = Math.min(limitOffset, newlineOffset);
+                        }
+                        if (hiEOffset > hiSOffset) {
+                            if (moveHs) {
+                                assertTrue("Cannot move highlight sequence to next highlight", hs.moveNext());
+                            }
+                            moveHs = true;
+                            System.out.println(indent + "Highlight: <" + hs.getStartOffset() + ", " + hs.getEndOffset() + ">");
+                            assertEquals("Wrong starting offset", hiSOffset, hs.getStartOffset());
+                            assertEquals("Wrong ending offset", hiEOffset, hs.getEndOffset());
+                        }
+                    } while (hiEOffset < limitOffset);
                     // XXX: compare attributes as well
                 }
             }

@@ -58,7 +58,7 @@ import org.openide.util.NbBundle.Messages;
 public class PHP54UnhandledError extends DefaultVisitor {
 
     private FileObject fileObject;
-    private List<PHPVersionError> errors = new ArrayList<PHPVersionError>();
+    private List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
     private static final String BINARY_PREFIX = "0b"; //NOI18N
     private boolean checkAnonymousObjectVariable;
 
@@ -70,7 +70,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
         return !CodeUtils.isPhp_54(fobj);
     }
 
-    public Collection<PHPVersionError> getErrors() {
+    public Collection<PHPVerificationError> getErrors() {
         return Collections.unmodifiableCollection(errors);
     }
 
@@ -131,7 +131,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
     }
 
     private  void createError(int startOffset, int endOffset){
-        PHPVersionError error = new PHP54VersionError(fileObject, startOffset, endOffset);
+        PHPVerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
         errors.add(error);
     }
 
@@ -140,7 +140,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
         super.visit(node);
     }
 
-    private class PHP54VersionError extends PHPVersionError {
+    private class PHP54VersionError extends PHPVerificationError {
 
         private static final String KEY = "Php.Version.54"; //NOI18N
 

@@ -74,6 +74,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -219,7 +220,12 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
             if (serviceToRemove != null) {
                 servicesModel.startTransaction();
                 serviceGroup.removeService(serviceToRemove);
-                servicesModel.endTransaction();
+		try {
+                    servicesModel.endTransaction();
+		}
+		catch(IllegalStateException ex) {
+		    Exceptions.printStackTrace(ex);
+		}
             }
             
             // removing implementation class

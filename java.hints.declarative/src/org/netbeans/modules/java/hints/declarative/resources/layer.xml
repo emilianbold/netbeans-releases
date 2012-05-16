@@ -222,7 +222,7 @@ made subject to such option by the copyright holder.
     </folder>-->
     <folder name="org-netbeans-modules-java-hints">
         <folder name="templates">
-            <file name="HintSample.hint" url="HintSample.hint">
+            <file name="Inspection.hint" url="HintSample.hint">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.declarative.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
             </file>

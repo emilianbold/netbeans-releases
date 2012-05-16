@@ -288,7 +288,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     @Override
     public JPDAThread getCurrentThread () {
-        return currentThread;
+        synchronized (currentThreadAndFrameLock) {
+            return currentThread;
+        }
     }
 
     /**
@@ -1958,9 +1960,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     private void setState (int state) {
         if (state == STATE_RUNNING) {
+            CallStackFrame old;
             synchronized (currentThreadAndFrameLock) {
+                old = currentCallStackFrame;
                 currentCallStackFrame = null;
             }
+            firePropertyChange (
+                PROP_CURRENT_CALL_STACK_FRAME,
+                old,
+                null
+            );
         }
         PropertyChangeEvent evt = setStateNoFire(state);
         if (evt != null) {

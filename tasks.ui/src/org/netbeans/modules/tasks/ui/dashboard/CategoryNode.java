@@ -44,17 +44,12 @@ package org.netbeans.modules.tasks.ui.dashboard;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
@@ -73,26 +68,30 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     private JPanel panel;
     private TreeLabel lblName;
     private LinkButton btnRefresh;
-    private TreeLabel lblCounts;
+    private List<JLabel> labels;
     private CloseCategoryNodeAction closeCategoryAction;
     private OpenCategoryNodeAction openCategoryAction;
-    private boolean opened;
+    private TreeLabel lblTotal;
+    private TreeLabel lblChanged;
 
     public CategoryNode(Category category) {
         this(category, true);
     }
 
     public CategoryNode(Category category, boolean opened) {
-        super(true, null);
+        super(opened, null);
         this.category = category;
-        this.opened = opened;
+        labels = new ArrayList<JLabel>();
         updateNodes();
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (isRefresh()) {
-            refreshTasks();
+        if (!category.isLoaded()) {
+            DashboardViewer.getInstance().loadCategory(category);
+            updateNodes();
+        } else if (isRefresh()) {
+            category.refresh();
             updateNodes();
             setRefresh(false);
         }
@@ -120,8 +119,14 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     @Override
     void updateCounts() {
         synchronized (UI_LOCK) {
-            lblCounts.setText(getCountText());
+            lblTotal.setText(getTotalString());
+            lblChanged.setText(getChangedString());
         }
+    }
+
+    @Override
+    boolean isLoaded() {
+        return category.isLoaded();
     }
 
     @Override
@@ -133,31 +138,55 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
                 final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true)); //NOI18N
                 panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-                lblName = new TreeLabel(getCategory().getName());
+                lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
                 panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                labels.add(lblName);
 
-                lblCounts = new TreeLabel(getCountText());
-                panel.add(lblCounts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                addTotalCountComp(lblCounts);
-                panel.add(getLblProgress(), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                getLblProgress().setVisible(false);
-                panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                TreeLabel lbl = new TreeLabel("("); //NOI18N
+                labels.add(lbl);
+                addTotalCountComp(lbl);
+                panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
 
-                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
+                lblTotal = new TreeLabel(getTotalString());
+                panel.add(lblTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                labels.add(lblTotal);
+                addTotalCountComp(lblTotal);
+
+                lbl = new TreeLabel("|"); //NOI18N
+                panel.add(lbl, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+                labels.add(lbl);
+                addChangedCountComp(lbl);
+
+                lblChanged = new TreeLabel(getChangedString());
+                panel.add(lblChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                labels.add(lblChanged);
+                addChangedCountComp(lblChanged);
+
+                lbl = new TreeLabel(")"); //NOI18N
+                labels.add(lbl);
+                addTotalCountComp(lbl);
+                panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+                ProgressLabel lblProgress = getLblProgress();
+                panel.add(lblProgress, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+                lblProgress.setVisible(false);
+                labels.add(lblProgress);
+                panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshCategoryAction(this)); //NOI18N
                 btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
-                panel.add(btnRefresh, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+                panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
             }
-            getLblProgress().setForeground(foreground);
             lblName.setText(Utils.getCategoryDisplayText(this));
-            lblName.setForeground(foreground);
-            lblCounts.setText(getCountText());
-            lblCounts.setForeground(foreground);
+            for (JLabel jLabel : labels) {
+                jLabel.setForeground(foreground);
+            }
             return panel;
         }
     }
 
     private Action getCategoryAction() {
-        if (opened) {
+        if (isOpened()) {
             if (closeCategoryAction == null) {
                 closeCategoryAction = new CloseCategoryNodeAction(this);
             }
@@ -175,11 +204,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     public boolean isOpened() {
-        return opened;
-    }
-
-    public void setOpened(boolean opened) {
-        this.opened = opened;
+        return true;
     }
 
     @Override
@@ -229,7 +254,11 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     public int compareTo(CategoryNode toCompare) {
-        return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+        if (this.isOpened() != toCompare.isOpened()) {
+            return this.isOpened() ? -1 : 1;
+        } else {
+            return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+        }
     }
 
     @Override
@@ -245,39 +274,5 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             }
         }
         return -1;
-    }
-
-    private String getCountText() {
-        String text = "(" + getTotalString();
-        String changed = getChangedString();
-        if (!changed.isEmpty()) {
-            text += "|" + changed;
-        }
-        text += ")";
-        return text;
-    }
-
-    private void refreshTasks() {
-        Map<Repository, List<String>> map = getTasksToRepository(category.getTasks());
-        Set<Repository> repositoryKeys = map.keySet();
-        for (Repository repository : repositoryKeys) {
-            List<String> ids = map.get(repository);
-            repository.getIssues(ids.toArray(new String[ids.size()]));
-        }
-    }
-
-    private Map<Repository, List<String>> getTasksToRepository(List<Issue> tasks) {
-        Map<Repository, List<String>> map = new HashMap<Repository, List<String>>();
-        for (Issue issue : tasks) {
-            Repository repositoryKey = issue.getRepository();
-            if (map.containsKey(repositoryKey)) {
-                map.get(repositoryKey).add(issue.getID());
-            } else {
-                ArrayList<String> list = new ArrayList<String>();
-                list.add(issue.getID());
-                map.put(repositoryKey, list);
-            }
-        }
-        return map;
     }
 }

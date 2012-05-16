@@ -180,11 +180,16 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         DataFolder df = DataFolder.findFolder(dir);
         
         String targetName = Templates.getTargetName(wizard);
-        boolean createController = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_CREATE);
-        String controllerName = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
-        String controllerFullName = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY);
-        boolean createCSS = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE);
-        String css = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY);
+        Object createControllerProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_CREATE);
+        Object controllerNameProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
+        Object controllerFullNameProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY);
+        Object createCSSProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE);
+        Object cssProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY);
+        boolean createController = createControllerProperty != null ? (Boolean) createControllerProperty : false;
+        String controllerName = controllerNameProperty != null ? (String) controllerNameProperty : null;
+        String controllerFullName = controllerFullNameProperty != null ? (String) controllerFullNameProperty : null;
+        boolean createCSS = createCSSProperty != null ? (Boolean) createCSSProperty : false;
+        String css = cssProperty != null ? (String) cssProperty : null;
         
         Map<String, String> params = new HashMap<String, String>();
         if (controllerFullName != null) {
@@ -222,6 +227,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }

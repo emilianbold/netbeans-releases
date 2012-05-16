@@ -316,45 +316,31 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 // customize annotation line numbers to match different reality
                 // compule line permutation
 
-                for (int i = 0; i < differences.length; i++) {
-                    Difference d = differences[i];
-                    if (d.getType() == Difference.ADD) continue;
-
-                    int editorStart;
-                    int firstShift = d.getFirstEnd() - d.getFirstStart() +1;
-                    if (d.getType() == Difference.CHANGE) {
-                        int firstLen = d.getFirstEnd() - d.getFirstStart();
-                        int secondLen = d.getSecondEnd() - d.getSecondStart();
-                        if (secondLen >= firstLen) continue; // ADD or pure CHANGE
-                        editorStart = d.getSecondStart();
-                        firstShift = firstLen - secondLen;
-                    } else {  // DELETE
-                        editorStart = d.getSecondStart() + 1;
-                    }
-
-                    for (int c = editorStart + firstShift -1; c<lineCount; c++) {
-                        ann2editorPermutation[c] -= firstShift;
-                    }
-                }
-
-                for (int i = differences.length -1; i >= 0; i--) {
-                    Difference d = differences[i];
-                    if (d.getType() == Difference.DELETE) continue;
-
-                    int firstStart;
-                    int firstShift = d.getSecondEnd() - d.getSecondStart() +1;
-                    if (d.getType() == Difference.CHANGE) {
-                        int firstLen = d.getFirstEnd() - d.getFirstStart();
-                        int secondLen = d.getSecondEnd() - d.getSecondStart();
-                        if (secondLen <= firstLen) continue; // REMOVE or pure CHANGE
-                        firstShift = secondLen - firstLen;
-                        firstStart = d.getFirstStart();
+                for (Difference d : differences) {
+                    int offset, editorStart;
+                    if (d.getType() == Difference.ADD) {
+                        offset = d.getSecondEnd() - d.getSecondStart() + 1;
+                        editorStart = d.getFirstStart();
+                    } else if (d.getType() == Difference.DELETE) {
+                        offset = d.getFirstEnd() - d.getFirstStart() + 1;
+                        editorStart = d.getFirstEnd();
+                        for (int c = editorStart - offset; c < editorStart; c++) {
+                            ann2editorPermutation[c] = -1;
+                        }
+                        offset = -offset;
                     } else {
-                        firstStart = d.getFirstStart() + 1;
+                        // change
+                        int firstLen = d.getFirstEnd() - d.getFirstStart();
+                        int secondLen = d.getSecondEnd() - d.getSecondStart();
+                        offset = secondLen - firstLen;
+                        if (offset == 0) continue;
+                        editorStart = d.getFirstEnd();
+                        for (int c = d.getFirstStart(); c < editorStart; c++) {
+                            ann2editorPermutation[c] += -1;
+                        }
                     }
-
-                    for (int k = firstStart-1; k<lineCount; k++) {
-                        ann2editorPermutation[k] += firstShift;
+                    for (int c = editorStart; c < lineCount; c++) {
+                        ann2editorPermutation[c] += offset;
                     }
                 }
 
@@ -374,6 +360,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 while (it.hasNext()) {
                     AnnotateLine line = it.next();
                     int lineNum = ann2editorPermutation[line.getLineNum() -1];
+                    if (lineNum == -1) {
+                        continue;
+                    }
                     try {
                         int lineOffset = NbDocument.findLineOffset(sd, lineNum -1);
                         Element element = sd.getParagraphElement(lineOffset);                        
@@ -409,6 +398,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.caretTimer = new Timer(500, this);
         caretTimer.setRepeats(false);
 
+        elementAnnotationsSubstitute = "";
         onCurrentLine();
         revalidate();
         repaint();

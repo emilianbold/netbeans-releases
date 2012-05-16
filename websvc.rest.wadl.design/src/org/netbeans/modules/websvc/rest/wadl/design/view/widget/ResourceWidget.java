@@ -53,6 +53,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+
 import javax.swing.Action;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
@@ -164,7 +166,13 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
                     getModel().startTransaction();
                     getResource().setPath(text);
                 } finally {
-                    getModel().endTransaction();
+                    try {
+                        getModel().endTransaction();
+                    }
+                    catch (IllegalStateException ex) {
+                        Exceptions.printStackTrace(Exceptions.attachSeverity(ex, 
+                                Level.WARNING));
+                    }
                 }
             }
         });

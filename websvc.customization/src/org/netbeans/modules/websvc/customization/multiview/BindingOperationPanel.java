@@ -53,6 +53,8 @@ package org.netbeans.modules.websvc.customization.multiview;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JComponent;
 import org.netbeans.modules.websvc.api.customization.model.BindingCustomization;
 import org.netbeans.modules.websvc.api.customization.model.BindingOperationCustomization;
@@ -65,6 +67,7 @@ import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -190,43 +193,50 @@ public class BindingOperationPanel extends SaveableSectionInnerPanel  {
         List <BindingOperationCustomization> ee =
                 bindingOperation.getExtensibilityElements(BindingOperationCustomization.class);
         CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
-        if(jComponent == enableMIMEContentCB){
-            if(ee.size() > 0){ //there is an extensibility element
-                BindingOperationCustomization boc = ee.get(0);
-                EnableMIMEContent emc = boc.getEnableMIMEContent();
-                if(emc == null){ //there is no EnableMIMEContent, create one
+        
+        try {
+            if(jComponent == enableMIMEContentCB){
+                if(ee.size() > 0){ //there is an extensibility element
+                    BindingOperationCustomization boc = ee.get(0);
+                    EnableMIMEContent emc = boc.getEnableMIMEContent();
+                    if(emc == null){ //there is no EnableMIMEContent, create one
+                        try{
+                            model.startTransaction();
+                            emc = factory.createEnableMIMEContent(model);
+                            emc.setEnabled(this.getEnableMIMEContent());
+                            boc.setEnableMIMEContent(emc);
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    } else{ //there is an EnableMIMEContent, reset it
+                        try{
+                            model.startTransaction();
+                            emc.setEnabled(this.getEnableMIMEContent());
+                            wsdlDirty = true;
+                        } finally{
+                                model.endTransaction();
+                        }
+                    }
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //MIME content element
+                    BindingOperationCustomization boc = factory.createBindingOperationCustomization(model);
+                    EnableMIMEContent emc = factory.createEnableMIMEContent(model);
                     try{
                         model.startTransaction();
-                        emc = factory.createEnableMIMEContent(model);
                         emc.setEnabled(this.getEnableMIMEContent());
                         boc.setEnableMIMEContent(emc);
+                        bindingOperation.addExtensibilityElement(boc);
                         wsdlDirty = true;
                     } finally{
                             model.endTransaction();
                     }
-                } else{ //there is an EnableMIMEContent, reset it
-                    try{
-                        model.startTransaction();
-                        emc.setEnabled(this.getEnableMIMEContent());
-                        wsdlDirty = true;
-                    } finally{
-                            model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //MIME content element
-                BindingOperationCustomization boc = factory.createBindingOperationCustomization(model);
-                EnableMIMEContent emc = factory.createEnableMIMEContent(model);
-                try{
-                    model.startTransaction();
-                    emc.setEnabled(this.getEnableMIMEContent());
-                    boc.setEnableMIMEContent(emc);
-                    bindingOperation.addExtensibilityElement(boc);
-                    wsdlDirty = true;
-                } finally{
-                        model.endTransaction();
                 }
             }
+        }
+        catch(IllegalStateException ex){
+            Exceptions.attachSeverity(ex, Level.WARNING);
+            Exceptions.printStackTrace(ex);
         }
         
     }

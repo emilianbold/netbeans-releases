@@ -388,6 +388,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     public CsmFunctionDefinition getDefinition(CsmClass baseClass) {
+        if (!isValid()) {
+            return null;
+        }
         if( isCStyleStatic() ) {
             CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(
                                getName(), true, true, false);
