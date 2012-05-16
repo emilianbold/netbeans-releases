@@ -68,6 +68,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -171,7 +172,14 @@ public class ExclusionGenerator implements CodeGenerator {
                     }
                 }
             } finally {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                } catch (IllegalStateException ex) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(ExclusionGenerator.class, "ERR_CannotWriteModel", 
+                            Exceptions.findLocalizedMessage(ex)), 
+                            StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                }
             }
         }
     }

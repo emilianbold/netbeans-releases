@@ -67,6 +67,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -172,7 +173,14 @@ public class PluginGenerator implements CodeGenerator {
                     container.addPlugin(plug);
                     newPos = model.getAccess().findPosition(plug.getPeer());
                 } finally {
-                    model.endTransaction();
+                    try {
+                        model.endTransaction();
+                    } catch (IllegalStateException ex) {
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(PluginGenerator.class, "ERR_CannotWriteModel", 
+                                Exceptions.findLocalizedMessage(ex)), 
+                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                    }
                 }
                 if (newPos != -1) {
                     component.setCaretPosition(newPos);

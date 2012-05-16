@@ -63,6 +63,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -150,7 +151,14 @@ public class DependencyGenerator implements CodeGenerator {
                 }
                 newPos = dep.getModel().getAccess().findPosition(dep.getPeer());
             } finally {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                } catch (IllegalStateException ex) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(DependencyGenerator.class, "ERR_CannotWriteModel", 
+                            Exceptions.findLocalizedMessage(ex)), 
+                            StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                }
             }
             if (newPos != -1) {
                 component.setCaretPosition(newPos);

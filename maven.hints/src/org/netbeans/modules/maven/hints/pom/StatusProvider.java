@@ -92,6 +92,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
@@ -213,7 +214,11 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                         return err;
                     } finally {
                         if ((! isInTransaction) && model.isIntransaction()) {
-                            model.endTransaction();
+                            try {
+                                model.endTransaction();
+                            } catch (IllegalStateException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 }

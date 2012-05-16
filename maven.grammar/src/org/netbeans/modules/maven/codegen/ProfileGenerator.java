@@ -68,6 +68,7 @@ import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -191,7 +192,14 @@ public class ProfileGenerator implements CodeGenerator {
                     }
                     model.getProject().addProfile(prof);
                 } finally {
-                    model.endTransaction();
+                    try {
+                        model.endTransaction();
+                    } catch (IllegalStateException ex) {
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(ProfileGenerator.class, "ERR_CannotWriteModel", 
+                                Exceptions.findLocalizedMessage(ex)), 
+                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                    }
                 }
                 int pos = prof.getModel().getAccess().findPosition(prof.getPeer());
                 component.setCaretPosition(pos);
