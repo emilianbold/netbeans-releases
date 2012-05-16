@@ -228,12 +228,16 @@ public class UnitDetails extends DetailsPanel {
         Set<UpdateElement> internalUpdates = new HashSet<UpdateElement>();
         if (!(u instanceof Unit.InternalUpdate)) {
             OperationContainer<InstallSupport> container = OperationContainer.createForUpdate();
+            if (! container.canBeAdded(u.updateUnit, uu.getRelevantElement())) {
+                return null;
+            }
 
             try {
                 container.add(u.updateUnit, uu.getRelevantElement());
             } catch (IllegalArgumentException ex) {
                 Exceptions.attachMessage(ex, "Unit: " + u);
                 Exceptions.attachMessage(ex, "Unit.updateUnit: " + u.updateUnit);
+                Exceptions.attachMessage(ex, "Unit.updateUnit.getInstalled(): " + u.updateUnit.getInstalled());
                 Exceptions.attachMessage(ex, "Unit.getRelevantElement(): " + uu.getRelevantElement());
                 throw ex;
             }
@@ -297,7 +301,10 @@ public class UnitDetails extends DetailsPanel {
             
             OperationContainer<InstallSupport> updContainer = OperationContainer.createForUpdate();
             for (UpdateUnit inv : iu.getUpdateUnits()) {
-                updContainer.add(inv.getAvailableUpdates().get(0));
+                UpdateElement ue = inv.getAvailableUpdates().get(0);
+                if (updContainer.canBeAdded(inv, ue)) {
+                    updContainer.add(inv, ue);
+                }
             }
             for (OperationInfo<InstallSupport> info : updContainer.listAll()) {
                 internalUpdates.add(info.getUpdateElement());
@@ -329,18 +336,18 @@ public class UnitDetails extends DetailsPanel {
         StringBuilder desc = new StringBuilder();
         try {
         
-        Set <UpdateElement> sorted = new TreeSet <UpdateElement> (new Comparator<UpdateElement> () {
+            Set <UpdateElement> sorted = new TreeSet <UpdateElement> (new Comparator<UpdateElement> () {
 
-                public int compare(UpdateElement o1, UpdateElement o2) {
-                    return o1.getDisplayName().compareTo(o2.getDisplayName());
-                }
-            
-        });
-        sorted.addAll(internalUpdates);
+                    public int compare(UpdateElement o1, UpdateElement o2) {
+                        return o1.getDisplayName().compareTo(o2.getDisplayName());
+                    }
 
-        for (UpdateElement ue : sorted) {
-            appendInternalUpdates(desc, ue);
-        }
+            });
+            sorted.addAll(internalUpdates);
+
+            for (UpdateElement ue : sorted) {
+                appendInternalUpdates(desc, ue);
+            }
         } catch (Exception e) {
             err.log(Level.INFO, "Exception", e);
         }
