@@ -167,7 +167,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
         return toRet;
     }
 
-    private static class OverrideFix implements Fix {
+    private static class OverrideFix implements Fix, Runnable {
         private Plugin plugin;
 
         OverrideFix(Plugin plg) {
@@ -180,18 +180,18 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
         }
 
         @Override
+        public void run() {
+            plugin.setVersion(null);
+        }
+
+        @Override
         public ChangeInfo implement() throws Exception {
             ChangeInfo info = new ChangeInfo();
             POMModel mdl = plugin.getModel();
             if (!mdl.getState().equals(Model.State.VALID)) {
                 return info;
             }
-            mdl.startTransaction();
-            try {
-                plugin.setVersion(null);
-            } finally {
-                mdl.endTransaction();
-            }
+            PomModelUtils.implementInTransaction(mdl, this);
             return info;
         }
     }
