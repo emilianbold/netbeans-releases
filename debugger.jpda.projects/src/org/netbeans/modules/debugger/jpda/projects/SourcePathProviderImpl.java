@@ -1262,21 +1262,37 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
         IndexedRoot[] indexedRoots = new IndexedRoot[n];
+        List<IndexedRoot> indexed = new ArrayList<IndexedRoot>();
         for (int i = 0; i < n; i++) {
-            indexedRoots[i] = new IndexedRoot(roots[i], orderIndexes.get(roots[i]), i);
+            Integer index = orderIndexes.get(roots[i]);
+            indexedRoots[i] = new IndexedRoot(roots[i], index, i);
+            if (index != null) {
+                indexed.add(indexedRoots[i]);
+            }
         }
         class Cmp implements Comparator<IndexedRoot> {
             @Override
             public int compare(IndexedRoot ir1, IndexedRoot ir2) {
                 Integer i1 = ir1.index;
-                if (i1 == null) return 0;
                 Integer i2 = ir2.index;
-                if (i2 == null) return 0;
                 return i1 - i2;
             }
         }
         Cmp cmp = new Cmp();
-        Arrays.sort(indexedRoots, cmp);
+        if (indexed.size() == indexedRoots.length) {
+            // All elements have index != null
+            Arrays.sort(indexedRoots, cmp);
+        } else if (!indexed.isEmpty()) {
+            // Sort only the elements with index != null
+            Collections.sort(indexed, cmp);
+            // and merge them in in the correct order:
+            int indexedi = 0;
+            for (int i = 0; i < n; i++) {
+                if (indexedRoots[i].index != null) {
+                    indexedRoots[i] = indexed.get(indexedi++);
+                }
+            }
+        }
 
         int[] perm = new int[n];
         for (int i = 0; i < n; i++) {
