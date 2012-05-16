@@ -1048,6 +1048,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 212145 - Unable to resolve identifier - remote development - C++
         performTest("bug212145.cpp", 9, 11, "bug212145.cpp", 3, 5);
     }    
+
+    public void testBug211033() throws Exception {
+        // Bug 211033 - code model incorrectly resolves forward class declarations in case of external class definitions
+        performTest("bug211033.cpp", 41, 13, "bug211033.cpp", 31, 5);
+        performTest("bug211033.cpp", 46, 13, "bug211033.cpp", 36, 5);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
