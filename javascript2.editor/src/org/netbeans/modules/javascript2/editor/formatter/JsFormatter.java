@@ -133,6 +133,12 @@ public class JsFormatter implements Formatter {
                     FormatToken token = tokens.get(i);
                     indented = false;
 
+                    // FIXME optimize performance
+                    if (token.getOffset() >= 0) {
+                        initialIndent = formatContext.getEmbeddingIndent(token.getOffset())
+                                + CodeStyle.get(doc).getInitialIndent();
+                    }
+                    
                     switch (token.getKind()) {
                         case BEFORE_ASSIGNMENT_OPERATOR:
                             offsetDiff = handleSpaceBefore(tokens, i, formatContext, offsetDiff,

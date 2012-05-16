@@ -49,9 +49,11 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -108,6 +110,34 @@ public final class FormatContext {
             }
         }
         return -1;
+    }
+    
+    public int getEmbeddingIndent(int offset) {
+        if (!embedded) {
+            return 0;
+        }
+        
+        int docOffset = snapshot.getOriginalOffset(offset);
+        if (docOffset < 0) {
+            return 0;
+        }
+
+        Region start = null;
+        for (Region region : regions) {
+            if (docOffset >= region.getOriginalStart() && docOffset < region.getOriginalEnd()) {
+                start = region;
+                break;
+            }
+        }
+        if (start != null) {
+            try {
+                return context.lineIndent(context.lineStartOffset(start.getOriginalStart()))
+                        + IndentUtils.indentLevelSize(getDocument());
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return 0;
     }
     
     private BaseDocument getDocument() {
