@@ -301,8 +301,9 @@ public final class PhpProject implements Project {
         return sourcesDirectory;
     }
 
-    synchronized void resetSourcesDirectory() {
+    public synchronized void resetSourcesDirectory() {
         sourcesDirectory = null;
+        sourceRoots.fireChange();
     }
 
     private FileObject resolveSourcesDirectory() {
@@ -381,6 +382,7 @@ public final class PhpProject implements Project {
     synchronized void resetTestsDirectory() {
         testsDirectory = null;
         testsDirectoryResolved = false;
+        testRoots.fireChange();
     }
 
     synchronized void setTestsDirectory(FileObject testsDirectory) {
@@ -406,6 +408,7 @@ public final class PhpProject implements Project {
     synchronized void resetSeleniumDirectory() {
         seleniumDirectory = null;
         seleniumDirectoryResolved = false;
+        seleniumRoots.fireChange();
     }
 
     synchronized void setSeleniumDirectory(FileObject seleniumDirectory) {
