@@ -106,10 +106,10 @@ made subject to such option by the copyright holder.
                 </and>
                 <!-- #66793: also treat as a platform-based app if using platform and have no branding -->
                 <not>
-                    <available file="${run.exe.candidate}"/>
-                </not>
-                <not>
-                    <available file="${run.sh.candidate}"/>
+                    <or>
+                        <available file="${run.exe.candidate}"/>
+                        <available file="${run.sh.candidate}"/>
+                    </or>
                 </not>
             </or>
         </condition>

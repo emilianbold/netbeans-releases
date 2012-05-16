@@ -42,11 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -61,9 +57,12 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -87,16 +86,18 @@ import org.openide.util.NbBundle;
     private static class TimestampAndSharabilityFilter implements FileFilter {
 
         private final FileData fileData;
+        private final File fileDataStorageFile;
         private final SharabilityFilter delegate;
 
-        public TimestampAndSharabilityFilter(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
+        public TimestampAndSharabilityFilter(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
             fileData = FileData.get(privProjectStorageDir, executionEnvironment);
+            fileDataStorageFile = FileUtil.toFile(fileData.getDataFile());
             delegate = new SharabilityFilter();
         }
 
         @Override
         public boolean accept(File file) {
-            if (file.equals(fileData.getDataFile())) {
+            if (file.equals(fileDataStorageFile)) {
                 return false; // SharabilityFilter now includes nbproject/private. Exclude our storage
             }
             boolean accepted = delegate.accept(file);
@@ -134,8 +135,9 @@ import org.openide.util.NbBundle;
         }
     }
 
-    public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
-        super(executionEnvironment, out, err, privProjectStorageDir, files);
+    public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, FSPath... paths) {
+        super(executionEnvironment, out, err, privProjectStorageDir, paths);
         mapper = RemotePathMap.getPathMap(executionEnvironment);
     }
 
@@ -151,6 +153,7 @@ import org.openide.util.NbBundle;
         return sb;
     }
 
+    @SuppressWarnings("CallToThreadDumpStack")
     private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
         
         uploadCount = 0;
@@ -253,6 +256,12 @@ import org.openide.util.NbBundle;
 
     @Override
     public boolean startup(Map<String, String> env2add) {
+
+        if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
+            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            return false;
+        }
+
         // Later we'll allow user to specify where to copy project files to
         String remoteRoot = RemotePathMap.getRemoteSyncRoot(executionEnvironment);
         if (remoteRoot == null) {

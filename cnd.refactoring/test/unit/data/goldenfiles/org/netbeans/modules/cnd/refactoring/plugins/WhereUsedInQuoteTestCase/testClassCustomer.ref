@@ -1,16 +1,16 @@
 References in file quote_nosyshdr/customer.cc
-[2128-2128] <b>Customer</b>::Customer(const string initName, int initDiscount) :
-[2246-2246] int <b>Customer</b>::GetDiscount() const {
-[2309-2309] string <b>Customer</b>::GetName() const {
-[2401-2401] ostream&amp; operator &lt;&lt;(ostream&amp; output, const <b>Customer</b>&amp; customer) {
+[44:1-44:9] <b>Customer</b>::Customer(const string initName, int initDiscount) :
+[49:5-49:13] int <b>Customer</b>::GetDiscount() const {
+[53:8-53:16] string <b>Customer</b>::GetName() const {
+[57:45-57:53] ostream&amp; operator &lt;&lt;(ostream&amp; output, const <b>Customer</b>&amp; customer) {
 References in file quote_nosyshdr/customer.h
-[2462-2462] friend ostream&amp; operator&lt;&lt; (ostream&amp;, const <b>Customer</b>&amp;);
+[59:53-59:61] friend ostream&amp; operator&lt;&lt; (ostream&amp;, const <b>Customer</b>&amp;);
 References in file quote_nosyshdr/quote.cc
-[2286-2286] list&lt;<b>Customer</b>&gt; customers;
-[2509-2509] for(list&lt;<b>Customer</b>&gt;::iterator it = customers.begin(); it != customers.end(); ++it) {
-[2852-2852] customers.push_back(<b>Customer</b>("John", 10));
-[2903-2903] customers.push_back(<b>Customer</b>("Mike", 0));
-[2953-2953] customers.push_back(<b>Customer</b>("Peter", 13));
-[3005-3005] customers.push_back(<b>Customer</b>("Ann", 11));
-[3055-3055] customers.push_back(<b>Customer</b>("Tom", 9));
-[3138-3138] for(list&lt;<b>Customer</b>&gt;::iterator it = customers.begin(); it != customers.end(); ++it) {
+[53:10-53:18] list&lt;<b>Customer</b>&gt; customers;
+[59:18-59:26] for(list&lt;<b>Customer</b>&gt;::iterator it = customers.begin(); it != customers.end(); ++it) {
+[70:29-70:37] customers.push_back(<b>Customer</b>("John", 10));
+[71:29-71:37] customers.push_back(<b>Customer</b>("Mike", 0));
+[72:29-72:37] customers.push_back(<b>Customer</b>("Peter", 13));
+[73:29-73:37] customers.push_back(<b>Customer</b>("Ann", 11));
+[74:29-74:37] customers.push_back(<b>Customer</b>("Tom", 9));
+[78:18-78:26] for(list&lt;<b>Customer</b>&gt;::iterator it = customers.begin(); it != customers.end(); ++it) {

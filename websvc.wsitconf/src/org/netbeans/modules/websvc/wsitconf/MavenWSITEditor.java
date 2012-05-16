@@ -183,6 +183,8 @@ public class MavenWSITEditor implements WSEditor, UndoManagerHolder {
                                 } catch (IOException ioe) {
                                     // ignore - just don't do anything
                                 }
+                            } catch (IllegalStateException ex) {
+                                logger.log(Level.SEVERE, null, ex);
                             } catch (CatalogModelException ex) {
                                 logger.log(Level.SEVERE, null, ex);
                             }

@@ -90,6 +90,8 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
                     criteria.isFullText(), composition.getRootFiles(),
                     infoNode);
         }
+        resultPanel.setToolTipText(composition.getScopeDisplayName()
+                + ": " + getTitle());                                   //NOI18N
         return resultPanel;
     }
 

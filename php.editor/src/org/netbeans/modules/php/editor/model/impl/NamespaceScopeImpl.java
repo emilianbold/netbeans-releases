@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.index.Signature;
 
 /**
  *
@@ -215,9 +216,9 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         QualifiedName qualifiedName = getQualifiedName();
         String name = qualifiedName.toName().toString();
         String namespaceName = qualifiedName.toNamespaceName().toString();
-        sb.append(name.toLowerCase()).append(";");//NOI18N
-        sb.append(name).append(";");//NOI18N
-        sb.append(namespaceName).append(";");//NOI18N
+        sb.append(name.toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(name).append(Signature.ITEM_DELIMITER);
+        sb.append(namespaceName).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

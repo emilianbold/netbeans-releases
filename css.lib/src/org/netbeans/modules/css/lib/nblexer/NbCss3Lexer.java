@@ -69,7 +69,7 @@ public class NbCss3Lexer implements Lexer<CssTokenId> {
 
     public NbCss3Lexer(LexerRestartInfo<CssTokenId> info) {
         tokenFactory = info.tokenFactory();
-        antlrLexer = new ExtCss3Lexer(new NbLexerCharStream(info));
+        antlrLexer = new ExtCss3Lexer(new CaseInsensitiveNbLexerCHS(info));
     }
 
     @Override

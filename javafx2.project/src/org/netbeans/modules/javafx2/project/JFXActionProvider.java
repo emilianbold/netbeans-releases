@@ -42,12 +42,18 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
@@ -55,10 +61,13 @@ import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -77,6 +86,10 @@ public class JFXActionProvider implements ActionProvider {
         {
             put(COMMAND_RUN,"run"); //NOI18N
             put(COMMAND_DEBUG,"debug"); //NOI18N
+            put(COMMAND_PROFILE,"profile"); //NOI18N
+            put(COMMAND_RUN_SINGLE,"run-single"); //NOI18N
+            put(COMMAND_DEBUG_SINGLE,"debug-single"); //NOI18N
+            put(COMMAND_PROFILE_SINGLE,"profile-single"); //NOI18N
         }
     };
 
@@ -93,7 +106,34 @@ public class JFXActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        if (command != null) {
+        String c = command;
+        if (c != null) {
+            if(JFXProjectUtils.isFXPreloaderProject(prj)) {
+                NotifyDescriptor d =
+                    new NotifyDescriptor.Message(NbBundle.getMessage(JFXActionProvider.class,"WARN_PreloaderExecutionUnsupported", // NOI18N
+                        ProjectUtils.getInformation(prj).getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            }
+            if (c.equals(COMMAND_RUN_SINGLE) || c.equals(COMMAND_DEBUG_SINGLE) || c.equals(COMMAND_PROFILE_SINGLE)) {
+                NotifyDescriptor d =
+                    new NotifyDescriptor(NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupported", // NOI18N
+                        ProjectUtils.getInformation(prj).getDisplayName()), 
+                        NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupportedDialogTitle"), // NOI18N
+                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
+                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
+                    return;
+                }
+                if(c.equals(COMMAND_RUN_SINGLE)) {
+                    c = COMMAND_RUN;
+                } else {
+                    if(c.equals(COMMAND_DEBUG_SINGLE)) {
+                        c = COMMAND_DEBUG;
+                    } else {
+                        c = COMMAND_PROFILE;
+                    }
+                }
+            }
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
             String runAs = JFXProjectUtils.getFXProjectRunAs(prj);
@@ -104,15 +144,19 @@ public class JFXActionProvider implements ActionProvider {
             try {
                 String target;
                 if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
-                    target = "jfxsa-".concat(command); //NOI18N
+                    target = "jfxsa-".concat(c); //NOI18N
                 } else {
                     if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                        target = "jfxws-".concat(command); //NOI18N
+                        target = "jfxws-".concat(c); //NOI18N
                     } else { //JFXProjectProperties.RunAsType.INBROWSER
-                        target = "jfxbe-".concat(command); //NOI18N
+                        target = "jfxbe-".concat(c); //NOI18N
                     }
                 }
-                ActionUtils.runTarget(buildFo, new String[] {target}, null).addTaskListener(new TaskListener() {
+                
+                Properties props = new Properties();
+                collectStartupExtenderArgs(props, c, context);
+                
+                ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
                     @Override public void taskFinished(Task task) {
                         listener.finished(((ExecutorTask) task).result() == 0);
                     }
@@ -122,7 +166,7 @@ public class JFXActionProvider implements ActionProvider {
                 listener.finished(false);
             }
         } else {
-            throw new IllegalArgumentException(command);
+            throw new IllegalArgumentException(c);
         }
     }
 
@@ -156,5 +200,40 @@ public class JFXActionProvider implements ActionProvider {
     @CheckForNull
     private static String findTarget(@NonNull final String command) {
         return ACTIONS.get(command);
+    }
+    
+    private void collectStartupExtenderArgs(Map<? super String,? super String> p, String command, Lookup context) {
+        StringBuilder b = new StringBuilder();
+        for (String arg : runJvmargsIde(command, context)) {
+            b.append(' ').append(arg);
+        }
+        if (b.length() > 0) {
+            p.put("run.jvmargs.ide", b.toString());
+        }
+    }
+    
+    private List<String> runJvmargsIde(String command, Lookup context) {
+        StartupExtender.StartMode mode;
+        if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+            mode = StartupExtender.StartMode.NORMAL;
+        } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+            mode = StartupExtender.StartMode.DEBUG;
+        } else if (command.equals(COMMAND_PROFILE) || command.equals(COMMAND_PROFILE_SINGLE)) {
+            mode = StartupExtender.StartMode.PROFILE;
+        } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_NORMAL;
+        } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_DEBUG;
+        } else if (command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
+            mode = StartupExtender.StartMode.TEST_PROFILE;
+        } else {
+            return Collections.emptyList();
+        }
+        List<String> args = new ArrayList<String>();
+
+        for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
+            args.addAll(group.getArguments());
+        }
+        return args;
     }
 }

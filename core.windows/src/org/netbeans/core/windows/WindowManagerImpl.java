@@ -122,8 +122,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             // a static object to synchronize on
             if(defaultInstance != null) {
                 IllegalStateException ex = new IllegalStateException("Instance already exists"); // NOI18N
-                if (createdBy != null) {
-                    ex.initCause(createdBy);
+                if (defaultInstance.createdBy != null) {
+                    ex.initCause(defaultInstance.createdBy);
                 }
                 throw ex;
             }

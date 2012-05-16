@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
 
 /**
  *
@@ -57,10 +57,12 @@ public abstract class IdPOMComponentImpl extends POMComponentImpl implements IdP
     // attributes
 
 
+    @Override
     public String getId() {
         return getChildElementText(getModel().getPOMQNames().ID.getQName());
     }
 
+    @Override
     public void setId(String id) {
         setChildElementText(getModel().getPOMQNames().ID.getQName().getLocalPart(), id,
                 getModel().getPOMQNames().ID.getQName());

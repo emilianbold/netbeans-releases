@@ -46,8 +46,12 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmValidable;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -59,7 +63,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * Base class for CsmOffsetable
  * @author Vladimir Kvashin
  */
-public abstract class OffsetableBase implements CsmOffsetable, Disposable {
+public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmValidable {
     // only one of fileRef/fileUID must be used (USE_UID_TO_CONTAINER)
     private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
     private final CsmUID<CsmFile> fileUID;
@@ -139,8 +143,9 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable {
         return _getFile(true);
     }
 
-    protected final CsmFile getContainingFileImpl(boolean checkNull) {
-        return _getFile(checkNull);
+    @Override
+    public boolean isValid() {
+        return CsmBaseUtilities.isValid(_getFile(false));
     }
     
     @Override

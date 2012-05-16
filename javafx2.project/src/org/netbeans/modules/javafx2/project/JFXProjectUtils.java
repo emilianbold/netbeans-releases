@@ -267,6 +267,20 @@ public final class JFXProjectUtils {
                 && JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
     }
 
+     /**
+     * Checks if the project is a JavaFX preloader project
+     * @param prj the project to check
+     * @return true if project is JavaFX preloader
+     */
+    public static boolean isFXPreloaderProject(@NonNull final Project prj) {
+        final J2SEPropertyEvaluator ep = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        if (ep == null) {
+            return false;
+        }
+        return JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))
+                && JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER));
+    }
+
     /**
      * Checks what Run model is selected in current configuration of JFX Run Project Property panel
      * @param prj the project to check

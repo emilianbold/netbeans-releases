@@ -38,8 +38,10 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 /**
- *
- * @author vv159170
+ * This test reopens model from repository, but simulates deserialization problem which
+ * marsk repository as invalid, so model has to be completely recreated.
+ * Recreated model has to be the same as golden model.
+ * @author Vladimir Voskresensky
  */
 public class ReopenBrokenRepositoryValidationFinal extends RepositoryValidationFinal {
 

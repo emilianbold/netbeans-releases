@@ -477,11 +477,13 @@ public class HintTest {
 
         Collections.sort(result, ERRORS_COMPARATOR);
         
+        Reference<CompilationInfo> infoRef = new WeakReference<CompilationInfo>(info);
         Reference<CompilationUnitTree> cut = new WeakReference<CompilationUnitTree>(info.getCompilationUnit());
         
         info = null;
         
         DEBUGGING_HELPER.add(result);
+        NbTestCase.assertGC("noone holds CompilationInfo", infoRef);
         NbTestCase.assertGC("noone holds javac", cut);
         DEBUGGING_HELPER.remove(result);
         

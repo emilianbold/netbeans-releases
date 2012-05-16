@@ -254,7 +254,7 @@ public class SecurityPolicyModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -280,7 +280,7 @@ public class SecurityPolicyModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -784,7 +784,7 @@ public class SecurityPolicyModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -1103,7 +1103,7 @@ public class SecurityPolicyModelHelper {
             p.addExtensibilityElement(e);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }    

@@ -86,6 +86,11 @@ public abstract class JsfSupportProvider {
             return null;
         }
 
+        if (!handle.isEnabled()) {
+            LOGGER.log(Level.FINE, "{0} does have an instance of JsfSupportHandle in its lookup, but it's disabled by the JsfSupportHandle implementation.", project);
+            return null;
+        }
+
         JsfSupport instance = handle.get();
         if(instance == null) {
             //not support for this project yet

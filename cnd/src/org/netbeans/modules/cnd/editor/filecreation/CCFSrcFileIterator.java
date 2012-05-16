@@ -71,7 +71,7 @@ import org.openide.loaders.TemplateWizard;
 public class CCFSrcFileIterator implements TemplateWizard.ProgressInstantiatingIterator<WizardDescriptor> {
 
     /** Holds list of event listeners */
-    private static List<SrcFileWizardListener> listenerList = null;
+    private static final List<SrcFileWizardListener> listenerList = new ArrayList<SrcFileWizardListener>(0);
     protected WizardDescriptor.Panel<WizardDescriptor> targetChooserDescriptorPanel;
     protected TemplateWizard templateWizard;
     // special mime type for C Headers extensions
@@ -169,7 +169,7 @@ public class CCFSrcFileIterator implements TemplateWizard.ProgressInstantiatingI
 
         if (result != null) {
             fireWizardEvent(new EventObject(result));
-            OpenCookie open = result.getCookie(OpenCookie.class);
+            OpenCookie open = result.getLookup().lookup(OpenCookie.class);
             if (open != null) {
                 open.open();
             }
@@ -212,25 +212,25 @@ public class CCFSrcFileIterator implements TemplateWizard.ProgressInstantiatingI
 
     /* ------------------------------------------*/
     protected static void fireWizardEvent(EventObject e) {
-        List<SrcFileWizardListener> listeners = getListenerList();
+        List<SrcFileWizardListener> listeners;
+        synchronized (listenerList) {
+            listeners = new ArrayList<SrcFileWizardListener>(listenerList);
+        }
 
         for (int i = listeners.size() - 1; i >= 0; i--) {
             (listeners.get(i)).srcFileCreated(e);
         }
     }
 
-    private static List<SrcFileWizardListener> getListenerList() {
-        if (listenerList == null) {
-            listenerList = Collections.synchronizedList(new ArrayList<SrcFileWizardListener>(0));
-        }
-        return listenerList;
-    }
-
     public static void addSrcFileWizardListener(SrcFileWizardListener l) {
-        getListenerList().add(l);
+        synchronized (listenerList) {
+            listenerList.add(l);
+        }
     }
 
     public static void removeSrcFileWizardListener(SrcFileWizardListener l) {
-        getListenerList().remove(l);
+        synchronized (listenerList) {
+            listenerList.remove(l);
+        }
     }
 }

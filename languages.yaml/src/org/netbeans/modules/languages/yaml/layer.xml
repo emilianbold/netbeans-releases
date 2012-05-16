@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="Preferences">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-languages-yaml-preferences.xml" url="preferences.xml"/>
@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="200"/>
-                    </file>     
+                    </file>
                     <file name="Separator2.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="600"/>
@@ -163,14 +163,23 @@ made subject to such option by the copyright holder.
                     <file name="Separator5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
-                    </file> 
-                     
-                     
+                    </file>
+
+
                     <file name="ToolsAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
                         <attr name="position" intvalue="1500"/>
                     </file>
-                </folder>            
+                </folder>
+                <folder name="Factories">
+                    <file name="YamlDataLoader.instance">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/yaml_files_16.png"/>
+                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.languages.yaml.YamlDataObject"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
+                        <attr name="mimeType" stringvalue="text/x-yaml"/>
+                        <attr name="position" intvalue="1083"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

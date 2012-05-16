@@ -950,48 +950,62 @@ public class FormEditor {
 
         settingsListener = new PreferenceChangeListener() {
             @Override
-            public void preferenceChange(PreferenceChangeEvent evt) {
-                Iterator iter = openForms.keySet().iterator();
-                while (iter.hasNext()) {
-                    FormModel formModel = (FormModel) iter.next();
-                    String propName = evt.getKey();
-
-                    if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)) {
-                        formModel.fireSyntheticPropertyChanged(null, propName,
-                                                               null, evt.getNewValue());
-                    } else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)                    
-                          || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)
-                          || FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName))
-                    {
-                        FormDesigner designer = getFormDesigner(formModel);
-                        if (designer != null) {
-                            designer.updateVisualSettings();
+            public void preferenceChange(final PreferenceChangeEvent evt) {
+                if (EventQueue.isDispatchThread()) {
+                    updateSettings(evt);
+                } else {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateSettings(evt);
                         }
-                    } else if (FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR.equals(propName)) {
-                        FormDesigner designer = getFormDesigner(formModel);
-                        if (designer != null) {
-                            designer.getFormToolBar().showPaletteButton(
-                                FormLoaderSettings.getInstance().isPaletteInToolBar());
-                        }
-                    } else if (FormLoaderSettings.PROP_PAINT_ADVANCED_LAYOUT.equals(propName)) {
-                        FormDesigner designer = getFormDesigner(formModel);
-                        if (designer != null) {
-                            LayoutDesigner layoutDesigner = designer.getLayoutDesigner();
-                            if (layoutDesigner != null) {
-                                int paintLayout = FormLoaderSettings.getInstance().getPaintAdvancedLayoutInfo();
-                                layoutDesigner.setPaintAlignment((paintLayout&1) != 0);
-                                layoutDesigner.setPaintGaps((paintLayout&2) != 0);
-                                designer.getHandleLayer().repaint();
-                            }
-                        }
-                    }
+                    });
                 }
             }
         };
 
         FormLoaderSettings.getPreferences().addPreferenceChangeListener(settingsListener);
+    }
+
+    private static void updateSettings(PreferenceChangeEvent evt) {
+        Iterator iter = openForms.keySet().iterator();
+        while (iter.hasNext()) {
+            FormModel formModel = (FormModel) iter.next();
+            String propName = evt.getKey();
+
+            if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)) {
+                formModel.fireSyntheticPropertyChanged(null, propName,
+                                                       null, evt.getNewValue());
+            } else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)                    
+                  || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
+                  || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)
+                  || FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)
+                  || FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)
+                  || FormLoaderSettings.PROP_GUIDING_LINE_COLOR.equals(propName))
+            {
+                FormDesigner designer = getFormDesigner(formModel);
+                if (designer != null) {
+                    designer.updateVisualSettings();
+                }
+            } else if (FormLoaderSettings.PROP_PALETTE_IN_TOOLBAR.equals(propName)) {
+                FormDesigner designer = getFormDesigner(formModel);
+                if (designer != null) {
+                    designer.getFormToolBar().showPaletteButton(
+                        FormLoaderSettings.getInstance().isPaletteInToolBar());
+                }
+            } else if (FormLoaderSettings.PROP_PAINT_ADVANCED_LAYOUT.equals(propName)) {
+                FormDesigner designer = getFormDesigner(formModel);
+                if (designer != null) {
+                    LayoutDesigner layoutDesigner = designer.getLayoutDesigner();
+                    if (layoutDesigner != null) {
+                        int paintLayout = FormLoaderSettings.getInstance().getPaintAdvancedLayoutInfo();
+                        layoutDesigner.setPaintAlignment((paintLayout&1) != 0);
+                        layoutDesigner.setPaintGaps((paintLayout&2) != 0);
+                        designer.getHandleLayer().repaint();
+                    }
+                }
+            }
+        }
     }
 
     private static void detachSettingsListener() {
@@ -1000,7 +1014,7 @@ public class FormEditor {
             settingsListener = null;
         }
     }
-    
+
     private void attachPaletteListener() {
         if (paletteListener != null)
             return;

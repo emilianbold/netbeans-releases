@@ -125,6 +125,10 @@ public class ArchetypeWizardUtils {
         
         if (additional != null) {
             for (Map.Entry<String,String> entry : additional.entrySet()) {
+                if (baseprops.containsKey(entry.getKey())) {
+                    //don't let the additional props overwrite the values for version, groupId or artifactId
+                    continue;
+                }
                 String val = entry.getValue();
                 //#208146 process the additional prop value through a simplistic extression resolution.
                 for (Map.Entry<String, String> basePropEnt : baseprops.entrySet()) {

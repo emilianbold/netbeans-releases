@@ -51,12 +51,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.Module.PackageExport;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
@@ -130,7 +132,7 @@ class ModuleData {
             String bld = attr.getValue("OpenIDE-Module-Build-Version"); // NOI18N
             buildVersion = bld == null ? implVersion : bld;
             
-            this.provides = computeProvides(forModule, attr, verifyCNBs);
+            this.provides = computeProvides(forModule, attr, verifyCNBs, false);
 
             // Exports
             String exportsS = attr.getValue("OpenIDE-Module-Public-Packages"); // NOI18N
@@ -225,7 +227,7 @@ class ModuleData {
         }
         String v = getMainAttribute(mf, "Bundle-Version"); // NOI18N
         if (v == null) {
-            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", m);
+            Logger.getLogger(ModuleData.class.getName()).log(Level.WARNING, "No Bundle-Version for {0}", m);
             this.specVers = new SpecificationVersion(v = "0.0");
         } else {
             this.specVers = computeVersion(v);
@@ -237,8 +239,8 @@ class ModuleData {
         this.buildVersion = bld == null ? implVersion : bld;
         this.friendNames = Collections.emptySet();
         this.publicPackages = null;
-        this.provides = computeProvides(m, mf.getMainAttributes(), false);
-        this.dependencies = null;
+        this.provides = computeProvides(m, mf.getMainAttributes(), false, true);
+        this.dependencies = computeImported(mf.getMainAttributes());
         this.coveredPackages = new HashSet<String>();
     }
     
@@ -274,16 +276,81 @@ class ModuleData {
         Module.PackageExport.write(dos, publicPackages);
     }
 
-    private String[] computeProvides(Module forModule, Attributes attr, boolean verifyCNBs) throws InvalidException, IllegalArgumentException {
-        String[] arr;
+    private Dependency[] computeImported(Attributes attr) {
+        String pkgs = attr.getValue("Import-Package"); // NOI18N
+        List<Dependency> arr = null;
+        if (pkgs != null) {
+            arr = new ArrayList<Dependency>();
+            StringTokenizer tok = createTokenizer(pkgs); // NOI18N
+            while (tok.hasMoreElements()) {
+                String dep = beforeSemicolon(tok);
+                arr.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, dep));
+            }
+        }
+        String recomm = attr.getValue("Require-Bundle"); // NOI18N
+        if (recomm != null) {
+            if (arr == null) {
+                arr = new ArrayList<Dependency>();
+            }
+            StringTokenizer tok = createTokenizer(recomm); // NOI18N
+            while (tok.hasMoreElements()) {
+                String dep = beforeSemicolon(tok);
+                arr.addAll(Dependency.create(Dependency.TYPE_RECOMMENDS, "cnb." + dep)); // NOI18N
+            }
+        }
+        return arr == null ? null : arr.toArray(new Dependency[0]);
+    }
+
+    private static StringTokenizer createTokenizer(String osgiDep) {
+        for (;;) {
+            int first = osgiDep.indexOf('"');
+            if (first == -1) {
+                break;
+            }
+            int second = osgiDep.indexOf('"', first + 1);
+            if (second == -1) {
+                break;
+            }
+            osgiDep = osgiDep.substring(0, first - 1) + osgiDep.substring(second + 1);
+        }
+        
+        return new StringTokenizer(osgiDep, ",");
+    }
+
+    private static String beforeSemicolon(StringTokenizer tok) {
+        String dep = tok.nextToken().trim();
+        int semicolon = dep.indexOf(';');
+        if (semicolon >= 0) {
+            dep = dep.substring(0, semicolon);
+        }
+        return dep.replace('-', '_');
+    }
+    
+    private String[] computeExported(boolean useOSGi, Collection<String> arr, Attributes attr) {
+        if (!useOSGi) {
+            return arr.toArray(ZERO_STRING_ARRAY);
+        }
+        String pkgs = attr.getValue("Export-Package"); // NOI18N
+        if (pkgs == null) {
+            return arr.toArray(ZERO_STRING_ARRAY);
+        }
+        StringTokenizer tok = createTokenizer(pkgs); // NOI18N
+        while (tok.hasMoreElements()) {
+            arr.add(beforeSemicolon(tok));
+        }
+        return arr.toArray(ZERO_STRING_ARRAY);
+    }
+    
+    private String[] computeProvides(
+        Module forModule, Attributes attr, boolean verifyCNBs, boolean useOSGi
+    ) throws InvalidException, IllegalArgumentException {
+        Set<String> arr = new LinkedHashSet<String>();
         // Token provides
         String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
-        if (providesS == null) {
-            arr = ZERO_STRING_ARRAY;
-        } else {
+        if (providesS != null) {
             StringTokenizer tok = new StringTokenizer(providesS, ", "); // NOI18N
-            arr = new String[tok.countTokens()];
-            for (int i = 0; i < arr.length; i++) {
+            int expCount = tok.countTokens();
+            while (tok.hasMoreTokens()) {
                 String provide = tok.nextToken();
                 if (provide.indexOf(',') != -1) {
                     throw new InvalidException("Illegal code name syntax parsing OpenIDE-Module-Provides: " + provide); // NOI18N
@@ -292,24 +359,18 @@ class ModuleData {
                     Dependency.create(Dependency.TYPE_MODULE, provide);
                 }
                 if (provide.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Provides: " + provide); // NOI18N
-                arr[i] = provide;
+                arr.add(provide);
             }
-            if (new HashSet<String>(Arrays.asList(arr)).size() < arr.length) {
+            if (arr.size() != expCount) {
                 throw new IllegalArgumentException("Duplicate entries in OpenIDE-Module-Provides: " + providesS); // NOI18N
             }
         }
         String[] additionalProvides = forModule.getManager().refineProvides (forModule);
         if (additionalProvides != null) {
-            if (arr == null) {
-                arr = additionalProvides;
-            } else {
-                ArrayList<String> l = new ArrayList<String> ();
-                l.addAll (Arrays.asList (arr));
-                l.addAll (Arrays.asList (additionalProvides));
-                arr = l.toArray (arr);
-            }
+            arr.addAll (Arrays.asList (additionalProvides));
         }
-        return arr;
+        arr.add("cnb." + getCodeNameBase()); // NOI18N
+        return computeExported(useOSGi, arr, attr);
     }
     
     /**

@@ -121,13 +121,7 @@ public class IntegrationTest extends NbTestCase {
             mgr.mutexPrivileged().exitWriteAccess();
         }
 
-        Object obj = Lookup.getDefault().lookup(NetigsoFramework.class);
-        LOG.log(Level.INFO, "NetigsoFramework: {0}", obj);
-        final Method m = obj.getClass().getDeclaredMethod("getFramework");
-        m.setAccessible(true);
-        LOG.log(Level.INFO, "Method to use: {0}", m);
-        Framework w = (Framework) m.invoke(obj);
-        LOG.log(Level.INFO, "Framework is here: {0}", w);
+        Framework w = NetigsoUtil.framework(mgr);
         assertNotNull("Framework found", w);
         if (!w.getClass().getName().contains("felix")) {
             fail("By default the OSGi framework is felix: " + w.getClass());

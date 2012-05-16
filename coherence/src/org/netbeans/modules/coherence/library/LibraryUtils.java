@@ -43,6 +43,7 @@ package org.netbeans.modules.coherence.library;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,15 +57,25 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.coherence.server.CoherenceProperties;
 import org.netbeans.modules.coherence.server.util.Version;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -141,17 +152,12 @@ public class LibraryUtils {
         // create coherence library if not exists in this version yet
         Version coherenceVersion = CoherenceProperties.getServerVersion(serverRoot);
         String libraryName = LibraryUtils.getCoherenceLibraryDisplayName(coherenceVersion);
-        String message;
         if (LibraryUtils.registerCoherenceLibrary(libraryName, serverRoot)) {
-            message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryCreated", libraryName); //NOI18N
-        } else {
-            message = NbBundle.getMessage(LibraryUtils.class, "MSG_CoherenceLibraryExists", libraryName); //NOI18N
+            LOGGER.log(
+                    Level.INFO,
+                    "Coherence library created; libraryDisplayName={0}, version={1}", //NOI18N
+                    new Object[]{libraryName, coherenceVersion});
         }
-
-        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                message,
-                NotifyDescriptor.Message.INFORMATION_MESSAGE);
-        DialogDisplayer.getDefault().notify(descriptor);
     }
 
     /**
@@ -188,6 +194,34 @@ public class LibraryUtils {
             }
         }
         return coherenceLibraries;
+    }
+
+    /**
+     * Gets Coherence library available on the project classpath.
+     * @param project project to search
+     * @return library if found any, {@code null} otherwise
+     */
+    public static Library getCoherenceLibraryOnProjectClasspath(Project project) {
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        SourceGroup[] sg = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        ClassPath compileClassPath = cpp.findClassPath(sg[0].getRootFolder(), ClassPath.COMPILE);
+        List<Library> coherenceLibs = getRegisteredCoherenceLibraries();
+        for (ClassPath.Entry entry : compileClassPath.entries()) {
+            for (final Library coherenceLibrary : coherenceLibs) {
+                try {
+                    List<URI> cps = coherenceLibrary.getURIContent("classpath"); //NOI18N
+                    for (URI uri : cps) {
+                        if (entry.getRoot() != null
+                                && entry.getRoot().equals(URLMapper.findFileObject(uri.toURL()))) {
+                            return coherenceLibrary;
+                        }
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return null;
     }
 
     /**

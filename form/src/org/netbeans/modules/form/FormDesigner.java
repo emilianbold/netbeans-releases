@@ -825,16 +825,10 @@ public class FormDesigner {
 
         if (mode == MODE_ADD) {
             PaletteItem pitem = PaletteUtils.getSelectedItem();
-            if ((pitem != null) && PaletteItem.TYPE_CHOOSE_BEAN.equals(pitem.getExplicitComponentType())
-                    && getSelectedDesigner() == this) {
-                NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-                    FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
-                    FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
-                DialogDisplayer.getDefault().notify(desc);
-                if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                    pitem.setClassFromCurrentProject(desc.getInputText(),
-                            formEditor.getFormDataObject().getPrimaryFile());
-                } else {
+            if (pitem != null && getSelectedDesigner() == this) {
+                boolean prepared = pitem.prepareComponentInitializer(
+                                     formEditor.getFormDataObject().getPrimaryFile());
+                if (!prepared) {
                     toggleSelectionMode();
                     return;
                 }
@@ -2119,15 +2113,17 @@ public class FormDesigner {
                 baseLinePos = 0;
             }
 
-            if (baseLinePos == -1) {
-                if (comp != null && height >= 0) {
+            if (baseLinePos == -1 && comp != null && height >= 0) {
+                Insets insets = comp.getInsets();
+                if (insets == null || height - insets.top - insets.bottom >= 0) {
                     if (width < 0) {
                         width = 0;
                     }
                     baseLinePos = comp.getBaseline(width, height);
-                } else {
-                    baseLinePos = 0;
                 }
+            }
+            if (baseLinePos == -1) {
+                baseLinePos = 0;
             }
 
             if (getLayoutDesigner().logTestCode()) {
@@ -2151,8 +2147,8 @@ public class FormDesigner {
                      + (paddingType != null ? paddingType.ordinal() : 0);
         }
             
-            JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
-            JComponent comp2 = (JComponent) getVisualComponent(comp2Id, true, true);
+            JComponent comp1 = (JComponent) getVisualComponent(comp1Id, false, true);
+            JComponent comp2 = (JComponent) getVisualComponent(comp2Id, false, true);
             if (comp1 == null || comp2 == null) { // not JComponents...
                 if (getLayoutDesigner().logTestCode()) {
                     getLayoutDesigner().testCode.add("  prefPadding.put(\"" + id +                  //NOI18N
@@ -2210,7 +2206,7 @@ public class FormDesigner {
                 RADVisualContainer metacont = (RADVisualContainer)
                                               getMetaComponent(parentId);
                 parent = metacont.getContainerDelegate(parent);
-                comp = (JComponent) getVisualComponent(compId, true, true);
+                comp = (JComponent) getVisualComponent(compId, false, true);
             }
             if (comp == null) {
                 if (getLayoutDesigner().logTestCode()) {

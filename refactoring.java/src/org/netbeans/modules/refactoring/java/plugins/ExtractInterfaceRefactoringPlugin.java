@@ -516,7 +516,9 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                         tree.getType(),
                         tree.getInitializer());
                 newVarTree = genUtils.importFQNs(newVarTree);
-                RefactoringUtils.copyJavadoc(memberElm, newVarTree, wc);
+                tree = genUtils.importComments(tree,  wc.getTrees().getPath(memberElm).getCompilationUnit());
+                genUtils.copyComments(tree, newVarTree, false);
+                genUtils.copyComments(tree, newVarTree, true);
                 members.add(newVarTree);
             }
             // add newmethods
@@ -536,7 +538,9 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
                         (BlockTree) null,
                         null);
                 newMethodTree = genUtils.importFQNs(newMethodTree);
-                RefactoringUtils.copyJavadoc(memberElm, newMethodTree, wc);
+                tree = genUtils.importComments(tree,  wc.getTrees().getPath(memberElm).getCompilationUnit());
+                genUtils.copyComments(tree, newMethodTree, false);
+                genUtils.copyComments(tree, newMethodTree, true);
                 members.add(newMethodTree);
             }
             // add super interfaces

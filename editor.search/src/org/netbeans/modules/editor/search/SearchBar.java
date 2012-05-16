@@ -68,6 +68,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeymap;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
+import org.netbeans.modules.editor.search.SearchPropertiesSupport.SearchProperties;
 import org.openide.awt.CloseButtonFactory;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
@@ -109,7 +110,7 @@ public final class SearchBar extends JPanel {
     private final JCheckBox wrapAroundCheckBox;
     private final JButton closeButton;
     private final SearchExpandMenu expandMenu;
-    private Map<String, Object> findProps = EditorFindSupport.getInstance().getFindProperties();
+    private SearchProperties searchProps = SearchPropertiesSupport.getSearchProperties();
     private boolean popupMenuWasCanceled = false;
     private Rectangle actualViewPort;
 
@@ -648,7 +649,7 @@ public final class SearchBar extends JPanel {
 
         // configure find properties
         EditorFindSupport findSupport = EditorFindSupport.getInstance();
-        findSupport.putFindProperties(getFindProps());
+        findSupport.putFindProperties(getSearchProperties());
 
         // search starting at current caret position
         int caretPosition = getActualTextComponent().getSelectionStart();
@@ -674,7 +675,7 @@ public final class SearchBar extends JPanel {
                         SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
             }
         } else {
-            if (findSupport.incSearch(findProps, caretPosition) || empty) {
+            if (findSupport.incSearch(searchProps.getProperties(), caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
@@ -705,7 +706,7 @@ public final class SearchBar extends JPanel {
 
         // configure find properties
         EditorFindSupport findSupport = EditorFindSupport.getInstance();
-        Map<String, Object> actualfindProps = getFindProps();
+        Map<String, Object> actualfindProps = getSearchProperties();
         findSupport.putFindProperties(actualfindProps);
 
         if (findSupport.find(actualfindProps, !next) || empty) {
@@ -770,27 +771,27 @@ public final class SearchBar extends JPanel {
             int blockSearchEndOffset = blockSearchVisible ? endSelection : 0;
 
             try {
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, blockSearchVisible);
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, doc.createPosition(blockSearchStartOffset));
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndOffset));
+                searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH, blockSearchVisible);
+                searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_START, doc.createPosition(blockSearchStartOffset));
+                searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_END, doc.createPosition(blockSearchEndOffset));
                 EditorFindSupport.getInstance().setBlockSearchHighlight(blockSearchStartOffset, blockSearchEndOffset);
             } catch (BadLocationException ble) {
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
-                findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
+                searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+                searchProps.setProperty(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
             }
 
-            EditorFindSupport.getInstance().putFindProperties(findProps);
+            EditorFindSupport.getInstance().putFindProperties(searchProps.getProperties());
         }
     }
 
     boolean getFindSupportValue(String findConstant) {
-        Boolean b = (Boolean) findProps.get(findConstant);
+        Boolean b = (Boolean) searchProps.getProperty(findConstant);
         return b != null ? b.booleanValue() : false;
     }
 
     private void switchFindSupportValue(String findConstant) {
-        findProps.put(findConstant, !getFindSupportValue(findConstant));
+        searchProps.setProperty(findConstant, !getFindSupportValue(findConstant));
     }
 
     boolean getRegExp() {
@@ -853,18 +854,23 @@ public final class SearchBar extends JPanel {
         return findPreviousButton;
     }
 
-    Map<String, Object> getFindProps() {
-        findProps.put(EditorFindSupport.FIND_WHAT, incSearchTextField.getText());
-        findProps.put(EditorFindSupport.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
-        findProps.put(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !incSearchTextField.getText().isEmpty() && highlightCheckBox.isSelected());
-        findProps.put(EditorFindSupport.FIND_WRAP_SEARCH, wrapAroundCheckBox.isSelected());
-        return findProps;
+    public Map<String,Object> getSearchProperties() {
+        searchProps.setProperty(EditorFindSupport.FIND_WHAT, incSearchTextField.getText());
+        searchProps.setProperty(EditorFindSupport.FIND_MATCH_CASE, matchCaseCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_WHOLE_WORDS, wholeWordsCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
+        searchProps.setProperty(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
+        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !incSearchTextField.getText().isEmpty() && highlightCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_WRAP_SEARCH, wrapAroundCheckBox.isSelected());
+        return searchProps.getProperties();
     }
-
+    
+    public void setSearchProperties(SearchProperties searchProperties) {
+        searchProps = searchProperties;
+        selectCheckBoxes();
+    }
+    
     JCheckBox getMatchCaseCheckBox() {
         return matchCaseCheckBox;
     }

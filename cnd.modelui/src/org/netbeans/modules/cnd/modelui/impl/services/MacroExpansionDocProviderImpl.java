@@ -84,8 +84,8 @@ import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
+import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
@@ -448,6 +448,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
         if (ts != null) {
             ts = new APTMacroExpandedStream(ts, handler.getMacroMap(), true);
+            
+            // skip comments, see IZ 207378
+            ts = new APTCommentsFilter(ts);
+            
             StringBuilder sb = new StringBuilder(""); // NOI18N
             try {
                 APTToken t = (APTToken) ts.nextToken();

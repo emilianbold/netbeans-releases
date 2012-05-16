@@ -58,7 +58,7 @@ import org.openide.nodes.Sheet;
 public class CustomizableHost extends Host implements Record, OptionSetOwner {
     private OptionSet options = new HostOptionSet();
 
-    public static String default_location = System.getProperty("spro.home");
+    private static final String default_location = System.getProperty("spro.home");
     /**
      * Create a Default Host with the following properties.
      * host: localhost

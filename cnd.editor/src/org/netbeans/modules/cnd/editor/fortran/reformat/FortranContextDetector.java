@@ -53,8 +53,8 @@ import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
  */
 public class FortranContextDetector extends FortranExtendedTokenSequence {
     //private FortranBracesStack braces;
-    /*package local*/ FortranContextDetector(TokenSequence<FortranTokenId> ts, FortranDiffLinkedList diffs, FortranBracesStack braces, int tabSize){
-        super(ts, diffs, tabSize);
+    /*package local*/ FortranContextDetector(TokenSequence<FortranTokenId> ts, FortranDiffLinkedList diffs, FortranBracesStack braces, int tabSize, boolean expandTabToSpaces){
+        super(ts, diffs, tabSize, expandTabToSpaces);
         //this.braces = braces;
     }
     

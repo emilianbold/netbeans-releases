@@ -95,7 +95,9 @@ import org.netbeans.modules.websvc.axis2.services.model.ServiceGroup;
 import org.netbeans.modules.websvc.axis2.services.model.Services;
 import org.netbeans.modules.websvc.axis2.services.model.ServicesComponentFactory;
 import org.netbeans.modules.websvc.axis2.services.model.ServicesModel;
+import org.netbeans.modules.xml.xam.Model;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -138,7 +140,7 @@ public class WizardUtils {
         service.setMessageReceivers(receivers);
         service.addParameter(param);
         serviceGroup.addService(service);
-        servicesModel.endTransaction();
+        endTransaction(servicesModel);
 
     }
     /** add the clone of service element to serviceGroup, replace the serviceClass value
@@ -165,7 +167,7 @@ public class WizardUtils {
         }
         serviceGroup.addService(newService);
 
-        servicesModel.endTransaction();
+        endTransaction(servicesModel);
     }
     
     static void addService(ServicesModel servicesModel, String serviceClass, WsdlBindingInfo bindingInfo) {
@@ -198,7 +200,7 @@ public class WizardUtils {
         
         serviceGroup.addService(newService);
 
-        servicesModel.endTransaction();
+        endTransaction(servicesModel);
     }
     
     /** add service element to axis2.xml, used in "from java" case
@@ -227,7 +229,7 @@ public class WizardUtils {
                 service.setGenerateWsdl(genWsdl);
             }
             axis2.addService(service);
-            axis2Model.endTransaction();
+            endTransaction(axis2Model);
         }
     }
     /** add service element to axis2.xml, used in "from wsdl" case
@@ -260,7 +262,7 @@ public class WizardUtils {
             javaGenerator.setOptionsAttr(moreOptions);
             service.setJavaGenerator(javaGenerator);
             axis2.addService(service);
-            axis2Model.endTransaction();
+            endTransaction(axis2Model);
         }
     }
     
@@ -275,7 +277,7 @@ public class WizardUtils {
             service.setServiceClass(serviceClass);
             service.setWsdlUrl(wsdlUrl);
             axis2.addService(service);
-            axis2Model.endTransaction();
+            endTransaction(axis2Model);
         }       
     }
     
@@ -459,6 +461,14 @@ public class WizardUtils {
                 }
             }
         }
+    }
+
+    private static void endTransaction(Model model) {
+	try {
+	    model.endTransaction();
+	} catch (IllegalStateException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
     }
 
 }

@@ -66,6 +66,7 @@ public class RepositoryPolicyImpl extends SettingsComponentImpl implements Repos
     // child elements
 
     // child elements
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

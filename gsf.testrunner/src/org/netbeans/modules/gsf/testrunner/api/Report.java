@@ -67,6 +67,7 @@ public final class Report {
      */
     private int totalTests;
     private int passed;
+    private int passedWithErrors;
     private int failures;
     private int errors;
     private int pending;
@@ -119,6 +120,7 @@ public final class Report {
             this.suiteClassName = report.suiteClassName;
             this.totalTests = report.totalTests;
             this.passed = report.passed;
+            this.passedWithErrors = report.passedWithErrors;
             this.failures = report.failures;
             this.errors = report.errors;
             this.pending = report.pending;
@@ -141,6 +143,8 @@ public final class Report {
             return Status.FAILED;
         } else if (pending > 0) {
             return Status.PENDING;
+        } else if (passedWithErrors > 0) {
+            return Status.PASSEDWITHERRORS;
         }
         return Status.PASSED;
     }
@@ -216,6 +220,20 @@ public final class Report {
      */
     public void setPassed(int passed) {
         this.passed = passed;
+    }
+
+    /**
+     * @return the passedWithErrors
+     */
+    public int getPassedWithErrors() {
+        return passedWithErrors;
+    }
+
+    /**
+     * @param passedWithErrors the passedWithErrors to set
+     */
+    public void setPassedWithErrors(int passedWithErrors) {
+        this.passedWithErrors = passedWithErrors;
     }
 
     /**
@@ -328,6 +346,7 @@ public final class Report {
     int getStatusMask(){
         int statusMask = 0;
         statusMask |= getPassed() > 0 ? Status.PASSED.getBitMask() : 0;
+        statusMask |= getPassedWithErrors() > 0 ? Status.PASSEDWITHERRORS.getBitMask() : 0;
         statusMask |= getFailures() > 0 ? Status.FAILED.getBitMask() : 0;
         statusMask |= getErrors() > 0 ? Status.ERROR.getBitMask() : 0;
         return statusMask;

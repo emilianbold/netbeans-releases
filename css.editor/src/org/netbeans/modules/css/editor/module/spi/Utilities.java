@@ -136,12 +136,18 @@ public class Utilities {
     }
  
     public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor) {
+        return wrapProperties(props, anchor, 0);
+    }
+    public static List<CompletionProposal> wrapProperties(Collection<Property> props, int anchor, int stripLen) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (Property p : props) {
             //filter out non-public properties
             if (!GrammarParser.isArtificialElementName(p.getName())) {
                 CssElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), anchor, false);
+                String insertPrefix = stripLen == 0
+                        ? p.getName()
+                        : p.getName().substring(stripLen);
+                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), insertPrefix, anchor, false);
                 proposals.add(proposal);
             }
         }

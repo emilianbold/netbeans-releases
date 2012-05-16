@@ -109,7 +109,8 @@ public class SourceMultiViewElement extends CloneableEditor
      */
     public SourceMultiViewElement() {
         // Needed for deserialization, do not remove.
-        this(null);
+        super();
+        initialize();
     }
     
     /**

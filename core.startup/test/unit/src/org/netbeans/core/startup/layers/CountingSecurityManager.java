@@ -451,12 +451,18 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             return true;
         }
         
+        if (file.contains("jna")) {
+            return false;
+        }
         for (Class c : this.getClassContext()) {
             if (c.getName().equals(InstalledFileLocatorImpl.class.getName())) {
                 if (file.startsWith(Places.getCacheDirectory().getPath())) {
                     return false;
                 }
                 if (file.equals(System.getProperty("netbeans.home"))) {
+                    return false;
+                }
+                if (file.equals(System.getProperty("netbeans.home") + File.separator + "update_tracking")) {
                     return false;
                 }
                 if (file.equals(System.getProperty("netbeans.user"))) {

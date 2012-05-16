@@ -502,7 +502,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     private static boolean createAndThrowIncorrectCharsetUQE(final FileObject fo, Charset charset) throws UserQuestionException {
         ERR.log(Level.INFO, "Encoding problem using {0} for {1}", new Object[]{charset, fo}); // NOI18N
-        throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", charset)) {
+        throw new UserQuestionException(NbBundle.getMessage(DataObject.class, "MSG_EncodingProblem", charset, fo.getPath())) {
             @Override
             public void confirmed() throws IOException {
                 warnedEncodingFiles.add(fo);

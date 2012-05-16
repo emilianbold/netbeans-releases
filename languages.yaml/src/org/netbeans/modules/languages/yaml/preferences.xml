@@ -49,4 +49,5 @@ made subject to such option by the copyright holder.
     <entry category="private" javaType="java.lang.Integer" name="indent-shift-width" value="2" />
     <entry category="private" javaType="java.lang.Integer" name="spaces-per-tab" value="2" />
     <entry category="private" javaType="java.lang.Integer" name="tab-size" value="2" />
+    <entry category="private" name="custom-action-list" value="org.netbeans.modules.languages.yaml.InsertTabAction.createCustomActions" />
 </editor-preferences>

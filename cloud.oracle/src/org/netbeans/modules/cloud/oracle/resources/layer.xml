@@ -29,7 +29,7 @@
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
             
-            <folder name="Oracle Public Cloud">
+            <folder name="Oracle Cloud">
                 
                 <!-- 
                     An instance of the class implementing the DeploymentFactory 

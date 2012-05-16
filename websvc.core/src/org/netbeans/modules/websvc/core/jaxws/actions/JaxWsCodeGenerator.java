@@ -70,6 +70,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
@@ -1118,27 +1119,43 @@ public class JaxWsCodeGenerator  {
         IndentEngine eng = IndentEngine.find(document);
         StringWriter textWriter = new StringWriter();
         Writer indentWriter = eng.createWriter(document, pos, textWriter);
+        
+        StringBuilder methodBody = new StringBuilder();
 
         if (compilerTask.containsWsRefInjection()) { //if in J2SE
             Object[] args = new Object[]{service.getJavaName(), null, null, 
                     null, null, null, null, "service"}; //TODO: compute proper var name
             String serviceDeclForJava = MessageFormat.format(JAVA_SERVICE_DEF, args);
+            methodBody.append( serviceDeclForJava );
             indentWriter.write(serviceDeclForJava);
         }
         // create the inserted text
         String invocationBody = getDispatchInvocationMethod(port, operation);
-        indentWriter.write(invocationBody);
-        indentWriter.close();
-        String textToInsert = textWriter.toString();
+        
+        DispatchClientMethodGenerator generator = new DispatchClientMethodGenerator(
+                operation.getJavaName(), 
+                methodBody.append( invocationBody ).toString(), pos );
+        ModificationResult result = targetSource.runModificationTask(generator);
+        if (generator.isMethodBody()) {
 
-        try {
-            document.insertString(pos, textToInsert, null);
-        } catch (BadLocationException badLoc) {
+            indentWriter.write(invocationBody);
+            indentWriter.close();
+            String textToInsert = textWriter.toString();
+
             try {
-                document.insertString(pos + 1, textToInsert, null);
-            } catch (BadLocationException ex) {
-                ErrorManager.getDefault().notify(ex);
+                document.insertString(pos, textToInsert, null);
             }
+            catch (BadLocationException badLoc) {
+                try {
+                    document.insertString(pos + 1, textToInsert, null);
+                }
+                catch (BadLocationException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        }
+        else {
+            result.commit();
         }
 
         // modify Class f.e. @insert WebServiceRef injection

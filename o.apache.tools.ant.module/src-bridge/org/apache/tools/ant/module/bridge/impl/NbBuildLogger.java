@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -121,7 +120,8 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final Runnable interestingOutputCallback;
     private final ProgressHandle handle;
     private boolean insideRunTask = false; // #95201
-    private final AtomicBoolean protectedMode = new AtomicBoolean(); // #211005
+    private IndexingBridge.Lock protectedMode; // #211005
+    private final Object protectedModeLock = new Object();
     private final RequestProcessor.Task sleepTask = new RequestProcessor(NbBuildLogger.class.getName(), 1, false, false).create(new Runnable() {
         public @Override void run() {
             handle.suspend(insideRunTask ? NbBundle.getMessage(NbBuildLogger.class, "MSG_sleep_running") : "");
@@ -197,13 +197,18 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     }
 
     private void enterProtectedMode() {
-        if (protectedMode.compareAndSet(false, true)) {
-            IndexingBridge.getDefault().enterProtectedMode();
+        synchronized (protectedModeLock) {
+            if (protectedMode == null) {
+                protectedMode = IndexingBridge.getDefault().protectedMode();
+            }
         }
     }
     private void exitProtectedMode() {
-        if (protectedMode.compareAndSet(true, false)) {
-            IndexingBridge.getDefault().exitProtectedMode();
+        synchronized (protectedModeLock) {
+            if (protectedMode != null) {
+                protectedMode.release();
+                protectedMode = null;
+            }
         }
     }
     

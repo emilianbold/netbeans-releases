@@ -109,7 +109,7 @@ public class TreeList extends JList {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() != 2 || e.isPopupTrigger()) {
+                if (e.getClickCount() != 2 || e.isPopupTrigger() || e.isConsumed()) {
                     return;
                 }
                 int index = locationToIndex(e.getPoint());

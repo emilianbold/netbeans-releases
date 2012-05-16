@@ -33,7 +33,6 @@ package org.netbeans.modules.web.refactoring.rename;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -54,8 +53,8 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
     private final FileObject pkg;
     private final RenameRefactoring rename;
     
-    public WebXmlPackageRename(FileObject webDD, WebApp webModel, FileObject pkg, RenameRefactoring rename) {
-        super(webDD, webModel);
+    public WebXmlPackageRename(FileObject webDD, FileObject pkg, RenameRefactoring rename) {
+        super(webDD);
         this.pkg = pkg;
         this.rename = rename;
     }

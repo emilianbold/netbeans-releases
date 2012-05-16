@@ -42,8 +42,6 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -108,10 +106,7 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
             return null;
         }
         FileObject ddFile = wm.getDeploymentDescriptor();
-        WebApp webApp = getWebApp(ddFile);
-//        if (webApp == null){
-//            return null;
-//        }
+
         String clazz = resolveClass(handle);
         
         // if we have a java file, the class name should be resolvable
@@ -126,13 +121,13 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         if (refactoring instanceof RenameRefactoring){
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaPackage || folder){
-                if (webApp != null) {
-                    refactorings.add(new WebXmlPackageRename(ddFile, webApp, sourceFO, rename));
+                if (ddFile != null) {
+                    refactorings.add(new WebXmlPackageRename(ddFile, sourceFO, rename));
                 }
                 refactorings.add(new TldPackageRename(rename, wm, sourceFO));
             } else if (javaFile) {
-                if (webApp != null) {
-                    refactorings.add(new WebXmlRename(clazz, rename, webApp, ddFile));
+                if (ddFile != null) {
+                    refactorings.add(new WebXmlRename(clazz, rename, ddFile));
                 }
                 refactorings.add(new TldRename(clazz, rename, wm));
             }
@@ -140,16 +135,16 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         
         if (refactoring instanceof WhereUsedQuery && javaFile){
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            if (webApp != null) {
-                refactorings.add(new WebXmlWhereUsed(ddFile, webApp, clazz, whereUsedQuery));
+            if (ddFile != null) {
+                refactorings.add(new WebXmlWhereUsed(ddFile, clazz, whereUsedQuery));
             }
             refactorings.add(new TldWhereUsed(clazz, wm, whereUsedQuery));
         } 
         
         if (refactoring instanceof SafeDeleteRefactoring && javaFile){
             SafeDeleteRefactoring safeDelete = (SafeDeleteRefactoring) refactoring;
-            if (webApp != null) {
-                refactorings.add(new WebXmlSafeDelete(ddFile, webApp, safeDelete));
+            if (ddFile != null) {
+                refactorings.add(new WebXmlSafeDelete(ddFile, safeDelete));
             }
             refactorings.add(new TldSafeDelete(safeDelete, wm));
         }
@@ -157,31 +152,19 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         if (refactoring instanceof MoveRefactoring){
             MoveRefactoring move = (MoveRefactoring) refactoring;
             if (javaFile){
-                if (webApp != null) {
-                    refactorings.add(new WebXmlMove(ddFile, webApp, move));
+                if (ddFile != null) {
+                    refactorings.add(new WebXmlMove(ddFile, move));
                 }
                 refactorings.add(new TldMove(move, wm));
             } else if (folder){
-                if (webApp != null) {
-                    refactorings.add(new WebXmlFolderMove(ddFile, webApp, sourceFO, move));
+                if (ddFile != null) {
+                    refactorings.add(new WebXmlFolderMove(ddFile, sourceFO, move));
                 }
                 refactorings.add(new TldFolderMove(wm, sourceFO, move));
             }
         }
         
         return refactorings.isEmpty() ? null : new WebRefactoringPlugin(refactorings);
-    }
-    
-    private WebApp getWebApp(FileObject ddFile){
-        if (ddFile == null){
-            return null;
-        }
-        try{
-            return DDProvider.getDefault().getDDRoot(ddFile);
-        }catch(IOException ioe){
-            Exceptions.printStackTrace(ioe);
-        }
-        return null;
     }
     
     private TreePathHandle resolveTreePathHandle(final AbstractRefactoring refactoring){

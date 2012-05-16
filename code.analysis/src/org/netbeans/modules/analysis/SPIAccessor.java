@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.analysis;
 
+import java.util.Collection;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.spi.Analyzer;
@@ -84,5 +85,7 @@ public abstract class SPIAccessor {
     public abstract String getAnalyzerId(AnalyzerFactory selected);
     public abstract String getAnalyzerDisplayName(AnalyzerFactory a);
     public abstract String getAnalyzerIconPath(AnalyzerFactory analyzer);
+
+    public abstract Collection<? extends AnalysisProblem> getAnalysisProblems(Context context);
 
 }

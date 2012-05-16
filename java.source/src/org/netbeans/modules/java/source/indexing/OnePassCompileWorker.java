@@ -132,7 +132,7 @@ final class OnePassCompileWorker extends CompileWorker {
                                 public @Override boolean isCanceled() {
                                     return context.isCancelled();
                                 }
-                            }, APTUtils.get(context.getRoot()));
+                            }, tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
                         }
                         for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                             if (units != null) {
@@ -244,7 +244,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 jt.analyze(types);
                 if (aptEnabled) {
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
+                    JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 if (mem.isLowMemory()) {
                     units = null;
@@ -293,7 +293,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 JavaIndex.LOG.log(Level.FINEST, message, isp);
             }
         } catch (MissingPlatformError mpe) {
-            //No platform - log & ignore
+            //No platform - log & mark files as errornous
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
                 final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
@@ -307,6 +307,7 @@ final class OnePassCompileWorker extends CompileWorker {
                             );
                 JavaIndex.LOG.log(Level.FINEST, message, mpe);
             }
+            JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
             if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N

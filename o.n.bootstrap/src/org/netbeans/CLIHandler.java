@@ -590,6 +590,7 @@ public abstract class CLIHandler extends Object {
                     }
                 }
                 lockFile.deleteOnExit();
+                assert lock != null : "Null lock on " + lockFile;
 
                 if (runWhenHome != null) {
                     // notify that we have successfully identified the home property

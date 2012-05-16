@@ -176,6 +176,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     }
 
     @Override
+    @Deprecated
     public ProgressObject distribute(Target[] targets, InputStream in, InputStream in1) throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }

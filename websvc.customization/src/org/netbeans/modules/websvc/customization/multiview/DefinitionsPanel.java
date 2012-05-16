@@ -55,6 +55,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
@@ -69,6 +71,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
 import org.netbeans.modules.xml.multiview.Error;
 import org.netbeans.modules.websvc.api.customization.model.CustomizationComponentFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -242,32 +245,73 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
                 definitions.getExtensibilityElements(DefinitionsCustomization.class);
         CustomizationComponentFactory factory = CustomizationComponentFactory.getDefault();
 
-        //process default package name
-        if(jComponent == packageNameText || jComponent == defaultPackageCB) {
-            if (getPackageName() == null) {
-                if (ee.size() == 1) { //there is an extensibility element
-                    DefinitionsCustomization dc = ee.get(0);
-                    JavaPackage javaPackage = dc.getPackage();
-                    if(javaPackage != null){ //there is no EnableWrapperStyle, create one
+        try {
+            //process default package name
+            if(jComponent == packageNameText || jComponent == defaultPackageCB) {
+                if (getPackageName() == null) {
+                    if (ee.size() == 1) { //there is an extensibility element
+                        DefinitionsCustomization dc = ee.get(0);
+                        JavaPackage javaPackage = dc.getPackage();
+                        if(javaPackage != null){ //there is no EnableWrapperStyle, create one
+                            try{
+                                model.startTransaction();
+                                dc.removePackage(javaPackage);
+                                wsdlDirty = true;
+                            } finally{
+                                model.endTransaction();
+                            }
+                        }
+                    }
+                } else {
+                    if (ee.size() == 1) { //there is an extensibility element
+                        DefinitionsCustomization dc = ee.get(0);
+                        JavaPackage javaPackage = dc.getPackage();
+                        if(javaPackage == null){ //there is no EnableWrapperStyle, create one
+                            try{
+                                model.startTransaction();
+                                javaPackage = factory.createJavaPackage(model);
+                                javaPackage.setName(packageNameText.getText());
+                                dc.setPackage(javaPackage);
+                                wsdlDirty = true;
+                            } finally{
+                                model.endTransaction();
+                            }
+                        } else{ //there is an EnableWrapperStyle, reset it
+                            try{
+                                model.startTransaction();
+                                javaPackage.setName(packageNameText.getText());
+                                wsdlDirty = true;
+                            } finally{
+                                model.endTransaction();
+                            }
+                        }
+                    } else {  //there is no extensibility element, add a new one and add a new
+                        //wrapper style element
+                        DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
+                        JavaPackage javaPackage = factory.createJavaPackage(model);
                         try{
                             model.startTransaction();
-                            dc.removePackage(javaPackage);
+                            javaPackage.setName(packageNameText.getText());
+                            dc.setPackage(javaPackage);
+                            definitions.addExtensibilityElement(dc);
                             wsdlDirty = true;
                         } finally{
                             model.endTransaction();
                         }
                     }
                 }
-            } else {
-                if (ee.size() == 1) { //there is an extensibility element
+            }
+            //process Wrapper Style
+            else if(jComponent == enableWrapperStyleCB){
+                if(ee.size() == 1){ //there is an extensibility element
                     DefinitionsCustomization dc = ee.get(0);
-                    JavaPackage javaPackage = dc.getPackage();
-                    if(javaPackage == null){ //there is no EnableWrapperStyle, create one
+                    EnableWrapperStyle ews = dc.getEnableWrapperStyle();
+                    if(ews == null){ //there is no EnableWrapperStyle, create one
                         try{
                             model.startTransaction();
-                            javaPackage = factory.createJavaPackage(model);
-                            javaPackage.setName(packageNameText.getText());
-                            dc.setPackage(javaPackage);
+                            ews = factory.createEnableWrapperStyle(model);
+                            ews.setEnabled(this.getEnableWrapperStyle());
+                            dc.setEnableWrapperStyle(ews);
                             wsdlDirty = true;
                         } finally{
                             model.endTransaction();
@@ -275,21 +319,96 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
                     } else{ //there is an EnableWrapperStyle, reset it
                         try{
                             model.startTransaction();
-                            javaPackage.setName(packageNameText.getText());
+                            ews.setEnabled(this.getEnableWrapperStyle());
                             wsdlDirty = true;
                         } finally{
                             model.endTransaction();
                         }
                     }
-                } else {  //there is no extensibility element, add a new one and add a new
+                } else{  //there is no extensibility element, add a new one and add a new
                     //wrapper style element
                     DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
-                    JavaPackage javaPackage = factory.createJavaPackage(model);
+                    EnableWrapperStyle ews = factory.createEnableWrapperStyle(model);
                     try{
                         model.startTransaction();
-                        javaPackage.setName(packageNameText.getText());
-                        dc.setPackage(javaPackage);
+                        ews.setEnabled(this.getEnableWrapperStyle());
+                        dc.setEnableWrapperStyle(ews);
                         definitions.addExtensibilityElement(dc);
+                        wsdlDirty = true;
+                    } finally{
+                        model.endTransaction();
+                    }
+                }
+            } else if(jComponent == enableAsyncMappingCB){  //process Async Mapping
+                if(ee.size() == 1){ //there is an extensibility element
+                    DefinitionsCustomization dc = ee.get(0);
+                    EnableAsyncMapping eam = dc.getEnableAsyncMapping();
+                    if(eam == null){ //there is no EnableAsyncMapping, create one
+                        try{
+                            model.startTransaction();
+                            eam = factory.createEnableAsyncMapping(model);
+                            eam.setEnabled(this.getEnableAsyncMapping());
+                            dc.setEnableAsyncMapping(eam);
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    } else{ //there is an EnableAsyncMapping, reset it
+                        try{
+                            model.startTransaction();
+                            eam.setEnabled(this.getEnableAsyncMapping());
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    }
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //async mapping element
+                    DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
+                    EnableAsyncMapping eam = factory.createEnableAsyncMapping(model);
+                    try{
+                        model.startTransaction();
+                        eam.setEnabled(this.getEnableAsyncMapping());
+                        dc.setEnableAsyncMapping(eam);
+                        definitions.addExtensibilityElement(dc);
+                        wsdlDirty = true;
+                    } finally{
+                        model.endTransaction();
+                    }
+                }
+            } else if(jComponent == enableMIMEContentCB){  //process MIME content
+                if(ee.size() == 1){ //there is an extensibility element
+                    DefinitionsCustomization dc = ee.get(0);
+                    EnableMIMEContent emc = dc.getEnableMIMEContent();
+                    if(emc == null){ //there is no EnableMIMEContent, create one
+                        try{
+                            model.startTransaction();
+                            emc = factory.createEnableMIMEContent(model);
+                            emc.setEnabled(this.getEnableMIMEContent());
+                            dc.setEnableMIMEContent(emc);
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    } else{ //there is an EnableMIMEContent, reset it
+                        try{
+                            model.startTransaction();
+                            emc.setEnabled(this.getEnableMIMEContent());
+                            wsdlDirty = true;
+                        } finally{
+                            model.endTransaction();
+                        }
+                    }
+                } else{  //there is no extensibility element, add a new one and add a new
+                    //MIME content element
+                    DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
+                    EnableMIMEContent emc = factory.createEnableMIMEContent(model);
+                    try{
+                        model.startTransaction();
+                        emc.setEnabled(this.getEnableMIMEContent());
+                        dc.setEnableMIMEContent(emc);
+                        definitions.addExtensibilityElement(dc);
+                        
                         wsdlDirty = true;
                     } finally{
                         model.endTransaction();
@@ -297,119 +416,9 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
                 }
             }
         }
-        //process Wrapper Style
-        else if(jComponent == enableWrapperStyleCB){
-            if(ee.size() == 1){ //there is an extensibility element
-                DefinitionsCustomization dc = ee.get(0);
-                EnableWrapperStyle ews = dc.getEnableWrapperStyle();
-                if(ews == null){ //there is no EnableWrapperStyle, create one
-                    try{
-                        model.startTransaction();
-                        ews = factory.createEnableWrapperStyle(model);
-                        ews.setEnabled(this.getEnableWrapperStyle());
-                        dc.setEnableWrapperStyle(ews);
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                } else{ //there is an EnableWrapperStyle, reset it
-                    try{
-                        model.startTransaction();
-                        ews.setEnabled(this.getEnableWrapperStyle());
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //wrapper style element
-                DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
-                EnableWrapperStyle ews = factory.createEnableWrapperStyle(model);
-                try{
-                    model.startTransaction();
-                    ews.setEnabled(this.getEnableWrapperStyle());
-                    dc.setEnableWrapperStyle(ews);
-                    definitions.addExtensibilityElement(dc);
-                    wsdlDirty = true;
-                } finally{
-                    model.endTransaction();
-                }
-            }
-        } else if(jComponent == enableAsyncMappingCB){  //process Async Mapping
-            if(ee.size() == 1){ //there is an extensibility element
-                DefinitionsCustomization dc = ee.get(0);
-                EnableAsyncMapping eam = dc.getEnableAsyncMapping();
-                if(eam == null){ //there is no EnableAsyncMapping, create one
-                    try{
-                        model.startTransaction();
-                        eam = factory.createEnableAsyncMapping(model);
-                        eam.setEnabled(this.getEnableAsyncMapping());
-                        dc.setEnableAsyncMapping(eam);
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                } else{ //there is an EnableAsyncMapping, reset it
-                    try{
-                        model.startTransaction();
-                        eam.setEnabled(this.getEnableAsyncMapping());
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //async mapping element
-                DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
-                EnableAsyncMapping eam = factory.createEnableAsyncMapping(model);
-                try{
-                    model.startTransaction();
-                    eam.setEnabled(this.getEnableAsyncMapping());
-                    dc.setEnableAsyncMapping(eam);
-                    definitions.addExtensibilityElement(dc);
-                    wsdlDirty = true;
-                } finally{
-                    model.endTransaction();
-                }
-            }
-        } else if(jComponent == enableMIMEContentCB){  //process MIME content
-            if(ee.size() == 1){ //there is an extensibility element
-                DefinitionsCustomization dc = ee.get(0);
-                EnableMIMEContent emc = dc.getEnableMIMEContent();
-                if(emc == null){ //there is no EnableMIMEContent, create one
-                    try{
-                        model.startTransaction();
-                        emc = factory.createEnableMIMEContent(model);
-                        emc.setEnabled(this.getEnableMIMEContent());
-                        dc.setEnableMIMEContent(emc);
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                } else{ //there is an EnableMIMEContent, reset it
-                    try{
-                        model.startTransaction();
-                        emc.setEnabled(this.getEnableMIMEContent());
-                        wsdlDirty = true;
-                    } finally{
-                        model.endTransaction();
-                    }
-                }
-            } else{  //there is no extensibility element, add a new one and add a new
-                //MIME content element
-                DefinitionsCustomization dc = factory.createDefinitionsCustomization(model);
-                EnableMIMEContent emc = factory.createEnableMIMEContent(model);
-                try{
-                    model.startTransaction();
-                    emc.setEnabled(this.getEnableMIMEContent());
-                    dc.setEnableMIMEContent(emc);
-                    definitions.addExtensibilityElement(dc);
-                    
-                    wsdlDirty = true;
-                } finally{
-                    model.endTransaction();
-                }
-            }
+        catch( IllegalStateException ex ){
+            Exceptions.attachSeverity(ex, Level.WARNING);
+            Exceptions.printStackTrace(ex);
         }
     }
     

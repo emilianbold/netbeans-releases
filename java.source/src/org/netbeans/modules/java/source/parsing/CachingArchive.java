@@ -64,10 +64,15 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
-public class CachingArchive implements Archive {
+public class CachingArchive implements Archive, FileChangeListener {
     
     private static final Logger LOGGER = Logger.getLogger(CachingArchive.class.getName());
     
@@ -87,6 +92,8 @@ public class CachingArchive implements Archive {
     public CachingArchive( File archiveFile, boolean keepOpened) {
         this.archiveFile = archiveFile;
         this.keepOpened = keepOpened;
+        
+        FileUtil.addFileChangeListener(this, archiveFile);
     }
         
     // Archive implementation --------------------------------------------------
@@ -319,6 +326,31 @@ public class CachingArchive implements Archive {
         return start;
     }
 
+    @Override
+    public void fileFolderCreated(FileEvent fe) { }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        clear();
+    }
+    
+    @Override
+    public void fileChanged(FileEvent fe) {
+        clear();
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        clear();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        clear();
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) { }
 
     // Innerclasses ------------------------------------------------------------
     private static class Folder {

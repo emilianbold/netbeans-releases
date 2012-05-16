@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -373,17 +372,18 @@ public class WebProjectValidation extends J2eeTestCase {
         String compileJSPLabel = "Test compile all JSP files during builds";
         new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(true);
         properties.ok();
-
-        testCleanAndBuildProject();
-        logAndCloseOutputs();
-        testCleanAndBuildProject();
-        logAndCloseOutputs();
-
-        new Action(null, "Properties").perform(rootNode);
-        properties = new NbDialogOperator("Project Properties");
-        new Node(new JTreeOperator(properties), "Build|Compiling").select();
-        new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(false);
-        properties.ok();
+        try {
+            testCleanAndBuildProject();
+            logAndCloseOutputs();
+            testCleanAndBuildProject();
+            logAndCloseOutputs();
+        } finally {
+            new Action(null, "Properties").perform(rootNode);
+            properties = new NbDialogOperator("Project Properties");
+            new Node(new JTreeOperator(properties), "Build|Compiling").select();
+            new JCheckBoxOperator(properties, compileJSPLabel).changeSelection(false);
+            properties.ok();
+        }
     }
 
     public void testCompileJSP() {
@@ -483,23 +483,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.replace("try {",
                 "try {\nout.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
         new ActionNoBlock(null, "Run File").perform(editor);
-        NbDialogOperator dialog;
-        try {
-            dialog = new NbDialogOperator("Set Servlet Execution URI");
-        } catch (TimeoutExpiredException e) {
-            // workaround bug 201668
-            System.out.println("Bug 201668");
-            e.printStackTrace(System.out);
-            // close all error and information dialogs
-            JDialog jDialog;
-            do {
-                jDialog = NbDialogOperator.findJDialog(ComponentSearcher.getTrueChooser("Any dialog"));
-                if (jDialog != null) {
-                    new NbDialogOperator(jDialog).close();
-                }
-            } while (jDialog != null);
-            return;
-        }
+        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem() + "?name=Servlet1");
         dialog.ok();
@@ -669,30 +653,33 @@ public class WebProjectValidation extends J2eeTestCase {
         //wait for editor update
         new EventTool().waitNoEvent(300);
         int startCaretPos = eOperator.txtEditorPane().getCaretPosition();
-        NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
+        final NavigatorOperator navigatorOperator = NavigatorOperator.invokeNavigator();
         assertNotNull(navigatorOperator);
-        final JTreeOperator treeOperator = navigatorOperator.getTree();
-        TreeModel model = treeOperator.getModel();
-        Object root = model.getRoot();
-        assertNotNull(root);
-        // wait until please wait node dismiss
-        treeOperator.waitState(new ComponentChooser() {
+        new Waiter(new Waitable() {
 
             @Override
-            public boolean checkComponent(Component comp) {
-                Object root = treeOperator.getModel().getRoot();
-                if (root.toString() != null) {
-                    return !root.toString().contains("Wait");
+            public Object actionProduced(Object obj) {
+                JTreeOperator treeOper = navigatorOperator.getTree();
+                Object root = treeOper.getModel().getRoot();
+                if (root != null) {
+                    if (root.toString() != null && root.toString().contains("Wait")) {
+                        // still please wait node
+                        return null;
+                    } else if (treeOper.getChildCount(root) > 0) {
+                        return Boolean.TRUE;
+                    }
                 }
-                return true;
+                return null;
             }
 
             @Override
             public String getDescription() {
-                return "nodes initialized";
+                return "root node in navigator tree has one child";
             }
-        });
-        dumpNode(model, root, 0);
+        }).waitAction(null);
+        JTreeOperator treeOperator = navigatorOperator.getTree();
+        Object root = treeOperator.getModel().getRoot();
+        dumpNode(treeOperator.getModel(), root, 0);
         assertEquals(1, treeOperator.getChildCount(root));
         Object htmlChild = treeOperator.getChild(root, 0);//HTML
         assertNotNull(htmlChild);
@@ -703,9 +690,6 @@ public class WebProjectValidation extends J2eeTestCase {
         assertEquals(2, treeOperator.getChildCount(tableChild));// 2 rows
         Object[] pathObjects = {root, htmlChild, bodyChild, tableChild};
         TreePath path = new TreePath(pathObjects);
-        if (root.toString() != null && root.toString().contains("Wait")) {
-            new EventTool().waitNoEvent(3000);
-        }
         treeOperator.clickOnPath(path, 2);
         // wait for editor update
         new EventTool().waitNoEvent(300);

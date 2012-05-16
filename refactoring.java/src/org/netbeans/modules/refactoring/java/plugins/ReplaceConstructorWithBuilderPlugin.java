@@ -70,8 +70,9 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
+@NbBundle.Messages({"WRN_NODEFAULT=Parameter {0}'s setter is optional but has no default value."})
 public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
-
+ 
     private final ReplaceConstructorWithBuilderRefactoring replaceConstructorWithBuilder;
     
     private final AtomicBoolean cancel = new AtomicBoolean();
@@ -106,7 +107,13 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
         if (resource !=null) {
             return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_FileExists", name));
         }
-        return null;
+        Problem problem = null;
+        for (Setter set : replaceConstructorWithBuilder.getSetters()) {
+            if(set.isOptional() && set.getDefaultValue() == null) {
+                problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "WRN_NODEFAULT", set.getVarName())));
+            }
+        }
+        return problem;
     }
 
     @Override
@@ -192,7 +199,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                             Collections.<TypeParameterTree>emptyList(),
                             Collections.<VariableTree>emptyList(),
                             Collections.<ExpressionTree>emptyList(),
-                            "{return new " + parent.getSimpleName() + "(" + args + ");}", //NOI18N
+                            "{return new " + parent.getSimpleName() + "(" + (args==null?"":args) + ");}", //NOI18N
                             null));
 
 
@@ -229,7 +236,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
                     for (Setter set : replaceConstructorWithBuilder.getSetters()) {
                         i++;
                         final Tree value = occurrence.getVariables().get("$" + i).getLeaf(); //NOI18N
-                        if (treeEquals(copy, value, set.getDefaultValue())) {
+                        if (set.isOptional() && treeEquals(copy, value, set.getDefaultValue())) {
                             continue;
                         }
                         expression = make.MethodInvocation(

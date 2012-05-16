@@ -726,7 +726,7 @@ public class InstallSupportImpl {
             return toUpdateImpl.getDownloadSize ();
         }
 
-        int c = 0;
+        int c;
         
         // download
         try {
@@ -761,6 +761,11 @@ public class InstallSupportImpl {
                                     }
                                     check.update(arr, 0, len);
                                     fos.write(arr, 0, len);
+                                    if (progressRunning) {
+                                        if ((c += len) <= toUpdateImpl.getDownloadSize()) {
+                                            progress.progress(aggregateDownload + c);
+                                        }
+                                    }
                                 }
                             } finally {
                                 fos.close();
@@ -789,7 +794,7 @@ public class InstallSupportImpl {
             throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
         }
         
-        return c;
+        return toUpdateImpl.getDownloadSize();
     }
 
     private int doValidate (OperationInfo info, ProgressHandle progress, final int verified) throws OperationException {
@@ -1041,7 +1046,7 @@ public class InstallSupportImpl {
 
         LOG.log (Level.FINE, "Destination " + dest + " is successfully wrote. Size " + dest.length());
         
-        return estimatedSize;
+        return increment;
     }
     
     private int verifyNbm (UpdateElement el, File nbmFile, ProgressHandle progress, int verified) throws OperationException {

@@ -119,6 +119,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
             FileObject baseDirFO = getFileObject(baseDir);
             FileObject dataFileFO = getFileObject(baseDirFO, dataFile);
+            int hashCode = dataFileFO.hashCode();
             assertFalse("FileObject should not be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
 
             script =
@@ -129,6 +130,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
             refreshFor(dataFileFO.getPath());
+            assertEquals("FileObject hashCode should not change", hashCode, dataFileFO.hashCode());
             assertTrue("FileObject should be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
             String content = "another brown fox...";
             writeFile(dataFileFO, content);
@@ -320,6 +322,29 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
+    }
+    
+    @ForAllEnvironments
+    public void testLinkLastModificationTime() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String linkName = "link";
+            String fileName = "data";
+            String script = 
+                    "cd " + baseDir + "; " +
+                    "touch " + baseDir + "/" + fileName + ";" +
+                    "sleep 10;" +
+                    "ln -s " + fileName + ' ' + linkName;
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+           
+            FileObject linkFO = getFileObject(baseDir + '/' + linkName);
+            FileObject fileFO = getFileObject(baseDir + '/' + fileName);
+            assertEquals("Link and it's target modification time should be the same (as with java.io.File)", linkFO.lastModified(), fileFO.lastModified());            
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }        
     }
     
     public static Test suite() {

@@ -1018,7 +1018,7 @@ private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         String type = runType.getString();
         configs.setPropertyTransparent(config, JFXProjectProperties.RUN_AS, type);
         //labelRunAs.setFont(JFXProjectProperties.isEqual(type, configs.getDefaultProperty(JFXProjectProperties.RUN_AS)) ? plainfont : emphfont);
-        setEmphasizedFont(labelRunAs, !JFXProjectProperties.isEqualText(type, configs.getDefaultProperty(JFXProjectProperties.RUN_AS)));
+        setEmphasizedFont(labelRunAs, config != null && !JFXProjectProperties.isEqualText(type, configs.getDefaultProperty(JFXProjectProperties.RUN_AS)));
         if(runType == JFXProjectProperties.RunAsType.STANDALONE) {
             setBoldFont(radioButtonSA, true);
             radioButtonSA.setSelected(true);
@@ -1179,9 +1179,22 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         comboBoxWebBrowserActionRunning = true;
         String config = getSelectedConfig();
         String sel = (String)comboBoxWebBrowser.getSelectedItem();
-        configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER, sel);
-        configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, jfxProps.getBrowserPaths().get(sel));
-        setEmphasizedFont(labelWebBrowser, !JFXProjectProperties.isEqualText(sel, configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER)));
+        if(JFXProjectProperties.isEqualIgnoreCase(sel, NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser"))) { //NOI18N
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER, JFXProjectProperties.RUN_IN_BROWSER_UNDEFINED);
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, JFXProjectProperties.RUN_IN_BROWSER_UNDEFINED);
+            if(radioButtonBE.isSelected()) {
+                radioButtonSA.setSelected(true);
+                runTypeChanged(JFXProjectProperties.RunAsType.STANDALONE);
+            }
+            radioButtonBE.setEnabled(false);
+        } else {
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER, sel);
+            configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, jfxProps.getBrowserPaths().get(sel));
+            if(!radioButtonBE.isEnabled()) {
+                radioButtonBE.setEnabled(true);
+            }
+        }
+        setEmphasizedFont(labelWebBrowser, config != null && !JFXProjectProperties.isEqualText(sel, configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER)));
         comboBoxWebBrowserActionRunning = false;
     }
 }//GEN-LAST:event_comboBoxWebBrowserActionPerformed
@@ -1276,7 +1289,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                     buttonPreloaderDefault.setMnemonic(java.awt.event.KeyEvent.VK_F);
                 }
 
-                browserSelectionChanged(configs.getProperty(activeConfig, JFXProjectProperties.RUN_IN_BROWSER), configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER));
+                browserSelectionChanged(activeConfig);
             }
             buttonDelete.setEnabled(activeConfig != null);
             configChangedRunning = false;
@@ -1299,10 +1312,13 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         return null;
     }
     
-    private void browserSelectionChanged(String name, String defaultConfigName) {
+    private void browserSelectionChanged(String config) {
+        String name = configs.getProperty(config, JFXProjectProperties.RUN_IN_BROWSER);
+        String defaultConfigName = configs.getDefaultProperty(JFXProjectProperties.RUN_IN_BROWSER);
         if(isBrowserKnown(name)) {
             comboBoxWebBrowser.setSelectedItem(name);
-            setEmphasizedFont(labelWebBrowser, !JFXProjectProperties.isEqualText(name, defaultConfigName));
+            setEmphasizedFont(labelWebBrowser, config != null && !JFXProjectProperties.isEqualText(name, defaultConfigName)
+                    && !JFXProjectProperties.isEqualIgnoreCase(name, NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser")));
         } else {
             if(isBrowserKnown(defaultConfigName)) {
                 comboBoxWebBrowser.setSelectedItem(defaultConfigName);
@@ -1311,7 +1327,8 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 String defaultName = getDefaultKnownBrowser();
                 if(defaultName != null) {
                     comboBoxWebBrowser.setSelectedItem(defaultName);
-                    setEmphasizedFont(labelWebBrowser, (JFXProjectProperties.isNonEmpty(name) || JFXProjectProperties.isNonEmpty(defaultConfigName)) 
+                    setEmphasizedFont(labelWebBrowser, config != null && (JFXProjectProperties.isNonEmpty(name) || JFXProjectProperties.isNonEmpty(defaultConfigName))
+                            && !JFXProjectProperties.isEqualIgnoreCase(defaultName, NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser"))
                             && !JFXProjectProperties.isEqualText(defaultName, defaultConfigName));
                 }
             }
@@ -1482,16 +1499,20 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     private List<String> updateBrowserList() {
         final ArrayList<String> list = new ArrayList<String> (6);
         jfxProps.resetBrowserPaths();
-        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
-            list.add(browser.getDisplayName());
-            ExtWebBrowser instance = browser.getInstance();
-            if(instance != null) {
-                NbProcessDescriptor proc = instance.getBrowserExecutable();
-                if(proc != null) {
-                    String path = proc.getProcessName();
-                    jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+        if(allBrowsers != null) {
+            for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
+                list.add(browser.getDisplayName());
+                ExtWebBrowser instance = browser.getInstance();
+                if(instance != null) {
+                    NbProcessDescriptor proc = instance.getBrowserExecutable();
+                    if(proc != null) {
+                        String path = proc.getProcessName();
+                        jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+                    }
                 }
             }
+        } else {
+            list.add(NbBundle.getMessage(JFXRunPanel.class, "MSG_NoBrowser")); // NOI18N
         }
         return list;
     }
@@ -1657,7 +1678,9 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         final List<String> list = updateBrowserList();
         final String sel = configs.getActiveProperty(JFXProjectProperties.RUN_IN_BROWSER);
         fillWebBrowsersCombo(list, sel);
-        allBrowsers.addLookupListener(this);
+        if(allBrowsers != null) {
+            allBrowsers.addLookupListener(this);
+        }
         comboBoxWebBrowserActionRunning = false;
     }
 

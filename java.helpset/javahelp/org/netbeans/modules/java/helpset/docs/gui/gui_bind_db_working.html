@@ -6,7 +6,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Working with Desktop Database Applications</title>
+        <title>Working with Database Applications</title>
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
@@ -39,12 +39,12 @@
             </tr>            
             <tr valign="top"> 
                 <td align="center"><img src="../images/circle2.gif" alt="Number Two"><br>
-                    <b>Create a project and a GUI form</b>
+                    <b>Create a project</b>
                 <p></td>
                 <td> 
-                    <ul><li><a href="../project/proj_creating.html">Create a new project</a> using 
-                    the Java Application template and then <a href="gui_creatingforms.html">create a GUI form</a>
-                        in the project.</li></ul>
+                    <ul>
+                      <li><a href="nbdocs://org.netbeans.modules.apisupport.kit/org/netbeans/modules/apisupport/project/docs/create_plugin/projectlevel_create/create_platform_app.html">Create a new project</a> using the New NetBeans  Platform Application template</a>.</li>
+                    </ul>
               </td>
             </tr>
             <tr> 
@@ -55,13 +55,10 @@
             <!--TODO database component-->
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle3.gif" alt="Number Three"><br>
-                    <b>Add necessary bean and entity classes</b>
+                    <b>Add necessary entity classes</b>
                 <p></td>
-                <td><ol>
-                        <li><a href="gui_addcomponent.html">Add necessary components to the form</a>, 
-                            including custom beans for which you will create bindings 
-                        and any necessary converter and validator classes.</li>
-                        <li>Add entity classes to the project to represent the 
+                <td><ul>
+                    <li>Add entity classes to the project to represent the 
                             database tables with which your application will work. 
                             (Entity classes are special classes that use the 
                             <a href="../persistence/general/persistence_about.html">Java Persistence API</a>.)
@@ -69,7 +66,7 @@
                             <a href="../persistence/general/persistence_fromdb.html">generate entity classes</a> 
                             or you can write them from scratch.
                   </li>
-                    </ol>
+                    </ul>
                     
                 </td>
             </tr>
@@ -83,22 +80,13 @@
             
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle4.gif" alt="Number Four"><br>
-                    <b>Bind component properties</b>
-                <p></td>
+                    <b>Wrap the entity classes JAR in a module</b>
+                    <p></td>
                 <td> 
-                    <ol>
-                        <li>Right-click a component in the Design view of the 
-                            Source Editor or in the 
-                        Inspector window, and choose a target property from the Bind menu.</li>
-                        <li>In the 
-                            <a href="csh/gui_bind_dialog.html">Binding tab of Bind dialog box</a>, 
-                        specify the source for the binding.</li>
-                        <li>In the <a href="csh/gui_bind_advanced_dialog.html">Advanced tab of Bind dialog box</a>, 
-                        specify any other customizations to the binding, if necessary. 
-                        For example, some bindings require custom converters, validators, 
-                        and code for handling unreadable or non-existent values from the 
-                        source.
-                    </ol>
+                    <ul>
+                        <li>Create a <a href="nbdocs://org.netbeans.modules.apisupport.kit/org/netbeans/modules/apisupport/project/docs/create_plugin/projectlevel_create/create_library_wrapper.html">library wrapper module project</a>.</li>
+                        
+                    </ul>
                 </td>
             </tr>
             <tr> 
@@ -109,22 +97,12 @@
             
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle5.gif" alt="Number Five"><br>
-                    <b>Generate and code actions</b>
-                <p></td>
+                    <b>Design the user interface </b>
+                    <p></td>
                 <td> 
-                    <ol>
-                        <li>Generate skeleton action methods for UI components by  
-                            right-clicking the component and choosing Set Action to 
-                        open the <a href="saf/gui_saf_action_csh.html">Set Action dialog box</a>.</li>
-                            <li>In the Action drop-down list, select Create New Action.</li>
-                            <li>Fill in details for the action, including method name, 
-                            name, tool tip text, and accelerator. Optionally, 
-                        you can also make the action run as a background task and 
-                    do other advanced configuration.</li>
-                    <li>Click OK to close the dialog box.</li>
-                        <li>In the Source Editor, type code for the actions.</li>
-               
-                    </ol>
+                    <ul>
+                        <li><a href="gui_designing.html">Create a user interface</a> and <a href="gui_addcomponent.html">add components</a> to display data retrieved from the database.</li>
+                  </ul>
                 </td>
             </tr>
             <tr> 
@@ -135,15 +113,36 @@
             
             <tr valign="top"> 
                 <td align="center"> <img src="../images/circle6.gif" alt="Number Six"><br>
+                    <b>Bind Data to user interface components</b>
+                <p></td>
+                <td> 
+                        <ul>
+                            <li><a href="gui_bind_data.html">Bind a component to your database</a>.</li>
+                        </ul>
+              </td>
+          </tr> 
+		   <tr valign="top"> 
+                <td align="center"> <img src="../images/circle7.gif" alt="Number Six"><br>
                     <b>Deploy the application</b>
                 <p></td>
                 <td> 
                         <ul>
-                            <li><a href="gui_deploying.html">Deploy standalone Java GUI Applications.</a></li>
+                            <li><a href="gui_deploying.html">Deploy Java GUI Application</a>.</li>
                         </ul>
               </td>
-          </tr>            
+          </tr>             
         </table>
+		<ul class="notes">
+		<li>For information on how to integrate a Java DB database into a NetBeans Platform application, see:
+		<p>
+		<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://platform.netbeans.org/tutorials/nbm-crud.html">
+                    <param name="text" value="<html><u>NetBeans Platform CRUD Application Tutorial</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></p>
+				</li>
+		</ul>
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>
@@ -151,7 +150,7 @@
             <dd><a href="gui_about.html">About Java GUIs</a></dd>
             <dd><a href="gui_quickref.html">GUI Builder Tasks: Quick Reference</a></dd>
             <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
-                                  
+			                                 
 
         </dl>
         

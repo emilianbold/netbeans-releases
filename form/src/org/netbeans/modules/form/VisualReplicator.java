@@ -197,7 +197,8 @@ public class VisualReplicator {
                 }
             }
             boolean restrictions = getDesignRestrictions();
-            for (String id : mapToClones.keySet()) {
+            for (Map.Entry<String,Object> entry : entries) {
+                String id = entry.getKey();
                 RADComponent rc = formModel.getMetaComponent(id);
                 if ((rc != null) && (rc.getKnownBindingProperties().length != 0)) {
                     if (restrictions) { // this is an updated view (designer)
@@ -205,6 +206,13 @@ public class VisualReplicator {
                                 rc, false, mapToClones, false);
                         // BindingDesignSupport will unbind and remove these bindings
                         // automatically if user removes a binding or whole component
+                        Object comp = entry.getValue();
+                        if (comp instanceof Component) {
+                            Component parent = ((Component)comp).getParent();
+                            if (parent != null) {
+                                parent.invalidate(); // bug #211888
+                            }
+                        }
                     } else { // this is a one-off view (preview)
                         getBindingReplicator().establishOneOffBindings(
                                 rc, false, mapToClones);

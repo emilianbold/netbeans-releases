@@ -531,17 +531,25 @@ public class ProxyLookup extends Lookup {
          * @param indexToCache 0 = allInstances, 1 = allClasses, 2 = allItems
          * @return the collection or set of the objects
          */
-        private java.util.Collection computeResult(int indexToCache, boolean callBeforeLookup) {
-            Lookup.Result[] arr = myBeforeLookup(callBeforeLookup, false);
+        private Collection computeResult(int indexToCache, boolean callBeforeLookup) {
+            Collection cachedResult = null;
+            synchronized (proxy()) {
+                Collection[] cc = getCache();
+                if (cc != null && cc != R.NO_CACHE) {
+                    cachedResult = cc[indexToCache];
+                }
+            }
+            // if caches exist, wait for finished
+            Lookup.Result[] arr = myBeforeLookup(callBeforeLookup, cachedResult != null);
             // use caches, if they exist
             synchronized (proxy()) {
                 Collection[] cc = getCache();
                 if (cc != null && cc != R.NO_CACHE) {
-                    Collection r = cc[indexToCache];
-                    if (r != null) {
-                        return r;
-                    }
+                    cachedResult = cc[indexToCache];
                 }
+            }
+            if (cachedResult != null) {
+                return cachedResult;
             }
             if (indexToCache == 1) {
                 return new LazySet(this, indexToCache, callBeforeLookup, arr);

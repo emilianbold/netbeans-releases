@@ -401,7 +401,7 @@ public class RulesManager implements FileChangeListener {
 
             if (result == null) return result;
 
-            Document doc = ctx.getInfo().getSnapshot().getSource().getDocument(false);
+            Document doc = ctx.getInfo().getSnapshot().getSource().getDocument(true);
 
             if (doc == null) return Collections.emptyList();
 

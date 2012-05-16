@@ -817,7 +817,8 @@ public final class Utils {
         }
     }
 
-    private static Map<File, Charset> fileToCharset;
+    private static final Object ENCODING_LOCK = new Object();
+    private static Map<FileObject, Charset> fileToCharset;
 
     /**
      * Retrieves the Charset for the referenceFile and associates it weakly with
@@ -829,12 +830,27 @@ public final class Utils {
      *
      */
     public static void associateEncoding(File referenceFile, File file) {
-        FileObject fo = FileUtil.toFileObject(referenceFile);
+        associateEncoding(FileUtil.toFileObject(referenceFile), FileUtil.toFileObject(file));
+    }
+    
+    /**
+     * Retrieves the Charset for the referenceFile and associates it weakly with
+     * the given file. A following getAssociatedEncoding() call for
+     * the file will then return the referenceFile-s Charset.
+     *
+     * @param referenceFile the file which charset has to be used when encoding file
+     * @param file file to be encoded with the referenceFile-s charset
+     *
+     */
+    public static void associateEncoding(FileObject refFo, FileObject fo) {
+        if(refFo == null || refFo.isFolder()) {
+            return;
+        }
         if(fo == null || fo.isFolder()) {
             return;
         }
-        Charset c = FileEncodingQuery.getEncoding(fo);
-        associateEncoding(file, c);
+        Charset c = FileEncodingQuery.getEncoding(refFo);
+        associateEncoding(fo, c);
     }
 
     /**
@@ -846,13 +862,30 @@ public final class Utils {
      *
      */
     public static void associateEncoding (File file, Charset charset) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if(fo == null) {
+            LOG.log(Level.WARNING, "associateEncoding() no file object available for {0}", file); // NOI18N
+            return;
+        }
+        associateEncoding(fo, charset);
+    }
+    
+    /**
+     * Associates a given charset weakly with
+     * the given file. A following getAssociatedEncoding() call for
+     * the file will then return the referenceFile-s Charset.
+     *
+     * @param file file to be encoded with the referenceFile-s charset
+     *
+     */
+    public static void associateEncoding (FileObject file, Charset charset) {
         if(charset == null) {
             return;
         }
-        if(fileToCharset == null) {
-            fileToCharset = new WeakHashMap<File, Charset>();
-        }
-        synchronized(fileToCharset) {
+        synchronized(ENCODING_LOCK) {
+            if(fileToCharset == null) {
+                fileToCharset = new WeakHashMap<FileObject, Charset>();
+            }
             fileToCharset.put(file, charset);
         }
     }
@@ -865,15 +898,12 @@ public final class Utils {
      */
     public static Charset getAssociatedEncoding(FileObject fo) {
         try {
-            if(fileToCharset == null || fileToCharset.isEmpty() || fo == null || fo.isFolder()) {
-                return null;
-            }
-            File file = FileUtil.toFile(fo);
-            if(file == null) {
-                return null;
-            }
-            synchronized(fileToCharset) {
-                return fileToCharset.get(file);
+            synchronized(ENCODING_LOCK) {
+                if(fileToCharset == null || fileToCharset.isEmpty() || fo == null || fo.isFolder()) {
+                    return null;
+                }
+                Charset c = fileToCharset.get(fo);
+                return c;
             }
         } catch (Throwable t) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);

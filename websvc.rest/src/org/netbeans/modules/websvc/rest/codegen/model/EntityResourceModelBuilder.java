@@ -78,11 +78,11 @@ public class EntityResourceModelBuilder {
         for (String entity : entities) {
             try {
                 EntityClassInfo info = null;
-                JavaSource js = SourceGroupSupport.getJavaSourceFromClassName(
-                        entity, project);
 
-                if (js != null) {
-                    info = new EntityClassInfo(entity, project, this, js);
+                if (SourceGroupSupport.getFileObjectFromClassName(entity, 
+                        project) != null) 
+                {
+                    info = new EntityClassInfo(entity, project, this);
                 }
                 if (info != null ){
                     allEntitiesClassInfoMap.put(entity, info);

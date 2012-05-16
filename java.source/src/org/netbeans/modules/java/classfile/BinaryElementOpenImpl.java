@@ -33,6 +33,7 @@ package org.netbeans.modules.java.classfile;
 
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -51,7 +52,7 @@ import org.openide.util.Exceptions;
 public class BinaryElementOpenImpl implements BinaryElementOpen {
 
     @Override
-    public boolean open(ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpen) {
+    public boolean open(ClasspathInfo cpInfo, final ElementHandle<? extends Element> toOpen, final AtomicBoolean cancel) {
         FileObject source = CodeGenerator.generateCode(cpInfo, toOpen);
         if (source != null) {
             final int[] pos = new int[] {-1};
@@ -59,6 +60,7 @@ public class BinaryElementOpenImpl implements BinaryElementOpen {
             try {
                 JavaSource.create(cpInfo, source).runUserActionTask(new Task<CompilationController>() {
                     @Override public void run(CompilationController parameter) throws Exception {
+                        if (cancel.get()) return ;
                         parameter.toPhase(JavaSource.Phase.RESOLVED);
 
                         Element el = toOpen.resolve(parameter);
@@ -76,7 +78,7 @@ public class BinaryElementOpenImpl implements BinaryElementOpen {
                 Exceptions.printStackTrace(ex);
             }
 
-            if (pos[0] != (-1)) {
+            if (pos[0] != (-1) && !cancel.get()) {
                 return open(source, pos[0]);
             } else {
                 return false;

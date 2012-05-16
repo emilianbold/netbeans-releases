@@ -216,5 +216,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 209950 - error: Empty function name
         performTest("bug209950.cpp", 9, 37, "bug209950.cpp", 3, 3);
     }
+
+    public void testBug211983() throws Exception {
+        // Bug 211983 - NumberFormatException: For input string: "1U"
+        performTest("bug211983.cpp", 10, 7, "bug211983.cpp", 5, 5);
+    }
     
 }

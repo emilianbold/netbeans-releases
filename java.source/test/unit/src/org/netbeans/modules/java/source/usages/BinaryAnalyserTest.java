@@ -60,7 +60,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Index;
@@ -276,13 +275,13 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     private Pair<ElementHandle<TypeElement>,Long> create (String name, long crc) {
-        return Pair.<ElementHandle<TypeElement>,Long>of(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, name),crc);
+        return Pair.<ElementHandle<TypeElement>,Long>of(ElementHandle.createTypeElementHandle(ElementKind.CLASS, name),crc);
     }
 
     private List<ElementHandle<TypeElement>> create (String... names) {
         List<ElementHandle<TypeElement>> result = new ArrayList<ElementHandle<TypeElement>>();
         for (String name : names) {
-            result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, name));
+            result.add(ElementHandle.createTypeElementHandle(ElementKind.CLASS, name));
         }
         return result;
     }

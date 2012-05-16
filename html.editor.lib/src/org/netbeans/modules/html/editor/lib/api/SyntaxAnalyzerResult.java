@@ -48,12 +48,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.lib.ElementsParserCache;
-import org.netbeans.modules.html.editor.lib.EmptyResult;
-import org.netbeans.modules.html.editor.lib.HtmlSourceVersionQuery;
+import org.netbeans.modules.html.editor.lib.*;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.XmlSyntaxTreeBuilder;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
@@ -146,7 +144,7 @@ public class SyntaxAnalyzerResult {
     }
 
     public HtmlModel getHtmlModel() {
-        return findParser().getModel(getHtmlVersion());
+        return HtmlModelFactory.getModel(getHtmlVersion());
     }
 
     /**
@@ -223,7 +221,7 @@ public class SyntaxAnalyzerResult {
                     : null;
 
             Iterator<Element> original = getElementsIterator();
-            Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+            final Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
                 @Override
                 public boolean accepts(Element node) {
                     switch (node.type()) {
@@ -274,7 +272,18 @@ public class SyntaxAnalyzerResult {
 
             //add the syntax elements to the lookup since the old html4 parser needs them
             InstanceContent content = new InstanceContent();
+            
+            //for html5 parser
             content.add(maskedAreas);
+            
+            //for SimpleXHTMLParser
+            content.add(new ElementsIteratorHandle() {
+                @Override
+                public Iterator<Element> getIterator() {
+                    return filteredIterator;
+                }
+            });
+            
             Lookup lookup = new AbstractLookup(content);
 
             justParsingStart = System.currentTimeMillis();

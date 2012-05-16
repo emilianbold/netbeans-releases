@@ -46,11 +46,11 @@ import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
-import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranContextDetector.OperatorKind;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranDiffLinkedList.DiffResult;
+import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 
 /**
  *
@@ -64,16 +64,19 @@ public class FortranReformatterImpl {
     private FortranPreprocessorFormatter preprocessorFormatter;
     private final int startOffset;
     private final int endOffset;
-    private int tabSize;
+    final int tabSize;
+    final boolean expandTabToSpaces;
     private int indentAfterLabel;
 
     FortranReformatterImpl(TokenSequence<FortranTokenId> ts, int startOffset, int endOffset, FortranCodeStyle codeStyle){
         braces = new FortranBracesStack(codeStyle);
-        tabSize = codeStyle.getTabSize();
-        if (tabSize <= 1) {
-            tabSize = 8;
+        int aTabSize = codeStyle.getTabSize();
+        if (aTabSize <= 1) {
+            aTabSize = 8;
         }
-        this.ts = new FortranContextDetector(ts, diffs, braces, tabSize);
+        tabSize = aTabSize;
+        expandTabToSpaces = codeStyle.expandTabToSpaces();
+        this.ts = new FortranContextDetector(ts, diffs, braces, tabSize, expandTabToSpaces);
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.codeStyle = codeStyle;
@@ -750,7 +753,6 @@ public class FortranReformatterImpl {
             return;
         }
         spaceBefore(previous, false);
-        return;
     }
 
     private void reformatBlockComment(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
@@ -1020,14 +1022,12 @@ public class FortranReformatterImpl {
                 }
                 spaceBefore(previous, codeStyle.spaceBeforeMethodCallParen());
                 spaceAfter(current, codeStyle.spaceWithinMethodCallParens());
-                return;
             } else if (p != null && KEYWORD_CATEGORY.equals(p.id().primaryCategory())){
                 switch (p.id()) {
                     case KW_RETURN:
                         spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
                         return;
                 }
-                return;
             } else {
                 spaceAfter(current, codeStyle.spaceWithinParens());
             }
@@ -1069,7 +1069,6 @@ public class FortranReformatterImpl {
                         return;
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens());
-                return;
             } else {
                 spaceBefore(previous, codeStyle.spaceWithinParens());
             }

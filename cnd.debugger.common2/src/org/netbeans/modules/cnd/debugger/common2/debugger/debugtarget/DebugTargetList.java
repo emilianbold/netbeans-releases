@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget;
 
-import org.openide.ErrorManager;
-import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.AbstractRecordList;
 import org.netbeans.modules.cnd.debugger.common2.utils.UserdirFile;
+import org.netbeans.modules.cnd.debugger.common2.utils.masterdetail.AbstractRecordList;
+import org.openide.ErrorManager;
 
 public class DebugTargetList extends AbstractRecordList<DebugTarget> {
 
@@ -98,7 +98,7 @@ public class DebugTargetList extends AbstractRecordList<DebugTarget> {
 	    new DebugTargetsXMLWriter(userdirFile, this);
         try {
             xw.write();
-            clearDirty();
+//            clearDirty();
         } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
         }
@@ -114,6 +114,7 @@ public class DebugTargetList extends AbstractRecordList<DebugTarget> {
     }
 
     // implement AbstractRecordList
+    @Override
     public DebugTargetList cloneList() {
 	return new DebugTargetList(this);
     }

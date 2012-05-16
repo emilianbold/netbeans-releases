@@ -54,11 +54,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.Stack;
-import java.util.TreeSet;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
@@ -795,85 +794,7 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
         }
     }
-    private final Comparator<LayoutNode> nodePositionComparator = new Comparator<LayoutNode>() {
-
-        @Override
-        public int compare(LayoutNode n1, LayoutNode n2) {
-            return n1.pos - n2.pos;
-        }
-    };
-    private final Comparator<LayoutNode> nodeProcessingDownComparator = new Comparator<LayoutNode>() {
-
-        @Override
-        public int compare(LayoutNode n1, LayoutNode n2) {
-            if (n1.vertex == null) {
-                return -1;
-            }
-            if (n2.vertex == null) {
-                return 1;
-            }
-            return n1.preds.size() - n2.preds.size();
-        }
-    };
-    private final Comparator<LayoutNode> nodeProcessingUpComparator = new Comparator<LayoutNode>() {
-
-        @Override
-        public int compare(LayoutNode n1, LayoutNode n2) {
-            if (n1.vertex == null) {
-                return -1;
-            }
-            if (n2.vertex == null) {
-                return 1;
-            }
-            return n1.succs.size() - n2.succs.size();
-        }
-    };
-
     private class AssignXCoordinates extends AlgorithmPart {
-
-        private ArrayList<Integer>[] space;
-        private ArrayList<LayoutNode>[] downProcessingOrder;
-        private ArrayList<LayoutNode>[] upProcessingOrder;
-
-        private void initialPositions() {
-            for (LayoutNode n : nodes) {
-                n.x = space[n.layer].get(n.pos);
-            }
-        }
-
-//        @Override
-//        protected void run() {
-//
-//            space = new ArrayList[layers.length];
-//            downProcessingOrder = new ArrayList[layers.length];
-//            upProcessingOrder = new ArrayList[layers.length];
-//
-//            for (int i = 0; i < layers.length; i++) {
-//                space[i] = new ArrayList<Integer>();
-//                downProcessingOrder[i] = new ArrayList<LayoutNode>();
-//                upProcessingOrder[i] = new ArrayList<LayoutNode>();
-//
-//                int curX = 0;
-//                for (LayoutNode n : layers[i]) {
-//                    space[i].add(curX);
-//                    curX += n.width + xOffset;
-//                    downProcessingOrder[i].add(n);
-//                    upProcessingOrder[i].add(n);
-//                }
-//
-//                Collections.sort(downProcessingOrder[i], nodeProcessingDownComparator);
-//                Collections.sort(upProcessingOrder[i], nodeProcessingUpComparator);
-//            }
-//
-//            initialPositions();
-//            for (int i = 0; i < SWEEP_ITERATIONS; i++) {
-//                sweepDown();
-//                sweepUp();
-//            }
-//
-//            sweepDown();
-//            sweepUp();
-//        }
 
         @Override
         protected void run() {
@@ -904,113 +825,6 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
             }
         }
 
-
-
-        private int calculateOptimalDown(LayoutNode n) {
-
-            List<Integer> values = new ArrayList<Integer>();
-            if (n.preds.isEmpty()) {
-                return n.x;
-            }
-            for (LayoutEdge e : n.preds) {
-                int cur = e.from.x + e.relativeFrom - e.relativeTo;
-                values.add(cur);
-            }
-            return median(values);
-        }
-
-        private int calculateOptimalUp(LayoutNode n) {
-
-            List<Integer> values = new ArrayList<Integer>();
-            if (n.succs.isEmpty()) {
-                return n.x;
-            }
-            for (LayoutEdge e : n.succs) {
-                int cur = e.to.x + e.relativeTo - e.relativeFrom;
-                values.add(cur);
-            }
-            return median(values);
-        }
-
-        private int median(List<Integer> values) {
-            Collections.sort(values);
-            if (values.size() % 2 == 0) {
-                return (values.get(values.size() / 2 - 1) + values.get(values.size() / 2)) / 2;
-            } else {
-                return values.get(values.size() / 2);
-            }
-        }
-
-        private void sweepUp() {
-            for (int i = layers.length - 2; i >= 0; i--) {
-                NodeRow r = new NodeRow(space[i]);
-                for (LayoutNode n : upProcessingOrder[i]) {
-                    int optimal = calculateOptimalUp(n);
-                    r.insert(n, optimal);
-                }
-            }
-        }
-
-        private void sweepDown() {
-            for (int i = 1; i < layers.length; i++) {
-                NodeRow r = new NodeRow(space[i]);
-                for (LayoutNode n : downProcessingOrder[i]) {
-                    int optimal = calculateOptimalDown(n);
-                    r.insert(n, optimal);
-                }
-            }
-        }
-    }
-
-    private class NodeRow {
-
-        private TreeSet<LayoutNode> treeSet;
-        private ArrayList<Integer> space;
-
-        public NodeRow(ArrayList<Integer> space) {
-            treeSet = new TreeSet<LayoutNode>(nodePositionComparator);
-            this.space = space;
-        }
-
-        public int offset(LayoutNode n1, LayoutNode n2) {
-            int v1 = space.get(n1.pos) + n1.width;
-            int v2 = space.get(n2.pos);
-            return v2 - v1;
-        }
-
-        public void insert(LayoutNode n, int pos) {
-
-            SortedSet<LayoutNode> headSet = treeSet.headSet(n);
-            SortedSet<LayoutNode> tailSet = treeSet.tailSet(n);
-
-            LayoutNode leftNeighbor = null;
-            int minX = Integer.MIN_VALUE;
-            if (!headSet.isEmpty()) {
-                leftNeighbor = headSet.last();
-                minX = leftNeighbor.x + leftNeighbor.width + offset(leftNeighbor, n);
-            }
-
-            LayoutNode rightNeighbor = null;
-            int maxX = Integer.MAX_VALUE;
-            if (!tailSet.isEmpty()) {
-                rightNeighbor = tailSet.first();
-                maxX = rightNeighbor.x - offset(n, rightNeighbor) - n.width;
-            }
-
-            assert minX <= maxX;
-
-            if (pos >= minX && pos <= maxX) {
-                n.x = pos;
-            } else if (Math.abs((long) pos - (long) minX) < Math.abs((long) pos - (long) maxX)) {
-                assert minX != Integer.MIN_VALUE;
-                n.x = minX;
-            } else {
-                assert maxX != Integer.MAX_VALUE;
-                n.x = maxX;
-            }
-
-            treeSet.add(n);
-        }
     }
 
     private class AssignYCoordinates extends AlgorithmPart {
@@ -1107,14 +921,14 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             int minX = Integer.MAX_VALUE;
             int minY = Integer.MAX_VALUE;
-            for (N v : vertexPositions.keySet()) {
-                Point p = vertexPositions.get(v);
+            for (Map.Entry<N, Point> entry : vertexPositions.entrySet()) {
+                Point p = entry.getValue();
                 minX = Math.min(minX, p.x);
                 minY = Math.min(minY, p.y);
             }
 
-            for (E l : linkPositions.keySet()) {
-                List<Point> points = linkPositions.get(l);
+            for (Map.Entry<E, List<Point>> entry : linkPositions.entrySet()) {
+                List<Point> points = entry.getValue();
                 for (Point p : points) {
                     if (p != null) {
                         minX = Math.min(minX, p.x);
@@ -1124,11 +938,11 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
             }
 
-            for (N v : vertexPositions.keySet()) {
-                Point p = vertexPositions.get(v);
+            for (Map.Entry<N, Point> entry : vertexPositions.entrySet()) {
+                Point p = entry.getValue();
                 p.x -= minX;
                 p.y -= minY;
-                Widget w = graph.getScene().findWidget(v);
+                Widget w = graph.getScene().findWidget(entry.getKey());
                 if (animate) {
                     graph.getScene().getSceneAnimator().animatePreferredLocation(w, p);
                 } else {
@@ -1136,8 +950,8 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 }
             }
 
-            for (E l : linkPositions.keySet()) {
-                List<Point> points = linkPositions.get(l);
+            for (Map.Entry<E, List<Point>> entry : linkPositions.entrySet()) {
+                List<Point> points = entry.getValue();
 
                 for (Point p : points) {
                     if (p != null) {
@@ -1164,7 +978,7 @@ public class HorizontalHierarchicalLayout<N, E> extends GraphLayout<N, E> {
                     points = invertedPoints;
                 }
 
-                Widget w = graph.getScene().findWidget(l);
+                Widget w = graph.getScene().findWidget(entry.getKey());
                 if (w instanceof ConnectionWidget) {
                     ConnectionWidget cw = (ConnectionWidget) w;
                     cw.setControlPoints(points, true);

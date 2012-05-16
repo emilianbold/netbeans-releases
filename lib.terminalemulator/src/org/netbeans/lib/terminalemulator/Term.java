@@ -247,7 +247,7 @@ public class Term extends JComponent implements Accessible {
 
     private State st = new State();
     private Sel sel = new Sel(this, st);
-    private Ops ops = new OpsImpl();
+    private transient Ops ops = new OpsImpl();
     private int top_margin = 0;		// 0 means default (see topMargin())
     private int bot_margin = 0;
     // Stuff to control how often RegionManager.cull() gets called
@@ -421,9 +421,9 @@ public class Term extends JComponent implements Accessible {
     }
     // head is closer to Term
     // pushes extend tail
-    private TermStream base_stream = new BaseTermStream();
-    private TermStream dce_end = base_stream;
-    private TermStream dte_end = base_stream;
+    private transient TermStream base_stream = new BaseTermStream();
+    private transient TermStream dce_end = base_stream;
+    private transient TermStream dte_end = base_stream;
 
     /**
      *
@@ -1349,7 +1349,7 @@ public class Term extends JComponent implements Accessible {
 
         } else if (delta_row < 0) {
             // we shrunk
-            int orows = st.rows - delta_row;	// reconstruct orows
+            // int orows = st.rows - delta_row;	// reconstruct orows
 
             // First attempt to remove lines from the bottom of the buffer.
             // This comes into play mostly when you have just started Term
@@ -1669,7 +1669,7 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
-                JScrollBar sb = (JScrollBar) e.getAdjustable();
+                // JScrollBar sb = (JScrollBar) e.getAdjustable();
                 switch (e.getAdjustmentType()) {
                     case AdjustmentEvent.TRACK:
 
@@ -1716,7 +1716,7 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void adjustmentValueChanged(AdjustmentEvent e) {
-                JScrollBar sb = (JScrollBar) e.getAdjustable();
+                // JScrollBar sb = (JScrollBar) e.getAdjustable();
                 switch (e.getAdjustmentType()) {
                     case AdjustmentEvent.TRACK:
 
@@ -1945,7 +1945,7 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void mouseClicked(MouseEvent e) {
-                BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
+                // BCoord bcoord = toBufCoords(toViewCoord(e.getPoint()));
 
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     /* DEBUG
@@ -4636,7 +4636,8 @@ public class Term extends JComponent implements Accessible {
     public Interp getInterp() {
         return interp;
     }
-    private Interp interp = new InterpDumb(ops);	// used to InterpANSI
+
+    private transient Interp interp = new InterpDumb(ops);	// used to InterpANSI
 
     /**
      * Set how many lines of history will be available.

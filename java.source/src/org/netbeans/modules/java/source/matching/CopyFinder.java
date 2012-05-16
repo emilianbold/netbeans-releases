@@ -71,6 +71,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
@@ -326,19 +327,25 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return false;
         }
 
+        String treeName = null;
+        
         if (p != null && p.getLeaf().getKind() == Kind.IDENTIFIER) {
-            String ident = ((IdentifierTree) p.getLeaf()).getName().toString();
-
-            if (ident.startsWith("$") && options.contains(Options.ALLOW_VARIABLES_IN_PATTERN)) {
-                if (bindState.variables2Names.containsKey(ident)) {
+            treeName = ((IdentifierTree) p.getLeaf()).getName().toString();
+        } else if (p != null && p.getLeaf().getKind() == Kind.TYPE_PARAMETER) {
+            treeName = ((TypeParameterTree) p.getLeaf()).getName().toString();
+        }
+        
+        if (treeName != null) {
+            if (treeName.startsWith("$") && options.contains(Options.ALLOW_VARIABLES_IN_PATTERN)) {
+                if (bindState.variables2Names.containsKey(treeName)) {
                     if (node.getKind() == Kind.IDENTIFIER)
-                        return ((IdentifierTree) node).getName().toString().equals(bindState.variables2Names.get(ident));
+                        return ((IdentifierTree) node).getName().toString().equals(bindState.variables2Names.get(treeName));
                     else
                         return false; //correct?
                 }
 
                 TreePath currentPath = new TreePath(getCurrentPath(), node);
-                TypeMirror designed = designedTypeHack != null ? designedTypeHack.get(ident) : null;//info.getTrees().getTypeMirror(p);
+                TypeMirror designed = designedTypeHack != null ? designedTypeHack.get(treeName) : null;//info.getTrees().getTypeMirror(p);
 
                 boolean bind;
 
@@ -354,10 +361,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 }
 
                 if (bind) {
-                    TreePath original = bindState.variables.get(ident);
+                    TreePath original = bindState.variables.get(treeName);
 
                     if (original == null) {
-                        bindState.variables.put(ident, currentPath);
+                        bindState.variables.put(treeName, currentPath);
                         return true;
                     } else {
                         boolean oldAllowGoDeeper = allowGoDeeper;
@@ -1638,6 +1645,14 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         if (t.getKind() == Kind.IDENTIFIER) {
             IdentifierTree identTree = (IdentifierTree) t;
             String name = identTree.getName().toString();
+
+            if (name.startsWith("$")) {
+                return name;
+            }
+        }
+        
+        if (t.getKind() == Kind.TYPE_PARAMETER) {
+            String name = ((TypeParameterTree) t).getName().toString();
 
             if (name.startsWith("$")) {
                 return name;

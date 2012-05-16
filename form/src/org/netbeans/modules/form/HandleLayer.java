@@ -417,13 +417,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
         if (layoutDesigner != null) {
             Component topComp = formDesigner.getTopDesignComponentView();
-            Point convertPoint = convertPointFromComponent(0, 0, topComp);
-            g.translate(convertPoint.x, convertPoint.y);
-            Color oldColor = g.getColor();
-            g.setColor(formSettings.getGuidingLineColor());
-            layoutDesigner.paintSelection(g);
-            g.setColor(oldColor);
-            g.translate(-convertPoint.x, -convertPoint.y);
+            if (topComp != null) {
+                Point convertPoint = convertPointFromComponent(0, 0, topComp);
+                g.translate(convertPoint.x, convertPoint.y);
+                Color oldColor = g.getColor();
+                g.setColor(formSettings.getGuidingLineColor());
+                layoutDesigner.paintSelection(g);
+                g.setColor(oldColor);
+                g.translate(-convertPoint.x, -convertPoint.y);
+            }
         }
     }
 
@@ -2097,14 +2099,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
-                if ((item.getComponentClassName().indexOf('.') == -1) // Issue 79573
-                    && (!FormJavaSource.isInDefaultPackage(getFormModel()))) {
-                    String message = FormUtils.getBundleString("MSG_DefaultPackageBean"); // NOI18N
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(nd);
-                    formDesigner.toggleSelectionMode();
-                    return;
-                }
                 draggedComponent = new NewComponentDrag( item );
             }
             draggedComponent.move(e);
@@ -2335,24 +2329,28 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             } else {
                 comps = cont.getComponents();
             }
+            boolean contains = false;
             for (int i=0; i < comps.length; i++) {
                 Component comp = comps[i];
-                Rectangle bounds = convertRectangleFromComponent(
-                                       comps[i].getBounds(), cont);
-                boolean intersects = selRect.intersects(bounds);
-
-                RADComponent metacomp = formDesigner.getMetaComponent(comp);
-                if (metacomp != null && intersects) {
-                    toSelect.add(metacomp);
+                Rectangle bounds = convertRectangleFromComponent(comp.getBounds(), cont);
+                if (selRect.intersects(bounds)) {
+                    if (selRect.contains(bounds)) {
+                        contains = true;
+                    }
+                    RADComponent metacomp = formDesigner.getMetaComponent(comp);
+                    if (metacomp != null) {
+                        toSelect.add(metacomp);
+                    }
+                    if (comp instanceof Container) {
+                        subContainers.add(comp);
+                    }
                 }
-
-                if (intersects && comp instanceof Container)
-                    subContainers.add(comp);
             }
 
             if (toSelect.size() > 1
-                    || (toSelect.size() == 1 && subContainers.isEmpty()))
+                    || (toSelect.size() == 1 && (subContainers.isEmpty() || contains))) {
                 return true;
+            }
 
             RADComponent theOnlyOne = toSelect.size() == 1 ? toSelect.get(0) : null;
 

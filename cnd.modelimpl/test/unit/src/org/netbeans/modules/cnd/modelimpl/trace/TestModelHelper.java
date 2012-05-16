@@ -67,8 +67,8 @@ public final class TestModelHelper {
     }
     
     public void initParsedProject(String projectRoot, 
-            List<String> sysIncludes, List<String> usrIncludes) throws Exception {
-        traceModel.setIncludePaths(sysIncludes, usrIncludes);
+            List<String> sysIncludes, List<String> usrIncludes, List<String> libProjectsPaths) throws Exception {
+        traceModel.setIncludePaths(sysIncludes, usrIncludes, libProjectsPaths);
         traceModel.test(new String[]{projectRoot}, System.out, System.err);
     } 
     

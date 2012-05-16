@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
  */
 public class AstRendererException extends Exception {
     
-    public static AstRendererException createAstRendererException(FileImpl file, AST ast, int offset, String message) {
+    public static AstRendererException throwAstRendererException(FileImpl file, AST ast, int offset, String message) throws AstRendererException {
         StringBuilder buf = new StringBuilder();
         buf.append('\n').append(file.getAbsolutePath()); //NOI18N
         if (offset != 0) {
@@ -62,7 +62,7 @@ public class AstRendererException extends Exception {
             buf.append(':').append(lineColumn[0]); //NOI18N
             buf.append(':').append(lineColumn[1]); //NOI18N
             buf.append(": error: ").append(message); //NOI18N
-            return new AstRendererException(buf.toString());
+            throw new AstRendererException(buf.toString());
         } else if (ast != null) {
             offset = getStartOffset(ast);
             if (offset == -1) {
@@ -73,11 +73,11 @@ public class AstRendererException extends Exception {
                 buf.append(':').append(lineColumn[0]); //NOI18N
                 buf.append(':').append(lineColumn[1]); //NOI18N
                 buf.append(": error: ").append(message); //NOI18N
-                return new AstRendererException(buf.toString());
+                throw new AstRendererException(buf.toString());
             }
         }
         buf.append(": undefined position : error: ").append(message); //NOI18N
-        return new AstRendererException(buf.toString());
+        throw new AstRendererException(buf.toString());
     }
     
     private AstRendererException(String message){

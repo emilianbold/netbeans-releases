@@ -87,4 +87,26 @@ public class FontsModuleTest extends CssModuleTestBase {
         
     }
     
+    public void testFontFamily() {
+        //test quoted value
+        assertPropertyValues("font-family", "\"Times New Roman\"", "'Times New Roman'");
+        
+        //more quoted values
+        assertPropertyValues("font-family", "\"Times New Roman\", \"My Cool Font Family\"");
+        //mixed quoted and generic
+        assertPropertyValues("font-family", "\"Times New Roman\", Helvetica, Verdana, \"My Cool Font Family\"");
+        
+        //test unquoted family name - it is recommened so the value is quoted, but not forbidden!
+        //http://www.w3.org/TR/css3-fonts/#descdef-font-family
+        
+        assertPropertyValues("font-family", "Times New Roman");
+        assertPropertyValues("font-family", "Times New Roman, My Cool Font Family");
+        
+        //test mixed
+        assertPropertyValues("font-family", "Times New Roman");
+        assertPropertyValues("font-family", "Times New Roman, Helvetica");
+        assertPropertyValues("font-family", "Times New Roman, Helvetica, \"My Cool Font Family\"");
+        
+    }
+    
 }

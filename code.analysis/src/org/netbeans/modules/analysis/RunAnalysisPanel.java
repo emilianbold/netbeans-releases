@@ -65,9 +65,11 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -75,6 +77,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.progress.ProgressHandle;
@@ -105,12 +109,13 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author lahvac
  */
-public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
+public final class RunAnalysisPanel extends javax.swing.JPanel implements LookupListener {
 
     private static final String COMBO_PROTOTYPE = "999999999999999999999999999999999999999999999999999999999999";
     private final JPanel progress;
@@ -118,8 +123,14 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     private       Collection<? extends AnalyzerFactory> analyzers;
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
+    private final JButton runAnalysis;
 
-    public RunAnalysisPanel(ProgressHandle handle, Lookup context) {
+    public RunAnalysisPanel(ProgressHandle handle, Lookup context, JButton runAnalysis) {
+        this(handle, context, runAnalysis, null);
+    }
+    
+    public RunAnalysisPanel(ProgressHandle handle, Lookup context, JButton runAnalysis, DialogState state) {
+        this.runAnalysis = runAnalysis;
         this.analyzersResult = Lookup.getDefault().lookupResult(AnalyzerFactory.class);
         this.analyzersResult.addLookupListener(this);
         
@@ -220,10 +231,17 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         add(progress, gridBagConstraints);
         ((CardLayout) progress.getLayout()).show(progress, "empty");
 
-        updateConfigurations(1, 2);//XXX: the values should be kept across invocations of the dialog
+        if (state == null) state = DialogState.load();
+        updateConfigurations(state);
         updateEnableDisable();
 
         setBorder(new EmptyBorder(12, 12, 12, 12));
+        
+        ConfigurationsManager.getDefault().addChangeListener(new ChangeListener() {
+            @Override public void stateChanged(ChangeEvent e) {
+                resultChanged(null);
+            }
+        });
     }
 
     void started() {
@@ -248,34 +266,39 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         }
     }
 
-    private void updateConfigurations(int configurationComboPreselectIndex, int inspectionComboPreselectIndex) {
+    public void updateConfigurations(DialogState state) {
         analyzers = analyzersResult.allInstances();
         
+        Object selectedConfiguration = null;
         DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
         configurationModel.addElement("Predefined");
         configurationModel.addElement(null);
-
+        
         for (AnalyzerFactory analyzer : analyzers) {
+            if (SPIAccessor.ACCESSOR.getAnalyzerId(analyzer).equals(state.selectedAnalyzer)) {
+                selectedConfiguration = analyzer;
+            }
             configurationModel.addElement(analyzer);
         }
 
         configurationModel.addElement("Custom");
 
-        if (!RunAnalysis.readConfigurations().iterator().hasNext()) {
-            RunAnalysis.getConfigurationSettingsRoot("default").put("displayName", "Default");
-        }
-
-        for (Configuration c : RunAnalysis.readConfigurations()) {
+        for (Configuration c : ConfigurationsManager.getDefault().getConfigurations()) {
+            if (c.id().equals(state.selectedConfiguration)) {
+                selectedConfiguration = c;
+            }
             configurationModel.addElement(c);
         }
 
         configurationCombo.setModel(configurationModel);
-        configurationCombo.setSelectedIndex(configurationComboPreselectIndex < configurationModel.getSize() ? configurationComboPreselectIndex : 1);
+        configurationCombo.setSelectedItem(selectedConfiguration);
 
-        configurationRadio.setSelected(true);
+        configurationRadio.setSelected(state.configurationsSelected);
         configurationCombo.setRenderer(new ConfigurationRenderer(true));
 
         DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
+        AnalyzerAndWarning firstInspection = null;
+        AnalyzerAndWarning preselectInspection = null;
 
         for (AnalyzerFactory a : analyzers) {
             inspectionModel.addElement(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a));
@@ -304,13 +327,19 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
                     AnalyzerAndWarning aaw = new AnalyzerAndWarning(a, wd);
                     inspectionModel.addElement(aaw);
                     warningId2Description.put(SPIAccessor.ACCESSOR.getWarningId(wd), aaw);
+                    
+                    if (firstInspection == null) firstInspection = aaw;
+                    if (SPIAccessor.ACCESSOR.getWarningId(wd).equals(state.selectedInspection)) {
+                        preselectInspection = aaw;
+                    }
                 }
             }
         }
 
         inspectionCombo.setModel(inspectionModel);
         inspectionCombo.setRenderer(new InspectionRenderer());
-        inspectionCombo.setSelectedIndex(inspectionComboPreselectIndex < inspectionModel.getSize() ? inspectionComboPreselectIndex : 0);
+        inspectionCombo.setSelectedItem(preselectInspection != null ? preselectInspection : firstInspection);
+        singleInspectionRadio.setSelected(!state.configurationsSelected);
 
         updatePlugins();
     }
@@ -326,17 +355,22 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
 
         Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, null, null, -1, -1);
         Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
+        boolean someOk = false;
 
         for (AnalyzerFactory a : toRun) {
-            plugins.addAll(a.requiredPlugins(ctx));
+            Collection<? extends MissingPlugin> req = a.requiredPlugins(ctx);
+            plugins.addAll(req);
+            someOk |= req.isEmpty();
         }
 
         if (plugins.isEmpty()) {
             ((CardLayout) progress.getLayout()).show(progress, "empty");
         } else {
-            requiredPlugins.setRequiredPlugins(plugins);
+            requiredPlugins.setRequiredPlugins(plugins, !someOk);
             ((CardLayout) progress.getLayout()).show(progress, "plugins");
         }
+        
+        runAnalysis.setEnabled(someOk);
     }
 
     public Scope getSelectedScope(AtomicBoolean cancel) {
@@ -348,11 +382,11 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         return (AnalyzerFactory) configurationCombo.getSelectedItem();
     }
 
-    public String getConfiguration() {
-        if (inspectionCombo.isEnabled()) return "internal-temporary";
+    public Configuration getConfiguration() {
+        if (inspectionCombo.isEnabled()) return ConfigurationsManager.getDefault().getTemporaryConfiguration();
         Object selected = configurationCombo.getSelectedItem();
 
-        if (selected instanceof Configuration) return ((Configuration) selected).id();
+        if (selected instanceof Configuration) return (Configuration) selected;
         else return null;
     }
 
@@ -558,9 +592,18 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
     public void resultChanged(LookupEvent ev) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
-                updateConfigurations(configurationCombo.getSelectedIndex(), inspectionCombo.getSelectedIndex());
+                updateConfigurations(getDialogState());
             }
         });
+    }
+    
+    public DialogState getDialogState() {
+        Object selectedConfiguration = configurationCombo.getSelectedItem();
+        Object selectedInspection = inspectionCombo.getSelectedItem();
+        return new DialogState(configurationRadio.isSelected(),
+                               selectedConfiguration instanceof AnalyzerFactory ? SPIAccessor.ACCESSOR.getAnalyzerId((AnalyzerFactory) selectedConfiguration) : null,
+                               selectedConfiguration instanceof Configuration ? ((Configuration) selectedConfiguration).id() : null,
+                               selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd) : null);
     }
 
     public static final class ConfigurationRenderer extends DefaultListCellRenderer {
@@ -784,6 +827,46 @@ public class RunAnalysisPanel extends javax.swing.JPanel implements LookupListen
         public AnalyzerAndWarning(AnalyzerFactory analyzer, WarningDescription wd) {
             this.analyzer = analyzer;
             this.wd = wd;
+        }
+    }
+    
+    public static final class DialogState {
+        private final boolean configurationsSelected;
+        private final String  selectedAnalyzer;
+        private final String  selectedConfiguration;
+        private final String  selectedInspection;
+
+        private DialogState(boolean configurationsSelected, String selectedAnalyzer, String selectedConfiguration, String selectedInspection) {
+            this.configurationsSelected = configurationsSelected;
+            this.selectedAnalyzer = selectedAnalyzer;
+            this.selectedConfiguration = selectedConfiguration;
+            this.selectedInspection = selectedInspection;
+        }
+        
+        public void save() {
+            Preferences prefs = NbPreferences.forModule(RunAnalysisPanel.class).node("RunAnalysisPanel");
+            
+            prefs.putBoolean("configurationsSelected", configurationsSelected);
+            if (selectedAnalyzer != null)
+                prefs.put("selectedAnalyzer", selectedAnalyzer);
+            else
+                prefs.remove("selectedAnalyzer");
+            if (selectedConfiguration != null)
+                prefs.put("selectedConfiguration", selectedConfiguration);
+            else
+                prefs.remove("selectedConfiguration");
+            if (selectedInspection != null)
+                prefs.put("selectedInspection", selectedInspection);
+            else
+                prefs.remove("selectedInspection");
+        }
+        
+        private static DialogState load() {
+            Preferences prefs = NbPreferences.forModule(RunAnalysisPanel.class).node("RunAnalysisPanel");
+            return new DialogState(prefs.getBoolean("configurationsSelected", true),
+                                   prefs.get("selectedAnalyzer", null),
+                                   prefs.get("selectedConfiguration", null),
+                                   prefs.get("selectedInspection", null));
         }
     }
 }

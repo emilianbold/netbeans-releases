@@ -82,14 +82,12 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  * 
  * @author Alexander Simon
  */
 public class CreateDependencies implements PropertyChangeListener {
-    private static final boolean TRACE = true;
     private static final RequestProcessor RP = new RequestProcessor(ImportExecutable.class.getName(), 1);
     private final Project mainProject;
     private final List<String> dependencies;
@@ -235,7 +233,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 }
                 DiscoveryManagerImpl.saveMakeConfigurationDescriptor(mainProject);
                 for(Project aProject : projects) {
-                    String executable = null;
+                    String executable;
                     if (createdProjects.containsKey(aProject)){
                         executable = createdProjects.get(aProject);
                         createdProjects.remove(aProject);
@@ -267,11 +265,11 @@ public class CreateDependencies implements PropertyChangeListener {
 
     public void process(final DiscoveryExtension extension, final Project lastSelectedProject, final Map<String, Object> map){
         ImportExecutable.switchModel(false, lastSelectedProject);
-        Task post = RP.post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
+                ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportExecutable.class, "ImportExecutable.Progress")); // NOI18N
                 progress.start();
                 try {
                     ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -284,7 +282,7 @@ public class CreateDependencies implements PropertyChangeListener {
                                 extension.apply(map, lastSelectedProject);
                                 DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
                             } catch (IOException ex) {
-                                ex.printStackTrace();
+                                ex.printStackTrace(System.err);
                             }
                         }
                     }

@@ -150,7 +150,7 @@ public abstract class Children extends Object {
         synchronized (Children.class) {
             if (getEntrySupport() == null) {
                 LOG.finer("Initializing entrySupport");
-                EntrySupport es = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
+                EntrySupport es = lazySupport ? new EntrySupportLazy(this) : new EntrySupportDefault(this);
                 setEntrySupport(es);
                 postInitializeEntrySupport(es);
             }
@@ -1394,6 +1394,7 @@ public abstract class Children extends Object {
                     nodesEntry = null;
                 } else {
                     nodesEntry = createNodesEntry();
+                    entries = new ArrayList<Entry>(entries);
                     entries.add(before ? 0 : entries.size(), nodesEntry);
                 }
 

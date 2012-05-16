@@ -477,7 +477,7 @@ public final class ColorModel {
                 exampleMimeType = mimeType;
             }
             
-            if (exampleFile != null) {
+            if (exampleFile != null && exampleFile.isValid()) {
                 StringBuilder sb = new StringBuilder((int)exampleFile.getSize());
                 
                 try {
@@ -497,6 +497,9 @@ public final class ColorModel {
                 
                 return new String [] { sb.toString(), exampleMimeType };
             } else {
+                if(exampleFile != null && !exampleFile.isValid()) {
+                    LOG.log(Level.WARNING, "Font & colors preview example is invalid " + exampleFile); //NOI18N
+                }
                 return new String [] { "", "text/plain" }; //NOI18N
             }            
         }

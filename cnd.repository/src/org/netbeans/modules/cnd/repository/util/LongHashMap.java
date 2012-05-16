@@ -43,7 +43,15 @@
  */
 package org.netbeans.modules.cnd.repository.util;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Hash table based implementation of the <tt>Map</tt> interface.  This
@@ -249,7 +257,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
      * been inserted.  (In the absence of this method, readObject would
      * require explicit knowledge of subclasses.)
      */
-    void init() {
+    private void init() {
     }
     /**
      * Value representing null keys inside tables.
@@ -665,16 +673,16 @@ public class LongHashMap<K> //extends AbstractMap<K>
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Map.Entry)) {
+            if (!(o instanceof Entry)) {
                 return false;
             }
-            Map.Entry e = (Map.Entry) o;
+            Entry e = (Entry) o;
             Object k1 = getKey();
             Object k2 = e.getKey();
             if (k1 == k2 || (k1 != null && k1.equals(k2))) {
-                Object v1 = getValue();
-                Object v2 = e.getValue();
-                if (v1 == v2 || (v1 != null && v1.equals(v2))) {
+                long v1 = getValue();
+                long v2 = e.getValue();
+                if (v1 == v2) {
                     return true;
                 }
             }

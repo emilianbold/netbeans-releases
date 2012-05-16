@@ -96,6 +96,7 @@ public class SettingsComponentFactoryImpl implements SettingsComponentFactory {
         }
     }
 
+    @Override
     public SettingsComponent create(Element element, SettingsComponent context) {
         // return new SCAComponentCreateVisitor().create(element, context);
         QName qName = getQName(element, (SettingsComponentImpl)context);
@@ -111,6 +112,7 @@ public class SettingsComponentFactoryImpl implements SettingsComponentFactory {
         }
     }
     
+    @Override
     public SettingsComponent create(SettingsComponent context, QName qName) {
        String prefix = qName.getPrefix();
        if (prefix == null || prefix.length() == 0) {
@@ -124,72 +126,89 @@ public class SettingsComponentFactoryImpl implements SettingsComponentFactory {
        return create(factory, element, context);
     }
     
+    @Override
     public Settings createSettings() {
         return new SettingsImpl(model);
     }
 
 
+    @Override
     public Repository createRepository() {
         return new RepositoryImpl(model, false);
     }
 
+    @Override
     public Repository createPluginRepository() {
         return new RepositoryImpl(model, true);
     }
 
+    @Override
     public RepositoryPolicy createReleaseRepositoryPolicy() {
         return new RepositoryPolicyImpl(model, model.getSettingsQNames().RELEASES);
     }
 
+    @Override
     public RepositoryPolicy createSnapshotRepositoryPolicy() {
         return new RepositoryPolicyImpl(model, model.getSettingsQNames().SNAPSHOTS);
     }
 
 
+    @Override
     public Profile createProfile() {
         return new ProfileImpl(model);
     }
 
+    @Override
     public Activation createActivation() {
         return new ActivationImpl(model);
     }
 
+    @Override
     public ActivationProperty createActivationProperty() {
         return new ActivationPropertyImpl(model);
     }
 
+    @Override
     public ActivationOS createActivationOS() {
         return new ActivationOSImpl(model);
     }
 
+    @Override
     public ActivationFile createActivationFile() {
         return new ActivationFileImpl(model);
     }
 
+    @Override
     public ActivationCustom createActivationCustom() {
         return new ActivationCustomImpl(model);
     }
 
+    @Override
     public Properties createProperties() {
         return new PropertiesImpl(model);
     }
 
+    @Override
     public SettingsExtensibilityElement createSettingsExtensibilityElement(QName name) {
         return new SettingsExtensibilityElementBase(model, name);
     }
 
+    @Override
     public Configuration createConfiguration() {
         return new ConfigurationImpl(model);
     }
 
+    @Override
     public Mirror createMirror() {
         return new MirrorImpl(model);
     }
 
+    @Override
     public Proxy createProxy() {
         return new ProxyImpl(model);
     }
 
+    @Override
     public Server createServer() {
         return new ServerImpl(model);
     }

@@ -224,7 +224,7 @@ public class TrieDictionary implements Dictionary {
         return -1;
     }
 
-    private static final int CURRENT_TRIE_DICTIONARY_VERSION = 1;
+    private static final int CURRENT_TRIE_DICTIONARY_VERSION = 2;
 
     public static Dictionary getDictionary(String suffix, List<URL> sources) throws IOException {
         File trie = Places.getCacheSubfile("dict/dictionary" + suffix + ".trie" + CURRENT_TRIE_DICTIONARY_VERSION);
@@ -484,22 +484,27 @@ public class TrieDictionary implements Dictionary {
         public void run() {
             trie.getParentFile().mkdirs();
             trie.delete();
-
-            boolean done = false;
-
+            
+            File temp = new File(trie.getParentFile(), "dict.temp");
+            
+            temp.delete();
+            
             try {
-                ByteArray array = new ByteArray(trie);
+                ByteArray array = new ByteArray(temp);
 
                 constructTrie(array, sources);
                 array.close();
-                done = true;
-                delegate.set(new TrieDictionary(trie));
+                temp.renameTo(trie);
+                if (trie.canRead()) {
+                    delegate.set(new TrieDictionary(trie));
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 workingTask.set(null);
-                if (!done) {
-                    trie.delete();
+                if (temp.exists()) {
+                    LOG.log(Level.INFO, "Something went wrong during dictionary construction, the temporary file still exists - deleting.");
+                    temp.delete();
                 }
             }
         }
