@@ -132,6 +132,7 @@ public class ProfileGenerator implements CodeGenerator {
             Profile prof = model.getProject().findProfileById(id);
             boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
             if (prof == null) {
+                int newPos = -1;
                 try {
                     if (model.startTransaction()) {
                         prof = model.getFactory().createProfile();
@@ -191,6 +192,7 @@ public class ProfileGenerator implements CodeGenerator {
                             }
                         }
                         model.getProject().addProfile(prof);
+                        newPos = prof.getModel().getAccess().findPosition(prof.getPeer());
                     }
                 } finally {
                     try {
@@ -202,8 +204,9 @@ public class ProfileGenerator implements CodeGenerator {
                                 StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
                     }
                 }
-                int pos = prof.getModel().getAccess().findPosition(prof.getPeer());
-                component.setCaretPosition(pos);
+                if (newPos != -1) {
+                    component.setCaretPosition(newPos);
+                }
             }
         }
     }

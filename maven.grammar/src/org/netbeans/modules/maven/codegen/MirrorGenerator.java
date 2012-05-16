@@ -120,6 +120,8 @@ public class MirrorGenerator implements CodeGenerator {
         if (ret == DialogDescriptor.OK_OPTION) {
             String id = panel.getMirrorId();
             Mirror mirror = model.getSettings().findMirrorById(id);
+            int newPos = -1;
+            
             if (mirror == null) {
                 try {
                     if (model.startTransaction()) {
@@ -128,6 +130,7 @@ public class MirrorGenerator implements CodeGenerator {
                         mirror.setUrl(panel.getMirrorUrl());
                         mirror.setMirrorOf(panel.getMirrorOf());
                         model.getSettings().addMirror(mirror);
+                        newPos = mirror.getModel().getAccess().findPosition(mirror.getPeer());
                     }
                 } finally {
                     try {
@@ -139,8 +142,9 @@ public class MirrorGenerator implements CodeGenerator {
                                 StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
                     }
                 }
-                int pos = mirror.getModel().getAccess().findPosition(mirror.getPeer());
-                component.setCaretPosition(pos);
+                if (newPos != -1) {
+                    component.setCaretPosition(newPos);
+                }
             }
         }
     }
