@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,12 +44,12 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import java.util.List;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
+import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 
@@ -106,17 +106,19 @@ public abstract class UpdateElementImpl extends Object {
     public abstract boolean isEnabled ();
 
     public abstract String getLicence ();
+    public abstract String getLicenseId();
     
     public abstract UpdateManager.TYPE getType ();
     
     public abstract boolean isAutoload ();
     public abstract boolean isEager ();
     public abstract boolean isFixed ();
+    public abstract boolean isPreferredUpdate();
     
    // XXX: try to rid of this
     public abstract List<ModuleInfo> getModuleInfos ();
     
     // XXX: try to rid of this
     public abstract InstallInfo getInstallInfo ();
-    
+
 }
