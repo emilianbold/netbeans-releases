@@ -115,7 +115,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private static final boolean    verbose =
         System.getProperty ("netbeans.debugger.sourcepathproviderimpl") != null;
     
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.projects");
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.projects");
     
     private static final Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
     private static final Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
@@ -274,16 +274,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                                 continue;
                             }
                             addedBinaryRoots.add(fo);
-                            try {
-                                FileObject[] roots = SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots();
-                                for (FileObject fr : roots) {
-                                    if (!preferredRoots.contains(fr)) {
-                                        allSourceRoots.add(fr);
-                                        preferredRoots.add(fr);
-                                    }
+                            FileObject[] roots = SourceForBinaryQuery.findSourceRoots(fo.toURL()).getRoots();
+                            for (FileObject fr : roots) {
+                                if (!preferredRoots.contains(fr)) {
+                                    allSourceRoots.add(fr);
+                                    preferredRoots.add(fr);
                                 }
-                            } catch (FileStateInvalidException ex) {
-                                Exceptions.printStackTrace(ex);
                             }
                         }
                     }
@@ -381,13 +377,10 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (srcRootsToListenForArtifactsUpdates != null) {
             final Set<ArtifactsUpdatedImpl> artifactsListeners = new HashSet<ArtifactsUpdatedImpl>();
             for (FileObject src : srcRootsToListenForArtifactsUpdates) {
-                try {
-                    artifactsListeners.add(addArtifactsUpdateListenerFor(debugger, src));
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                artifactsListeners.add(addArtifactsUpdateListenerFor(debugger, src));
             }
             debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (JPDADebugger.STATE_DISCONNECTED == ((Integer) evt.getNewValue()).intValue()) {
                         for (ArtifactsUpdatedImpl al : artifactsListeners) {
@@ -593,6 +586,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      * @param global true if global path should be used
      * @return url or <code>null</code>
      */
+    @Override
     public String getURL (String relativePath, boolean global) {    if (verbose) System.out.println ("SPPI: getURL " + relativePath + " global " + global);
         relativePath = normalize(relativePath);
         if (global) {
@@ -637,11 +631,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (fo == null) {
             url = null;
         } else {
-            try {
-                url = fo.getURL ().toString ();
-            } catch (FileStateInvalidException e) {         if (verbose) System.out.println ("SPPI:   FileStateInvalidException");
-                url = null;
-            }
+            url = fo.toURL ().toString ();
         }
         if (global) {
             synchronized (urlCacheGlobal) {
@@ -688,11 +678,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
         List<String> urls = new ArrayList<String>(fos.size());
         for (FileObject fo : fos) {
-            try {
-                urls.add(fo.getURL().toString());
-            } catch (FileStateInvalidException e) {                         if (verbose) System.out.println ("SPPI:   FileStateInvalidException for "+fo);
-                // skip it
-            }
+            urls.add(fo.toURL().toString());
         }
         return urls.toArray(new String[0]);
     }
@@ -707,13 +693,14 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      *
      * @return relative path
      */
+    @Override
     public String getRelativePath (
         String url, 
         char directorySeparator, 
         boolean includeExtension
     ) {
         // 1) url -> FileObject
-        FileObject fo = null;                                       if (verbose) System.out.println ("SPPI: getRelativePath " + url);
+        FileObject fo;                                              if (verbose) System.out.println ("SPPI: getRelativePath " + url);
         try {
             fo = URLMapper.findFileObject (new URL (url));          if (verbose) System.out.println ("SPPI:   fo " + fo);
         } catch (MalformedURLException e) {
@@ -769,16 +756,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             roots = originalSourcePath.getRoots();
         }
         for (FileObject fileObject : roots) {
-            try {
-                String rootURL = fileObject.getURL().toString();
-                if (url.startsWith(rootURL)) {
-                    String root = getRoot(fileObject);
-                    if (root != null) {
-                        return root;
-                    }
+            String rootURL = fileObject.toURL().toString();
+            if (url.startsWith(rootURL)) {
+                String root = getRoot(fileObject);
+                if (root != null) {
+                    return root;
                 }
-            } catch (FileStateInvalidException ex) {
-                // Invalid source root - skip
             }
         }
         return null; // not found
@@ -817,6 +800,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      *
      * @return allSourceRoots of original source roots
      */
+    @Override
     public synchronized String[] getOriginalSourceRoots () {
         return getSourceRoots(originalSourcePath);
     }
@@ -826,6 +810,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      *
      * @return array of source roots
      */
+    @Override
     public synchronized String[] getSourceRoots () {
         return getSourceRoots(smartSteppingSourcePath);
     }
@@ -869,9 +854,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 permutation[i] = sourcePathPermutation[permutation[i]];
                 sortedOriginalRoots[i] = unorderedOriginalRoots[permutation[i]];
             }
-            for (int i = 0; i < n; i++) {
-                sourcePathPermutation[i] = permutation[i];
-            }
+            System.arraycopy(permutation, 0, sourcePathPermutation, 0, n);
             originalSourcePath = createClassPath(sortedOriginalRoots);
             srcRoots = unorderedOriginalRoots;
         }
@@ -944,6 +927,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      *
      * @param sourceRoots a new array of sourceRoots
      */
+    @Override
     public void setSourceRoots (String[] sourceRoots) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("SourcePathProviderImpl.setSourceRoots("+java.util.Arrays.asList(sourceRoots)+")");
@@ -1029,7 +1013,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     // Remove it only if it's not among all additional source roots
                     removedOriginalRoots.add(fo);
                     additionalSourceRoots.remove(spr);
-                    if (additionalSourceRoots.size() == 0) {
+                    if (additionalSourceRoots.isEmpty()) {
                         additionalSourceRoots = null;
                     }
                 }
@@ -1165,6 +1149,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      *
      * @param l new listener.
      */
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener l) {
         pcs.addPropertyChangeListener (l);
     }
@@ -1174,6 +1159,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
      *
      * @param l removed listener.
      */
+    @Override
     public void removePropertyChangeListener (
         PropertyChangeListener l
     ) {
@@ -1280,6 +1266,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             indexedRoots[i] = new IndexedRoot(roots[i], orderIndexes.get(roots[i]), i);
         }
         class Cmp implements Comparator<IndexedRoot> {
+            @Override
             public int compare(IndexedRoot ir1, IndexedRoot ir2) {
                 Integer i1 = ir1.index;
                 if (i1 == null) return 0;
@@ -1302,6 +1289,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private ClassPath reorder(ClassPath sourcePath, final Map<String, Integer> orderIndexes) {
         String[] roots = getSourceRoots(sourcePath);
         class Cmp implements Comparator<String> {
+            @Override
             public int compare(String o1, String o2) {
                 int i1 = orderIndexes.get(o1);
                 int i2 = orderIndexes.get(o2);
@@ -1327,10 +1315,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         for (FileObject fo : froots) {
             if (fo != null && fo.canRead()) {
                 try {
-                    URL url = fo.getURL();
+                    URL url = fo.toURL();
                     pris.add(ClassPathSupport.createResource(url));
-                } catch (FileStateInvalidException e) {
-                    Exceptions.printStackTrace (e);
                 } catch (IllegalArgumentException iaex) {
                     // Can be thrown from ClassPathSupport.createResource()
                     // Ignore - bad source root
@@ -1360,8 +1346,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return ClassPathSupport.createClassPath(pris);
     }
     
-    private ArtifactsUpdatedImpl addArtifactsUpdateListenerFor(JPDADebugger debugger, FileObject src) throws FileStateInvalidException {
-        URL url = src.getURL();
+    private ArtifactsUpdatedImpl addArtifactsUpdateListenerFor(JPDADebugger debugger, FileObject src) {
+        URL url = src.toURL();
         ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(debugger, url, src);
         BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
         return l;
@@ -1385,6 +1371,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             return url;
         }
 
+        @Override
         public void artifactsUpdated(Iterable<File> artifacts) {
             String error = null;
             final JPDADebugger debugger = debuggerRef.get();
@@ -1465,6 +1452,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             });
         }
         
+        @Override
         public void pathsAdded(final GlobalPathRegistryEvent event) {
             List<URL> changedPaths = getChangedPaths(event);
             synchronized (rootsLock) {
@@ -1477,6 +1465,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             task.schedule(1000);    // Work with class path is expensive.
         }
         
+        @Override
         public void pathsRemoved(final GlobalPathRegistryEvent event) {
             List<URL> changedPaths = getChangedPaths(event);
             synchronized (rootsLock) {
@@ -1565,11 +1554,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
         }
 
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             // JDK sources changed
             // Work with class path is expensive. Move it off AWT.
             if (EventQueue.isDispatchThread()) {
                 rp.post(new Runnable() {
+                    @Override
                     public void run() {
                         propertyChange(evt);
                     }
@@ -1615,6 +1606,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     
     static final class FileObjectComparator implements Comparator<FileObject> {
 
+        @Override
         public int compare(FileObject fo1, FileObject fo2) {
             String r1 = getRoot(fo1);
             String r2 = getRoot(fo2);
