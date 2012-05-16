@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.doxygensupport.DoxygenDocumentation.CompletionDocumentationImpl;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
+import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -63,17 +64,28 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author thp
  */
-@ServiceProvider(service = CompletionDocumentationProvider.class)
-public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider {
+@ServiceProviders({@ServiceProvider(service = CompletionDocumentationProvider.class),
+                   @ServiceProvider(service = CsmDocProvider.class)})
+public class CompletionDocumentationProviderImpl implements CompletionDocumentationProvider, CsmDocProvider {
 
     @Override
     public CompletionDocumentation createDocumentation(CsmObject csmObject, CsmFile csmFile) {
         return createDocumentationImpl(csmObject, csmFile);
+    }
+
+    @Override
+    public CharSequence getDocumentation(CsmObject obj, CsmFile file) {
+        CompletionDocumentation doc = createDocumentationImpl(obj, file);
+        if (doc != null) {
+            return doc.getText();
+        }
+        return null;
     }
 
     @Override
@@ -182,6 +194,6 @@ public class CompletionDocumentationProviderImpl implements CompletionDocumentat
     }
 
     private static String getString(String s) {
-        return NbBundle.getBundle(CompletionDocumentationProviderImpl.class).getString(s);
+        return NbBundle.getMessage(CompletionDocumentationProviderImpl.class, s);
     }
 }

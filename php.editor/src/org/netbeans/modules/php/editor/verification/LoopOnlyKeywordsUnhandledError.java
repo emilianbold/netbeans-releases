@@ -45,9 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -55,19 +54,14 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHP54UnhandledError extends DefaultVisitor {
+public class LoopOnlyKeywordsUnhandledError extends DefaultTreePathVisitor {
+    private static final String CONTINUE = "continue"; //NOI18N
+    private static final String BREAK = "break"; //NOI18N
+    private final FileObject fileObject;
+    private final List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
 
-    private FileObject fileObject;
-    private List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
-    private static final String BINARY_PREFIX = "0b"; //NOI18N
-    private boolean checkAnonymousObjectVariable;
-
-    public PHP54UnhandledError(FileObject fobj) {
-        this.fileObject = fobj;
-    }
-
-    public static  boolean appliesTo(FileObject fobj) {
-        return !CodeUtils.isPhp_54(fobj);
+    public LoopOnlyKeywordsUnhandledError(final FileObject fileObject) {
+        this.fileObject = fileObject;
     }
 
     public Collection<PHPVerificationError> getErrors() {
@@ -75,96 +69,88 @@ public class PHP54UnhandledError extends DefaultVisitor {
     }
 
     @Override
-    public void visit(TraitDeclaration node) {
-        Identifier name = node.getName();
-        if (name != null) {
-            createError(name);
-        } else {
+    public void visit(final ContinueStatement node) {
+        checkProperPath(node);
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(final BreakStatement node) {
+        checkProperPath(node);
+        super.visit(node);
+    }
+
+    private void checkProperPath(final ASTNode node) {
+        if (!isInProperControlStructure()) {
             createError(node);
         }
     }
 
-    @Override
-    public void visit(UseTraitStatement node) {
-        createError(node);
-    }
-
-    @Override
-    public void visit(MethodInvocation node) {
-        checkAnonymousObjectVariable = true;
-        super.visit(node);
-        checkAnonymousObjectVariable = false;
-    }
-
-    @Override
-    public void visit(FieldAccess node) {
-        checkAnonymousObjectVariable = true;
-        super.visit(node);
-        checkAnonymousObjectVariable = false;
-    }
-
-    @Override
-    public void visit(AnonymousObjectVariable node) {
-        if (checkAnonymousObjectVariable) {
-            createError(node);
+    private boolean isInProperControlStructure() {
+        boolean result = false;
+        List<ASTNode> path = getPath();
+        synchronized (path) {
+            for (ASTNode node : path) {
+                if (isProperStructure(node)) {
+                    result = true;
+                    break;
+                }
+            }
         }
+        return result;
     }
 
-    @Override
-    public void visit(DereferencedArrayAccess node) {
-        createError(node);
+    private static boolean isProperStructure(final ASTNode node) {
+        return node instanceof ForStatement
+                || node instanceof ForEachStatement
+                || node instanceof WhileStatement
+                || node instanceof DoStatement
+                || node instanceof SwitchStatement;
     }
 
-    @Override
-    public void visit(Scalar node) {
-        if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
-            createError(node);
+    private void createError(final ASTNode node) {
+        errors.add(new LoopOnlyKeywordsError(fileObject, node.getStartOffset(), node.getEndOffset(), extractKeyword(node)));
+    }
+
+    private String extractKeyword(final ASTNode node) {
+        String result = ""; //NOI18N
+        if (node instanceof ContinueStatement) {
+            result = CONTINUE;
+        } else if (node instanceof BreakStatement) {
+            result = BREAK;
         }
+        return result;
     }
 
-    @Override
-    public void visit(StaticMethodInvocation node) {
-        Expression name = node.getMethod().getFunctionName().getName();
-        if (name instanceof ReflectionVariable) {
-            createError(name);
-        }
-    }
+    private static class LoopOnlyKeywordsError extends PHPVerificationError {
 
-    private  void createError(int startOffset, int endOffset){
-        PHPVerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
-        errors.add(error);
-    }
+        private static final String KEY = "Loop.Only.Keywors.Error"; //NOI18N
+        private final String nameOfKeyword;
 
-    private void createError(ASTNode node){
-        createError(node.getStartOffset(), node.getEndOffset());
-        super.visit(node);
-    }
-
-    private class PHP54VersionError extends PHPVerificationError {
-
-        private static final String KEY = "Php.Version.54"; //NOI18N
-
-        private PHP54VersionError(FileObject fileObject, int startOffset, int endOffset) {
+        public LoopOnlyKeywordsError(final FileObject fileObject, final int startOffset, final int endOffset, final String nameOfKeyword) {
             super(fileObject, startOffset, endOffset);
+            this.nameOfKeyword = nameOfKeyword;
         }
 
         @Override
-        @Messages("CheckPHP54VerDisp=Language feature not compatible with PHP version indicated in project settings")
+        @Messages({
+            "# {0} - name of keyword",
+            "LoopOnlyKeywordsDisp={0} outside of for, foreach, while, do-while or switch statement."
+        })
         public String getDisplayName() {
-            return Bundle.CheckPHP54VerDisp();
+            return Bundle.LoopOnlyKeywordsDisp(nameOfKeyword);
         }
 
         @Override
-        @Messages("CheckPHP54VerDesc=Detect language features not compatible with PHP version indicated in project settings")
+        @Messages("LoopOnlyKeywordsDesc=Checks whether the keyword is used in a proper control structure.")
         public String getDescription() {
-            return Bundle.CheckPHP54VerDesc();
+            return Bundle.LoopOnlyKeywordsDesc();
         }
 
         @Override
         public String getKey() {
             return KEY;
         }
-
     }
 
 }

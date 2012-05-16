@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     private FileObject fobj;
-    private ArrayList<PHPVersionError> errors = new ArrayList<PHPVersionError>();
+    private ArrayList<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
 
     public CheckPHPVersionVisitor(FileObject fobj) {
         this.fobj = fobj;
@@ -141,13 +141,13 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    public Collection<PHPVersionError> getErrors(){
+    public Collection<PHPVerificationError> getErrors(){
         return Collections.unmodifiableCollection(errors);
     }
 
     private  void createError(int startOffset, int endOffset){
 
-        PHPVersionError error = new PHP53VersionError(fobj, startOffset, endOffset);
+        PHPVerificationError error = new PHP53VersionError(fobj, startOffset, endOffset);
         errors.add(error);
     }
 
@@ -156,7 +156,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    private class PHP53VersionError extends PHPVersionError {
+    private class PHP53VersionError extends PHPVerificationError {
 
         private static final String KEY = "php.ver"; //NOI18N
 
