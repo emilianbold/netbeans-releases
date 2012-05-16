@@ -227,6 +227,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }

@@ -797,7 +797,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable<Bi
             return String.format(code,
                     pattern.getDeclaringClass().resolve(javac).getQualifiedName(),
                     pattern.getName(),
-                    pattern.getType().resolve(javac).toString(), // XXX ???
+                    listener.getQualifiedName().toString(),
                     methodList.length() == 0? methodList: methodList.substring(paramdelim.length()),
                     pattern.getAddListenerMethod().resolve(javac).getSimpleName(),
                     pattern.getRemoveListenerMethod().resolve(javac).getSimpleName()

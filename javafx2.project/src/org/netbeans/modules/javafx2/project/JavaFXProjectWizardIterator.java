@@ -51,6 +51,8 @@ import java.io.PrintWriter;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -64,7 +66,9 @@ import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -79,6 +83,9 @@ import org.openide.util.NbBundle;
  * @author Petr Somol
  */
 public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+
+    private static final Logger LOG = Logger.getLogger(JavaFXProjectWizardIterator.class.getName());
+
     public static enum WizardType {APPLICATION, PRELOADER, FXML, SWING, LIBRARY, EXTISTING}
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
@@ -164,6 +171,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject mainClassFo = null;
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
         if (dirF == null) {
+            warnIssue204880();
             throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
         }
         dirF = FileUtil.normalizeFile(dirF);
@@ -504,4 +512,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         return  sb.toString();
     }
 
+    private void warnIssue204880() {
+        LOG.log(Level.WARNING, "Detected issue 204880 occurence. Properties:" + wiz.getProperties()); // NOI18N
+        NotifyDescriptor d = new NotifyDescriptor.Message(
+                NbBundle.getMessage(JavaFXProjectWizardIterator.class,"WARN_Issue204880"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+        DialogDisplayer.getDefault().notify(d);
+    }
 }
