@@ -138,40 +138,41 @@ public class PluginGenerator implements CodeGenerator {
                 //boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
                 int newPos = -1;
                 try {
-                    model.startTransaction();
-                    int pos = component.getCaretPosition();
-                    PluginContainer container = findContainer(pos, model);
+                    if (model.startTransaction()) {
+                        int pos = component.getCaretPosition();
+                        PluginContainer container = findContainer(pos, model);
 
-                    Plugin plug = model.getFactory().createPlugin();
-                    plug.setGroupId(vi.getGroupId());
-                    plug.setArtifactId(vi.getArtifactId());
-                    plug.setVersion(vi.getVersion());
+                        Plugin plug = model.getFactory().createPlugin();
+                        plug.setGroupId(vi.getGroupId());
+                        plug.setArtifactId(vi.getArtifactId());
+                        plug.setVersion(vi.getVersion());
 
-                    if (pluginPanel.isConfiguration()) {
-                        Configuration config = model.getFactory().createConfiguration();
-                        //it would be nice to figure all mandatory parameters without a default value..
-                        config.setSimpleParameter("foo", "bar");
-                        plug.setConfiguration(config);
-                    }
+                        if (pluginPanel.isConfiguration()) {
+                            Configuration config = model.getFactory().createConfiguration();
+                            //it would be nice to figure all mandatory parameters without a default value..
+                            config.setSimpleParameter("foo", "bar");
+                            plug.setConfiguration(config);
+                        }
 
-                    if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
-                        PluginExecution ex = model.getFactory().createExecution();
-                        String id = null;
-                        for (String goal : pluginPanel.getGoals()) {
-                            ex.addGoal(goal);
-                            if (id == null) {
-                                id = goal;
+                        if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
+                            PluginExecution ex = model.getFactory().createExecution();
+                            String id = null;
+                            for (String goal : pluginPanel.getGoals()) {
+                                ex.addGoal(goal);
+                                if (id == null) {
+                                    id = goal;
+                                }
                             }
+                            if (id !=null) {
+                                ex.setId(id);
+                            }
+                            plug.addExecution(ex);
+                            //shall we add execution configuration if
                         }
-                        if (id !=null) {
-                            ex.setId(id);
-                        }
-                        plug.addExecution(ex);
-                        //shall we add execution configuration if
-                    }
 
-                    container.addPlugin(plug);
-                    newPos = model.getAccess().findPosition(plug.getPeer());
+                        container.addPlugin(plug);
+                        newPos = model.getAccess().findPosition(plug.getPeer());
+                    }
                 } finally {
                     try {
                         model.endTransaction();

@@ -135,21 +135,22 @@ public class DependencyGenerator implements CodeGenerator {
             String classifier = ret[5];
             int newPos = -1;
             try {
-                model.startTransaction();
-                pos = component.getCaretPosition();
-                DependencyContainer container = findContainer(pos, model);
-                Dependency dep = container.findDependencyById(groupId, artifactId, classifier);
-                if (dep == null) {
-                    dep = model.getFactory().createDependency();
-                    dep.setGroupId(groupId);
-                    dep.setArtifactId(artifactId);
-                    dep.setVersion(version);
-                    dep.setScope(scope);
-                    dep.setType(type);
-                    dep.setClassifier(classifier);
-                    container.addDependency(dep);
+                if (model.startTransaction()) {
+                    pos = component.getCaretPosition();
+                    DependencyContainer container = findContainer(pos, model);
+                    Dependency dep = container.findDependencyById(groupId, artifactId, classifier);
+                    if (dep == null) {
+                        dep = model.getFactory().createDependency();
+                        dep.setGroupId(groupId);
+                        dep.setArtifactId(artifactId);
+                        dep.setVersion(version);
+                        dep.setScope(scope);
+                        dep.setType(type);
+                        dep.setClassifier(classifier);
+                        container.addDependency(dep);
+                    }
+                    newPos = dep.getModel().getAccess().findPosition(dep.getPeer());
                 }
-                newPos = dep.getModel().getAccess().findPosition(dep.getPeer());
             } finally {
                 try {
                     model.endTransaction();

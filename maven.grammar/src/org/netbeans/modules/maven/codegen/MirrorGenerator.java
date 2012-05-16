@@ -122,12 +122,13 @@ public class MirrorGenerator implements CodeGenerator {
             Mirror mirror = model.getSettings().findMirrorById(id);
             if (mirror == null) {
                 try {
-                    model.startTransaction();
-                    mirror = model.getFactory().createMirror();
-                    mirror.setId(id);
-                    mirror.setUrl(panel.getMirrorUrl());
-                    mirror.setMirrorOf(panel.getMirrorOf());
-                    model.getSettings().addMirror(mirror);
+                    if (model.startTransaction()) {
+                        mirror = model.getFactory().createMirror();
+                        mirror.setId(id);
+                        mirror.setUrl(panel.getMirrorUrl());
+                        mirror.setMirrorOf(panel.getMirrorOf());
+                        model.getSettings().addMirror(mirror);
+                    }
                 } finally {
                     try {
                         model.endTransaction();

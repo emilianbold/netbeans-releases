@@ -129,45 +129,46 @@ public class ExclusionGenerator implements CodeGenerator {
         DocumentComponent c = model.findComponent(pos);
         Map<Artifact, List<Artifact>> excludes = DialogFactory.showDependencyExcludeDialog(prj);
         if (excludes != null) {
-            model.startTransaction();
             try {
-                for (Artifact exclude : excludes.keySet()) {
-                    for (Artifact directArt : excludes.get(exclude)) {
-                        org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
-                        if (dep == null) {
-                            // now check the active profiles for the dependency..
-                            List<String> profileNames = new ArrayList<String>();
-                            NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
-                            Iterator it = project.getMavenProject().getActiveProfiles().iterator();
-                            while (it.hasNext()) {
-                                org.apache.maven.model.Profile prof = (org.apache.maven.model.Profile) it.next();
-                                profileNames.add(prof.getId());
-                            }
-                            for (String profileId : profileNames) {
-                                Profile modProf = model.getProject().findProfileById(profileId);
-                                if (modProf != null) {
-                                    dep = modProf.findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
-                                    if (dep != null) {
-                                        break;
+                if (model.startTransaction()) {
+                    for (Artifact exclude : excludes.keySet()) {
+                        for (Artifact directArt : excludes.get(exclude)) {
+                            org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
+                            if (dep == null) {
+                                // now check the active profiles for the dependency..
+                                List<String> profileNames = new ArrayList<String>();
+                                NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
+                                Iterator it = project.getMavenProject().getActiveProfiles().iterator();
+                                while (it.hasNext()) {
+                                    org.apache.maven.model.Profile prof = (org.apache.maven.model.Profile) it.next();
+                                    profileNames.add(prof.getId());
+                                }
+                                for (String profileId : profileNames) {
+                                    Profile modProf = model.getProject().findProfileById(profileId);
+                                    if (modProf != null) {
+                                        dep = modProf.findDependencyById(directArt.getGroupId(), directArt.getArtifactId(), null);
+                                        if (dep != null) {
+                                            break;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (dep == null) {
-                            dep = model.getFactory().createDependency();
-                            dep.setArtifactId(directArt.getArtifactId());
-                            dep.setGroupId(directArt.getGroupId());
-                            dep.setType(directArt.getType());
-                            dep.setVersion(directArt.getVersion());
-                            model.getProject().addDependency(dep);
-                            
-                        }
-                        Exclusion ex = dep.findExclusionById(exclude.getGroupId(), exclude.getArtifactId());
-                        if (ex == null) {
-                            ex = model.getFactory().createExclusion();
-                            ex.setArtifactId(exclude.getArtifactId());
-                            ex.setGroupId(exclude.getGroupId());
-                            dep.addExclusion(ex);
+                            if (dep == null) {
+                                dep = model.getFactory().createDependency();
+                                dep.setArtifactId(directArt.getArtifactId());
+                                dep.setGroupId(directArt.getGroupId());
+                                dep.setType(directArt.getType());
+                                dep.setVersion(directArt.getVersion());
+                                model.getProject().addDependency(dep);
+
+                            }
+                            Exclusion ex = dep.findExclusionById(exclude.getGroupId(), exclude.getArtifactId());
+                            if (ex == null) {
+                                ex = model.getFactory().createExclusion();
+                                ex.setArtifactId(exclude.getArtifactId());
+                                ex.setGroupId(exclude.getGroupId());
+                                dep.addExclusion(ex);
+                            }
                         }
                     }
                 }
