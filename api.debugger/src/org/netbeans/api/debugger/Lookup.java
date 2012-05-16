@@ -848,7 +848,7 @@ abstract class Lookup implements ContextProvider {
                             }
                         }
                     }
-                    if (instance == null) {
+                    if (instance == null && className != null) {
                         synchronized (instanceCreationLock) {
                             FutureInstance fi = null;
                             FutureInstance fiex = null;

@@ -467,10 +467,15 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
             setValidity(Breakpoint.VALIDITY.VALID, failReason); // failReason is != null for partially submitted breakpoints (to some classes only)
         } else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Unable to submit line breakpoint to "+referenceTypes.get(0).name()+
-                    " at line "+lineNumber+", reason: "+failReason);
-            setValidity(Breakpoint.VALIDITY.INVALID, failReason);
+            String className = getBreakpoint().getPreferredClassName();
+            boolean all = className != null && (className.startsWith("*") || className.endsWith("*")); // NOI18N
+            // We know that the breakpoint is invalid, only when it's not submitted for an unknown set of classes.
+            if (!all) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        "Unable to submit line breakpoint to "+referenceTypes.get(0).name()+
+                        " at line "+lineNumber+", reason: "+failReason);
+                setValidity(Breakpoint.VALIDITY.INVALID, failReason);
+            }
         }
     }
     
