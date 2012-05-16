@@ -366,11 +366,14 @@ public abstract class CsmResultItem implements CompletionItem {
                 BaseDocument doc = (BaseDocument) component.getDocument();
                 Object ob = getAssociatedObject();
                 if (CsmKindUtilities.isCsmObject(ob)) {
-                    CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
-                    if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
-                        String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
-                        if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
-                            insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                    // Bug 186954 - Included files are chaotically inserted
+                    if (!isDummyForward((CsmObject) ob)) {
+                        CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
+                        if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
+                            String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
+                            if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
+                                insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                            }
                         }
                     }
                 } else {
@@ -382,6 +385,10 @@ public abstract class CsmResultItem implements CompletionItem {
             return false;
         }
 
+    }
+
+    private boolean isDummyForward(CsmObject ob) {
+        return CsmKindUtilities.isClass(ob) && ob.toString().startsWith("DUMMY_FORWARD"); // NOI18N
     }
 
     // Checks that include directive have not been already included
