@@ -52,19 +52,19 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author warden
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class LoopOnlyKeywordsUnhandledError extends DefaultTreePathVisitor {
     private static final String CONTINUE = "continue"; //NOI18N
     private static final String BREAK = "break"; //NOI18N
     private final FileObject fileObject;
-    private final List<PHPVersionError> errors = new ArrayList<PHPVersionError>();
+    private final List<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
 
     public LoopOnlyKeywordsUnhandledError(final FileObject fileObject) {
         this.fileObject = fileObject;
     }
 
-    public Collection<PHPVersionError> getErrors() {
+    public Collection<PHPVerificationError> getErrors() {
         return Collections.unmodifiableCollection(errors);
     }
 
@@ -122,7 +122,7 @@ public class LoopOnlyKeywordsUnhandledError extends DefaultTreePathVisitor {
         return result;
     }
 
-    private static class LoopOnlyKeywordsError extends PHPVersionError {
+    private static class LoopOnlyKeywordsError extends PHPVerificationError {
 
         private static final String KEY = "Loop.Only.Keywors.Error"; //NOI18N
         private final String nameOfKeyword;
