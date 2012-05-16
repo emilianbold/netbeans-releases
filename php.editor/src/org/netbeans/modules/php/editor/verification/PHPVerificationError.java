@@ -46,17 +46,17 @@ import org.netbeans.modules.csl.api.Severity;
 import org.openide.filesystems.FileObject;
 
 /**
- * Class encapsulating errors caused by different PHP version used in files and PHP version set in Project properties.
+ * Class encapsulating errors caused by verification package.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class PHPVersionError implements Badging {
+public abstract class PHPVerificationError implements Badging {
 
     private final FileObject fileObject;
     private final int startOffset;
     private final int endOffset;
 
-    public PHPVersionError(FileObject fileObject, int startOffset, int endOffset) {
+    public PHPVerificationError(FileObject fileObject, int startOffset, int endOffset) {
         this.fileObject = fileObject;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
