@@ -593,15 +593,17 @@ public final class SearchBar extends JPanel {
         addEnterKeystrokeFindNextTo(incSearchTextField);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         
-        hadFocusOnIncSearchTextField = true;
-        setVisible(true);
+        
         MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
             comboBoxModelIncSearch.removeElementAt(i);
         }
         for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
             comboBoxModelIncSearch.addElement(spw.getSearchExpression());
-        incSearchTextField.setText("");
+        if (!isVisible())
+            incSearchTextField.setText("");
+        hadFocusOnIncSearchTextField = true;
+        setVisible(true);
         initBlockSearch();
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
 
