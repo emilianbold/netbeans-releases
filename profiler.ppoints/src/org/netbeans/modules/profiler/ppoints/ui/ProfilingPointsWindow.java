@@ -49,6 +49,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import java.awt.BorderLayout;
 import org.netbeans.lib.profiler.common.CommonUtils;
+import org.netbeans.modules.profiler.ProfilerTopComponent;
 import org.netbeans.modules.profiler.api.icons.Icons;
 
 
@@ -61,7 +62,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
     "ProfilingPointsWindow_ComponentName=Profiling Points",
     "ProfilingPointsWindow_ComponentAccessDescr=List of defined profiling points"
 })
-public class ProfilingPointsWindow extends TopComponent {
+public class ProfilingPointsWindow extends ProfilerTopComponent {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     private static final String HELP_CTX_KEY = "ProfilingPointsWindow.HelpCtx"; // NOI18N

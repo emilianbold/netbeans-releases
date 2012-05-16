@@ -45,4 +45,5 @@ made subject to such option by the copyright holder.
 -->
 <antlib>
     <taskdef name="startprofiler" classname="org.netbeans.modules.profiler.nbimpl.StartProfilerTask"/>
+    <taskdef name="nbprofiledirect" classname="org.netbeans.modules.profiler.nbimpl.NBProfileDirectTask"/>
 </antlib>
