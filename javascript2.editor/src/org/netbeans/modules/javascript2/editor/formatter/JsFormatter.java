@@ -417,7 +417,8 @@ public class JsFormatter implements Formatter {
                                 if (isContinuation(tokens, index)) {
                                     indentationSize += continuationIndent;
                                 }
-                                if (isIndentationAllowed(doc, token, context, indentationSize)) {
+                                if (isIndentationAllowed(doc, token, formatContext,
+                                        context, indentationSize)) {
                                     offsetDiff = formatContext.indentLine(indentationStart.getOffset(), indentationSize, offsetDiff);
                                 }
                             }
@@ -593,13 +594,19 @@ public class JsFormatter implements Formatter {
     }
 
     private boolean isIndentationAllowed(BaseDocument doc, FormatToken token,
-            Context context, int indentationSize) {
+            FormatContext formatContext, Context context, int indentationSize) {
 
         assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
-        if (token.getKind() != FormatToken.Kind.SOURCE_START || context.startOffset() <= 0) {
+        if (token.getKind() != FormatToken.Kind.SOURCE_START
+                || (context.startOffset() <= 0 && !formatContext.isEmbedded())) {
             return true;
         }
 
+        // no source start indentation in embedded code
+        if (formatContext.isEmbedded()) {
+            return false;
+        }
+        
         try {
             // when we are formatting only selection we
             // have to handle the source start indentation properly

@@ -53,7 +53,6 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -110,6 +109,10 @@ public final class FormatContext {
             }
         }
         return -1;
+    }
+
+    public boolean isEmbedded() {
+        return embedded;
     }
     
     public int getEmbeddingIndent(int offset) {
