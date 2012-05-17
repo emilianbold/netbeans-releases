@@ -84,7 +84,6 @@ public class JsFormatter implements Formatter {
     @Override
     public void reformat(final Context context, final ParserResult compilationInfo) {
         final BaseDocument doc = (BaseDocument) context.document();
-        final FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
 
         doc.runAtomic(new Runnable() {
 
@@ -92,6 +91,8 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
+                FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
+                
                 TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                         compilationInfo.getSnapshot(), context.startOffset());
                 

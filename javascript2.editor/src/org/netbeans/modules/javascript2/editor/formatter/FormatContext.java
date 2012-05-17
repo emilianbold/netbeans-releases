@@ -47,11 +47,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -88,6 +91,46 @@ public final class FormatContext {
         }
         
         this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath());
+        
+        /*
+         * What we do here is fix for case like this:
+         * <head>
+         *     <script>[REGION_START]
+         *         var x = 1;
+         *         function test() {
+         *             x ="";    
+         *         }
+         *     [REGION_END]</script>
+         * </head>
+         * 
+         * The last line with REGION_END would be considered empty line and
+         * truncated. So we could either avoid that or shift the REGION_END to
+         * the line start offset. We do the latter.
+         */
+        if (embedded) {
+            for (Region region : regions) {
+                int endOffset = region.getOriginalEnd();
+                try {
+                    int lineOffset = context.lineStartOffset(endOffset);
+                    TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                        snapshot, region.getOriginalStart());
+                    if (ts != null) {
+                        int embeddedOffset = snapshot.getEmbeddedOffset(lineOffset);
+                        if (embeddedOffset >= 0) {
+                            ts.move(embeddedOffset);
+                            if (ts.moveNext()) {
+                                Token<? extends JsTokenId> token = ts.token();
+                                if (token.id() == JsTokenId.WHITESPACE) {
+                                    region.setOriginalEnd(lineOffset);
+                                }
+                            }
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                }
+            }
+        }
     }
     
     private int getDocumentOffset(int offset) {
@@ -231,7 +274,7 @@ public final class FormatContext {
 
         private final int originalStart;
         
-        private final int originalEnd;
+        private int originalEnd;
 
         public Region(int originalStart, int originalEnd) {
             this.originalStart = originalStart;
@@ -244,6 +287,10 @@ public final class FormatContext {
 
         public int getOriginalEnd() {
             return originalEnd;
+        }
+
+        public void setOriginalEnd(int originalEnd) {
+            this.originalEnd = originalEnd;
         }
     }
 }
