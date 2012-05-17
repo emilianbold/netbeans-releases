@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
@@ -123,29 +125,25 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
 //    }
     
     private void setupCombo() {
-        //TODO get dynamically from layers??
         final Cursor currentCursor = getCursor();
         setCursor(Utilities.createProgressCursor(this));
 
         Utilities.attachInitJob(comMode, new AsyncGUIJob() {
 
-            String[] modes = null;
+            Set<String> modes;
 
             @Override
             public void construct() {
                 try {
                     modes = DesignSupport.existingModes(data);
-                    if (modes == null) {
-                        modes = DEFAULT_MODES;
-                    }
                 } catch (IOException exc) {
-                    modes = DEFAULT_MODES;
+                    Logger.getLogger(BasicSettingsPanel.class.getName()).log(Level.INFO, null, exc);
                 }
             }
 
             @Override
             public void finished() {
-                comMode.setModel(new DefaultComboBoxModel(modes));
+                comMode.setModel(new DefaultComboBoxModel(modes != null ? modes.toArray(new String[modes.size()]) : DEFAULT_MODES));
                 setComModeSelectedItem();
                 windowPosChanged(null);
                 setCursor(currentCursor);
