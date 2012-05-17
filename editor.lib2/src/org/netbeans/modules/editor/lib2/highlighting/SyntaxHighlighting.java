@@ -399,18 +399,18 @@ implements TokenHierarchyListener, ChangeListener {
 
                 // Check whether processing multiple parts into that token was split due to presence of '\n' char(s)
                 if (partsEndOffset != 0) { // Fetch next part
-                    hiStartOffset = hiEndOffset;
-                    while (hiStartOffset == newlineOffset) { // Newline at highlight start
-                        hiStartOffset++; // Skip newline
-                        if (updateNewlineOffset(hiStartOffset)) { // Reached endOffset
+                    while (hiEndOffset == newlineOffset) { // Newline at highlight start
+                        hiEndOffset++; // Skip newline
+                        if (updateNewlineOffset(hiEndOffset)) { // Reached endOffset
                             finish();
                             return false;
                         }
-                        if (hiStartOffset >= partsEndOffset) { // Reached end of parts only by newlines
+                        if (hiEndOffset >= partsEndOffset) { // Reached end of parts only by newlines
                             finishParts();
                             return moveTheSequence();
                         }
                     }
+                    hiStartOffset = hiEndOffset;
                     if (newlineOffset < partsEndOffset) {
                         hiEndOffset = newlineOffset;
                     } else {
@@ -546,14 +546,14 @@ implements TokenHierarchyListener, ChangeListener {
          *  due to token consisting of all newlines.
          */
         private boolean assignHighlightOrPart(int tokenEndOffset, AttributeSet attrs) {
-            hiStartOffset = hiEndOffset;
-            while (hiStartOffset == newlineOffset) { // Newline at highlight start
-                hiStartOffset++; // Skip newline
-                if (updateNewlineOffset(hiStartOffset) || hiStartOffset >= tokenEndOffset) { // Reached endOffset
-                    hiEndOffset = hiStartOffset;
+            while (hiEndOffset == newlineOffset) { // Newline at highlight start
+                hiEndOffset++; // Skip newline
+                if (updateNewlineOffset(hiEndOffset) || hiEndOffset >= tokenEndOffset) { // Reached endOffset
+                    hiStartOffset = hiEndOffset;
                     return false;
                 }
             }
+            hiStartOffset = hiEndOffset;
             if (newlineOffset < tokenEndOffset) {
                 hiEndOffset = newlineOffset;
                 partsEndOffset = tokenEndOffset;
@@ -561,7 +561,7 @@ implements TokenHierarchyListener, ChangeListener {
                 hiEndOffset = tokenEndOffset;
             }
             hiAttrs = attrs;
-            return true; // (hiEndOffset > hiStartOffset);
+            return true;
         }
         
         /**

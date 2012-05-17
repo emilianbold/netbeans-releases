@@ -214,7 +214,7 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec == null) {
+        if (ec == null || ec.getOpenedPanes() == null) {
             return EncapsulateFieldUI.create(info, handles);
         }
         JEditorPane textC = ec.getOpenedPanes()[0];

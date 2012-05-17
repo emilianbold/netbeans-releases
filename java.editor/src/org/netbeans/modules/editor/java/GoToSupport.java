@@ -62,6 +62,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -101,6 +102,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -113,7 +115,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -132,7 +133,7 @@ public class GoToSupport {
         return od != null ? od.getPrimaryFile() : null;
     }
     
-    public static String getGoToElementTooltip(final Document doc, final int offset, final boolean goToSource, final String key) {
+    public static String getGoToElementTooltip(final Document doc, final int offset, final boolean goToSource, final HyperlinkType type) {
         try {
             final FileObject fo = getFileObject(doc);
 
@@ -152,7 +153,7 @@ public class GoToSupport {
                     Context resolved = resolveContext(controller, doc, offset, goToSource);
 
                     if (resolved != null) {
-                        result[0] = computeTooltip(controller, resolved, key);
+                        result[0] = computeTooltip(controller, resolved, type);
                     }
                 }
             });
@@ -386,7 +387,7 @@ public class GoToSupport {
         return new Context(classType, el);
     }
 
-    private static String computeTooltip(CompilationInfo controller, Context resolved, String key) {
+    private static String computeTooltip(CompilationInfo controller, Context resolved, HyperlinkType type) {
         DisplayNameElementVisitor v = new DisplayNameElementVisitor(controller);
 
         if (resolved.resolved.getKind() == ElementKind.CONSTRUCTOR && resolved.classType != null && resolved.classType.getKind() == TypeKind.DECLARED) {
@@ -398,8 +399,14 @@ public class GoToSupport {
         String result = v.result.toString();
         int overridableKind = overridableKind(resolved.resolved);
 
-        if (overridableKind != (-1) && key != null) {
-            result = NbBundle.getMessage(GoToSupport.class, key, overridableKind, result);
+        if (overridableKind != (-1) && type != null) {
+            if (type == HyperlinkType.GO_TO_DECLARATION) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(KeyEvent.getKeyText(org.openide.util.Utilities.isMac() ? KeyEvent.VK_META : KeyEvent.VK_CONTROL)).append('+').append(KeyEvent.getKeyText(KeyEvent.VK_ALT)).append('+');
+                result = NbBundle.getMessage(GoToSupport.class, "TP_OverriddenTooltipSugg", sb.toString(), overridableKind, result);//NOI18N
+            } else {
+                result = NbBundle.getMessage(GoToSupport.class, "TP_GoToOverriddenTooltipSugg", overridableKind, result);//NOI18N
+            }
         }
 
         result = "<html><body>" + result;
