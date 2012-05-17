@@ -172,8 +172,10 @@ public class JDBCTable extends TableImplementation {
     protected void createColumns() {
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         try {
-            ResultSet rs = getColumns(jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
-                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
+            ResultSet rs = MetadataUtilities.getColumns(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name, "%"); // NOI18N
             try {
                 while (rs.next()) {
                     Column column = createJDBCColumn(rs).getColumn();
@@ -194,8 +196,10 @@ public class JDBCTable extends TableImplementation {
     protected void createIndexes() {
         Map<String, Index> newIndexes = new LinkedHashMap<String, Index>();
         try {
-            ResultSet rs = getIndexInfo(jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
-                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, false, true);
+            ResultSet rs = MetadataUtilities.getIndexInfo(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name, false, true);
             try {
                 JDBCIndex index = null;
                 String currentIndexName = null;
@@ -269,8 +273,10 @@ public class JDBCTable extends TableImplementation {
         protected void createForeignKeys() {
         Map<String,ForeignKey> newKeys = new LinkedHashMap<String,ForeignKey>();
         try {
-            ResultSet rs = getImportedKeys(jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
-                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name);
+            ResultSet rs = MetadataUtilities.getImportedKeys(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name);
             try {
                 JDBCForeignKey fkey = null;
                 String currentKeyName = null;
@@ -381,8 +387,10 @@ public class JDBCTable extends TableImplementation {
         String pkname = null;
         Collection<Column> pkcols = new ArrayList<Column>();
         try {
-            ResultSet rs = getPrimaryKeys(jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
-                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name);
+            ResultSet rs = MetadataUtilities.getPrimaryKeys(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name);
             try {
                 while (rs.next()) {
                     if (pkname == null) {
@@ -449,71 +457,6 @@ public class JDBCTable extends TableImplementation {
             Logger.getLogger(JDBCTable.class.getName()).log(Level.FINE, x.getLocalizedMessage(), x);
         } else {
             throw new MetadataException(x);
-        }
-    }
-
-    /**
-     * Call {@link DatabaseMetaData#getColumns(String, String, String, String)},
-     * wrapping any internal runtime exception into an {@link SQLException}.
-     */
-    private static ResultSet getColumns(DatabaseMetaData dmd, String catalog,
-            String schemaPattern, String tableNamePattern,
-            String columnNamePattern) throws SQLException {
-        try {
-            return dmd.getColumns(catalog, schemaPattern, tableNamePattern,
-                    columnNamePattern);
-        } catch (SQLException e) {
-            throw e;
-        } catch (Throwable t) {
-            throw new SQLException(t);
-        }
-    }
-
-    /**
-     * Call {@link DatabaseMetaData#getIndexInfo(String, String, String,
-     * boolean, boolean)}, wrapping any internal runtime exception into an
-     * {@link SQLException}.
-     */
-    private static ResultSet getIndexInfo(DatabaseMetaData dmd,
-            String catalog, String schema, String table,
-            boolean unique, boolean approximate) throws SQLException {
-        try {
-            return dmd.getIndexInfo(catalog, schema, table, unique,
-                    approximate);
-        } catch (SQLException e) {
-            throw e;
-        } catch (Throwable t) {
-            throw new SQLException(t);
-        }
-    }
-
-    /**
-     * Call {@link DatabaseMetaData#getImportedKeys(String, String, String)},
-     * wrapping any internal runtime exception into an {@link SQLException}.
-     */
-    private static ResultSet getImportedKeys(DatabaseMetaData dmd,
-            String catalog, String schema, String table) throws SQLException {
-        try {
-            return dmd.getImportedKeys(catalog, schema, table);
-        } catch (SQLException e) {
-            throw e;
-        } catch (Throwable t) {
-            throw new SQLException(t);
-        }
-    }
-
-    /**
-     * Call {@link DatabaseMetaData#getPrimaryKeys(String, String, String)},
-     * wrapping any internal runtime exeption into an {@link SQLException}.
-     */
-    private static ResultSet getPrimaryKeys(DatabaseMetaData dmd,
-            String catalog, String schema, String table) throws SQLException {
-        try {
-            return dmd.getPrimaryKeys(catalog, schema, table);
-        } catch (SQLException e) {
-            throw e;
-        } catch (Throwable t) {
-            throw new SQLException(t);
         }
     }
 }
