@@ -134,8 +134,12 @@ public final class FormatContext {
     }
     
     private int getDocumentOffset(int offset) {
+        return getDocumentOffset(offset, true);
+    }
+    
+    private int getDocumentOffset(int offset, boolean check) {
         if (!embedded) {
-            if (offset >= initialStart && offset < initialEnd) {
+            if (!check || (offset >= initialStart && offset < initialEnd)) {
                 return offset;
             }
             return -1;
@@ -190,14 +194,21 @@ public final class FormatContext {
         return (BaseDocument) context.document();
     }
     
-    public int indentLine(int voffset, int indentationSize, int offsetDiff) {        
-        int offset = getDocumentOffset(voffset);
+    public int indentLine(int voffset, int indentationSize, int offsetDiff,
+            JsFormatter.Indentation indentationCheck) { 
+        
+        if (!indentationCheck.isAllowed()) {
+            return offsetDiff;
+        }
+        
+        int offset = getDocumentOffset(voffset, !indentationCheck.isExceedLimits());
         if (offset < 0) {
             return offsetDiff;
         }
         
         try {
-            int diff = GsfUtilities.setLineIndentation(getDocument(), offset + offsetDiff, indentationSize);
+            int diff = GsfUtilities.setLineIndentation(getDocument(),
+                    offset + offsetDiff, indentationSize);
             return offsetDiff + diff;
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);

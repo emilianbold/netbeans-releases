@@ -417,10 +417,9 @@ public class JsFormatter implements Formatter {
                                 if (isContinuation(tokens, index)) {
                                     indentationSize += continuationIndent;
                                 }
-                                if (isIndentationAllowed(doc, token, formatContext,
-                                        context, indentationSize)) {
-                                    offsetDiff = formatContext.indentLine(indentationStart.getOffset(), indentationSize, offsetDiff);
-                                }
+                                offsetDiff = formatContext.indentLine(
+                                        indentationStart.getOffset(), indentationSize, offsetDiff,
+                                        checkIndentation(doc, token, formatContext, context, indentationSize));
                             }
                             break;
                     }
@@ -593,18 +592,18 @@ public class JsFormatter implements Formatter {
 
     }
 
-    private boolean isIndentationAllowed(BaseDocument doc, FormatToken token,
+    private Indentation checkIndentation(BaseDocument doc, FormatToken token,
             FormatContext formatContext, Context context, int indentationSize) {
 
         assert token.getKind() == FormatToken.Kind.EOL || token.getKind() == FormatToken.Kind.SOURCE_START;
         if (token.getKind() != FormatToken.Kind.SOURCE_START
                 || (context.startOffset() <= 0 && !formatContext.isEmbedded())) {
-            return true;
+            return Indentation.ALLOWED;
         }
 
         // no source start indentation in embedded code
         if (formatContext.isEmbedded()) {
-            return false;
+            return Indentation.FORBIDDEN;
         }
         
         try {
@@ -616,14 +615,14 @@ public class JsFormatter implements Formatter {
                 if (currentIndentation != indentationSize) {
                     // fix the indentation if possible
                     if (lineStartOffset + indentationSize >= context.startOffset()) {
-                        return true;
+                        return new Indentation(true, true);
                     }
                 }
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return false;
+        return Indentation.FORBIDDEN;
     }
 
     private int updateIndentationLevel(FormatToken token, int indentationLevel) {
@@ -658,4 +657,27 @@ public class JsFormatter implements Formatter {
         // TODO
     }
 
+    static class Indentation {
+        
+        static final Indentation ALLOWED = new Indentation(true, false);
+        
+        static final Indentation FORBIDDEN = new Indentation(false, false);
+        
+        private final boolean allowed;
+        
+        private final boolean exceedLimits;
+
+        public Indentation(boolean allowed, boolean exceedLimits) {
+            this.allowed = allowed;
+            this.exceedLimits = exceedLimits;
+        }
+
+        public boolean isAllowed() {
+            return allowed;
+        }
+
+        public boolean isExceedLimits() {
+            return exceedLimits;
+        }
+    }
 }
