@@ -28,6 +28,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -136,6 +137,14 @@ public class JSFConfigModelTest extends NbTestCase {
         assertNull(navigationCase.getFromAction());
     }
 
+    private static void endModelTransaction(JSFConfigModel model) {
+        try {
+            model.endTransaction();
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
+        }
+    }
+
     final String newDescription = "Some text.\n Test description\nnew line\n\nnew second line.";
     final String newFromViewID = "/haha.jsp";
     public void testChangeNavigationRuleJSFJPAExample() throws Exception {
@@ -154,7 +163,7 @@ public class JSFConfigModelTest extends NbTestCase {
         description.setValue(newDescription);
         navigationRule.addDescription(description);
         navigationRule.setFromViewId(newFromViewID);
-        model.endTransaction();
+        endModelTransaction(model);
 
         // test whether the change is in the model
         navigationRules = facesConfig.getNavigationRules();
@@ -175,7 +184,7 @@ public class JSFConfigModelTest extends NbTestCase {
         model.startTransaction();
         navigationRule.removeDescription(navigationRule.getDescriptions().get(0));
         navigationRule.setFromViewId(null);
-        model.endTransaction();
+        endModelTransaction(model);
 
         navigationRules = model.getRootComponent().getNavigationRules();
         navigationRule = navigationRules.iterator().next();
@@ -201,7 +210,7 @@ public class JSFConfigModelTest extends NbTestCase {
 
         model.startTransaction();
         facesConfig.addNavigationRule(newRule);
-        model.endTransaction();
+        endModelTransaction(model);
 
         // save the model into a tmp file and reload. then test.
         dumpModelToFile(model, "test-config-03.xml");
@@ -215,7 +224,7 @@ public class JSFConfigModelTest extends NbTestCase {
 
         model.startTransaction();
         model.getRootComponent().removeNavigationRule(newRule);
-        model.endTransaction();
+        endModelTransaction(model);
 
         dumpModelToFile(model, "test-config-04.xml");
         navigationRules = model.getRootComponent().getNavigationRules();
@@ -242,13 +251,13 @@ public class JSFConfigModelTest extends NbTestCase {
         navigationCase.setFromAction("hahatest");
         navigationCase.setToViewId("welcomme.test");
         navigationCase.setRedirected(false);
-        model.endTransaction();
+        endModelTransaction(model);
 
         dumpModelToFile(model, "test-config-01.xml");
 
         model.startTransaction();
         navigationCase.setRedirected(true);
-        model.endTransaction();
+        endModelTransaction(model);
         dumpModelToFile(model, "test-config-02.xml");
 
     }
@@ -273,7 +282,7 @@ public class JSFConfigModelTest extends NbTestCase {
 
         navigationRule.getModel().startTransaction();
         navigationRule.addNavigationCase(newCase);
-        navigationRule.getModel().endTransaction();
+        endModelTransaction(navigationRule.getModel());
 
         System.out.println("pridam case");
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
@@ -347,7 +356,7 @@ public class JSFConfigModelTest extends NbTestCase {
         }
         managedBean.getModel().startTransaction();
         managedBean.setAttribute(FacesAttributes.ID.getName(), FacesAttributes.ID, "girl");
-        managedBean.getModel().endTransaction();
+        endModelTransaction(managedBean.getModel());
         assertEquals("girl", managedBean.getAttribute(FacesAttributes.ID));
     }
 
@@ -366,7 +375,7 @@ public class JSFConfigModelTest extends NbTestCase {
         assertEquals("RealPage5.jsp", rule.getNavigationCases().get(0).getToViewId());
         model.startTransaction();
         rule.setFromViewId("RealPage4.jsp");
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         assertEquals("RealPage4.jsp", rule.getFromViewId());
     }
@@ -447,7 +456,7 @@ public class JSFConfigModelTest extends NbTestCase {
         locale.getDefaultLocale().setLocale("cz");
         supportedLocales.get(0).setLocale("en");
         resourceBundles.get(0).setVar("testMessages");
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
 
         checkEvent(ViewHandler.VIEW_HANDLER, "org.test.ViewHandler", "a.b.c.Handler");
@@ -488,7 +497,7 @@ public class JSFConfigModelTest extends NbTestCase {
         newResourceBundle.setBaseName("org.test.Messages");
 
         newApplication.addResourceBundle( newResourceBundle);
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
 
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);

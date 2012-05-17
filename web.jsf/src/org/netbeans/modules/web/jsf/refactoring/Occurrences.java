@@ -60,9 +60,7 @@ import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
+import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.openide.filesystems.FileObject;
@@ -71,6 +69,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -222,14 +221,14 @@ public class Occurrences {
         public void undoChange(){
             changeBeanClass(newValue, oldValue);
         }
-        
+
         private void changeBeanClass(String oldClass, String newClass){
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             for (ManagedBean managedBean : facesConfig.getManagedBeans()) {
                 if (oldClass.equals(managedBean.getManagedBeanClass())){
                     facesConfig.getModel().startTransaction();
                     managedBean.setManagedBeanClass(newClass);
-                    facesConfig.getModel().endTransaction();
+                    endModelTransaction(facesConfig.getModel());
                     break;
                 }
             }
@@ -246,7 +245,7 @@ public class Occurrences {
                 if (oldValue.equals(managedBean.getManagedBeanClass())){
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeManagedBean(managedBean);
-                    facesConfig.getModel().endTransaction();
+                    endModelTransaction(facesConfig.getModel());
                     break;
                 }
             }
@@ -256,7 +255,7 @@ public class Occurrences {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
             facesConfig.addManagedBean((ManagedBean) copy);
-            facesConfig.getModel().endTransaction();
+            endModelTransaction(facesConfig.getModel());
         }
     }
     
@@ -297,7 +296,7 @@ public class Occurrences {
                 if (oldClass.equals(converter.getConverterClass())){
                     converter.getModel().startTransaction();
                     converter.setConverterClass(newClass);
-                    converter.getModel().endTransaction();
+                    endModelTransaction(converter.getModel());
                     break;
                 }
             }
@@ -314,7 +313,7 @@ public class Occurrences {
                 if (oldValue.equals(converter.getConverterClass())){
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
-                    facesConfig.getModel().endTransaction();
+                    endModelTransaction(facesConfig.getModel());
                     break;
                 }
             }
@@ -324,7 +323,7 @@ public class Occurrences {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
             facesConfig.addConverter((Converter) copy);
-            facesConfig.getModel().endTransaction();
+            endModelTransaction(facesConfig.getModel());
         }
     }
     
@@ -365,7 +364,7 @@ public class Occurrences {
                 if (oldClass.equals(converter.getConverterForClass())){
                     converter.getModel().startTransaction();
                     converter.setConverterForClass(newClass);
-                    converter.getModel().endTransaction();
+                    endModelTransaction(converter.getModel());
                     break;
                 }
             }
@@ -382,7 +381,7 @@ public class Occurrences {
                 if (oldValue.equals(converter.getConverterForClass())){
                     facesConfig.getModel().startTransaction();
                     facesConfig.removeConverter(converter);
-                    facesConfig.getModel().endTransaction();
+                    endModelTransaction(facesConfig.getModel());
                     break;
                 }
             }
@@ -392,7 +391,7 @@ public class Occurrences {
             FacesConfig facesConfig = ConfigurationUtils.getConfigModel(config, true).getRootComponent();
             facesConfig.getModel().startTransaction();
             facesConfig.addConverter((Converter) copy);
-            facesConfig.getModel().endTransaction();
+            endModelTransaction(facesConfig.getModel());
         }
     }
     
@@ -470,6 +469,14 @@ public class Occurrences {
             }
         }
         return result;
+    }
+
+    private static void endModelTransaction(JSFConfigModel model) {
+        try {
+            model.endTransaction();
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
+        }
     }
     
     public static List <OccurrenceItem> getPackageOccurrences(WebModule webModule, 

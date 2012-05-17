@@ -526,7 +526,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 } catch (ValueNotPermittedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                getModel().endTransaction();
+                try {
+                    getModel().endTransaction();
+                } catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     });
@@ -563,7 +567,11 @@ private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
                 } catch (ValueNotPermittedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                getModel().endTransaction();
+                try {
+                    getModel().endTransaction();
+                } catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     });
@@ -587,7 +595,11 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     }
                 }
                 setModified();
-                getModel().endTransaction();
+                try {
+                    getModel().endTransaction();
+                } catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 //                    serialize();
             }
         }
@@ -961,7 +973,11 @@ private void btnDeleteImageActionPerformed(java.awt.event.ActionEvent evt) {//GE
             getPofConfig().setAllowInterfaces(getFactory().createAllowInterfaces());
         }
         getPofConfig().getAllowInterfaces().setValue(b);
-        getModel().endTransaction();
+        try {
+            getModel().endTransaction();
+        } catch (IllegalStateException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public boolean isAllowInterfaces() {
@@ -981,7 +997,11 @@ private void btnDeleteImageActionPerformed(java.awt.event.ActionEvent evt) {//GE
             getPofConfig().setAllowSubclasses(getFactory().createAllowSubclasses());
         }
         getPofConfig().getAllowSubclasses().setValue(b);
-        getModel().endTransaction();
+        try {
+            getModel().endTransaction();
+        } catch (IllegalStateException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public boolean isAllowSubclasses() {
@@ -1008,7 +1028,11 @@ private void btnDeleteImageActionPerformed(java.awt.event.ActionEvent evt) {//GE
             }
             getPofConfig().getDefaultSerializer().getClassName().setValue(s);
         }
-        getModel().endTransaction();
+        try {
+            getModel().endTransaction();
+        } catch (IllegalStateException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public String getDefaultSerializer() {
