@@ -1482,4 +1482,9 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertChar("$foo = 'bar'^;", '/', "$foo = /^;", "'bar'");
     }
 
+    public void testIssue202644() throws Exception {
+        insertBreak("function foo($bar) {^\n    echo($bar);\n}\n\nfunction bar($foo) {",
+                "function foo($bar) {\n    ^\n    echo($bar);\n}\n\nfunction bar($foo) {");
+    }
+
 }

@@ -44,14 +44,19 @@
 
 package org.netbeans.modules.cnd.editor.fortran;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.TextAction;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
@@ -88,9 +93,33 @@ public class FKit extends NbEditorKit {
     protected void initDocument(BaseDocument doc) {
         super.initDocument(doc);
         doc.putProperty(Language.class, getLanguage());
-        doc.putProperty(InputAttributes.class, getLexerAttributes(doc));
+        initCodeStyle(doc);
     }
 
+    @Override
+    public void read(Reader in, Document doc, int pos) throws IOException, BadLocationException {
+        super.read(in, doc, pos);
+        initCodeStyle(doc);
+    }
+
+    @Override
+    public void read(InputStream in, Document doc, int pos) throws IOException, BadLocationException {
+        super.read(in, doc, pos);
+        initCodeStyle(doc);
+    }
+
+    private void initCodeStyle(Document doc) {
+        InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+        if (lexerAttrs == null) {
+            lexerAttrs = new InputAttributes();
+            doc.putProperty(InputAttributes.class, lexerAttrs);
+        }
+        FortranCodeStyle codeStyle = FortranCodeStyle.get(doc);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFortranFilter(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, codeStyle.getRrightMargin(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, codeStyle.getFormatFortran(), true);
+    }
+    
     private Language<FortranTokenId> getLanguage() {
         return FortranTokenId.languageFortran();
     }
@@ -100,7 +129,7 @@ public class FKit extends NbEditorKit {
         FortranCodeStyle codeStyle = FortranCodeStyle.get(doc);
         lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, CndLexerUtilities.getFortranFilter(), true);
         lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, codeStyle.getRrightMargin(), true);
-        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, codeStyle.isFreeFormatFortran(), true);
+        lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranFormat.UNDEFINED, true);
         return lexerAttrs;
     }
 
@@ -120,9 +149,9 @@ public class FKit extends NbEditorKit {
 		try {
 		    fortranActions[index] = (Action)c.newInstance();
 		} catch (java.lang.InstantiationException e) {
-		    e.printStackTrace();
+		    e.printStackTrace(System.err);
 		} catch (java.lang.IllegalAccessException e) {
-		    e.printStackTrace();
+		    e.printStackTrace(System.err);
 		}
 		index++;
 	    }
@@ -146,5 +175,4 @@ public class FKit extends NbEditorKit {
 	}
 	actionClasses.add(action);
     }
-
 }

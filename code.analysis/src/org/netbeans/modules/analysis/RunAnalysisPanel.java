@@ -48,6 +48,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -242,6 +244,32 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 resultChanged(null);
             }
         });
+        
+        configurationCombo.addActionListener(new ActionListener() {
+            Object currentItem = configurationCombo.getSelectedItem();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object tempItem = configurationCombo.getSelectedItem();
+                if (tempItem instanceof String) {
+                    configurationCombo.setSelectedItem(currentItem);
+                } else {
+                    currentItem = tempItem;
+                }
+            }
+        });
+        
+        inspectionCombo.addActionListener(new ActionListener() {
+            Object currentItem = inspectionCombo.getSelectedItem();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object tempItem = inspectionCombo.getSelectedItem();
+                if (!(tempItem instanceof AnalyzerAndWarning)) {
+                    inspectionCombo.setSelectedItem(currentItem);
+                } else {
+                    currentItem = tempItem;
+                }
+            }
+        });
     }
 
     void started() {
@@ -266,12 +294,13 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         }
     }
 
+    @Messages({"LBL_Predefined=Predefined", "LBL_Custom=Custom"})
     public void updateConfigurations(DialogState state) {
         analyzers = analyzersResult.allInstances();
         
         Object selectedConfiguration = null;
         DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
-        configurationModel.addElement("Predefined");
+        configurationModel.addElement(Bundle.LBL_Predefined());
         configurationModel.addElement(null);
         
         for (AnalyzerFactory analyzer : analyzers) {
@@ -281,7 +310,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             configurationModel.addElement(analyzer);
         }
 
-        configurationModel.addElement("Custom");
+        configurationModel.addElement(Bundle.LBL_Custom());
 
         for (Configuration c : ConfigurationsManager.getDefault().getConfigurations()) {
             if (c.id().equals(state.selectedConfiguration)) {

@@ -114,6 +114,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
     private SearchProperties searchProps = SearchPropertiesSupport.getSearchProperties();
     private boolean popupMenuWasCanceled = false;
     private Rectangle actualViewPort;
+    private boolean highlightCanceled = false;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -629,6 +630,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
             findNextButton.setEnabled(false);
         }
         actualViewPort = getActualTextComponent().getVisibleRect();
+        if (!isClosingSearchType() && highlightCanceled) {
+            searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+            highlightCanceled = false;
+        }
     }
     
     public void looseFocus() {
@@ -644,6 +649,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
             getActualTextComponent().requestFocusInWindow();
         }
         setVisible(false);
+        if (!isClosingSearchType() && getFindSupportValue(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
+            searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
+            highlightCanceled = true;
+        }            
     }
 
     private void incrementalSearch() {

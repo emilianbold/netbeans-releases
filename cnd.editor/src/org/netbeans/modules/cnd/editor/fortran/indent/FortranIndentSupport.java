@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.editor.fortran.indent;
 
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
@@ -429,7 +430,7 @@ public class FortranIndentSupport {
     }
 
     protected boolean getFreeFormat() {
-        return codeStyle.isFreeFormatFortran();
+        return codeStyle.getFormatFortran() == CndLexerUtilities.FortranFormat.FREE;
     }
 
     protected int getTabSize() {

@@ -43,11 +43,12 @@
  */
 package org.netbeans.modules.cnd.lexer;
 
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
 import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -120,7 +121,10 @@ public class FortranLexer implements Lexer<FortranTokenId> {
         }
         o = info.getAttributeValue(CndLexerUtilities.FORTRAN_FREE_FORMAT);
         if(o != null) {
-            this.fortranFreeFormat = (Boolean) o;
+            if (o == FortranFormat.UNDEFINED) {
+                
+            }
+            this.fortranFreeFormat = o == FortranFormat.FREE;
         }
         setState((State) info.state());
     }
@@ -875,7 +879,7 @@ public class FortranLexer implements Lexer<FortranTokenId> {
      */
     private Token<FortranTokenId> token(FortranTokenId id, String fixedText, PartType part) {
         assert id != null : "id must be not null";
-        Token<FortranTokenId> token = null;
+        Token<FortranTokenId> token;
         if (fixedText != null) {
             // create flyweight token
             token = tokenFactory.getFlyweightToken(id, fixedText);

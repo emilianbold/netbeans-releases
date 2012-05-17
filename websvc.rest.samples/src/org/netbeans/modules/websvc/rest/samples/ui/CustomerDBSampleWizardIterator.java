@@ -101,7 +101,7 @@ public class CustomerDBSampleWizardIterator extends SampleWizardIterator {
             dirParent = FileUtil.toFileObject(FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR)));
         } 
         
-        ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent.getParent()));
+        ProjectChooser.setProjectsFolder(FileUtil.toFile(dirParent));
         return resultSet;
     }
 
