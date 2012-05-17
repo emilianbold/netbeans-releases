@@ -1672,7 +1672,6 @@
                     // fx:platform
                     var plat = deploy.createPlatform();
                     plat.setProject(project);
-                    plat.setJavafx("2.0+");
                     var jvmargs = project.getProperty("run.jvmargs");
                     if(jvmargs != null && jvmargs.length() > 0) {
                         var jvmargss = jvmargs.split(" ");
