@@ -67,6 +67,8 @@ public class UpdateContextRoot implements ProgressListener {
     private ServerInstance si;
     private boolean needToDo;
 
+    private static final RequestProcessor RP = new RequestProcessor("UpdateContextRoot",5); // NOI18N
+
     public UpdateContextRoot(MonitorProgressObject returnProgress, Hk2TargetModuleID moduleId,
             ServerInstance si, boolean needToDo) {
         this.returnProgress = returnProgress;
@@ -82,7 +84,7 @@ public class UpdateContextRoot implements ProgressListener {
                 returnProgress.operationStateChanged(OperationState.RUNNING, event.getDeploymentStatus().getMessage());
                 // let's update the context-root
                 //
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
 
                     @Override
                     public void run() {
