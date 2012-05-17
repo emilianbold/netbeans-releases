@@ -29,7 +29,7 @@
         <h4>To generate JSF pages from an entity class:</h4>
 
         <ol>
-            <li>Choose File > New (Ctrl-N) from the main menu.</li>
+            <li>Choose File &gt; New (Ctrl-N) from the main menu.</li>
 
             <li>From the JavaServer Faces category, select JSF Pages from Entity Class and
                 click Next. The wizard displays all of the entity classes in the project.</li>
@@ -44,28 +44,31 @@
                 fields:
 
                 <ul>
-                    <li><strong>JPA Session Bean Package:</strong> (contains EJB session beans)</li>
-                    <li><strong>JSF Classes Package:</strong> (contains JSF session-scoped, managed beans)</li>
-                    <li><strong>JSF Pages Folder:</strong> (contains all Facelets pages generated for entity classes)</li>
-                    <li><strong>Localization Bundle Name:</strong> (the properties bundle that
-                        will contain all text used in Facelets pages as key-value pairs)</li>
+                    <li><strong>Session Bean Package.</strong> This package contains the session facades for the entity classes.</li>
+                    <li><strong>JSF Classes Package:</strong> This package JSF session-scoped, managed beans.</li>
+                    <li><strong>JSF Pages Folder:</strong> This folder contains the Facelets pages generated for the entity classes.</li>
+                    <li><strong>Localization Bundle Name:</strong> The properties bundle 
+                        contains all the text used in the Facelets pages as key-value pairs.</li>
                 </ul></li>
 
             <li>Click Finish.</li>
         </ol>
 
         <p>The IDE generates all files based on the names and locations you specified in the wizard.
-            For each entity class, the wizard generates the following:</p>
+            For each entity class the wizard generates the following files.</p>
 
         <ul>
-            <li>a stateless session bean for creation, retrieval, modification and
-                removal of entity instances</li>
+            <li>a stateless session facade that extends an abstract facade</li>
 
             <li>a JSF session-scoped, managed bean</li>
 
             <li>a directory containing four Facelets files for CRUD capabilities (<code>Create.xhtml</code>,
                 <code>Edit.xhtml</code>, <code>List.xhtml</code>, and <code>View.xhtml</code>)</li>
-
+        </ul>
+        <p>The IDE also generates the following files.</p>
+        <ul>
+            <li>an abstract facade class with methods for the creation, retrieval, modification and
+                removal of entity instances</li>
             <li>utility classes used by the JSF managed beans (<code>JsfUtil</code>,
                 <code>PaginationHelper</code>)</li>
 
@@ -73,7 +76,7 @@
                 the project's Faces configuration file (A <code>faces-config.xml</code> file is
                 created if one does not already exist.)</li>
 
-            <li>auxilary web files, including a default stylesheet for rendered components,
+            <li>auxiliary web files, including a default stylesheet for rendered components,
                 and a Facelets template file</li>
         </ul>
 
