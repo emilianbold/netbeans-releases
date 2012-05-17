@@ -61,6 +61,12 @@ import org.openide.util.lookup.Lookups;
  * @author Vladirmir Voskresensky
  */
 public final class CndLexerUtilities {
+    
+    public enum FortranFormat {
+        FREE,
+        FIXED,
+        UNDEFINED
+    }
 
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
     public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
@@ -202,15 +208,13 @@ public final class CndLexerUtilities {
         }
         return null;
     }
-    public static final boolean FORTRAN_FIXED_FORMAT_VALUE = false;
-    public static final boolean FORTRAN_FREE_FORMAT_VALUE = true;
 
-    public static boolean detectFortranFormat(Document doc) {
+    public static FortranFormat detectFortranFormat(Document doc) {
         CharSequence sequence;
         try {
             sequence = doc.getText(0, doc.getLength());
         } catch (BadLocationException ex) {
-            return FORTRAN_FIXED_FORMAT_VALUE;
+            return FortranFormat.FIXED;
         }
         int column = 0;
         boolean ignoreRestLine = false;
@@ -242,7 +246,7 @@ public final class CndLexerUtilities {
                         column = 6;
                         break;
                     } else {
-                        return FORTRAN_FREE_FORMAT_VALUE;
+                        return FortranFormat.FREE;
                     }
                 case 2:
                 case 3:
@@ -259,13 +263,13 @@ public final class CndLexerUtilities {
                         column = 6;
                         break;
                     } else {
-                        return FORTRAN_FREE_FORMAT_VALUE;
+                        return FortranFormat.FREE;
                     }
                 default:
                     break;
             }
         }
-        return FORTRAN_FIXED_FORMAT_VALUE;
+        return FortranFormat.FIXED;
     }
 
     public static boolean isCppIdentifier(CharSequence id) {
