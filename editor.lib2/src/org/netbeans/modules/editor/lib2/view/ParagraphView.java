@@ -471,10 +471,6 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     }
     
     void releaseTextLayouts() {
-        dropChildren(); // In fact it means releasing whole children
-    }
-    
-    void dropChildren() {
         children = null;
         markChildrenInvalid();
     }

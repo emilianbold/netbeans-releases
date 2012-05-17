@@ -119,12 +119,20 @@ public abstract class DiffElement extends SimpleRefactoringElementImplementation
         }
         
         public void performChange() {
-            occurence.performChange();
+            try {
+                occurence.performChange();
+            } catch (IllegalStateException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         @Override
         public void undoChange() {
-            occurence.undoChange();
+            try {
+                occurence.undoChange();
+            } catch (IllegalStateException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         public PositionBounds getPosition() {

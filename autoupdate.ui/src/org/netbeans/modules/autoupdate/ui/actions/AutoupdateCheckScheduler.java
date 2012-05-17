@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -69,11 +69,11 @@ import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Unit;
 import org.netbeans.modules.autoupdate.ui.UnitCategory;
 import org.netbeans.modules.autoupdate.ui.Utilities;
+import org.netbeans.modules.autoupdate.ui.wizards.InstallUnitWizard;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDisplayer;
@@ -97,7 +97,6 @@ public class AutoupdateCheckScheduler {
         new RequestProcessor("auto-checker-reqularly-timer", 1, true); // NOI18N
     private static final Logger err = Logger.getLogger (AutoupdateCheckScheduler.class.getName ());
     
-    private static boolean wasRealCheckUpdateCenters = false;
     private static Notification updatesNotification = null;
 
     private AutoupdateCheckScheduler () {
@@ -209,7 +208,10 @@ public class AutoupdateCheckScheduler {
         // check
         err.log (Level.FINEST, "Check UpdateElements for " + type);
         if (forceReload) {
-            Collection <String> updateProblems=refreshUpdateCenters (ProgressHandleFactory.createHandle ("dummy-check-for-updates")); // NOI18N
+            ProgressHandle dummyHandler = ProgressHandleFactory.createHandle ("dummy-check-for-updates"); // NOI18N
+            ProgressHandleFactory.createProgressComponent(dummyHandler);
+            dummyHandler.start();
+            Collection <String> updateProblems=refreshUpdateCenters (dummyHandler);
             if(problems!=null && updateProblems!=null)problems.addAll(updateProblems);
         }
         List<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (Utilities.getUnitTypes ());
@@ -443,7 +445,6 @@ public class AutoupdateCheckScheduler {
             }
             if (timeToCheck ()) {
                 scheduleRefreshProviders ();
-                wasRealCheckUpdateCenters = true;
                 if (getWaitPeriod () > 0 && regularlyCheck != null && regularlyCheck.getDelay () <= 0) {
                     regularlyCheck = REGULARLY_CHECK_TIMER.post (doCheck, getWaitPeriod (), Thread.MIN_PRIORITY);
                 }
@@ -544,4 +545,11 @@ public class AutoupdateCheckScheduler {
                     onMouseClickAction, NotificationDisplayer.Priority.HIGH);
         }
     }
+
+    public static void notifyAvailableUpdates(Collection<UpdateElement> updates) {
+        assert updates != null && ! updates.isEmpty() : "Some updates found.";
+        LazyUnit.storeUpdateElements(OperationType.UPDATE, updates);
+        notifyAvailable(LazyUnit.loadLazyUnits (OperationType.UPDATE), OperationType.UPDATE);
+    }
+
 }

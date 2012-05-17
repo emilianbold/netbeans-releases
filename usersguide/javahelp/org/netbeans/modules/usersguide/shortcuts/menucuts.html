@@ -261,7 +261,7 @@
         <tr>
             <td valign="top">Ctrl-Shift-P</td>
             <td valign="top">Go to Super Implementation</td>
-            <td valign="top">Jump to the super implementation of the item under the cursor.></td>
+            <td valign="top">Jump to the super implementation of the item under the cursor.</td>
         </tr>
         <tr>
             <td valign="top">Ctrl-Q</td>    
@@ -476,42 +476,97 @@
             <td valign="top">Run Project</td>
             <td valign="top">Runs the currently selected project.</td>
         </tr>
-        <tr>
-            <td valign="top">Ctrl-F5</td>
-            <td valign="top">Debug Project</td>
-            <td valign="top">Debugs the currently selected project.</td>
-        </tr>
+        
         <tr> 
             <td valign="top">Alt-F6</td>
             <td valign="top">Test Project</td>
             <td valign="top">Starts JUnit test for project.</td>
+        </tr>
+		<tr>
+            <td valign="top">F11</td>
+            <td valign="top">Build  Project</td>
+            <td valign="top">Compiles the file. If you select a folder, the IDE
+                compiles all files regardless of whether they have changed since the
+            last compile.</td>
+        </tr>
+		<tr>
+            <td valign="top">Shift-F11</td>
+            <td valign="top">Clean and Build  Project</td>
+            <td valign="top">Deletes all previously compiled files and distributable outputs and recompiles the file. </td>
         </tr>
         <tr> 
             <td valign="top">Shift-F6</td>
             <td valign="top">Run File</td>
             <td valign="top">Runs the currently selected file.</td>
         </tr>
-        <tr> 
-            <td valign="top">Ctrl-Shift-F5</td>
-            <td valign="top">Debug File</td>
-            <td valign="top">Starts debugging session for currently selected file.</td>
-        </tr>
+       
         <tr> 
             <td valign="top">Ctrl-F6</td>
             <td valign="top">Test File</td>
             <td valign="top">Starts JUnit test for current file.</td>
         </tr>
-        <tr> 
+		<tr>
+            <td valign="top">F9</td>
+            <td valign="top">Compile File</td>
+            <td valign="top">Compiles the file. If you select a folder, the IDE
+                compiles only the files that are new or have changed since the last
+            compile.</td>
+        </tr>
+		<tr>
+            <td valign="top">Alt-F9</td>
+            <td valign="top">Check File</td>
+            <td valign="top">Checks file dependencies in the currently selected project when building.</td>
+        </tr>
+		<tr>
+            <td valign="top">Alt-Shift-F9</td>
+            <td valign="top">Validate File</td>
+            <td valign="top">Validates file dependencies in the currently selected project when building.</td>
+        </tr>
+		<tr>
+            <td valign="top">Ctrl-F11</td>
+            <td valign="top">Repeat Build/Run </td>
+            <td valign="top">Runs/builds the currently selected project once again.</td>
+        </tr>
+        
+       
+        
+        
+       
+       
+       
+        
+        
+    </table>
+
+    <a name="debug"></a>
+    <h3>Debug Menu</h3>
+    <table border="1" summary="This table displays keyboard shortcuts for Debug menu commands.">
+        <tr>
+            <th align="left" scope="col">Keys</th>
+            <th align="left" scope="col">Command</th>
+            <th align="left" scope="col">Action</th>
+        </tr>
+		<tr>
+            <td valign="top">Ctrl-F5</td>
+            <td valign="top">Debug Project</td>
+            <td valign="top">Debugs the currently selected project.</td>
+        </tr>
+		 <tr> 
+            <td valign="top">Ctrl-Shift-F5</td>
+            <td valign="top">Debug File</td>
+            <td valign="top">Starts debugging session for currently selected file.</td>
+        </tr>
+		<tr> 
             <td valign="top">Ctrl-Shift-F6</td>
-            <td valign="top">Debug Test for File</td>
+            <td valign="top">Debug Test File</td>
             <td valign="top">Starts debugging test for file in JUnit.</td>
         </tr>
-        <tr> 
+		 <tr> 
             <td valign="top">Shift-F5</td>
             <td valign="top">Finish Debugger Session</td>
             <td valign="top">Ends the dugging session.</td>
         </tr>
-        <tr> 
+		<tr> 
             <td valign="top">F5</td>
             <td valign="top">Continue</td>
             <td valign="top">Resumes debugging until the next breakpoint or the end of 
@@ -523,7 +578,7 @@
             <td valign="top">Executes one source line of a program. If the line is a method 
             call, executes the entire method then stops.</td>
         </tr>
-        <tr> 
+		<tr> 
             <td valign="top">Shift-F8</td>
             <td valign="top">Step Over Expression</td>
             <td valign="top">Steps over the expression and then stops the debugging.</td>
@@ -534,24 +589,46 @@
             <td valign="top">Executes one source line of a program. If the line is a method 
             call, executes the program up to the method's first statement and stops.</td>
         </tr>
+		 <tr> 
+            <td valign="top">Shift-F7</td>
+            <td valign="top">Step into Next Method</td>
+            <td valign="top">Runs the current project to the specified method and then steps into the method. </td>
+        </tr>
         <tr> 
             <td valign="top">Ctrl-F7</td>
             <td valign="top">Step Out</td>
             <td valign="top">Executes one source line of a program. If the line is a method 
             call, executes the methods and returns control to the caller.</td>
         </tr>
-        <tr> 
+		 <tr> 
             <td valign="top">F4</td>
             <td valign="top">Run to Cursor</td>
             <td valign="top">Runs the current project to the cursor's location in the 
             file and stop program execution. </td>
         </tr>
-        <tr> 
-            <td valign="top">Shift-F7</td>
-            <td valign="top">Run into Method</td>
-            <td valign="top">Runs the current project to the specified method and then steps into the method. </td>
+		<tr> 
+            <td valign="top">Ctrl-F8</td>
+            <td valign="top">Toggle Line Breakpoint</td>
+            <td valign="top">Adds a line breakpoint or removes the breakpoint at the cursor 
+            location in the program.</td>
+        </tr>
+		<tr> 
+            <td valign="top">Ctrl-Shift-F8</td>
+            <td valign="top">New Breakpoint</td>
+            <td valign="top">Sets a new breakpoint at the specified line, exception, or 
+            method.</td>
         </tr>
         <tr> 
+            <td valign="top">Ctrl-Shift-F7</td>
+            <td valign="top">New Watch</td>
+            <td valign="top">Adds the specified variable to watch.</td>
+        </tr>
+		<tr> 
+            <td valign="top">Ctrl-F9</td>
+            <td valign="top">Evaluate Expression</td>
+            <td valign="top">Opens the Evaluate Expression dialog box.</td>
+        </tr>
+		 <tr> 
             <td valign="top">Ctrl-Alt-Up</td>
             <td valign="top">Make Callee Current</td>
             <td valign="top">Makes the method being called the current call. Only available 
@@ -563,59 +640,9 @@
             <td valign="top">Makes the calling method the current call. Only available 
             when a call is selected in the Call Stack window.</td>
         </tr> 
-        <tr> 
-            <td valign="top">Ctrl-F8</td>
-            <td valign="top">Toggle Line Breakpoint</td>
-            <td valign="top">Adds a line breakpoint or removes the breakpoint at the cursor 
-            location in the program.</td>
-        </tr>
-        <tr> 
-            <td valign="top">Ctrl-Shift-F8</td>
-            <td valign="top">New Breakpoint</td>
-            <td valign="top">Sets a new breakpoint at the specified line, exception, or 
-            method.</td>
-        </tr>
-        <tr> 
-            <td valign="top">Ctrl-Shift-F7</td>
-            <td valign="top">New Watch</td>
-            <td valign="top">Adds the specified variable to watch.</td>
-        </tr>
-        <tr> 
-            <td valign="top">Ctrl-F9</td>
-            <td valign="top">Evaluate Expression</td>
-            <td valign="top">Opens the Evaluate Expression dialog box.</td>
-        </tr>
-    </table>
-
-    <a name="debug"></a>
-    <h3>Debug Menu</h3>
-    <table border="1" summary="This table displays keyboard shortcuts for Debug menu commands.">
-        <tr>
-            <th align="left" scope="col">Keys</th>
-            <th align="left" scope="col">Command</th>
-            <th align="left" scope="col">Action</th>
-        </tr>
-        <tr>
-            <td valign="top">F11</td>
-            <td valign="top">Build  Project</td>
-            <td valign="top">Compiles the file. If you select a folder, the IDE
-                compiles all files regardless of whether they have changed since the
-            last compile.</td>
-        </tr>
-        <tr>
-            <td valign="top">Shift-F11</td>
-            <td valign="top">Clean and Build  Project</td>
-            <td valign="top">Compiles the file. If you select a folder, the IDE
-                compiles all files regardless of whether they have changed since the
-            last compile.</td>
-        </tr>
-        <tr>
-            <td valign="top">F9</td>
-            <td valign="top">Compile File</td>
-            <td valign="top">Compiles the file. If you select a folder, the IDE
-                compiles only the files that are new or have changed since the last
-            compile.</td>
-        </tr>
+        
+        
+        
     </table>
     
     <a name="profile"></a>
@@ -670,7 +697,7 @@
         </tr>
         <tr> 
             <td valign="top">Ctrl-0</td>
-            <td valign="top">Source Editor</td>
+            <td valign="top"> Editor</td>
             <td valign="top">Switches to the Source Editor.</td>
         </tr>
         <tr> 
@@ -763,7 +790,7 @@
         </tr>
         <tr> 
             <td valign="top">Ctrl-W</td>
-            <td valign="top">Close</td>
+            <td valign="top">Close Window</td>
             <td valign="top">Closes the current tab in the current window. If the window 
             has no tabs, the whole window is closed.</td>
         </tr>
@@ -774,11 +801,11 @@
         </tr>
         <tr> 
             <td valign="top">Alt-Shift-D</td>
-            <td valign="top">Undock Window</td>
-            <td valign="top">Detaches the window from the IDE.</td>
+            <td valign="top">Configure Window &gt; Dock</td>
+            <td valign="top">Pins a detached  window to the IDE.</td>
         </tr>
         <tr> 
-            <td valign="top">Ctrl-Shift-w</td>
+            <td valign="top">Ctrl-Shift-W</td>
             <td valign="top">Close All Documents</td>
             <td valign="top">Closes all open documents in the Source Editor.</td>
         </tr>
@@ -829,3 +856,4 @@
     <table border="0" cellpadding="50">
         <tr><td>&nbsp;</td></tr>
 </table></body>
+</html>

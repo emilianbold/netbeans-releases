@@ -931,6 +931,7 @@ public class RequestProcessor180386Test extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #8322: hung
     public void testScheduleRepeatingIntervalsAreRoughlyCorrect() throws Exception {
         int runCount = 5;
         final CountDownLatch latch = new CountDownLatch(runCount);

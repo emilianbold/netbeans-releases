@@ -292,6 +292,11 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
         boolean isTestSource = false;
+        
+        //#212331 star static imports need to be stripped of the .* part. 
+        if (simpleOrQualifiedName.endsWith(".*")) {
+            simpleOrQualifiedName = simpleOrQualifiedName.substring(0, simpleOrQualifiedName.length() - ".*".length());
+        }
 
         MavenProject mp = mavProj.getMavenProject();
         String testSourceDirectory = mp.getBuild().getTestSourceDirectory();

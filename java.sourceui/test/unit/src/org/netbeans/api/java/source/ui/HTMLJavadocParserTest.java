@@ -61,4 +61,16 @@ public class HTMLJavadocParserTest extends TestCase {
     assertNotNull(result);
     assertTrue(result.contains("C"));
   }
+  
+  public void test209707() throws MalformedURLException {
+        URL url = HTMLJavadocParserTest.class.getResource("FileChooser.html");
+        String result = HTMLJavadocParser.getJavadocText(url, false);
+        assertNotNull(result);
+        assertTrue(result.contains(" may be restricted "));
+
+        result = HTMLJavadocParser.getJavadocText(
+                new URL(url, "FileChooser.html#showSaveDialog(javafx.stage.Window)"), false);
+        assertNotNull(result);
+        assertTrue(result.contains("the selected file or"));
+  }
 }

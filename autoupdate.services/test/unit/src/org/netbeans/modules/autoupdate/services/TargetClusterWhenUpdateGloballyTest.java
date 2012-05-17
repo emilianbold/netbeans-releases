@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 
 /**
@@ -65,7 +66,7 @@ public class TargetClusterWhenUpdateGloballyTest extends TargetClusterTestCase {
     }
     
     @Override
-    protected UpdateElement getInstalledUpdateElement () throws IOException {
+    protected UpdateElement getInstalledUpdateElement () throws IOException, OperationException {
         if (installed == null) {
             // !!! origin module is installed in platformDir
             installed = installModule (getCodeName (null, null));
@@ -73,7 +74,7 @@ public class TargetClusterWhenUpdateGloballyTest extends TargetClusterTestCase {
         return installed;
     }
 
-    public void testUpdateGlobally () throws IOException {
+    public void testUpdateGlobally () throws IOException, OperationException {
         // TODO: adjust changes (issue 128718)
         // If an update, overwrite the existing location, wherever that is.
         assertEquals ("Goes into platformDir", platformDir.getName (), getTargetCluster (null, true).getName ());

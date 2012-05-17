@@ -47,7 +47,9 @@ package org.netbeans.modules.form;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,16 +61,20 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.lang.model.SourceVersion;
 import javax.swing.JEditorPane;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * This class manages resources of a form (i.e. property values stored
@@ -1771,19 +1777,24 @@ public class ResourceSupport {
             @Override
             public void setValue(String value) {
                 String oldValue = getI18nBundleName();
-                if ((oldValue == null && value != null) || !oldValue.equals(value)) {
-                    String resourceName = value;
-                    if (resourceName != null && resourceName.toLowerCase().endsWith(".properties")) { // NOI18N
-                        resourceName = resourceName.substring(
-                                0, resourceName.length()-".properties".length()); // NOI18N
-                    }
-                    formModel.getSettings().setFormBundle(resourceName);
+                if ((oldValue == null && value == null) || (oldValue != null && oldValue.equals(value))) {
+                    return;
+                }
+                String resourceName = getValidBundleName(value);
+                if (resourceName != null) {
+                    formModel.getSettings().setFormBundle(value);
                     bundleChanged(oldValue);
                     formModel.fireSyntheticPropertyChanged(null, PROP_FORM_BUNDLE, oldValue, value);
                     FormEditor.getFormEditor(formModel).getFormRootNode()
                             .firePropertyChangeHelper(PROP_FORM_BUNDLE, oldValue, value);
+                } else {
+                    String msg = FormUtils.getBundleString("MSG_InvalidBundleFileName"); // NOI18N
+                    IllegalArgumentException ex = new IllegalArgumentException(msg);
+                    Exceptions.attachLocalizedMessage(ex, msg);
+                    throw ex;
                 }
             }
+
             @Override
             public String getValue() {
                 return getI18nBundleName();
@@ -1835,6 +1846,59 @@ public class ResourceSupport {
             }
         }
         return props.toArray(new Node.Property[props.size()]);
+    }
+
+    private String getValidBundleName(String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.contains("..") || name.contains("//")) { // NOI18N
+            return null;
+        }
+        name = name.trim();
+        if ("".equals(name)) { // NOI18N
+            return null;
+        }
+        if (name.toLowerCase().endsWith(".java")) { // NOI18N
+            return null;
+        }
+
+        if (name.startsWith("/")) { // NOI18N
+            name = name.substring(1);
+        }
+        // We prefer if the name (without extension) can be used as a class name, but
+        // that can be too strict, so we allow to use any file that already exists.
+        int i = name.lastIndexOf('.');
+        String withPropertiesExt = i < 0 ? name + ".properties" : null; // NOI18N
+        FileObject sourceFile = getSourceFile();
+        ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
+        for (FileObject r : cp.getRoots()) {
+            if (FileUtil.isParentOf(r, sourceFile)) {
+                if (r.getFileObject(name) != null
+                        || (withPropertiesExt != null && r.getFileObject(withPropertiesExt) != null)) {
+                    return name; // it exists
+                }
+                break;
+            }
+        }
+
+        String withoutExt;
+        String ext;
+        if (i >= 0) {
+            withoutExt = name.substring(0, i);
+            ext = name.substring(i+1); // one dot considered as extension
+        } else {
+            withoutExt = name;
+            ext = null;
+        }
+        if (withoutExt.contains(".") || withoutExt.length() == 0) { // NOI18N
+            return null; // likely entered dot-separated class name, but that's not allowed here
+        }
+        if (!SourceVersion.isName(withoutExt.replace('/', '.'))
+                    || (ext != null && !SourceVersion.isIdentifier(ext))) {
+            return null;
+        }
+        return name;
     }
 
     private class BundleFilePropertyEditor extends PropertyEditorSupport {
