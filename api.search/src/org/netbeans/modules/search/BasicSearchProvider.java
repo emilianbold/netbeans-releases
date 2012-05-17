@@ -138,6 +138,7 @@ public class BasicSearchProvider extends SearchProvider {
         private String scopeId;
         private BasicSearchCriteria explicitCriteria;
         private SearchScopeDefinition[] extraSearchScopes;
+        private boolean wasUsableAlready = false;
 
         public BasicSearchPresenter(boolean replacing, String scopeId,
                 BasicSearchCriteria explicitCriteria,
@@ -232,9 +233,15 @@ public class BasicSearchProvider extends SearchProvider {
                     msg = "BasicSearchForm.txtErrorFileName";           //NOI18N
                 } else {
                     msg = "BasicSearchForm.txtErrorMissingCriteria";    //NOI18N
+                    if (!wasUsableAlready) { // #212614
+                        notifySupport.setInformationMessage(
+                                UiUtils.getText(msg));
+                        return false;
+                    }
                 }
                 notifySupport.setErrorMessage(UiUtils.getText(msg));
             } else {
+                wasUsableAlready = true;
                 notifySupport.clearMessages();
             }
             return usable;
