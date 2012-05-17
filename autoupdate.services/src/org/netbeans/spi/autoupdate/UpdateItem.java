@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,11 +48,11 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.Set;
 import java.util.jar.Manifest;
-import org.netbeans.modules.autoupdate.updateprovider.LocalizationItem;
+import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
+import org.netbeans.modules.autoupdate.updateprovider.LocalizationItem;
 import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.modules.autoupdate.updateprovider.NativeComponentItem;
-import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 
 /** Represents a item of content provider by <code>UpdateProvider</code>. These items are exposed to 
@@ -69,6 +69,7 @@ public final class UpdateItem {
     UpdateItem original;
     
     /** Creates a new instance of UpdateItem */
+    @SuppressWarnings("LeakingThisInConstructor")
     UpdateItem (UpdateItemImpl item) {
         impl = item;
         item.setUpdateItem (this);
@@ -94,7 +95,7 @@ public final class UpdateItem {
      * @param license <code>UpdateLicense</code> represents license name and text of license agreement
      * @return UpdateItem
      */
-    public static final UpdateItem createModule (
+    public static UpdateItem createModule (
                                     String codeName,
                                     String specificationVersion,
                                     URL distribution,
@@ -113,7 +114,53 @@ public final class UpdateItem {
         ModuleItem item = new ModuleItem (codeName, specificationVersion, distribution, 
                 author, publishDate, downloadSize, homepage, category,
                 manifest, isEager, isAutoload,
-                needsRestart, isGlobal, targetCluster, license.impl);
+                needsRestart, isGlobal, false, targetCluster, license.impl);
+        return new UpdateItem (item);
+    }
+    
+    /** Creates <code>UpdateItem/code> which represents NetBeans Module in Autoupdate infrastructure.
+     * UpdateItem is identify by <code>codeName</code> and <code>specificationVersion<code>.
+     * 
+     * @param codeName code name of module
+     * @param specificationVersion specification version of module
+     * @param distribution URL to NBM file
+     * @param author name of module author or null
+     * @param downloadSize size of NBM file in bytes
+     * @param homepage homepage of module or null
+     * @param publishDate date of publish of item, in date format "yyyy/MM/dd"
+     * @param category name of category
+     * @param manifest <code>java.util.jar.Manifest</code> describes the module in NetBeans module system
+     * @param isEager says if the module is <code>eager</code> or not
+     * @param isAutoload says if the module is <code>autoload</code> or not
+     * @param needsRestart if true then IDE must be restarted after module installation
+     * @param isGlobal control if the module will be installed into the installation directory or into user's dir
+     * @param isPreferedUpdate if <code>true</code> will be handled in exclusive mode before other updates
+     * @param targetCluster name of cluster where new module will be installed if installation isGlobal
+     * @param license <code>UpdateLicense</code> represents license name and text of license agreement
+     * @return UpdateItem
+     * @since 1.33
+     */
+    public static UpdateItem createModule (
+                                    String codeName,
+                                    String specificationVersion,
+                                    URL distribution,
+                                    String author,
+                                    String downloadSize,
+                                    String homepage,
+                                    String publishDate,
+                                    String category,
+                                    Manifest manifest,
+                                    Boolean isEager,
+                                    Boolean isAutoload,
+                                    Boolean needsRestart,
+                                    Boolean isGlobal,
+                                    Boolean isPreferedUpdate,
+                                    String targetCluster,
+                                    UpdateLicense license) {
+        ModuleItem item = new ModuleItem (codeName, specificationVersion, distribution, 
+                author, publishDate, downloadSize, homepage, category,
+                manifest, isEager, isAutoload,
+                needsRestart, isGlobal, isPreferedUpdate, targetCluster, license.impl);
         return new UpdateItem (item);
     }
     
@@ -130,7 +177,7 @@ public final class UpdateItem {
      * @param category name of category
      * @return UpdateItem
      */
-    public static final UpdateItem createFeature (
+    public static UpdateItem createFeature (
                                     String codeName,
                                     String specificationVersion,
                                     Set<String> dependencies,
@@ -158,7 +205,7 @@ public final class UpdateItem {
      * @param license <code>UpdateLicense</code> represents license name and text of license agreement
      * @return <code>UpdateItem</code>
      */
-    public static final UpdateItem createNativeComponent (
+    public static UpdateItem createNativeComponent (
                                     String codeName,
                                     String specificationVersion,
                                     String downloadSize,
@@ -188,7 +235,7 @@ public final class UpdateItem {
      * @param uninstaller <code>CustomUninstaller</code> call-back interface
      * @return <code>UpdateItem</code>
      */
-    public static final UpdateItem createInstalledNativeComponent (
+    public static UpdateItem createInstalledNativeComponent (
                                     String codeName,
                                     String specificationVersion,
                                     Set<String> dependencies,
@@ -218,7 +265,7 @@ public final class UpdateItem {
      * @param license <code>UpdateLicense</code> represents license name and text of license agreement
      * @return <code>UpdateItem</code>
      */
-    public static final UpdateItem createLocalization (
+    public static UpdateItem createLocalization (
                                     String codeName,
                                     String specificationVersion,
                                     String moduleSpecificationVersion,

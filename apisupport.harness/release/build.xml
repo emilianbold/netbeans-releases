@@ -205,6 +205,7 @@ made subject to such option by the copyright holder.
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
+        <property name="nbm.is.preferredupdate" value=""/>
         <!-- Override if you want to use these: -->
         <property name="nbm.distribution" value=""/>
         <property name="nbm.homepage" value=""/>

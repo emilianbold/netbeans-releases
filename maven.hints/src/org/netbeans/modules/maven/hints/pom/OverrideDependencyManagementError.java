@@ -155,7 +155,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
         return toRet;
     }
 
-    private static class OverrideFix implements Fix {
+    private static class OverrideFix implements Fix, Runnable {
         private Dependency dependency;
 
         OverrideFix(Dependency dep) {
@@ -166,6 +166,10 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
         public String getText() {
             return NbBundle.getMessage(OverrideDependencyManagementError.class, "TEXT_OverrideDependencyFix");
         }
+        
+        public void run() {
+            dependency.setVersion(null);
+        }
 
         @Override
         public ChangeInfo implement() throws Exception {
@@ -174,12 +178,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
             if (!mdl.getState().equals(Model.State.VALID)) {
                 return info;
             }
-            mdl.startTransaction();
-            try {
-                dependency.setVersion(null);
-            } finally {
-                mdl.endTransaction();
-            }
+            PomModelUtils.implementInTransaction(mdl, this);
             return info;
         }
 

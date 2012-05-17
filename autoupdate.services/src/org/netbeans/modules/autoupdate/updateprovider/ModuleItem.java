@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import org.netbeans.modules.autoupdate.services.*;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Date;
@@ -52,6 +51,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
+import org.netbeans.modules.autoupdate.services.*;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
 
@@ -71,6 +71,7 @@ public class ModuleItem extends UpdateItemImpl {
     private Date publishDate;
     private boolean isEager;
     private boolean isAutoload;
+    private boolean isPreferedUpdate;
     private String moduleNotification = null;
     
     private URL distribution;
@@ -95,6 +96,7 @@ public class ModuleItem extends UpdateItemImpl {
             Boolean isAutoload,
             Boolean needsRestart,
             Boolean isGlobal,
+            Boolean isPrefered,
             String targetCluster,
             UpdateLicenseImpl licenseImpl) {
         this.codeName = codeName;
@@ -118,8 +120,10 @@ public class ModuleItem extends UpdateItemImpl {
         this.category = category;
         this.isEager = isEager;
         this.isAutoload = isAutoload;
+        this.isPreferedUpdate = isPrefered;
     }
     
+    @Override
     public String getCodeName () {
         return codeName;
     }
@@ -148,6 +152,7 @@ public class ModuleItem extends UpdateItemImpl {
         return this.deployImpl;
     }
     
+    @Override
     public UpdateLicenseImpl getUpdateLicenseImpl () {
         return this.licenseImpl;
     }
@@ -164,6 +169,7 @@ public class ModuleItem extends UpdateItemImpl {
         return getUpdateLicenseImpl ().getAgreement();
     }
 
+    @Override
     public String getCategory () {
         return category;
     }
@@ -178,6 +184,10 @@ public class ModuleItem extends UpdateItemImpl {
 
     public boolean isEager () {
         return isEager;
+    }
+    
+    public boolean isPreferredUpdate() {
+        return isPreferedUpdate;
     }
     
     public String getModuleNotification () {

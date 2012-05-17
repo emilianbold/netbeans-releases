@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.hints.pom;
 
-package org.netbeans.modules.autoupdate.services;
-
-import java.io.IOException;
-import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.modules.xml.xam.Model;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jiri Rechtacek
+ * @author sdedic
  */
-public class TargetClusterWhenGlobalUndeclaredTest extends TargetClusterTestCase {
-    
-    public TargetClusterWhenGlobalUndeclaredTest (String testName) {
-        super (testName);
+final class PomModelUtils {
+    static boolean implementInTransaction(Model m, Runnable r) {
+        m.startTransaction();
+        try {
+            r.run();
+        } finally {
+            try {
+                m.endTransaction();
+            } catch (IllegalStateException ex) {
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(PomModelUtils.class, "ERR_UpdatePomModel",
+                        Exceptions.findLocalizedMessage(ex)));
+                return false;
+            }
+        }
+        return true;
     }
-    
-    @Override
-    protected String getCodeName (String target, Boolean global) {
-        return "org.yourorghere.testupdatemodule";
-    }
-    
-    public void testUpdateGlobalUndeclared () throws IOException, OperationException {
-        // Otherwise (no cluster name specified), if marked global, maybe put it into an "extra" cluster
-        assertEquals ("Goes into extraDir", "extra", getTargetCluster (null, Boolean.TRUE).getName ());
-    }
-    
 }

@@ -88,7 +88,9 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -730,7 +732,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
             try {
                 excludeDepFromModel(node, exclTargets);
             } finally {
-                model.endTransaction();
+                try {
+                    model.endTransaction();
+                } catch (IllegalStateException ex) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            NbBundle.getMessage(DependencyGraphScene.class, "ERR_UpdateModel", Exceptions.findLocalizedMessage(ex)), 
+                            StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                    return;
+                }
             }
 
             HashSet<DependencyNode> conflictParents = new HashSet<DependencyNode>();

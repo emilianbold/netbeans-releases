@@ -118,7 +118,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final Logger ERR = Logger.getLogger (AutoupdateCatalogParser.class.getName ());
     
     private static enum ELEMENTS {
-        module_updates, module_group, notification, module, description,
+        module_updates, module_group, notification, content_description, module, description,
         module_notification, external_package, manifest, l10n, license
     }
     
@@ -138,6 +138,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final String MODULE_ATTR_MODULE_AUTHOR = "moduleauthor"; // NOI18N
     private static final String MODULE_ATTR_RELEASE_DATE = "releasedate"; // NOI18N
     private static final String MODULE_ATTR_IS_GLOBAL = "global"; // NOI18N
+    private static final String MODULE_ATTR_IS_PREFERRED_UPDATE = "preferredupdate";
     private static final String MODULE_ATTR_TARGET_CLUSTER = "targetcluster"; // NOI18N
     private static final String MODULE_ATTR_EAGER = "eager"; // NOI18N
     private static final String MODULE_ATTR_AUTOLOAD = "autoload"; // NOI18N
@@ -257,6 +258,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
     private Stack<Map <String,String>> currentLicense = new Stack<Map <String,String>> ();
     private Stack<String> currentNotificationUrl = new Stack<String> ();
+    private Stack<String> currentContentDescriptionUrl = new Stack<String> ();
     private Map<String, UpdateLicenseImpl> name2license = new HashMap<String, UpdateLicenseImpl> ();
     private List<String> lines = new ArrayList<String> ();
     private int bufferInitSize = 0;
@@ -304,6 +306,26 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                                 "<a name=\"autoupdate_catalog_parser\"/>"; // NOI18N
                     }
                     provider.setNotification (notification);
+                }
+                currentNotificationUrl.pop ();
+                break;
+            case content_description :
+                // write catalog notification
+                if (this.provider != null && ! lines.isEmpty ()) {
+                    StringBuilder sb = new StringBuilder (bufferInitSize);
+                    for (String line : lines) {
+                        sb.append (line);
+                    }
+                    String contentDescription = sb.toString ();
+                    String contentDescriptionUrl = currentContentDescriptionUrl.peek ();
+                    if (contentDescriptionUrl != null && contentDescriptionUrl.length () > 0) {
+                        contentDescription += (contentDescription.length () > 0 ? "<br>" : "") + // NOI18N
+                                "<a name=\"update_center_content_description\" href=\"" + contentDescriptionUrl + "\">" + contentDescriptionUrl + "</a>"; // NOI18N
+                    } else {
+                        contentDescription += (contentDescription.length () > 0 ? "<br>" : "") +
+                                "<a name=\"update_center_content_description\"/>"; // NOI18N
+                    }
+                    provider.setContentDescription(contentDescription);
                 }
                 currentNotificationUrl.pop ();
                 break;
@@ -481,6 +503,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         private Boolean isGlobal;
         private Boolean isEager;
         private Boolean isAutoload;
+        private Boolean isPreferredUpdate;
 
         private String specVersion;
         private Manifest mf;
@@ -524,11 +547,13 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             String global = module.getValue (MODULE_ATTR_IS_GLOBAL);
             String eager = module.getValue (MODULE_ATTR_EAGER);
             String autoload = module.getValue (MODULE_ATTR_AUTOLOAD);
+            String preferred = module.getValue(MODULE_ATTR_IS_PREFERRED_UPDATE);
                         
             needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
             isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
             isEager = Boolean.parseBoolean (eager);
             isAutoload = Boolean.parseBoolean (autoload);
+            isPreferredUpdate = Boolean.parseBoolean(preferred);
                         
             String licName = module.getValue (MODULE_ATTR_LICENSE);
             lic = UpdateLicense.createUpdateLicense (licName, null);
@@ -563,6 +588,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     isAutoload,
                     needsRestart,
                     isGlobal,
+                    isPreferredUpdate,
                     targetcluster,
                     lic);
             

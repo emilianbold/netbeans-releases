@@ -189,6 +189,7 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
             }
             assert cmd != null : "Unsupported action: " + action; //NOI18N
             props.put("javac.includes", ActionUtils.antIncludesList(new FileObject[]{testRoot}, testRoot, true)); //NOI18N
+            props.setProperty("ignore.failing.tests", "true"); //NOI18N
             ActionUtils.runTarget(projectHome.getFileObject("build.xml"), new String[]{cmd}, props); //NOI18N
         }
     }

@@ -285,7 +285,8 @@ public class WeakSetTest extends NbTestCase {
         }
         assertTrue("ConcurrentModificationException is expected", gotException);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #8344: after assertGC: expected:<[2, 3.0]> but was:<[2, 3.0]>
     public void testClone() {
         Object[] arr = new Object[]{new Integer(1), new Long(2), new Double(3)};
         WeakSet<Object> set = new WeakSet<Object>();

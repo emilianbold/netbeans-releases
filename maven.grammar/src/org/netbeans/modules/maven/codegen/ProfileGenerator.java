@@ -43,11 +43,8 @@
  */
 package org.netbeans.modules.maven.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.maven.api.Constants;
@@ -63,13 +60,10 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginManagement;
 import org.netbeans.modules.maven.model.pom.Profile;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
@@ -80,7 +74,7 @@ import org.openide.util.Utilities;
 @Messages({"NAME_Profile=Profile...",
            "TIT_Add_profile=Add new profile"
 })
-public class ProfileGenerator implements CodeGenerator {
+public class ProfileGenerator extends AbstractGenerator<POMModel> {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=300)
     public static class Factory implements CodeGenerator.Factory {
@@ -96,106 +90,94 @@ public class ProfileGenerator implements CodeGenerator {
             return toRet;
         }
     }
-
-    private POMModel model;
-    private JTextComponent component;
     
     /** Creates a new instance of ProfileGenerator */
     private ProfileGenerator(POMModel model, JTextComponent component) {
-        this.model = model;
-        this.component = component;
+        super(model, component);
     }
 
     @Override
     public String getDisplayName() {
         return NAME_Profile();
     }
-
+    
     @Override
-    public void invoke() {
-        try {
-            model.sync();
-        } catch (IOException ex) {
-            Logger.getLogger(ProfileGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
-        }
-        if (!model.getState().equals(State.VALID)) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ProfileGenerator.class, "MSG_Cannot_Parse"));
-            return;
-        }
-        NewProfilePanel panel = new NewProfilePanel(model);
+    protected void doInvoke() {
+        final NewProfilePanel panel = new NewProfilePanel(model);
         DialogDescriptor dd = new DialogDescriptor(panel, TIT_Add_profile());
         panel.attachDialogDisplayer(dd);
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
-            String id = panel.getProfileId();
-            Profile prof = model.getProject().findProfileById(id);
-            boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
-            if (prof == null) {
-                try {
-                    model.startTransaction();
-                    prof = model.getFactory().createProfile();
-                    prof.setId(id);
-                    if (panel.generateDependencies()) {
-                        Dependency dep = model.getFactory().createDependency();
-                        dep.setGroupId("foo"); //NOI18N
-                        dep.setArtifactId("bar"); //NOI18N
-                        dep.setVersion("1.0"); //NOI18N
-                        if (pomPackaging) {
-                            DependencyManagement dm = model.getFactory().createDependencyManagement();
-                            prof.setDependencyManagement(dm);
-                            dm.addDependency(dep);
-                        } else {
-                            prof.addDependency(dep);
+            final String id = panel.getProfileId();
+            writeModel(new ModelWriter() {
+                @Override
+                public int write() {
+                    Profile prof = model.getProject().findProfileById(id);
+                    boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
+                    if (prof == null) {
+                        prof = model.getFactory().createProfile();
+                        prof.setId(id);
+                        if (panel.generateDependencies()) {
+                            Dependency dep = model.getFactory().createDependency();
+                            dep.setGroupId("foo"); //NOI18N
+                            dep.setArtifactId("bar"); //NOI18N
+                            dep.setVersion("1.0"); //NOI18N
+                            if (pomPackaging) {
+                                DependencyManagement dm = model.getFactory().createDependencyManagement();
+                                prof.setDependencyManagement(dm);
+                                dm.addDependency(dep);
+                            } else {
+                                prof.addDependency(dep);
+                            }
                         }
-                    }
-                    if (panel.generatePlugins()) {
-                        BuildBase base = model.getFactory().createBuildBase();
-                        prof.setBuildBase(base);
+                        if (panel.generatePlugins()) {
+                            BuildBase base = model.getFactory().createBuildBase();
+                            prof.setBuildBase(base);
                             Plugin plug = model.getFactory().createPlugin();
                             plug.setGroupId("foo"); //NOI18N
                             plug.setArtifactId("bar"); //NOI18N
                             plug.setVersion("1.0"); //NOI18N
-                        if (pomPackaging) {
-                            PluginManagement pm = model.getFactory().createPluginManagement();
-                            base.setPluginManagement(pm);
-                            pm.addPlugin(plug);
-                        } else {
-                            base.addPlugin(plug);
-                        }
-                    }
-                    if (panel.isActivation()) {
-                        Activation act = model.getFactory().createActivation();
-                        prof.setActivation(act);
-                        if (panel.isActiovationByProperty()) {
-                            ActivationProperty prop = model.getFactory().createActivationProperty();
-                            act.setActivationProperty(prop);
-                            prop.setName("foo");//NOI18N
-                            prop.setValue("bar");//NOI18N
-                        }
-                        if (panel.isActiovationByFile()) {
-                            ActivationFile file = model.getFactory().createActivationFile();
-                            act.setActivationFile(file);
-                            file.setExists("${basedir}/foo.bar"); //NOI18N
-                        }
-                        if (panel.isActiovationByOS()) {
-                            ActivationOS os = model.getFactory().createActivationOS();
-                            if (Utilities.isMac()) {
-                                os.setFamily("MacOS");//NOI18N
-                            } else if (Utilities.isUnix()) {
-                                os.setFamily("Linux");//NOI18N
+                            if (pomPackaging) {
+                                PluginManagement pm = model.getFactory().createPluginManagement();
+                                base.setPluginManagement(pm);
+                                pm.addPlugin(plug);
                             } else {
-                                os.setFamily("Windows"); //NOI18N
+                                base.addPlugin(plug);
                             }
-                            act.setActivationOS(os);
                         }
+                        if (panel.isActivation()) {
+                            Activation act = model.getFactory().createActivation();
+                            prof.setActivation(act);
+                            if (panel.isActiovationByProperty()) {
+                                ActivationProperty prop = model.getFactory().createActivationProperty();
+                                act.setActivationProperty(prop);
+                                prop.setName("foo");//NOI18N
+                                prop.setValue("bar");//NOI18N
+                            }
+                            if (panel.isActiovationByFile()) {
+                                ActivationFile file = model.getFactory().createActivationFile();
+                                act.setActivationFile(file);
+                                file.setExists("${basedir}/foo.bar"); //NOI18N
+                            }
+                            if (panel.isActiovationByOS()) {
+                                ActivationOS os = model.getFactory().createActivationOS();
+                                if (Utilities.isMac()) {
+                                    os.setFamily("MacOS");//NOI18N
+                                } else if (Utilities.isUnix()) {
+                                    os.setFamily("Linux");//NOI18N
+                                } else {
+                                    os.setFamily("Windows"); //NOI18N
+                                }
+                                act.setActivationOS(os);
+                            }
+                        }
+                        model.getProject().addProfile(prof);
+                        return prof.getModel().getAccess().findPosition(prof.getPeer());
                     }
-                    model.getProject().addProfile(prof);
-                } finally {
-                    model.endTransaction();
+                    return -1;
                 }
-                int pos = prof.getModel().getAccess().findPosition(prof.getPeer());
-                component.setCaretPosition(pos);
-            }
+            });
         }
     }
+
 }

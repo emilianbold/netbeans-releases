@@ -532,6 +532,7 @@ public class CLIHandlerTest extends NbTestCase {
         
     }
 
+    @RandomlyFails // NB-Core-Build #8297: The handler should not be finished, as it blocks in '99' but it is and the result is -255
     public void testServerIsNotBlockedByLongRequests() throws Exception {
         class H extends CLIHandler {
             private int cnt = -1;
