@@ -782,7 +782,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                         getSelectionModel().setSelectedIndex(i);
                     }
                 }
-                if (i != -1) {
+                if (i != -1 && e.getButton() == MouseEvent.BUTTON1 ) {
                     //Post a maximize request
                     shouldPerformAction(TabDisplayer.COMMAND_MAXIMIZE, i, e);
                 }

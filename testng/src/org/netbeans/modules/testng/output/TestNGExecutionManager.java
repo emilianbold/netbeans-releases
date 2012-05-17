@@ -84,6 +84,7 @@ public class TestNGExecutionManager implements RerunHandler {
     public TestNGExecutionManager(AntSession session, TestSession testSession, Properties props) {
         this.testSession = testSession;
         this.properties = props;
+        properties.setProperty("ignore.failing.tests", "true"); //NOI18N
         try {
             scriptFile = session.getOriginatingScript();
             targets = session.getOriginatingTargets();

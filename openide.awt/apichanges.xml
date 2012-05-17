@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="CheckForUpdatesProvider">
+        <api name="awt"/>
+        <summary>Support for Check for Updates feature</summary>
+        <version major="7" minor="45"/>
+        <date day="16" month="5" year="2012"/>
+        <author login="jrechtacek"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            A service provider of UI for Check for Updates feature, for example in About dialog.
+            The instance of the provider should be installed in default lookup using {@link org.openide.util.lookup.ServiceProvider}.
+        </description>
+        <class package="org.openide.awt" name="CheckForUpdatesProvider"/>
+        <issue number="212218"/>
+    </change>
     <change id="QuickSearch">
       <api name="awt"/>
       <summary>QuickSearch class that allows to attach quick search field to an arbitratry component.</summary>

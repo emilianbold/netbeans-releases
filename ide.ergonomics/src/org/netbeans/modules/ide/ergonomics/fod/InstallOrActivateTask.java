@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.awt.CheckForUpdatesProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /** Runnable to install missing modules or activate
  * new ones.
@@ -87,7 +92,19 @@ final class InstallOrActivateTask implements Runnable, FileChangeListener {
                 fo.removeFileChangeListener(this);
                 FeatureManager.associateFiles(changed);
             }
+            notifyUpdates();
         }
+    }
+    
+    private void notifyUpdates() {
+        assert ! EventQueue.isDispatchThread() : "Don't call it from event dispatch thread.";
+        CheckForUpdatesProvider checkForUpdatesProvider = Lookup.getDefault().lookup(CheckForUpdatesProvider.class);
+        if (checkForUpdatesProvider == null) {
+            Logger.getLogger(InstallOrActivateTask.class.getName()).log(Level.WARNING, "CheckForUpdatesProvider not found in Lookup.getDefault(): " + Lookup.getDefault());
+            return;
+        }
+        boolean anyUpdates = checkForUpdatesProvider.notifyAvailableUpdates(false);
+        Logger.getLogger(InstallOrActivateTask.class.getName()).log(Level.FINE, "Any updates? " + anyUpdates);
     }
 
     public void fileFolderCreated(FileEvent fe) {

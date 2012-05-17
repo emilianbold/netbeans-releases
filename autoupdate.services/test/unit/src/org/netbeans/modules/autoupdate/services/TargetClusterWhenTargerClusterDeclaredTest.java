@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
+import org.netbeans.api.autoupdate.OperationException;
 
 /**
  *
@@ -61,7 +62,7 @@ public class TargetClusterWhenTargerClusterDeclaredTest extends TargetClusterTes
         return "org.yourorghere.testupdatemodule";
     }
     
-    public void testUpdateTargerClusterDeclared () throws IOException {
+    public void testUpdateTargerClusterDeclared () throws IOException, OperationException {
         // if a cluster name is specified in NBM, put it there (creating the cluster if necessary)
         assertEquals ("Goes into platformDir", nextDir.getName (), getTargetCluster (nextDir.getName (), null).getName ());
     }

@@ -326,7 +326,7 @@ public class WindowManagerParserTest extends NbTestCase {
         WindowManagerConfig wmCfg2 = wmParser.load();
         
         //Compare data
-        assertTrue("Compare configuration data",wmCfg1.equals(wmCfg2));
+        assertEquals("Compare configuration data", wmCfg1, wmCfg2);
         
         System.out.println("WindowManagerParserTest.testSaveWM01 FINISH");
     }

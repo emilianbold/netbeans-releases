@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,8 +46,6 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.awt.Image;
 import java.io.File;
-import org.netbeans.api.autoupdate.*;
-import org.netbeans.spi.autoupdate.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,20 +60,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.autoupdate.*;
+import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
+import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
+import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
+import org.netbeans.spi.autoupdate.*;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.netbeans.modules.autoupdate.updateprovider.ProviderCategory;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 
 /** <code>UpdateProvider</code> providers items for Autoupdate infrastructure. The items
@@ -131,8 +131,14 @@ public final class UpdateUnitProviderImpl {
         return ProviderCategory.forValue(CATEGORY.COMMUNITY).getDisplayName();
     }
 
-    
-    
+    public String getContentDescription() {
+        UpdateProvider up = getUpdateProvider();
+        if (up instanceof AutoupdateCatalogProvider) {
+            return ((AutoupdateCatalogProvider) up).getContentDescription();
+        }
+        return null;
+    }
+
     /** Display name of provider. This display name can be visualized in UI.
      * 
      * @return display name of provider

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,8 +45,6 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.text.ParseException;
-import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
-import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -60,6 +58,8 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.modules.autoupdate.updateprovider.ArtificialFeaturesProvider;
+import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
+import org.netbeans.modules.autoupdate.updateprovider.InstallInfo;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
@@ -77,8 +77,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     private String homepage;
     private String category;
     private InstallInfo installInfo;
-    private FeatureItem featureItem;
-    private static Logger LOG = null;
+    private static final Logger LOG = Logger.getLogger (FeatureUpdateElementImpl.class.getName ());
     private Set<ModuleUpdateElementImpl> moduleElementsImpl;
     private UpdateManager.TYPE type;
     
@@ -89,28 +88,30 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         codeName = item.getCodeName ();
         String itemSpec = item.getSpecificationVersion ();
         if (itemSpec == null) {
-            getLogger ().log (Level.INFO, codeName + " has no specificationVersion.");
+            LOG.log (Level.INFO, codeName + " has no specificationVersion.");
         } else {
             specVersion = new SpecificationVersion (itemSpec);
         }
         installInfo = new InstallInfo (item);
         displayName = item.getDisplayName ();
         description = item.getDescription ();
-        this.featureItem = item;
         category = item.getCategory ();
         if (category == null) {
             category = NbBundle.getMessage (UpdateElementImpl.class, "UpdateElementImpl_Feature_CategoryName");
         }
     }
     
+    @Override
     public String getCodeName () {
         return codeName;
     }
     
+    @Override
     public String getDisplayName () {
         return displayName;
     }
     
+    @Override
     public SpecificationVersion getSpecificationVersion () {
         if (specVersion == null) {
             specVersion = new SpecificationVersion (ArtificialFeaturesProvider.createVersion (getModuleInfos ()));
@@ -118,14 +119,17 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return specVersion;
     }
     
+    @Override
     public String getDescription () {
         return description;
     }
     
+    @Override
     public String getNotification() {
         return null;
     }
     
+    @Override
     public String getAuthor () {
         String res = "";
         Set<String> authors = new HashSet<String> ();
@@ -139,10 +143,12 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
     
+    @Override
     public String getHomepage () {
         return homepage;
     }
     
+    @Override
     public int getDownloadSize () {
         int res = 0;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
@@ -153,6 +159,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
     
+    @Override
     public String getSource () {
         String res = "";
         Set<String> sources = new HashSet<String> ();
@@ -164,6 +171,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
     
+    @Override
     public String getCategory () {
         if (isAutoload () || isFixed ()) {
             category = UpdateUnitFactory.LIBRARIES_CATEGORY;
@@ -175,6 +183,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return category;
     }
     
+    @Override
     public String getDate () {
         String res = null;
         Date date = null;
@@ -195,6 +204,22 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
     
+    @Override
+    public String getLicenseId() {
+        String res = "";
+        Set<String> ids = new HashSet<String>();
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements()) {
+            if (!impl.getUpdateUnit().getAvailableUpdates().isEmpty()) {
+                String id = impl.getUpdateUnit().getAvailableUpdates().get(0).getLicenseId();
+                if (ids.add(id)) {
+                    res += res.length() == 0 ? id : "," + id; // NOI18N
+                }
+            }
+        }
+        return res;
+    }
+    
+    @Override
     public String getLicence () {
         String res = "";
         Set<String> licenses = new HashSet<String> ();
@@ -209,10 +234,12 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
 
+    @Override
     public InstallInfo getInstallInfo () {
         return installInfo;
     }
     
+    @Override
     public List<ModuleInfo> getModuleInfos () {
         List<ModuleInfo> infos = new ArrayList<ModuleInfo> ();
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
@@ -228,10 +255,12 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return moduleElementsImpl;
     }
     
+    @Override
     public UpdateManager.TYPE getType () {
         return type;
     }
 
+    @Override
     public boolean isEnabled () {
         boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
@@ -240,6 +269,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
     
+    @Override
     public boolean isAutoload () {
         boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
@@ -248,6 +278,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
 
+    @Override
     public boolean isEager () {
         boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
@@ -256,10 +287,20 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return res;
     }
     
+    @Override
     public boolean isFixed () {
         boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
             res &= impl.isFixed ();
+        }
+        return res;
+    }
+    
+    @Override
+    public boolean isPreferredUpdate() {
+        boolean res = true;
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements()) {
+            res &= impl.isPreferredUpdate();
         }
         return res;
     }
@@ -293,14 +334,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                                          : 0);
         return hash;
     }
-    
-    private static Logger getLogger () {
-        if (LOG == null) {
-            LOG = Logger.getLogger (FeatureUpdateElementImpl.class.getName ());
-        }
-        return LOG;
-    }
-    
+
     public static class Agent extends FeatureUpdateElementImpl {
         
         private Set<ModuleUpdateElementImpl> moduleElementsImpl;
