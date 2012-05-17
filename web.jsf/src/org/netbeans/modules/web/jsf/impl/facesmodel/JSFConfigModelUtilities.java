@@ -55,6 +55,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Various model utilities methods.
@@ -78,7 +80,14 @@ public class JSFConfigModelUtilities {
      */
     public static void saveChanges(DocumentModel<?> model) throws IOException {
         if (model.isIntransaction()) {
-            model.endTransaction();
+            try {
+                model.endTransaction();
+            } catch (IllegalStateException ex) {
+                IOException io = new IOException("Cannot save faces config", ex);
+                throw Exceptions.attachLocalizedMessage(io,
+                        NbBundle.getMessage(JSFConfigModelUtilities.class, "ERR_Save_FacesConfig",
+                        Exceptions.findLocalizedMessage(ex)));
+            }
         }
         model.sync();
         DataObject dobj = model.getModelSource().getLookup().lookup(DataObject.class);
