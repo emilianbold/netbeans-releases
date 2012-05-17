@@ -44,9 +44,10 @@ package org.netbeans.modules.cnd.editor.fortran.reformat;
 
 import java.util.Stack;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
-import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
+import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 
 /**
  *
@@ -169,7 +170,7 @@ class FortranBracesStack implements Cloneable {
         
     public int getIndent(){
         int shift = 0;
-        if (!codeStyle.isFreeFormatFortran()){
+        if (codeStyle.getFormatFortran() == FortranFormat.FIXED){
             shift = FIXED_FORMAT_SHIFT;
         }
         FortranStackEntry top = peek();
@@ -181,7 +182,7 @@ class FortranBracesStack implements Cloneable {
 
     public int getSelfIndent(){
         int shift = 0;
-        if (!codeStyle.isFreeFormatFortran()){
+        if (codeStyle.getFormatFortran() == FortranFormat.FIXED){
             shift = FIXED_FORMAT_SHIFT;
         }
         FortranStackEntry top = peek();
@@ -236,7 +237,7 @@ class FortranBracesStack implements Cloneable {
             }
             buf.append(entry.toString());
         }
-        buf.append("+"+getIndent()+"-"+getSelfIndent()); // NOI18N
+        buf.append("+").append(getIndent()).append("-").append(getSelfIndent()); // NOI18N
         return buf.toString();
     }
 

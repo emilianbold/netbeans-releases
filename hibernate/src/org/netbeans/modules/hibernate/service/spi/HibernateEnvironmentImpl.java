@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -156,9 +157,16 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      * @return true if can connect to database, false otherwise.
      */
     public boolean canDirectlyConnectToDB(HibernateConfiguration config) {
+        //
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         ClassLoader ccl = null;
         try {
+            //try first to open a connection, see #205183, it will open connection if registred in ide
+            DatabaseConnection dbconn = HibernateUtil.getDBConnection(config);
+            if (dbconn != null) {
+                dbconn.getJDBCConnection();
+            }
+            //
             ccl = getProjectClassLoader(getProjectClassPath().toArray(new URL[]{}));
             Thread.currentThread().setContextClassLoader(ccl);
             HibernateUtil.getDirectDBConnection(config);
