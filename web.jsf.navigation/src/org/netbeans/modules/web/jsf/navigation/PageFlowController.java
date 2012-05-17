@@ -349,12 +349,13 @@ public class PageFlowController {
         FacesModelUtility.setToViewId(navCase, target.getDisplayName());
         navRule.addNavigationCase(navCase);
 
-
-        configModel.endTransaction();
         try {
+            configModel.endTransaction();
             configModel.sync();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
         }
 
         return navCase;
@@ -985,11 +986,13 @@ public class PageFlowController {
             }
         }
 
-        configModel.endTransaction();
         try {
+            configModel.endTransaction();
             configModel.sync();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
         }
     }
 
@@ -1100,12 +1103,14 @@ public class PageFlowController {
         if (navCase.getFromAction() != null) {
             navCase.setFromAction(newName);
         }
-        configModel.endTransaction();
 
         try {
+            configModel.endTransaction();
             configModel.sync();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
         }
     }
 
@@ -1119,7 +1124,12 @@ public class PageFlowController {
                 configModel.removeChildComponent(navRule); //put this back once you remove hack
             }
         }
-        configModel.endTransaction();
+
+        try {
+            configModel.endTransaction();
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
+        }
         configModel.sync();
     }
 

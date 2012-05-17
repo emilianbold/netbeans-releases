@@ -152,6 +152,10 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                     facesConfig.getModel().endTransaction();
                     facesConfig.getModel().sync();
                     target.setCaretPosition(bean.findPosition());
+                } catch (IllegalStateException ex) {
+                    java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                            ex.getMessage(),
+                            ex);
                 } catch (IOException ex) {
                     java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                             ex.getMessage(),
@@ -194,6 +198,8 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                     facesConfig.getModel().endTransaction();
                     facesConfig.getModel().sync();
                     target.setCaretPosition(rule.findPosition());
+                } catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(ex);
                 } catch (java.io.IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -257,6 +263,8 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                         target.setCaretPosition(rule.findPosition());    //NOI18N
                     else
                         target.setCaretPosition(nCase.findPosition());
+                } catch (IllegalStateException ex) {
+                    Exceptions.printStackTrace(ex);
                 } catch (java.io.IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
