@@ -464,15 +464,16 @@ public class VariousUtils {
                         for (TypeScope type : oldRecentTypes) {
                             Collection<? extends FieldElement> inheritedFields = IndexScopeImpl.getFields(type, fldName, varScope, PhpModifiers.ALL_FLAGS);
                             for (FieldElement fieldElement : inheritedFields) {
-                                if (var != null) {
-                                    final Collection<? extends TypeScope> fieldTypes = var.getFieldTypes(fieldElement, offset);
-                                    if (fieldTypes.isEmpty() && (fieldElement instanceof FieldElementImpl)) {
+                                Collection<? extends TypeScope> fieldTypes = fieldElement.getTypes(offset);
+                                if (fieldTypes.isEmpty() && var != null) {
+                                    final Collection<? extends TypeScope> varFieldTypes = var.getFieldTypes(fieldElement, offset);
+                                    if (varFieldTypes.isEmpty() && (fieldElement instanceof FieldElementImpl)) {
                                         newRecentTypes.addAll(((FieldElementImpl) fieldElement).getDefaultTypes());
                                     } else {
-                                        newRecentTypes.addAll(fieldTypes);
+                                        newRecentTypes.addAll(varFieldTypes);
                                     }
                                 } else {
-                                    newRecentTypes.addAll(fieldElement.getTypes(offset));
+                                    newRecentTypes.addAll(fieldTypes);
                                 }
                             }
                         }
