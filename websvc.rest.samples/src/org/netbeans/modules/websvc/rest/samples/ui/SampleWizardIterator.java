@@ -57,7 +57,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.rest.samples.util.RestSampleUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -112,31 +111,27 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
     @Override
     public Set<FileObject> instantiate() throws IOException {
         Set resultSet = new LinkedHashSet();
-        File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
-        dirF.mkdirs();
         
-        String name = (String) wiz.getProperty(NAME);
+        File projectDirFile = FileUtil.normalizeFile((File) wiz.getProperty(PROJDIR));
+        projectDirFile.mkdirs();
+        
+        FileObject projectDirFileObject = FileUtil.toFileObject(projectDirFile);
+        
+        String projectName = (String) wiz.getProperty(NAME);
         FileObject template = Templates.getTemplate(wiz);
-
-        FileObject dir = FileUtil.toFileObject(dirF);
-        
-        // All projects associated with the sample are created within a 
-        // top level directory.       
-        dir = dir.createFolder(name);
-        dirF = FileUtil.toFile(dir);
-    
-        RestSampleUtils.unZipFile(template.getInputStream(), dir);
+        RestSampleUtils.unZipFile(template.getInputStream(), projectDirFileObject);
         ProjectManager.getDefault().clearNonProjectCache();
         
-        if (projectConfigNamespace != null)
-            RestSampleUtils.setProjectName(dir, projectConfigNamespace, name);
+        if (projectConfigNamespace != null) {
+            RestSampleUtils.setProjectName(projectDirFileObject, projectConfigNamespace, projectName);
+        }
  
-        myProjectFolder = dir;
+        myProjectFolder = projectDirFileObject;
     
         // Always open top dir as a project:
-        resultSet.add(dir);
+        resultSet.add(projectDirFileObject);
         // Look for nested projects to open as well:
-        Enumeration e = dir.getFolders(true);
+        Enumeration e = projectDirFileObject.getFolders(true);
         while (e.hasMoreElements()) {
             FileObject subfolder = (FileObject) e.nextElement();
             if (ProjectManager.getDefault().isProject(subfolder)) {
@@ -144,9 +139,9 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
             }
         }
 
-        File parent = dirF.getParentFile();
-        if (parent != null && parent.exists()) {
-            ProjectChooser.setProjectsFolder(parent);
+        File projectParentDir = projectDirFile.getParentFile();
+        if (projectParentDir != null && projectParentDir.exists()) {
+            ProjectChooser.setProjectsFolder(projectParentDir);
         }
 
         return resultSet;

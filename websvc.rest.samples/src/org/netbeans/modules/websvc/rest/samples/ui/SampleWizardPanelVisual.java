@@ -266,8 +266,8 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
-        d.putProperty( SampleWizardIterator.PROJDIR, new File( folder ));
-        d.putProperty(  SampleWizardIterator.NAME, name );
+        d.putProperty(SampleWizardIterator.PROJDIR, new File( folder ));
+        d.putProperty(SampleWizardIterator.NAME, name);
     }
     
     protected void read(WizardDescriptor settings) {
@@ -364,15 +364,19 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             // Change in the project name
-            
-            String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText();
-            
-            //if ( projectFolder.trim().length() == 0 || projectFolder.equals( oldName )  ) {
-            createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
-            //}
-            
+            createdFolderTextField.setText(getCreatedFolderPath());
         }
         myPanel.fireChangeEvent(); // Notify that the panel changed
     }
+
+    private String getCreatedFolderPath() {
+        StringBuilder createdFolderPath = new StringBuilder(projectLocationTextField.getText().trim());
+        if (!projectLocationTextField.getText().endsWith(File.separator)) {
+            createdFolderPath.append(File.separatorChar);
+        }
+        createdFolderPath.append(projectNameTextField.getText().trim());
+        
+        return createdFolderPath.toString();
+    }
+    
 }
