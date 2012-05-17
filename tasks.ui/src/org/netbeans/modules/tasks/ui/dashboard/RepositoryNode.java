@@ -273,7 +273,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     void updateContent() {
         updateNodes();
-        fireContentChanged();
         refreshChildren();
     }
 

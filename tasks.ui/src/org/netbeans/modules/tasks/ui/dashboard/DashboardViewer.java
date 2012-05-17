@@ -100,6 +100,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final TitleNode titleRepositoryNode;
     private final Object LOCK = new Object();
     private Map<Category, CategoryNode> mapCategoryToNode;
+    private Map<Issue, TaskNode> mapTaskToNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
     private AppliedFilters<Issue> appliedTaskFilters;
@@ -134,6 +135,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         mapCategoryToNode = new HashMap<Category, CategoryNode>();
+        mapTaskToNode = new HashMap<Issue, TaskNode>();
         categoryNodes = new ArrayList<CategoryNode>();
         repositoryNodes = new ArrayList<RepositoryNode>();
 
@@ -183,6 +185,21 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             });
         }
+    }
+
+    void setSelection(Collection<Issue> toSelect) {
+        for (Issue issue : toSelect) {
+            TaskNode taskNode = mapTaskToNode.get(issue);
+            TreeListNode parent = taskNode.getParent();
+            if (!parent.isExpanded()) {
+                parent.setExpanded(true);
+            }
+            treeList.setSelectedValue(taskNode, true);
+        }
+    }
+
+    void addTaskMapEntry(Issue issue, TaskNode taskNode) {
+        mapTaskToNode.put(issue, taskNode);
     }
 
     private static class Holder {
@@ -254,8 +271,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
                 DashboardViewer.getInstance().setActiveTaskNode(toAdd);
             }
-            model.contentChanged(destCategoryNode);
-            destCategoryNode.updateContent();
+            ArrayList<Issue> toSelect = new ArrayList<Issue>();
+            toSelect.add(taskNode.getTask());
+            destCategoryNode.updateContentAndSelect(toSelect);
         }
         if (isTaskInFilter && !isCatInFilter) {
             addCategoryToModel(destCategoryNode);
@@ -747,7 +765,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (RepositoryNode repositoryNode : repositoryNodes) {
             repositoryNode.updateContent();
         }
-
+        mapTaskToNode.clear();
         setRepositories(repositoryNodes);
         setCategories(categoryNodes);
     }

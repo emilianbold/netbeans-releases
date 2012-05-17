@@ -44,6 +44,7 @@ package org.netbeans.modules.tasks.ui.dashboard;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -67,6 +68,7 @@ public abstract class TaskContainerNode extends TreeListNode {
     private List<JComponent> changedCountComp;
     private final Object LOCK = new Object();
     final Object UI_LOCK = new Object();
+    private Collection<Issue> toSelect;
 
     public TaskContainerNode(boolean expandable, TreeListNode parent) {
         this(false, expandable, parent);
@@ -80,7 +82,26 @@ public abstract class TaskContainerNode extends TreeListNode {
         changedCountComp = new ArrayList<JComponent>();
     }
 
-    abstract void updateContent();
+    void updateContent(){
+        updateContentAndSelect(null);
+    }
+
+    void updateContentAndSelect(Collection<Issue> toSelect){
+        this.toSelect = toSelect;
+        final boolean empty = getChildren().isEmpty();
+        boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
+        // expand node if needed
+        if (expand) {
+            setExpanded(true);
+        }
+        updateNodes();
+
+        // if getChildren().isEmpty() is true, refresh was already performed in setExpanded
+        if (!empty) {
+            refreshChildren();
+        }
+        fireContentChanged();
+    }
 
     abstract List<Issue> getTasks();
 
@@ -108,7 +129,10 @@ public abstract class TaskContainerNode extends TreeListNode {
                 synchronized (UI_LOCK) {
                     lblProgress.setVisible(false);
                     showCounts();
-                    updateCounts();
+                    if (toSelect != null) {
+                        DashboardViewer.getInstance().setSelection(toSelect);
+                        toSelect = null;
+                    }
                 }
             }
         });
@@ -167,7 +191,8 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     final void updateNodes() {
         synchronized (LOCK) {
-            AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
+            DashboardViewer dashboard = DashboardViewer.getInstance();
+            AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
             List<Issue> issues = getTasks();
             removeTaskListeners();
             if (taskListener == null) {
@@ -181,9 +206,12 @@ public abstract class TaskContainerNode extends TreeListNode {
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
                 if (appliedFilters.isInFilter(issue)) {
+                    dashboard.addTaskMapEntry(issue, taskNode);
                     filteredTaskNodes.add(taskNode);
                 }
             }
+            updateCounts();
+            showCounts();
         }
     }
 

@@ -107,7 +107,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     @Override
     void updateCounts() {
         synchronized (UI_LOCK) {
-            if (btnTotal != null) {
+            if (panel != null) {
                 btnTotal.setText(getTotalString());
                 btnChanged.setText(getChangedString());
             }

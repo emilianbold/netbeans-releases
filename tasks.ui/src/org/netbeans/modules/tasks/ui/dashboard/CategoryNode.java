@@ -101,12 +101,6 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     @Override
-    void updateContent() {
-        updateNodes();
-        refreshChildren();
-    }
-
-    @Override
     List<Issue> getTasks() {
         return category.getTasks();
     }
@@ -119,8 +113,10 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     @Override
     void updateCounts() {
         synchronized (UI_LOCK) {
-            lblTotal.setText(getTotalString());
-            lblChanged.setText(getChangedString());
+            if (panel != null) {
+                lblTotal.setText(getTotalString());
+                lblChanged.setText(getChangedString());
+            }
         }
     }
 
