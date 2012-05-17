@@ -223,7 +223,12 @@ public class ClientHandlerButtonListener implements ActionListener {
                     bindingsModel.startTransaction();
                     gb.setWsdlLocation(relativePath);
                 } finally {
-                    bindingsModel.endTransaction();  //becomes locked here
+                    try {
+                        bindingsModel.endTransaction();  //becomes locked here
+                    } catch (IllegalStateException ex) {
+                        ErrorManager.getDefault().notify(ex);
+                        return;
+                    }
                 }
 
                 DataObject dobj = DataObject.find(bindingHandlerFO);
@@ -268,7 +273,11 @@ public class ClientHandlerButtonListener implements ActionListener {
                     }
                 }
             } finally {
-                bindingsModel.endTransaction();
+                try {
+                    bindingsModel.endTransaction();
+                } catch (IllegalStateException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
 
             //save bindingshandler file

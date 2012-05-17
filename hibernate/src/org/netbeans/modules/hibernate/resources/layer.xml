@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-hibernate-loaders-cfg-HibernateCfgDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
+                        <attr name="position" intvalue="3501"/>
                     </file>
                 </folder>
                 <folder name="Actions">
@@ -140,6 +141,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-hibernate-loaders-mapping-HibernateMappingDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
+                        <attr name="position" intvalue="3503"/>
                     </file>
                 </folder>
                 <folder name="Actions">
@@ -225,6 +227,7 @@ made subject to such option by the copyright holder.
                 <folder name="Factories">
                     <file name="org-netbeans-modules-hibernate-loaders-reveng-HibernateRevengDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
+                        <attr name="position" intvalue="3502"/>
                     </file>
                 </folder>
                 <folder name="Actions">

@@ -71,9 +71,11 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -149,90 +151,96 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
             if (!mdl.getState().equals(Model.State.VALID)) {
                 return info;
             }
-            try {
-            mdl.startTransaction();
-            File fl = mdl.getModelSource().getLookup().lookup(File.class);
-            if (fl == null) {
-                FileObject obj = mdl.getModelSource().getLookup().lookup(FileObject.class);
-                fl = FileUtil.toFile(obj);
-            }
-            assert fl != null;
-            DocumentComponent comp1 = mdl.findComponent(start);
-
-            POMComponent pc = findEnclosing(comp1);
-            List<Dependency> dps = null;
-            if (pc instanceof org.netbeans.modules.maven.model.pom.Project) {
-                org.netbeans.modules.maven.model.pom.Project modprj = (org.netbeans.modules.maven.model.pom.Project)pc;
-                dps = modprj.getDependencies();
-            } else if (pc instanceof Profile) {
-                Profile prf = (Profile)pc;
-                dps = prf.getDependencies();
-            }
-            if (dps == null) {
-                return info;
-            }
-            List<Dependency> deps = extractSelectedDeps(dps, start, end);
-
-            MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl);
-            DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(MoveToDependencyManagementHint.class, "TIT_MoveDepMan"));
-            Object ret = DialogDisplayer.getDefault().notify(dd);
-            if (ret == DialogDescriptor.OK_OPTION) {
-                //TODO add the versions to the selected DM section.
-                FileObject fo = pnl.getSelectedPomFile();
-                if (fo == null) {
-                    return info;
-                }
-                FileObject current = mdl.getModelSource().getLookup().lookup(FileObject.class);
-                POMModel depMdl;
-                if (fo.equals(current)) {
-                    depMdl = mdl;
-                } else {
-                    ModelSource depSource = Utilities.createModelSource(fo);
-                    depMdl = POMModelFactory.getDefault().getModel(depSource);
-                }
-                int oldpos = -1;
-                try {
-                    if (depMdl != mdl) {
-                        depMdl.startTransaction();
+            
+            PomModelUtils.implementInTransaction(mdl, new Runnable() {
+                public void run() {
+                    File fl = mdl.getModelSource().getLookup().lookup(File.class);
+                    if (fl == null) {
+                        FileObject obj = mdl.getModelSource().getLookup().lookup(FileObject.class);
+                        fl = FileUtil.toFile(obj);
                     }
-                    DependencyManagement dm = depMdl.getProject().getDependencyManagement();
-                    if (dm == null) {
-                        dm = depMdl.getFactory().createDependencyManagement();
-                        depMdl.getProject().setDependencyManagement(dm);
+                    assert fl != null;
+                    DocumentComponent comp1 = mdl.findComponent(start);
+
+                    POMComponent pc = findEnclosing(comp1);
+                    List<Dependency> dps = null;
+                    if (pc instanceof org.netbeans.modules.maven.model.pom.Project) {
+                        org.netbeans.modules.maven.model.pom.Project modprj = (org.netbeans.modules.maven.model.pom.Project)pc;
+                        dps = modprj.getDependencies();
+                    } else if (pc instanceof Profile) {
+                        Profile prf = (Profile)pc;
+                        dps = prf.getDependencies();
                     }
-                    for (Dependency d : deps) {
-                        Dependency old = dm.findDependencyById(d.getGroupId(), d.getArtifactId(), d.getScope());
-                        if (old == null) {
-                            old = depMdl.getFactory().createDependency();
-                            old.setGroupId(d.getGroupId());
-                            old.setArtifactId(d.getArtifactId());
-                            old.setVersion(d.getVersion());
-                            old.setClassifier(d.getClassifier());
-                            old.setType(d.getType());
-                            old.setScope(d.getScope());
-                            dm.addDependency(old);
-                        } else {
-                            //TODO shall be copy over values from the current pom to the dm?
-                            old.setVersion(d.getVersion());
+                    if (dps == null) {
+                        return;
+                    }
+                    List<Dependency> deps = extractSelectedDeps(dps, start, end);
+
+                    MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl);
+                    DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(MoveToDependencyManagementHint.class, "TIT_MoveDepMan"));
+                    Object ret = DialogDisplayer.getDefault().notify(dd);
+                    if (ret == DialogDescriptor.OK_OPTION) {
+                        //TODO add the versions to the selected DM section.
+                        FileObject fo = pnl.getSelectedPomFile();
+                        if (fo == null) {
+                            return;
                         }
-                        oldpos = old.findPosition();
+                        FileObject current = mdl.getModelSource().getLookup().lookup(FileObject.class);
+                        POMModel depMdl;
+                        if (fo.equals(current)) {
+                            depMdl = mdl;
+                        } else {
+                            ModelSource depSource = Utilities.createModelSource(fo);
+                            depMdl = POMModelFactory.getDefault().getModel(depSource);
+                        }
+                        int oldpos = -1;
+                        try {
+                            if (depMdl != mdl) {
+                                depMdl.startTransaction();
+                            }
+                            DependencyManagement dm = depMdl.getProject().getDependencyManagement();
+                            if (dm == null) {
+                                dm = depMdl.getFactory().createDependencyManagement();
+                                depMdl.getProject().setDependencyManagement(dm);
+                            }
+                            for (Dependency d : deps) {
+                                Dependency old = dm.findDependencyById(d.getGroupId(), d.getArtifactId(), d.getScope());
+                                if (old == null) {
+                                    old = depMdl.getFactory().createDependency();
+                                    old.setGroupId(d.getGroupId());
+                                    old.setArtifactId(d.getArtifactId());
+                                    old.setVersion(d.getVersion());
+                                    old.setClassifier(d.getClassifier());
+                                    old.setType(d.getType());
+                                    old.setScope(d.getScope());
+                                    dm.addDependency(old);
+                                } else {
+                                    //TODO shall be copy over values from the current pom to the dm?
+                                    old.setVersion(d.getVersion());
+                                }
+                                oldpos = old.findPosition();
 
+                            }
+                        } finally {
+                            if (depMdl != mdl) {
+                                try {
+                                    depMdl.endTransaction();
+                                } catch (IllegalStateException ex) {
+                                    StatusDisplayer.getDefault().setStatusText(
+                                            NbBundle.getMessage(PomModelUtils.class, "ERR_UpdatePomModel",
+                                            Exceptions.findLocalizedMessage(ex)));
+                                }
+                            }
+                        }
+                        for (Dependency d : deps) {
+                            d.setVersion(null);
+                        }
+                        if (oldpos != -1) {
+                            openParent(oldpos, depMdl);
+                        }
                     }
-                } finally {
-                    if (depMdl != mdl) {
-                        depMdl.endTransaction();
-                    }
                 }
-                for (Dependency d : deps) {
-                    d.setVersion(null);
-                }
-                if (oldpos != -1) {
-                    openParent(oldpos, depMdl);
-                }
-            }
-            } finally {
-                mdl.endTransaction();
-            }
+            });
             return info;
         }
     }

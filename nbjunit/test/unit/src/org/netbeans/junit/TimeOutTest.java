@@ -110,7 +110,8 @@ public class TimeOutTest extends NbTestCase {
         assertTrue(SwingUtilities.isEventDispatchThread());
         expectedResult = true;
     }
-    
+
+    @RandomlyFails // NB-Core-Build #8326: expectedResult: truefailureCount: 1
     public void testRunsInAWTThreadAndShallSucceedWith1sDelay () throws Exception {
         assertTrue(SwingUtilities.isEventDispatchThread());
         expectedResult = true;

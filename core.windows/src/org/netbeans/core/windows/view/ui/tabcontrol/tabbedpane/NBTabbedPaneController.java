@@ -361,7 +361,7 @@ public class NBTabbedPaneController {
                         sel.setSelectedIndex( i );
                     }
                 }
-                if( i != -1 ) {
+                if( i != -1 && e.getButton() == MouseEvent.BUTTON1 ) {
                     //Post a maximize request
                     shouldPerformAction( TabDisplayer.COMMAND_MAXIMIZE, tabIndex, e );
                 }
