@@ -117,6 +117,15 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         }
     }
 
+    /**
+     * Get <code>GlassfishInstance</code> object associated with this object.
+     * <p/>
+     * @return <code>GlassfishInstance</code> object associated with this object.
+     */
+    public GlassfishInstance getInstance() {
+        return this.instance;
+    }
+
     private FileObject getInstanceFileObject() {
         FileObject dir = FileUtil.getConfigFile(
                 instance.getInstanceProvider().getInstancesDirName());
@@ -343,65 +352,86 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     @Override
-    public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name, String contextRoot, Map<String, String> properties, File[] libraries) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
-
-        return mgr.deploy(application, name, contextRoot, properties, libraries);
+    public Future<OperationState> deploy(OperationStateListener stateListener,
+            File application, String name, String contextRoot,
+            Map<String, String> properties, File[] libraries) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
+        return mgr.deploy(application, name, contextRoot, properties,
+                libraries);
     }
 
     @Override
-    public Future<OperationState> redeploy(final OperationStateListener stateListener,
+    public Future<OperationState> redeploy(
+            final OperationStateListener stateListener,
             final String name, boolean resourcesChanged) {
         return redeploy(stateListener, name, null, resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(final OperationStateListener stateListener,
-            final String name, final String contextRoot, boolean resourcesChanged) {
-        return redeploy(stateListener, name, contextRoot, new File[0], resourcesChanged);
+    public Future<OperationState> redeploy(
+            final OperationStateListener stateListener,
+            final String name, final String contextRoot,
+            boolean resourcesChanged) {
+        return redeploy(stateListener, name, contextRoot, new File[0],
+                resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(OperationStateListener stateListener, String name, String contextRoot, File[] libraries, boolean resourcesChanged) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> redeploy(OperationStateListener stateListener,
+    String name, String contextRoot, File[] libraries,
+    boolean resourcesChanged) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.redeploy(name, contextRoot, libraries, resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> undeploy(
+            final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.undeploy(name);
     }
 
     @Override
-    public Future<OperationState> enable(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> enable(
+            final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.enable(name);
     }
     @Override
-    public Future<OperationState> disable(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> disable(
+            final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.disable(name);
     }
 
     @Override
     public Future<OperationState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance);
         return mgr.execute(command);
     }
 
     private Future<OperationState> execute(boolean irr, ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+                instance);
         return mgr.execute(command);
     }
-    private Future<OperationState> execute(boolean irr, ServerCommand command, OperationStateListener... osl) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties(), osl);
+    private Future<OperationState> execute(boolean irr, ServerCommand command,
+            OperationStateListener... osl) {
+        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+                instance, osl);
         return mgr.execute(command);
     }
 
     @Override
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance);
         int total = 0;
         Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
@@ -420,8 +450,10 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public Map<String, ResourceDesc> getResourcesMap(String type) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
-        Map<String, ResourceDesc> resourcesMap = new HashMap<String, ResourceDesc>();
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance);
+        Map<String, ResourceDesc> resourcesMap
+                = new HashMap<String, ResourceDesc>();
         List<ResourceDesc> resourcesList = mgr.getResources(type);
         for (ResourceDesc resource : resourcesList) {
             resourcesMap.put(resource.getName(), resource);

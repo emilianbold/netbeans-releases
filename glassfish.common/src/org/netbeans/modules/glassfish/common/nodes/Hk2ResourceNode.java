@@ -48,8 +48,9 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Future;
-import org.netbeans.modules.glassfish.common.PartialCompletionException;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.PartialCompletionException;
 import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceCookie;
 import org.netbeans.modules.glassfish.common.ui.BasePanel;
@@ -86,9 +87,12 @@ public class Hk2ResourceNode extends Hk2ItemNode {
 
                 public Future<OperationState> unregister() {
                     Future<OperationState> result = null;
-                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+                    CommonServerSupport commonModule = lookup.lookup(
+                            CommonServerSupport.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true,
+                                commonModule.getCommandFactory(),
+                                commonModule.getInstance());
                         result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
                                 decorator.getCmdPropertyName(), decorator.isCascadeDelete());
                         status = new WeakReference<Future<OperationState>>(result);
@@ -127,11 +131,11 @@ public class Hk2ResourceNode extends Hk2ItemNode {
 
                                 // fetch the data for the BasePanel
                                 public void run() {
-                                    GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                                    CommonServerSupport commonSupport = lookup.lookup(
+                                            CommonServerSupport.class);
                                     if (commonSupport != null) {
                                         //try {
-                                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), commonSupport.getInstance());
                                         if (!GlassfishModule.JDBC_RESOURCE.equals(resource.getCommandSuffix())) {
                                             retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
                                         } else {
@@ -151,11 +155,11 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                         public void actionPerformed(ActionEvent event) {
                                             if (event.getSource().equals(NotifyDescriptor.OK_OPTION)) {
                                                 // write the data back to the server
-                                                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                                                CommonServerSupport commonSupport = lookup.lookup(
+                                                        CommonServerSupport.class);
                                                 if (commonSupport != null) {
                                                     //try {
-                                                    java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                                                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                                                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), commonSupport.getInstance());
                                                     //retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
                                                     try {
                                                         mgr.putResourceData(retVal.getData());
