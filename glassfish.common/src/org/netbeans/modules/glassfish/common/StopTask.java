@@ -66,8 +66,9 @@ public class StopTask extends BasicTask<OperationState> {
      * @param support common support object for the server instance being stopped
      * @param stateListener state monitor to track start progress
      */
-    public StopTask(CommonServerSupport support, OperationStateListener... stateListener) {
-        super(support.getInstanceProperties(), stateListener);
+    public StopTask(CommonServerSupport support,
+            OperationStateListener... stateListener) {
+        super(support.getInstance(), stateListener);
         this.support = support;
     }
     
@@ -84,14 +85,14 @@ public class StopTask extends BasicTask<OperationState> {
         String host; // = null;
         int port = 0;
         
-        host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+        host = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
         if(host == null || host.length() == 0) {
             return fireOperationStateChanged(OperationState.FAILED, 
                     "MSG_START_SERVER_FAILED_NOHOST", instanceName); // NOI18N
         }
                
         try {
-            port = Integer.valueOf(ip.get(GlassfishModule.ADMINPORT_ATTR));
+            port = Integer.valueOf(instance.getProperty(GlassfishModule.ADMINPORT_ATTR));
             if(port < 0 || port > 65535) {
                 return fireOperationStateChanged(OperationState.FAILED, 
                         "MSG_START_SERVER_FAILED_BADPORT", instanceName); // NOI18N
@@ -101,9 +102,9 @@ public class StopTask extends BasicTask<OperationState> {
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); // NOI18N
         }
 
-        String target = Util.computeTarget(ip);
+        String target = Util.computeTarget(instance.getProperties());
 
-        if (!Util.isDefaultOrServerTarget(ip)) {
+        if (!Util.isDefaultOrServerTarget(instance.getProperties())) {
             // stop an instance/cluster
             return stopClusterOrInstance(target);
         }
@@ -113,7 +114,8 @@ public class StopTask extends BasicTask<OperationState> {
         // !PW Can we have a single manager instance per instance, available on
         // demand through lookup?
         // !PW FIXME this uses doubly nested runnables.  Can we fix?
-        CommandRunner mgr = new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
+        CommandRunner mgr = new CommandRunner(true, support.getCommandFactory(),
+                instance, new OperationStateListener() {
             // if the http command is successful, we are not done yet...
             // The server still has to stop. If we signal success to the 'stateListener'
             // for the task, it may be premature.
@@ -137,7 +139,7 @@ public class StopTask extends BasicTask<OperationState> {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
                 }
-                LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
+                LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(GlassfishModule.URL_ATTR));
                 logger.stopReaders();
 
                 return fireOperationStateChanged(OperationState.COMPLETED, 
@@ -157,7 +159,8 @@ public class StopTask extends BasicTask<OperationState> {
     
     private OperationState  stopClusterOrInstance(String target) {
                 CommandRunner inner = new CommandRunner(true,
-                        support.getCommandFactory(), ip, new OperationStateListener() {
+                        support.getCommandFactory(), instance,
+                        new OperationStateListener() {
                     @Override
                     public void operationStateChanged(OperationState newState, String message) {
 
@@ -175,7 +178,9 @@ public class StopTask extends BasicTask<OperationState> {
                 }
                 if (state == OperationState.FAILED) {
                     // if start-cluster not successful, try start-instance
-                    inner =  new CommandRunner(true, support.getCommandFactory(), ip, new OperationStateListener() {
+                    inner =  new CommandRunner(true,
+                            support.getCommandFactory(), instance,
+                            new OperationStateListener() {
                         @Override
                         public void operationStateChanged(OperationState newState, String message) {
 

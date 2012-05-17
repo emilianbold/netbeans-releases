@@ -131,8 +131,9 @@ public class CommandRunner extends BasicTask<OperationState> {
     private final boolean isReallyRunning;
 
 
-    public CommandRunner(boolean isReallyRunning, CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
-        super(properties, stateListener);
+    public CommandRunner(boolean isReallyRunning, CommandFactory cf,
+            GlassfishInstance instance, OperationStateListener... stateListener) {
+        super(instance, stateListener);
         this.cf =cf;
         this.isReallyRunning = isReallyRunning;
     }
@@ -162,7 +163,8 @@ public class CommandRunner extends BasicTask<OperationState> {
             }, "MSG_RESTART_SERVER_IN_PROGRESS"); // NOI18N
         }
         // force the options to be correct for remote debugging, then restart...
-        CommandRunner inner = new CommandRunner(isReallyRunning, cf, ip, new OperationStateListener() {
+        CommandRunner inner = new CommandRunner(isReallyRunning, cf, instance,
+                new OperationStateListener() {
 
             @Override
             public void operationStateChanged(OperationState newState, String message) {
@@ -225,7 +227,8 @@ public class CommandRunner extends BasicTask<OperationState> {
      * @return String array of names of deployed applications.
      */
     public Map<String, List<AppDesc>> getApplications(String container) {
-        CommandRunner inner = new CommandRunner(isReallyRunning, cf, ip, new OperationStateListener() {
+        CommandRunner inner = new CommandRunner(isReallyRunning, cf, instance,
+                new OperationStateListener() {
 
             @Override
             public void operationStateChanged(OperationState newState, String message) {
@@ -236,7 +239,9 @@ public class CommandRunner extends BasicTask<OperationState> {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
             Map<String, List<String>> apps = Collections.emptyMap();
-            Commands.ListComponentsCommand cmd = new Commands.ListComponentsCommand(container,Util.computeTarget(ip));
+            Commands.ListComponentsCommand cmd
+                    = new Commands.ListComponentsCommand(
+                    container,Util.computeTarget(instance.getProperties()));
             OperationState state = inner.execute(cmd).get();
             if (state == OperationState.COMPLETED) {
                 apps = cmd.getApplicationMap();
@@ -352,7 +357,9 @@ public class CommandRunner extends BasicTask<OperationState> {
     public List<ResourceDesc> getResources(String type) {
         List<ResourceDesc> result = Collections.emptyList();
         try {
-            Commands.ListResourcesCommand cmd = new Commands.ListResourcesCommand(type, Util.computeTarget(ip));
+            Commands.ListResourcesCommand cmd
+                    = new Commands.ListResourcesCommand(
+                    type, Util.computeTarget(instance.getProperties()));
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
@@ -446,22 +453,25 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
 
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties, File[] libraries) {
-        LogViewMgr.displayOutput(ip,null);
+        LogViewMgr.displayOutput(instance, null);
         return execute(new Commands.DeployCommand(dir, moduleName,
-                contextRoot, computePreserveSessions(ip), properties, libraries, Util.computeTarget(ip)));
+                contextRoot, computePreserveSessions(instance), properties, libraries,
+                Util.computeTarget(instance.getProperties())));
     }
 
     public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
-        LogViewMgr.displayOutput(ip,null);
-        boolean preserve = computePreserveSessions(ip).booleanValue();
+        LogViewMgr.displayOutput(instance, null);
+        boolean preserve = computePreserveSessions(instance).booleanValue();
         return execute(new Commands.RedeployCommand(moduleName, contextRoot,
-                preserve, libraries, resourcesChanged, computeAdditionalParam(ip, preserve), Util.computeTarget(ip)));
+                preserve, libraries, resourcesChanged,
+                computeAdditionalParam(instance, preserve),
+                Util.computeTarget(instance.getProperties())));
     }
 
-    private static String computeAdditionalParam(Map<String,String> ip, boolean preserve) {
+    private static String computeAdditionalParam(GlassfishInstance instance, boolean preserve) {
         String retval = null;
         if (preserve) {
-            String url = ip.get(GlassfishModule.URL_ATTR);
+            String url = instance.getProperty(GlassfishModule.URL_ATTR);
             if (null != url && url.contains("ee6wc")) { // NOI18N
                 retval = "keepState=true"; // NOI18N
             }
@@ -469,36 +479,44 @@ public class CommandRunner extends BasicTask<OperationState> {
         return retval;
     }
 
-    private static Boolean computePreserveSessions(Map<String,String> ip) {
+    private static Boolean computePreserveSessions(GlassfishInstance instance) {
         // prefer the value stored in the instance properties for a domain.
-        String sessionPreservationFlag = ip.get(GlassfishModule.SESSION_PRESERVATION_FLAG);
+        String sessionPreservationFlag = instance.getProperty(
+                GlassfishModule.SESSION_PRESERVATION_FLAG);
         if (null == sessionPreservationFlag) {
-            // if there isn't a value stored for the instance, use the value of
+            // If there isn't a value stored for the instance, use the value of
             // the command-line flag.
-            sessionPreservationFlag = System.getProperty("glassfish.session.preservation.enabled","false"); // NOI18N
+            sessionPreservationFlag = System.getProperty(
+                    "glassfish.session.preservation.enabled","false"); // NOI18N
         }
         return Boolean.parseBoolean(sessionPreservationFlag);
     }
 
     public Future<OperationState> undeploy(String moduleName) {
-        LogViewMgr.displayOutput(ip,null);
-        return execute(new Commands.UndeployCommand(moduleName, Util.computeTarget(ip)));
+        LogViewMgr.displayOutput(instance, null);
+        return execute(new Commands.UndeployCommand(moduleName,
+                Util.computeTarget(instance.getProperties())));
     }
 
     public Future<OperationState> enable(String moduleName) {
-        return execute(new Commands.EnableCommand(moduleName, Util.computeTarget(ip)));
+        return execute(new Commands.EnableCommand(moduleName,
+                Util.computeTarget(instance.getProperties())));
     }
 
     public Future<OperationState> disable(String moduleName) {
-        return execute(new Commands.DisableCommand(moduleName, Util.computeTarget(ip)));
+        return execute(new Commands.DisableCommand(moduleName,
+                Util.computeTarget(instance.getProperties())));
     }
 
-    public Future<OperationState> unregister(String resourceName, String suffix, String cmdPropName, boolean cascade) {
-        return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade,  Util.computeTarget(ip)));
+    public Future<OperationState> unregister(String resourceName, String suffix,
+            String cmdPropName, boolean cascade) {
+        return execute(new Commands.UnregisterCommand(resourceName, suffix,
+                cmdPropName, cascade,
+                Util.computeTarget(instance.getProperties())));
     }
 
     /**
-     * Execute an abitrary server command.
+     * Execute an arbitrary server command.
      */
     public Future<OperationState> execute(ServerCommand command) {
         return execute(command, null);
@@ -653,7 +671,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                                 // connection to manager has not been allowed
                                 authorized = false;
                                 String messageId = "MSG_AuthorizationFailed";  // NOI18N
-                                if (ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null) {
+                                if (instance.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR) == null) {
                                     messageId = "MSG_AuthorizationFailedRemote"; // NOI18N
                                 }
                                 return fireOperationStateChanged(OperationState.FAILED,
@@ -735,22 +753,31 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
     }
 
-    private String constructCommandUrl(final String cmdSrc, final String cmd, final String query) throws URISyntaxException {
-        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
-        int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
+    private String constructCommandUrl(final String cmdSrc, final String cmd,
+            final String query) throws URISyntaxException {
+        String host = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
+        boolean useAdminPort = !"false".equals(System.getProperty(
+                "glassfish.useadminport")); // NOI18N
+        int port = Integer.parseInt(instance.getProperty(useAdminPort
+                ? GlassfishModule.ADMINPORT_ATTR
+                : GlassfishModule.HTTPPORT_ATTR));
         String protocol = "http";
-        String url = ip.get(GlassfishModule.URL_ATTR);
-        String domainsDir = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+        String url = instance.getProperty(GlassfishModule.URL_ATTR);
+        String domainsDir = instance.getProperty(
+                GlassfishModule.DOMAINS_FOLDER_ATTR);
         if (null == url) {
-            protocol = getHttpListenerProtocol(host,port, ":::"+cmd+"?"+query);  //NOI18N
+            protocol = getHttpListenerProtocol(host,port, ":::"+cmd+"?"+query);
         } else if (!(url.contains("ee6wc"))) {
-            protocol = getHttpListenerProtocol(host,port,url+":::"+cmd+"?"+query);  // NOI18N
-        } else if (url.contains("ee6wc") && (null == domainsDir || "".equals(domainsDir))) {
+            protocol = getHttpListenerProtocol(host,port,url+":::"+cmd+"?"+query);
+        } else if (url.contains("ee6wc")
+                && (null == domainsDir || "".equals(domainsDir))) {
             protocol = "https";
         }
-        URI uri = new URI(protocol, null, host, port, cmdSrc + cmd, query, null); // NOI18N
-        return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
+        URI uri = new URI(protocol, null, host, port, cmdSrc + cmd, query,
+                null);
+        // These characters don't get handled by GF correctly...
+        // Best I can tell.
+        return uri.toASCIIString().replace("+", "%2b");
     }
 
 

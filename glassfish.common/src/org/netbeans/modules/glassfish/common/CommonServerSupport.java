@@ -48,44 +48,30 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.keyring.Keyring;
+import org.glassfish.tools.ide.admin.CommandVersion;
+import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.ServerAdmin;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.data.IdeContext;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
-import org.netbeans.modules.glassfish.spi.AppDesc;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
-import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.RecognizerCookie;
-import org.netbeans.modules.glassfish.spi.ResourceDesc;
-import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.CommandFactory;
-import org.netbeans.modules.glassfish.spi.GlassfishModule2;
-import org.netbeans.modules.glassfish.spi.Utils;
-import org.netbeans.modules.glassfish.spi.VMIntrospector;
+import org.netbeans.modules.glassfish.spi.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.*;
+import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 
@@ -95,9 +81,16 @@ import org.openide.util.lookup.Lookups;
  */
 public class CommonServerSupport implements GlassfishModule2, RefreshModulesCookie {
 
-    private final transient Lookup lookup;
-    private final Map<String, String> properties =
-            Collections.synchronizedMap(new HashMap<String, String>(37));
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Managed GlassFish instance. */
+    private final GlassfishInstance instance;
 
     private volatile ServerState serverState = ServerState.UNKNOWN;
     private final Object stateMonitor = new Object();
@@ -108,40 +101,16 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     private volatile boolean startedByIde = false;
     private transient boolean isRemote = false;
-    private GlassfishInstanceProvider instanceProvider;
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
     
     private Process localStartProcess;
 
-    CommonServerSupport(Lookup lookup, Map<String, String> ip, GlassfishInstanceProvider instanceProvider) {
-        this.lookup = lookup;
-        this.instanceProvider = instanceProvider;
-        this.isRemote = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
-        String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
-        String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, ""); // NOI18N
-        int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
-        updateString(ip, GlassfishModule.DISPLAY_NAME_ATTR, "Bogus display name"); // NOI18N GlassfishInstance.GLASSFISH_PRELUDE_SERVER_NAME);
-        int adminPort = updateInt(ip, GlassfishModule.ADMINPORT_ATTR, GlassfishInstance.DEFAULT_ADMIN_PORT);
-
-        updateString(ip,GlassfishModule.SESSION_PRESERVATION_FLAG,"true"); // NOI18N
-        updateString(ip,GlassfishModule.START_DERBY_FLAG, isRemote ? "false" : "true"); // NOI18N
-        updateString(ip,GlassfishModule.USE_IDE_PROXY_FLAG, "true");  // NOI18N
-        updateString(ip,GlassfishModule.DRIVER_DEPLOY_FLAG, "true");  // NOI18N
-        updateString(ip,GlassfishModule.HTTPHOST_ATTR, "localhost"); // NOI18N
-        String deployerUri = ip.get(GlassfishModule.URL_ATTR);
-
-        // Asume a local instance is in NORMAL_MODE
-        // Assume remote Prelude and 3.0 instances are in DEBUG (we cannot change them)
-        // Assume a remote 3.1 instance is in NORMAL_MODE... we can restart it into debug mode
-        ip.put(JVM_MODE, isRemote && !deployerUri.contains("deployer:gfv3ee6wc") ? DEBUG_MODE : NORMAL_MODE);
-        properties.putAll(ip);
-
-        // XXX username/password handling at some point.
-        properties.put(USERNAME_ATTR, GlassfishInstance.DEFAULT_ADMIN_NAME);
-        properties.put(PASSWORD_ATTR, GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
-
+    CommonServerSupport(GlassfishInstance instance) {
+        this.instance = instance;
+        this.isRemote = instance.getProperties().get(
+                GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
         // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
@@ -150,31 +119,20 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         }
     }
 
-    private static String updateString(Map<String, String> map, String key, String defaultValue) {
-        String result = map.get(key);
-        if(result == null) {
-            map.put(key, defaultValue);
-            result = defaultValue;
-        }
-        return result;
-    }
-
-    private static int updateInt(Map<String, String> map, String key, int defaultValue) {
-        int result;
-        String value = map.get(key);
-        try {
-            result = Integer.parseInt(value);
-        } catch(NumberFormatException ex) {
-            map.put(key, Integer.toString(defaultValue));
-            result = defaultValue;
-        }
-        return result;
+    /**
+     * Get <code>GlassfishInstance</code> object associated with this object.
+     * <p/>
+     * @return <code>GlassfishInstance</code> object associated with this object.
+     */
+    public GlassfishInstance getInstance() {
+        return this.instance;
     }
 
     private FileObject getInstanceFileObject() {
-        FileObject dir = FileUtil.getConfigFile(instanceProvider.getInstancesDirName());
+        FileObject dir = FileUtil.getConfigFile(
+                instance.getInstanceProvider().getInstancesDirName());
         if(dir != null) {
-            String instanceFN = properties.get(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+            String instanceFN = instance.getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
@@ -182,133 +140,81 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return null;
     }
 
-    public String getInstallRoot() {
-        return properties.get(INSTALL_FOLDER_ATTR);
-    }
-
-    public String getGlassfishRoot() {
-        return properties.get(GLASSFISH_FOLDER_ATTR);
-    }
-
-    public String getDisplayName() {
-        return properties.get(DISPLAY_NAME_ATTR);
-    }
-
-    public String getDeployerUri() {
-        return properties.get(URL_ATTR);
-    }
-
-    public String getUserName() {
-        return properties.get(USERNAME_ATTR);
-    }
-
     @Override
     public String getPassword() {
-        String retVal = properties.get(PASSWORD_ATTR);
-        String key = properties.get(URL_ATTR);
-        char[] retChars = Keyring.read(key);
-        if (null == retChars || retChars.length < 1 || !GlassfishModule.PASSWORD_CONVERTED_FLAG.equals(retVal)) {
-            retChars = retVal.toCharArray();
-            if (null != key) {
-                Keyring.save(key, retChars, "a Glassfish/SJSAS passord");
-                properties.put(PASSWORD_ATTR, GlassfishModule.PASSWORD_CONVERTED_FLAG) ;
-            }
-        } else {
-            retVal = String.copyValueOf(retChars);
-        }
-        return retVal;
+        return instance.getPassword();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
+    public String getInstallRoot() {
+        return instance.getInstallRoot();
+    }
+
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
+    public String getGlassfishRoot() {
+        return instance.getGlassfishRoot();
+    }
+
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
+    public String getDisplayName() {
+        return instance.getDisplayName();
+    }
+
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
+    public String getDeployerUri() {
+        return instance.getDeployerUri();
+    }
+
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
+    public String getUserName() {
+        return instance.getUserName();
+    }
+
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
     public String getAdminPort() {
-        return properties.get(ADMINPORT_ATTR);
+        return instance.getHttpAdminPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
     public String getHttpPort() {
-        return properties.get(HTTPPORT_ATTR);
+        return instance.getHttpPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
     public int getHttpPortNumber() {
-        int httpPort = -1;
-        try {
-            httpPort = Integer.parseInt(properties.get(HTTPPORT_ATTR));
-        } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);  // NOI18N
-        }
-        return httpPort;
+        return instance.getPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
     public int getAdminPortNumber() {
-        int adminPort = -1;
-        try {
-            adminPort = Integer.parseInt(properties.get(ADMINPORT_ATTR));
-        } catch(NumberFormatException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);  // NOI18N
-        }
-        return adminPort;
+        return instance.getAdminPort();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
     public String getHostName() {
-        return properties.get(HOSTNAME_ATTR);
+        return instance.getProperty(HOSTNAME_ATTR);
     }
 
-    public synchronized String getDomainsRoot() {
-        String retVal = properties.get(DOMAINS_FOLDER_ATTR);
-        if (null == retVal) {
-            return null;
-        }
-        File candidate = new File(retVal);
-        if (candidate.exists() && !Utils.canWrite(candidate)) {
-            // we need to do some surgury here...
-            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
-            FileObject destdir = null;
-            try {
-                destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
-            } catch (IOException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable domain dir",ex); // NOI18N
-            }
-            if (null != destdir) {
-                candidate = new File(candidate, properties.get(DOMAIN_NAME_ATTR));
-                FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(candidate));
-                try {
-                    Utils.doCopy(source, destdir);
-
-                    retVal = FileUtil.toFile(destdir).getAbsolutePath();
-                    properties.put(DOMAINS_FOLDER_ATTR,retVal);
-                } catch (IOException ex) {
-                    // need to try again... since the domain is probably unreadable.
-                    foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3"); // NOI18N
-                    destdir = null;
-                    try {
-                        destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
-                    } catch (IOException ioe) {
-                        Logger.getLogger("glassfish").log(Level.INFO,"could not create a writable second domain dir",ioe); // NOI18N
-                        return retVal;
-                    }
-                    File destdirFile = FileUtil.toFile(destdir);
-                    properties.put(DOMAINS_FOLDER_ATTR, destdirFile.getAbsolutePath());
-                    retVal = destdirFile.getAbsolutePath();
-                    // getEe6() eventually creates a call to getDomainsRoot()... which can lead to a deadlock
-                    //  forcing the call to happen after getDomainsRoot returns will 
-                    // prevent the deadlock.
-                    RequestProcessor.getDefault().post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            CreateDomain cd = new CreateDomain("anonymous", "", // NOI18N
-                                    new File(properties.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)),
-                                    properties, GlassfishInstanceProvider.getEe6(), false, true, "INSTALL_ROOT_KEY"); // NOI18N
-                            cd.start();
-                        }
-                    }, 100);
-                }
-            }
-        }
-        return retVal;
+   /** @deprecated Use in <code>GlassfishInstance</code> context. */
+   @Deprecated
+   public String getDomainsRoot() {
+        return instance.getDomainsRoot();
     }
 
+    /** @deprecated Use in <code>GlassfishInstance</code> context. */
+    @Deprecated
     public String getDomainName() {
-        String retVal = properties.get(DOMAIN_NAME_ATTR);
-        return retVal;
+        return instance.getDomainName();
     }
 
     public void setServerState(final ServerState newState) {
@@ -340,12 +246,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     public Map<String, String> getInstanceProperties() {
         // force the domains conversion
         getDomainsRoot();
-        return Collections.unmodifiableMap(properties);
+        return Collections.unmodifiableMap(instance.getProperties());
     }
 
     @Override
     public GlassfishInstanceProvider getInstanceProvider() {
-        return instanceProvider;
+        return instance.getInstanceProvider();
     }
 
     @Override
@@ -371,7 +277,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     private List<Recognizer> getRecognizers() {
         List<Recognizer> recognizers;
-        Collection<? extends RecognizerCookie> cookies = lookup.lookupAll(RecognizerCookie.class);
+        Collection<? extends RecognizerCookie> cookies = 
+                instance.localLookup().lookupAll(RecognizerCookie.class);
         if(!cookies.isEmpty()) {
             recognizers = new LinkedList<Recognizer>();
             for(RecognizerCookie cookie: cookies) {
@@ -401,13 +308,14 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 }
             }
         };
-        FutureTask<OperationState> task = null;
-        if (!isRemote() || !Util.isDefaultOrServerTarget(properties)) {
+        FutureTask<OperationState> task;
+        if (!isRemote() || !Util.isDefaultOrServerTarget(instance.getProperties())) {
             if (getServerState() == ServerState.STOPPED_JVM_PROFILER) {
-                task = new FutureTask<OperationState>(new StopProfilingTask(this, stateListener));
+                task = new FutureTask<OperationState>(
+                        new StopProfilingTask(this, stateListener));
             } else {
                 task = new FutureTask<OperationState>(
-                    new StopTask(this, stopServerListener, stateListener));
+                        new StopTask(this, stopServerListener, stateListener));
             }
         // prevent j2eeserver from stopping a server it did not start.
         } else {
@@ -452,65 +360,86 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     @Override
-    public Future<OperationState> deploy(OperationStateListener stateListener, File application, String name, String contextRoot, Map<String, String> properties, File[] libraries) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
-
-        return mgr.deploy(application, name, contextRoot, properties, libraries);
+    public Future<OperationState> deploy(OperationStateListener stateListener,
+            File application, String name, String contextRoot,
+            Map<String, String> properties, File[] libraries) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
+        return mgr.deploy(application, name, contextRoot, properties,
+                libraries);
     }
 
     @Override
-    public Future<OperationState> redeploy(final OperationStateListener stateListener,
+    public Future<OperationState> redeploy(
+            final OperationStateListener stateListener,
             final String name, boolean resourcesChanged) {
         return redeploy(stateListener, name, null, resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(final OperationStateListener stateListener,
-            final String name, final String contextRoot, boolean resourcesChanged) {
-        return redeploy(stateListener, name, contextRoot, new File[0], resourcesChanged);
+    public Future<OperationState> redeploy(
+            final OperationStateListener stateListener,
+            final String name, final String contextRoot,
+            boolean resourcesChanged) {
+        return redeploy(stateListener, name, contextRoot, new File[0],
+                resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(OperationStateListener stateListener, String name, String contextRoot, File[] libraries, boolean resourcesChanged) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> redeploy(OperationStateListener stateListener,
+    String name, String contextRoot, File[] libraries,
+    boolean resourcesChanged) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.redeploy(name, contextRoot, libraries, resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> undeploy(
+            final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.undeploy(name);
     }
 
     @Override
-    public Future<OperationState> enable(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> enable(
+            final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.enable(name);
     }
     @Override
-    public Future<OperationState> disable(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
+    public Future<OperationState> disable(
+            final OperationStateListener stateListener, final String name) {
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance, stateListener);
         return mgr.disable(name);
     }
 
     @Override
     public Future<OperationState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance);
         return mgr.execute(command);
     }
 
     private Future<OperationState> execute(boolean irr, ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+                instance);
         return mgr.execute(command);
     }
-    private Future<OperationState> execute(boolean irr, ServerCommand command, OperationStateListener... osl) {
-        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties(), osl);
+    private Future<OperationState> execute(boolean irr, ServerCommand command,
+            OperationStateListener... osl) {
+        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
+                instance, osl);
         return mgr.execute(command);
     }
 
     @Override
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance);
         int total = 0;
         Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
@@ -529,8 +458,10 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public Map<String, ResourceDesc> getResourcesMap(String type) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
-        Map<String, ResourceDesc> resourcesMap = new HashMap<String, ResourceDesc>();
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+                getCommandFactory(), instance);
+        Map<String, ResourceDesc> resourcesMap
+                = new HashMap<String, ResourceDesc>();
         List<ResourceDesc> resourcesList = mgr.getResources(type);
         for (ResourceDesc resource : resourcesList) {
             resourcesMap.put(resource.getName(), resource);
@@ -559,12 +490,12 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     @Override
     public String setEnvironmentProperty(final String name, final String value,
             final boolean overwrite) {
-        String result = null;
+        String result;
 
-        synchronized (properties) {
-            result = properties.get(name);
+        synchronized (instance.getProperties()) {
+            result = instance.getProperty(name);
             if(result == null || overwrite == true) {
-                properties.put(name, value);
+                instance.putProperty(name, value);
                 setInstanceAttr(name, value);
                 result = value;
             }
@@ -577,11 +508,11 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     // bookkeeping & impl managment, not exposed via interface.
     // ------------------------------------------------------------------------
     void setProperty(final String key, final String value) {
-        properties.put(key, value);
+        instance.putProperty(key, value);
     }
 
     void getProperty(String key) {
-        properties.get(key);
+        instance.getProperty(key);
     }
 
     boolean setInstanceAttr(String name, String value) {
@@ -642,7 +573,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         } catch (java.net.SocketTimeoutException ste) {
             return false;
         } catch (IOException ioe) {
-            String message = null;
+            String message;
             if (name == null || "".equals(name.trim())) {
                 message = NbBundle.getMessage(CommonServerSupport.class,
                         "MSG_FLAKEY_NETWORK", host, ""+port, ioe.getLocalizedMessage()); // NOI18N
@@ -658,10 +589,11 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     public boolean isReallyRunning() {
-        return //isRunning(getHostName(), getAdminPortNumber(), properties.get(DISPLAY_NAME_ATTR)) &&
+        return //isRunning(getHostName(), getAdminPortNumber(), instance.getProperty(DISPLAY_NAME_ATTR)) &&
                 isReady(false,30,TimeUnit.SECONDS);
     }
 
+    @SuppressWarnings("SleepWhileInLoop")
     public boolean isReady(boolean retry, int timeout, TimeUnit units) {
         boolean isReady = false;
         int maxtries = retry ? 3 : 1;
@@ -670,7 +602,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         while(!isReady && tries++ < maxtries) {
             if (tries > 1) {
                 try {
-                    Thread.sleep(2000);
+                        Thread.sleep(2000);
                 } catch (InterruptedException ex) {
                      Logger.getLogger("glassfish").log(Level.INFO, null,ex);
                 }
@@ -678,7 +610,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
             long start = System.nanoTime();
             Commands.LocationCommand command = new Commands.LocationCommand();
             try {
-                Future<OperationState> result = null;
+                Future<OperationState> result;
 
                 if (isRemote) {
                     final CommonServerSupport css = this;
@@ -725,14 +657,16 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     // !PW temporary while some server versions support __locations
                     // and some do not but are still V3 and might the ones the user
                     // is using.
-                    result = execute(true, new Commands.VersionCommand());
-                    isReady = result.get(timeout, units) == OperationState.COMPLETED;
+                    Future<ResultString> future = 
+                            ServerAdmin.<ResultString>exec(instance,
+                            new CommandVersion(), new IdeContext());
+                    isReady = future.get().getState() == TaskState.COMPLETED;
                     break;
                 } else {
                     // keep trying for 10 minutes if the server is stuck between
                     // httpLive and server ready state. We have to give up sometime, though.
                     VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
-                    boolean suspended = null == vmi ? false : vmi.isSuspended(getHostName(), (String) properties.get(GlassfishModule.DEBUG_PORT));
+                    boolean suspended = null == vmi ? false : vmi.isSuspended(getHostName(), (String) instance.getProperty(GlassfishModule.DEBUG_PORT));
                     if (suspended) {
                         tries--;
                     } else if (maxtries < 20) {
@@ -760,7 +694,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     @Override
-    public void refresh() {
+    public final void refresh() {
         refresh(null,null);
     }
 
@@ -775,7 +709,8 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                 public void run() {
                     // Can block for up to a few seconds...
                     boolean isRunning = isReallyRunning();
-                    if (isRunning && !Util.isDefaultOrServerTarget(properties)) {
+                    if (isRunning && !Util.isDefaultOrServerTarget(
+                            instance.getProperties())) {
                         isRunning = pingHttp(1);
                     }
                     ServerState currentState = getServerState();
@@ -813,7 +748,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public CommandFactory getCommandFactory() {
-        return instanceProvider.getCommandFactory();
+        return instance.getInstanceProvider().getCommandFactory();
     }
 
     @Override
@@ -871,15 +806,15 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
     }
 
     void updateHttpPort() {
-        String target = Util.computeTarget(properties);
-        GetPropertyCommand gpc = null;
-        if (Util.isDefaultOrServerTarget(properties)) {
+        String target = Util.computeTarget(instance.getProperties());
+        GetPropertyCommand gpc;
+        if (Util.isDefaultOrServerTarget(instance.getProperties())) {
             gpc = new GetPropertyCommand("*.server-config.*.http-listener-1.port"); // NOI18N
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR, 
-                    properties.get(GlassfishModule.HOSTNAME_ATTR), true); // NOI18N
+                    instance.getProperty(GlassfishModule.HOSTNAME_ATTR), true); // NOI18N
         } else {
             String server = getServerFromTarget(target);
-            String adminHost = properties.get(GlassfishModule.HOSTNAME_ATTR);
+            String adminHost = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
             setEnvironmentProperty(GlassfishModule.HTTPHOST_ATTR,
                     getHttpHostFromServer(server,adminHost), true);
             gpc = new GetPropertyCommand("servers.server."+server+".system-property.HTTP_LISTENER_PORT.value", true); // NOI18N
@@ -902,7 +837,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
                     }
                 }
             }
-            if (!didSet && !Util.isDefaultOrServerTarget(properties)) {
+            if (!didSet && !Util.isDefaultOrServerTarget(instance.getProperties())) {
                 setEnvironmentProperty(GlassfishModule.HTTPPORT_ATTR, "28080", true); // NOI18N
             }
         } catch (InterruptedException ex) {
@@ -979,6 +914,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return "localhost".equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
     }
 
+    @SuppressWarnings("SleepWhileInLoop")
     private boolean pingHttp(int maxTries) {
         boolean retVal = false;
         URL url = null;
