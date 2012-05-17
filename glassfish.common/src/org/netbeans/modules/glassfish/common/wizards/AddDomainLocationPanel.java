@@ -44,12 +44,10 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
-import java.util.MissingResourceException;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import java.awt.Component;
 import java.io.File;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
@@ -57,6 +55,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeListener {
@@ -147,8 +149,11 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      */
     @Override
     public HelpCtx getHelp() {
-        // !PW FIXME correct help context
-        return new HelpCtx("registering_app_server_hk2_domain"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("Services/JavaHelp/org-netbeans-modules-j2ee-helpset.xml");
+        if (null != fo)
+            return new HelpCtx("registering_app_server_hk2_domain"); //NOI18N
+        else
+            return null;
     }
 
     /**
