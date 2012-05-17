@@ -99,11 +99,19 @@ class Utils {
         if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
             sb.append ("Ctrl+");
         if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)
-            sb.append ("Alt+");
+            if(Utilities.isMac()) {
+                sb.append(KeyEvent.getKeyText(KeyEvent.VK_ALT)).append ("+");
+            } else {
+                sb.append ("Alt+");
+            }
         if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
             sb.append ("Shift+");
         if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
-            sb.append ("Meta+");
+            if(Utilities.isMac()) {
+                sb.append(KeyEvent.getKeyText(KeyEvent.VK_META)).append ("+");
+            } else {
+                sb.append ("Meta+");
+            }
         if (keyStroke.getKeyCode () != KeyEvent.VK_SHIFT &&
             keyStroke.getKeyCode () != KeyEvent.VK_CONTROL &&
             keyStroke.getKeyCode () != KeyEvent.VK_META &&

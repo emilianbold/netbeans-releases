@@ -157,7 +157,7 @@
       <SubComponents>
         <Component class="javax.swing.JEditorPane" name="epProperties">
           <Properties>
-            <Property name="contentType" type="java.lang.String" value="text/x-properties"/>
+            <Property name="contentType" type="java.lang.String" value="text/x-properties" noResource="true"/>
           </Properties>
         </Component>
       </SubComponents>

@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -266,6 +267,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     private Integer subTest;
     
     // common tests to check nothing is reported
+    @RandomlyFails
     public void testIssue105979() throws Exception {
         String before = "package test; class Test {" +
                 "  return b;" +
@@ -279,6 +281,8 @@ public abstract class TreeRuleTestBase extends NbTestCase {
             performAnalysisTest("test/Test.java", before, i);
 }
     }
+    
+    @RandomlyFails
     public void testIssue108246() throws Exception {
 
         String before = "package test; class Test {" +
@@ -295,6 +299,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testNoHintsForSimpleInitialize() throws Exception {
 
         String before = "package test; class Test {" +
@@ -310,6 +315,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testIssue113933() throws Exception {
 
         String before = "package test; class Test {" +
