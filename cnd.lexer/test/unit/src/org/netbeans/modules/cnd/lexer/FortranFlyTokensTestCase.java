@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -84,7 +85,7 @@ public class FortranFlyTokensTestCase extends NbTestCase {
     protected InputAttributes getLexerAttributes() {
         InputAttributes lexerAttrs = new InputAttributes();
         lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, 132, true);
-        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, true, true);
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranFormat.FREE, true);
         return lexerAttrs;
     }
 
