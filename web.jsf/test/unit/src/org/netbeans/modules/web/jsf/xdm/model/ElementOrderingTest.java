@@ -61,6 +61,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.Ordering;
 import org.netbeans.modules.web.jsf.api.facesmodel.SupportedLocale;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -86,7 +87,13 @@ public class ElementOrderingTest extends NbTestCase {
     protected void tearDown() throws Exception {
     }
     
-    
+    private static void endModelTransaction(JSFConfigModel model) {
+        try {
+            model.endTransaction();
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
+        }
+    }
     
     public void testNavigationCase99906() throws Exception {
         JSFConfigModel model = Util.loadRegistryModel("faces-config-99906.xml");
@@ -96,7 +103,7 @@ public class ElementOrderingTest extends NbTestCase {
         
         model.startTransaction();
         rule.setFromViewId("frompage.jsp");
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         NodeList nodes = rule.getPeer().getChildNodes();
@@ -125,7 +132,7 @@ public class ElementOrderingTest extends NbTestCase {
         
         newRule.addNavigationCase(newCase);
         facesConfig.addNavigationRule(newRule);
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         NodeList list = newCase.getPeer().getChildNodes();
@@ -136,7 +143,7 @@ public class ElementOrderingTest extends NbTestCase {
         //One more test to make sure that even if the outcome is reset, it is still listed as first.
         model.startTransaction();
         newCase.setFromOutcome("fromoutcome2");
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         NodeList list2 = newCase.getPeer().getChildNodes();        
@@ -158,7 +165,7 @@ public class ElementOrderingTest extends NbTestCase {
         locale = model.getFactory().createDefatultLocale();
         config.setDefaultLocale(locale);
         
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         Element element  = Util.getElement( config.getPeer(), 0 );
@@ -184,7 +191,7 @@ public class ElementOrderingTest extends NbTestCase {
         locale = model.getFactory().createSupportedLocale();
         config.addSupportedLocales( locale );
         
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         Element element  = Util.getElement( config.getPeer(), 0 );
@@ -219,7 +226,7 @@ public class ElementOrderingTest extends NbTestCase {
         element = Util.getElement( ordering.getPeer(), 1);
         assertEquals("before", element.getNodeName());
         
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
@@ -247,7 +254,7 @@ public class ElementOrderingTest extends NbTestCase {
         caze.setFromAction("fromAction");
         caze.addDescription( model.getFactory().createDescription());
         
-        model.endTransaction();
+        endModelTransaction(model);
         model.sync();
         
         Element element = Util.getElement(caze.getPeer(), 0);

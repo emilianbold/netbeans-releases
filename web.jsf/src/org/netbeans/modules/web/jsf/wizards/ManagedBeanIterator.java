@@ -79,6 +79,7 @@ import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelUtilities;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.util.Exceptions;
 
 /** A template wizard iterator for new struts action
  *
@@ -249,8 +250,15 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             }
             configModel.startTransaction();
             facesConfig.addManagedBean(bean);
-            configModel.endTransaction();
-            configModel.sync();
+            try {
+                configModel.endTransaction();
+                configModel.sync();
+            } catch (IllegalStateException ex) {
+                IOException io = new IOException("Could not create faces config", ex);
+                throw Exceptions.attachLocalizedMessage(io,
+                        NbBundle.getMessage(ManagedBeanIterator.class, "ERR_CreateFacesConfig",
+                        Exceptions.findLocalizedMessage(ex)));
+            }
             JSFConfigModelUtilities.saveChanges(configModel);
         }
         return Collections.singleton(dobj);

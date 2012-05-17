@@ -868,7 +868,7 @@ public class JSFClientGenerator {
             }
             finally {
                 //TODO: RETOUCHE correct write to JSF model?
-                    model.endTransaction();
+                model.endTransaction();
                 DataObject facesDO;
                 try {
                     facesDO = DataObject.find(fo);
@@ -881,6 +881,8 @@ public class JSFClientGenerator {
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalStateException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
