@@ -2248,7 +2248,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </for-each>
     </target>
     <target name="generate-jdk-bundle-single-windows">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.22">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2232">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -2258,14 +2258,36 @@ jarsigner.storepass=${jarsigner.storepass}
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
+    <target name="generate-jdk-bundle-single-windows-x64">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2264">
+            <isset property="jdk.full.version"/>
+        </condition>
+	<antcall target="generate-jdk-bundle">
+		<param name="bundle.platform"           value="windows-x64"/>
+		<param name="bundle.extension"		value=".exe"/>
+		<param name="bundled.jvm.file.suffix"   value="windows-x64.exe"/>
+	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
+	</antcall>
+    </target>
     <target name="generate-jdk-bundle-single-linux">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.20">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2032">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
+	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
+	</antcall>
+    </target>
+    <target name="generate-jdk-bundle-single-linux-x64">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2064">
+            <isset property="jdk.full.version"/>
+        </condition>
+	<antcall target="generate-jdk-bundle">
+		<param name="bundle.platform"           value="linux-x64"/>
+		<param name="bundle.extension"		value=".sh"/>
+		<param name="bundled.jvm.file.suffix"   value="linux-x64.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
 	</antcall>
     </target>
