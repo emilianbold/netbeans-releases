@@ -187,6 +187,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
                 setTreeViewVisible(!treeViewShowing);
             }
         });
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/bookmarks/resources/bookmark_16.png")); // NOI18N
     }
     
     @Override
