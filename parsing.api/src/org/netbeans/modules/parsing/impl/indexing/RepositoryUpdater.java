@@ -2164,6 +2164,15 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
         
+        protected final void suspendProgress(@NonNull final String message) {
+            synchronized (progressLock) {
+                if (progressHandle == null) {
+                    return;
+                }
+                progressHandle.suspend(message);
+            }
+        }
+        
         protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
                                    final SourceIndexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
                                    final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
@@ -4827,6 +4836,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                 if (waitForProjects) {
                     boolean retry = true;
+                    suspendProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_OpeningProjects"));
                     while (retry) {
                         try {
                             OpenProjects.getDefault().openProjects().get(1000, TimeUnit.MILLISECONDS);

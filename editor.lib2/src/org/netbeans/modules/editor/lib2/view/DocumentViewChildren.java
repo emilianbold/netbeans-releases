@@ -518,7 +518,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 if (!pView.isChildrenValid()) {
                     String cacheIntegrity = tlCache.findIntegrityError();
                     StringBuilder sb = new StringBuilder(200);
-                    sb.append("Null children of pView[").append(pIndex). // NOI18N
+                    sb.append("NULL children of pView[").append(pIndex). // NOI18N
                             append("] from <").append(startIndex).append(",").append(endIndex). // NOI18N
                             append("> origEndIndex=").append(origEndIndex).append(", rebuild<"). // NOI18N
                             append(rStartIndex).append(",").append(rEndIndex).append(">."); // NOI18N
