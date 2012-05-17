@@ -67,13 +67,14 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
     }
 
     public boolean isShared() {
-        return cbShared.isSelected();
+        return !cbShared.isSelected();
     }
 
     public void setShared(boolean shared) {
-        cbShared.setSelected(shared);
+        cbShared.setSelected(!shared);
     }
     /** Creates new form NewConfigurationPanel */
+    @SuppressWarnings("LeakingThisInConstructor")
     public NewConfigurationPanel() {
         initComponents();
 
@@ -155,7 +156,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         lblProperties.setLabelFor(epProperties);
         org.openide.awt.Mnemonics.setLocalizedText(lblProperties, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblProperties.text")); // NOI18N
 
-        epProperties.setContentType("text/x-properties");
+        epProperties.setContentType("text/x-properties"); // NOI18N
         jScrollPane1.setViewportView(epProperties);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

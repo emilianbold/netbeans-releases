@@ -543,13 +543,22 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (tokenSequence != null) {
                 tokenSequence = tokenSequence.subSequence(request.anchor, request.result.getModel().getVariableScope(request.anchor).getBlockRange().getEnd());
             }
+            boolean wasWhitespace = false;
             while (tokenSequence.moveNext()) {
                 Token<PHPTokenId> token = tokenSequence.token();
                 PHPTokenId id = token.id();
-                if (PHPTokenId.WHITESPACE.equals(id) || PHPTokenId.PHP_STRING.equals(id)) {
+                if (PHPTokenId.PHP_STRING.equals(id)) {
+                    if (wasWhitespace) {
+                        // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
+                        break;
+                    } else {
+                        // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
+                        continue;
+                    }
+                } else if (PHPTokenId.WHITESPACE.equals(id)) {
+                    wasWhitespace = true;
                     continue;
-                }
-                if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
+                } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.toString().equals("(")) { //NOI18N
                     return template.toString();
                 } else {
                     break;
