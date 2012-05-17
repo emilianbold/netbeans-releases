@@ -57,6 +57,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.Property;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigModelImpl;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 
 
@@ -125,7 +126,11 @@ public class ComponentTest extends NbTestCase {
         element = Util.getElement( component.getPeer(), 4);
         assertEquals("property",  element.getNodeName());
         
-        model.endTransaction();
+        try {
+            model.endTransaction();
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
+        }
         model.sync();
         
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
@@ -178,7 +183,11 @@ public class ComponentTest extends NbTestCase {
         
         assertEquals( 0 , element.getChildNodes().getLength());
         
-        model.endTransaction();
+        try {
+            model.endTransaction();
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
+        }
         model.sync();
         
         //Util.dumpToStream(((AbstractDocumentModel)model).getBaseDocument(), System.out);
