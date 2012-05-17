@@ -314,6 +314,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug201811.cpp", 24, 8, "bug201811.cpp", 2, 5);
         performTest("bug201811.cpp", 25, 8, "bug201811.cpp", 4, 9);
     }
+
+    public void testBug199689() throws Exception {
+        // Bug 199689 - Code assist shows wrong warning when defining a class with Namespace::Class style
+        performTest("bug199689.cpp", 2, 18, "bug199689.cpp", 5, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
