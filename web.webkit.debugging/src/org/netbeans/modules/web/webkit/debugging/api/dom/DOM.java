@@ -43,6 +43,8 @@ package org.netbeans.modules.web.webkit.debugging.api.dom;
 
 import java.awt.Color;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,25 +58,40 @@ import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 
 /**
- * See DOM section of WebKit Remote Debugging Protocol for more details.
+ * Java wrapper of the DOM domain of WebKit Remote Debugging Protocol.
  *
  * @author Jan Stola
  */
 public class DOM {
+    /** Transport used by this instance. */
     private TransportHelper transport;
+    /** Callback for DOM event notifications. */
     private ResponseCallback callback;
+    /** Registered listeners. */
     private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    /** Document node */
     private Node documentNode;
+    /** Known nodes - maps node ID to Node. */
     private Map<Integer,Node> nodes = new HashMap<Integer,Node>();
 
     private static final Logger LOG = Logger.getLogger(DOM.class.getName());
-    
+
+    /**
+     * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
+     * 
+     * @param transport transport to use.
+     */
     public DOM(TransportHelper transport) {
         this.transport = transport;
         this.callback = new Callback();
         this.transport.addListener(callback);
     }
 
+    /**
+     * Returns the document node (the root DOM node).
+     * 
+     * @return document node.
+     */
     public synchronized Node getDocument() {
         if (documentNode == null) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
@@ -90,6 +107,12 @@ public class DOM {
         return documentNode;
     }
 
+    /**
+     * Ensures that the given node and its sub-nodes are in the map
+     * of all known nodes.
+     * 
+     * @param node node to check/insert.
+     */
     private void updateNodesMap(Node node) {
         nodes.put(node.getNodeId(), node);
         synchronized (node) {
@@ -102,12 +125,35 @@ public class DOM {
         }
     }
 
+    /**
+     * Requests children information for the specified node. The children
+     * are delivered in the form of {@code setChildNodes} events. This method
+     * should be called for nodes whose {@code getChildren()} method
+     * returns {@code null} only. Otherwise, the children information
+     * of the node should be up to date.
+     * 
+     * @param nodeId ID of the node whose children are requested.
+     */
     public void requestChildNodes(int nodeId) {
         JSONObject params = new JSONObject();
         params.put("nodeId", nodeId); // NOI18N
         transport.sendCommand(new Command("DOM.requestChildNodes", params)); // NOI18N
     }
 
+    /**
+     * Highlights the given rectangle. The coordinates are absolute with
+     * respect to the main frame viewport.
+     * 
+     * Note that this method does nothing in WebView currently.
+     * 
+     * Note that at most one rectangle or node can be highlighted.
+     * Invocation of {@code highlightRect()} or {@code highlightNode()} cancels
+     * any existing highlight.
+     * 
+     * @param rect rectangle to highlight.
+     * @param fill fill color (can be {@code null}).
+     * @param outline outline color (can be {@cod enull}).
+     */
     public void highlightRect(Rectangle rect, Color fill, Color outline) {
         JSONObject params = new JSONObject();
         params.put("x", rect.x); // NOI18N
@@ -115,14 +161,26 @@ public class DOM {
         params.put("width", rect.width); // NOI18N
         params.put("height", rect.height); // NOI18N
         if (fill != null) {
-            params.put("color", HighlightConfig.colorToJSONObject(fill)); // NOI18N
+            params.put("color", HighlightConfig.colorToRGBA(fill)); // NOI18N
         }
         if (outline != null) {
-            params.put("outlineColor", HighlightConfig.colorToJSONObject(outline)); // NOI18N
+            params.put("outlineColor", HighlightConfig.colorToRGBA(outline)); // NOI18N
         }
         transport.sendCommand(new Command("DOM.highlightRect", params)); // NOI18N
     }
 
+    /**
+     * Highlights the given node.
+     * 
+     * Note that this method does nothing in WebView currently.
+     * 
+     * Note that at most one node or rectangle can be highlighted.
+     * Invocation of {@code highlightRect()} or {@code highlightNode()} cancels
+     * any existing highlight.
+     * 
+     * @param node node to highlight.
+     * @param highlight description of the requested highlight.
+     */
     public void highlightNode(Node node, HighlightConfig highlight) {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId()); // NOI18N
@@ -130,48 +188,260 @@ public class DOM {
         transport.sendCommand(new Command("DOM.highlightNode", params)); // NOI18N
     }
 
+    /**
+     * Hides the current node or rectangle highlight.
+     */
     public void hideHighlight() {
         transport.sendCommand(new Command("DOM.hideHighlight")); // NOI18N
     }
 
+    /**
+     * Executes the given selector on the specified node and returns
+     * a matching node.
+     * 
+     * @param node context of the query.
+     * @param selector selector to execute.
+     * @return node matching the selector or {@code null}.
+     */
+    public Node querySelector(Node node, String selector) {
+        Node n = null;
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("selector", selector); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("DOM.querySelector", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+                n = nodes.get(nodeId);
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Executes the given selector on the specified node and returns
+     * all matching nodes.
+     * 
+     * @param node context of the query.
+     * @param selector selector to execute.
+     * @return nodes matching the selector (empty list is returned when
+     * no matching node is found).
+     */
+    public List<Node> querySelectorAll(Node node, String selector) {
+        List<Node> list = Collections.EMPTY_LIST;
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("selector", selector); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("DOM.querySelectorAll", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                list = new ArrayList<Node>();
+                JSONArray array = (JSONArray)params.get("nodeIds"); // NOI18N
+                for (Object id : array) {
+                    int nodeId = ((Number)id).intValue();
+                    Node n = nodes.get(nodeId);
+                    if (n != null) {
+                        list.add(n);
+                    }
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Sets node name of the given node. In fact, the old node is replaced
+     * by a new node with the new name.
+     * 
+     * @param node node whose name should be set.
+     * @param name new name of the node.
+     * @return node that has the specified name and that replaces
+     * the given old node.
+     */
+    public Node setNodeName(Node node, String name) {
+        Node n = null;
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("name", name); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("DOM.setNodeName", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                int nodeId = ((Number)result.get("nodeId")).intValue(); // NOI18N
+                n = nodes.get(nodeId);
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Sets node value of the given node.
+     * 
+     * @param node node whose node value should be replaced.
+     * @param value new node value of the node.
+     */
+    public void setNodeValue(Node node, String value) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("value", value); // NOI18N
+        transport.sendCommand(new Command("DOM.setNodeValue", params)); // NOI18N
+    }
+
+    /**
+     * Removes the specified node.
+     * 
+     * @param node node to remove.
+     */
+    public void removeNode(Node node) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        transport.sendCommand(new Command("DOM.removeNode", params)); // NOI18N
+    }
+
+    /**
+     * Sets value of the specified attribute.
+     * 
+     * @param node node whose attribute should be modified.
+     * @param name name of the attribute to modify.
+     * @param value new value of the attribute.
+     */
+    public void setAttributeValue(Node node, String name, String value) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("name", name); // NOI18N
+        params.put("value", value); // NOI18N
+        transport.sendCommand(new Command("DOM.setAttributeValue", params)); // NOI18N
+    }
+
+    /**
+     * Removes the specified attribute.
+     * 
+     * @param node node whose attribute should be removed.
+     * @param name name of the attribute to remove.
+     */
+    public void removeAttribute(Node node, String name) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("name", name); // NOI18N
+        transport.sendCommand(new Command("DOM.removeAttribute", params)); // NOI18N
+    }
+
+    /**
+     * Returns an outer HTML of the specified node.
+     * 
+     * @param node node whose outer HTML should be returned.
+     * @return outer HTML of the specified node.
+     */
+    public String getOuterHTML(Node node) {
+        String html = null;
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("DOM.getOuterHTML", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                html = (String)result.get("outerHTML"); // NOI18N
+            }
+        }
+        return html;
+    }
+
+    /**
+     * Sets the outer HTML of the specified node.
+     * 
+     * @param node node whose outer HTML should be returned.
+     * @param html new outer HTML of the node.
+     */
+    public void setOuterHTML(Node node, String html) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        params.put("outerHTML", html); // NOI18N
+        transport.sendCommand(new Command("DOM.setOuterHTML", params)); // NOI18N
+    }
+
+    /**
+     * Registers DOM domain listener.
+     * 
+     * @param listener listener to register.
+     */
     public void addListener(Listener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Unregisters DOM domain listener.
+     * 
+     * @param listener listener to unregister.
+     */
     public void removeListener(Listener listener) {
         listeners.remove(listener);
     }
 
+    /**
+     * Notify listeners about {@code childNodesSet} event.
+     * 
+     * @param parent parent whose children have been set.
+     */
     private void notifyChildNodesSet(Node parent) {
         for (Listener listener : listeners) {
             listener.childNodesSet(parent);
         }
     }
 
+    /**
+     * Notify listeners about {@code childNodeRemoved} event.
+     * 
+     * @param parent parent whose child has been removed.
+     * @param child child that has been removed.
+     */
     private void notifyChildNodeRemoved(Node parent, Node child) {
         for (Listener listener : listeners) {
             listener.childNodeRemoved(parent, child);
         }
     }
 
+    /**
+     * Notify listeners about {@code childNodeInserted} event.
+     * 
+     * @param parent parent whose child has been inserted.
+     * @param child child that has been inserted.
+     */
     private void notifyChildNodeInserted(Node parent, Node child) {
         for (Listener listener : listeners) {
             listener.childNodeInserted(parent, child);
         }
     }
 
+    /**
+     * Notify listeners about {@code documentUpdated} event.
+     */
     private void notifyDocumentUpdated() {
         for (Listener listener : listeners) {
             listener.documentUpdated();
         }
     }
 
+    /**
+     * Notify listeners about {@code attributeModified} event.
+     * 
+     * @param node node whose attribute has been modified.
+     * @param attrName name of the modified attribute (the new value
+     * is already set in the node).
+     */
     private void notifyAttributeModified(Node node, String attrName) {
         for (Listener listener : listeners) {
             listener.attributeModified(node, attrName);
         }
     }
 
+    /**
+     * Notify listeners about {@code attributeRemoved} event.
+     * 
+     * @param node node whose attribute has been removed.
+     * @param attrName  name of the removed attribute.
+     */
     private void notifyAttributeRemoved(Node node, String attrName) {
         for (Listener listener : listeners) {
             listener.attributeRemoved(node, attrName);
@@ -183,7 +453,8 @@ public class DOM {
         Node parent = nodes.get(parentId);
         JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
         for (Object child : children) {
-            parent.addChild(new Node((JSONObject)child));
+            Node node = new Node((JSONObject)child);
+            parent.addChild(node);
         }
         updateNodesMap(parent);
         notifyChildNodesSet(parent);
@@ -237,19 +508,68 @@ public class DOM {
     }
 
     /**
-     * DOM listener.
+     * DOM domain listener.
      */
     public static interface Listener {
+        /**
+         * Document has been updated. Old node IDs are no longer valid.
+         */
         void documentUpdated();
+        
+        /**
+         * Notification about child nodes of some node. This event is sent
+         * at most once. Events that correspond to incremental updates
+         * are sent when child nodes are modified after that.
+         * 
+         * @param parent parent whose nodes has been set.
+         */
         void childNodesSet(Node parent);
+        
+        /**
+         * Child node has been removed from the parent, mirrors
+         * {@code DOMNodeRemoved} event.
+         * 
+         * @param parent parent whose child has been removed.
+         * @param child child that has been removed.
+         */
         void childNodeRemoved(Node parent, Node child);
+        
+        /**
+         * Child node has been inserted into the parent, mirrors
+         * {@code DOMNodeInserted} event.
+         * 
+         * @param parent parent whose child has been inserted.
+         * @param child child that has been inserted.
+         */
         void childNodeInserted(Node parent, Node child);
+        
+        /**
+         * Attribute has been modified.
+         * 
+         * @param node node whose attribute has been modified.
+         * @param attrName name of the modified attribute.
+         */
         void attributeModified(Node node, String attrName);
+        
+        /**
+         * Attribute has been removed.
+         * 
+         * @param node node whose attribute has been removed.
+         * @param attrName name of the removed attribute.
+         */
         void attributeRemoved(Node node, String attrName);
     }
 
+    /**
+     * Callback for DOM domain events.
+     */
     class Callback implements ResponseCallback {
 
+        /**
+         * Handles DOM domain events.
+         * 
+         * @param response event description.
+         */
         @Override
         public void handleResponse(Response response) {
             String method = response.getMethod();

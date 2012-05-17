@@ -114,6 +114,15 @@ public class Node {
         children = new ArrayList<Node>();
     }
 
+    /**
+     * Returns sub-nodes of this node. This method returns an empty list
+     * if there are no sub-nodes but it can return {@code null} when
+     * the sub-nodes are not known yet. If that happens then you may
+     * request the sub-nodes using {@code DOM.requestChildNodes()} method.
+     * 
+     * @return sub-nodes of this node or {@code null} when the sub-nodes
+     * are not known yet.
+     */
     public synchronized List<Node> getChildren() {
         return children;
     }

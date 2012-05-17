@@ -51,33 +51,47 @@ import org.json.simple.JSONObject;
  * @author Jan Stola
  */
 public class HighlightConfig {
-    public Boolean showInfo;
+    /** Determines whether the info tooltip should be shown. */
+    public boolean showInfo;
+    /** Color used to paint the content box, can be {@code null}. */
     public Color contentColor;
+    /** Color used to paint the padding, can be {@code null}. */
     public Color paddingColor;
+    /** Color used to paint the border, can be {@code null}. */
     public Color borderColor;
+    /** Color used to paint the margin, can be {@code null}. */
     public Color marginColor;
 
+    /**
+     * Converts this highlight configuration into {@code DOM.HighlightConfig} format.
+     * 
+     * @return this highlight configuration in {@code DOM.HighlightConfig} format.
+     */
     JSONObject toJSONObject() {
         JSONObject object = new JSONObject();
-        if (showInfo != null) {
-            object.put("showInfo", showInfo); // NOI18N
-        }
+        object.put("showInfo", showInfo); // NOI18N
         if (contentColor != null) {
-            object.put("contentColor", colorToJSONObject(contentColor)); // NOI18N
+            object.put("contentColor", colorToRGBA(contentColor)); // NOI18N
         }
         if (paddingColor != null) {
-            object.put("paddingColor", colorToJSONObject(paddingColor)); // NOI18N
+            object.put("paddingColor", colorToRGBA(paddingColor)); // NOI18N
         }
         if (borderColor != null) {
-            object.put("borderColor", colorToJSONObject(borderColor)); // NOI18N
+            object.put("borderColor", colorToRGBA(borderColor)); // NOI18N
         }
         if (marginColor != null) {
-            object.put("marginColor", colorToJSONObject(marginColor)); // NOI18N
+            object.put("marginColor", colorToRGBA(marginColor)); // NOI18N
         }
         return object;
     }
 
-    static JSONObject colorToJSONObject(Color color) {
+    /**
+     * Converts the given color into a JSONObject in {@code DOM.RGBA} format.
+     * 
+     * @param color color to convert.
+     * @return color in {@code DOM.RGBA} format.
+     */
+    static JSONObject colorToRGBA(Color color) {
         JSONObject object = new JSONObject();
         object.put("r", color.getRed()); // NOI18N
         object.put("g", color.getGreen()); // NOI18N
