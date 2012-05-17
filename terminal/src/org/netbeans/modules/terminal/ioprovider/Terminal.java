@@ -923,13 +923,15 @@ public final class Terminal extends JComponent {
     
     private void applyShortcuts() {
 	if (!termOptions.getIgnoreKeymap()) {
-	    Set<Action> actions = new HashSet<Action>();
+	    Set<String> actions = new HashSet<String>();
 	    for (FileObject def : shortcutsDir.getChildren()) {
 		try {
 		    DataObject dobj = DataObject.find(def);
 		    InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
 		    if (ic != null) {
-			actions.add((Action)ic.instanceCreate());
+			// put class names in the map,
+			// otherwise we may end with several instances of the action
+			actions.add(ic.instanceCreate().getClass().getName());
 		    }
 		} catch (Exception e) {
 		    Exceptions.printStackTrace(e);

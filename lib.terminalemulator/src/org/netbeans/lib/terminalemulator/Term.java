@@ -763,14 +763,14 @@ public class Term extends JComponent implements Accessible {
     }
     
     private Keymap keymap;
-    private Set<Action> allowedActions;
+    private Set<String> allowedActions;
             
     /**
      * Set keymap and allowed actions
      * @param keymap - use this to check if a keystroke is used outside the terminal
      * @param allowedActions - if not null we only allow specified actions in the terminal
      */
-    public void setKeymap(Keymap keymap, Set<Action> allowedActions) {
+    public void setKeymap(Keymap keymap, Set<String> allowedActions) {
         this.keymap = keymap;
         this.allowedActions = allowedActions;
     }
@@ -849,7 +849,7 @@ public class Term extends JComponent implements Accessible {
         if (keymap != null) {
             Action action = keymap.getAction(ks);
             if (action != null) {
-                if (allowedActions == null || allowedActions.contains(action)) {
+                if (allowedActions == null || allowedActions.contains(action.getClass().getName())) {
                     return false;
                 }
             }
