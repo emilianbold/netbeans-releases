@@ -50,6 +50,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
@@ -57,6 +58,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.WizardUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -167,10 +169,14 @@ final class ModuleInstallPanel extends BasicWizardIterator.Panel {
         modifiedFilesValue.getAccessibleContext().setAccessibleDescription(getMessage("ACS_CTL_ModifiedFilesValue"));
     }
     
-    private String getModuleInstall() {
+    private @CheckForNull String getModuleInstall() {
         String moduleInstall = null;
+        FileObject manifestFile = data.getModuleInfo().getManifestFile();
+        if (manifestFile == null) {
+            return null;
+        }
         try {
-            EditableManifest mf = Util.loadManifest(data.getModuleInfo().getManifestFile());
+            EditableManifest mf = Util.loadManifest(manifestFile);
             moduleInstall = mf.getAttribute(DataModel.OPENIDE_MODULE_INSTALL, null);
         } catch (IOException e) {
             assert false : e;

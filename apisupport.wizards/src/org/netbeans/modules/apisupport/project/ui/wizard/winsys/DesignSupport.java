@@ -47,9 +47,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.MissingResourceException;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +63,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.spi.ExecProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -154,20 +155,20 @@ public final class DesignSupport implements TaskListener, Runnable {
         );
     }
 
-    static String[] existingModes(NewTCIterator.DataModel data) throws IOException {
+    static @CheckForNull Set<String> existingModes(NewTCIterator.DataModel data) throws IOException {
         FileSystem fs = data.getProject().getLookup().lookup(NbModuleProvider.class).getEffectiveSystemFilesystem();
         data.setSFS(fs);
         FileObject foRoot = fs.getRoot().getFileObject("Windows2/Modes"); //NOI18N
         if (foRoot != null) {
             FileObject[] fos = foRoot.getChildren();
-            Collection<String> col = new ArrayList<String>();
+            Set<String> col = new TreeSet<String>();
             for (FileObject fo : fos) {
                 if (fo.isData() && "wsmode".equals(fo.getExt())) { //NOI18N
                     col.add(fo.getName());
                     data.existingMode(fo.getName());
                 }
             }
-            return col.toArray(new String[col.size()]);
+            return col;
         } else {
             return null;
         }
