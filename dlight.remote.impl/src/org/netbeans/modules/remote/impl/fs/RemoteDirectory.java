@@ -842,7 +842,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName, boolean expected) throws
+    private DirectoryStorage getDirectoryStorageImpl(final boolean forceRefresh, final String expectedName, final String childName, final boolean expected) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
