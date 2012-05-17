@@ -757,9 +757,7 @@ public class RefactoringPanel extends JPanel {
                                     if (cancelRequest.get()) {
                                         break;
                                     }
-                                    tree.expandRow(0);
 
-                                    final int in = i;
                                     final boolean last = !it.hasNext();
                                     final int occurrences = i + 1;
                                     size = occurrences;
@@ -772,7 +770,6 @@ public class RefactoringPanel extends JPanel {
                                                 if (last) {
                                                     tree.repaint();
                                                 }
-                                                
                                             }
                                         });
                                     }
