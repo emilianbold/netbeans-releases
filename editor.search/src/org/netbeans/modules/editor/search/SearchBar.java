@@ -115,6 +115,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
     private boolean popupMenuWasCanceled = false;
     private Rectangle actualViewPort;
     private boolean highlightCanceled = false;
+    private boolean whenOpenedWasNotVisible = false;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -604,15 +605,18 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         addEnterKeystrokeFindNextTo(incSearchTextField);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         
-        
         MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
             comboBoxModelIncSearch.removeElementAt(i);
         }
         for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
             comboBoxModelIncSearch.addElement(spw.getSearchExpression());
-        if (!isVisible())
+        if (!isVisible() && isClosingSearchType())
+            whenOpenedWasNotVisible = true;
+        if (whenOpenedWasNotVisible) {
             incSearchTextField.setText("");
+            whenOpenedWasNotVisible = false;
+        }
         hadFocusOnIncSearchTextField = true;
         setVisible(true);
         initBlockSearch();
