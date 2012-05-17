@@ -235,6 +235,8 @@ public abstract class EntityClass {
             facesConfig.addManagedBean(managedBean);
             facesConfig.getModel().endTransaction();
             facesConfig.getModel().sync();
+        } catch (IllegalStateException ex) {
+            java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
         }

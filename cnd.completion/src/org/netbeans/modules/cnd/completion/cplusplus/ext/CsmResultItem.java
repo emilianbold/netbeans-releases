@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -367,7 +368,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 Object ob = getAssociatedObject();
                 if (CsmKindUtilities.isCsmObject(ob)) {
                     // Bug 186954 - Included files are chaotically inserted
-                    if (!isDummyForward((CsmObject) ob)) {
+                    if (!CsmClassifierResolver.getDefault().isForwardClass((CsmObject) ob)) {
                         CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
                         if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                             String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
@@ -385,10 +386,6 @@ public abstract class CsmResultItem implements CompletionItem {
             return false;
         }
 
-    }
-
-    private boolean isDummyForward(CsmObject ob) {
-        return CsmKindUtilities.isClass(ob) && ob.toString().startsWith("DUMMY_FORWARD"); // NOI18N
     }
 
     // Checks that include directive have not been already included
