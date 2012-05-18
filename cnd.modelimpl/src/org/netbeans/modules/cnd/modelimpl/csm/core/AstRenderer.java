@@ -918,7 +918,8 @@ public class AstRenderer {
                             }
                             break;
                         }
-                    case CPPTokenTypes.SEMICOLON: {
+                    case CPPTokenTypes.SEMICOLON: 
+                    {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
                             CsmType type = TypeFactory.createType(classifier, null, 0, null, file, startOffset, endOffset);
@@ -933,6 +934,7 @@ public class AstRenderer {
                             }
                             classifier.addEnclosingVariable(var);
                         }
+                        break;
                     }
                     default:
                         nothingBeforSemicolon = false;
@@ -956,7 +958,7 @@ public class AstRenderer {
                 node = node.getNextSibling();
             }
             AST classNode = node;
-            while (classNode != null && isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType())) {
+            while (classNode != null && (isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType()))) {
                 classNode = classNode.getNextSibling();
             }
             if (classNode == null) {
