@@ -527,6 +527,7 @@ public class JPDAStart extends Task implements Runnable {
                     }
                 });
 
+                logger.log(Level.FINE, "adding a BuildListener to project {0} in {1}", new Object[] {getProject().getName(), getProject().getBaseDir()});
                 getProject().addBuildListener(new BuildListener() {
 
                     public void messageLogged(BuildEvent event) {}
