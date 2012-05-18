@@ -48,6 +48,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -57,7 +58,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JQueryCodeCompletionSelectorsTest extends JsTestBase {
+public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
     
     public JQueryCodeCompletionSelectorsTest(String testName) {
         super(testName);
@@ -102,6 +103,10 @@ public class JQueryCodeCompletionSelectorsTest extends JsTestBase {
     
     public void testSelectorTagAttr02() throws Exception {
         checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('div[t^itle=\"hello\"]')", false);
+    }
+    
+    public void testCodeCompletionSelectorInsert() throws Exception {
+        assertComplete("$(':b|')", "$(':button|')", ":button");
     }
         
     @Override

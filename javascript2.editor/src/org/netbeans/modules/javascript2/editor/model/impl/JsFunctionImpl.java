@@ -84,7 +84,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
     
     public static JsFunctionImpl createGlobal(FileObject fileObject, int length) {
-        Identifier ident = new IdentifierImpl(fileObject.getName(), new OffsetRange(0, length));
+        String name = fileObject != null ? fileObject.getName() : "VirtualSource"; //NOI18N
+        Identifier ident = new IdentifierImpl(name, new OffsetRange(0, length));
         return new JsFunctionImpl(fileObject, ident);
     }
     

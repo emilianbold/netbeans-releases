@@ -702,9 +702,27 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
         }
-        if (jsObject.getJSKind() == JsElement.Kind.OBJECT) {
+        
+        completeObjectMembers(jsObject, request, properties);
+        
+        if (jsObject.getName().equals("prototype")) {  //NOI18N
+            completeObjectMembers(jsObject.getParent(), request, properties);
+        }
+        
+        for (JsElement element : properties.values()) {
+            if (element instanceof JsObject)
+                resultList.add(JsCompletionItem.Factory.create((JsObject)element, request));
+            else if (element instanceof IndexedElement){
+                resultList.add(JsCompletionItem.Factory.create((IndexedElement)element, request));
+            }
+        }
+    }
+    
+    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, HashMap<String, JsElement> properties) {
+        if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
             for (JsObject property : jsObject.getProperties().values()) {
-                if(startsWith(property.getName(), request.prefix)) {
+                if(!property.getModifiers().contains(Modifier.PRIVATE)
+                        && startsWith(property.getName(), request.prefix)) {
                     JsElement element = properties.get(property.getName());
                     if(element == null || (!element.isDeclared() && property.isDeclared())) {
                         properties.put(property.getName(), property);
@@ -723,14 +741,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 if (element == null || (!element.isDeclared() && indexedElement.isDeclared())) {
                     properties.put(indexedElement.getName(), indexedElement);
                 }
-            }
-        }
-        
-        for (JsElement element : properties.values()) {
-            if (element instanceof JsObject)
-                resultList.add(JsCompletionItem.Factory.create((JsObject)element, request));
-            else if (element instanceof IndexedElement){
-                resultList.add(JsCompletionItem.Factory.create((IndexedElement)element, request));
             }
         }
     }
