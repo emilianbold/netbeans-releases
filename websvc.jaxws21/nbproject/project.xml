@@ -143,6 +143,9 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jaxws22/stax-ex.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/jaxws22/stax2-api.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/jaxws22/streambuffer.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
