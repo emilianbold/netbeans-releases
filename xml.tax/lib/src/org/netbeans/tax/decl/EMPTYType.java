@@ -77,7 +77,7 @@ public class EMPTYType extends LeafType {
     /**
      */
     public String getName () {
-        return Util.THIS.getString ("NAME_EMPTY");
+        return "EMPTY"; // NOI18N
     }
     
     /**
