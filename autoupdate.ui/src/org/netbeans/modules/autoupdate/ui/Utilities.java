@@ -160,6 +160,9 @@ public class Utilities {
     }
     
     public static void storeAcceptedLicenseIDs() {
+        if (acceptedLicenseIDs == null) {
+            return ;
+        }
         StringBuilder sb = new StringBuilder();
         for(String licenseId : acceptedLicenseIDs) {
             sb.append(licenseId).append(",");
