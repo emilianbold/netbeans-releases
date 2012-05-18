@@ -1356,6 +1356,18 @@ public final class CsmProjectContentResolver {
                 res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedMembers));
             }
         }
+        // handle all parent namespaces
+        CsmNamespace parentNS = ns.getParent();
+        while(parentNS != null && !handledNS.contains(parentNS) && !ns.isGlobal()) {
+            handledNS.add(parentNS);
+
+            strPrefix = ns.getName() + "::" + strPrefix; // NOI18N
+            filterDeclarations(parentNS, res, kinds, strPrefix, match, returnUnnamedMembers);
+
+            ns  = parentNS;
+            parentNS = parentNS.getParent();
+        }
+        
         return res;
     }
 

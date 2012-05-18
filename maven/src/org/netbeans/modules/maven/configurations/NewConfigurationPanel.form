@@ -23,7 +23,7 @@
                       <Component id="lblId" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbShared" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbPrivate" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="txtId" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -53,7 +53,7 @@
                   <Component id="txtId" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="cbShared" min="-2" max="-2" attributes="0"/>
+              <Component id="cbPrivate" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblActivate" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -92,15 +92,15 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="cbShared">
+    <Component class="javax.swing.JCheckBox" name="cbPrivate">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/configurations/Bundle.properties" key="NewConfigurationPanel.cbShared.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/configurations/Bundle.properties" key="NewConfigurationPanel.cbPrivate.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/configurations/Bundle.properties" key="NewConfigurationPanel.cbShared.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/configurations/Bundle.properties" key="NewConfigurationPanel.cbPrivate.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <AuxValues>

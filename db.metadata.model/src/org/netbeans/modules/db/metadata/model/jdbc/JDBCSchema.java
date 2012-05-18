@@ -156,7 +156,8 @@ public class JDBCSchema extends SchemaImplementation {
         LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
         try {
-            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE", "SYSTEM TABLE" }); // NOI18N
+            ResultSet rs = MetadataUtilities.getTables(jdbcCatalog.getJDBCMetadata().getDmd(),
+                    jdbcCatalog.getName(), name, "%", new String[]{"TABLE", "SYSTEM TABLE"}); // NOI18N
             try {
                 while (rs.next()) {
                     String tableName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
@@ -179,7 +180,8 @@ public class JDBCSchema extends SchemaImplementation {
         LOGGER.log(Level.FINE, "Initializing views in {0}", this);
         Map<String, View> newViews = new LinkedHashMap<String, View>();
         try {
-            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "VIEW" }); // NOI18N
+            ResultSet rs = MetadataUtilities.getTables(jdbcCatalog.getJDBCMetadata().getDmd(),
+                    jdbcCatalog.getName(), name, "%", new String[]{"VIEW"}); // NOI18N
             try {
                 while (rs.next()) {
                     String viewName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
@@ -202,7 +204,8 @@ public class JDBCSchema extends SchemaImplementation {
         LOGGER.log(Level.FINE, "Initializing procedures in {0}", this);
         Map<String, Procedure> newProcedures = new LinkedHashMap<String, Procedure>();
         try {
-            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getProcedures(jdbcCatalog.getName(), name, "%"); // NOI18N
+            ResultSet rs = MetadataUtilities.getProcedures(jdbcCatalog.getJDBCMetadata().getDmd(),
+                    jdbcCatalog.getName(), name, "%"); // NOI18N
             try {
                 while (rs.next()) {
                     String procedureName = MetadataUtilities.trimmed(rs.getString("PROCEDURE_NAME")); // NOI18N
