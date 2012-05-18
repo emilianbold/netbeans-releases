@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.hibernate.editor.HibernateEditorUtil;
+import org.netbeans.modules.hibernate.mapping.HibernateMappingXmlConstants;
 import org.openide.util.Exceptions;
 
 /**
@@ -64,13 +65,14 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
     public PropertyHyperlinkProcessor() {
     }
 
+    @Override
     public void process(HyperlinkEnv env) {
         try {
             String className0 = HibernateEditorUtil.getClassName(env.getCurrentTag());
             if (className0 == null) {
                 return;
             }
-            String pack = env.getDocumentContext().getDocRoot().getAttribute("package");//NOI18N
+            String pack = env.getDocumentContext().getDocRoot().getAttribute(HibernateMappingXmlConstants.PACKAGE_ATTRIB);//NOI18N
             if(pack!=null &&  pack.length()>0){
                 if(!className0.contains(".")){
                     className0 = pack + "." +className0;
