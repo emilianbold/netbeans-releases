@@ -46,13 +46,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -74,6 +75,7 @@ public class UpdateContextRoot implements ProgressListener {
         this.needToDo = needToDo;
     }
 
+    @Override
     public void handleProgressEvent(ProgressEvent event) {
         if (event.getDeploymentStatus().isCompleted()) {
             if (needToDo) {
@@ -82,6 +84,7 @@ public class UpdateContextRoot implements ProgressListener {
                 //
                 RequestProcessor.getDefault().post(new Runnable() {
 
+                    @Override
                     public void run() {
                         // Maven projects like to embed a '.' into the ModuleID
                         //   that played havoc with the get command, so we started
@@ -96,7 +99,6 @@ public class UpdateContextRoot implements ProgressListener {
                                 if (null != newCR) {
                                     moduleId.setPath(newCR); //e.getValue());
                                     returnProgress.operationStateChanged(OperationState.COMPLETED, "updated the moduleid");
-                                    return;
                                 } else {
                                     returnProgress.operationStateChanged(OperationState.COMPLETED, "no moduleid update necessary");
                                 }
@@ -106,13 +108,13 @@ public class UpdateContextRoot implements ProgressListener {
                             }
                         } catch (InterruptedException ex) {
                             returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid..");
-                            Exceptions.printStackTrace(ex);
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "", ex);
                         } catch (ExecutionException ex) {
                             returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid...");
-                            Exceptions.printStackTrace(ex);
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "", ex);
                         } catch (TimeoutException ex) {
                             returnProgress.operationStateChanged(OperationState.FAILED, "failed updating the moduleid....");
-                            Exceptions.printStackTrace(ex);
+                            Logger.getLogger("glassfish-javaee").log(Level.INFO, "", ex);
                         }
                     }
                 });

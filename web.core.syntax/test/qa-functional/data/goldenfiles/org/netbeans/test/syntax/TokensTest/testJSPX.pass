@@ -1,4 +1,5 @@
-TEXT:<?xml version="1.0" encoding="UTF-8"?>
+XML_PI:<?xml version="1.0" encoding="UTF-8"?>
+TEXT:
 
 
 DECLARATION:<!DOCTYPE
@@ -75,7 +76,8 @@ TEXT:
         
 TEXT:<![CDATA[Node18]]>
         
-TEXT:<?Node16 processing instruction data?>
+XML_PI:<?Node16 processing instruction data?>
+TEXT:
         
 SYMBOL:</
 ENDTAG:jsp:body

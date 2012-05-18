@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -99,8 +98,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
-            DiagnosticExceptoins.register(AstRendererException.createAstRendererException((FileImpl) file, ast, startOffset, "Empty function name.")); // NOI18N
-            return null;
+            AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
         
@@ -129,7 +127,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, functionDefinitionImpl);
         if (body == null) {
-            throw AstRendererException.createAstRendererException((FileImpl)file, ast, startOffset,
+            throw AstRendererException.throwAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
         }        
         functionDefinitionImpl.setCompoundStatement(body);
@@ -214,6 +212,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     private CsmFunction findDeclaration() {
+        if (!isValid()) {
+            return null;
+        }
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         Collection<? extends CsmDeclaration> prjDecls = getContainingFile().getProject().findDeclarations(uname);
         if (prjDecls.isEmpty()) {

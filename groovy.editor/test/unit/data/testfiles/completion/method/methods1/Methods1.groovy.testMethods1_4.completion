@@ -7,6 +7,7 @@ METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
+METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     dump()                                     String

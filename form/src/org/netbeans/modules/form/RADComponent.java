@@ -2048,7 +2048,12 @@ public class RADComponent {
         @Override
         public EventSetDescriptor[] getEventSetDescriptors() {            
 	    return new EventSetDescriptor[0];
-        }        
+        }
+
+        @Override
+        public MethodDescriptor[] getMethodDescriptors() {
+            return new MethodDescriptor[0];
+        }
 
         void addPropertyDescriptor(String propertyName, Class propertyClass) {
             try {

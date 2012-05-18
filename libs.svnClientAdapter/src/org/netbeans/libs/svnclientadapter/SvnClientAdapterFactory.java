@@ -68,6 +68,7 @@ public abstract class SvnClientAdapterFactory {
 
     public static synchronized SvnClientAdapterFactory getInstance(Client client) {
         if (instance == null || SvnClientAdapterFactory.client != client) {
+            instance = null;
             Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
             for (SvnClientAdapterFactory f : cl) {
                 if(f.provides() == client) {

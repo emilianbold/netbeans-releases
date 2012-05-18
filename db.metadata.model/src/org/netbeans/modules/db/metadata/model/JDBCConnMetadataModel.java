@@ -143,7 +143,8 @@ public class JDBCConnMetadataModel implements MetadataModelImplementation {
             
             String driverName = dmd.getDriverName();
             if (driverName != null) {
-                if (driverName.contains("Microsoft SQL Server") || driverName.contains("jTDS")) { // NOI18N
+                if ((driverName.contains("Microsoft") && driverName.contains("SQL Server")) //NOI18N
+                        || driverName.contains("jTDS")) { //NOI18N
                     return new MSSQLMetadata(conn, defaultSchemaName);
                 }
             }

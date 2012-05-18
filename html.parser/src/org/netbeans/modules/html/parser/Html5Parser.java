@@ -41,15 +41,11 @@
  */
 package org.netbeans.modules.html.parser;
 
-import org.netbeans.modules.html.parser.model.HtmlTagProvider;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,16 +54,14 @@ import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
 import org.netbeans.modules.html.editor.lib.api.*;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
-import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.netbeans.modules.html.editor.lib.api.model.*;
-import org.netbeans.modules.html.parser.model.ElementDescriptor;
-import org.netbeans.modules.html.parser.model.NamedCharacterReference;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -77,14 +71,8 @@ import org.xml.sax.SAXParseException;
  *
  * @author marekfukala
  */
-@ServiceProviders(value={
-    @ServiceProvider(service = HtmlParser.class, position = 100),
-    @ServiceProvider(service = HtmlModelProvider.class, position = 10)
-})
-public class Html5Parser implements HtmlParser, HtmlModelProvider {
-
-    private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
-    private static final HtmlModel HTML5MODEL = new Html5Model();
+@ServiceProvider(service = HtmlParser.class, position = 100)
+public class Html5Parser implements HtmlParser {
 
     @Override
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
@@ -109,6 +97,7 @@ public class Html5Parser implements HtmlParser, HtmlModelProvider {
 
             final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
             driver.setErrorHandler(new ErrorHandler() {
+                
                 @Override
                 public void warning(SAXParseException saxpe) throws SAXException {
                     reportProblem(saxpe.getLocalizedMessage(), ProblemDescription.WARNING);
@@ -167,35 +156,32 @@ public class Html5Parser implements HtmlParser, HtmlModelProvider {
     @Override
     public boolean canParse(HtmlVersion version) {
         return version == HtmlVersion.HTML5
-                || version == HtmlVersion.XHTML5
                 || version == HtmlVersion.HTML32
                 || version == HtmlVersion.HTML41_STRICT
                 || version == HtmlVersion.HTML41_TRANSATIONAL
                 || version == HtmlVersion.HTML41_FRAMESET
                 || version == HtmlVersion.HTML40_STRICT
                 || version == HtmlVersion.HTML40_TRANSATIONAL
-                || version == HtmlVersion.HTML40_FRAMESET
-                || version == HtmlVersion.XHTML10_STICT
-                || version == HtmlVersion.XHTML10_TRANSATIONAL
-                || version == HtmlVersion.XHTML10_FRAMESET
-                || version == HtmlVersion.XHTML11;
+                || version == HtmlVersion.HTML40_FRAMESET;
     }
 
+    /**
+     * 
+     * @deprecated 
+     */
     @Override
     public HtmlModel getModel(HtmlVersion version) {
-        switch(version) {
-            case HTML5:
-            case XHTML5:
-                return HTML5MODEL;
-            default:
-                return null;
-        }
+        return null;
     }
 
+    /**
+     * @deprecated 
+     */
     @Override
     public String getName() {
-        return PARSER_NAME;
+        return null;
     }
+    
     private static class Html5ParserResult extends DefaultHtmlParseResult {
 
         public Html5ParserResult(HtmlSource source, Node root, Collection<ProblemDescription> problems, HtmlVersion version) {
@@ -207,129 +193,16 @@ public class Html5Parser implements HtmlParser, HtmlModelProvider {
             return HtmlModelFactory.getModel(version());
         }
 
-        public void addPossibleTags(HtmlTag tag, Collection<HtmlTag> possible) {
-            //1.add all children of the tag
-            //2.if a child has optional end, add its possible children
-            //3.if a child is transparent, add its possible children
-            Collection<HtmlTag> children = tag.getChildren();
-            possible.addAll(children);
-            for (HtmlTag child : children) {
-                if (child.hasOptionalOpenTag()) {
-                    addPossibleTags(child, possible);
-                }
-                //TODO add the transparent check
-            }
-        }
-
         @Override
         public Collection<HtmlTag> getPossibleOpenTags(Element afterNode) {
-            if (afterNode.type() != ElementType.OPEN_TAG) {
-                return Collections.emptyList();
-            }
-
-            OpenTag openTag = (OpenTag) afterNode;
-
-            HtmlTag tag = model().getTag(openTag.unqualifiedName().toString());
-            if (tag == null) {
-                return Collections.emptyList();
-            }
-
-            //skip empty tags - this is mailny a workaround for bad logical context of empty nodes
-            //however not easily fixable since the HtmlCompletionQuery uses the XmlSyntaxTreeBuilder
-            //when the parse tree is broken and the builder has no notion of such metadata.
-            while (tag != null && tag.isEmpty()) {
-                afterNode = afterNode.parent();
-                if (afterNode == null) {
-                    return Collections.emptyList();
-                }
-                if (afterNode.type() != ElementType.OPEN_TAG) {
-                    return Collections.emptyList();
-                }
-                OpenTag ot = (OpenTag) afterNode;
-                tag = model().getTag(ot.unqualifiedName().toString());
-            }
-            if (tag == null) {
-                return Collections.emptyList();
-            }
-
-            Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
-            addPossibleTags(tag, possibleChildren);
-            return possibleChildren;
+            return ElementUtils.getPossibleOpenTags(model(), afterNode);
         }
 
         @Override
         public Map<HtmlTag, OpenTag> getPossibleCloseTags(Element node) {
-            //Bug 197608 - Non-html tags offered as closing tags using code completion
-            //XXX define of what type can be the node argument
-            if (node.type() != ElementType.OPEN_TAG) {
-                node = node.parent();
-                if (node == null) {
-                    return Collections.emptyMap();
-                }
-            }
-            //<<<
-
-            OpenTag openTag = (OpenTag) node;
-            String openTagName = openTag.unqualifiedName().toString();
-
-            HtmlTag tag = model().getTag(openTagName);
-            if (tag == null) {
-                return Collections.emptyMap();
-            }
-
-            Map<HtmlTag, OpenTag> possible = new LinkedHashMap<HtmlTag, OpenTag>();
-            //end tags
-            do {
-                if (!ElementUtils.isVirtualNode(node)) {
-                    tag = HtmlTagProvider.getTagForElement(((OpenTag)node).unqualifiedName().toString());
-                    if (!tag.isEmpty()) {
-                        possible.put(tag, (OpenTag)node);
-                    }
-                    if (!tag.hasOptionalEndTag()) {
-                        //since the end tag is required, the parent elements cannot be closed here
-                        break;
-                    }
-                }
-            } while ((node = node.parent()) != null && node.type() == ElementType.OPEN_TAG);
-
-            return possible;
-
-
+           return ElementUtils.getPossibleCloseTags(model(), node);
         }
+        
     }
-
-    private static final class Html5Model implements HtmlModel {
-
-        private static Collection<HtmlTag> ALL_TAGS;
-
-        @Override
-        public synchronized Collection<HtmlTag> getAllTags() {
-            if (ALL_TAGS == null) {
-                ALL_TAGS = new ArrayList<HtmlTag>();
-                for (ElementDescriptor element : ElementDescriptor.values()) {
-                    ALL_TAGS.add(HtmlTagProvider.forElementDescriptor(element));
-                }
-            }
-            return Collections.unmodifiableCollection(ALL_TAGS);
-        }
-
-        @Override
-        public HtmlTag getTag(String tagName) {
-            return HtmlTagProvider.getTagForElement(tagName);
-        }
-
-        @Override
-        public Collection<? extends NamedCharRef> getNamedCharacterReferences() {
-            return EnumSet.allOf(NamedCharacterReference.class);
-        }
-
-        public HelpResolver getHelpResolver() {
-            return HtmlDocumentation.getDefault();
-        }
-
-        @Override
-        public String getModelId() {
-            return "html5model";//NOI18N
-        }
-    }
+    
 }

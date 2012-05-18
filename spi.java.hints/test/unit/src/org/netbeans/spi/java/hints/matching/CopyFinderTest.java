@@ -1037,6 +1037,63 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testMethodTypeParameters1() throws Exception {
+        performVariablesTest("package test; public class Test { private void t() { } }",
+                             "$mods$ <$tp$> $ret $name($args$) { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {42, 46}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$tp$", new int[] {}),
+                                new Pair<String, int[]>("$args$", new int[] {}),
+                                new Pair<String, int[]>("$body$", new int[] {}),
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "t")
+                             },
+                             false,
+                             false);
+    }
+    
+    public void testMethodTypeParameters2() throws Exception {
+        performVariablesTest("package test; public class Test { private <A, B> String aa(int a, int b) { a = b; b = a;} }",
+                             "$mods$ <$tp$> $ret $name($args$) { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {49, 55}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$tp$", new int[] {43, 44, 46, 47}),
+                                new Pair<String, int[]>("$args$", new int[] {59, 64, 66, 71}),
+                                new Pair<String, int[]>("$body$", new int[] {75, 81, 82, 88}),
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "aa")
+                             },
+                             false,
+                             true);
+    }
+    
+    public void testMethodTypeParameters3() throws Exception {
+        performVariablesTest("package test; public class Test { private <A> String aa(int a, int b) { a = b; b = a;} }",
+                             "$mods$ <$tp> $ret $name($args$) { $body$; }",
+                             new Pair[] {
+                                new Pair<String, int[]>("$ret", new int[] {46, 52}),
+                                new Pair<String, int[]>("$mods$", new int[] {34, 41}),
+                                new Pair<String, int[]>("$tp", new int[] {43, 44}),
+                             },
+                             new Pair[] {
+                                new Pair<String, int[]>("$args$", new int[] {56, 61, 63, 68}),
+                                new Pair<String, int[]>("$body$", new int[] {72, 78, 79, 85}),
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$name", "aa")
+                             },
+                             false,
+                             true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

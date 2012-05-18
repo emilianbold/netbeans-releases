@@ -45,12 +45,13 @@ package org.netbeans.modules.cnd.editor.fortran.reformat;
 import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
-import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 import static org.netbeans.cnd.api.lexer.FortranTokenId.*;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranContextDetector.OperatorKind;
 import org.netbeans.modules.cnd.editor.fortran.reformat.FortranDiffLinkedList.DiffResult;
+import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
 
 /**
  *
@@ -64,16 +65,19 @@ public class FortranReformatterImpl {
     private FortranPreprocessorFormatter preprocessorFormatter;
     private final int startOffset;
     private final int endOffset;
-    private int tabSize;
+    final int tabSize;
+    final boolean expandTabToSpaces;
     private int indentAfterLabel;
 
     FortranReformatterImpl(TokenSequence<FortranTokenId> ts, int startOffset, int endOffset, FortranCodeStyle codeStyle){
         braces = new FortranBracesStack(codeStyle);
-        tabSize = codeStyle.getTabSize();
-        if (tabSize <= 1) {
-            tabSize = 8;
+        int aTabSize = codeStyle.getTabSize();
+        if (aTabSize <= 1) {
+            aTabSize = 8;
         }
-        this.ts = new FortranContextDetector(ts, diffs, braces, tabSize);
+        tabSize = aTabSize;
+        expandTabToSpaces = codeStyle.expandTabToSpaces();
+        this.ts = new FortranContextDetector(ts, diffs, braces, tabSize, expandTabToSpaces);
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.codeStyle = codeStyle;
@@ -345,7 +349,7 @@ public class FortranReformatterImpl {
                 }
                 case NUM_LITERAL_INT:
                 {
-                    if (!codeStyle.isFreeFormatFortran() && ts.isFirstLineToken()) {
+                    if (codeStyle.getFormatFortran() == FortranFormat.FIXED && ts.isFirstLineToken()) {
                         int pos = ts.getTokenPosition();
                         if (pos != 5) {
                             while(true) {
@@ -472,7 +476,7 @@ public class FortranReformatterImpl {
             newLineFormat(previous, current, next);
         }
         if (next != null) {
-            if (!codeStyle.isFreeFormatFortran() && next.id() == NUM_LITERAL_INT) {
+            if (codeStyle.getFormatFortran() == FortranFormat.FIXED && next.id() == NUM_LITERAL_INT) {
                 Token<FortranTokenId> next2 = ts.lookNextLineImportant(2);
                 if (next2 != null) {
                     next = next2;
@@ -623,9 +627,9 @@ public class FortranReformatterImpl {
     }
 
     private void newLineFormat(Token<FortranTokenId> previous, Token<FortranTokenId> current, Token<FortranTokenId> firstImportant) {
-        boolean fixedLabel = firstImportant != null && firstImportant.id() == NUM_LITERAL_INT && !codeStyle.isFreeFormatFortran();
+        boolean fixedLabel = firstImportant != null && firstImportant.id() == NUM_LITERAL_INT && codeStyle.getFormatFortran() == FortranFormat.FIXED;
         int pos = ts.getFirstLineTokenPosition();
-        if (pos == 5 && !codeStyle.isFreeFormatFortran()) {
+        if (pos == 5 && codeStyle.getFormatFortran() == FortranFormat.FIXED) {
             return;
         }
         if (previous != null && previous.id() != PREPROCESSOR_DIRECTIVE) {
@@ -658,7 +662,7 @@ public class FortranReformatterImpl {
                 ts.replaceCurrent(current, 0, space, true);
             } else if (current.id() == LINE_COMMENT_FIXED) {
             } else if (current.id() == LINE_COMMENT_FREE) {
-                if (codeStyle.isFreeFormatFortran()){
+                if (codeStyle.getFormatFortran() == FortranFormat.FREE){
                     if (space > 0) {
                         ts.addBeforeCurrent(0, space, true);
                     }
@@ -681,7 +685,7 @@ public class FortranReformatterImpl {
             if (next.id() == NEW_LINE || next.id() == FortranTokenId.LINE_COMMENT_FIXED) {
                 return;
             } else if (next.id() == FortranTokenId.LINE_COMMENT_FREE) {
-                if (!codeStyle.isFreeFormatFortran()) {
+                if (codeStyle.getFormatFortran() == FortranFormat.FIXED) {
                     if (getIndent() <= 6) {
                         ts.addAfterCurrent(current, 0, 0, true);
                         return;
@@ -750,7 +754,6 @@ public class FortranReformatterImpl {
             return;
         }
         spaceBefore(previous, false);
-        return;
     }
 
     private void reformatBlockComment(Token<FortranTokenId> previous, Token<FortranTokenId> current) {
@@ -1020,14 +1023,12 @@ public class FortranReformatterImpl {
                 }
                 spaceBefore(previous, codeStyle.spaceBeforeMethodCallParen());
                 spaceAfter(current, codeStyle.spaceWithinMethodCallParens());
-                return;
             } else if (p != null && KEYWORD_CATEGORY.equals(p.id().primaryCategory())){
                 switch (p.id()) {
                     case KW_RETURN:
                         spaceBefore(previous, codeStyle.spaceBeforeKeywordParen());
                         return;
                 }
-                return;
             } else {
                 spaceAfter(current, codeStyle.spaceWithinParens());
             }
@@ -1069,7 +1070,6 @@ public class FortranReformatterImpl {
                         return;
                 }
                 spaceBefore(previous, codeStyle.spaceWithinMethodCallParens());
-                return;
             } else {
                 spaceBefore(previous, codeStyle.spaceWithinParens());
             }

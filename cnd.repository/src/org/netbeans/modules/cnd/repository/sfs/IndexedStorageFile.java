@@ -43,14 +43,8 @@
  */
 package org.netbeans.modules.cnd.repository.sfs;
 
-import org.netbeans.modules.cnd.repository.sfs.index.FileIndexFactory;
-import org.netbeans.modules.cnd.repository.sfs.index.SimpleFileIndex;
-import org.netbeans.modules.cnd.repository.sfs.index.FileIndex;
-import org.netbeans.modules.cnd.repository.sfs.index.ChunkInfo;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -62,7 +56,11 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
+import org.netbeans.modules.cnd.repository.sfs.index.ChunkInfo;
 import org.netbeans.modules.cnd.repository.sfs.index.CompactFileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.FileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.FileIndexFactory;
+import org.netbeans.modules.cnd.repository.sfs.index.SimpleFileIndex;
 import org.netbeans.modules.cnd.repository.sfs.statistics.FileStatistics;
 import org.netbeans.modules.cnd.repository.sfs.statistics.RangeStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -274,9 +272,9 @@ class IndexedStorageFile extends FileStorage {
             size.consume(info.getSize());
         }
         //long channelSize = fileRWAccess.size();
-        long channelSize = getSize();
 
         if (TRACE) {
+            long channelSize = getSize();
             ps.printf("\n"); // NOI18N
             ps.printf("Dumping %s\n", dataFile.getAbsolutePath()); // NOI18N
             ps.printf("Entries count: %d\n", index.size()); // NOI18N
@@ -300,8 +298,8 @@ class IndexedStorageFile extends FileStorage {
     }
 
     private void print(final PrintStream ps, final Key key, final ChunkInfo chunk, final boolean lf) {
-        final long endOffset = chunk.getOffset() + chunk.getSize() - 1;
         if (TRACE) {
+            final long endOffset = chunk.getOffset() + chunk.getSize() - 1;
             ps.printf("%d-%d %d [0x%H-0x%H] read: %d written: %d (%s) %c", // NOI18N
                     chunk.getOffset(), endOffset, chunk.getSize(), chunk.getOffset(), endOffset,
                     fileStatistics.getReadCount(key), fileStatistics.getWriteCount(key), chunk.toString(),

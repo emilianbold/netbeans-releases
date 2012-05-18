@@ -67,13 +67,14 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
     }
 
     public boolean isShared() {
-        return cbShared.isSelected();
+        return !cbPrivate.isSelected();
     }
 
     public void setShared(boolean shared) {
-        cbShared.setSelected(shared);
+        cbPrivate.setSelected(!shared);
     }
     /** Creates new form NewConfigurationPanel */
+    @SuppressWarnings("LeakingThisInConstructor")
     public NewConfigurationPanel() {
         initComponents();
 
@@ -101,6 +102,14 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         }
         return toRet;
     }
+    
+    public void setProperties(String props) {
+        epProperties.setText(props);
+    }
+    
+    public String getProperties() {
+        return epProperties.getText();
+    }
 
     void attachDescriptor(DialogDescriptor dd) {
         this.descriptor = dd;
@@ -125,21 +134,30 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
 
         lblId = new javax.swing.JLabel();
         txtId = new javax.swing.JTextField();
-        cbShared = new javax.swing.JCheckBox();
+        cbPrivate = new javax.swing.JCheckBox();
         lblActivate = new javax.swing.JLabel();
         lblHint = new javax.swing.JLabel();
         txtActivate = new javax.swing.JTextField();
+        lblProperties = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        epProperties = new javax.swing.JEditorPane();
 
         lblId.setLabelFor(txtId);
         org.openide.awt.Mnemonics.setLocalizedText(lblId, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblId.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbShared, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbPrivate, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbPrivate.text")); // NOI18N
 
         lblActivate.setLabelFor(txtActivate);
         org.openide.awt.Mnemonics.setLocalizedText(lblActivate, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblActivate.text")); // NOI18N
 
         lblHint.setText(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblHint.text")); // NOI18N
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        lblProperties.setLabelFor(epProperties);
+        org.openide.awt.Mnemonics.setLocalizedText(lblProperties, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblProperties.text")); // NOI18N
+
+        epProperties.setContentType("text/x-properties"); // NOI18N
+        jScrollPane1.setViewportView(epProperties);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -152,13 +170,17 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                         .addComponent(lblId)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbShared)
-                            .addComponent(txtId, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)))
+                            .addComponent(cbPrivate)
+                            .addComponent(txtId)))
+                    .addComponent(lblHint, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblActivate)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblActivate)
+                            .addComponent(lblProperties))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtActivate, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE))
-                    .addComponent(lblHint, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtActivate)
+                            .addComponent(jScrollPane1))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -169,39 +191,49 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                     .addComponent(lblId)
                     .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbShared)
+                .addComponent(cbPrivate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblActivate)
                     .addComponent(txtActivate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(lblHint)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblProperties)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 41, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         txtId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.txtId.AccessibleContext.accessibleDescription")); // NOI18N
-        cbShared.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.AccessibleContext.accessibleDescription")); // NOI18N
+        cbPrivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbPrivate.AccessibleContext.accessibleDescription")); // NOI18N
         txtActivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.txtActivate.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbShared;
+    private javax.swing.JCheckBox cbPrivate;
+    private javax.swing.JEditorPane epProperties;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblActivate;
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblId;
+    private javax.swing.JLabel lblProperties;
     private javax.swing.JTextField txtActivate;
     private javax.swing.JTextField txtId;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         check();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         check();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         check();
     }

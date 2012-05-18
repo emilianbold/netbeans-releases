@@ -46,9 +46,13 @@ import java.io.File;
 import java.io.PrintWriter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,14 +68,16 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files) {
+            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir,
+            FSPath... files) {
         return new FullRemoteSyncWorker(executionEnvironment, out, err, files);
     }
 
     @Override
     public RemoteSyncWorker createNew(Project project, PrintWriter out, PrintWriter err) {
         ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
-        return new FullRemoteSyncWorker(execEnv, out, err);
+        FileSystem fileSystem = RemoteFileUtil.getProjectSourceFileSystem(project);
+        return new FullRemoteSyncWorker(execEnv, out, err, FSPath.toFSPath(project.getProjectDirectory()));
     }
 
     @Override

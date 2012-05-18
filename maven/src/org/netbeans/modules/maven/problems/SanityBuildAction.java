@@ -74,7 +74,9 @@ public class SanityBuildAction extends AbstractAction {
         config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
         config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
         config.setReactorStyle(ReactorStyle.ALSO_MAKE);
-        config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
+        //after a discussion with jglick -> comment out, could add artifacts with failing tests into local repository
+        // i'm unclear what the scope of the problem is, needs more investigation
+        //config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
         config.setProject(nbproject);
         String label = build_label(nbproject.getProjectDirectory().getNameExt());
         config.setExecutionName(label);

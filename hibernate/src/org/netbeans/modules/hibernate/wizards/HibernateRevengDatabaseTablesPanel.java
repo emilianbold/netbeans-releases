@@ -490,7 +490,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void tableClosureCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_tableClosureCheckBoxItemStateChanged
-        tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());
+        if(tableClosure != null)tableClosure.setClosureEnabled(tableClosureCheckBox.isSelected());
     }//GEN-LAST:event_tableClosureCheckBoxItemStateChanged
 
     private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed

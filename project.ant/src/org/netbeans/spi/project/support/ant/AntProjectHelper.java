@@ -67,6 +67,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.ProjectXMLCatalogReader;
+import org.netbeans.modules.project.ant.ProjectXMLKnownChecksums;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -347,6 +348,10 @@ public final class AntProjectHelper {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
                 final byte[] data = baos.toByteArray();
+                ProjectXMLKnownChecksums checksums = new ProjectXMLKnownChecksums(); // #195029
+                if (!checksums.check(data)) {
+                    checksums.save();
+                }
                 final FileObject xml = FileUtil.createData(dir, path);
                 try {
                     _lock[0] = xml.lock(); // unlocked by {@link #save}

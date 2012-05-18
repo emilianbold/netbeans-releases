@@ -49,9 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +66,6 @@ import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
@@ -143,32 +140,18 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             }
         });
         
-        // For listeners purposes
-        final HudsonInstanceImpl instance = this;
-        
-        // Add content change listener to update HudsonJobViews in cache and
-        // to notify all failed jobs
         addHudsonChangeListener(new HudsonChangeAdapter() {
             @Override
             public void contentChanged() {
-                // Failed jobs collection
-                final Collection<HudsonJob> failedJobs = new ArrayList<HudsonJob>();
-                
-                // Collect failed jobs ans update jobs view
-                for (final HudsonJob job : getJobs()) {
-                    if (job.getColor().equals(Color.red) || job.getColor().equals(Color.red_anime))
-                        failedJobs.add(job);
-                }
-
                 if (problemNotificationController == null) {
-                    problemNotificationController = new ProblemNotificationController(instance);
+                    problemNotificationController = new ProblemNotificationController(HudsonInstanceImpl.this);
                 }
                 problemNotificationController.updateNotifications();
             }
         });
     }
 
-    public boolean isPersisted() {
+    @Override public boolean isPersisted() {
         return properties.isPersisted();
     }
 
@@ -208,7 +191,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         }
     }
 
-    public Preferences prefs() {
+    @Override public Preferences prefs() {
         return HudsonManagerImpl.instancePrefs().node(HudsonManagerImpl.simplifyServerLocation(getName(), true));
     }
     
@@ -222,8 +205,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         assert instance.getUrl() != null;
         assert instance.getProperties().get(INSTANCE_SYNC) != null;
         
-        if (null == HudsonManagerImpl.getDefault().addInstance(instance))
+        if (null == HudsonManagerImpl.getDefault().addInstance(instance)) {
             return null;
+        }
         
         return instance;
     }
@@ -248,11 +232,11 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         return connector;
     }
     
-    public HudsonVersion getVersion() {
+    @Override public HudsonVersion getVersion() {
         return version;
     }
     
-    public boolean isConnected() {
+    @Override public boolean isConnected() {
         return connected;
     }
 
@@ -264,17 +248,17 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         return properties;
     }
     
-    public String getName() {
+    @Override public String getName() {
         return getProperties().get(INSTANCE_NAME);
     }
     
-    public String getUrl() {
+    @Override public String getUrl() {
         String url = getProperties().get(INSTANCE_URL);
         assert url.endsWith("/") : url;
         return url;
     }
     
-    public synchronized Collection<HudsonJob> getJobs() {
+    @Override public synchronized Collection<HudsonJob> getJobs() {
         return jobs;
     }
 
@@ -332,14 +316,14 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         });
     }
 
-    @Messages("MSG_Synchronizing=Synchronizing {0}")
+    @Messages({"# {0} - server label", "MSG_Synchronizing=Synchronizing {0}"})
     private void doSynchronize(final boolean authentication) {
             final AtomicReference<Thread> synchThread = new AtomicReference<Thread>();
             final AtomicReference<ProgressHandle> handle = new AtomicReference<ProgressHandle>();
             handle.set(ProgressHandleFactory.createHandle(
                     MSG_Synchronizing(getName()),
                     new Cancellable() {
-                public boolean cancel() {
+                @Override public boolean cancel() {
                     Thread t = synchThread.get();
                     if (t != null) {
                         LOG.log(Level.FINE, "Cancelling synchronization of {0}", getUrl());
@@ -366,8 +350,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         Collection<HudsonJob> retrieved = getConnector().getAllJobs(authentication);
                         
                         // Exit when instance is terminated
-                        if (terminated)
+                        if (terminated) {
                             return;
+                        }
                         
                         // Set connected and version
                         connected = getConnector().isConnected();
@@ -390,12 +375,10 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                             }
                         }
 
-                        // Sort retrieved list
-                        Collections.sort(Arrays.asList(retrieved.toArray(new HudsonJob[] {})));
-                        
                         // When there are no changes return and do not fire changes
-                        if (getJobs().equals(retrieved) && oldViews.equals(getViews()))
+                        if (getJobs().equals(retrieved) && oldViews.equals(getViews())) {
                             return;
+                        }
                         
                         // Update jobs
                         jobs = retrieved;
@@ -407,15 +390,15 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                     }
     }
     
-    public void addHudsonChangeListener(HudsonChangeListener l) {
+    @Override public void addHudsonChangeListener(HudsonChangeListener l) {
         listeners.add(l);
     }
     
-    public void removeHudsonChangeListener(HudsonChangeListener l) {
+    @Override public void removeHudsonChangeListener(HudsonChangeListener l) {
         listeners.remove(l);
     }
     
-    protected void fireStateChanges() {
+    private void fireStateChanges() {
         ArrayList<HudsonChangeListener> tempList;
         
         synchronized (listeners) {
@@ -427,7 +410,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         }
     }
     
-    protected void fireContentChanges() {
+    private void fireContentChanges() {
         ArrayList<HudsonChangeListener> tempList;
         
         synchronized (listeners) {
@@ -441,33 +424,25 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof HudsonInstance))
-            return false;
-        
-        final HudsonInstance other = (HudsonInstance) obj;
-        
-        if (getUrl() != other.getUrl() &&
-                (getUrl() == null || !getUrl().equals(other.getUrl())))
-            return false;
-        return true;
+        return obj instanceof HudsonInstance && getUrl().equals(((HudsonInstance) obj).getUrl());
     }
 
     @Override
     public int hashCode() {
-        return getUrl() == null ? 445 : getUrl().hashCode();
+        return getUrl().hashCode();
     }
 
     public @Override String toString() {
         return getUrl();
     }
 
-    public int compareTo(HudsonInstance o) {
+    @Override public int compareTo(HudsonInstance o) {
         return getName().compareTo(o.getName());
     }
 
     /* access from HudsonJobImpl */ FileSystem getRemoteWorkspace(final HudsonJob job) {
         return getFileSystemFromCache(workspaces, job.getName(), new Callable<RemoteFileSystem>() {
-            public RemoteFileSystem call() throws Exception {
+            @Override public RemoteFileSystem call() throws Exception {
                 return new RemoteFileSystem(job);
             }
         });
@@ -475,7 +450,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
 
     /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonJobBuild build) {
         return getFileSystemFromCache(artifacts, build.getJob().getName() + "/" + build.getNumber(), new Callable<RemoteFileSystem>() { // NOI18N
-            public RemoteFileSystem call() throws Exception {
+            @Override public RemoteFileSystem call() throws Exception {
                 return new RemoteFileSystem(build);
             }
         });
@@ -485,7 +460,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         return getFileSystemFromCache(artifacts, module.getBuild().getJob().getName() + "/" + // NOI18N
                 module.getBuild().getNumber() + "/" + module.getName(), // NOI18N
                 new Callable<RemoteFileSystem>() {
-            public RemoteFileSystem call() throws Exception {
+            @Override public RemoteFileSystem call() throws Exception {
                 return new RemoteFileSystem(module);
             }
         });

@@ -64,6 +64,8 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
@@ -111,6 +113,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
@@ -225,7 +228,18 @@ public class ClientHandlerButtonListener implements ActionListener {
                     bindingsModel.startTransaction();
                     gb.setWsdlLocation(relativePath);
                 } finally {
-                    bindingsModel.endTransaction();  //becomes locked here
+                    try {
+                        bindingsModel.endTransaction();  //becomes locked here
+                    }
+                    catch(IllegalStateException  ex){
+                        Exceptions.attachLocalizedMessage(ex, 
+                                NbBundle.getMessage(ClientHandlerButtonListener.class,
+                                        "ERR_writeHandler", 
+                                        Exceptions.findLocalizedMessage(ex))); // NOI18N
+                        Exceptions.attachSeverity(ex, Level.WARNING);
+                        Exceptions.printStackTrace(ex);
+                        
+                    }
                 }
 
                 DataObject dobj = DataObject.find(bindingHandlerFO);
@@ -270,7 +284,18 @@ public class ClientHandlerButtonListener implements ActionListener {
                     }
                 }
             } finally {
-                bindingsModel.endTransaction();
+                try {
+                    bindingsModel.endTransaction();  //becomes locked here
+                }
+                catch(IllegalStateException  ex){
+                    Exceptions.attachLocalizedMessage(ex, 
+                            NbBundle.getMessage(ClientHandlerButtonListener.class,
+                                    "ERR_writeHandler", 
+                                    Exceptions.findLocalizedMessage(ex))); // NOI18N
+                    Exceptions.attachSeverity(ex, Level.WARNING);
+                    Exceptions.printStackTrace(ex);
+                    
+                }
             }
 
             //save bindingshandler file

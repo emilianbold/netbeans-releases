@@ -256,10 +256,11 @@ final class ViewBuilder {
      *
      * @param startRebuildIndex index of first paragraph where the rebuilding occurs.
      * @param endRebuildIndex
-     * @param startOffset start offset of first paragraph to rebuild.
-     * @param endOffset ending offset of the last paragraph to be rebuilt.
      */
-    void initParagraphs(int startRebuildIndex, int endRebuildIndex, int startOffset, int endOffset) {
+    void initParagraphs(int startRebuildIndex, int endRebuildIndex) {
+        DocumentView docView = docReplace.view;
+        int startOffset = docView.getParagraphView(startRebuildIndex).getStartOffset();
+        int endOffset = docView.getParagraphView(endRebuildIndex - 1).getEndOffset();
         rebuildCause = RebuildCause.INIT_PARAGRAPHS;
         modOffset = endModOffset = Integer.MIN_VALUE; // No mod
         forceCreateLocalViews = true;
@@ -717,8 +718,9 @@ final class ViewBuilder {
         this.factoryStates = new FactoryState[viewFactories.length];
         for (int i = 0; i < viewFactories.length; i++) {
             FactoryState state = new FactoryState(viewFactories[i]);
-            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
             factoryStates[i] = state;
+            // Note: if init() fails with exception state.finish() will be called.
+            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
         }
         allReplaces = new ArrayList<ViewReplace<ParagraphView, EditorView>>(2);
 
@@ -1051,6 +1053,7 @@ final class ViewBuilder {
     private void replaceRepaintViews() {
         // Compute repaint region as area of views being removed
         DocumentView docView = docReplace.view;
+        TextLayoutCache tlCache = docView.op.getTextLayoutCache();
         final JTextComponent textComponent = docView.getTextComponent();
         assert (textComponent != null) : "Null textComponent"; // NOI18N
         // Check firstReplace (in PV at (docReplace.index - 1))
@@ -1073,14 +1076,7 @@ final class ViewBuilder {
                 pView.markChildrenValid();
             }
             pView.replace(firstReplace.index, firstReplace.getRemoveCount(), firstReplace.addedViews());
-        }
-        // Remove paragraphs from text-layout-cache
-        TextLayoutCache textLayoutCache = docView.op.getTextLayoutCache();
-        for (int i = 0; i < docReplace.getRemoveCount(); i++) {
-            ParagraphView pView = docView.getParagraphView(docReplace.index + i);
-            if (pView.children != null) {
-                textLayoutCache.remove(pView, false);
-            }
+            tlCache.activate(pView);
         }
         
         // Possibly retain vertical spans from original views
@@ -1196,16 +1192,18 @@ final class ViewBuilder {
             int allReplacesSize = allReplaces.size();
             if (forceCreateLocalViews) { // Ensure there will be enough space in TLCache
                 // Respect any previously set limit
-                TextLayoutCache tlCache = docView.op.getTextLayoutCache();
-                int newCapacity = Math.max(tlCache.capacity(), allReplacesSize);
-                tlCache.setCapacityOrDefault(newCapacity);
+                if (allReplacesSize > tlCache.capacity()) {
+                    tlCache.setCapacityOrDefault(allReplacesSize);
+                }
             }
             // Replace contents of each added paragraph view (if the contents are built too).
-            for (int i = 0; i < allReplacesSize; i++) {
-                ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(i);
+            for (int pIndex = 0; pIndex < allReplacesSize; pIndex++) {
+                ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(pIndex);
                 if (replace.isChanged()) {
-                    replace.view.replace(replace.index, replace.getRemoveCount(), replace.addedViews());
-                    replace.view.markChildrenValid();
+                    ParagraphView pView = replace.view;
+                    pView.replace(replace.index, replace.getRemoveCount(), replace.addedViews());
+                    pView.markChildrenValid();
+                    tlCache.activate(pView);
                 }
             }
             // Add y change if necessary
@@ -1262,7 +1260,9 @@ final class ViewBuilder {
         // Finish factories
         if (factoryStates != null) {
             for (FactoryState factoryState : factoryStates) {
-                factoryState.finish();
+                if (factoryState != null) { // Prevents NPE in case of early failure of state.init()
+                    factoryState.finish();
+                }
             }
         }
     }

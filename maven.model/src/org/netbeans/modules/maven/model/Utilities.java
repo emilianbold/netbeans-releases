@@ -123,7 +123,7 @@ public class Utilities {
     
     private static BaseDocument getDocument(final DataObject modelSourceDataObject) throws IOException {
         if (modelSourceDataObject != null && modelSourceDataObject.isValid()) {
-            EditorCookie ec = modelSourceDataObject.getCookie(EditorCookie.class);
+            EditorCookie ec = modelSourceDataObject.getLookup().lookup(EditorCookie.class);
             assert ec != null : "Data object "+modelSourceDataObject.getPrimaryFile().getPath()+" has no editor cookies.";
             Document doc;
             try {
@@ -219,6 +219,7 @@ public class Utilities {
      */
     public static void saveChanges(AbstractDocumentModel<?> model) throws IOException {
         if (model.isIntransaction()) {
+            // the ISE thrown from endTransction is handled in performPOMModelOperations.
             model.endTransaction();
         }
         model.sync();
@@ -329,8 +330,11 @@ public class Utilities {
                 }
             } catch (IOException ex) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
-                logger.log(Level.INFO, "Canot write POM", ex);
+                logger.log(Level.INFO, "Cannot write POM", ex);
 //                Exceptions.printStackTrace(ex);
+            } catch (IllegalStateException ex) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                logger.log(Level.INFO, "Cannot write POM", ex);
             } finally {
                 if (model.isIntransaction()) {
                     model.rollbackTransaction();
@@ -359,13 +363,19 @@ public class Utilities {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_SETTINGS", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
                     return;
                 }
-                model.startTransaction();
+                if (!model.startTransaction()) {
+                    logger.log(Level.WARNING, "Could not start transaction on {0}", settingsFileObject);
+                    return;
+                }
                 for (ModelOperation<SettingsModel> op : operations) {
                     op.performOperation(model);
                 }
                 model.endTransaction();
                 Utilities.saveChanges(model);
             } catch (IOException ex) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_SETTINGS", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Cannot write settings.xml", ex);
+            } catch (IllegalStateException ex) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_SETTINGS", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
                 Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Cannot write settings.xml", ex);
             } finally {

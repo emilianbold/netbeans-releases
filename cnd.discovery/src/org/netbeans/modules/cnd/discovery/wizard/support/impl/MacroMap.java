@@ -161,7 +161,6 @@ public class MacroMap {
             int i = values.indexOf(value);
             if (i < 0) {
                 values.add(value);
-                i = values.size() - 1;
                 counts.add(Integer.valueOf(1));
             } else {
                 int c = counts.get(i);

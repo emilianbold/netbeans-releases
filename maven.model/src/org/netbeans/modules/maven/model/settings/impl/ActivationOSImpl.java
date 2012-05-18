@@ -63,6 +63,7 @@ public class ActivationOSImpl extends SettingsComponentImpl implements Activatio
     // attributes
 
     // child elements
+    @Override
     public void accept(SettingsComponentVisitor visitor) {
         visitor.visit(this);
     }

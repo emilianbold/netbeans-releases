@@ -10,6 +10,7 @@ PACKAGE    App                             [PUBLIC]   null
 ------------------------------------
 CONSTRUCTO A()                             [PUBLIC]   A
 CONSTRUCTO A()                             [PUBLIC]   A
+CONSTRUCTO A()                             [PUBLIC]   A
 CONSTRUCTO a()                             [PUBLIC]   a
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    a                               [PUBLIC]   Test204925_06_P

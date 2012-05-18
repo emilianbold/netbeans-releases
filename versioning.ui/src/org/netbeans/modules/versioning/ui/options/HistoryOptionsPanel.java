@@ -71,8 +71,6 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
 
         olderThanDaysTextField.setText(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.olderThanDaysTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(daysLabel2, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.daysLabel2.text")); // NOI18N
-
         warningLabel.setForeground(java.awt.Color.red);
         warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/error.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.warningLabel.text")); // NOI18N
@@ -84,8 +82,6 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.jLabel2.text")); // NOI18N
 
         daysIncrementTextField.setText(org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.daysIncrementTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.jLabel4.text")); // NOI18N
 
         buttonGroup1.add(loadAllRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(loadAllRadioButton, org.openide.util.NbBundle.getMessage(HistoryOptionsPanel.class, "HistoryOptionsPanel.loadAllRadioButton.text")); // NOI18N
@@ -112,9 +108,7 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(loadIncrementsRadioButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(daysIncrementTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel4))))
+                                .addComponent(daysIncrementTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(35, 35, 35)
                         .addComponent(noLabelCleanupCheckBox))
@@ -122,10 +116,8 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                         .addContainerGap()
                         .addComponent(removeOlderRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(olderThanDaysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(daysLabel2)))
-                .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(olderThanDaysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 160, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -151,7 +143,6 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(olderThanDaysTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(daysLabel2)
                     .addComponent(removeOlderRadioButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(noLabelCleanupCheckBox)
@@ -164,7 +155,6 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(daysIncrementTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4)
                     .addComponent(loadIncrementsRadioButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loadAllRadioButton)
@@ -182,10 +172,8 @@ public class HistoryOptionsPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     final javax.swing.JTextField daysIncrementTextField = new javax.swing.JTextField();
-    final javax.swing.JLabel daysLabel2 = new javax.swing.JLabel();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    final javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     final javax.swing.JRadioButton keepForeverRadioButton = new javax.swing.JRadioButton();

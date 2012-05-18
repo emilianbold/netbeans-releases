@@ -350,6 +350,28 @@ public class FileUtilTest extends NbTestCase {
         return paths;
     }
     
+    public void testNormalizePathChangeCase() throws Exception {
+        if (!Utilities.isWindows()) {
+            return;
+        }
+        clearWorkDir();
+        File path = new File(getWorkDir(), "dir");
+        path.mkdirs();
+        File FILE = new File(path, "FILE");
+        FILE.createNewFile();
+
+        File file = new File(path, "file");
+        File n2 = FileUtil.normalizeFile(file);
+        assertNormalized(n2);
+        
+        FILE.renameTo(file);
+        new FileRenameEvent(FileUtil.getConfigRoot(), "x", "y"); // flushes the caches
+        File n1 = FileUtil.normalizeFile(FILE);
+        assertNormalized(n1);
+        
+        assertEquals("now it has to normalize to lowercase", "file", n1.getName());
+    }
+
     public void testNormalizePathIsCached() throws Exception {
         File f = new File(getWorkDir(), "textPath.txt");
         String path = f.getPath();
@@ -404,6 +426,10 @@ public class FileUtilTest extends NbTestCase {
         withinMIMETypes = new String[]{"mime1", "mime2"};
         fo.getMIMEType(withinMIMETypes);
         assertTrue("Resolver should be queried if both items in array of desired MIME types matches MIMEResolver.getMIMETypes.", MyResolver.wasQueried());
+    }
+
+    private static void assertNormalized(File path) {
+        assertEquals("Really normalized", path, FileUtil.normalizeFile(path));
     }
 
     /** MIMEResolver used in testGetMIMETypeConstrained. */

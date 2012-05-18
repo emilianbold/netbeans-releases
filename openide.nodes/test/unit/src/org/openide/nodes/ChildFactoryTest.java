@@ -402,7 +402,7 @@ public class ChildFactoryTest extends NbTestCase {
                 assertEquals("Same number of nodes", ev.getNode().getChildren().getNodesCount(), cnt);
                 for (int i = 0; i < cnt; i++) {
                     Node fromEv = snapshot.get(i);
-                    if (fromEv instanceof EntrySupport.Lazy.DummyNode) {
+                    if (fromEv instanceof EntrySupportLazy.DummyNode) {
                         continue;
                     }
                     Node fromCh = ev.getNode().getChildren().getNodeAt(i);

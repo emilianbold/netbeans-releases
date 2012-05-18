@@ -97,7 +97,7 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
 
     @Override
     public void setActiveConfiguration(Configuration configuration) throws IllegalArgumentException, IOException {
-        if (configuration instanceof Configuration && projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor()) {
+        if (configuration != null && projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor()) {
             MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             if (configurationDescriptor != null) {
                 configurationDescriptor.getConfs().setActive(configuration);

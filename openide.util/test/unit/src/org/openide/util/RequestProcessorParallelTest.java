@@ -45,6 +45,7 @@ package org.openide.util;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -55,6 +56,7 @@ public class RequestProcessorParallelTest extends NbTestCase {
         super(s);
     }
 
+    @RandomlyFails // NB-Core-Build #8322: There shall be a warning about parallel execution(len=0): ''
     public void testParallelExecutionOnDefaultRequestProcessorReported() {
         final RequestProcessor rp = RequestProcessor.getDefault();
         Para p = new Para(rp, 3);
@@ -62,7 +64,7 @@ public class RequestProcessorParallelTest extends NbTestCase {
         CharSequence log = Log.enable("org.openide.util.RequestProcessor", Level.WARNING);
         rp.post(p).waitFinished();
         if (log.length() == 0) {
-            fail("There shall be a warning about parallel execution");
+            fail("There shall be a warning about parallel execution(len=" + log.length() + "):\n'" + log + "'");
         }
     }
 

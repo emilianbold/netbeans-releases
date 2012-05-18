@@ -208,9 +208,6 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         if (offset == -1 && classScope.getBlockRange() != null) {
             offset = Utilities.getRowStart(doc, classScope.getBlockRange().getEnd()) - 1;
         }
-        if (offset != -1) {
-            offset = Utilities.getRowEnd(doc, offset);
-        }
         return offset;
     }
 
@@ -246,8 +243,9 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
 
         EditList getEditList() throws Exception {
             EditList edits = new EditList(doc);
+            edits.setFormatAll(true);
             for (String methodScope : fixInfo.methodSkeletons) {
-                edits.replace(fixInfo.newMethodsOffset, 0, "\n" + methodScope, true, 0);
+                edits.replace(fixInfo.newMethodsOffset, 0, methodScope, true, 0);
             }
             return edits;
         }

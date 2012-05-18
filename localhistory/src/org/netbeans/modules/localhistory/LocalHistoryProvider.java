@@ -51,7 +51,6 @@ import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.LifecycleManager;
@@ -175,7 +174,6 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
                 StoreEntry storeEntry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(originalFile, ts);
                 if(storeEntry != null) {
                     FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile); 
-                    Utils.associateEncoding(originalFile, revisionFile);
                 } else {
                     LocalHistory.LOG.log(Level.WARNING, "No entry in Local History for file {0} {1} {2}", new Object[]{originalFile, new Date(ts), ts}); // NOI18N
                 }

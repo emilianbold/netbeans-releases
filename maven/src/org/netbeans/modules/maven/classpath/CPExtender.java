@@ -221,7 +221,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                 if (reposit != null) {
                     reposit.setId(library.getName());
                     reposit.setLayout(result.getRepoType());
-                    reposit.setName("Repository for library " + library); //NOI18N - content coming into the pom.xml file
+                    reposit.setName("Repository for library " + library.getDisplayName()); //NOI18N - content coming into the pom.xml file
                     modified = true;
                 }
             }

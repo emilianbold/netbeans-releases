@@ -397,7 +397,7 @@ public final class PaletteUtils {
                 } else {
                     img = item.getIcon(type);
                 }
-                if ((classDetails == null) || (classDetails.equals(item.getInitializerId()))) {
+                if ((classDetails == null) || (classDetails.equals(item.getComponentInitializerId()))) {
                     break;
                 }
             }

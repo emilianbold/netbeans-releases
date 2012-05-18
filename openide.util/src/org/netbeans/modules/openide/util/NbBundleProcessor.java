@@ -132,6 +132,9 @@ public class NbBundleProcessor extends AbstractProcessor {
                 for (String keyValue : e.getAnnotation(NbBundle.Messages.class).value()) {
                     if (keyValue.startsWith("#")) {
                         runningComments.add(keyValue);
+                        if (keyValue.matches("# +(PART)?(NO)?I18N *")) {
+                            processingEnv.getMessager().printMessage(Kind.ERROR, "#NOI18N and related keywords must not include spaces", e);
+                        }
                         continue;
                     }
                     int i = keyValue.indexOf('=');

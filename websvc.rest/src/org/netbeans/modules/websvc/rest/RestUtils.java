@@ -44,6 +44,7 @@
 package org.netbeans.modules.websvc.rest;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
@@ -55,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
@@ -69,6 +71,10 @@ import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
@@ -101,19 +107,6 @@ public class RestUtils {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
             restSupport.ensureRestDevelopmentReady();
-        }
-    }
-    
-    public static void configRestPackages(Project project, String... packs) throws IOException {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            try {
-                restSupport.configRestPackages(packs);
-            }
-            catch(IOException e ){
-                Logger.getLogger( RestUtils.class.getName() ).log( Level.WARNING, 
-                        null, e );
-            }
         }
     }
     
@@ -433,6 +426,12 @@ public class RestUtils {
     }
 
     public static boolean isAnnotationConfigAvailable(Project project) throws IOException {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if ( restSupport!= null ){
+            if ( restSupport.hasSpringSupport()){
+                return false;
+            }
+        }
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             Profile profile = wm.getJ2eeProfile();
@@ -470,6 +469,28 @@ public class RestUtils {
         return false;
     }
     
+    public static void createApplicationConfigClass(FileObject packageFolder, 
+            String name ) throws IOException
+    {   
+        FileObject appClass = GenerationUtils.createClass(packageFolder,name, null );
+        JavaSource javaSource = JavaSource.forFileObject(appClass);
+        javaSource.runModificationTask( new Task<WorkingCopy>(){
+
+            @Override
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                JavaSourceHelper.addClassAnnotation(workingCopy, 
+                        new String[]{"javax.ws.rs.ApplicationPath"}, 
+                        new String[]{"webresources"});         // NOI18N
+                ClassTree tree = JavaSourceHelper.getTopLevelClassTree(workingCopy);
+                TreeMaker maker = workingCopy.getTreeMaker();
+                ClassTree newTree = maker.setExtends(tree, 
+                        maker.QualIdent("javax.ws.rs.core.Application")); // NOI18N
+                workingCopy.rewrite( tree, newTree);
+            }
+            
+        }).commit();
+    }
 
     public static boolean isJavaEE6(Project project) {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());

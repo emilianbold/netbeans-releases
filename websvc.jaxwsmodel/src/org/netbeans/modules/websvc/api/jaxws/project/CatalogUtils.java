@@ -57,7 +57,9 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -95,7 +97,15 @@ public class CatalogUtils {
                 }
             }
         }
-        targetModel.endTransaction();
+        try {
+            targetModel.endTransaction();
+        }
+        catch (IllegalStateException ex) {
+            IOException io = new IOException("Cannot modify catalog", ex);      // NOI18N
+            throw Exceptions.attachLocalizedMessage(io, 
+                    NbBundle.getMessage(CatalogUtils.class, 
+                            "ERR_ModifyCatalog", ex.getLocalizedMessage()));    // NOI18N
+        }
     }
 
     public static void copyCatalogEntriesForClient(FileObject catalog, FileObject jaxWsCatalog, String clientName)
@@ -137,7 +147,15 @@ public class CatalogUtils {
                     }
                 }
             }
-            targetModel.endTransaction();
+            try {
+                targetModel.endTransaction();
+            }
+            catch (IllegalStateException ex) {
+                IOException io = new IOException("Cannot modify catalog", ex);      // NOI18N
+                throw Exceptions.attachLocalizedMessage(io, 
+                        NbBundle.getMessage(CatalogUtils.class, 
+                                "ERR_ModifyCatalog", ex.getLocalizedMessage()));    // NOI18N
+            }
         }
     }
 

@@ -993,6 +993,19 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 if (err == null) {
                     err = children.findIntegrityError(this);
                 }
+                if (err == null) {
+                    // Check TextLayoutCache correctness - all PVs with non-null children
+                    // should be present in the cache
+                    TextLayoutCache tlCache = op.getTextLayoutCache();
+                    for (int i = 0; i < viewCount; i++) {
+                        ParagraphView pView = getParagraphView(i);
+                        boolean inCache = tlCache.contains(pView);
+                        if (!pView.isChildrenNull() != inCache) {
+                            err = "Invalid TLCaching for pView[" + i + "]: inCache=" + inCache; // NOI18N
+                            break;
+                        }
+                    }
+                }
             } // else { do not check startOffset == endOffset since they may differ (pViews not created yet)
             if (err == null && startOffset > endOffset) {
                 err = "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N

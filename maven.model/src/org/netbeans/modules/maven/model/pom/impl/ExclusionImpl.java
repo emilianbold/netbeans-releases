@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -59,19 +58,23 @@ public class ExclusionImpl extends POMComponentImpl implements Exclusion {
         this(model, createElementNS(model, model.getPOMQNames().EXCLUSION));
     }
 
+    @Override
     public String getGroupId() {
         return getChildElementText(getModel().getPOMQNames().GROUPID.getQName());
     }
 
+    @Override
     public void setGroupId(String groupId) {
         setChildElementText(getModel().getPOMQNames().GROUPID.getName(), groupId,
                 getModel().getPOMQNames().GROUPID.getQName());
     }
 
+    @Override
     public String getArtifactId() {
         return getChildElementText(getModel().getPOMQNames().ARTIFACTID.getQName());
     }
 
+    @Override
     public void setArtifactId(String artifactId) {
         setChildElementText(getModel().getPOMQNames().ARTIFACTID.getName(), artifactId,
                 getModel().getPOMQNames().ARTIFACTID.getQName());
@@ -79,6 +82,7 @@ public class ExclusionImpl extends POMComponentImpl implements Exclusion {
     // attributes
 
     // child elements
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

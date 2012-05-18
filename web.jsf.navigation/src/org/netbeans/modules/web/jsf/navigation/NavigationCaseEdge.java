@@ -303,13 +303,15 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
                 InvocationTargetException {
             
             JSFConfigModel model = navCase.getModel();
-                model.startTransaction();
-                super.setValue(val);
-                model.endTransaction();
+            model.startTransaction();
+            super.setValue(val);
             try {
+                model.endTransaction();
                 model.sync();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (IllegalStateException ise) {
+                Exceptions.printStackTrace(ise);
             }
             
         }

@@ -49,12 +49,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -167,7 +169,9 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         for (CsmClassifier decl : decls) {
             if (!classesOnly || CsmKindUtilities.isClass(decl)) {
                 if ((first == null || ForwardClass.isForwardClass(first))) {
-                    first = decl;
+                    if(!(CsmKindUtilities.isTemplate(decl) && ((CsmTemplate)decl).isSpecialization())) {
+                        first = decl;
+                    }
                 }
                 if (ir.isObjectVisible(file, decl)) {
                     if (CsmKindUtilities.isTypedef(decl)) {

@@ -46,6 +46,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.modules.cnd.search.SearchParams;
 import org.netbeans.modules.cnd.search.SearchResult;
@@ -85,7 +86,10 @@ public final class CNDSearchPresenter extends Presenter {
 
     @Override
     public SearchComposition<SearchResult> composeSearch() {
-        String textToFind = panel.getTextToFind();
+        panel.storeSettings();
+
+        SearchPattern searchPattern = panel.getSearchPattern();
+        String textToFind = searchPattern.getSearchExpression();
         String fileName = panel.getFileName();
         String title = textToFind == null || textToFind.isEmpty()
                 ? fileName
@@ -97,9 +101,7 @@ public final class CNDSearchPresenter extends Presenter {
             return null;
         }
 
-        SearchParams params = new SearchParams(searchRoots, fileName, textToFind);
-        params.setCaseSensitive(panel.isCaseSensitive());
-        params.setWholeWords(panel.isWholeWords());
+        SearchParams params = new SearchParams(searchRoots, fileName, searchPattern);
 
         return new CNDSearchComposition(title, this, params);
     }

@@ -726,7 +726,11 @@ public class MultiDataObject extends DataObject {
                 ERR.fine("move " + this + " to " + df + " number of secondary entries: " + count); // NOI18N
                 ERR.fine("moving primary entry: " + getPrimaryEntry()); // NOI18N
             }
-            getPrimaryEntry ().changeFile (getPrimaryEntry ().move (df.getPrimaryFile (), suffix));
+            final FileObject newPF = getPrimaryEntry ().move (df.getPrimaryFile (), suffix);
+            if (newPF == null) {
+                throw new NullPointerException("Invalid move on " + getPrimaryEntry() + " of " + MultiDataObject.this + " returned null"); // NOI18N
+            }
+            getPrimaryEntry ().changeFile (newPF);
             if (ERR.isLoggable(Level.FINE)) ERR.fine("               moved: " + getPrimaryEntry().getFile()); // NOI18N
 
             

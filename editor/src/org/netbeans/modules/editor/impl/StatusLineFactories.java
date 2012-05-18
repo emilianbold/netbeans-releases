@@ -49,6 +49,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -64,7 +65,9 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.StatusBar;
 import org.netbeans.editor.Utilities;
 import org.openide.awt.StatusDisplayer;
+import org.openide.awt.StatusDisplayer.Message;
 import org.openide.awt.StatusLineElementProvider;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
@@ -75,6 +78,8 @@ import org.openide.windows.WindowManager;
  * @author Miloslav Metelka
  */
 public final class StatusLineFactories {
+    
+    private static final RequestProcessor WORKER = new RequestProcessor(StatusLineFactories.class.getName(), 1, false, false);
 
     // -J-Dorg.netbeans.modules.editor.impl.StatusLineFactories.level=FINE
     private static final Logger LOG = Logger.getLogger(StatusLineFactories.class.getName());
@@ -83,15 +88,32 @@ public final class StatusLineFactories {
 
     public static JLabel TYPING_MODE_CELL = new StatusLineComponent(StatusLineComponent.Type.TYPING_MODE);
 
-    public static JLabel MAIN_CELL = new JLabel();
+    public static final JLabel MAIN_CELL = new JLabel();
     static {
         MAIN_CELL.addPropertyChangeListener(new PropertyChangeListener() {
+            private final AtomicReference<Message> previous = new AtomicReference<Message>();
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("text".equals(evt.getPropertyName())) {
+                    String text = MAIN_CELL.getText();
+                    if ("".equals(text)) {
+                        Message message = previous.getAndSet(null);
+                        
+                        if (message != null) {
+                            message.clear(0);
+                        }
+                        return;
+                    }
                     Integer importance = (Integer)MAIN_CELL.getClientProperty("importance");
-                    StatusDisplayer.Message msg = StatusDisplayer.getDefault().setStatusText(
-                            MAIN_CELL.getText(), importance);
-                    msg.clear(5000);
+                    final StatusDisplayer.Message msg = StatusDisplayer.getDefault().setStatusText(
+                            text, importance);
+                    previous.set(msg);
+                    WORKER.post(new Runnable() {
+                        @Override public void run() {
+                            if (previous.compareAndSet(msg, null)) {
+                                msg.clear(0);
+                            }
+                        }
+                    }, 5000);
                 }
             }
         });

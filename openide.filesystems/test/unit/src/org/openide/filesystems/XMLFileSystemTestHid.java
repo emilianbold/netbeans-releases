@@ -1105,6 +1105,36 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             fail("Missing " + f2 + "\ninside: " + layersB);
         }
     }
+    
+    public void testToStringOnMapDoesNotComputeValues() throws Exception {
+        File layer = new File(getWorkDir(), "layer2.xml");
+        FileWriter w = new FileWriter(layer);
+        w.write(
+            "<filesystem>"
+            + "  <folder name='f'>"
+            + "    <file name='empty.xml'>"
+            + "      <attr name='displayName' methodvalue='org.openide.filesystems.XMLFileSystemTestHid.computeToString'/>"
+            + "    </file>"
+            + "  </folder>"
+            + "</filesystem>");
+        w.close();
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, layer.toURI().toURL());
+
+        FileObject fo = xfs.findResource("f/empty.xml");
+        assertNotNull("File found", fo);
+        
+        String displayName = (String) fo.getAttribute("displayName"); 
+        assertNotNull("Attribute provided", displayName);
+        
+        if (!displayName.contains(fo.getPath())) {
+            fail("The file Object name should be in there: " + displayName);
+        }
+    }
+    
+    static String computeToString(Map whatIsYourToString) {
+        return whatIsYourToString.toString();
+    }
 
     public void testWeights() throws Exception { // #195827
         File c1 = writeFile("c1.txt", "first");

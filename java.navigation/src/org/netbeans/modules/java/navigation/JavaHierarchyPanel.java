@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -148,7 +149,53 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             },
             KeyStroke.getKeyStroke (KeyEvent.VK_ESCAPE, 0, true),
             JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
+        
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    showSuperTypeHierarchyToggleButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_S),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);        
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    showSubTypeHierarchyToggleButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_B),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    showFQNToggleButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_Q),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    showInnerToggleButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_I),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        registerKeyboardAction (
+            new ActionListener () {
+                @Override
+                public void actionPerformed (ActionEvent actionEvent) {
+                    expandAllButton.doClick();
+                }
+            },
+            getKeyStroke(KeyEvent.VK_E),
+            JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        
         filterTextField.getDocument ().addDocumentListener (
             new DocumentListener () {
 
@@ -475,6 +522,11 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
             }
         });
     }
+    
+    private static KeyStroke getKeyStroke(int baseKey) {
+        final int mask =  Utilities.isMac() ? KeyEvent.CTRL_MASK : KeyEvent.ALT_MASK;
+        return KeyStroke.getKeyStroke (baseKey, mask, true);
+    }
     //</editor-fold>
 
     @Override
@@ -742,9 +794,9 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         splitPane.setLeftComponent(javaHierarchyTreeScrollPane);
 
-        signatureEditorPane.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
-        signatureEditorPane.setContentType("text/x-java");
         signatureEditorPane.setEditable(false);
+        signatureEditorPane.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
+        signatureEditorPane.setContentType("text/x-java"); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(filtersLabel, org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "LABEL_filtersLabel")); // NOI18N
 
@@ -757,31 +809,26 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         javaHierarchyModeButtonGroup.add(showSuperTypeHierarchyToggleButton);
         showSuperTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUPER_TYPE_HIERARCHY_ICON);
-        showSuperTypeHierarchyToggleButton.setMnemonic('S');
         showSuperTypeHierarchyToggleButton.setSelected(true);
-        showSuperTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSuperTypeHierarchyToggleButton")); // NOI18N
+        showSuperTypeHierarchyToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showSuperTypeHierarchyToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_S))));
         filtersToolbar.add(showSuperTypeHierarchyToggleButton);
 
         javaHierarchyModeButtonGroup.add(showSubTypeHierarchyToggleButton);
         showSubTypeHierarchyToggleButton.setIcon(JavaMembersAndHierarchyIcons.SUB_TYPE_HIERARCHY_ICON);
-        showSubTypeHierarchyToggleButton.setMnemonic('B');
-        showSubTypeHierarchyToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showSubTypeHierarchyToggleButton")); // NOI18N
+        showSubTypeHierarchyToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showSubTypeHierarchyToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_B))));
         filtersToolbar.add(showSubTypeHierarchyToggleButton);
 
         showFQNToggleButton.setIcon(JavaMembersAndHierarchyIcons.FQN_ICON);
-        showFQNToggleButton.setMnemonic('Q');
-        showFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
+        showFQNToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showFQNToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_Q))));
         filtersToolbar.add(showFQNToggleButton);
 
         showInnerToggleButton.setIcon(JavaMembersAndHierarchyIcons.INNER_CLASS_ICON);
-        showInnerToggleButton.setMnemonic('I');
         showInnerToggleButton.setSelected(true);
-        showInnerToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(JavaHierarchyPanel.class).getString("TOOLTIP_showInnerToggleButton")); // NOI18N
+        showInnerToggleButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_showInnerToggleButton", Utilities.keyToString(getKeyStroke(KeyEvent.VK_I))));
         filtersToolbar.add(showInnerToggleButton);
 
         expandAllButton.setIcon(JavaMembersAndHierarchyIcons.EXPAND_ALL_ICON);
-        expandAllButton.setMnemonic('E');
-        expandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_expandAll")); // NOI18N
+        expandAllButton.setToolTipText(NbBundle.getMessage(JavaHierarchyPanel.class, "TOOLTIP_expandAll", Utilities.keyToString(getKeyStroke(KeyEvent.VK_E))));
         expandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         filtersToolbar.add(expandAllButton);
 
@@ -817,7 +864,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
                     .addComponent(caseSensitiveFilterCheckBox)
                     .addComponent(filterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 57, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(signatureEditorPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

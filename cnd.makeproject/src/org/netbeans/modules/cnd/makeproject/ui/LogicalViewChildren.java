@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
+import org.netbeans.modules.cnd.makeproject.ui.options.ViewBinaryFiles;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -85,7 +86,7 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
-        if (property.equals(MakeOptions.VIEW_BINARY_FILES)) {
+        if (property.equals(ViewBinaryFiles.VIEW_BINARY_FILES)) {
             stateChanged(new ChangeEvent(this));
         }
     }

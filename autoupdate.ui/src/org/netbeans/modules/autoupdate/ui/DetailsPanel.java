@@ -52,6 +52,7 @@ import javax.swing.text.StyledEditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -65,6 +66,7 @@ public class DetailsPanel extends JTextPane  {
     private JButton button2;
     private JPanel rightCornerHeader;
     private HyperlinkListener hyperlinkListener;
+    private static final RequestProcessor RP = new RequestProcessor(DetailsPanel.class);
     
     public DetailsPanel() {
         initComponents2();
@@ -91,6 +93,7 @@ public class DetailsPanel extends JTextPane  {
         
         setEditorKit(htmlkit);
         addHyperlinkListener(new HyperlinkListener() {
+            @Override
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
                     if (hlevt.getURL () != null) {
@@ -101,8 +104,14 @@ public class DetailsPanel extends JTextPane  {
         });
         setEditable(false);
         setPreferredSize(new Dimension(300, 80));
-        getAccessibleContext ().setAccessibleName (
-                NbBundle.getMessage (DetailsPanel.class, "ACN_DetailsPanel")); // NOI18N
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                getAccessibleContext ().setAccessibleName (
+                        NbBundle.getMessage (DetailsPanel.class, "ACN_DetailsPanel")); // NOI18N
+            }
+        });
     }
 
     @Override

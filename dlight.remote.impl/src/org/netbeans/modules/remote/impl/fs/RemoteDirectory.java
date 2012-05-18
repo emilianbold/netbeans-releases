@@ -842,7 +842,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private DirectoryStorage getDirectoryStorageImpl(boolean forceRefresh, String expectedName, String childName, boolean expected) throws
+    private DirectoryStorage getDirectoryStorageImpl(final boolean forceRefresh, final String expectedName, final String childName, final boolean expected) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -954,7 +954,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
                     getFileSystem().addPendingFile(this);
-                    // valid cache can not be available
                     RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
                 } else {
@@ -981,6 +980,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean changed = (newEntries.size() != storage.listAll().size()) || (storage == DirectoryStorage.EMPTY);
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
+            List<DirEntry> entriesToFireChangedRO = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
             DirEntry expectedCreated = null;
             List<RemoteFileObject> filesToFireDeleted = new ArrayList<RemoteFileObject>();
@@ -1033,7 +1033,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         } else {
                             changed = true;
                             getFileSystem().getFactory().changeImplementor(this, oldEntry, newEntry);
-                            entriesToFireChanged.add(newEntry);
+                            if (oldEntry.isLink() && newEntry.isPlainFile() && newEntry.canWrite(getExecutionEnvironment())) {
+                                entriesToFireChangedRO.add(newEntry);
+                            } else {
+                                entriesToFireChanged.add(newEntry);
+                            }
                             cacheName = null; // unchanged
                         }
                     }
@@ -1128,6 +1132,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                         } else {
                             fireFileChangedEvent(getListeners(), new FileEvent(fo.getOwnerFileObject(), fo.getOwnerFileObject(), expected));
+                        }
+                    }
+                }
+                for (DirEntry entry : entriesToFireChangedRO) {
+                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+                    if (fo != null) {
+                        if (fo.isPendingRemoteDelivery()) {
+                            RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
+                        } else {
+                            fo.fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
                         }
                     }
                 }

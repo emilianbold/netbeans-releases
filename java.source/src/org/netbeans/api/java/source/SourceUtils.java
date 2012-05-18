@@ -302,7 +302,7 @@ public class SourceUtils {
     @NonNull
     public static String[] getJVMSignature(@NonNull final ElementHandle<?> handle) {
         Parameters.notNull("handle", handle);   //NOI18N
-        return ElementHandleAccessor.INSTANCE.getJVMSignature(handle);
+        return ElementHandleAccessor.getInstance().getJVMSignature(handle);
     }
 
 
@@ -781,7 +781,7 @@ public class SourceUtils {
             throw new IllegalArgumentException ();
         }
         try {
-            final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+            final LinkedHashSet<ElementHandle<TypeElement>> result = new LinkedHashSet<ElementHandle<TypeElement>> ();
             js.runUserActionTask(new Task<CompilationController>() {            
                 @Override
                 public void run(final CompilationController control) throws Exception {

@@ -97,7 +97,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return GoToSupport.getGoToElementTooltip(doc, offset, false, type == HyperlinkType.GO_TO_DECLARATION ? "TP_OverriddenTooltipSugg" : "TP_GoToOverriddenTooltipSugg");
+        return GoToSupport.getGoToElementTooltip(doc, offset, false, type);
     }
 
 }

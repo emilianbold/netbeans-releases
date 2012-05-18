@@ -44,25 +44,21 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-
+import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
-
-import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Log;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
-
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FallbackBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
 
 /**
  * This class manages the NativeBreakpoint "database".
@@ -126,6 +122,7 @@ public final class BreakpointManager {
 	}
 
 	// interface Iterable
+        @Override
 	public Iterator<Handler> iterator() {
 	    return list.iterator();
 	}
@@ -210,15 +207,13 @@ public final class BreakpointManager {
         }
 
         public void print() {
-            if (!Log.Bpt.pathway) {
-                return;
+            if (Log.Bpt.pathway) {
+                System.out.println("BreakpointJob " + routingToken + " " + kind.name() + ":"); // NOI18N
+                System.out.println("\ttarget " + target.toString()); // NOI18N
+                System.out.println("\ttemplt " + template.toString()); // NOI18N
+                System.out.println("\tspread " + gen.toString() + " overload " // NOI18N
+                        + overload + " " + expectedOverloads + " " + fallback); // NOI18N
             }
-            System.out.printf("BreakpointJob %d %s:\n" + // NOI18N
-                    "              target %s\n" + // NOI18N
-                    "              templt %s\n" + // NOI18N
-                    "              spread %b overload %b %d  fallback %b\n", // NOI18N
-                    routingToken, kind, target, template,
-                    gen, overload, expectedOverloads, fallback);
         }
 
         public Kind kind() {
@@ -1129,13 +1124,13 @@ public final class BreakpointManager {
 
             List<NativeBreakpoint> matches = top.findByContext(debugger().context());
 
-            NativeBreakpoint mid = null;
+            NativeBreakpoint mid;
 
             // The following three cases correspond to the three cases in
             // newHandler() case RESTORE.
             // Also see newBrokenHandler().
 
-            if (matches.size() == 0) {
+            if (matches.isEmpty()) {
                 if (NativeDebuggerManager.isPerTargetBpts()) {
                     // if per-target bpts don't restore it.
                     continue;
@@ -1479,7 +1474,7 @@ public final class BreakpointManager {
      * Used during restoration and spreading to choose all variations
      * automatically w/o asking the user.
      */
-    private final ItemSelectorResult chooseAllItems(BreakpointJob bj, int nitems) {
+    private ItemSelectorResult chooseAllItems(BreakpointJob bj, int nitems) {
         rememberOverloadedBreakpoint(bj, nitems, false);
 
 	return ItemSelectorResult.selectAll(nitems);

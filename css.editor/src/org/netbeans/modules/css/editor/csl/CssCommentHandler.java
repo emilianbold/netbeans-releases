@@ -94,7 +94,8 @@ public class CssCommentHandler extends CommentHandler.DefaultCommentHandler {
                 CharSequence text = DocumentUtilities.getText(doc); //shared instance, low cost
 
                 int lastCommentStartIndex = CharSequenceUtilities.lastIndexOf(text, getCommentStartDelimiter(), from);
-                int lastCommentEndIndex = CharSequenceUtilities.lastIndexOf(text, getCommentEndDelimiter(), from);
+                // search from the LAST character in the working area; allows to include comment block whose end is just aligned with 'to'
+                int lastCommentEndIndex = from > 0 ? CharSequenceUtilities.lastIndexOf(text, getCommentEndDelimiter(), from - 1) : -1;
 
                 OffsetRange range = getCssAreaRange(doc, from, to);
                 if(range != OffsetRange.NONE) {

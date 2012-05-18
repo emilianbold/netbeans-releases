@@ -789,7 +789,7 @@ public final class Resolver3 implements Resolver {
                     }
                 }
             }
-        }
+        }   
         if (result == null) {
              result = backupResult;
         }
@@ -1051,7 +1051,7 @@ public final class Resolver3 implements Resolver {
                         }
                     }
                 }
-                if (classifier != null && needForwardClassesOnly()) {
+                if (classifier != null) {
                     return classifier;
                 }
             }

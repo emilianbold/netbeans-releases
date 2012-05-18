@@ -94,6 +94,8 @@ public class DelegatingConnector extends BugtrackingConnector {
             delegate = (BugtrackingConnector) map.get("delegate"); // NOI18N
             if(delegate == null) {
                 BugtrackingManager.LOG.log(Level.WARNING, "Couldn't create delegate for : {0}", map.get("displayName")); // NOI18N
+            } else {
+                BugtrackingManager.LOG.log(Level.FINE, "Created delegate for : {0}", map.get("displayName")); // NOI18N
             }
         }
         return delegate;
@@ -117,22 +119,26 @@ public class DelegatingConnector extends BugtrackingConnector {
 
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        return getDelegate().createRepository(info);
+        BugtrackingConnector d = getDelegate();
+        return d != null ? d.createRepository(info) : null;
     }
 
     @Override
     public IssueFinder getIssueFinder() {
-        return getDelegate().getIssueFinder();
+        BugtrackingConnector d = getDelegate();
+        return d != null ? d.getIssueFinder() : null;
     }
 
     @Override
     public Repository createRepository() {
-        return getDelegate().createRepository();
+        BugtrackingConnector d = getDelegate();
+        return d != null ? d.createRepository() : null;
     }
 
     @Override
     public TaskListIssueProvider getTasklistProvider() {
-        return getDelegate().getTasklistProvider();
+        BugtrackingConnector d = getDelegate();
+        return d != null ? d.getTasklistProvider() : null;
     }
 
 }

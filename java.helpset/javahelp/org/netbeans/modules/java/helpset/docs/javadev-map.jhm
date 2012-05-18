@@ -315,8 +315,9 @@
 
 <!-- New JavaFX Project wizards -->
 <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_APPLICATION" url="javafx/csh/new_application.html" />
-<mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_FXML" url="javafx/csh/new_application.html" />
+<mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_FXML" url="javafx/csh/new_fxml.html" />
 <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_PRELOADER" url="javafx/csh/new_preloader.html" />
+<mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_SWING" url="javafx/csh/new_swing.html" />
 
 <!-- JavaFX Project Properties dialogs -->
 <mapID target="org.netbeans.modules.javafx2.project.ui.JFXRunPanel" url="javafx/csh/proj_props_run.html" />
@@ -417,6 +418,8 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.MoveMembersUI" url="refactor/csh/move-members_db.html" />
 <!--Introduce Local Extension dialog box: -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceLocalExtensionUI" url="refactor/csh/intro-local-extension_db.html" />
+<!--Inspect dialog box: -->
+<mapID target="org.netbeans.modules.analysis.RunAnalysis" url="editing/csh/java-inspect.html" />
 
 
 

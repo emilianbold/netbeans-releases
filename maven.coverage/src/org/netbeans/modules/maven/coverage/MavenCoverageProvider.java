@@ -81,6 +81,8 @@ public final class MavenCoverageProvider implements CoverageProvider {
 
     private static final String GROUP_COBERTURA = "org.codehaus.mojo"; // NOI18N
     private static final String ARTIFACT_COBERTURA = "cobertura-maven-plugin"; // NOI18N
+    private static final String GROUP_JOCOCO = "org.jacoco";
+    private static final String ARTIFACT_JOCOCO = "jacoco-maven-plugin";
 
     private static final Logger LOG = Logger.getLogger(MavenCoverageProvider.class.getName());
 
@@ -98,21 +100,25 @@ public final class MavenCoverageProvider implements CoverageProvider {
         return false;
     }
 
-    public @Override boolean isEnabled() {
+    private boolean hasPlugin(String groupId, String artifactId) {
         NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
         if (prj == null) {
             return false;
         }
         MavenProject mp = prj.getMavenProject();
-        if (PluginPropertyUtils.getReportPluginVersion(mp, GROUP_COBERTURA, ARTIFACT_COBERTURA) != null) {
+        if (PluginPropertyUtils.getReportPluginVersion(mp, groupId, artifactId) != null) {
             return true;
         }
-        if (PluginPropertyUtils.getPluginVersion(mp, GROUP_COBERTURA, ARTIFACT_COBERTURA) != null) {
+        if (PluginPropertyUtils.getPluginVersion(mp, groupId, artifactId) != null) {
             // For whatever reason, was configured as a direct build plugin... fine.
             return true;
         }
         // In fact you _could_ just run the plugin directly here... but perhaps the user did not want to do so.
         return false;
+    }
+
+    public @Override boolean isEnabled() {
+        return hasPlugin(GROUP_COBERTURA, ARTIFACT_COBERTURA) || hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO);
     }
 
     public @Override boolean isAggregating() {
@@ -132,6 +138,21 @@ public final class MavenCoverageProvider implements CoverageProvider {
     }
 
     private @CheckForNull File report() {
+        if (hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO)) {
+            String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null);
+            if (outputDirectory == null) {
+                outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_JOCOCO, ARTIFACT_JOCOCO, "outputDirectory", null);
+            }
+            if (outputDirectory == null) {
+                try {
+                    outputDirectory = (String) PluginPropertyUtils.createEvaluator(p.getLookup().lookup(NbMavenProject.class).getMavenProject()).evaluate("${project.reporting.outputDirectory}/jacoco");
+                } catch (ExpressionEvaluationException x) {
+                    LOG.log(Level.WARNING, null, x);
+                    return null;
+                }
+            }
+            return FileUtil.normalizeFile(new File(outputDirectory, "jacoco.xml"));
+        } else {
         String outputDirectory = PluginPropertyUtils.getReportPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
         if (outputDirectory == null) {
             outputDirectory = PluginPropertyUtils.getPluginProperty(p, GROUP_COBERTURA, ARTIFACT_COBERTURA, "outputDirectory", null);
@@ -145,6 +166,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
             }
         }
         return FileUtil.normalizeFile(new File(outputDirectory, "coverage.xml"));
+        }
     }
 
     private @NullAllowed org.w3c.dom.Document report;
@@ -202,6 +224,8 @@ public final class MavenCoverageProvider implements CoverageProvider {
                 public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                     if (systemId.equals("http://cobertura.sourceforge.net/xml/coverage-04.dtd")) {
                         return new InputSource(MavenCoverageProvider.class.getResourceAsStream("coverage-04.dtd")); // NOI18N
+                    } else if (publicId.equals("-//JACOCO//DTD Report 1.0//EN")) {
+                        return new InputSource(MavenCoverageProvider.class.getResourceAsStream("jacoco-1.0.dtd"));
                     } else {
                         return null;
                     }
@@ -233,18 +257,32 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (path == null) {
             return null;
         }
+        final boolean jacoco = hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO);
         final List<Element> lines = new ArrayList<Element>();
         String name = null;
-        NodeList nl = r.getElementsByTagName("class"); // NOI18N
+        NodeList nl = r.getElementsByTagName(jacoco ? "sourcefile" : "class"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             final Element clazz = (Element) nl.item(i);
-            if (clazz.getAttribute("filename").equals(path)) { // NOI18N
-                Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18
-                if (linesE != null) {
-                    lines.addAll(XMLUtil.findSubElements(linesE));
+            if (jacoco) {
+                if ((((Element) clazz.getParentNode()).getAttribute("name") + '/' + clazz.getAttribute("name")).equals(path)) {
+                    for (Element line : XMLUtil.findSubElements(clazz)) {
+                        if (line.getTagName().equals("line")) {
+                            lines.add(line);
+                        }
+                    }
+                    if (name == null) {
+                        name = path.replaceFirst("[.]java$", "").replace('/', '.');
+                    }
                 }
-                if (name == null) {
-                    name = clazz.getAttribute("name");
+            } else {
+                if (clazz.getAttribute("filename").equals(path)) {
+                    Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18
+                    if (linesE != null) {
+                        lines.addAll(XMLUtil.findSubElements(linesE));
+                    }
+                    if (name == null) {
+                        name = clazz.getAttribute("name");
+                    }
                 }
             }
         }
@@ -267,12 +305,12 @@ public final class MavenCoverageProvider implements CoverageProvider {
                 return r != null ? r.lastModified() : 0;
             }
             public @Override FileCoverageSummary getSummary() {
-                return summaryOf(fo, _name, lines);
+                return summaryOf(fo, _name, lines, jacoco);
             }
             private Integer find(int lineNo) {
                 for (Element line : lines) {
-                    if (line.getAttribute("number").equals(String.valueOf(lineNo + 1))) { // NOI18N
-                        return Integer.valueOf(line.getAttribute("hits")); // NOI18N
+                    if (line.getAttribute(jacoco ? "nr" : "number").equals(String.valueOf(lineNo + 1))) { // NOI18N
+                        return Integer.valueOf(line.getAttribute(jacoco ? "ci" : "hits")); // NOI18N
                     }
                 }
                 return null;
@@ -298,28 +336,45 @@ public final class MavenCoverageProvider implements CoverageProvider {
             return null;
         }
         List<FileCoverageSummary> summs = new ArrayList<FileCoverageSummary>();
-        NodeList nl = r.getElementsByTagName("class"); // NOI18N
+        boolean jacoco = hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO);
+        NodeList nl = r.getElementsByTagName(jacoco ? "sourcefile" : "class"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             Element clazz = (Element) nl.item(i);
-            FileObject java = src.getFileObject(clazz.getAttribute("filename")); // NOI18N
+            String filename;
+            List<Element> lines;
+            String name;
+            if (jacoco) {
+                filename = ((Element) clazz.getParentNode()).getAttribute("name") + '/' + clazz.getAttribute("name");
+                lines = new ArrayList<Element>();
+                for (Element line : XMLUtil.findSubElements(clazz)) {
+                    if (line.getTagName().equals("line")) {
+                        lines.add(line);
+                    }
+                }
+                name = filename.replaceFirst("[.]java$", "").replace('/', '.');
+            } else {
+                filename = clazz.getAttribute("filename");
+                Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18N
+                lines = linesE != null ? XMLUtil.findSubElements(linesE) : Collections.<Element>emptyList();
+                // XXX nicer to collect together nested classes in same compilation unit
+                name = clazz.getAttribute("name").replace('$', '.');
+            }
+            FileObject java = src.getFileObject(filename); // NOI18N
             if (java == null) {
                 continue;
             }
-            // XXX nicer to collect together nested classes in same compilation unit
-            Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18N
-            List<Element> lines = linesE != null ? XMLUtil.findSubElements(linesE) : Collections.<Element>emptyList();
-            summs.add(summaryOf(java, clazz.getAttribute("name").replace('$', '.'), lines));
+            summs.add(summaryOf(java, name, lines, jacoco));
         }
         return summs;
     }
     
-    private FileCoverageSummary summaryOf(FileObject java, String name, List<Element> lines) {
+    private FileCoverageSummary summaryOf(FileObject java, String name, List<Element> lines, boolean jacoco) {
         // Not really the total number of lines in the file at all, but close enough - the ones Cobertura recorded.
         int lineCount = 0;
         int executedLineCount = 0;
         for (Element line : lines) {
             lineCount++;
-            if (!line.getAttribute("hits").equals("0")) {
+            if (!line.getAttribute(jacoco ? "ci" : "hits").equals("0")) {
                 executedLineCount++;
             }
         }
@@ -327,7 +382,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
     }
 
     public @Override String getTestAllAction() {
-        return "cobertura"; // NOI18N
+        return hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO) ? "jacoco" : "cobertura";
         // XXX and Test button runs COMMAND_TEST_SINGLE on file, which is not good here; cf. CoverageSideBar.testOne
     }
 

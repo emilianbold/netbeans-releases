@@ -37,6 +37,8 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -60,6 +62,7 @@ public class CsmFileModel {
     private Action[] actions;
     private FileObject fileObject;
     private boolean isStandalone;
+    private Project unopenedProject;
 
     public CsmFileModel(CsmFileFilter filter, Action[] actions){
         this.filter = filter;
@@ -87,6 +90,10 @@ public class CsmFileModel {
         return isStandalone;
     }
 
+    public Project getUnopenedProject() {
+        return unopenedProject;
+    }
+
     public void addOffset(Node node, CsmOffsetable element, List<IndexOffsetNode> lineNumberIndex) {
         lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
@@ -96,15 +103,18 @@ public class CsmFileModel {
     }
 
     public PreBuildModel buildPreModel(CsmFile csmFile) {
+        boolean oldValue = isStandalone;
         isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
         fileObject = CsmUtilities.getFileObject(csmFile);
-        PreBuildModel preBuildModel = new PreBuildModel();
+        PreBuildModel preBuildModel = new PreBuildModel(oldValue != isStandalone);
+        unopenedProject = null;
         if (csmFile != null && csmFile.isValid()) {
             if (isStandalone) {
                 CppDeclarationNode node = CppDeclarationNode.nodeFactory(csmFile, this, false, lineNumberIndex);
                 if (node != null) {
                     preBuildModel.newList.add(node);
                 }
+                unopenedProject = FileOwnerQuery.getOwner(fileObject);
             }
             if (filter.isApplicableInclude()) {
                 for (CsmInclude element : csmFile.getIncludes()) {
@@ -142,7 +152,7 @@ public class CsmFileModel {
         boolean res = true;
         if (csmFile != null &&  csmFile.isValid()) {
             resetScope(preBuildModel.newLineNumberIndex);
-            if (force || isNeedChange(preBuildModel.newLineNumberIndex)) {
+            if (force || preBuildModel.forceRebuild || isNeedChange(preBuildModel.newLineNumberIndex)) {
                 clear();
                 list.addAll(preBuildModel.newList);
                 lineNumberIndex.addAll(preBuildModel.newLineNumberIndex);
@@ -255,5 +265,10 @@ public class CsmFileModel {
     public static final class PreBuildModel {
         List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
         List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
+        final boolean forceRebuild;
+
+        public PreBuildModel(boolean forceRebuild) {
+            this.forceRebuild = forceRebuild;
+        }
     }
 }

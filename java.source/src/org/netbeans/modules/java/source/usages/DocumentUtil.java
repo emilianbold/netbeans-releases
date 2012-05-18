@@ -505,7 +505,7 @@ public class DocumentUtil {
         }
 
         private ElementHandle<TypeElement> convert(ElementKind kind, String value) {
-            return ElementHandleAccessor.INSTANCE.create(kind, value);
+            return ElementHandleAccessor.getInstance().create(kind, value);
         }
     }
     

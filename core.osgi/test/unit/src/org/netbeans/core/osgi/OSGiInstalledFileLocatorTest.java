@@ -67,7 +67,7 @@ public class OSGiInstalledFileLocatorTest extends NbTestCase {
                 "OpenIDE-Module: custom",
                 "OpenIDE-Module-Install: " + LocateInstall.class.getName(),
                 "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
-                run();
+                run(false);
         assertEquals("2", System.getProperty("my.file.count"));
         assertEquals("6", System.getProperty("my.file.length"));
         assertEquals("10", System.getProperty("my.url.length"));

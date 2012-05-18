@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -366,11 +367,14 @@ public abstract class CsmResultItem implements CompletionItem {
                 BaseDocument doc = (BaseDocument) component.getDocument();
                 Object ob = getAssociatedObject();
                 if (CsmKindUtilities.isCsmObject(ob)) {
-                    CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
-                    if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
-                        String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
-                        if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
-                            insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                    // Bug 186954 - Included files are chaotically inserted
+                    if (!CsmClassifierResolver.getDefault().isForwardClass((CsmObject) ob)) {
+                        CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
+                        if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
+                            String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
+                            if (include.length() != 0 && !isForwardDeclaration(component) && !isAlreadyIncluded(component, include)) {
+                                insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                            }
                         }
                     }
                 } else {

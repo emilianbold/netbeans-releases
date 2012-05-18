@@ -107,6 +107,8 @@ import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
+import org.openide.text.DataEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -130,7 +132,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/jsf/resources/"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
     private static String DEFAULT_MAPPING = "/faces/*";  //NOI18N
 
@@ -159,10 +161,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
             // create new jsf library
             String libraryName = panel.getNewLibraryName();
-            File installFolder = panel.getInstallFolder();
-            if (installFolder != null && libraryName != null) {
+            File installResource = panel.getInstallResource();
+            if (installResource != null && libraryName != null) {
                 try {
-                    JSFUtils.createJSFUserLibrary(installFolder, libraryName);
+                    JSFUtils.createJSFUserLibrary(installResource, libraryName);
                     jsfLibrary = LibraryManager.getDefault().getLibrary(libraryName);
                 } catch (IOException exception) {
                     LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
@@ -534,7 +536,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             welcomeFileList.add(FORWARD_JSF);
                             //copy forwardToJSF.jsp
                             if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
-                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                                String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
                                 content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
                                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                                 content = content.replaceAll("__ENCODING__", encoding.name());
@@ -605,7 +607,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                 }
                 if (createFacesConfig) {
-                    String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
+                    String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
                     FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
                     createFile(target, content, "UTF-8"); //NOI18N
                 }
@@ -649,7 +651,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             if (!isJSF20 && !isMyFaces) {
                                 ViewHandler viewHandler = model.getFactory().createViewHandler();
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
-                                application.addViewHandler(viewHandler);
+                                application.addViewHandler(viewHandler);                                
                             }
 //                            // A component library may require a render kit
 //                            if (isJSF20Plus && panel.getJsfComponentDescriptor() != null) {
@@ -680,8 +682,17 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 iceViewHandler.setFullyQualifiedClassType("com.icesoft.faces.facelets.D2DFaceletViewHandler");  //NOI18N
                                 application.addViewHandler(iceViewHandler);
                             }
-                            model.endTransaction();
-                            model.sync();
+                            try {
+                                model.endTransaction();
+                                model.sync();
+                            } catch (IllegalStateException ex) {
+                                IOException io = new IOException("Cannot update faces-config.xml", ex);
+                                throw Exceptions.attachLocalizedMessage(io,
+                                        NbBundle.getMessage(JSFFrameworkProvider.class, "ERR_WRITE_FACES_CONFIG", Exceptions.findLocalizedMessage(ex)));
+                            }
+                            DataEditorSupport editorSupport =
+                                    DataObject.find(files[0]).getLookup().lookup(DataEditorSupport.class);
+                            editorSupport.saveDocument();
                         }
                     }
                 }
@@ -729,7 +740,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             //copy Welcome.jsp
             if (!panel.isEnableFacelets() && createWelcome && canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
-                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
+                String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N
                 Charset encoding = FileEncodingQuery.getDefaultEncoding();
                 content = content.replaceAll("__ENCODING__", encoding.name());
                 FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_JSF);

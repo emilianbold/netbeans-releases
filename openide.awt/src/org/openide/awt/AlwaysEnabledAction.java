@@ -134,7 +134,7 @@ implements PropertyChangeListener, ContextAwareAction {
             if (parent == null) {
                 Object listener = map.get("delegate"); // NOI18N
                 if (!(listener instanceof ActionListener)) {
-                    throw new NullPointerException();
+                    throw new NullPointerException("No 'delegate' in " + map);
                 }
                 al = (ActionListener) listener;
             } else {

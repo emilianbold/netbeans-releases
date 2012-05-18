@@ -79,7 +79,10 @@ public class StartProfilerTask extends Task {
                     getProject().setProperty(e.getKey(), e.getValue());
                 }
                 if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
-                    throw new BuildException("User abort");
+                    throw new BuildException("User abort"); // NOI18N
+                }
+                if (isFreeForm) {
+                    getProject().setProperty("profiler.configured", "true"); // NOI18N
                 }
             }
         }

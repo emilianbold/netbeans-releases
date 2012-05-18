@@ -42,16 +42,18 @@
 
 package org.netbeans.modules.cnd.spi.remote;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -83,7 +85,8 @@ public abstract class RemoteSyncFactory {
      * @return new instance of the RemoteSyncWorker
      */
     public abstract RemoteSyncWorker createNew(ExecutionEnvironment executionEnvironment, 
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, String workingDir, File... files);
+            PrintWriter out, PrintWriter err, FileObject privProjectStorageDir, String workingDir, 
+            FSPath... files);
 
     /**
      * Creates an instance of RemoteSyncWorker.
@@ -143,7 +146,7 @@ public abstract class RemoteSyncFactory {
             }
         }
         Logger log = Logger.getLogger("org.netbeans.modules.cnd.spi.remote"); // NOI18N
-        log.severe("No RemoteSyncFactory found by with ID " + id); //NOI18N
+        log.log(Level.SEVERE, "No RemoteSyncFactory found by with ID {0}", id); //NOI18N
         return null;
     }
 

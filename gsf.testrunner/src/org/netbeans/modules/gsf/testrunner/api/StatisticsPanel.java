@@ -149,12 +149,12 @@ final class StatisticsPanel extends JPanel {
         }
         toolbar.add(btnShowFailed);
         toolbar.add(btnShowError);
-        if(testingFramework.equals(Manager.TESTNG_TF) || testingFramework.equals(Manager.JUNIT_TF)) {
-            toolbar.add(btnShowIgnored);
-        }
-        if(testingFramework.equals(Manager.TESTNG_TF)) {
-            toolbar.add(btnShowSkipped);
-        }
+//        if(testingFramework.equals(Manager.TESTNG_TF) || testingFramework.equals(Manager.JUNIT_TF)) {
+//            toolbar.add(btnShowIgnored);
+//        }
+//        if(testingFramework.equals(Manager.TESTNG_TF)) {
+//            toolbar.add(btnShowSkipped);
+//        }
         toolbar.add(new JToolBar.Separator());
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);

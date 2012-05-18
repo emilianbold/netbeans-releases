@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.beans.addproperty;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -62,29 +63,30 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.JButton;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -186,7 +188,8 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                             doc.insertString(offset[0], code, null);
                             Position start = doc.createPosition(offset[0]);
                             Position end = doc.createPosition(offset[0] + code.length());
-                            r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
+//                            r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
+                            r.reformat(start.getOffset(), end.getOffset());
                             bounds[0] = start;
                             bounds[1] = end;
                         } catch (GuardedException ex) {
@@ -207,17 +210,17 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                 // code insertion to document passed
                 try {
                     JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
-                        public void run(WorkingCopy parameter) throws Exception {
-                            parameter.toPhase(Phase.RESOLVED);
+                        public void run(WorkingCopy workingCopy) throws Exception {
+                            workingCopy.toPhase(Phase.RESOLVED);
 
                             Position start = bounds[0];
                             Position end = bounds[1];
                             
-                            new ImportFQNsHack(parameter, start.getOffset(), end.getOffset()).scan(parameter.getCompilationUnit(), null);
+                            new ImportFQNsHack(workingCopy, start.getOffset(), end.getOffset()).scan(workingCopy.getCompilationUnit(), null);
 
-                            CompilationUnitTree cut = parameter.getCompilationUnit();
+                            CompilationUnitTree cut = workingCopy.getCompilationUnit();
 
-                            parameter.rewrite(cut, parameter.getTreeMaker().CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
+                            workingCopy.rewrite(cut, workingCopy.getTreeMaker().CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
                         }
                     }).commit();
                 } catch (IOException ex) {
@@ -225,66 +228,6 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                 }
             }
     }
-
-    static void insertCode(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
-        try {
-            JavaSource.create(ClasspathInfo.create(file)).runUserActionTask(new Task<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    insertCodeImpl(file, pane, config);
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    static void insertCodeImpl(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
-        try {
-            final Document doc = pane.getDocument();
-            final Reformat r = Reformat.get(pane.getDocument());
-
-            r.lock();
-
-            try {
-                NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
-                    public void run() {
-                        try {
-                            String code = new AddPropertyGenerator().generate(config);
-                            int startOffset = pane.getCaretPosition();
-
-                            doc.insertString(startOffset, code, null);
-
-                            final Position start = doc.createPosition(startOffset);
-                            final Position end = doc.createPosition(startOffset + code.length());
-
-                            JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
-                                public void run(WorkingCopy parameter) throws Exception {
-                                    parameter.toPhase(Phase.RESOLVED);
-
-                                    new ImportFQNsHack(parameter, start.getOffset(), end.getOffset()).scan(parameter.getCompilationUnit(), null);
-
-                                    CompilationUnitTree cut = parameter.getCompilationUnit();
-
-                                    parameter.rewrite(cut, parameter.getTreeMaker().CompilationUnit(cut.getPackageName(), cut.getImports(), cut.getTypeDecls(), cut.getSourceFile()));
-                                }
-                            }).commit();
-
-                            r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
-
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    });
-            } finally {
-                r.unlock();
-            }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        }
 
     private static final class ImportFQNsHack extends TreePathScanner<Void, Void> {
 
@@ -316,10 +259,23 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
         }
 
         @Override
-        public Void visitMethod(MethodTree node, Void p) {
-            return super.visitMethod(node, p);
+        public Void visitClass(ClassTree node, Void p) {
+            final SourcePositions sourcePositions = wc.getTrees().getSourcePositions();
+            final TreeMaker make = wc.getTreeMaker();
+            List<Tree> members = new LinkedList<Tree>();
+            ClassTree classTree = node;
+            for (Tree member : node.getMembers()) {
+                int s = (int) sourcePositions.getStartPosition(wc.getCompilationUnit(), member);
+                int e = (int) sourcePositions.getEndPosition(wc.getCompilationUnit(), member);
+                if (s >= start && e <= end) {
+                    classTree = make.removeClassMember(classTree, member);
+                    members.add(member);
+                }
+            }
+            classTree = GeneratorUtils.insertClassMembers(wc, classTree, members, start);
+            wc.rewrite(node, classTree);
+            return super.visitClass(classTree, p);
         }
-
     }
 
     public static final class Factory implements CodeGenerator.Factory {
@@ -342,8 +298,8 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
             
             if (e == null || !e.getKind().isClass()) {
                 return Collections.emptyList();
-            }
-
+        }
+        
             TypeMirror pcs = resolve(cc, "java.beans.PropertyChangeSupport"); //NOI18N
             TypeMirror vcs = resolve(cc, "java.beans.VetoableChangeSupport"); //NOI18N
             

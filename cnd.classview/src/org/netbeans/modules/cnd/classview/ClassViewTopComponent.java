@@ -44,22 +44,22 @@
 
 package org.netbeans.modules.cnd.classview;
 
-import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.classview.resources.I18n;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.classview.resources.I18n;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -78,7 +78,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     private static final String PREFERRED_ID = "classview"; //NOI18N
 
-    public static transient ClassViewTopComponent DEFAULT;
+    private static transient ClassViewTopComponent DEFAULT;
     
     public static final String OPENED_PREFERENCE = "ClassViewWasOpened"; // NOI18N
 
@@ -219,6 +219,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         }
     }
 
+    @Override
     public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {
         switch(newState) {
             case ON:
@@ -231,6 +232,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         }
     }
 
+    @Override
     public void projectOpened(CsmProject project) {
         if (!modelOn){
             return;
@@ -238,6 +240,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         if (view != null) {
             view.projectOpened(project);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     removeAll();
                     add(view, BorderLayout.CENTER);
@@ -247,6 +250,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         }
     }
 
+    @Override
     public void projectClosed(CsmProject project) {
         if (!modelOn){
             return;
@@ -256,6 +260,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         }
         if (CsmModelAccessor.getModel().projects().isEmpty()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     removeAll();
                     add(createEmptyContent(), BorderLayout.CENTER);
@@ -273,6 +278,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         return res;
     }
 
+    @Override
     public void modelChanged(CsmChangeEvent e) {
         if (!modelOn){
             return;

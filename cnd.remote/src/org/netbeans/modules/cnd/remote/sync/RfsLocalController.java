@@ -85,6 +85,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -101,7 +102,7 @@ class RfsLocalController extends NamedRunnable {
     private final FileData fileData;
     private final RemotePathMap mapper;
     private final Set<File> remoteUpdates;
-    private final File privProjectStorageDir;
+    private final FileObject privProjectStorageDir;
     private final PrefixedLogger logger;
     private final String prefix;
     private final SharabilityFilter filter;
@@ -126,7 +127,7 @@ class RfsLocalController extends NamedRunnable {
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
             NativeProcess remoteControllerProcess, BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
-            File privProjectStorageDir) {
+            FileObject privProjectStorageDir) throws IOException {
         super("RFS local controller thread " + executionEnvironment); //NOI18N
         this.execEnv = executionEnvironment;
         this.files = files;

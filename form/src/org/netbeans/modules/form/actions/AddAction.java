@@ -115,18 +115,6 @@ public class AddAction extends CallableSystemAction {
                     PaletteItem paletteItem = nodes[0].getCookie(PaletteItem.class);
                     if (paletteItem == null)
                         return false;
-                    String chooseBeanType = null;
-                    if (PaletteItem.TYPE_CHOOSE_BEAN.equals(paletteItem.getExplicitComponentType())) {
-                        NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-                            FormUtils.getBundleString("MSG_Choose_Bean"), // NOI18N
-                            FormUtils.getBundleString("TITLE_Choose_Bean")); // NOI18N
-                        DialogDisplayer.getDefault().notify(desc);
-                        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                            chooseBeanType = desc.getInputText();
-                        } else {
-                            return false;
-                        }
-                    }
 
                     nodes = getNodes();
                     if (nodes.length == 0)
@@ -149,10 +137,6 @@ public class AddAction extends CallableSystemAction {
                         else targetComponent = null;
 
                         FormModel formModel = formCookie.getFormModel();
-                        if (chooseBeanType != null) {
-                            paletteItem.setClassFromCurrentProject(chooseBeanType,
-                                    FormEditor.getFormDataObject(formModel).getPrimaryFile());
-                        }
                         if (formModel.getComponentCreator().createComponent(
                                 paletteItem, targetComponent, null)
                                 != null) {

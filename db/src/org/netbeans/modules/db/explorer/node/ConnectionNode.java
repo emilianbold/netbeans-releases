@@ -109,14 +109,20 @@ public class ConnectionNode extends BaseNode {
     protected void initialize() {
         // listen for change events
         connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-            @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                        updateModel();
-                    }
-                }
-        );
+                new PropertyChangeListener() {
+                    private final RequestProcessor.Task UPDATE = RP.create(
+                            new Runnable() { //#203127 - asynchronous update
+                                @Override
+                                public void run() {
+                                    updateModel();
+                                }
+                            });
 
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        UPDATE.schedule(10);
+                    }
+                });
         updateModel();
     }
 

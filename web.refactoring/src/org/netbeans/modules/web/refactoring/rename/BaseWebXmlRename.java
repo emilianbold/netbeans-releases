@@ -51,10 +51,10 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
-abstract class BaseWebXmlRename extends WebXmlRefactoring{
+abstract class BaseWebXmlRename extends WebXmlRefactoring {
     
-    public BaseWebXmlRename(FileObject webDD, WebApp webModel) {
-        super(webDD, webModel);
+    public BaseWebXmlRename(FileObject webDD) {
+        super(webDD);
     }
     
     protected abstract AbstractRefactoring getRefactoring();
@@ -92,31 +92,31 @@ abstract class BaseWebXmlRename extends WebXmlRefactoring{
             
             
             for (Servlet servlet : getServlets(oldFqn)){
-                refactoringElements.add(getRefactoring(), new ServletRenameElement(newName, oldFqn, webModel, webDD, servlet));
+                refactoringElements.add(getRefactoring(), new ServletRenameElement(newName, oldFqn, getWebModel(), webDD, servlet));
             }
             
             for (Listener listener : getListeners(oldFqn)){
-                refactoringElements.add(getRefactoring(), new ListenerRenameElement(newName, oldFqn,  webModel, webDD, listener));
+                refactoringElements.add(getRefactoring(), new ListenerRenameElement(newName, oldFqn,  getWebModel(), webDD, listener));
             }
             
             for (Filter filter : getFilters(oldFqn)){
-                refactoringElements.add(getRefactoring(), new FilterRenameElement(newName, oldFqn, webModel, webDD, filter));
+                refactoringElements.add(getRefactoring(), new FilterRenameElement(newName, oldFqn, getWebModel(), webDD, filter));
             }
             
             for (EjbRef ejbRef : getEjbRefs(oldFqn, true)){
-                refactoringElements.add(getRefactoring(), new EjbRemoteRefRenameElement(newName, oldFqn, webModel, webDD, ejbRef));
+                refactoringElements.add(getRefactoring(), new EjbRemoteRefRenameElement(newName, oldFqn, getWebModel(), webDD, ejbRef));
             }
             
             for (EjbRef ejbRef : getEjbRefs(oldFqn, false)){
-                refactoringElements.add(getRefactoring(), new EjbHomeRefRenameElement(newName, oldFqn, webModel, webDD, ejbRef));
+                refactoringElements.add(getRefactoring(), new EjbHomeRefRenameElement(newName, oldFqn, getWebModel(), webDD, ejbRef));
             }
             
             for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(oldFqn, false)){
-                refactoringElements.add(getRefactoring(), new EjbLocalRefRenameElement(newName, oldFqn, webModel, webDD, ejbLocalRef));
+                refactoringElements.add(getRefactoring(), new EjbLocalRefRenameElement(newName, oldFqn, getWebModel(), webDD, ejbLocalRef));
             }
             
             for (EjbLocalRef ejbLocalRef : getEjbLocalRefs(oldFqn, true)){
-                refactoringElements.add(getRefactoring(), new EjbLocalHomeRefRenameElement(newName, oldFqn, webModel, webDD, ejbLocalRef));
+                refactoringElements.add(getRefactoring(), new EjbLocalHomeRefRenameElement(newName, oldFqn, getWebModel(), webDD, ejbLocalRef));
             }
         }
         

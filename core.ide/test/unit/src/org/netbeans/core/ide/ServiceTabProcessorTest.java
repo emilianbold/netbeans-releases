@@ -86,6 +86,16 @@ public class ServiceTabProcessorTest {
         assertSame("icon2 is in use", img2, n.getIcon(BeanInfo.ICON_COLOR_16x16));
 
     }
+    
+    @Test
+    public void testDoubleNode() {
+        Node n1 = new ServicesTab.ServicesNode();
+        Node n2 = new ServicesTab.ServicesNode();
+        
+        assertEquals("One subnode there", 1, n1.getChildren().getNodes(true).length);
+        assertEquals("One subnode there", 1, n2.getChildren().getNodes(true).length);
+        
+    }
 
     @ServicesTabNodeRegistration(
         name="my1", displayName="org.netbeans.core.ide.TestBundle#NAME", position=10,

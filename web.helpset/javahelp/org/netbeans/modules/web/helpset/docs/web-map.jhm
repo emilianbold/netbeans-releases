@@ -169,5 +169,18 @@
         <!-- CSH : JSF from entity wizard -->
         <mapID target="persistence_entity_selection_javaee6" url="web/framework/jsf/csh/file_jsffromentity_panel1.html"/>
         <mapID target="framework_jsf_fromentity_setup" url="web/framework/jsf/csh/file_jsffromentity_panel2.html"/>
+        
+        
+        <!-- CSH : Bean Validation Constraint wizard -->
+        <mapID target="org.netbeans.modules.javaee.beanvalidation.ConstraintPanel" url="web/framework/jsf/csh/file_beanvalidationconstraint.html"/>
+<!-- Cloud TOC topics -->
+<mapID target="about-cloud" url="web/cloud/about-cloud.html"/>
+<mapID target="cloud-process" url="web/cloud/cloud_process.html"/>
+<mapID target="register-cloud" url="web/cloud/register-cloud.html"/>
+<mapID target="develop-locally" url="web/cloud/develop-locally.html"/>
+<mapID target="deploy-cloud" url="web/cloud/deploy-cloud.html"/>
+        
+<!-- Cloud support CSH topics -->
+<mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="web/cloud/csh/add-cloud-provider-oracle.html" />
 </map>
 

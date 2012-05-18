@@ -602,6 +602,12 @@ Microsystems, Inc. All Rights Reserved.
           Allows unit tests to prevent changes to <code>System.err</code> and
           <code>System.out</code> by the logging infrastructure.
       </api>
+      <api name="org.netbeans.log.numberOfFiles" category="friend" group="systemproperty" type="export">
+          Changes the number of files used for log rotation. If started with
+          <code>-J-Dorg.netbeans.log.numberOfFiles=number</code> then the log files for
+          <code>number-1</code> previous executions will be preserved. Default and
+          minimum number is 3.
+      </api>
       <api name="org.netbeans.core.startup.ModuleList.firstModuleJarWins" category="friend" group="systemproperty" type="export">
           Disables #113341 so that the first version of a module JAR to be encountered is loaded,
           even if a later cluster contains a newer version of the same module.

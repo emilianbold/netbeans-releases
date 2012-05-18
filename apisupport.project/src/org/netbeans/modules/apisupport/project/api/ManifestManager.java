@@ -618,7 +618,15 @@ public final class ManifestManager {
     }
     
     public String[] getProvidedTokens() {
-        return provTokens;
+        List<String> arr = Arrays.asList(provTokens);
+        String implied = "cnb." + getCodeNameBase(); // NOI18N
+        if (arr.contains(implied)) {
+            return provTokens;
+        } else {
+            List<String> ret = new ArrayList<String>(arr);
+            ret.add(implied);
+            return ret.toArray(new String[ret.size()]);
+        }
     }
     
     public String[] getRequiredTokens() {

@@ -44,30 +44,23 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
-import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 /**
  * @author Ludo
@@ -127,8 +120,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
      */
     @Override
     public HelpCtx getHelp() {
-        // !PW FIXME correct help context
-        return new HelpCtx("registering_app_server_hk2_location"); //NOI18N
+        FileObject fo = FileUtil.getConfigFile("Services/JavaHelp/org-netbeans-modules-j2ee-helpset.xml");
+        if (null != fo)
+            return new HelpCtx("registering_app_server_hk2_location"); //NOI18N
+        else
+            return null;
     }
 
     private AtomicBoolean isValidating = new AtomicBoolean();

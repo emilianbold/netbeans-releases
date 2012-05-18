@@ -547,7 +547,7 @@ final class JavaActions implements ActionProvider {
         }
         assert taskIndex != -1;
         Element target = (Element) ownerDocument.importNode(origTarget, true);
-        target.setAttribute("depends", "-profile-check,dist"); // NOI18N
+        target.setAttribute("depends", "-profile-check"); // NOI18N
         target.setAttribute("if", "profiler.configured"); // NOI18N
         addJdkInitDeps(target);
         Element task = (Element) target.getChildNodes().item(taskIndex);
@@ -560,7 +560,7 @@ final class JavaActions implements ActionProvider {
     
     Element createProfileTargetFromScratch(String generatedTargetName, Document ownerDocument) {
         Element target = ownerDocument.createElement("target"); // NOI18N
-        target.setAttribute("depends", "-profile-check,dist"); // NOI18N
+        target.setAttribute("depends", "-profile-check"); // NOI18N        
         target.setAttribute("if", "profiler.configured"); // NOI18N
         addJdkInitDeps(target);
         target.setAttribute("name", generatedTargetName); // NOI18N

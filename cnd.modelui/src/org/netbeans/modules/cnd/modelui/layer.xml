@@ -86,7 +86,7 @@ Contributor(s):
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getFileContainerAction"/>
             </file>
             <file name="SwitchIndexAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.SwitchIndexAction"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.trace.SwitchIndexAction"/>
             </file>
         </folder>
     </folder>

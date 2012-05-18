@@ -12,23 +12,20 @@
     </head>
     <body>
         <h2>New JSF Pages from Entity Class Wizard: Entity Classes</h2>
-        <p><small>
-                <a href="#seealso">See Also</a>
-            </small></p>
+        <p><small><a href="#seealso">See Also</a></small></p>
 
         <p>The JSF Pages from Entity Class wizard generates JSP pages with JSF components based on entity classes in your web application.
             The generated JSP pages provide a web interface for the entity classes.
-            The left column lists the entity classes in the module with data to be persisted.
             For each entity class, the IDE creates four JSP pages enabling you to view, edit, create, and destroy entries in the data source.
             The IDE also creates controller and converter classes for each entity class.</p>
         <ul class="notes"><li>To use JSF components in your web application, you must make sure that your project supports the JSF Framework.</li></ul>
         <p>You open the wizard by opening the New File wizard and selecting JSF Pages from Entity Classes in the Persistence category.</p>
         <p>Use this page as follows:</p>
         <ul>
-            <li>Select any entity classes from the available entity classes in the left panel and click Add.
-                When you click Add, the entity classes you select are listed in the right pane.
+            <li>Select any entity classes from the list of available entity classes in the left pane and click Add.
+                When you click Add, the entity classes you select are added to the list in the right pane.
                 Any entity classes referenced by the entity classes you select are also listed in the right pane.
-                An entity class is greyed to indicate that it is referenced by another entity classes.
+                An entity class name that is gray indicates that the entity is referenced by another entity class.
                 The IDE automatically generates JSP pages for each of the entity classes listed in the right pane.
                 <ul class="notes"><li><b>Include Referenced Classes.</b> Deselect this if you do not want JSF pages created from referenced entity classes.</li></ul>
             </li>
@@ -42,8 +39,10 @@
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../../about_framework.html">About Web Application Frameworks</a></dd>
-            <dd>  <a href="../create.html">Creating a New Application with JSF Support</a></dd>
-            <dd>  <a href="../add.html">Adding JSF Support to an Existing Application</a></dd>
+            <dd><a href="../pages-from-entities.html">Generating JSF Pages from Entity Classes</a></dd>
+            <dd><a href="../create.html">Creating a New Application with JSF Support</a></dd>
+            <dd><a href="../add.html">Adding JSF Support to an Existing Application</a></dd>
+            
         </dl>
 
         <hr><small><a href="../../../../credits.html">Legal Notices</a></small>

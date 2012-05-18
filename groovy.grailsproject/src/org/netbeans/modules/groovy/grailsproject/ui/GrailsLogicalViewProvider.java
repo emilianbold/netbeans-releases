@@ -54,10 +54,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.actions.ManagePluginsAction;
 import org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction;
+import org.netbeans.modules.groovy.grailsproject.actions.ManagePluginsAction;
 import org.netbeans.modules.groovy.grailsproject.actions.ResolvePluginsAction;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -79,12 +79,13 @@ import org.openide.util.lookup.Lookups;
 public class GrailsLogicalViewProvider implements LogicalViewProvider {
 
     private final GrailsProject project;
-    GrailsLogicalViewRootNode rootNode = null;
+    private GrailsLogicalViewRootNode rootNode;
 
     public GrailsLogicalViewProvider(GrailsProject project) {
         this.project = project;
-        }
+    }
 
+    @Override
     public Node createLogicalView() {
         if (rootNode == null){
             rootNode = new GrailsLogicalViewRootNode();
@@ -93,8 +94,6 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         return rootNode;
     }
 
-
-    //==========================================================================
 
     private final class GrailsLogicalViewRootNode extends AbstractNode {
 
@@ -107,20 +106,24 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
 
             String prefix = "";
 
-            if(!Utilities.isWindows())
+            if(!Utilities.isWindows()) {
                 prefix = File.separator;
+            }
 
             setShortDescription("Grails Project in " + prefix + project.getProjectDirectory().getPath());
         }
 
+        @Override
         public Image getIcon(int type) {
             return ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
         }
 
+        @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
 
+        @Override
         public String getDisplayName() {
             return project.getProjectDirectory().getName();
         }
@@ -131,34 +134,23 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         }
 
         private Action[] getAdditionalActions() {
-
             List<Action> actions = new ArrayList<Action>();
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_BUILD,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_BuildAction_Name"), null));
-            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_COMPILE,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Compile_Name"), null));
-            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_CLEAN,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_CleanAction_Name"), null));
-            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_UPGRADE,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Upgrade_Name"), null));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_BUILD, "LBL_BuildAction_Name"));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_COMPILE, "LBL_Compile_Name"));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_CLEAN, "LBL_CleanAction_Name"));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_UPGRADE, "LBL_Upgrade_Name"));
             actions.add(null);
             actions.add(SystemAction.get(GrailsCommandAction.class));
-            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL, "LBL_ShellAction_Name"));
             actions.add(new ManagePluginsAction(project));
             actions.add(null);
             actions.add(new ResolvePluginsAction(project));
             actions.add(null);
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null));
-
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_DebugAction_Name"), null));
-
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_RUN, "LBL_RunAction_Name"));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_DEBUG, "LBL_DebugAction_Name"));
+            actions.add(getCommandAction(GrailsActionProvider.COMMAND_TEST, "LBL_TestAction_Name"));
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.closeProjectAction());
@@ -175,11 +167,14 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.customizeProjectAction());
 
             return actions.toArray(new Action[actions.size()]);
-
         }
 
+        private Action getCommandAction(String commandName, String localizationName) {
+            return ProjectSensitiveActions.projectCommandAction(commandName, NbBundle.getMessage(GrailsLogicalViewProvider.class, localizationName), null);
+        }
     }
 
+    @Override
     public Node findPath(Node root, Object target) {
         Project project = root.getLookup().lookup(Project.class);
         if (project == null) {
@@ -194,9 +189,13 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             }
 
             for (Node n : root.getChildren().getNodes(true)) {
-                Node result = TreeRootNode.findPath(n, target);
-                if (result != null) {
-                    return result;
+                Node treeNode = TreeRootNode.findPath(n, target);
+                if (treeNode != null) {
+                    return treeNode;
+                }
+                Node packageNode = PackageView.findPath(n, target);
+                if (packageNode != null) {
+                    return packageNode;
                 }
             }
         }

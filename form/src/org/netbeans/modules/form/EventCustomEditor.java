@@ -49,6 +49,7 @@ import javax.swing.DefaultListModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -80,6 +81,8 @@ public class EventCustomEditor extends javax.swing.JPanel {
             FormUtils.getBundleString("ACSD_CTL_EE_RENAME")); // NOI18N
         getAccessibleContext().setAccessibleDescription(
             FormUtils.getBundleString("ACSD_EventCustomEditor")); // NOI18N
+
+        HelpCtx.setHelpIDString(this, "gui.csh.handlers"); // NOI18N
     }
 
     /** This method is called from within the constructor to

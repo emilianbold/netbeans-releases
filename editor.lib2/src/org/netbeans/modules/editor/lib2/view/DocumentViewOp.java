@@ -170,7 +170,7 @@ public final class DocumentViewOp
      */
     ViewUpdates viewUpdates; // pkg-private for tests
     
-    private TextLayoutCache textLayoutCache;
+    private final TextLayoutCache textLayoutCache;
 
     /**
      * New width assigned by DocumentView.setSize() - it will be processed once a lock is acquired.
@@ -280,6 +280,7 @@ public final class DocumentViewOp
     
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
+        textLayoutCache = new TextLayoutCache();
     }
 
     public ViewHierarchyImpl viewHierarchyImpl() {
@@ -409,9 +410,12 @@ public final class DocumentViewOp
             docView.setAllocationHeight(newAllocationHeight);
         }
         if (isAnyStatusBit(ALLOCATION_WIDTH_CHANGE)) {
-            clearStatusBits(ALLOCATION_WIDTH_CHANGE);
-            docView.setAllocationHeight(newAllocationWidth);
-            updateVisibleDimension();
+            docView.setAllocationWidth(newAllocationWidth);
+            // Updating of visible dimension can only be performed in EDT (acquires AWT treelock)
+            if (SwingUtilities.isEventDispatchThread()) {
+                clearStatusBits(ALLOCATION_WIDTH_CHANGE);
+                updateVisibleDimension();
+            }
         }
     }
 
@@ -498,7 +502,6 @@ public final class DocumentViewOp
     
     void parentViewSet() {
         JTextComponent textComponent = docView.getTextComponent();
-        textLayoutCache = new TextLayoutCache();
         updateStatusBits(ACCURATE_SPAN, Boolean.TRUE.equals(textComponent.getClientProperty(DocumentView.ACCURATE_SPAN_PROPERTY)));
         viewUpdates = new ViewUpdates(docView);
         textComponent.addPropertyChangeListener(this);
@@ -514,7 +517,6 @@ public final class DocumentViewOp
         viewHierarchyImpl.setDocumentView(null);
         uninstallFromViewport();
         textComponent.removePropertyChangeListener(this);
-        textLayoutCache = null;
         viewUpdates = null;
     }
     
@@ -612,7 +614,7 @@ public final class DocumentViewOp
     }
 
     void updateVisibleDimension() { // Called only with textComponent != null
-        // Must be called under mutex
+        // Must be called under mutex and in EDT (getViewRect() acquires AWT treelock)
         JTextComponent textComponent = docView.getTextComponent();
         Component parent = textComponent.getParent();
         Rectangle newRect;
@@ -1324,21 +1326,22 @@ public final class DocumentViewOp
         }
        
         Keymap keymap = docView.getTextComponent().getKeymap();
-        if (evt.getWheelRotation() < 0) {
+        int wheelRotation = evt.getWheelRotation();
+        if (wheelRotation < 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x290, modifiers)); //WHEEL_UP constant
             if (action != null) {
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
-                return;
+            } else {
+                origMouseWheelListener.mouseWheelMoved(evt);
             }
-            origMouseWheelListener.mouseWheelMoved(evt);
-        } else {
+        } else if (wheelRotation > 0) {
             Action action = keymap.getAction(KeyStroke.getKeyStroke(0x291, modifiers)); //WHEEL_DOWN constant
             if (action != null) {
                 action.actionPerformed(new ActionEvent(docView.getTextComponent(),0,""));
-                return;
+            } else {
+                origMouseWheelListener.mouseWheelMoved(evt);
             }
-            origMouseWheelListener.mouseWheelMoved(evt);
-        }   
+        } // else: wheelRotation == 0 => do nothing
     }
 
     StringBuilder appendInfo(StringBuilder sb) {

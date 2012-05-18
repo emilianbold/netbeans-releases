@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -55,7 +55,7 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
  * An object that keeps requests for operations upon instances of <code>UpdateEelement</code>
  * (like install, uninstall, update, enable, disable), provides checks whether 
  * chosen operation is allowed (e.g. already installed plugin cannot be scheduled for install again), 
- * provides information which additonal plugins are
+ * provides information which additional plugins are
  * required and so on.
  * <p>
  * Typical scenario how to use:
@@ -64,9 +64,9 @@ import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
  * for chosen operation: {@link #createForInstall}, {@link #createForUninstall}, 
  * {@link #createForUpdate}, {@link #createForEnable},{@link #createForDisable}</li>
  * <li>add instances of <code>UpdateElement</code> (see {@link OperationContainer#add})</li>
- * <li>check if additional requiered instances of <code>UpdateElement</code> are needed 
+ * <li>check if additional required instances of <code>UpdateElement</code> are needed 
  * ({@link OperationInfo#getRequiredElements}), 
- * if so then these requiered instances should be also added</li>
+ * if so then these required instances should be also added</li>
  * <li>next can be tested for broken dependencies ({@link OperationInfo#getBrokenDependencies}) </li>
  * <li>call method {@link #getSupport} to get either {@link InstallSupport} or {@link OperationSupport} 
  * that can be used for performing operation</li>
@@ -200,8 +200,8 @@ public final class OperationContainer<Support> {
     }
     
     /**
-     * The factory method to construct  instance of <code>OperationContainer</code> for installation of custom compomnent
-     * @return newly constructed instance of <code>OperationContainer</code> for installation of custom compomnent
+     * The factory method to construct  instance of <code>OperationContainer</code> for installation of custom component
+     * @return newly constructed instance of <code>OperationContainer</code> for installation of custom component
      */                    
     public static OperationContainer<OperationSupport> createForCustomInstallComponent () {
         OperationContainer<OperationSupport> retval =
@@ -211,8 +211,8 @@ public final class OperationContainer<Support> {
     }
 
     /**
-     * The factory method to construct  instance of <code>OperationContainer</code> for uninstallation of custom compomnent
-     * @return newly constructed instance of <code>OperationContainer</code> for uninstallation of custom compomnent
+     * The factory method to construct  instance of <code>OperationContainer</code> for uninstallation of custom component
+     * @return newly constructed instance of <code>OperationContainer</code> for uninstallation of custom component
      */                        
     public static OperationContainer<OperationSupport> createForCustomUninstallComponent () {
         OperationContainer<OperationSupport> retval =
@@ -229,13 +229,16 @@ public final class OperationContainer<Support> {
      * <br><p>See the difference between {@link #createForInstall} and {@link #createForDirectInstall} for example</p>
      */                        
     public Support getSupport() {
-        if (upToDate) {
+        if (upToDate != null && upToDate) {
             return support;
         } else {
-            if (listAll().size() > 0 && listInvalid().size() == 0) {
+            if (listAll().size() > 0 && listInvalid().isEmpty()) {
                 upToDate = true;
                 return support;
             } else {
+                if (upToDate != null) {
+                    OperationContainerImpl.LOGGER.info("Support is null, either listAll[" + listAll() + "] empty, or there are invalid[" + listInvalid() + "]");
+                }
                 return null;
             }
         }
@@ -317,10 +320,12 @@ public final class OperationContainer<Support> {
     /**
      * Removes <code>updateElement</code>
      * @param updateElement
-     * @return <tt>true</tt> if succesfully added
+     * @return <tt>true</tt> if successfully added
      */
     public boolean remove(UpdateElement updateElement) {
-        upToDate = false;
+        if (upToDate != null) {
+            upToDate = false;
+        }
         return impl.remove(updateElement);
     }
     
@@ -356,7 +361,9 @@ public final class OperationContainer<Support> {
      * @param op
      */
     public void remove(OperationInfo<Support> op) {
-        upToDate = false;
+        if (upToDate != null) {
+            upToDate = false;
+        }
         impl.remove (op);
     }
     
@@ -365,7 +372,9 @@ public final class OperationContainer<Support> {
      * Removes all content
      */
     public void removeAll() {
-        upToDate = false;
+        if (upToDate != null) {
+            upToDate = false;
+        }
         impl.removeAll ();
     }
     
@@ -404,12 +413,11 @@ public final class OperationContainer<Support> {
     private  OperationContainer(OperationContainerImpl<Support> impl, Support t) {
         this.impl = impl;
         this.support = t;
-        impl.setOperationContainer (this);
     }
     
     OperationContainerImpl<Support> impl;
     private Support support;
-    private boolean upToDate = false;
+    private Boolean upToDate = null;
     
     @Override
     public String toString() {

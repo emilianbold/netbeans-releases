@@ -110,22 +110,25 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitTestFinishedHandler extends TestRecognizerHandler {
 
         public CUnitTestFinishedHandler() {
-            super("Test: (.*) \\.\\.\\. passed"); //NOI18N
+            super("Test: (.*) \\.\\.\\.( )?passed"); //NOI18N
         }
 
         @Override
         public void updateUI(Manager manager, TestSession session) {
             Testcase testcase = new Testcase(matcher.group(1), C_UNIT, session);
-            testcase.setTimeMillis(0);
-            testcase.setClassName(session.getCurrentSuite().getName());
-            session.addTestCase(testcase);
+            if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
+                    session.getCurrentTestCase().getTrouble() != null)) {
+                testcase.setTimeMillis(0);
+                testcase.setClassName(session.getCurrentSuite().getName());
+                session.addTestCase(testcase);
+            }
         }
     }
 
     static class CUnitTestFailedHandler extends TestRecognizerHandler {
 
         public CUnitTestFailedHandler() {
-            super("Test: (.*) \\.\\.\\. FAILED"); //NOI18N
+            super("Test: (.*) \\.\\.\\.( )?FAILED"); //NOI18N
         }
 
         @Override
@@ -143,7 +146,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
         public CUnitSuiteFinishedHandler() {
-            super("--Run Summary: "); //NOI18N
+            super("(--)?Run Summary: "); //NOI18N
         }
 
         @Override
@@ -214,10 +217,12 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
                 currentSuiteName = suiteName;
 
                 Testcase testcase = new Testcase(matcher.group(2), CPP_UNIT, session);
-                testcase.setTimeMillis(0);
-                testcase.setClassName(suiteName);
-
-                session.addTestCase(testcase);
+                if(!(session.getCurrentTestCase() != null && session.getCurrentTestCase().getName().equals(testcase.getName()) &&
+                        session.getCurrentTestCase().getTrouble() != null)) {
+                    testcase.setTimeMillis(0);
+                    testcase.setClassName(suiteName);
+                    session.addTestCase(testcase);
+                }
             }
         }
 

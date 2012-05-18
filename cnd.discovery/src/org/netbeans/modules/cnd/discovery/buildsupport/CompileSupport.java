@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Iterator;
-import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -168,7 +167,6 @@ public class CompileSupport extends CompileOptionsProvider {
     private AllOptionsProvider getOptions(FileObject projectDirectory, String confName, String itemPath) {
         FileObject properties = projectDirectory.getFileObject("nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
         if (properties != null && properties.isValid()) {
-            Properties p = new Properties();
             BufferedReader in = null;
             try {
                 in = new BufferedReader(new InputStreamReader(properties.getInputStream(), "UTF-8")); // NOI18N

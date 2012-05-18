@@ -273,6 +273,12 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         this.offset = offset;
         int tag_gt_offset = -1;
         switch (to) {
+            case SELF_CLOSING_START_TAG:
+                if (LOG_FINER) {
+                    LOGGER.finer("Set self closing start tag flag.");//NOI18N
+                }
+                self_closing_starttag = true;
+                break;
             case TAG_OPEN:
                 tag_lt_offset = offset;
                 break;
@@ -301,8 +307,6 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             case SCRIPT_DATA:
             case DATA:
                 switch (from) {
-                    case SELF_CLOSING_START_TAG:
-                        self_closing_starttag = true;
                     case ATTRIBUTE_NAME:
                     case AFTER_ATTRIBUTE_VALUE_QUOTED:
                     case AFTER_ATTRIBUTE_NAME:
@@ -413,10 +417,13 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         super.endTag(en);
     }
 
-    private void resetIntenallPositions() {
+    private void resetInternalPositions() {
         tag_lt_offset = -1;
         self_closing_starttag = false;
         attrs.clear();
+        if (LOG) {
+            LOGGER.fine("Internal state reset.");//NOI18N
+        }
     }
 
     @Override
@@ -455,7 +462,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                 currentOpenTag = node = factory.createOpenTag(tag_lt_offset, -1, (byte)name.length());
             }
             addAttributesToElement(node, attributes);
-            resetIntenallPositions();
+            resetInternalPositions();
 
         } else {
             //virtual element

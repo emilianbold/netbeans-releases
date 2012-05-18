@@ -634,10 +634,11 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                         RP.execute(new Runnable() {
                             @Override
                             public void run() {
-                                data = getPathList(platform.getBootstrapLibraries());
+                                final java.util.List<URL> update = getPathList(platform.getBootstrapLibraries());
                                 Mutex.EVENT.readAccess(new Runnable() {
                                     @Override
                                     public void run() {
+                                        data = update;
                                         fireIntervalAdded(PathModel.this, 0, data.size());
                                     }
                                 });

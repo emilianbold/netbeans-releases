@@ -48,6 +48,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
 import java.io.IOException;
+import java.util.logging.Level;
+
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -56,6 +58,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.SwingScrollWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.websvc.rest.wadl.model.*;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -119,7 +122,13 @@ public class DocWidget<T extends WadlComponent> extends AbstractTitledWidget {
                     model.startTransaction();
                     doc.setTitle(text);
                 } finally {
-                    model.endTransaction();
+                    try {
+                        model.endTransaction();
+                    }
+                    catch (IllegalStateException ex) {
+                        Exceptions.printStackTrace(
+                                Exceptions.attachSeverity(ex, Level.WARNING));
+                    }
                 }
             }
         });

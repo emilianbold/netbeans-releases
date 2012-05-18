@@ -79,6 +79,9 @@ public class ${name} extends SimpleBeanInfo {
      * properties of this bean.  May return null if the
      * information should be obtained by automatic analysis.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public BeanDescriptor getBeanDescriptor() {
 	return getBdescriptor();
     }
@@ -95,6 +98,9 @@ public class ${name} extends SimpleBeanInfo {
      * A client of getPropertyDescriptors can use "instanceof" to check
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public PropertyDescriptor[] getPropertyDescriptors() {
 	return getPdescriptor();
     }
@@ -106,6 +112,9 @@ public class ${name} extends SimpleBeanInfo {
      * events fired by this bean.  May return null if the information
      * should be obtained by automatic analysis.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public EventSetDescriptor[] getEventSetDescriptors() {
 	return getEdescriptor();
     }
@@ -117,6 +126,9 @@ public class ${name} extends SimpleBeanInfo {
      * implemented by this bean.  May return null if the information
      * should be obtained by automatic analysis.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public MethodDescriptor[] getMethodDescriptors() {
 	return getMdescriptor();
     }
@@ -129,6 +141,9 @@ public class ${name} extends SimpleBeanInfo {
      * 		returned by getPropertyDescriptors.
      * <P>	Returns -1 if there is no default property.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public int getDefaultPropertyIndex() {
         return defaultPropertyIndex;
     }
@@ -140,6 +155,9 @@ public class ${name} extends SimpleBeanInfo {
      *		returned by getEventSetDescriptors.
      * <P>	Returns -1 if there is no default event.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public int getDefaultEventIndex() {
         return defaultEventIndex;
     }
@@ -165,6 +183,9 @@ public class ${name} extends SimpleBeanInfo {
      * @return  An image object representing the requested icon.  May
      *    return null if no suitable icon is available.
      */
+    <#if java15style??>
+    @Override
+    </#if>
     public java.awt.Image getIcon(int iconKind) {
         switch ( iconKind ) {
         case ICON_COLOR_16x16:

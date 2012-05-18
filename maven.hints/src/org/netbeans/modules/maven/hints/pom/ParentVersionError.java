@@ -189,7 +189,7 @@ public class ParentVersionError implements POMErrorFixProvider {
         return configuration;
     }
 
-    private static class SynchronizeFix implements Fix {
+    private static class SynchronizeFix implements Fix, Runnable {
         private Parent parent;
         private String version;
         private String message;
@@ -213,18 +213,18 @@ public class ParentVersionError implements POMErrorFixProvider {
         }
 
         @Override
+        public void run() {
+            parent.setVersion(version);
+        }
+
+        @Override
         public ChangeInfo implement() throws Exception {
             ChangeInfo info = new ChangeInfo();
             POMModel mdl = parent.getModel();
             if (!mdl.getState().equals(Model.State.VALID)) {
                 return info;
             }
-            mdl.startTransaction();
-            try {
-                parent.setVersion(version);
-            } finally {
-                mdl.endTransaction();
-            }
+            PomModelUtils.implementInTransaction(mdl, this);
             return info;
         }
     }

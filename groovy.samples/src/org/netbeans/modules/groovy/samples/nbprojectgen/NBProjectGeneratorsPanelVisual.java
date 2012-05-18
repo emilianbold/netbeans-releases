@@ -94,7 +94,7 @@ public class NBProjectGeneratorsPanelVisual extends JPanel implements DocumentLi
         org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(NBProjectGeneratorsPanelVisual.class, "NBProjectGeneratorsPanelVisual.projectLocationLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(NBProjectGeneratorsPanelVisual.class, "NBProjectGeneratorsPanelVisual.browseButton.text")); // NOI18N
-        browseButton.setActionCommand(org.openide.util.NbBundle.getMessage(NBProjectGeneratorsPanelVisual.class, "NBProjectGeneratorsPanelVisual.browseButton.actionCommand")); // NOI18N
+        browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);

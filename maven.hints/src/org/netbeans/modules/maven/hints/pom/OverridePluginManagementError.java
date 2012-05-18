@@ -84,6 +84,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
     }
 
 
+    @Override
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
@@ -91,7 +92,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
             return toRet;
         }
         Map<String, String> managed = collectManaged(prj);
-        if (managed.size() == 0) {
+        if (managed.isEmpty()) {
             return toRet;
         }
 
@@ -137,10 +138,12 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
     }
 
 
+    @Override
     public JComponent getCustomizer(Preferences preferences) {
         return null;
     }
 
+    @Override
     public Configuration getConfiguration() {
         return configuration;
     }
@@ -164,29 +167,31 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
         return toRet;
     }
 
-    private static class OverrideFix implements Fix {
+    private static class OverrideFix implements Fix, Runnable {
         private Plugin plugin;
 
         OverrideFix(Plugin plg) {
             plugin = plg;
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(OverridePluginManagementError.class, "TEXT_OverridePluginFix");
         }
 
+        @Override
+        public void run() {
+            plugin.setVersion(null);
+        }
+
+        @Override
         public ChangeInfo implement() throws Exception {
             ChangeInfo info = new ChangeInfo();
             POMModel mdl = plugin.getModel();
             if (!mdl.getState().equals(Model.State.VALID)) {
                 return info;
             }
-            mdl.startTransaction();
-            try {
-                plugin.setVersion(null);
-            } finally {
-                mdl.endTransaction();
-            }
+            PomModelUtils.implementInTransaction(mdl, this);
             return info;
         }
     }

@@ -78,11 +78,11 @@
                               </Group>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="306" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="316" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
                                           <Component id="jtNewLibraryName" alignment="1" pref="204" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="204" max="32767" attributes="1"/>
+                                          <Component id="customBundleTextField" alignment="1" pref="204" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
@@ -112,7 +112,7 @@
                       <Component id="rbNewLibrary" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jbBrowse" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jtFolder" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="customBundleTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="lDirectory" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -121,7 +121,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbPackageJars" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="28" max="32767" attributes="0"/>
+                      <EmptySpace pref="22" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -197,7 +197,7 @@
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_lJSFDir" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="jtFolder"/>
+                  <ComponentRef name="customBundleTextField"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_INSTALL_DIR" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -207,14 +207,14 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="jtFolder">
+            <Component class="javax.swing.JTextField" name="customBundleTextField">
               <Properties>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="HINT_JSF_Directory" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>
-                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="jtFolderKeyPressed"/>
+                <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="customBundleTextFieldKeyPressed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JButton" name="jbBrowse">
@@ -299,7 +299,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lURLPattern" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="tURLPattern" pref="306" max="32767" attributes="0"/>
+                              <Component id="tURLPattern" pref="326" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
@@ -399,7 +399,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jsfComponentsScrollPane" alignment="0" pref="462" max="32767" attributes="0"/>
+                          <Component id="jsfComponentsScrollPane" alignment="0" pref="479" max="32767" attributes="0"/>
                           <Component id="jsfComponentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -412,7 +412,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jsfComponentsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jsfComponentsScrollPane" pref="143" max="32767" attributes="0"/>
+                      <Component id="jsfComponentsScrollPane" pref="153" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>

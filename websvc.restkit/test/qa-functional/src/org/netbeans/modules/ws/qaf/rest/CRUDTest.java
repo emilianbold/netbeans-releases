@@ -251,7 +251,12 @@ public class CRUDTest extends RestTestBase {
         n.performPopupActionNoBlock(testRestActionName);
         String testRestTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.support.Bundle", "TTL_SelectTarget");
         NbDialogOperator wo = new NbDialogOperator(testRestTitle);
-        wo.ok();
+        if (getProjectType().isAntBasedProject()) {
+            wo.ok();
+        } else {
+            // cancel for Maven projects because otherwise it opens browser
+            wo.cancel();
+        }
     }
 
     protected void createPU() {
@@ -262,6 +267,7 @@ public class CRUDTest extends RestTestBase {
         createNewFile(getProject(), category, puLabel);
         String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
         WizardOperator wo = new WizardOperator(title);
+        new JTextFieldOperator(wo).setText(getProjectName().replace("Mvn", "") + "PU");
         new JComboBoxOperator(wo, 1).selectItem(1); //NOI18N
         wo.finish();
         new EventTool().waitEvent(2500);

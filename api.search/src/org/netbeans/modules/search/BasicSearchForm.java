@@ -52,7 +52,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -66,6 +65,8 @@ import org.netbeans.api.search.ui.ComponentUtils;
 import org.netbeans.api.search.ui.FileNameController;
 import org.netbeans.api.search.ui.ScopeController;
 import org.netbeans.api.search.ui.ScopeOptionsController;
+import org.netbeans.api.search.ui.SearchPatternController;
+import org.netbeans.api.search.ui.SearchPatternController.Option;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.PatternChangeListener;
@@ -125,7 +126,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         } else {
             initValuesFromHistory(searchAndReplace);
         }
-        updateTextPatternColor();
         if (searchAndReplace) {
             updateReplacePatternColor();
         }
@@ -144,13 +144,16 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 if (recentPane != null) {
                     String initSearchText = recentPane.getSelectedText();
                     if (initSearchText != null) {
-                        cboxTextToFind.setSelectedIndex(-1);
-                        textToFindEditor.setText(initSearchText);
+                        cboxTextToFind.setSearchPattern(SearchPattern.create(
+                                initSearchText, false, false, false));
                         searchCriteria.setTextPattern(initSearchText);
+                        return;
                     }
                 }
             }
         }
+        searchCriteria.setTextPattern(
+                cboxTextToFind.getSearchPattern().getSearchExpression());
     }
     
     /** This method is called from within the constructor to
@@ -165,9 +168,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private void initComponents(final boolean searchAndReplace) {
 
         lblTextToFind = new JLabel();
-        cboxTextToFind = new JComboBox();        
-        cboxTextToFind.setEditable(true);
-        lblTextToFind.setLabelFor(cboxTextToFind);
+        cboxTextToFind = ComponentUtils.adjustComboForSearchPattern(new JComboBox());
+        lblTextToFind.setLabelFor(cboxTextToFind.getComponent());
         btnTestTextToFind = new JButton();
 
         if (searchAndReplace) {
@@ -202,8 +204,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         /* find the editor components of combo-boxes: */
         Component cboxEditorComp;
-        cboxEditorComp = cboxTextToFind.getEditor().getEditorComponent();
-        textToFindEditor = (JTextComponent) cboxEditorComp;
         if (cboxReplacement != null) {
             cboxEditorComp = cboxReplacement.getEditor().getEditorComponent();
             replacementPatternEditor = (JTextComponent) cboxEditorComp;
@@ -217,7 +217,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     protected void initFormPanel(boolean searchAndReplace) {
 
         formPanel = new SearchFormPanel();
-        formPanel.addRow(lblTextToFind, cboxTextToFind);
+        formPanel.addRow(lblTextToFind, cboxTextToFind.getComponent());
         initContainingTextOptionsRow(searchAndReplace);
         if (searchAndReplace) {
             formPanel.addRow(lblReplacement, cboxReplacement);
@@ -294,15 +294,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private void initValuesFromCriteria(BasicSearchCriteria initialCriteria,
             boolean searchAndReplace) {
-        cboxTextToFind.setSelectedItem(initialCriteria.getTextPatternExpr());
+        cboxTextToFind.setSearchPattern(initialCriteria.getSearchPattern());
         if (cboxReplacement != null) {
             cboxReplacement.setSelectedItem(initialCriteria.getReplaceExpr());
         }
 
         selectChk(chkPreserveCase, initialCriteria.isPreserveCase());
-        chkWholeWords.setSelected(initialCriteria.isWholeWords());
-        chkCaseSensitive.setSelected(initialCriteria.isCaseSensitive());
-        chkRegexp.setSelected(initialCriteria.isRegexp());
         scopeSettingsPanel.setFileNameRegexp(initialCriteria.isFileNameRegexp());
         scopeSettingsPanel.setUseIgnoreList(initialCriteria.isUseIgnoreList());
         cboxFileNamePattern.setRegularExpression(initialCriteria.isFileNameRegexp());
@@ -328,21 +325,19 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         
 
         final TextFieldFocusListener focusListener = new TextFieldFocusListener();
-        textToFindEditor.addFocusListener(focusListener);
         if (replacementPatternEditor != null) {
             replacementPatternEditor.addFocusListener(focusListener);
         }
 
-        textToFindEditor.getDocument().addDocumentListener(
-                new TextToFindChangeListener());
         if (replacementPatternEditor != null) {
             replacementPatternEditor.getDocument().addDocumentListener(
                     new ReplacementPatternListener());
         }
         
         chkRegexp.addItemListener(this);
-        chkCaseSensitive.addItemListener(this);
-        chkWholeWords.addItemListener(this);
+        cboxTextToFind.bind(Option.REGULAR_EXPRESSION, chkRegexp);
+        cboxTextToFind.bind(Option.MATCH_CASE, chkCaseSensitive);
+        cboxTextToFind.bind(Option.WHOLE_WORDS, chkWholeWords);
 
         boolean regexp = chkRegexp.isSelected();
         boolean caseSensitive = chkCaseSensitive.isSelected();
@@ -376,6 +371,17 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                         cboxFileNamePattern.isRegularExpression());
             }
         });
+
+        cboxTextToFind.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                SearchPattern sp = cboxTextToFind.getSearchPattern();
+                searchCriteria.setTextPattern(sp.getSearchExpression());
+                searchCriteria.setRegexp(sp.isRegExp());
+                searchCriteria.setWholeWords(sp.isWholeWords());
+                searchCriteria.setCaseSensitive(sp.isMatchCase());
+            }
+        });
         initButtonInteraction();
     }
 
@@ -392,8 +398,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
     private void openTextPatternSandbox() {
 
-        String expr = cboxTextToFind.getSelectedItem() == null ? "" // NOI18N
-                : cboxTextToFind.getSelectedItem().toString();
+        SearchPattern sp = cboxTextToFind.getSearchPattern();
+        String expr = sp.getSearchExpression() == null ? "" // NOI18N
+                : sp.getSearchExpression();
         boolean matchCase = chkCaseSensitive.isSelected();
 
         PatternSandbox.openDialog(new PatternSandbox.TextPatternSandbox(
@@ -401,8 +408,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
             @Override
             protected void onApply(String newExpr, boolean newMatchCase) {
-                cboxTextToFind.setSelectedItem(newExpr);
-                chkCaseSensitive.setSelected(newMatchCase);
+                cboxTextToFind.setSearchPattern(SearchPattern.create(
+                        newExpr, false, newMatchCase, true));
             }
         }, btnTestTextToFind);
     }
@@ -412,15 +419,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * expressions. The combo-boxes' text-fields remain empty.
      */
     private void initHistory() {
-        final List<SearchPattern> patterns
-                = SearchHistory.getDefault().getSearchPatterns();
-        if (!patterns.isEmpty()) {
-            List<String> itemsList = new ArrayList<String>(patterns.size());
-            for (SearchPattern pattern : patterns) {
-                itemsList.add(pattern.getSearchExpression());
-            }
-            cboxTextToFind.setModel(new ListComboBoxModel(itemsList));
-        }
 
         FindDialogMemory memory = FindDialogMemory.getDefault();
         List<String> entries;
@@ -438,10 +436,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private void initValuesFromHistory(final boolean searchAndReplace) {
         final FindDialogMemory memory = FindDialogMemory.getDefault();
 
-        if (memory.isTextPatternSpecified()
-                && (cboxTextToFind.getItemCount() != 0)) {
-            cboxTextToFind.setSelectedIndex(0);
-        }
         if (memory.isFileNamePatternSpecified()
                 && cboxFileNamePattern.getComponent().getItemCount() != 0) {
             cboxFileNamePattern.getComponent().setSelectedIndex(0);
@@ -467,40 +461,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     
     @Override
     public boolean requestFocusInWindow() {
-        assert textToFindEditor != null;
-        
-	if (textToFindEditor.isFocusOwner()) {
-            return true;
-	}
-
-        int textLength = textToFindEditor.getText().length();
-        if (textLength > 0) {
-            textToFindEditor.setCaretPosition(0);
-            textToFindEditor.moveCaretPosition(textLength);
-        }
-
-        return textToFindEditor.requestFocusInWindow();
-    }
-
-    /**
-     * Sets proper color of text pattern.
-     */
-    private void updateTextPatternColor() {
-        boolean wasInvalid = invalidTextPattern;
-        invalidTextPattern = searchCriteria.isTextPatternInvalid();
-        if (invalidTextPattern != wasInvalid) {
-            Color dfltColor = getDefaultTextColor(); // need to be here to init
-            textToFindEditor.setForeground(
-                    invalidTextPattern ? getErrorTextColor()
-                    : dfltColor);
-        }
-    }
-
-    private Color getDefaultTextColor() {
-        if (defaultTextColor == null) {
-            defaultTextColor = textToFindEditor.getForeground();
-        }
-        return defaultTextColor;
+	return cboxTextToFind.getComponent().requestFocusInWindow();
     }
 
     /**
@@ -512,7 +473,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (invalidReplacePattern != wasInvalid) {
             if (defaultTextColor == null) {
                 assert !wasInvalid;
-                defaultTextColor = textToFindEditor.getForeground();
+                defaultTextColor = cboxReplacement.getForeground();
             }
             replacementPatternEditor.setForeground(
                     invalidReplacePattern ? getErrorTextColor()
@@ -573,16 +534,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         final ItemSelectable toggle = e.getItemSelectable();
         final boolean selected = (e.getStateChange() == ItemEvent.SELECTED);
         if (toggle == chkRegexp) {
-            searchCriteria.setRegexp(selected);
-            updateTextPatternColor();
             if (cboxReplacement != null){
                 updateReplacePatternColor();
             }
             setTextToFindToolTip();
-        } else if (toggle == chkCaseSensitive) {
-            searchCriteria.setCaseSensitive(selected);
-        } else if (toggle == chkWholeWords) {
-            searchCriteria.setWholeWords(selected);
         } else if (toggle == chkPreserveCase) {
             searchCriteria.setPreserveCase(selected);
         } else {
@@ -598,7 +553,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             t = UiUtils.getText(
                     "BasicSearchForm.cboxTextToFind.tooltip");          //NOI18N
         }
-        cboxTextToFind.setToolTipText(t);
+        cboxTextToFind.getComponent().setToolTipText(t);
     }
 
     /**
@@ -653,10 +608,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * * search string is empty, meaning that the dialog is empty.
      */
     private SearchPattern getCurrentSearchPattern() {
-        return SearchPattern.create(textToFindEditor.getText(),
-                                    chkWholeWords.isSelected(),
-                                    chkCaseSensitive.isSelected(),
-                                    chkRegexp.isSelected());
+        return cboxTextToFind.getSearchPattern();
     }
 
     /**
@@ -714,14 +666,13 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private static final Logger watcherLogger = Logger.getLogger(
             "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
 
-    private JComboBox cboxTextToFind;
+    private SearchPatternController cboxTextToFind;
     private JComboBox cboxReplacement;
     private FileNameController cboxFileNamePattern;
     private JCheckBox chkWholeWords;
     private JCheckBox chkCaseSensitive;
     private JCheckBox chkRegexp;
     private JCheckBox chkPreserveCase;
-    private JTextComponent textToFindEditor;
     private JTextComponent replacementPatternEditor;
     protected SearchFormPanel formPanel;
     private JButton btnTestTextToFind;
@@ -847,21 +798,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             TextPatternCheckBoxGroup tpcbg = new TextPatternCheckBoxGroup(
                     matchCase, wholeWords, regexp, preserveCase);
             tpcbg.initListeners();
-        }
-    }
-
-    private class TextToFindChangeListener extends PatternChangeListener {
-
-        public TextToFindChangeListener() {
-        }
-
-        @Override
-        public void handleComboBoxChange(String text) {
-            searchCriteria.setTextPattern(text);
-            updateTextPatternColor();
-            if (cboxReplacement != null) {
-                updateReplacePatternColor();
-            }
         }
     }
 

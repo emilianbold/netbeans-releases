@@ -46,6 +46,7 @@ package org.netbeans.modules.javafx2.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,6 +87,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
 
     private volatile RequestProcessor.Task task;
     private DetectPlatformTask detectPlatformTask;
+    boolean detectPlatformTaskPerformed = false;
     
     private final WizardType type;
     private PanelConfigureProject panel;
@@ -606,8 +608,9 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     @Override
     boolean valid(WizardDescriptor settings) {
         if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
-            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, detectPlatformTaskPerformed ?
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform") : // NOI18N
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.creatingDefaultFXPlatform") ); // NOI18N
             return false;
         }
         
@@ -620,7 +623,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                 } else {
                     File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
                     File libLoc = PropertyUtils.resolveFile(projectLoc, location);
-                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                    if (!CollocationQuery.areCollocated(projectLoc.toURI(), libLoc.toURI())) {
                         settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                                 NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); // NOI18N
                     }
@@ -756,7 +759,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
                     // select javafx platform
                     selectJavaFXEnabledPlatform();
-//                    panel.fireChangeEvent();
+                    detectPlatformTaskPerformed = true;
+                    panel.fireChangeEvent();
                 }
             }
         });

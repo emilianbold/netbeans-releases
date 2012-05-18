@@ -215,24 +215,13 @@ public class JiraRepository {
 
     public NbJiraIssue[] getIssues(String[] keys) {
         final List<NbJiraIssue> ret = new LinkedList<NbJiraIssue>();
-        TaskDataCollector collector = new TaskDataCollector() {
-            @Override
-            public void accept(TaskData taskData) {
-                String id = NbJiraIssue.getID(taskData);
-                try {
-                    NbJiraIssue issue = (NbJiraIssue) getIssueCache().setIssueData(id, taskData);
-                    if(issue != null) {
-                        ret.add(issue);
-                    }
-                } catch (IOException ex) {
-                    Jira.LOG.log(Level.SEVERE, null, ex);
-                }
+        // can't use GetMultiTaskDataCommand as it isn't implemented in the JIRA connector
+        // see also issue ##212090 
+        for (String key : keys) {
+            NbJiraIssue issue = getIssue(key);
+            if(issue != null) {
+                ret.add(issue);
             }
-        };
-        GetMultiTaskDataCommand queryCmd = new GetMultiTaskDataCommand(this, new HashSet<String>(Arrays.asList(keys)), collector);
-        getExecutor().execute(queryCmd, true);
-        if(queryCmd.hasFailed()) {
-            return new NbJiraIssue[0];
         }
         return ret.toArray(new NbJiraIssue[ret.size()]);
     }

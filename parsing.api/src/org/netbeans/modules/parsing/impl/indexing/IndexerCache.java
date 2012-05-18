@@ -66,6 +66,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -120,21 +122,23 @@ public abstract class IndexerCache <T> {
     }
 
     public Collection<? extends IndexerInfo<T>> getIndexers(Set<IndexerInfo<T>> changedIndexers) {
-        final Object [] data = getData(changedIndexers);
+        final Object [] data = getData(changedIndexers, false);
         @SuppressWarnings("unchecked")
         List<IndexerInfo<T>> infos = (List<IndexerInfo<T>>) data[2];
         return infos;
     }
 
     public Map<String, Set<IndexerInfo<T>>> getIndexersMap(Set<IndexerInfo<T>> changedIndexers) {
-        final Object [] data = getData(changedIndexers);
+        final Object [] data = getData(changedIndexers, false);
         @SuppressWarnings("unchecked")
         Map<String, Set<IndexerInfo<T>>> infosMap = (Map<String, Set<IndexerInfo<T>>>) data[1];
         return infosMap;
     }
 
-    public Collection<? extends IndexerInfo<T>> getIndexersFor(String mimeType) {
-        final Object [] data = getData(null);
+    public Collection<? extends IndexerInfo<T>> getIndexersFor(
+            @NonNull final String mimeType,
+            final boolean transientState) {
+        final Object [] data = getData(null, transientState);
         @SuppressWarnings("unchecked")
         Map<String, Set<IndexerInfo<T>>> infosMap = (Map<String, Set<IndexerInfo<T>>>) data[1];
         Set<IndexerInfo<T>> infos = infosMap.get(mimeType);
@@ -142,7 +146,7 @@ public abstract class IndexerCache <T> {
     }
 
     public Collection<? extends IndexerInfo<T>> getIndexersByName(String indexerName) {
-        final Object [] data = getData(null);
+        final Object [] data = getData(null, false);
         @SuppressWarnings("unchecked")
         Map<String, Set<IndexerInfo<T>>> infosMap = (Map<String, Set<IndexerInfo<T>>>) data[0];
         Set<IndexerInfo<T>> info = infosMap.get(indexerName);
@@ -340,14 +344,20 @@ public abstract class IndexerCache <T> {
         }
     }
 
-    private Object[] getData(Set<IndexerInfo<T>> changedIndexers) {
+    @NonNull
+    private Object[] getData(
+            @NullAllowed Set<IndexerInfo<T>> changedIndexers,
+            final boolean transientUpdate) {
         boolean fire = false;
 
         synchronized (this) {
             if (infosByName == null) {
-                Map<String, IndexerInfo<T>> lastKnownInfos = readLastKnownIndexers();
+                Map<String, IndexerInfo<T>> lastKnownInfos =
+                        transientUpdate ?
+                            Collections.<String,IndexerInfo<T>>emptyMap():
+                            readLastKnownIndexers();
                 Set<String> mimeTypesToCheck = null;
-                if (firstGetData) {
+                if (firstGetData && !transientUpdate) {
                     firstGetData = false;
                     if (changedIndexers != null) {
                         mimeTypesToCheck = new HashSet<String>();
@@ -404,6 +414,13 @@ public abstract class IndexerCache <T> {
                 // the comparator instance must not be cached, because it uses data
                 // from the default lookup
                 Collections.sort(_orderedInfos, new C());
+                if (transientUpdate) {
+                    return new Object [] {
+                        _infosByName,
+                        _infosByMimeType,
+                        _orderedInfos
+                    };
+                }
                 infosByName = Collections.unmodifiableMap(_infosByName);
                 infosByMimeType = Collections.unmodifiableMap(_infosByMimeType);
                 orderedInfos = Collections.unmodifiableList(_orderedInfos);
@@ -435,7 +452,7 @@ public abstract class IndexerCache <T> {
                     RP.post(new Runnable() {
                         public @Override void run() {
                             resetCache();
-                            getData(null);
+                            getData(null,false);
                         }
                     }, 321);
                 }

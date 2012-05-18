@@ -71,8 +71,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
+import java.util.zip.ZipException;
 import javax.servlet.ServletContext;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -785,7 +785,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                         // the web-inf folder is mapped somewhere else
                         path = "/WEB-INF/" + ContextUtil.findRelativePath(webInf, fo); //NOI18N
                     }
-                    returnMap.put(path, new String[] {path, null});
+                    returnMap.put(path, new String[] {path, wmRoot.getPath() + path});
                 }
             }
         }
@@ -1056,6 +1056,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     private static class InitTldLocationCacheThread extends Thread {
 
         private final TldScanner cache;
+        private static final TldScannerLoggerFilter LOGGER_FILTER = new TldScannerLoggerFilter();
 
         InitTldLocationCacheThread(TldScanner lc) {
             super("Init TldLocationCache"); // NOI18N
@@ -1070,25 +1071,48 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
 //                mappings.setAccessible(true);
 //                mappings.set(cache, null);
 //                cache.getLocation(""); // NOI18N
+
+                // see #205387 - adjust TldScanner logger
+                updateTldScannerLogger();
                 Method mappingsMethod = TldScanner.class.getDeclaredMethod("scanTlds"); //NOI18N
                 mappingsMethod.setAccessible(true);
                 mappingsMethod.invoke(cache);
             } catch (IllegalArgumentException ex) {
-                LOG.log(Level.INFO, null, ex);
+                LOG.log(Level.WARNING, null, ex);
             } catch (InvocationTargetException ex) {
                 LOG.log(Level.INFO, null, ex);
             } catch (NoSuchMethodException ex) {
-                LOG.log(Level.INFO, null, ex);
+                LOG.log(Level.WARNING, null, ex);
             } catch (SecurityException ex) {
-                LOG.log(Level.INFO, null, ex);
-//            } catch (JasperException e) {
-//                LOG.log(Level.INFO, null, e);
-//            } catch (NoSuchFieldException e) {
-//                LOG.log(Level.INFO, null, e);
+                LOG.log(Level.WARNING, null, ex);
             } catch (IllegalAccessException e) {
-                LOG.log(Level.INFO, null, e);
+                LOG.log(Level.WARNING, null, e);
             }
         }
+
+        private void updateTldScannerLogger() {
+            Logger tldScannerLogger = Logger.getLogger(TldScanner.class.getName());
+            if (tldScannerLogger.getFilter() != LOGGER_FILTER) {
+                tldScannerLogger.setFilter(LOGGER_FILTER);
+            }
+        }
+    }
+
+    public static class TldScannerLoggerFilter implements Filter {
+
+        @Override
+        public boolean isLoggable(LogRecord record) {
+            Throwable thrown = record.getThrown();
+            if (thrown == null) {
+                return true;
+            }
+            if (thrown instanceof ZipException) {
+                LOG.log(Level.INFO, "TldScanner's ZipException", thrown); //NOI18N
+                return false;
+            }
+            return true;
+        }
+
     }
 
     final class FileSystemListener extends FileChangeAdapter {

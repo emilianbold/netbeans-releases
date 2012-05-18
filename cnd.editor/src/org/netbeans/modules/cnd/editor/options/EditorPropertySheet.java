@@ -369,6 +369,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.setDisplayName(getString("LBL_Other")); // NOI18N
             set.setShortDescription(getString("HINT_Other")); // NOI18N
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.addLeadingStarInComment));
+//            set.put(new BooleanNodeProp(language, preferences, EditorOptions.useBlockComment));
+//            set.put(new BooleanNodeProp(language, preferences, EditorOptions.useInlineKeyword));
             sheet.put(set);
         }
 
@@ -710,6 +712,28 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         @Override
         public int compareTo(EntryWrapper o) {
             return this.displayName.compareTo(o.displayName);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EntryWrapper other = (EntryWrapper) obj;
+            if ((this.displayName == null) ? (other.displayName != null) : !this.displayName.equals(other.displayName)) {
+                return false;
+            }
+            return true;
         }
     }
 

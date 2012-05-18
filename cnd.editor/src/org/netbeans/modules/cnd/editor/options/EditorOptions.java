@@ -314,6 +314,12 @@ public class EditorOptions {
     /** Whether the '*' should be added at the new line * in comment */
     public static final String addLeadingStarInComment = "addLeadingStarInComment"; // NOI18N
     public static final Boolean addLeadingStarInCommentDefault = true;
+    /** Whether the block comment should be used by Comment action */
+    public static final String useBlockComment = "useBlockComment"; // NOI18N
+    public static final Boolean useBlockCommentDefault = false;
+    /* Whether the 'inline' keyword should be used when generate getters/setters */
+    public static final String useInlineKeyword = "useInlineKeyword"; // NOI18N
+    public static final Boolean useInlineKeywordDefault = false;
     
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
@@ -433,6 +439,8 @@ public class EditorOptions {
         //defaults.put(blankLinesAfterMethods,blankLinesAfterMethodsDefault);      
         //Other
         defaults.put(addLeadingStarInComment,addLeadingStarInCommentDefault);
+        defaults.put(useBlockComment,useBlockCommentDefault);
+        defaults.put(useInlineKeyword,useInlineKeywordDefault);
 
         namedDefaults = new HashMap<String,Map<String,Object>>();
 //Apache style

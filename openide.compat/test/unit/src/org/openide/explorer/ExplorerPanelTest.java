@@ -162,7 +162,8 @@ public class ExplorerPanelTest extends NbTestCase {
         assertTrue("Copy action has to be disabled", !copy.isEnabled());
         assertTrue("Cut action has to be disabled", !cut.isEnabled());
     }
-    
+
+    @RandomlyFails // NB-Core-Build #8351 (from ExplorerActionsCompatTest): Now it gets enabled
     public void testDeleteAction () throws Exception {
         TestNode enabledNode = new TestNode(true, true, true);
         TestNode enabledNode2 = new TestNode(true, true, true);
