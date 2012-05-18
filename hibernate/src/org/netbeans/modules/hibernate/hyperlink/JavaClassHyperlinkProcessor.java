@@ -55,6 +55,13 @@ public class JavaClassHyperlinkProcessor extends HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        HibernateEditorUtil.findAndOpenJavaClass(env.getValueString(), env.getDocument());
+        String className = env.getValueString();
+        String pack = env.getDocumentContext().getDocRoot().getAttribute("package");//NOI18N
+        if(pack!=null &&  pack.length()>0){
+            if(!className.contains(".")){
+                className = pack + "." +className;
+            }
+        }
+        HibernateEditorUtil.findAndOpenJavaClass(className, env.getDocument());
     }
 }
