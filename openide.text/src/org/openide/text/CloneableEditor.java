@@ -51,6 +51,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -565,7 +567,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                             isComponentOpened = false;
                             SwingUtilities.invokeLater(new Runnable () {
                                 public void run () {
-                                    CloneableEditor.this.close();
+                                    TopComponent toClose = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, CloneableEditor.this );
+                                    if( null == toClose )
+                                        toClose = CloneableEditor.this;
+                                    toClose.close();
                                 }
                             });
                             return Integer.MAX_VALUE;
