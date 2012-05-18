@@ -90,17 +90,10 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             listener
         );
 
-        //PATCH 57824: getOpenedPanes () calls from non AWT threads can
-        // lead to deadlock.
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                setEnabled (
-                    ActionsManager.ACTION_RUN_TO_CURSOR,
-                    shouldBeEnabled ()
-                );
-            }
-        });
-        //PATCH 57824
+        setEnabled (
+            ActionsManager.ACTION_RUN_TO_CURSOR,
+            shouldBeEnabled ()
+        );
     }
     
     public Set getActions () {
