@@ -247,6 +247,65 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         super.deleteWord(wrapAsPhp(original), wrapAsPhp(expected));
     }
 
+// XXX: currently failing, but should be fixed (probably ruby specific - needs to be investigated)
+//    public void testContComment5() throws Exception {
+//        // No auto-// on new lines
+//        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
+//            insertBreak("      // ^", "      // \n      // ^");
+//        } else {
+//            insertBreak("      // ^", "      // \n      ^");
+//        }
+//    }
+//
+//
+//    public void testContComment10() throws Exception {
+//        insertBreak("//foo\n^// foobar", "//foo\n// ^\n// foobar");
+//    }
+//
+//    public void testContComment12() throws Exception {
+//        insertBreak("  code\n^// foobar", "  code\n\n  ^// foobar");
+//    }
+//
+//    public void testContComment14() throws Exception {
+//        insertBreak("def foo\n  code\n^// foobar\nend\n", "def foo\n  code\n\n  ^// foobar\nend\n");
+//    }
+//
+//    public void testContComment17() throws Exception {
+//        insertBreak("def foo\n  // cmnt1\n^  // cmnt2\nend\n", "def foo\n  // cmnt1\n  // ^\n  // cmnt2\nend\n");
+//    }
+//
+//    public void testDeleteContComment() throws Exception {
+//        deleteChar("// ^", "^");
+//        deleteChar("\n// ^", "\n^");
+//    }
+//
+//    public void testDeleteContComment2() throws Exception {
+//        deleteChar("// ^  ", "^  ");
+//        deleteChar("\n// ^  ", "\n^  ");
+//    }
+//
+//    public void testNoDeleteContComment() throws Exception {
+//        deleteChar("//  ^", "// ^");
+//        deleteChar("//^", "^");
+//        deleteChar("puts '// ^'", "puts '//^'");
+//    }
+//
+//    public void testReplaceSelectionNotInTemplateMode2() throws Exception {
+//        insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
+//    }
+//
+//    public void testInsertIf2() throws Exception {
+//        insertBreak("    if true\n    else", 20, "    if true\n    else\n      end", 27);
+//    }
+//
+//    public void testHeredoc1() throws Exception {
+//        insertBreak("x=<<FOO^\n", "x=<<FOO\n^\nFOO\n");
+//    }
+//
+//    public void testHeredoc2() throws Exception {
+//        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
+//    }
+
     public void testInsertX() throws Exception {
         insertChar("c^ass", 'l', "cl^ass");
     }
@@ -306,15 +365,13 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak("function a() {\n    array(\n        'a',^\n    )\n}", "function a() {\n    array(\n        'a',\n        ^\n    )\n}");
     }
 
-    // XXX out of scope for NB 6.5
-//    public void testInsertBreakInArray5() throws Exception {
-//        insertBreak("array(array(array(^)))", "array(array(array(\n^)))");
-//    }
+    public void testInsertBreakInArray5() throws Exception {
+        insertBreak("array(array(array(^)))", "array(array(array(\n    ^\n)))");
+    }
 
-    // this would be ideal
-//    public void testInsertBreakInArray6() throws Exception {
-//        insertBreak("array(array(array(^\n)))", "array(array(array(\n    ^\n)))");
-//    }
+    public void testInsertBreakInArray6() throws Exception {
+        insertBreak("array(array(array(^\n)))", "array(array(array(\n    ^\n)))");
+    }
 
     public void testInsertBreakInSwitch1() throws Exception {
         insertBreak("switch ($a) {\n    case 'a':^\n}", "switch ($a) {\n    case 'a':\n        ^\n}");
@@ -457,45 +514,37 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
                "*/", null);
     }
 
-// XXX: currently failing, but should be fixed
-//
-//    public void testInsertEnd1() throws Exception {
-//        insertBreak("x^", "x\n^");
-//    }
-//
-//    public void testInsertEnd2() throws Exception {
-//        insertBreak("class Foo {^", "class Foo {\n  ^\n}");
-//    }
-//
-//    public void testInsertEnd3() throws Exception {
-//        insertBreak("class Foo {^\n}", "class Foo {\n  ^\n}");
-//    }
-//
-//    public void testInsertEnd4() throws Exception {
-//        insertBreak("for(;;) {^", "for(;;) {\n  ^\n}");
-//    }
-//
-//    public void testInsertEnd5() throws Exception {
-//        insertBreak("if ($something) {^", "if ($something) {\n  ^\n}");
-//    }
-//
-//    public void testInsertEnd6() throws Exception {
-//        insertBreak("if ($something) {\n  \n} else {^", "if ($something) {\n  \n} else {\n  ^\n}");
-//    }
-//
-//
-//    public void testInsertIf1() throws Exception {
-//        insertBreak("if ($something)^", "if ($something)\n  ^");
-//    }
-//
-//    public void testInsertIf2() throws Exception {
-//        insertBreak("if ($something)\n  echo 'Hi!';\nelse^", "if ($something)\n  echo 'Hi!';\nelse\n  ^");
-//    }
+    public void testInsertEnd1() throws Exception {
+        insertBreak("x^", "x\n^");
+    }
 
-    // This doesn't work
-//    public void testInsertIf2() throws Exception {
-//        insertBreak("    if true\n    else", 20, "    if true\n    else\n      end", 27);
-//    }
+    public void testInsertEnd2() throws Exception {
+        insertBreak("class Foo {^", "class Foo {\n    ^\n}");
+    }
+
+    public void testInsertEnd3() throws Exception {
+        insertBreak("class Foo {^\n}", "class Foo {\n    ^\n}");
+    }
+
+    public void testInsertEnd4() throws Exception {
+        insertBreak("for(;;) {^", "for(;;) {\n    ^\n}");
+    }
+
+    public void testInsertEnd5() throws Exception {
+        insertBreak("if ($something) {^", "if ($something) {\n    ^\n}");
+    }
+
+    public void testInsertEnd6() throws Exception {
+        insertBreak("if ($something) {\n  \n} else {^", "if ($something) {\n  \n} else {\n    ^\n}");
+    }
+
+    public void testInsertIf1() throws Exception {
+        insertBreak("if ($something)^", "if ($something)\n    ^");
+    }
+
+    public void testInsertIf2() throws Exception {
+        insertBreak("if ($something)\n  echo 'Hi!';\nelse^", "if ($something)\n  echo 'Hi!';\nelse\n    ^");
+    }
 
     public void testBrackets1() throws Exception {
         insertChar("x = ^", '[', "x = [^]");
@@ -555,15 +604,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertChar("x = (()^)", ')', "x = (())^");
     }
 
-// XXX: currently failing, but should be fixed
-//    public void testHeredoc1() throws Exception {
-//        insertBreak("x=<<FOO^\n", "x=<<FOO\n^\nFOO\n");
-//    }
-//
-//    public void testHeredoc2() throws Exception {
-//        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
-//    }
-
     public void testBackspace1() throws Exception {
         deleteChar("x^", "^");
     }
@@ -609,92 +649,44 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         }
     }
 
-// XXX: currently failing, but should be fixed
-//    public void testContComment4() throws Exception {
-//        insertBreak("// foo\n^", "// foo\n\n^");
-//    }
-//
-//    public void testContComment5() throws Exception {
-//        // No auto-// on new lines
-//        if (PHPBracketCompleter.CONTINUE_COMMENTS) {
-//            insertBreak("      // ^", "      // \n      // ^");
-//        } else {
-//            insertBreak("      // ^", "      // \n      ^");
-//        }
-//    }
-//
-//    public void testContComment6() throws Exception {
-//        insertBreak("   // foo^bar", "   // foo\n   // ^bar");
-//    }
-//
-//    public void testContComment7() throws Exception {
-//        insertBreak("   // foo^\n   // bar", "   // foo\n   // ^\n   // bar");
-//    }
-//
-//    public void testContComment8() throws Exception {
-//        insertBreak("   // foo^bar", "   // foo\n   // ^bar");
-//    }
-//
-//
-//    public void testContComment9() throws Exception {
-//        insertBreak("^// foobar", "\n^// foobar");
-//    }
-//
-//    public void testContComment10() throws Exception {
-//        insertBreak("//foo\n^// foobar", "//foo\n// ^\n// foobar");
-//    }
-//
-//    public void testContComment11() throws Exception {
-//        insertBreak("code //foo\n^// foobar", "code //foo\n\n^// foobar");
-//    }
-//
-//    public void testContComment12() throws Exception {
-//        insertBreak("  code\n^// foobar", "  code\n\n  ^// foobar");
-//    }
-//
-//    public void testContComment14() throws Exception {
-//        insertBreak("def foo\n  code\n^// foobar\nend\n", "def foo\n  code\n\n  ^// foobar\nend\n");
-//    }
-//
-//    public void testContComment15() throws Exception {
-//        insertBreak("\n\n^// foobar", "\n\n\n^// foobar");
-//    }
-//
-//    public void testContComment16() throws Exception {
-//        insertBreak("\n  \n^// foobar", "\n  \n\n^// foobar");
-//    }
-//
-//    public void testContComment17() throws Exception {
-//        insertBreak("def foo\n  // cmnt1\n^  // cmnt2\nend\n", "def foo\n  // cmnt1\n  // ^\n  // cmnt2\nend\n");
-//    }
-//
-//    public void testNoContComment() throws Exception {
-//        // No auto-// on new lines
-//        insertBreak("foo // ^", "foo // \n^");
-//    }
-//
-//    public void testDeleteContComment() throws Exception {
-//        deleteChar("// ^", "^");
-//        deleteChar("\n// ^", "\n^");
-//    }
-//
-//    public void testDeleteContComment2() throws Exception {
-//        deleteChar("// ^  ", "^  ");
-//        deleteChar("\n// ^  ", "\n^  ");
-//    }
-//
-//    public void testNoDeleteContComment() throws Exception {
-//        deleteChar("//  ^", "// ^");
-//        deleteChar("//^", "^");
-//        deleteChar("puts '// ^'", "puts '//^'");
-//    }
+    public void testContComment4() throws Exception {
+        insertBreak("// foo\n^", "// foo\n\n^");
+    }
 
-//    public void testFreakOutEditor1() throws Exception {
-//        String before = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp/^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
-//        String  after = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
-//        deleteChar(before, after);
-//    }
-//
+    public void testContComment6() throws Exception {
+        insertBreak("   // foo^bar", "   // foo\n   // ^bar");
+    }
+
+    public void testContComment7() throws Exception {
+        insertBreak("   // foo^\n   // bar", "   // foo\n   // ^\n   // bar");
+    }
+
+    public void testContComment9() throws Exception {
+        insertBreak("^// foobar", "\n^// foobar");
+    }
+
+    public void testContComment11() throws Exception {
+        insertBreak("code //foo\n^// foobar", "code //foo\n\n^// foobar");
+    }
+
+    public void testContComment15() throws Exception {
+        insertBreak("\n\n^// foobar", "\n\n\n^// foobar");
+    }
+
+    public void testContComment16() throws Exception {
+        insertBreak("\n  \n^// foobar", "\n  \n\n^// foobar");
+    }
+
+    public void testNoContComment() throws Exception {
+        // No auto-// on new lines
+        insertBreak("foo // ^", "foo // \n^");
+    }
+
+    public void testFreakOutEditor1() throws Exception {
+        String before = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp/^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
+        String  after = "x = method_call(50, <<TOKEN1, \"arg3\", <<TOKEN2, /startofregexp^\nThis is part of the string\nTOKEN1\nrestofregexp/)";
+        deleteChar(before, after);
+    }
 
     public void testReplaceSelection1() throws Exception {
         insertChar("x = foo^", 'y', "x = y^", "foo");
@@ -703,18 +695,18 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testReplaceSelection4() throws Exception {
         insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
     }
-// XXX: currently failing, but should be fixed
-//    public void testReplaceSelection2() throws Exception {
-//        insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
-//    }
-//
-//    public void testReplaceSelection5() throws Exception {
-//        insertChar("'(^position:absolute;'", '{', "'{^position:absolute;'", "(");
-//    }
-//
-//    public void testReplaceSelection6() throws Exception {
-//        insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
-//    }
+
+    public void testReplaceSelection2() throws Exception {
+        insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
+    }
+
+    public void testReplaceSelection5() throws Exception {
+        insertChar("'(^position:absolute;'", '{', "'{^position:absolute;'", "(");
+    }
+
+    public void testReplaceSelection6() throws Exception {
+        insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
+    }
 
     public void testReplaceSelectionChangeType1() throws Exception {
         insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
@@ -727,11 +719,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
-
-    // Functionality works but test is broken
-    //public void testReplaceSelectionNotInTemplateMode2() throws Exception {
-    //    insertChar("x = \"foo^bar\"", '#', "x = \"#{^}bar\"", "foo", true);
-    //}
 
     public void testReplaceCommentSelectionBold() throws Exception {
         insertChar("# foo^", '*', "# *foo*^", "foo");
@@ -758,60 +745,59 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testDeleteWord() throws Exception {
         deleteWord("$foo_bar_baz^", "$foo_bar_^");
     }
-// XXX: failing, but should be fixed; some usecase could be ruby specific
-//    public void testDeleteWord111303() throws Exception {
-//        deleteWord("foo::bar^", "foo::^");
-//        deleteWord("Foo::Bar^", "Foo::^");
-//        deleteWord("Foo::Bar_Baz^", "Foo::Bar_^");
-//    }
-//    public void testDeleteWordx111305() throws Exception {
-//        deleteWord("foo_bar^", "foo_^");
-//        deleteWord("x.foo_bar^.y", "x.foo_^.y");
-//    }
-//
-//    public void testDeleteWord2() throws Exception {
-//        deleteWord("foo_bar_baz ^", "foo_bar_baz^");
-//        deleteWord("foo_bar_^", "foo_^");
-//    }
-//
-//    public void testDeleteWord3() throws Exception {
-//        deleteWord("FooBarBaz^", "FooBar^");
-//    }
-//
-//    public void testDeleteWord4_110998() throws Exception {
-//        deleteWord("Blah::Set^Foo", "Blah::^Foo");
-//    }
-//
-//    public void testdeleteWord5() throws Exception {
-//        deleteWord("foo_bar_^", "foo_^");
-//    }
-//
-//    public void testdeleteWords() throws Exception {
-//        deleteWord("foo bar^", "foo ^");
-//    }
-//
-//
-//    public void testDeleteWord4_110998c() throws Exception {
-//        String before = "  snark^\n";
-//        String after = "  ^\n";
-//        deleteWord(before, after);
-//    }
-//
-//    public void testDeleteWord4_110998b() throws Exception {
-//        String before = "" +
-//"  snark(%w(a b c))\n" +
-//"  snark(%W(a b c))\n" +
-//"  snark^\n" +
-//"  snark(%Q(a b c))\n" +
-//"  snark(%w(a b c))\n";
-//        String after = "" +
-//"  snark(%w(a b c))\n" +
-//"  snark(%W(a b c))\n" +
-//"  ^\n" +
-//"  snark(%Q(a b c))\n" +
-//"  snark(%w(a b c))\n";
-//        deleteWord(before, after);
-//    }
+    public void testDeleteWord111303() throws Exception {
+        deleteWord("foo::bar^", "foo::^");
+        deleteWord("Foo::Bar^", "Foo::^");
+        deleteWord("Foo::Bar_Baz^", "Foo::Bar_^");
+    }
+    public void testDeleteWordx111305() throws Exception {
+        deleteWord("foo_bar^", "foo_^");
+        deleteWord("x.foo_bar^.y", "x.foo_^.y");
+    }
+
+    public void testDeleteWord2() throws Exception {
+        deleteWord("foo_bar_baz ^", "foo_bar_baz^");
+        deleteWord("foo_bar_^", "foo_^");
+    }
+
+    public void testDeleteWord3() throws Exception {
+        deleteWord("FooBarBaz^", "FooBar^");
+    }
+
+    public void testDeleteWord4_110998() throws Exception {
+        deleteWord("Blah::Set^Foo", "Blah::^Foo");
+    }
+
+    public void testdeleteWord5() throws Exception {
+        deleteWord("foo_bar_^", "foo_^");
+    }
+
+    public void testdeleteWords() throws Exception {
+        deleteWord("foo bar^", "foo ^");
+    }
+
+
+    public void testDeleteWord4_110998c() throws Exception {
+        String before = "  snark^\n";
+        String after = "  ^\n";
+        deleteWord(before, after);
+    }
+
+    public void testDeleteWord4_110998b() throws Exception {
+        String before = "" +
+"  snark(%w(a b c))\n" +
+"  snark(%W(a b c))\n" +
+"  snark^\n" +
+"  snark(%Q(a b c))\n" +
+"  snark(%w(a b c))\n";
+        String after = "" +
+"  snark(%w(a b c))\n" +
+"  snark(%W(a b c))\n" +
+"  ^\n" +
+"  snark(%Q(a b c))\n" +
+"  snark(%w(a b c))\n";
+        deleteWord(before, after);
+    }
 
     public void testBackwardsDeletion() throws Exception {
         String s = "Foo::Bar = whatever('hello')  \n  nextline";
