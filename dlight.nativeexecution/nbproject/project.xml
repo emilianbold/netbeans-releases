@@ -245,6 +245,7 @@
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.remote.projectui</friend>
                 <friend>org.netbeans.modules.cnd.search</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
