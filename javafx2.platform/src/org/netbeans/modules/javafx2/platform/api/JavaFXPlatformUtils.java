@@ -253,12 +253,12 @@ public final class JavaFXPlatformUtils {
             }
             // SDK and RT location is enought for JFX platform definition
             if (sdkPath != null && runtimePath != null) {
-            if (javadocPath == null) {
-                javadocPath = predictJavadocLocation(path);
-            }
-            if (srcPath == null) {
-                srcPath = predictSourcesLocation(path);
-            }
+                if (javadocPath == null) {
+                    javadocPath = predictJavadocLocation(path);
+                }
+                if (srcPath == null) {
+                    srcPath = predictSourcesLocation(path);
+                }
                 break;
             }
         }
@@ -336,7 +336,7 @@ public final class JavaFXPlatformUtils {
                 }
             }
         }
-        return JAVADOC_ONLINE_URL;
+        return null;
     }
 
     /**
@@ -365,7 +365,7 @@ public final class JavaFXPlatformUtils {
             }
         }
         }
-        return null;
+        return JAVADOC_ONLINE_URL;
     }
 
     /**
