@@ -48,11 +48,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.CharBuffer;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
@@ -90,7 +91,7 @@ public class FortranLexerPerformanceTestCase extends NbTestCase {
     protected InputAttributes getLexerAttributes() {
         InputAttributes lexerAttrs = new InputAttributes();
         lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, 132, true);
-        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, true, true);
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, FortranFormat.FIXED, true);
         return lexerAttrs;
     }
 

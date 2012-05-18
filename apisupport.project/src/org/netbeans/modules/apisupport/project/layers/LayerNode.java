@@ -47,15 +47,16 @@ package org.netbeans.modules.apisupport.project.layers;
 import java.awt.Image;
 import java.io.CharConversionException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
+import org.netbeans.modules.apisupport.project.api.Util;
+import static org.netbeans.modules.apisupport.project.layers.Bundle.*;
 import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -69,11 +70,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 import org.openide.xml.XMLUtil;
 
@@ -83,8 +83,6 @@ import org.openide.xml.XMLUtil;
  */
 public final class LayerNode extends FilterNode implements Node.Cookie {
     
-    private static final RequestProcessor RP = new RequestProcessor(LayerNode.class);
-
     private final boolean specialDisplayName;
 
     public LayerNode(LayerHandle handle) {
@@ -92,7 +90,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
     }
     
     LayerNode(Node delegate, LayerHandle handle, boolean specialDisplayName) {
-        super(delegate, new LayerChildren(handle));
+        super(delegate, Children.create(new LayerChildren(handle), true));
         this.specialDisplayName = specialDisplayName;
     }
     
@@ -106,117 +104,57 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         }
     }
     
-    private static final class LayerChildren extends Children.Keys<LayerChildren.KeyType> {
+    private static final class LayerChildren extends ChildFactory<DataObject> {
 
-        enum KeyType {WAIT, RAW, CONTEXTUALIZED}
-        
         private final LayerHandle handle;
-        private Project p;
-        private FileSystem layerfs;
-        private FileSystem sfs;
         
-        public LayerChildren(LayerHandle handle) {
+        LayerChildren(LayerHandle handle) {
             this.handle = handle;
         }
-        
-        @Override
-        protected void addNotify() {
-            super.addNotify();
+
+        @Messages({"LBL_this_layer=<this layer>", "LBL_this_layer_in_context=<this layer in context>"})
+        @Override protected boolean createKeys(List<DataObject> keys) {
             handle.setAutosave(true);
-            setKeys(Collections.singleton(KeyType.WAIT));
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    FileObject layer = handle.getLayerFile();
-                    p = /* #180872 */layer == null ? null : FileOwnerQuery.getOwner(layer);
-                    if (p == null) { // #175861: inside JAR etc.
-                        setKeys(Collections.<LayerChildren.KeyType>emptySet());
-                        return;
-                    }
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            initialize();
-                        }
-                    });
-                }
-            });
-        }
-        
-        @Override
-        protected void removeNotify() {
-            setKeys(Collections.<KeyType>emptySet());
-            p = null;
-            layerfs = null;
-            sfs = null;
-            super.removeNotify();
-        }
-        
-        protected Node[] createNodes(KeyType key) {
+            FileObject layer = handle.getLayerFile();
+            if (layer == null) { // #180872, #212541
+                return true;
+            }
+            Project p = FileOwnerQuery.getOwner(layer);
+            if (p == null) { // #175861: inside JAR etc.
+                return true;
+            }
+            FileSystem layerfs = handle.layer(false);
             try {
-                switch (key) {
-                case RAW:
-                    FileSystem fs = badge(layerfs, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
-                    return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
-                case CONTEXTUALIZED:
-                    fs = badge(sfs, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
-                    return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
-                case WAIT:
-                    return new Node[] {new AbstractNode(Children.LEAF) {
-                        public @Override String getDisplayName() {
-                            return NbBundle.getMessage(LayerNode.class, "LayerNode_please_wait");
-                        }
-                    }};
-                default:
-                    throw new AssertionError(key);
+                if (layerfs != null) {
+                    keys.add(DataObject.find(badge(layerfs, handle.getLayerFile(), LBL_this_layer(), null).getRoot()));
+                }
+                LayerHandle h = LayerHandle.forProject(p);
+                if (layer.equals(h.getLayerFile())) {
+                    h.setAutosave(true); // #135376
+                    keys.add(DataObject.find(badge(LayerUtils.getEffectiveSystemFilesystem(p), handle.getLayerFile(), LBL_this_layer_in_context(), handle.layer(false)).getRoot()));
                 }
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                return new Node[0];
             }
+            return true;
         }
 
-        private void initialize() {
-            try {
-                FileObject layer = handle.getLayerFile();
-                Project prj = FileOwnerQuery.getOwner(layer);
-                if (prj == null) { // #175861: inside JAR etc.
-                    setKeys(Collections.<LayerChildren.KeyType>emptySet());
-                    return;
-                }
-                p = prj;
-                layerfs = handle.layer(false);
-                setKeys(Arrays.asList(KeyType.RAW, KeyType.WAIT));
-                Project project = FileOwnerQuery.getOwner(handle.getLayerFile());
-                boolean context = false;
-                if (project != null) {
-                    LayerHandle h = LayerHandle.forProject(project);
-                    h.setAutosave(true); // #135376
-                    if (layer.equals(h.getLayerFile())) {
-                        sfs = LayerUtils.getEffectiveSystemFilesystem(project);
-                        setKeys(Arrays.asList(KeyType.RAW, KeyType.CONTEXTUALIZED));
-                        context = true;
-                    }
-                }
-                if (!context) {
-                    setKeys(Collections.singleton(KeyType.RAW));
-                }
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            }
+        @Override protected Node createNodeForKey(DataObject key) {
+            return key.getNodeDelegate();
         }
+
     }
     
     /**
      * Add badging support to the plain layer.
      */
-    private static FileSystem badge(final FileSystem base, final FileObject layer, final String rootLabel, final FileSystem highlighted) {
+    private static FileSystem badge(final @NonNull FileSystem base, final @NonNull FileObject layer, final @NonNull String rootLabel, final @NullAllowed FileSystem highlighted) {
         class BadgingMergedFileSystem extends LayerFileSystem {
-            public BadgingMergedFileSystem() {
+            BadgingMergedFileSystem() {
                 super(new FileSystem[] {base});
                 setPropagateMasks(true);
                 status.addFileStatusListener(new FileStatusListener() {
-                    public void annotationChanged(FileStatusEvent ev) {
+                    @Override public void annotationChanged(FileStatusEvent ev) {
                         fireFileStatusChanged(ev);
                     }
                 });
@@ -225,22 +163,22 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     private void fire() {
                         fireFileStatusChanged(new FileStatusEvent(BadgingMergedFileSystem.this, true, true));
                     }
-                    public void fileAttributeChanged(FileAttributeEvent fe) {
+                    @Override public void fileAttributeChanged(FileAttributeEvent fe) {
                         fire();
                     }
-                    public void fileChanged(FileEvent fe) {
+                    @Override public void fileChanged(FileEvent fe) {
                         fire();
                     }
-                    public void fileDataCreated(FileEvent fe) {
+                    @Override public void fileDataCreated(FileEvent fe) {
                         fire();
                     }
-                    public void fileDeleted(FileEvent fe) {
+                    @Override public void fileDeleted(FileEvent fe) {
                         fire();
                     }
-                    public void fileFolderCreated(FileEvent fe) {
+                    @Override public void fileFolderCreated(FileEvent fe) {
                         fire();
                     }
-                    public void fileRenamed(FileRenameEvent fe) {
+                    @Override public void fileRenamed(FileRenameEvent fe) {
                         fire();
                     }
                 });
@@ -248,7 +186,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             @Override
             public FileSystem.Status getStatus() {
                 return new FileSystem.HtmlStatus() {
-                    public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                    @Override public String annotateNameHtml(String name, Set<? extends FileObject> files) {
                         String nonHtmlLabel = status.annotateName(name, files);
                         if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
                             nonHtmlLabel = rootLabel;
@@ -287,12 +225,12 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                         }
                         return htmlLabel;
                     }
-                    public String annotateName(String name, Set<? extends FileObject> files) {
+                    @Override public String annotateName(String name, Set<? extends FileObject> files) {
                         // Complex to explain why this is even called, but it is.
                         // Weird b/c hacks in the way DataNode.getHtmlDisplayName works.
                         return name;
                     }
-                    public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+                    @Override public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
                         return status.annotateIcon(icon, iconType, files);
                     }
                 };
@@ -322,10 +260,12 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
          */
     }
     
+    
+    @Messages("LayerNode_label=XML Layer")
     @Override
     public String getDisplayName() {
         if (specialDisplayName) {
-            return NbBundle.getMessage(LayerNode.class, "LayerNode_label");
+            return LayerNode_label();
         } else {
             return super.getDisplayName();
         }

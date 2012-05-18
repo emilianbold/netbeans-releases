@@ -169,7 +169,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
             
             performer.fixAllAbstractMethods(path, leaf);
             
-            if (e.getKind() == ElementKind.CLASS)
+            if (e.getKind() == ElementKind.CLASS && e.getSimpleName() != null && !e.getSimpleName().contentEquals(""))
                 performer.makeClassAbstract(leaf, e.getSimpleName().toString());
         } else {
             if (leaf.getKind() == Kind.NEW_CLASS) {

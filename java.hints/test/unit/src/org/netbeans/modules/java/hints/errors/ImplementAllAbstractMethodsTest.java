@@ -109,6 +109,17 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
                        "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void test209164() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private void run() {\n" +
+                       "          new Runnable() |{};\n" +
+                       "     }\n" +
+                       "}\n",
+                       "IAAM");
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new ImplementAllAbstractMethods().run(info, null, pos, path, null);

@@ -203,14 +203,14 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
         this.invalidate();
 
-        Component p = getParent();
-        while (p != null) {
-            if (p instanceof JFrame) {
-                ((JFrame) p).pack();
-                break;
-            }
-            p = p.getParent();
-        }
+//        Component p = getParent();
+//        while (p != null) {
+//            if (p instanceof JDialog) {
+//                ((JDialog) p).pack();
+//                break;
+//            }
+//            p = p.getParent();
+//        }
     }
 
     /**

@@ -47,6 +47,9 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Terminal">
         <folder name="Shortcuts">
+            <file name="Maximize.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-MaximizeWindowAction.instance"/>
+            </file>
             <file name="StepOver.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance"/>
             </file>
