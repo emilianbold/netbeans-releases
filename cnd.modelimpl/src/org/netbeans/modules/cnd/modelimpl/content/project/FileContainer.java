@@ -393,7 +393,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             CharSequence[] oldAr = (CharSequence[])out;
             assert oldAr.length >= 2;
             if (oldAr.length == 2) {
-                assert oldAr[0].equals(primaryKey) || oldAr[1].equals(primaryKey) : "no primaryKey " + primaryKey + " in " + oldAr;
+                assert oldAr[0].equals(primaryKey) || oldAr[1].equals(primaryKey) : "no primaryKey " + primaryKey + " in " + Arrays.toString(oldAr);
                 newVal = oldAr[0].equals(primaryKey) ? oldAr[1] : oldAr[0];
             } else {
                 CharSequence[] newAr = new CharSequence[oldAr.length - 1];
