@@ -541,7 +541,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
             TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
             if (tokenSequence != null) {
-                tokenSequence = tokenSequence.subSequence(request.anchor, request.result.getModel().getVariableScope(request.anchor).getBlockRange().getEnd());
+                VariableScope variableScope = request.result.getModel().getVariableScope(request.anchor);
+                if (variableScope != null) {
+                    tokenSequence = tokenSequence.subSequence(request.anchor, variableScope.getBlockRange().getEnd());
+                }
             }
             boolean wasWhitespace = false;
             while (tokenSequence.moveNext()) {
