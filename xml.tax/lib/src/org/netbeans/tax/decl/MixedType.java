@@ -106,7 +106,7 @@ public class MixedType extends ChoiceType {
     /**
      */
     public String getName () {
-        return (!!! hasChildren ()) ? Util.THIS.getString ("NAME_PCDATA") : Util.THIS.getString ("NAME_MIX") + getMultiplicity ();
+        return (!!! hasChildren ()) ? "PCDATA" : "MIX" + getMultiplicity (); // NOI18N
     }
     
 }
