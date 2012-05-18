@@ -121,6 +121,9 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
     }
 
     public void testStatusLocalDeleteIncomingEditAcceptLocal () throws Exception {
+        if ("true".equals(System.getProperty("subversion.tests.excludeFailingTests.svnkit", "false"))) {
+            return;
+        }
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalDeleteIncomingEdit(c);
 
@@ -131,6 +134,9 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
     }
 
     public void testStatusLocalDeleteIncomingEditAcceptRemote () throws Exception {
+        if ("true".equals(System.getProperty("subversion.tests.excludeFailingTests.svnkit", "false"))) {
+            return;
+        }
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalDeleteIncomingEdit(c);
 
