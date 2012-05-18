@@ -49,6 +49,7 @@ import com.sun.tools.ws.wscompile.AbortException;
 import com.sun.tools.ws.wscompile.BadCommandLineException;
 import com.sun.tools.ws.wscompile.ErrorReceiver;
 import com.sun.tools.ws.wscompile.WsimportOptions;
+import com.sun.tools.ws.wsdl.parser.MetadataFinder;
 import com.sun.xml.ws.util.JAXWSUtils;
 import java.io.File;
 import java.net.URL;
@@ -228,7 +229,8 @@ public class WsdlModeler {
             options.parseBindings(new IdeErrorReceiver(errorHandler));
 
             ideWSDLModeler =
-                    new WSDLModeler(options, new IdeErrorReceiver(errorHandler));
+                    new WSDLModeler(options, new IdeErrorReceiver(errorHandler), 
+                            null);
             Model tmpModel = ideWSDLModeler.buildModel();
 
             if (tmpModel != null) {

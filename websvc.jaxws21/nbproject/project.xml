@@ -93,6 +93,7 @@ made subject to such option by the copyright holder.
                 <package>com.sun.tools.ws.util.xml</package>
                 <package>com.sun.tools.ws.wscompile</package>
                 <package>com.sun.tools.ws.wsdl.document.soap</package>
+                <package>com.sun.tools.ws.wsdl.parser</package>
                 <package>com.sun.xml.messaging.saaj.soap</package>
                 <package>com.sun.xml.stream</package>
                 <package>com.sun.xml.ws</package>
