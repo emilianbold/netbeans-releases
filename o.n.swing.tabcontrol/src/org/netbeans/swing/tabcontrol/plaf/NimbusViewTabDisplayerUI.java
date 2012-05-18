@@ -80,7 +80,7 @@ public final class NimbusViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     private static final int BUMP_X_PAD = 0;
     private static final int BUMP_WIDTH = 0;
     private static final int TXT_X_PAD = 7;
-    private static final int TXT_Y_PAD = 5;
+    private static final int TXT_Y_PAD = 4;
 
     private static final int ICON_X_PAD = 2;
     
