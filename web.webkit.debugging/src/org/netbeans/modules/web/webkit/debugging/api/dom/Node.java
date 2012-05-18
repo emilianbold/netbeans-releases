@@ -53,10 +53,18 @@ import org.json.simple.JSONObject;
  * @author Jan Stola
  */
 public class Node {
+    /** Properties of the node. */
     private JSONObject properties;
+    /** Children of the node ({@code nul} when the children are not known yet). */
     private List<Node> children;
+    /** Attributes of the node. */
     private List<Attribute> attributes;
 
+    /**
+     * Creates a new {@code Node} that corresponds to the given JSONObject.
+     * 
+     * @param node JSONObject describing the node.
+     */
     public Node(JSONObject node) {
         this.properties = node;
 
@@ -86,30 +94,63 @@ public class Node {
         node.remove("attributes"); // NOI18N
     }
 
+    /**
+     * Returns properties of the node.
+     * 
+     * @return properties of the node.
+     */
     private JSONObject getProperties() {
         return properties;
     }
 
+    /**
+     * Returns ID of this node.
+     * 
+     * @return ID of this node.
+     */
     public int getNodeId() {
         return ((Number)getProperties().get("nodeId")).intValue(); // NOI18N
     }
 
+    /**
+     * Returns type of this node.
+     * 
+     * @return type of this node.
+     */
     public int getNodeType() {
         return ((Number)getProperties().get("nodeType")).intValue(); // NOI18N
     }
 
+    /**
+     * Returns node name.
+     * 
+     * @return node name.
+     */
     public String getNodeName() {
         return (String)getProperties().get("nodeName"); // NOI18N
     }
 
+    /**
+     * Returns local name.
+     * 
+     * @return local name.
+     */
     public String getLocalName() {
         return (String)getProperties().get("localName"); // NOI18N
     }
 
+    /**
+     * Returns node value.
+     * 
+     * @return node value.
+     */
     public String getNodeValue() {
         return (String)getProperties().get("nodeValue"); // NOI18N
     }
-    
+
+    /**
+     * Initializes {@code children} field.
+     */
     private synchronized void initChildren() {
         children = new ArrayList<Node>();
     }
@@ -127,6 +168,11 @@ public class Node {
         return children;
     }
 
+    /**
+     * Adds child to this node.
+     * 
+     * @param child new child to add.
+     */
     synchronized final void addChild(Node child) {
         if (children == null) {
             initChildren();
@@ -134,19 +180,41 @@ public class Node {
         children.add(child);
     }
 
+    /**
+     * Removes child from this node.
+     * 
+     * @param child child to remove.
+     */
     synchronized final void removeChild(Node child) {
         children.remove(child);
     }
 
+    /**
+     * Inserts child into this node.
+     * 
+     * @param child child to insert.
+     * @param previousChild previous child ({@code null} when the new child
+     * should be the first one).
+     */
     synchronized final void insertChild(Node child, Node previousChild) {
-        if (previousChild == null) {
-            addChild(child);
-        } else {
-            int index = children.indexOf(previousChild);
-            children.add(index+1, child);
+        if (children == null) {
+            initChildren();
         }
+        int index;
+        if (previousChild == null) {
+            index = 0;
+        } else {
+            index = children.indexOf(previousChild)+1;
+        }
+        children.add(index, child);
     }
 
+    /**
+     * Sets an attribute.
+     * 
+     * @param name name of the attribute to set.
+     * @param value new value of the attribute.
+     */
     final synchronized void setAttribute(String name, String value) {
         Attribute attribute = getAttribute(name);
         if (attribute == null) {
@@ -160,6 +228,11 @@ public class Node {
         }
     }
 
+    /**
+     * Removes an attribute.
+     * 
+     * @param name name of the attribute to remove.
+     */
     final synchronized void removeAttribute(String name) {
         Attribute attribute = getAttribute(name);
         if (attribute != null) {
@@ -167,6 +240,13 @@ public class Node {
         }
     }
 
+    /**
+     * Returns the attribute with the specified name.
+     * 
+     * @param name name of the attribute.
+     * @return attribute with the specified name or {@code null} when there
+     * is no such attribute.
+     */
     public synchronized Attribute getAttribute(String name) {
         Attribute result = null;
         for (Attribute attr : getAttributes()) {
@@ -178,26 +258,62 @@ public class Node {
         return result;
     }
 
+    /**
+     * Returns all attributes of this node.
+     * 
+     * @return attributes of this node ({@code null} is never returned,
+     * an empty list is returned when there are no attributes).
+     */
     public synchronized List<Attribute> getAttributes() {
         return (attributes == null) ? Collections.EMPTY_LIST : attributes;
     }
-    
+
+    /**
+     * Returns URL of the document.
+     * 
+     * @return URL of the document the node points to (for {@code Document}
+     * and {@code FrameOwner} nodes) or {@code null} (otherwise).
+     */
     public String getDocumentURL() {
         return (String)getProperties().get("documentURL"); // NOI18N
     }
 
+    /**
+     * Returns Public ID.
+     * 
+     * @return public ID (for {@code DocumentType} nodes)
+     * or {@code null} (otherwise).
+     */
     public String getPublicId() {
         return (String)getProperties().get("publicId"); // NOI18N
     }
 
+    /**
+     * Returns System ID.
+     * 
+     * @return system ID (for {@code DocumentType} nodes)
+     * or {@code null} (otherwise).
+     */
     public String getSystemId() {
         return (String)getProperties().get("systemId"); // NOI18N
     }
 
+    /**
+     * Returns internal subset.
+     * 
+     * @return internal subset (for {@code DocumentType} nodes)
+     * or {@code null} (otherwise).
+     */
     public String getInternalSubset() {
         return (String)getProperties().get("internalSubset"); // NOI18N
     }
 
+    /**
+     * Returns XML version.
+     * 
+     * @return XML version (for {@code Document} nodes of XML documents)
+     * or {@code null} (otherwise).
+     */
     public String getXmlVersion() {
         return (String)getProperties().get("xmlVersion"); // NOI18N
     }
@@ -231,23 +347,49 @@ public class Node {
         return getNodeId();
     }
 
+    /**
+     * Element's attribute.
+     */
     public static class Attribute {
+        /** Name of this attribute. */
         private String name;
+        /** Value of this attribute. */
         private String value;
-        
+
+        /**
+         * Creates a new {@code Attribute}.
+         * 
+         * @param name name of the attribute.
+         * @param value value of the attribute.
+         */
         Attribute(String name, String value) {
             this.name = name;
             this.value = value;
         }
 
+        /**
+         * Returns name of this attribute.
+         * 
+         * @return name of this attribute.
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Returns value of this attribute.
+         * 
+         * @return value of this attribute.
+         */
         public String getValue() {
             return value;
         }
 
+        /**
+         * Sets value of this attribute.
+         * 
+         * @param value new value of this attribute.
+         */
         void setValue(String value) {
             this.value = value;
         }
