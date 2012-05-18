@@ -434,6 +434,12 @@ made subject to such option by the copyright holder.
                             </file>
                         </folder>                
 
+                        <folder name="BracesMatchers">
+                            <file name="org-netbeans-modules-editor-java-JavaBracesMatcher.shadow">
+                                <attr name="originalFile" stringvalue="Editors/text/x-java/BracesMatchers/org-netbeans-modules-editor-java-JavaBracesMatcher.instance"/>
+                            </file>
+                        </folder>                
+
                     </folder>
                 </folder>
             </folder>
