@@ -4,4 +4,5 @@ $('.|notMe')
 ------------------------------------
 RULE       .colored                                   null
 RULE       .myClas                                    null
+RULE       .myClass                                   null
 RULE       .notMe                                     null

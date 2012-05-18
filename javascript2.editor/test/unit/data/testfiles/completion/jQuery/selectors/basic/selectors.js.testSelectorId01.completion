@@ -5,3 +5,4 @@ $(my|)
 VARIABLE   my                              [PUBLIC]   selectors.js
 RULE       #myIdTable                                 null
 RULE       .myClas                                    null
+RULE       .myClass                                   null
