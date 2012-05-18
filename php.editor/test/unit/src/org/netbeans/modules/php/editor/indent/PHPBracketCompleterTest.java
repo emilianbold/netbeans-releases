@@ -457,19 +457,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
                "*/", null);
     }
 
-// XXX: ruby specific
-//    public void testDocs() throws Exception {
-//        insertBreak("=begin^\n", "=begin\n^\n=end\n");
-//    }
-//
-//    public void testDocsEnd() throws Exception {
-//        insertBreak("=begin^", "=begin\n^\n=end");
-//    }
-//
-//    public void testDocsEnd2() throws Exception {
-//        insertBreak("def foo\nend\n=begin^", "def foo\nend\n=begin\n^\n=end");
-//    }
-
 // XXX: currently failing, but should be fixed
 //
 //    public void testInsertEnd1() throws Exception {
@@ -567,130 +554,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testParens6() throws Exception {
         insertChar("x = (()^)", ')', "x = (())^");
     }
-// XXX: ruby specific
-//    public void testRegexp1() throws Exception {
-//        insertChar("x = ^", '/', "x = /^/");
-//    }
-//
-//    public void testRegexp2() throws Exception {
-//        insertChar("x = /^/", '/', "x = //^");
-//    }
-//
-//    public void testRegexp3() throws Exception {
-//        insertChar("x = /^/", 'a', "x = /a^/");
-//    }
-//
-//    public void testRegexp4() throws Exception {
-//        insertChar("x = /\\^/", '/', "x = /\\/^/");
-//    }
-//
-//    public void testRegexp5() throws Exception {
-//        insertChar("    regexp = /fofo^\n      # Subsequently, you can make calls to it by name with <tt>yield</tt> in", '/',
-//                "    regexp = /fofo/^\n      # Subsequently, you can make calls to it by name with <tt>yield</tt> in");
-//    }
-//
-//    public void testRegexp6() throws Exception {
-//        insertChar("    regexp = /fofo^\n", '/',
-//                "    regexp = /fofo/^\n");
-//    }
-//
-//    public void testRegexp7() throws Exception {
-//        insertChar("x = ^\n", '/', "x = /^/\n");
-//    }
-//
-//    public void testRegexp8() throws Exception {
-//        insertChar("x = /^/\n", '/', "x = //^\n");
-//    }
-//
-//    public void testRegexp9() throws Exception {
-//        insertChar("x = /^/\n", 'a', "x = /a^/\n");
-//    }
-//
-//    public void testRegexp10() throws Exception {
-//        insertChar("x = /\\^/\n", '/', "x = /\\/^/\n");
-//    }
-//
-//    public void testRegexp11() throws Exception {
-//        insertChar("/foo^", '/',
-//                "/foo/^");
-//    }
-//
-//    public void testNotRegexp1() throws Exception {
-//        insertChar("x = 10 ^", '/', "x = 10 /^");
-//    }
-//
-//    public void testNotRegexp2() throws Exception {
-//        insertChar("x = 3.14 ^", '/', "x = 3.14 /^");
-//    }
-//
-//    // This test doesn't work; the lexer identifies x = y / as the
-//    // beginning of a regular expression. Without the space it DOES
-//    // work (see regexp4)
-//    //public void testNotRegexp3() throws Exception {
-//    //    insertChar("x = y ^", '/', "x = y /^");
-//    //}
-//
-//    public void testNotRegexp4() throws Exception {
-//        insertChar("x = y^", '/', "x = y/^");
-//    }
-//
-//    public void testRegexpPercent1() throws Exception {
-//        insertChar("x = %r^", '(', "x = %r(^)");
-//    }
-//
-//    public void testRegexpPercent2() throws Exception {
-//        insertChar("x = %r(^)", ')', "x = %r()^");
-//    }
-//
-//
-//    public void testSinglePercent1() throws Exception {
-//        insertChar("x = %q^", '(', "x = %q(^)");
-//    }
-//
-//    public void testSinglePercent2() throws Exception {
-//        insertChar("x = %q(^)", ')', "x = %q()^");
-//    }
-//
-//    // Broken!!
-//    // I've gotta handle proper parenthesis nesting here... e.g.
-//    // %q(())
-////    public void testSinglePercent3() throws Exception {
-////        insertChar("x = %q(^)", '(', "x = %q((^))");
-////    }
-//
-//    // Broken!!
-////    public void testSinglePercent4() throws Exception {
-////        insertChar("x = %q((^))", ')', "x = %q(()^)");
-////    }
-//
-//    public void testSinglePercent5() throws Exception {
-//        insertChar("x = %q((^))", 'a', "x = %q((a^))");
-//    }
-//
-//    public void testSinglePercent6() throws Exception {
-//        insertChar("x = %q^", '-', "x = %q-^-");
-//    }
-//
-//    public void testSinglePercent7() throws Exception {
-//        insertChar("x = %q-^-", '-', "x = %q--^");
-//    }
-//
-//    public void testSinglePercent8() throws Exception {
-//        insertChar("x = %q^", ' ', "x = %q ^ ");
-//    }
-//
-//    // Broken!
-////    public void testSinglePercent9() throws Exception {
-////        insertChar("x = %q ^ ", ' ', "x = %q  ^");
-////    }
-//
-//    public void testSinglePercent10() throws Exception {
-//        insertChar("x = %q ^ ", 'x', "x = %q x^ ");
-//    }
-//
-//    public void testSinglePercent11() throws Exception {
-//        insertChar("x = %q-\\^-", '-', "x = %q-\\-^-");
-//    }
 
 // XXX: currently failing, but should be fixed
 //    public void testHeredoc1() throws Exception {
@@ -699,30 +562,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 //
 //    public void testHeredoc2() throws Exception {
 //        insertBreak("x=f(<<FOO,^\n", "x=f(<<FOO,\n^\nFOO\n");
-//    }
-
-// XXX: ruby specific, we don't support this kind of markings; perhaps should be part of mark occurences
-//    public void testFindMatching1() throws Exception {
-//        match("^if true\n^end");
-//    }
-//
-//    public void testFindMatching4() throws Exception {
-//        match("^def foo\nif true\nend\n^end\nend");
-//    }
-//
-//    public void testFindMatching5() throws Exception {
-//        // Test heredocs
-//        match("x=f(^<<ABC,\"hello\")\nfoo\nbar\n^ABC\n");
-//    }
-//
-//    public void testFindMatching6() throws Exception {
-//        // Test heredocs
-//        match("x=f(^<<ABC,'hello',<<-DEF,'bye')\nfoo\nbar\n^ABC\nbaz\n  DEF\nwhatever");
-//    }
-//
-//    public void testFindMatching7() throws Exception {
-//        // Test heredocs
-//        match("x=f(<<ABC,'hello',^<<-DEF,'bye')\nfoo\nbar\nABC\nbaz\n  ^DEF\nwhatever");
 //    }
 
     public void testBackspace1() throws Exception {
@@ -761,32 +600,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         // See bug 111534
         deleteChar("x={^}", "x=^");
     }
-
-
-// XXX: ruby specific; BUT maybe there is an equivalent in PHP, see {$ } syntax in quoted strings
-//    public void testPercentBackspace() throws Exception {
-//        deleteChar("x=\"#{^}\"", "x=\"#^\"");
-//    }
-//
-//    public void testPercentBackspace2() throws Exception {
-//        deleteChar("x=\"#{a^}\"", "x=\"#{^}\"");
-//    }
-//
-//    public void testPercentBackspace3() throws Exception {
-//        deleteChar("x=\"a#{^}b\"", "x=\"a#^b\"");
-//    }
-//
-//    public void testPercentBackspace4() throws Exception {
-//        deleteChar("x=/#{^}/", "x=/#^/");
-//    }
-//
-//    public void testPercentBackspace5() throws Exception {
-//        deleteChar("x=/#{a^}/", "x=/#{^}/");
-//    }
-//
-//    public void testPercentBackspace6() throws Exception {
-//        deleteChar("x=/a#{^}b/", "x=/a#^b/");
-//    }
 
     public void testContComment() throws Exception {
         if (PHPBracketCompleter.CONTINUE_COMMENTS) {
@@ -883,65 +696,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 //    }
 //
 
-// XXX: ruby specific
-//    public void testInsertPercentInString() throws Exception {
-//        insertChar("x = \"foo ^\"", '#', "x = \"foo #{^}\"");
-//    }
-//
-//    public void testInsertPercentInString2() throws Exception {
-//        // Make sure type-through works
-//        insertChar("x = \"foo #{^}\"", '}', "x = \"foo #{}^\"");
-//    }
-//
-//    public void testInsertPercentInString3() throws Exception {
-//        insertChar("x = \"foo #{^}\"", '{', "x = \"foo #{^}\"");
-//    }
-//
-//    public void testInsertPercentInString4() throws Exception {
-//        insertChar("x = \"foo #{^a}\"", '}', "x = \"foo #{}^a}\"");
-//    }
-//
-//    public void testInsertPercentInString5() throws Exception {
-//        insertChar("x = \"foo {^}\"", '}', "x = \"foo {}^}\"");
-//    }
-//
-//    public void testInsertPercentInString6() throws Exception {
-//        insertChar("x = \"foo {^}\"", '{', "x = \"foo {{^}\"");
-//    }
-//
-//    public void testNoInsertPercentInString() throws Exception {
-//        insertChar("x = 'foo ^'", '#', "x = 'foo #^'");
-//    }
-//
-//    public void testNoInsertPercentElsewhere() throws Exception {
-//        insertChar("x = ^", '#', "x = #^");
-//    }
-//
-//    public void testInsertPercentInRegexp() throws Exception {
-//        insertChar("x = /foo ^/", '#', "x = /foo #{^}/");
-//    }
-//
-//    public void testInsertPercentInRegexp2() throws Exception {
-//        // Make sure type-through works
-//        insertChar("x = /foo #{^}/", '}', "x = /foo #{}^/");
-//    }
-//
-//    public void testInsertPercentInRegexp3() throws Exception {
-//        insertChar("x = /foo #{^}/", '{', "x = /foo #{^}/");
-//    }
-//
-//    public void testInsertPercentInRegexp4() throws Exception {
-//        insertChar("x = /foo #{^a}/", '}', "x = /foo #{}^a}/");
-//    }
-//
-//    public void testInsertPercentInRegexp5() throws Exception {
-//        insertChar("x = /foo {^}/", '}', "x = /foo {}^}/");
-//    }
-//
-//    public void testInsertPercentInRegexp6() throws Exception {
-//        insertChar("x = /foo {^}/", '{', "x = /foo {{^}/");
-//    }
-
     public void testReplaceSelection1() throws Exception {
         insertChar("x = foo^", 'y', "x = y^", "foo");
     }
@@ -960,11 +714,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 //
 //    public void testReplaceSelection6() throws Exception {
 //        insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
-//    }
-
-// XXX: ruby specific
-//    public void testReplaceSelection3() throws Exception {
-//        insertChar("x = \"foo^bar\"", '#', "x = \"#{foo}^bar\"", "foo");
 //    }
 
     public void testReplaceSelectionChangeType1() throws Exception {
@@ -1203,185 +952,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         insertChar(testString, '{', result, null, false, options);
     }
-//    public void testLogicalRange1() throws Exception {
-//        String code = "if (true)\n  fo^o\nend";
-//        String next = "if (true)\n  %<%fo^o%>%\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange2() throws Exception {
-//        String code = "if (true)\n  %<%fo^o%>%\nend";
-//        String next = "%<%if (true)\n  fo^o\nend%>%";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange3() throws Exception {
-//        String code = "def foo\nif (true)\n  %<%fo^o%>%\nend\nend";
-//        String next = "def foo\n%<%if (true)\n  fo^o\nend%>%\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange4() throws Exception {
-//        String code = "class Foo\ndef foo\nif (true)\n  %<%fo^o%>%\nend\nend\nend";
-//        String next = "class Foo\ndef foo\n%<%if (true)\n  fo^o\nend%>%\nend\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange5() throws Exception {
-//        String code = "class Foo\ndef foo\n%<%if (true)\n  fo^o\nend%>%\nend\nend";
-//        String next = "class Foo\n%<%def foo\nif (true)\n  fo^o\nend\nend%>%\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRange6() throws Exception {
-//        String code = "class Foo\n%<%def fo^o\nif (true)\n  foo\nend\nend%>%\nend";
-//        String next = "%<%class Foo\ndef fo^o\nif (true)\n  foo\nend\nend\nend%>%";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeComment1() throws Exception {
-//        String code = "foo\n  # Foo Bar\n  # Foo^y Baary\n  # Bye\ndef foo\nend\n";
-//        String next = "foo\n  # Foo Bar\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeComment2() throws Exception {
-//        String code = "foo\n  # Foo Bar\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
-//        String next = "foo\n  %<%# Foo Bar\n  # Foo^y Baary\n  # Bye%>%\ndef foo\nend\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeComment3() throws Exception {
-//        String code = "foo\n  # Foo Bar\n\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
-//        String next = "foo\n  # Foo Bar\n\n  %<%# Foo^y Baary\n  # Bye%>%\ndef foo\nend\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//    public void testLogicalRangeComment5() throws Exception {
-//        String code = "foo\n  foo # Foo Bar\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
-//        String next = "foo\n  foo # Foo Bar\n  %<%# Foo^y Baary\n  # Bye%>%\ndef foo\nend\n";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings1() throws Exception {
-//        String code = "x = 'foo b^ar baz', y = \"whatever\"";
-//        String next = "x = %<%'foo b^ar baz'%>%, y = \"whatever\"";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings2() throws Exception {
-//        String code = "x = %q-foo b^ar baz-, y = \"whatever\"";
-//        String next = "x = %<%%q-foo b^ar baz-%>%, y = \"whatever\"";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings3() throws Exception {
-//        String code = "def foo\nif (true)\nx = %<%'foo b^ar baz'%>%\nend\nend";
-//        String next = "def foo\nif (true)\n%<%x = 'foo b^ar baz'%>%\nend\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings4() throws Exception {
-//        String code = "def foo\nif (true)\n%<%x = 'foo b^ar baz'%>%\nend\nend";
-//        String next = "def foo\n%<%if (true)\nx = 'foo b^ar baz'\nend%>%\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings5() throws Exception {
-//        String code = "def test\n 'return^ me'\nend";
-//        String next = "def test\n %<%'return^ me'%>%\nend";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeStrings6() throws Exception {
-//        String code = "def test\n %<%'return^ me'%>%\nend";
-//        String next = "%<%def test\n 'return^ me'\nend%>%";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-//
-//    public void testLogicalRangeRegexps1() throws Exception {
-//        String code = "x = /foo b^ar baz/, y = \"whatever\"";
-//        // Uhm - is it good that we're selecting the -inside- of the regexp?
-//        String next = "x = /%<%foo b^ar baz%>%/, y = \"whatever\"";
-//        assertLogicalRange(code, true, next);
-//        assertLogicalRange(next, false, code);
-//    }
-
-// XXX: ruby specific
-//    public void testPipes1() throws Exception {
-//        insertChar("5.each { ^", '|', "5.each { |^|");
-//    }
-//
-//    public void testPipes2() throws Exception {
-//        insertChar("5.each { ^}", '|', "5.each { |^|}");
-//    }
-//
-//    public void testPipes3() throws Exception {
-//        insertChar("5.each { |^|}", '|', "5.each { ||^}");
-//    }
-//
-//    public void testPipes4() throws Exception {
-//        insertChar("5.each { |foo^|}", '|', "5.each { |foo|^}");
-//    }
-//
-//    public void testNegativePipes1() throws Exception {
-//        insertChar("'^'", '|', "'|^'");
-//    }
-//
-//    public void testNegativePipes2() throws Exception {
-//        insertChar("/^/", '|', "/|^/");
-//    }
-//
-//    public void testNegativePipes3() throws Exception {
-//        insertChar("#^", '|', "#|^");
-//    }
-//
-//    public void testNegativePipes4() throws Exception {
-//        insertChar("\"^\"", '|', "\"|^\"");
-//    }
-//
-//    public void testNegativePipes5() throws Exception {
-//        insertChar("5.each { |f^oo|}", '|', "5.each { |f|^oo|}");
-//    }
-//
-//    public void testNegativePipes6() throws Exception {
-//        insertChar("5.each { |^|foo|}", '|', "5.each { ||^foo|}");
-//    }
-//
-//    public void testNegativePipes7() throws Exception {
-//        insertChar("x = true ^", '|', "x = true |^");
-//    }
-//
-//    public void testNegativePipes8() throws Exception {
-//        insertChar("x = true |^", '|', "x = true ||^");
-//    }
-//
-//    public void testBackspacePipes() throws Exception {
-//        deleteChar("x=|^|", "x=^");
-//    }
-//
-//    public void testBackspacePipes2() throws Exception {
-//        deleteChar("x=|^x", "x=^x");
-//    }
-//
-//    public void testBackspacePipes3() throws Exception {
-//        deleteChar("x=|^", "x=^");
-//    }
 
     public void testAlternativeSyntaxFor_01()throws Exception {
         testIndentInFile("testfiles/indent/switch_09.php");
