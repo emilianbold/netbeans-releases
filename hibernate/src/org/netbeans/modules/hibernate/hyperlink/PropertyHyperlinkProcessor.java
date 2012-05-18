@@ -66,11 +66,17 @@ public class PropertyHyperlinkProcessor extends HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         try {
-            final String className = HibernateEditorUtil.getClassName(env.getCurrentTag());
-            if (className == null) {
+            String className0 = HibernateEditorUtil.getClassName(env.getCurrentTag());
+            if (className0 == null) {
                 return;
             }
-            
+            String pack = env.getDocumentContext().getDocRoot().getAttribute("package");//NOI18N
+            if(pack!=null &&  pack.length()>0){
+                if(!className0.contains(".")){
+                    className0 = pack + "." +className0;
+                }
+            }
+            final String className = className0;
             final String propName = env.getValueString();
             if( propName == null || propName.length() == 0 ) {
                 return;
