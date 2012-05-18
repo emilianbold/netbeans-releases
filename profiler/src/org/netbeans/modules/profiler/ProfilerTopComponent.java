@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -25,9 +25,8 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,34 +40,61 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javacard.spi.impl;
 
-import org.netbeans.modules.javacard.spi.JavacardPlatformLocator;
-import org.netbeans.modules.javacard.spi.ProjectKind;
-import org.netbeans.spi.java.platform.GeneralPlatformInstall;
-import org.netbeans.spi.java.platform.PlatformInstall;
-import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.InstantiatingIterator;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.profiler;
 
-@ServiceProvider(service=GeneralPlatformInstall.class, path="org-netbeans-api-java/platform/installers")
-public class JavacardPlatformInstall extends PlatformInstall {
-    @Override
-    public InstantiatingIterator<WizardDescriptor> createIterator(FileObject dir) {
-        return JavacardPlatformLocator.find(dir);
+import java.awt.Component;
+import java.awt.KeyboardFocusManager;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.openide.windows.TopComponent;
+
+/**
+ *
+ * @author Jiri Sedlacek
+ */
+public class ProfilerTopComponent extends TopComponent {
+    
+    private Component lastFocusOwner;
+    
+    private final PropertyChangeListener focusListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            Component c = evt.getNewValue() instanceof Component ?
+                    (Component)evt.getNewValue() : null;
+            processFocusedComponent(c);
+        }
+        private void processFocusedComponent(Component c) {
+            Component cc = c;
+            while (c != null) {
+                if (c == ProfilerTopComponent.this) {
+                    lastFocusOwner = cc;
+                    return;
+                }
+                c = c.getParent();
+            }
+        }
+    };
+    
+    public void componentActivated() {
+        super.componentActivated();
+        if (lastFocusOwner != null) {
+            lastFocusOwner.requestFocus();
+        } else {
+            Component defaultFocusOwner = defaultFocusOwner();
+            if (defaultFocusOwner != null) defaultFocusOwner.requestFocus();
+        }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                addPropertyChangeListener("focusOwner", focusListener); // NOI18N
     }
 
-    @Override
-    public boolean accept(FileObject f) {
-        return JavacardPlatformLocator.isPlatform(f);
+    public void componentDeactivated() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                removePropertyChangeListener("focusOwner", focusListener); // NOI18N
+        super.componentDeactivated();
     }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage (ProjectKind.class,
-                "JAVACARD_INSTALLATION"); //NOI18N
+    
+    protected Component defaultFocusOwner() {
+        return null;
     }
-
+    
 }
