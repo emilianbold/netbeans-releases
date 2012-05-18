@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -143,6 +144,11 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
 
     public void testPrototype06() throws Exception {
         checkCompletion("testfiles/model/person.js", "Person.prototype.amputate = function(){ this.l^egs-- } ", false);
+    }
+    
+    public void testCompleter() throws Exception {
+        CodeCompletionHandler cch = getCodeCompleter();
+        
     }
    
 }
