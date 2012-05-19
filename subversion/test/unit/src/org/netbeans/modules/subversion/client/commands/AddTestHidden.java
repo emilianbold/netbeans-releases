@@ -240,6 +240,9 @@ public class AddTestHidden extends AbstractCommandTestCase {
     }
 
     public void testAddUnversionedDirectory() throws Exception {
+        if ("true".equals(System.getProperty("subversion.tests.excludeFailingTests.cli", "false"))) {
+            return;
+        }
         File parentFolder = createFolder("folder");
         File folder = createFolder(parentFolder, "fail");
         

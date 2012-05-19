@@ -2270,10 +2270,12 @@ class LayoutOperations implements LayoutConstants {
         assert alignment == LEADING || alignment == TRAILING;
         assert gap.isEmptySpace();
 
+        boolean parentPos = false;
         if (interval.isSequential()) {
             interval = interval.getSubInterval(alignment == LEADING ? 0 : interval.getSubIntervalCount()-1);
             if (interval.isEmptySpace()) {
                 interval = LayoutInterval.getDirectNeighbor(interval, alignment^1, true);
+                parentPos = true;
             }
         }
 
@@ -2330,9 +2332,17 @@ class LayoutOperations implements LayoutConstants {
             LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
             if (neighbor != null && neighbor.isEmptySpace()) {
                 LayoutInterval next = LayoutInterval.getDirectNeighbor(neighbor, alignment, false);
-                int otherPos = next != null ? next.getCurrentSpace().positions[dimension][alignment^1] :
-                                              parent.getCurrentSpace().positions[dimension][alignment];
-                int mergedSize = (pos - otherPos) * (alignment == LEADING ? 1 : -1);
+                int mergedSize;
+                if (next != null) {
+                    mergedSize = pos - next.getCurrentSpace().positions[dimension][alignment^1];
+                } else if (!parentPos) {
+                    mergedSize = pos - parent.getCurrentSpace().positions[dimension][alignment];
+                } else {
+                    mergedSize = interval.getCurrentSpace().positions[dimension][alignment] - pos;
+                }
+                if (alignment == TRAILING) {
+                    mergedSize = -mergedSize;
+                }
                 eatGap(neighbor, gap, mergedSize);
             }
             else {
