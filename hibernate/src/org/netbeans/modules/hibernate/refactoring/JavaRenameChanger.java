@@ -110,7 +110,8 @@ public class JavaRenameChanger {
         }
     }
 
-    public void refactoringMyClasses(MyClass[] myClazz) {
+    public void refactoringMyClasses(HibernateMapping hbMapping) {
+        MyClass[] myClazz = hbMapping.getMyClass();
         for (int ci = 0; ci < myClazz.length; ci++) {
 
             MyClass thisClazz = myClazz[ci];
@@ -128,6 +129,17 @@ public class JavaRenameChanger {
                     myClazz[ci].setAttributeValue(nameAttrib, newClsName);
                 } else if (clsName.equals(origName)) {
                     myClazz[ci].setAttributeValue(nameAttrib, newName);
+                } else {
+                    String pack = null;
+                    try {
+                        pack = hbMapping.getAttributeValue("Package");//NOI18N
+                    } catch(Exception ex){}
+                    if(pack != null  &&  pack.length()>0){
+                        if((pack+"."+clsName).equals(origName)){
+                            String newShortName = newName.indexOf('.')>-1 ? newName.substring(newName.lastIndexOf('.')+1) : newName;
+                            myClazz[ci].setAttributeValue(nameAttrib, newShortName);
+                        }
+                    }
                 }
             }
 
