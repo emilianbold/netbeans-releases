@@ -448,6 +448,17 @@ public class DOM {
         }
     }
 
+    /**
+     * Notify listeners about {@code characterDataModified} event.
+     * 
+     * @param node node whose character data have been modified.
+     */
+    private void notifyCharacterDataModified(Node node) {
+        for (Listener listener : listeners) {
+            listener.characterDataModified(node);
+        }
+    }
+
     void handleSetChildNodes(JSONObject params) {
         int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
         Node parent = nodes.get(parentId);
@@ -507,6 +518,14 @@ public class DOM {
         notifyAttributeRemoved(node, name);
     }
 
+    void handleCharacterDataModified(JSONObject params) {
+        int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+        Node node = nodes.get(nodeId);
+        String characterData = (String)params.get("characterData"); // NOI18N
+        node.setNodeValue(characterData);
+        notifyCharacterDataModified(node);
+    }
+
     /**
      * DOM domain listener.
      */
@@ -558,6 +577,14 @@ public class DOM {
          * @param attrName name of the removed attribute.
          */
         void attributeRemoved(Node node, String attrName);
+
+        /**
+         * Character data of node have been modified, mirrors
+         * {@code DOMCharacterDataModified} event.
+         * 
+         * @param node node whose character data have been modified.
+         */
+        void characterDataModified(Node node);
     }
 
     /**
@@ -586,6 +613,8 @@ public class DOM {
                 handleAttributeModified(params);
             } else if ("DOM.attributeRemoved".equals(method)) { // NOI18N
                 handleAttributeRemoved(params);
+            } else if ("DOM.characterDataModified".equals(method)) { // NOI18N
+                handleCharacterDataModified(params);
             }
         }
 

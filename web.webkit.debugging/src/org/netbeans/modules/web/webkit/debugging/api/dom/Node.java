@@ -149,6 +149,15 @@ public class Node {
     }
 
     /**
+     * Sets node value.
+     * 
+     * @param value new node value.
+     */
+    void setNodeValue(String value) {
+        getProperties().put("nodeValue", value); // NOI18N
+    }
+
+    /**
      * Initializes {@code children} field.
      */
     private synchronized void initChildren() {
