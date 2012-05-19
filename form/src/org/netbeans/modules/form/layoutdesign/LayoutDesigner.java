@@ -2565,37 +2565,29 @@ public final class LayoutDesigner implements LayoutConstants {
         }
         assert !LayoutInterval.wantResize(interval);
         
-        boolean changed = false;
         parent = interval.getParent();
         while (parent != null) {
             if (parent.isParallel()) {
                 if (LayoutInterval.wantResize(parent) && !LayoutInterval.wantResize(interval)) {
                     int alg = interval.getAlignment();
                     if (alg != alignment) {
-                        // Add fixed gap and change alignment
-                        int size = LayoutInterval.getCurrentSize(parent, dimension)
-                            - LayoutInterval.getCurrentSize(interval, dimension);
+                        // add fixed supporting gap in the anchor direction, and change alignment
+                        int pos = parent.getCurrentSpace().positions[dimension][alignment];
+                        int size = (pos - interval.getCurrentSpace().positions[dimension][alignment]) * (alignment == LEADING ? -1 : 1);
                         if (size > 0) {
-                            if (!interval.isSequential()) {
-                                LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
-                                layoutModel.setIntervalAlignment(interval, DEFAULT);
-                                int i = layoutModel.removeInterval(interval);
-                                layoutModel.addInterval(interval, seq, -1);
-                                layoutModel.addInterval(seq, parent, i);
-                                interval = seq;
-                            }
-                            int index = (alg == LEADING) ? -1 : 0;
                             LayoutInterval gap = new LayoutInterval(SINGLE);
                             gap.setSize(size);
-                            layoutModel.addInterval(gap, interval, index);
+                            operations.insertGap(gap, interval, pos, dimension, alignment);
                         }
                         layoutModel.setIntervalAlignment(interval, alignment);
                     }
-                    changed = true;
+                    break; // assuming the anchor was clear before, so we need only one correction
                 }
-            } else {
+            } else { // in sequence
+                // first eliminate resizing gaps in the desired anchor direction
                 boolean before = true;
-                boolean seqChanged = false;
+                boolean seqWasResizing = false;
+                boolean otherSidePushing = false;
                 for (int i=0; i<parent.getSubIntervalCount(); i++) {
                     LayoutInterval li = parent.getSubInterval(i);
                     if (li == interval) {
@@ -2613,11 +2605,18 @@ public final class LayoutDesigner implements LayoutConstants {
                             } else if (operations.eliminateUnwantedZeroGap(li)) {
                                 i--;
                             }
-                            seqChanged = true;
+                            seqWasResizing = true;
+                        } else {
+                            otherSidePushing = true;
                         }
                     }
                 }
-                if (!changed && seqChanged) {
+                // second, if needed make a resizing gap in the other direction
+                if (!otherSidePushing && parent.getAlignment() != alignment
+                    && (seqWasResizing
+                        || (!LayoutInterval.wantResize(parent)
+                            && LayoutInterval.wantResize(parent.getParent())))) {
+                    layoutModel.setIntervalAlignment(parent, alignment);
                     boolean insertGap = false;
                     int index = parent.indexOf(interval);
                     if (alignment == LEADING) {
@@ -2646,24 +2645,29 @@ public final class LayoutDesigner implements LayoutConstants {
                             }
                         }
                     }
-                    if (insertGap) {
+                    if (insertGap) { // could not change existing gap, adding new
                         LayoutInterval gap = new LayoutInterval(SINGLE);
                         operations.setIntervalResizing(gap, true);
                         layoutModel.setIntervalSize(gap, 0, 0, gap.getMaximumSize());
                         layoutModel.addInterval(gap, parent, index);
-                        if (parent.getAlignment() != alignment) {
-                            layoutModel.setIntervalAlignment(parent, alignment);
-                        }
                         operations.optimizeGaps2(parent.getParent(), dimension);
                         parent = interval.getParent();
                     }
-                    changed = true;
+                    if (!seqWasResizing) { // also may need a supporting gap in the anchor direction
+                        int pos = parent.getParent().getCurrentSpace().positions[dimension][alignment];
+                        int size = (pos - parent.getCurrentSpace().positions[dimension][alignment]) * (alignment == LEADING ? -1 : 1);
+                        if (size > 0) {
+                            LayoutInterval gap = new LayoutInterval(SINGLE);
+                            gap.setSize(size);
+                            operations.insertGap(gap, parent, pos, dimension, alignment);
+                        }
+                    }
+                    break; // assuming the anchor was clear before, so we need only one correction
                 }
             }
             interval = parent;
             parent = parent.getParent();
         }
-//        updateDesignModifications(interval, dimension);
         visualStateUpToDate = false;
         updateDataAfterBuild = true;
         if (logTestCode()) {

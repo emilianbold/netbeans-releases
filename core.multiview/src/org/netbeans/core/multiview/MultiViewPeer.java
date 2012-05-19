@@ -155,6 +155,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
             d = d.createContextAwareDescription(context.getLookup());
             arr.add(d);
         }
+        if (arr.isEmpty()) {
+            arr.add(new EmptyViewDescription(mimeType));
+        }
         if (model != null) {
             model.removeElementSelectionListener(selListener);
         }
