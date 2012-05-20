@@ -355,6 +355,7 @@
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.remote.projectui</friend>
                 <package>org.netbeans.modules.cnd.discovery.api</package>
                 <package>org.netbeans.modules.cnd.discovery.wizard.api</package>
                 <package>org.netbeans.modules.cnd.discovery.wizard.api.support</package>
