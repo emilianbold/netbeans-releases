@@ -93,6 +93,12 @@ public class Runtime {
         return res;
     }
 
+    /**
+     * Evaluates the given expression on the global object.
+     * 
+     * @param expression expression to evaluate.
+     * @return result of the expression.
+     */
     public RemoteObject evaluate(String expression) {
         RemoteObject remoteObject = null;
         JSONObject params = new JSONObject();
@@ -108,6 +114,35 @@ public class Runtime {
         return remoteObject;
     }
 
+    /**
+     * Calls function with given declaration on the given object. The object
+     * group of the result is inherited from the target object.
+     * 
+     * @param object object to call the function on.
+     * @param functionDeclaration declaration of the function to call.
+     * @return return value of the invoked function.
+     */
+    public RemoteObject callFunctionOn(RemoteObject object, String functionDeclaration) {
+        RemoteObject remoteObject = null;
+        JSONObject params = new JSONObject();
+        params.put("objectId", object.getObjectID()); // NOI18N
+        params.put("functionDeclaration", functionDeclaration); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("Runtime.callFunctionOn", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                JSONObject expressionResult = (JSONObject)result.get("result"); // NOI18N
+                remoteObject = new RemoteObject(expressionResult, webkit);
+            }
+        }
+        return remoteObject;
+    }
+
+    /**
+     * Releases the given remote object.
+     * 
+     * @param object remote object to release.
+     */
     public void releaseObject(RemoteObject object) {
         String objectId = object.getObjectID();
         if (objectId != null) {

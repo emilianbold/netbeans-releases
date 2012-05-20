@@ -102,7 +102,7 @@ public class WebKitDebugging {
      */
     public synchronized DOM getDOM() {
         if (dom == null) {
-            dom = new DOM(transport);
+            dom = new DOM(transport, this);
         }
         return dom;
     }

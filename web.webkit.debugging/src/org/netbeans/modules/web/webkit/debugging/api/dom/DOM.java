@@ -53,6 +53,8 @@ import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -65,6 +67,8 @@ import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 public class DOM {
     /** Transport used by this instance. */
     private TransportHelper transport;
+    /** WebKit debugging this instance belongs to. */
+    private WebKitDebugging webKit;
     /** Callback for DOM event notifications. */
     private ResponseCallback callback;
     /** Registered listeners. */
@@ -81,8 +85,9 @@ public class DOM {
      * 
      * @param transport transport to use.
      */
-    public DOM(TransportHelper transport) {
+    public DOM(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
+        this.webKit = webKit;
         this.callback = new Callback();
         this.transport.addListener(callback);
     }
@@ -359,6 +364,53 @@ public class DOM {
         params.put("nodeId", node.getNodeId()); // NOI18N
         params.put("outerHTML", html); // NOI18N
         transport.sendCommand(new Command("DOM.setOuterHTML", params)); // NOI18N
+    }
+
+    /**
+     * Requests node that corresponds to the given remote JavaScript node reference.
+     *
+     * @param remoteObject remote JavaScript reference to the requested node.
+     * @return node corresponding to the given remote reference or {@code null}
+     * when such node doesn't exit.
+     */
+    public Node requestNode(RemoteObject remoteObject) {
+        Node n = null;
+        JSONObject params = new JSONObject();
+        params.put("objectId", remoteObject.getObjectID()); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("DOM.requestNode", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                int nodeId = ((Number)result.get("nodeId")).intValue(); // NOI18N
+                n = nodes.get(nodeId);
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Resolves given node into corresponding remote JavaScript node reference.
+     * 
+     * @param node node to resolve.
+     * @param objectGroup group name of the resulting remote reference (can be {@code null}).
+     * @return remote reference corresponding to the given node.
+     */
+    public RemoteObject resolveNode(Node node, String objectGroup) {
+        RemoteObject remoteObject = null;
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        if (objectGroup != null) {
+            params.put("objectGroup", objectGroup); // NOI18N
+        }
+        Response response = transport.sendBlockingCommand(new Command("DOM.resolveNode", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                JSONObject object = (JSONObject)result.get("object"); // NOI18N
+                remoteObject = new RemoteObject(object, webKit);
+            }
+        }
+        return remoteObject;
     }
 
     /**
