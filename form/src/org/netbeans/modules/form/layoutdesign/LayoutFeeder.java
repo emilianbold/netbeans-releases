@@ -1415,11 +1415,21 @@ class LayoutFeeder implements LayoutConstants {
                     // no specific alignment - decide based on distance
                     aligned = centerDst[i] < centerDst[i^1]
                           || (centerDst[i] == centerDst[i^1] && i == LEADING);
-                } else if (iDesc1.snappedParallel != null && seq.isParentOf(iDesc1.snappedParallel)) {
-                    // special case - aligning with interval in the same sequence - to subst. its position
-                    aligned = i == (iDesc1.alignment^1);
                 } else {
-                    aligned = i == iDesc1.alignment;
+                    aligned = (i == iDesc1.alignment);
+                    if (iDesc1.snappedParallel != null) {
+                        if (seq.isParentOf(iDesc1.snappedParallel)) {
+                            // special case - aligning with interval in the same sequence - to subst. its position
+                            aligned = (i == (iDesc1.alignment^1));
+                        } else if (parent.isParentOf(iDesc1.snappedParallel)
+                                && originalGap != null && LayoutInterval.canResize(originalGap)) {
+                            // follow alignment of the snapped interval (see ALT_Positioning18Test situation)
+                            int relatedAlign = LayoutInterval.getEffectiveAlignmentInParent(iDesc1.snappedParallel, parent, iDesc1.alignment);
+                            if (relatedAlign == LEADING || relatedAlign == TRAILING) {
+                                aligned = (i == relatedAlign);
+                            }
+                        }
+                    }
                 }
             } else { // both positions defined
                 if (dragger.isResizing(dimension) && LayoutInterval.wantResize(addingInterval)) {
@@ -2757,7 +2767,11 @@ class LayoutFeeder implements LayoutConstants {
             if (!LayoutInterval.canResize(group)) {
                 // reset explicit size of interval or gap - subordinate to fixed content
                 if (neighborGap != null) { // resizing neighbor gap created
+                    boolean explicitSize = neighborGap.getPreferredSize() > 0;
                     layoutModel.setIntervalSize(neighborGap, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, Short.MAX_VALUE);
+                    if (explicitSize) {
+                        neighborGap.setAttribute(LayoutInterval.ATTR_SIZE_DIFF);
+                    }
                 }
                 if (unresizedOnRemove != null && unresizedOnRemove[dimension] != null) {
                     // resizing of some intervals may be restored (those made fixed
