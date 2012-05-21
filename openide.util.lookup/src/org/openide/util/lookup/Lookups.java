@@ -44,12 +44,7 @@
 
 package org.openide.util.lookup;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
