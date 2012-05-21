@@ -47,25 +47,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.MultiKeymap;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.search.SearchBar;
-import org.netbeans.modules.editor.search.SearchNbEditorKit;
-import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 public class SearchComboBoxEditor implements ComboBoxEditor {
     private JScrollPane scrollPane;
