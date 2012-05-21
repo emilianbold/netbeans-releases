@@ -94,6 +94,8 @@ public class WizardConstants {
     public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
     public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N
     public static final String PROPERTY_SIMPLE_MODE_FOLDER = "simpleModeFolder"; // String // NOI18N
+
+    public static final String PROPERTY_REMOTE_FILE_SYSTEM_ENV = "REMOTE_FILE_ENV"; //NOI18N
     
     public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {
         ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV);

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.cnd.remote.projectui.wizard.cnd;
+package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +34,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -52,8 +53,8 @@ public class RemoteJavaExecution {
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.remote.projectui.wizard.cnd.dwarf"); // NOI18N
     
-    public RemoteJavaExecution(ExecutionEnvironment env, FileSystem fileSystem) {
-        this.env = env;
+    public RemoteJavaExecution(FileSystem fileSystem) {
+        this.env = FileSystemProvider.getExecutionEnvironment(fileSystem);
         this.fileSystem = fileSystem;
     }
     
@@ -191,7 +192,7 @@ public class RemoteJavaExecution {
             if (jar != null) {
                 FileObject from = FileUtil.toFileObject(jar);
                 FileObject tempFolder = fileSystem.getTempFolder();
-                FileObject to = fileSystem.createTempFile(tempFolder, "dwarfdump", ".jar", true);
+                FileObject to = fileSystem.createTempFile(tempFolder, "dwarfdump", ".jar", true); //NOI18N
                 final OutputStream outputStream = to.getOutputStream();
                 final InputStream inputStream = from.getInputStream();
                 FileUtil.copy(inputStream, outputStream);

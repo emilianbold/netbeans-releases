@@ -44,9 +44,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
-import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,22 +58,25 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -120,13 +121,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private WizardDescriptor.Panel<WizardDescriptor> selectBinaryPanel;
     private int lastNewHostPanel = -1;
     
-    private SelectModeDescriptorPanel selectModePanel;
+    private ProjectWizardPanels.MakeModePanel<WizardDescriptor> selectModePanel;
     private final PanelConfigureProject panelConfigureProjectTrue;
-//    private final PanelConfigureProject panelConfigureProjectFalse;
-//    private final MakefileOrConfigureDescriptorPanel makefileOrConfigureDescriptorPanel;
-//    private final BuildActionsDescriptorPanel buildActionsDescriptorPanel;
-//    private final SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
-//    private final ParserConfigurationDescriptorPanel parserConfigurationDescriptorPanel;
     private final List<WizardDescriptor.Panel<WizardDescriptor>> advancedPanels;
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
@@ -141,28 +137,32 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         this.fullRemote = fullRemote;
 
         panelConfigureProjectTrue = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true);
-
-//        panelConfigureProjectFalse = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false);
-//        makefileOrConfigureDescriptorPanel = new MakefileOrConfigureDescriptorPanel();
-//        buildActionsDescriptorPanel = new BuildActionsDescriptorPanel();
-//        sourceFoldersDescriptorPanel = new SourceFoldersDescriptorPanel();
-//        parserConfigurationDescriptorPanel = new ParserConfigurationDescriptorPanel();
         advancedPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-        advancedPanels.add(new MakefileOrConfigureDescriptorPanel());
-        advancedPanels.add(new BuildActionsDescriptorPanel());
-        advancedPanels.add(new SourceFoldersDescriptorPanel());
-        advancedPanels.add(new ParserConfigurationDescriptorPanel());
-        advancedPanels.add(new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false));
+        advancedPanels.addAll(getPanels(wizardtype, name, wizardTitle, wizardACSD, true));
     }
 
-    private synchronized SelectModeDescriptorPanel getSelectModePanel() {
+    public static List<WizardDescriptor.Panel<WizardDescriptor>> getPanels(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
+        List<WizardDescriptor.Panel<WizardDescriptor>> out = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        out.add(new MakefileOrConfigureDescriptorPanel());
+        out.add(new BuildActionsDescriptorPanel());
+        out.add(new SourceFoldersDescriptorPanel());
+        out.add(new ParserConfigurationDescriptorPanel());
+        out.add(new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false));
+        return out;
+    }
+    
+    public static ProjectWizardPanels.MakeModePanel<WizardDescriptor> createSelectModePanel() {
+        return new SelectModeDescriptorPanel();
+    }
+
+    public static WizardDescriptor.Panel<WizardDescriptor> getSelectBinaryPanel() {
+        return new SelectBinaryPanel();
+    }
+    
+    private synchronized ProjectWizardPanels.MakeModePanel<WizardDescriptor> getSelectModePanel() {
         if (selectModePanel == null) {
-            FileObject fo = (FileObject) wiz.getProperty(CommonProjectActions.EXISTING_SOURCES_FOLDER);
-            if (fo == null) {
-                selectModePanel = new SelectModeDescriptorPanel(fullRemote);
-            } else {
-                selectModePanel = new SelectModeDescriptorPanel(fullRemote, fo.getPath());
-            }
+            //FileObject fo = (FileObject) wiz.getProperty(CommonProjectActions.EXISTING_SOURCES_FOLDER);
+            selectModePanel = createSelectModePanel();
             selectModePanel.addChangeListener(new ChangeListener() {
 
                 @Override
@@ -173,7 +173,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         }
         return selectModePanel;
     }
-    
+
     public static NewMakeProjectWizardIterator newApplication() {
         String name = APPLICATION_PROJECT_NAME; //getString("NativeNewApplicationName"); // NOI18N
         String wizardTitle = getString("Templates/Project/Native/newApplication.xml"); // NOI18N
@@ -296,7 +296,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
             List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-            final SelectModeDescriptorPanel modeSelectionPanel = getSelectModePanel();
+            final WizardDescriptor.Panel<WizardDescriptor> modeSelectionPanel = getSelectModePanel();
             if (fullRemote) {
                 if (selectHostPanel == null) {
                     selectHostPanel = getSelectHostWizardProvider().getSelectHostPanel();
@@ -325,7 +325,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             setupSteps();
         } else if (wizardtype == TYPE_BINARY) {
             if (selectBinaryPanel == null) {
-                selectBinaryPanel = new SelectBinaryPanel();
+                selectBinaryPanel = getSelectBinaryPanel();
             }
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
@@ -353,12 +353,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     private void setupSteps() {
         String[] steps = createSteps(panels);
-        String[] advanced;
-        if (fullRemote) {
-            advanced = new String[]{ steps[0], steps[1], "..."}; // NOI18N
-        } else {
-            advanced = new String[]{ steps[0], "..."}; // NOI18N
-        }
+        String[] advanced = new String[]{ steps[0], "..."}; // NOI18N
         Component c = panels.get(0).getComponent();
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent) c;
@@ -369,8 +364,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private String[] createSteps(List<WizardDescriptor.Panel<WizardDescriptor>> panels) {
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
-            if (panels.get(i) instanceof Name) {
-                steps[i] = ((Name) panels.get(i)).getName();
+            if (panels.get(i) instanceof NamedPanel) {
+                steps[i] = ((NamedPanel) panels.get(i)).getName();
             } else {
                 steps[i] = panels.get(i).getComponent().getName();
             }
@@ -400,7 +395,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             handle.start();
             return instantiate();
         } catch (IOException ex) {
-            ex.printStackTrace(); // since caller doesn't report this
+            ex.printStackTrace(System.err); // since caller doesn't report this
             throw ex;
         } finally {
             handle.finish();
@@ -411,23 +406,24 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        File dirF = (File) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
-            dirF = CndFileUtils.normalizeFile(dirF);
+            ExecutionEnvironment ee = (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+            if (ee == null) {
+                ee = ExecutionEnvironmentFactory.getLocal();
+            }
+            dirF = new FSPath(dirF.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(dirF.getPath(), ee));
         }
         String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
         String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
-        if (fullRemote) {
-            getSelectHostWizardProvider().apply();
-        }
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(getSelectModePanel().getWizardStorage())));
+                resultSet.addAll(extension.createProject(getSelectModePanel().getWizardStorage().getAdapter()));
             }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -509,7 +505,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             
             MakeProjectGeneratorImpl.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
-            FileObject dir = CndFileUtils.toFileObject(dirF);
+            FileObject dir = dirF.getFileObject();
             resultSet.add(dir);
         }
         return resultSet;
@@ -541,8 +537,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(NewMakeProjectWizardIterator.class, "LAB_IteratorName"), // NOI18N
-                new Object[]{Integer.valueOf(index + 1), Integer.valueOf(panels.size())});
+        return NbBundle.getMessage(NewMakeProjectWizardIterator.class, "LAB_IteratorName",Integer.valueOf(index + 1), Integer.valueOf(panels.size())); // NOI18N
     }
 
     private boolean isSimple() {
@@ -614,10 +609,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         }
     }
 
-    interface Name {
-
-        public String getName();
-    }
     /** Look up i18n strings here */
     private static ResourceBundle bundle;
 
