@@ -44,11 +44,10 @@
 
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
-import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class NamedQueryImpl implements NamedQuery {
-    private final TypeElement element;
+
     private String name;
     private String query;
     
@@ -58,56 +57,67 @@ public class NamedQueryImpl implements NamedQuery {
      * @param name
      * @param query 
      */
-    public NamedQueryImpl(TypeElement element, String name, String query){
-        this.element = element;
+    public NamedQueryImpl(String name, String query){
         this.name = name;
         this.query = query;
     }
 
+    @Override
     public void setName(String value) {
         name = value; // NOI18N
     }
 
+    @Override
     public String getName() {
         return name; // NOI18N
     }
 
+    @Override
     public void setQuery(String value) {
         query = value; // NOI18N
     }
 
+    @Override
     public String getQuery() {
         return query; // NOI18N
     }
 
+    @Override
     public void setHint(int index, QueryHint value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public QueryHint getHint(int index) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public int sizeHint() {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public void setHint(QueryHint[] value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public QueryHint[] getHint() {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public int addHint(QueryHint value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public int removeHint(QueryHint value) {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
 
+    @Override
     public QueryHint newQueryHint() {
         throw new UnsupportedOperationException("This operation is not implemented yet."); // NOI18N
     }
