@@ -56,10 +56,13 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,7 +132,8 @@ public final class PlatformUiSupport {
         }
         storePlatform(props, helper, projectConfigurationNamespace, platformKey, new SourceLevelKey(sourceLevel));
     }
-
+    
+    
     /**
      * Stores active platform, <i>javac.source</i> and <i>javac.target</i> into the project's metadata.
      * @param props project's shared properties
@@ -138,8 +142,32 @@ public final class PlatformUiSupport {
      * @param platformKey the {@link PlatformKey} got from the platform model.
      * @param sourceLevelKey {@link SourceLevelKey} representing source level; can be <code>null</code>.
      */
-    public static void storePlatform(EditableProperties props, UpdateHelper helper,
-            String projectConfigurationNamespace, Object platformKey, Object sourceLevelKey) {
+    public static void storePlatform(
+            @NonNull final EditableProperties props,
+            @NonNull final UpdateHelper helper,
+            @NonNull final String projectConfigurationNamespace,
+            @NonNull final Object platformKey,
+            @NullAllowed final Object sourceLevelKey) {
+        storePlatform(props, helper, projectConfigurationNamespace, platformKey, sourceLevelKey, true);
+    }
+
+    /**
+     * Stores active platform, <i>javac.source</i> and <i>javac.target</i> into the project's metadata.
+     * @param props project's shared properties
+     * @param helper {@link UpdateHelper} that is capable to upgrade project metadata if needed.
+     * @param projectConfigurationNamespace project configuration namespace.
+     * @param platformKey the {@link PlatformKey} got from the platform model.
+     * @param sourceLevelKey {@link SourceLevelKey} representing source level; can be <code>null</code>.
+     * @param updatePreferredPlatform if true the {@link PreferredProjectPlatform} will be updated
+     * @since 1.37
+     */
+    public static void storePlatform(
+            @NonNull final EditableProperties props,
+            @NonNull final UpdateHelper helper,
+            @NonNull final String projectConfigurationNamespace,
+            @NonNull final Object platformKey,
+            @NullAllowed final Object sourceLevelKey,
+            final boolean updatePreferredPlatform) {
         Parameters.notNull("props", props); //NOI18N
         Parameters.notNull("helper", helper); //NOI18N
         Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); //NOI18N
@@ -157,7 +185,9 @@ public final class PlatformUiSupport {
         if (platform == null) {
             return;
         }
-
+        if (updatePreferredPlatform) {
+            PreferredProjectPlatform.setPreferredPlatform(platform);
+        }
         SpecificationVersion jdk13 = new SpecificationVersion("1.3"); //NOI18N
         String platformAntName = platform.getProperties().get("platform.ant.name"); //NOI18N
         assert platformAntName != null;
