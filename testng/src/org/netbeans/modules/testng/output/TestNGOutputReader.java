@@ -123,6 +123,10 @@ final class TestNGOutputReader {
     private String parameters;
     private String values;
     private String duration;
+    private boolean failedInConfigurationMethod;
+    private boolean failedInAfterClassMethod;
+    private boolean failedInBeforeClassMethod;
+    private boolean canAddToStackTrace;
 
     /**
      * Creates a new instance of TestNGOutputReader
@@ -231,6 +235,10 @@ final class TestNGOutputReader {
             passedWithErrorsFailure = 0;
             successPercentage = -1;
             descriptionInPassedWithErrors = false;
+            failedInAfterClassMethod = false;
+            failedInBeforeClassMethod = false;
+            failedInConfigurationMethod = false;
+            canAddToStackTrace = true;
             Matcher m = Pattern.compile(RegexpUtils.RUNNING_SUITE_REGEX).matcher(in);
             if (m.matches()) {
                 suiteStarted(m.group(1), Integer.valueOf(m.group(2)), m.group(3));
@@ -242,15 +250,18 @@ final class TestNGOutputReader {
         //suite finishing
         if (in.equals("===============================================")) {
             suiteSummary = !suiteSummary;
+
+            if(txt.size() > 0 && failedInAfterClassMethod) {
+                testStarted(suiteName, testCase, parameters, values);
+                addStackTrace(txt);
+                txt.clear();
+                testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+            }
             if (suiteSummary) {
                 suiteStat = new SuiteStats();
             } else {
                 suiteFinished(suiteStat);
                 suiteStat = null;
-            }
-            if (txt.size() > 0) {
-                addStackTrace(txt);
-                txt.clear();
             }
             return;
         } else if (suiteSummary) {
@@ -281,7 +292,13 @@ final class TestNGOutputReader {
         }
         //test
         if (in.startsWith("INVOKING: ")) {
-            if (txt.size() > 0) {
+            if(failedInBeforeClassMethod) {
+                return;
+            }
+            if(failedInConfigurationMethod) {
+                canAddToStackTrace = false;
+            }
+            if (txt.size() > 0 && !failedInConfigurationMethod) {
                 addStackTrace(txt);
                 txt.clear();
             }
@@ -356,8 +373,18 @@ final class TestNGOutputReader {
         }
 
         if (in.startsWith("SKIPPED: ")) {
+            if (failedInBeforeClassMethod) {
+                return;
+            }
             if (m.matches()) {
-                testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                if(failedInConfigurationMethod) {
+                    if (txt.size() > 0) {
+                        addStackTrace(txt);
+                    }
+                    testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                } else {
+                    testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -384,6 +411,49 @@ final class TestNGOutputReader {
         }
 
         //configuration methods
+        if (in.startsWith("FAILED CONFIGURATION: ")) {
+            if (m.matches()) {
+                suiteName = m.group(1);
+                testCase = m.group(2);
+                parameters = m.group(4);
+                values = m.group(6);
+                duration = m.group(8);
+            }
+            if (in.contains(" - @AfterClass")) {
+                failedInAfterClassMethod = true;
+                if (txt.size() > 0) {
+                    addStackTrace(txt);
+                }
+            }
+            if (in.contains(" - @BeforeClass")) {
+                failedInBeforeClassMethod = true;
+            }
+            failedInConfigurationMethod = true;
+            // clear previous stacktrace of FAILED test method as we have a more serious problem in setUp/tearDown methods
+            txt.clear();
+            return;
+        }
+        if (in.startsWith("SKIPPED CONFIGURATION: ")) {
+            if(!failedInBeforeClassMethod) {
+                addStackTrace(txt);
+            }
+            if (failedInBeforeClassMethod) {
+                if (txt.size() > 0) {
+                    testStarted(suiteName, testCase, parameters, values);
+                    addStackTrace(txt);
+                    txt.clear();
+                    testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+                }
+            }
+            return;
+        }
+        if (in.startsWith("PASSED CONFIGURATION: ")) {
+            if (txt.size() > 0) {
+                addStackTrace(txt);
+                txt.clear();
+            }
+            return;
+        }
         if (in.contains(" CONFIGURATION: ")) {
 //            if (txt.size() > 0) {
 //                addStackTrace(txt);
@@ -399,7 +469,9 @@ final class TestNGOutputReader {
                 addDescription(in.trim());
             } else if (in.trim().length() > 0) {
                 //we have a stacktrace
-                txt.add(in);
+                if(canAddToStackTrace || failedInAfterClassMethod || failedInBeforeClassMethod) {
+                    txt.add(in);
+                }
             }
         }
     }
