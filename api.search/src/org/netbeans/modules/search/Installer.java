@@ -44,16 +44,21 @@
 package org.netbeans.modules.search;
 
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.OnShowing;
 
 /**
  * Module installation class for search 'sub module'.
  *
  * @author Marian Petras
  */
-public class Installer extends ModuleInstall {
+@OnShowing
+public class Installer extends ModuleInstall implements Runnable {
 
+    /**
+     * {@link OnShowing} run method.
+     */
     @Override
-    public void restored() {
+    public void run() {
         ActionManager.FindActionManager.getInstance().init();
         ActionManager.ReplaceActionManager.getInstance().init();
     }
