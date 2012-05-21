@@ -190,7 +190,7 @@ public final class FormatContext {
         return 0;
     }
     
-    private BaseDocument getDocument() {
+    public BaseDocument getDocument() {
         return (BaseDocument) context.document();
     }
     

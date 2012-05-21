@@ -49,6 +49,7 @@ import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
  *  XXX make sure the getters get the defaults from somewhere
@@ -78,6 +79,13 @@ public final class CodeStyle {
 
     public static CodeStyle get(Document doc) {
         return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
+    }
+    
+    public static CodeStyle get(FormatContext context) {
+        if (context.isEmbedded()) {
+            return new CodeStyle(CodeStylePreferences.get(context.getDocument(), JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
+        }
+        return new CodeStyle(CodeStylePreferences.get(context.getDocument()).getPreferences());
     }
 
     // General tabs and indents ------------------------------------------------
