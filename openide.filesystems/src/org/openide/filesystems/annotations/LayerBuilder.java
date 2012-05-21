@@ -293,7 +293,7 @@ public final class LayerBuilder {
                 return new String[] {clazz, method};
             }
             default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + originatingElement);
+                throw new LayerGenerationException("Annotated element is not loadable as an instance", originatingElement, processingEnv, annotation, annotationMethod);
         }
     }
 

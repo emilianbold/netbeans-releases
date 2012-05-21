@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
@@ -365,6 +366,52 @@ public class LayerBuilderTest extends NbTestCase {
                 f.stringvalue("r1", v.r1());
                 f.stringvalue("r2", r2);
                 f.write();
+            }
+            return true;
+        }
+    }
+
+    public void testInstantiableClassOrMethod() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C {}");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("Serializable"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " class C implements java.io.Serializable {}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("public"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C implements java.io.Serializable {public C(int x) {}}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("constructor"));
+        // XXX no-arg ctor must be public
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public abstract class C implements java.io.Serializable {}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("abstract"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public interface C extends java.io.Serializable {}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("instance"));
+        // XXX test nonstatic nested
+        // XXX test factory methods
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C implements java.io.Serializable {}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+    }
+
+    public @interface I {}
+    @ServiceProvider(service=Processor.class)
+    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    public static class IP extends LayerGeneratingProcessor {
+        public @Override Set<String> getSupportedAnnotationTypes() {
+            return Collections.singleton(I.class.getCanonicalName());
+        }
+        protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+            if (roundEnv.processingOver()) {
+                return false;
+            }
+            for (Element e : roundEnv.getElementsAnnotatedWith(I.class)) {
+                layer(e).instanceFile("stuff", null, Serializable.class).write();
             }
             return true;
         }
