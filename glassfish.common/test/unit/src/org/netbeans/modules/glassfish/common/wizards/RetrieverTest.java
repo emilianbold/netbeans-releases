@@ -166,12 +166,12 @@ public class RetrieverTest implements Retriever.Updater {
                 r.run();
                 System.out.println("message="+message);
                 System.out.println("status="+status);
-                assert message.startsWith("Invalid URL: http://") || 
-                        message.startsWith("Connecting...") : message;
+                assert message.startsWith("Invalid URL: http://") /*|| 
+                        message.startsWith("Connecting...") */: message;
                 assert status.startsWith("I/O Exception: http://") ||
-                        status.startsWith("I/O Exception: connect timed out") ||
+                        status.startsWith("I/O Exception: connect timed out") /*||
                         status.startsWith("I/O Exception: java.net") ||
-                        status.startsWith("Connection Exception: Connection timed out") : status ;
+                        status.startsWith("Connection Exception: Connection timed out")*/ : status ;
             } finally {
                 deleteJunk(file);
             }
