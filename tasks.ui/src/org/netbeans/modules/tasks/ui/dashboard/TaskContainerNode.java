@@ -240,7 +240,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-                updateContent();
+                updateNodes();
+                updateCounts();
             }
         }
     }
