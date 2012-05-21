@@ -297,6 +297,7 @@ public class HibernateRefactoringUtil {
             // Get the document for this file
             DataObject dataObject = DataObject.find(mappingFile);
             EditorCookie result = dataObject.getCookie(EditorCookie.class);
+            String mappingPackage = null;
             if (result == null) {
                 throw new IllegalStateException("File " + mappingFile + " does not have an EditorCookie.");
             }
@@ -325,12 +326,16 @@ public class HibernateRefactoringUtil {
                         String nodeName = theNode.getNodeName();
                         String itemImage = item.getImage();
 
-                        if (searchingPackageName && nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MAPPING_TAG) &&
+                        if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.MAPPING_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.MAPPING_TAG)) {
-                            // <class> element
-                            attributeValues = new String[1];
-                            attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.PACKAGE_ATTRIB);
-                            pkgValue = true;
+                            if(searchingPackageName) {
+                                // <class> element
+                                attributeValues = new String[1];
+                                attributeValues[0] = getAttributeValue(theNode, HibernateMappingXmlConstants.PACKAGE_ATTRIB);
+                                pkgValue = true;
+                            } else {
+                                mappingPackage = getAttributeValue(theNode, HibernateMappingXmlConstants.PACKAGE_ATTRIB);
+                            }
                         } // Search the element/attrubutes that take class names
                         else if (nodeName.equalsIgnoreCase(HibernateMappingXmlConstants.CLASS_TAG) &&
                                 itemImage.contains(HibernateMappingXmlConstants.CLASS_TAG)) {
@@ -409,19 +414,19 @@ public class HibernateRefactoringUtil {
                                     value = getPackageName(value);
                                 }
 
-                                if (value != null && value.equals(searchingForName)) {
+                                if (value != null && (value.equals(searchingForName) || (mappingPackage!=null && mappingPackage.length()>0 && value.indexOf('.')==-1 && (mappingPackage + "." + value).equals(searchingForName)))) {
 
                                     // TODO: can not just do indexof. It does not work correctly if there are multiple
                                     // attributes have the same class searchingForName. Though, it does not make sense to have such case.
 
-                                    if (text.indexOf(searchingForName) != -1) {
-                                        int startOffset = item.getOffset() + text.indexOf(searchingForName);
-                                        int endOffset = startOffset + searchingForName.length();
+                                    if (text.indexOf(value) != -1) {
+                                        int startOffset = item.getOffset() + text.indexOf(value);
+                                        int endOffset = startOffset + value.length();
 
                                         PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                                 editor.createPositionRef(endOffset, Bias.Forward));
 
-                                        foundPlaces.add(new OccurrenceItem(loc, text));
+                                        foundPlaces.add(new OccurrenceItem(loc, text, value));
                                     }
                                 }
                             }
@@ -518,7 +523,7 @@ public class HibernateRefactoringUtil {
                                     PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                             editor.createPositionRef(endOffset, Bias.Forward));
 
-                                    foundPlaces.add(new OccurrenceItem(loc, text));
+                                    foundPlaces.add(new OccurrenceItem(loc, text, fieldName));
                                 }
                             }
                         }
@@ -600,7 +605,7 @@ public class HibernateRefactoringUtil {
                                     int endOffset = startOffset + resourceName.length();
                                     PositionBounds loc = new PositionBounds(editor.createPositionRef(startOffset, Bias.Forward),
                                             editor.createPositionRef(endOffset, Bias.Forward));
-                                    foundPlaces.add(new OccurrenceItem(loc, text));
+                                    foundPlaces.add(new OccurrenceItem(loc, text, resourceName));
                                 }
                             }
                         }
@@ -620,15 +625,21 @@ public class HibernateRefactoringUtil {
     public static final class OccurrenceItem {
 
         private String text;
+        private String matching;
         private PositionBounds location;
 
-        public OccurrenceItem(PositionBounds location, String text) {
+        public OccurrenceItem(PositionBounds location, String text, String matching) {
             this.location = location;
             this.text = text;
+            this.matching = matching;
         }
 
         public String getText() {
             return this.text;
+        }
+        
+        public String getMatching(){
+            return matching;
         }
 
         public PositionBounds getLocation() {
