@@ -276,15 +276,17 @@ public final class BookmarksNodeTree {
 
         @Override
         protected Node[] createNodes(FileObject fo) {
+            Node foNode;
             try {
                 DataObject dob = DataObject.find(fo);
-                Node node = dob.getNodeDelegate().cloneNode();
-                URL url = fo.toURL();
-                FileBookmarks urlBookmarks = projectBookmarks.get(url);
-                return new Node[] { new FilterNode(node, new FileBookmarksChildren(urlBookmarks, fo)) };
+                foNode = dob.getNodeDelegate().cloneNode();
             } catch (DataObjectNotFoundException ex) {
-                throw new IllegalStateException(); // TODO generic node for FO
+                foNode = new AbstractNode(Children.LEAF);
+                foNode.setDisplayName(fo.getNameExt());
             }
+            URL url = fo.toURL();
+            FileBookmarks urlBookmarks = projectBookmarks.get(url);
+            return new Node[]{new FilterNode(foNode, new FileBookmarksChildren(urlBookmarks, fo))};
         }
 
     }
