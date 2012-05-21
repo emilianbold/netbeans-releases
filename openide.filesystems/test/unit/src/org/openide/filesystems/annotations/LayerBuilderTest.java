@@ -80,12 +80,16 @@ public class LayerBuilderTest extends NbTestCase {
 
     private Document doc;
     private LayerBuilder b;
+    private File src;
+    private File dest;
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         doc = XMLUtil.createDocument("filesystem", null, null, null);
         b = new LayerBuilder(doc, null, null);
         assertEquals("<filesystem/>", dump());
+        src = new File(getWorkDir(), "src");
+        dest = new File(getWorkDir(), "dest");
     }
 
     private String dump() throws IOException {
@@ -241,9 +245,7 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testSourcePath() throws Exception { // #181355
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#label\") public class C {}");
-        File dest = new File(getWorkDir(), "dest");
         TestFileUtils.writeFile(new File(dest, "p/Bundle.properties"), "label=hello");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         File layer = new File(dest, "META-INF/generated-layer.xml");
@@ -254,28 +256,22 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testMissingBundleError() throws Exception {
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#nonexistent\") public class C {}");
-        File dest = new File(getWorkDir(), "dest");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("p/Bundle.properties"));
     }
 
     public void testMissingBundleKeyError() throws Exception {
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#nonexistent\") public class C {}");
         TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "label=hello");
-        File dest = new File(getWorkDir(), "dest");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("nonexistent"));
     }
 
     public void testBundleKeyDefinedUsingMessages() throws Exception {
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#k\") @org.openide.util.NbBundle.Messages(\"k=v\") public class C {}");
-        File dest = new File(getWorkDir(), "dest");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "public class C2 {@" + A.class.getCanonicalName() + "(displayName=\"#k2\") @org.openide.util.NbBundle.Messages(\"k2=v\") String f = null;}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, null));
@@ -302,8 +298,6 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testAbsolutizeAndValidateResourcesExistent() throws Exception {
-        File src = new File(getWorkDir(), "src");
-        File dest = new File(getWorkDir(), "dest");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"other/x1\", r2=\"resources/x2\") public class C {}");
         File j = TestFileUtils.writeZipFile(new File(getWorkDir(), "cp.jar"), "other/x1:x1");
         TestFileUtils.writeFile(new File(src, "p/resources/x2"), "x2");
@@ -320,8 +314,6 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testValidateResourceNonexistent() throws Exception {
-        File src = new File(getWorkDir(), "src");
-        File dest = new File(getWorkDir(), "dest");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"other/x1\", r2=\"resourcez/x2\") public class C {}");
         File j = TestFileUtils.writeZipFile(new File(getWorkDir(), "cp.jar"), "other/x1:x1");
         TestFileUtils.writeFile(new File(src, "p/resources/x2"), "x2");
