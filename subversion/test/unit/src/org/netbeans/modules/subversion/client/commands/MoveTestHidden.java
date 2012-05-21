@@ -45,6 +45,7 @@ package org.netbeans.modules.subversion.client.commands;
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.io.InputStream;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
@@ -128,10 +129,8 @@ public class MoveTestHidden extends AbstractCommandTestCase {
         testMoveURL2URLPrevRevision("file", "filemove");
     }
 
+    @RandomlyFails
     public void testMoveURL2URLWithAtSignPrevRevision() throws Exception {
-        if ("true".equals(System.getProperty("subversion.tests.excludeFailingTests.cli", "false"))) {
-            return;
-        }
         testMoveURL2URLPrevRevision("file1", "@filemove"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testMoveURL2URLPrevRevision("file2", "file@move");
         testMoveURL2URLPrevRevision("file3", "filemove@");

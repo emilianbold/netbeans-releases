@@ -44,9 +44,9 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.subversion.FileInformation;
 import org.tigris.subversion.svnclientadapter.*;
-import org.tigris.subversion.svnclientadapter.utils.Depth;
 
 /**
  *
@@ -120,10 +120,8 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
     }
 
+    @RandomlyFails
     public void testStatusLocalDeleteIncomingEditAcceptLocal () throws Exception {
-        if ("true".equals(System.getProperty("subversion.tests.excludeFailingTests.svnkit", "false"))) {
-            return;
-        }
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalDeleteIncomingEdit(c);
 
@@ -133,10 +131,8 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertFalse(f2.exists());
     }
 
+    @RandomlyFails
     public void testStatusLocalDeleteIncomingEditAcceptRemote () throws Exception {
-        if ("true".equals(System.getProperty("subversion.tests.excludeFailingTests.svnkit", "false"))) {
-            return;
-        }
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalDeleteIncomingEdit(c);
 
