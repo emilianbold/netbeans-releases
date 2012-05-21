@@ -393,9 +393,14 @@ public class LayerBuilderTest extends NbTestCase {
         err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("instance"));
-        // XXX test nonstatic nested
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "public class C {@" + I.class.getCanonicalName() + " public class N implements java.io.Serializable {}}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("static"));
         // XXX test factory methods
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C implements java.io.Serializable {}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "public class C {@" + I.class.getCanonicalName() + " public static class N implements java.io.Serializable {}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
     }
 
