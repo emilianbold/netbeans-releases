@@ -56,6 +56,7 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -114,8 +115,28 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         OpenProjects.getDefault ().removePropertyChangeListener (this);
         BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
+            List<Project> projects;
+            synchronized (lastOpenProjects) {
+                projects = new ArrayList<Project>(lastOpenProjects);
+            }
+            for (Project project : projects) {
+                URI projectURI = BookmarkUtils.toURI(project);
+                ProjectBookmarks projectBookmarks;
+                if (projectURI != null &&
+                        (projectBookmarks = lockedBookmarkManager.
+                            getProjectBookmarks(project, projectURI, false, false)) != null)
+                {
+                    saveProjectBookmarks(project, projectBookmarks);
+                    lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                }
+            }
             for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
-                saveProjectBookmarks(projectBookmarks);
+                URI prjURI = projectBookmarks.getProjectURI();
+                Project prj = FileOwnerQuery.getOwner(prjURI);
+                if (prj != null) {
+                    saveProjectBookmarks(prj, projectBookmarks);
+                    lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
+                }
             }
         } finally {
             lockedBookmarkManager.unlock();
@@ -178,7 +199,8 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     }
                 }
 
-                ProjectBookmarks projectBookmarks = new ProjectBookmarks(project, lastBookmarkId);
+                URI projectURI = BookmarkUtils.toURI(project);
+                ProjectBookmarks projectBookmarks = new ProjectBookmarks(projectURI, lastBookmarkId);
                 URL projectFolderURL = project.getProjectDirectory().toURL();
                 Node fileElem = skipNonElementNode (bookmarksElement.getFirstChild ());
                 while (fileElem != null) {
@@ -279,8 +301,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         return node;
     }
     
-    private void saveProjectBookmarks(ProjectBookmarks projectBookmarks) {
-        Project project = projectBookmarks.getProject();
+    private void saveProjectBookmarks(Project project, ProjectBookmarks projectBookmarks) {
         if (project == null) { // Bookmarks that do not belong to any project
             return;
         }
@@ -375,7 +396,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     for (Project p : projectsToSave) {
                         ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
                         if (projectBookmarks != null) {
-                            saveProjectBookmarks(projectBookmarks); // Write into private.xml under project's mutex acquired
+                            saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
                             lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
                         }
                     }
