@@ -137,7 +137,11 @@ public class JavaRenameChanger {
                     if(pack != null  &&  pack.length()>0){
                         if((pack+"."+clsName).equals(origName)){
                             String newShortName = newName.indexOf('.')>-1 ? newName.substring(newName.lastIndexOf('.')+1) : newName;
-                            myClazz[ci].setAttributeValue(nameAttrib, newShortName);
+                            if(clsName.equals(newShortName)){
+                                myClazz[ci].setAttributeValue(nameAttrib, newName);//TODO: optimize if there s only 1 class it should replace package of hibernate-mapping instead of fqn
+                            } else {
+                                myClazz[ci].setAttributeValue(nameAttrib, newShortName);
+                            }
                         }
                     }
                 }
