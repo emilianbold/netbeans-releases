@@ -44,9 +44,6 @@ package org.netbeans.modules.editor.search;
 import java.awt.Dimension;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 
 public class SearchComboBox extends JComboBox {
 
