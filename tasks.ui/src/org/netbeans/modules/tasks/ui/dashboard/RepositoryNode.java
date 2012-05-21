@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.CloseRepositoryNodeAction;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -56,7 +55,6 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.actions.*;
-import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -105,9 +103,15 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     @Override
     protected List<TreeListNode> createChildren() {
         if (refresh) {
-            //TODO refresh
-            updateNodes();
-            refresh = false;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (QueryNode queryNode : queryNodes) {
+                        queryNode.refreshContent();
+                    }
+                    refresh = false;
+                }
+            });
         }
         List<QueryNode> children = getFilteredQueryNodes();
         boolean expand = DashboardViewer.getInstance().expandNodes();
@@ -116,22 +120,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         }
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
-    }
-
-    @Override
-    protected void childrenLoadingFinished() {
-        if (!loaded) {
-//            SwingUtilities.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-            List<QueryNode> queries = getFilteredQueryNodes();
-            for (QueryNode queryNode : queries) {
-                queryNode.setExpanded(true);
-            }
-//                }
-//            });
-            loaded = true;
-        }
     }
 
     @Override
@@ -147,7 +135,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 if (isOpened()) {
-                    btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
+                    btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
                     btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                     panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
@@ -178,6 +166,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 filteredQueryNodes.add(queryNode);
             }
         }
+        loaded = true;
     }
 
     public final Repository getRepository() {
@@ -296,5 +285,13 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     ImageIcon getRepositoryIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/remote_repo.png", true);
+    }
+
+    public void refreshContent() {
+        refresh = true;
+        if (!isExpanded()) {
+            setExpanded(true);
+        }
+        updateContent();
     }
 }
