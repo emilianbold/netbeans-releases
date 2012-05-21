@@ -105,6 +105,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="PlatformUiSupport-preferred-platform">
+            <api name="java-api-common"/>
+            <summary>Added <code>PlatformUiSupport.storePlatform</code> with <code>updatePreferredPlatform</code> parameter</summary>
+            <version major="1" minor="37"/>
+            <date day="20" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>PlatformUiSupport.storePlatform</code> with <code>updatePreferredPlatform</code> parameter allowing
+                    the API clients to specify if the <code>PreferredProjectPlatform</code> should be updated.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+            <issue number="208528"/>
+        </change>
         <change id="ant-hooks">
             <api name="java-api-common"/>
             <summary>Added methods to track ant invocation</summary>

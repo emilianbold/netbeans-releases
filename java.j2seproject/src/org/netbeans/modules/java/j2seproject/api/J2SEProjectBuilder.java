@@ -99,7 +99,10 @@ import org.w3c.dom.NodeList;
  * @author Tomas Zezula
  * @since 1.42
  */
-public class J2SEProjectBuilder {   
+public class J2SEProjectBuilder {
+    
+    private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
+    private static final String DEFAULT_PLATFORM_ID = "default_platform";   //NOI18N
     
     private final File projectDirectory;
     private final String name;
@@ -118,6 +121,7 @@ public class J2SEProjectBuilder {
     private String buildXmlName;
     private String distFolder;
     private String mainClassTemplate;
+    private JavaPlatform platform;
     
     /**
      * Creates a new instance of {@link J2SEProjectBuilder}
@@ -136,6 +140,7 @@ public class J2SEProjectBuilder {
         this.jvmArgs = new StringBuilder();
         this.compileLibraries = new ArrayList<Library>();
         this.runtimeLibraries = new ArrayList<Library>();
+        this.platform = JavaPlatformManager.getDefault().getDefaultPlatform();
     }
     
     /**
@@ -295,6 +300,21 @@ public class J2SEProjectBuilder {
     }
     
     /**
+     * Sets a platform to be used for a new project
+     * @param platform to be used
+     * @return the builder
+     * @since 1.53
+     */
+    public J2SEProjectBuilder setJavaPlatform (@NonNull final JavaPlatform platform) {
+        Parameters.notNull("platform", platform);
+        if (platform.getProperties().get(PLATFORM_ANT_NAME) == null) {
+            throw new IllegalArgumentException("Invalid platform, the platform has no platform.ant.name");  //NOI18N
+        }
+        this.platform = platform;
+        return this;
+    }
+    
+    /**
      * Creates the J2SEProject
      * @return the {@link AntProjectHelper} of the created project
      * @throws IOException when creation fails
@@ -305,7 +325,7 @@ public class J2SEProjectBuilder {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
-                final SpecificationVersion sourceLevel = getDefaultSourceLevel();
+                final SpecificationVersion sourceLevel = getSourceLevel();
                 h[0] = createProject(
                         dirFO,
                         name, 
@@ -321,7 +341,8 @@ public class J2SEProjectBuilder {
                         librariesDefinition,
                         jvmArgs.toString(),
                         toClassPathElements(compileLibraries),
-                        toClassPathElements(runtimeLibraries, "${javac.classpath}:", "${build.classes.dir}"));   //NOI18N
+                        toClassPathElements(runtimeLibraries, "${javac.classpath}:", "${build.classes.dir}"),
+                        platform.getProperties().get(PLATFORM_ANT_NAME));   //NOI18N
                 final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = p.getReferenceHelper();
@@ -377,7 +398,9 @@ public class J2SEProjectBuilder {
             String librariesDefinition,
             String jvmArgs,
             String[] compileClassPath,
-            String[] runtimeClassPath) throws IOException {
+            String[] runtimeClassPath,
+            @NonNull final String platformId
+            ) throws IOException {
         
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProject.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
@@ -386,6 +409,13 @@ public class J2SEProjectBuilder {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        if (!DEFAULT_PLATFORM_ID.equals(platformId)) {
+            final Element platformEl = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform");   //NOI18N
+            final SpecificationVersion jdk13 = new SpecificationVersion("1.3");     //NOI18N
+            final boolean supportsExplicitSource = jdk13.compareTo(sourceLevel) < 0;
+            platformEl.setAttribute("explicit-source-supported", Boolean.toString(supportsExplicitSource)); //NOI18N
+            data.appendChild(platformEl);
+        }
         Element sourceRoots = doc.createElementNS(J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
         if (srcRoot != null) {
             Element root = doc.createElementNS (J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
@@ -467,7 +497,7 @@ public class J2SEProjectBuilder {
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-        ep.setProperty("platform.active", "default_platform"); // NOI18N
+        ep.setProperty("platform.active", platformId); // NOI18N
 
         ep.setProperty(ProjectProperties.RUN_JVM_ARGS, jvmArgs); // NOI18N
         ep.setComment(ProjectProperties.RUN_JVM_ARGS, new String[] {
@@ -559,12 +589,11 @@ public class J2SEProjectBuilder {
         Logger.getLogger(loggerName).log(logRecord);
     }
 
-    private SpecificationVersion getDefaultSourceLevel () {
+    private SpecificationVersion getSourceLevel () {
         if (defaultSourceLevel != null) {
             return defaultSourceLevel;
         } else {
-            final JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-            final SpecificationVersion v = defaultPlatform.getSpecification().getVersion();
+            final SpecificationVersion v = platform.getSpecification().getVersion();
             return v;
         }
     }

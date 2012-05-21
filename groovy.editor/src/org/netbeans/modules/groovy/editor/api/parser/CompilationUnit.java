@@ -115,6 +115,9 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             if (classNode != null) {
                 return classNode;
             }
+            if (cache.isNonExistent(name)) {
+                return null;
+            }
             try {
                 // if it is a groovy file it is useless to load it with java
                 // at least until VirtualSourceProvider will do te job ;)
@@ -129,27 +132,22 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
                         TypeElement typeElement = ElementSearch.getClass(elements, name);
                         if (typeElement != null) {
                             final ClassNode node = createClassNode(name, typeElement);
-                            if (node != null) {
-                                cache.put(name, node);
-                                holder[0] = node;
-                            }
+                            holder[0] = node;
                         }
                     }
                 };
                 javaSource.runUserActionTask(task, true);
-                if (holder[0] != null) {
-                    return holder[0];
+                classNode = holder[0];
+                if (classNode == null) {
+                    // if null or not present in cache
+                    classNode = super.getClass(name);
                 }
+                cache.put(name, classNode);
+                return classNode;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
-            // if null or not present in cache
-            classNode = super.getClass(name);
-            if (classNode != null) {
-                cache.put(name, classNode);
-            }
-            return classNode;
+            return null;
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {
