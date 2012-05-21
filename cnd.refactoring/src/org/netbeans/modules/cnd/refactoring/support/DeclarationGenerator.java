@@ -55,6 +55,7 @@ public final class DeclarationGenerator {
 
     public enum Kind {
         INLINE_DEFINITION,
+        INLINE_DEFINITION_MAKRED_INLINE, // definition with "inline" keyword
         DECLARATION,
         EXTERNAL_DEFINITION
     }
@@ -67,6 +68,9 @@ public final class DeclarationGenerator {
         // type information is the first
         if (field.isStatic()) {
             out.append("static "); //NOI18N
+        }
+        if (kind == Kind.INLINE_DEFINITION_MAKRED_INLINE) {
+            out.append("inline "); //NOI18N
         }
         out.append(field.getType().getText()).append(" "); //NOI18N
         // add name
@@ -91,6 +95,9 @@ public final class DeclarationGenerator {
         // type information is the first
         if (field.isStatic()) {
             out.append("static "); //NOI18N
+        }
+        if (kind == Kind.INLINE_DEFINITION_MAKRED_INLINE) {
+            out.append("inline "); //NOI18N
         }
         out.append("void "); //NOI18N
         // add name
