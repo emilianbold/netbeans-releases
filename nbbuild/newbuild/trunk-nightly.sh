@@ -5,7 +5,7 @@ rm /tmp/measuring-Trunk-Nightly.log
 start_time=$(date '+%s')
 export start_time
 
-#Initialize basic scructure
+#Initialize basic structure
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
@@ -17,7 +17,7 @@ rm -rf $DIST
 if [ ! -z $WORKSPACE ]; then
     #I'm under hudson and have sources here, I need to clone them
     #Clean obsolete sources first
-    rm -rf $NB_ALL
+    run_and_measure "rm -rf $NB_ALL"
     run_and_measure "hg clone -U $WORKSPACE $NB_ALL"
     run_and_measure "hg -R $NB_ALL update $NB_BRANCH"
 fi
