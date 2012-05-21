@@ -73,6 +73,7 @@ import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.lexer.Token;
@@ -812,6 +813,8 @@ public class GroovyParser extends Parser {
         private final CompilerConfiguration config;
 
         private final ClassPath path;
+        
+        private final ClassNodeCache cache;
 
         private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
 
@@ -828,10 +831,14 @@ public class GroovyParser extends Parser {
             }
         };
 
-        public ParsingClassLoader(ClassPath path, CompilerConfiguration config) {
+        public ParsingClassLoader(
+                @NonNull ClassPath path,
+                @NonNull CompilerConfiguration config,
+                @NonNull ClassNodeCache cache) {
             super(path.getClassLoader(true), config);
             this.config = config;
             this.path = path;
+            this.cache = cache;
         }
         
         @Override
@@ -841,7 +848,11 @@ public class GroovyParser extends Parser {
                 final boolean preferClassOverScript,
                 final boolean resolve) throws ClassNotFoundException, CompilationFailedException {
             if (preferClassOverScript && !lookupScriptFiles) {
-                throw CNF;
+                //Ideally throw CNF but we need to workaround fix of issue #206811
+                //which hurts performance.
+                if (cache.isNonExistent(name)) {
+                    throw CNF;
+                }
             }
             return super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
         }

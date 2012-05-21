@@ -217,7 +217,8 @@ public final class ClassNodeCache {
             LOG.log(Level.FINE,"Resolver ClassLoader created.");  //NOI18N
             resolveLoader = new GroovyParser.ParsingClassLoader(
                     allResources,
-                    configuration);
+                    configuration,
+                    this);
             resolveLoaderRef = new SoftReference<GroovyClassLoader>(resolveLoader);
         }
         return resolveLoader;
