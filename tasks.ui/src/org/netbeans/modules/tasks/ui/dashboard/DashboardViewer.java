@@ -356,7 +356,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         Category category = categoryNode.getCategory();
         final CategoryNode newNode;
         if (opened) {
-            newNode = new CategoryNode(category);
+            newNode = new CategoryNode(category, false);
         } else {
             newNode = new ClosedCategoryNode(category);
         }
@@ -630,7 +630,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         });
     }
 
-    void loadCategory(Category category) {
+    public void loadCategory(Category category) {
         DashboardStorage storage = DashboardStorage.getInstance();
         List<TaskEntry> taskEntries = storage.readCategory(category.getName());
         category.setTasks(loadTasks(taskEntries));
@@ -646,8 +646,8 @@ public final class DashboardViewer implements PropertyChangeListener {
             // was category opened
             boolean open = !names.contains(categoryEntry.getCategoryName());
             if (open) {
-                List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
-                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks)));
+                //List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
+                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName()), true));
             } else {
                 catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
             }
@@ -800,6 +800,14 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                for (RepositoryNode repositoryNode : repositoryNodes) {
+                    repositoryNode.setExpanded(true);
+                }
+            }
+        });
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
