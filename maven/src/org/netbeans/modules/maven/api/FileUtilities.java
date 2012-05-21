@@ -116,7 +116,7 @@ public final class FileUtilities {
      */
     public static File convertArtifactToLocalRepositoryFile(Artifact artifact) {
         String path = EmbedderFactory.getProjectEmbedder().getLocalRepository().pathOf(artifact);
-        File base = convertStringToFile(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        File base = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
         return resolveFilePath(base, path);
     }
 
