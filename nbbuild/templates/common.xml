@@ -313,10 +313,10 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="verify-class-linkage" depends="jar,release">
-        <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false" ignores="${module.jar.verifylinkageignores}" maxwarnings="10">
+<!--        <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false" ignores="${module.jar.verifylinkageignores}" maxwarnings="10">
             <classpath refid="cp"/>
             <classpath path="${nbjdk.bootclasspath}"/>
-        </verifyclasslinkage>
+        </verifyclasslinkage>-->
     </target>
 
     <target name="-verify-apichanges"/><!-- just for overriding -->
