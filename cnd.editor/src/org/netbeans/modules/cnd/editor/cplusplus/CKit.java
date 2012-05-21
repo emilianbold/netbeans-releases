@@ -96,10 +96,10 @@ public class CKit extends CCKit {
     protected Action getToggleCommentAction() {
         return new CToggleCommentAction();
     }
-    private static String START_BLOCK_COMMENT = "/*"; // NOI18N
-    private static String END_BLOCK_COMMENT = "*/"; // NOI18N
-    private static String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
-    private static String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
+    private static final String START_BLOCK_COMMENT = "/*"; // NOI18N
+    private static final String END_BLOCK_COMMENT = "*/"; // NOI18N
+    private static final String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
+    private static final String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
 
     private static final class CCommentAction extends CommentAction {
 
@@ -122,6 +122,7 @@ public class CKit extends CCKit {
                 final BaseDocument doc = (BaseDocument) target.getDocument();
                 doc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         Caret caret = target.getCaret();
                         try {
@@ -182,6 +183,7 @@ public class CKit extends CCKit {
                 final BaseDocument doc = (BaseDocument) target.getDocument();
                 doc.runAtomicAsUser(new Runnable() {
 
+                    @Override
                     public void run() {
                         Caret caret = target.getCaret();
                         try {
@@ -269,6 +271,7 @@ public class CKit extends CCKit {
             final AtomicBoolean res = new AtomicBoolean(false);
             doc.render(new Runnable() {
 
+                @Override
                 public void run() {
                     Caret caret = target.getCaret();
                     Token<TokenId> tok = null;
