@@ -120,7 +120,6 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
     }
 
-    @RandomlyFails
     public void testStatusLocalDeleteIncomingEditAcceptLocal () throws Exception {
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalDeleteIncomingEdit(c);
@@ -131,7 +130,6 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertFalse(f2.exists());
     }
 
-    @RandomlyFails
     public void testStatusLocalDeleteIncomingEditAcceptRemote () throws Exception {
         ISVNClientAdapter c = getNbClient();
         prepareTestStatusLocalDeleteIncomingEdit(c);
@@ -158,6 +156,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertStatus(fcopy2, false, SVNStatusKind.ADDED);
     }
 
+    @RandomlyFails
     public void testStatusLocalDeleteIncomingDelete () throws Exception {
         ISVNClientAdapter c = getNbClient();
         ISVNStatus st1 = c.getSingleStatus(f1);
@@ -190,6 +189,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertStatus(fcopy2, false, SVNStatusKind.NORMAL);
     }
 
+    @RandomlyFails
     public void testStatusFolderLocalDeleteIncomingDelete () throws Exception {
         ISVNClientAdapter c = getNbClient();
         ISVNStatus st1 = c.getSingleStatus(f1);
