@@ -109,6 +109,7 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         assertComplete("$(':b|')", "$(':button|')", ":button");
         assertComplete("$(h|)", "$(':has(|)')", ":has()");
         assertComplete("$(:|)", "$(':focus|')", ":focus");
+        assertComplete("$(|)", "$(':odd|')", ":odd");
     }
         
     @Override

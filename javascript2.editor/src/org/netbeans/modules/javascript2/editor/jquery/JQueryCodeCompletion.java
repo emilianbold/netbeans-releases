@@ -328,14 +328,32 @@ public class JQueryCodeCompletion {
             return;
         }
         String wrapup = "";
+        String prefixText = prefix;
+        int anchorOffsetDelta = 0;
         if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
             wrapup = "'";
-        }
+            if (ts.token().id() == JsTokenId.IDENTIFIER) {
+                ts.movePrevious();
+            }
+            if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
+                prefixText = ":" + prefixText;
+                anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
+            } else {
+                anchorOffsetDelta = prefix.isEmpty() ? 1 : 0;
+            }
+//            if (prefix.isEmpty()) {
+//                anchorOffsetDelta = 1;
+//            }
+            
+            
+        } 
+        
+        
         if(contextMap.isEmpty()) {
             fillContextMap();
         }
         
-        SelectorContext context = findSelectorContext(prefix);
+        SelectorContext context = findSelectorContext(prefixText);
         
         if (context != null) {
             int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefix.length();
@@ -360,7 +378,7 @@ public class JQueryCodeCompletion {
                     case ID:
                         Collection<String> tagIds = getTagIds(context.prefix, parserResult);
                         for (String tagId : tagIds) {
-                            result.add(JQueryCompletionItem.createCSSItem("#" + tagId, docOffset, wrapup));
+                            result.add(JQueryCompletionItem.createCSSItem("#" + tagId, docOffset + anchorOffsetDelta, wrapup));
                         }
                         break;
                     case CLASS:
@@ -376,7 +394,7 @@ public class JQueryCodeCompletion {
                         }
                         for (SelectorItem selector : afterColonList) {
                             if (selector.getDisplayText().startsWith(context.prefix)) {
-                                anchorOffset = docOffset + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
+                                anchorOffset = docOffset + anchorOffsetDelta + ((prefix.isEmpty() || prefix.charAt(0) == ':') ? 0 : 1);
                                 result.add(JQueryCompletionItem.createJQueryItem(":" + selector.displayText, anchorOffset, wrapup, selector.getInsertTemplate()));
                             }
                         }
