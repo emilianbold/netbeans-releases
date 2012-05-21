@@ -157,10 +157,10 @@ public class JsCodeComplationBase extends JsTestBase {
         CompletionProposal proposal = found.get();
         assertNotNull(proposal);
 
-        final String text = proposal.getInsertPrefix();
+        final String text = proposal.getCustomInsertTemplate() != null ? proposal.getCustomInsertTemplate() : proposal.getInsertPrefix();
         final int offset = proposal.getAnchorOffset();
         final int len = pipeOffset - offset;
-
+        final int[] resultPipeOffset = new int[1];
 
         //since there's no access to the GsfCompletionItem.defaultAction() I've copied important code below:
         doc.runAtomic(new Runnable() {
@@ -170,32 +170,41 @@ public class JsCodeComplationBase extends JsTestBase {
                 try {
                     int semiPos = -2;
                     String textToReplace = doc.getText(offset, len);
-                    if (text.equals(textToReplace)) {
+                    int newCaretPos = text.indexOf("${cursor}");
+                    String rtext = text;
+                    if (newCaretPos > -1) {
+                        rtext = text.substring(0, newCaretPos) + text.substring(newCaretPos + 9);
+                        resultPipeOffset[0] = offset + newCaretPos;
+                    } else {
+                        resultPipeOffset[0] = offset + rtext.length();
+                    }
+                    if (rtext.equals(textToReplace)) {
                         if (semiPos > -1) {
                             doc.insertString(semiPos, ";", null); //NOI18N
                         }
                         return;
                     }
                     int common = 0;
-                    while (text.regionMatches(0, textToReplace, 0, ++common)) {
+                    while (rtext.regionMatches(0, textToReplace, 0, ++common)) {
                         //no-op
                     }
                     common--;
                     Position position = doc.createPosition(offset + common);
                     Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                     doc.remove(offset + common, len - common);
-                    doc.insertString(position.getOffset(), text.substring(common), null);
+                    doc.insertString(position.getOffset(), rtext.substring(common), null);
                     if (semiPosition != null) {
                         doc.insertString(semiPosition.getOffset(), ";", null);
                     }
+                    
                 } catch (BadLocationException e) {
                     // Can't update
                 }
             }
         });
 
-
         assertEquals(expectedContent.toString(), doc.getText(0, doc.getLength()));
+        assertEquals(expPipeOffset, resultPipeOffset[0]);
 
     }
     
