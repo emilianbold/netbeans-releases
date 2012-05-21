@@ -424,8 +424,10 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
 
-            if (!preferClosedPosition(inclusion1)) {
+            if (!preferClosedPosition(inclusion1, originalPos1)) {
                 cancelResizingOfMovingComponent();
+            } else if (inclusion2 != null) {
+                preferClosedPosition(inclusion2, originalPos2);
             }
 
             int m = mergeSequentialInclusions(inclusion1, inclusion2);
@@ -3335,14 +3337,13 @@ class LayoutFeeder implements LayoutConstants {
      * group instead of independently with it). In such case this methods
      * modifies the given IncludeDesc object and returns true.
      */
-    private boolean preferClosedPosition(IncludeDesc newDesc) {
+    private boolean preferClosedPosition(IncludeDesc newDesc, IncludeDesc origDesc) {
         if (originalPosition == null) {
             return false;
         }
 
         // Check if something is moved within a closed group (typically moved
         // vertically within a column).
-        IncludeDesc origDesc = originalInclusion1;
         if (origDesc != null && origDesc != newDesc && originalPosition.isClosedSpace(origDesc.alignment)
                 && layoutModel.getChangeMark().equals(undoCheckMark)) {
             LayoutInterval origParent = origDesc.parent;
@@ -4415,7 +4416,7 @@ class LayoutFeeder implements LayoutConstants {
                     if (LayoutInterval.hasAnyResizingNeighbor(parent, TRAILING)
                             && LayoutInterval.getCount(parent, TRAILING, true) > 0
                             && !LayoutInterval.wantResize(parent)) {
-                        operations.maintainSize(parent, LayoutInterval.wantResize(ext2), dimension, false);
+                        operations.maintainSize(parent, LayoutInterval.wantResize(ext1), dimension, false);
                     }
                     if (parent.getSubIntervalCount() == 1) {
                         LayoutInterval last = layoutModel.removeInterval(parent, 0);
