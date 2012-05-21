@@ -57,6 +57,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
                              position=20000)
 public class ResultsSwitchViewAction implements NodeActionsProviderFilter {
     
+    static final String ID = "ResultsView";
     private static final String treeNodeFormat =
             "{DefaultLocalsColumn} = ({"+Constants.LOCALS_TYPE_COLUMN_ID+"}) "+"{"+Constants.LOCALS_VALUE_COLUMN_ID+"}"; // NOI18N
     
@@ -74,10 +75,14 @@ public class ResultsSwitchViewAction implements NodeActionsProviderFilter {
         Action[] newActions = new Action[n+1];
         System.arraycopy(actions, 0, newActions, 0, n);
         if (switchViewAction == null) {
-            switchViewAction = VariablesSwitchViewAction.createSwitchViewAction("ResultsView", treeNodeFormat);
+            switchViewAction = getSwitchViewAction();
         }
         newActions[n] = switchViewAction;
         return newActions;
+    }
+
+    static Action getSwitchViewAction() {
+        return VariablesSwitchViewAction.getSwitchViewAction(ID, treeNodeFormat);
     }
 
 }
