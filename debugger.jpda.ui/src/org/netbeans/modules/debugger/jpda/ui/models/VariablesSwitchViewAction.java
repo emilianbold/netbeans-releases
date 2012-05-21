@@ -132,6 +132,7 @@ public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
             }
         }
         
+        @Override
         public JMenuItem getPopupPresenter() {
             JMenu viewAsPopup = new JMenu(NbBundle.getMessage(SwitchViewAction.class, "CTL_ViewAs_Popup"));
             JRadioButtonMenuItem tableView = new ViewAsMenuItem(VIEW_TYPE_TABLE);
@@ -151,6 +152,7 @@ public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
 
             public ViewAsMenuItem(final String type) {
                 super(new AbstractAction(NbBundle.getMessage(NumericDisplayFilter.class, "CTL_View_"+type)) {
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             onViewAs(type);
                         }
