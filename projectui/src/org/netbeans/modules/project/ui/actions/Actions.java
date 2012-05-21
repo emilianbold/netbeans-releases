@@ -56,11 +56,12 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Factory for all kinds of actions used in projectui and
  *projectuiapi.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.ActionsFactory.class)
+@ServiceProvider(service=ActionsFactory.class)
 public class Actions implements ActionsFactory {
     
     //private static final Actions INSTANCE = new Actions();  
@@ -78,25 +79,25 @@ public class Actions implements ActionsFactory {
     private static Action MOVE_PROJECT;
     private static Action RENAME_PROJECT;
 
-    public synchronized Action setAsMainProjectAction() {
+    @Override public synchronized Action setAsMainProjectAction() {
         if ( SET_AS_MAIN_PROJECT == null ) {
             SET_AS_MAIN_PROJECT = new SetMainProject();
         }
         return SET_AS_MAIN_PROJECT;
     }
     
-    public synchronized Action customizeProjectAction() {
+    @Override public synchronized Action customizeProjectAction() {
         if ( CUSTOMIZE_PROJECT == null ) {
             CUSTOMIZE_PROJECT = new CustomizeProject();
         }
         return CUSTOMIZE_PROJECT;
     }
     
-    public synchronized Action openSubprojectsAction() {
+    @Override public synchronized Action openSubprojectsAction() {
         return SystemAction.get(OpenSubprojects.class);
     }
     
-    public Action closeProjectAction() {
+    @Override public Action closeProjectAction() {
         return closeProject();
     }
 
@@ -107,7 +108,7 @@ public class Actions implements ActionsFactory {
         return CLOSE_PROJECT;        
     }
     
-    public Action newFileAction() {
+    @Override public Action newFileAction() {
         return newFile();
     }
 
@@ -118,44 +119,44 @@ public class Actions implements ActionsFactory {
         return NEW_FILE;
     }
     
-    public Action deleteProjectAction() {
+    @Override public Action deleteProjectAction() {
         return deleteProject();
     }
 
-    public Action copyProjectAction() {
+    @Override public Action copyProjectAction() {
         return copyProject();
     }
     
-    public Action moveProjectAction() {
+    @Override public Action moveProjectAction() {
         return moveProject();
     }
     
-    public Action renameProjectAction() {
+    @Override public Action renameProjectAction() {
         return renameProject();
     }
     
-    public synchronized Action newProjectAction() {
+    @Override public synchronized Action newProjectAction() {
         return new NewProject();
     }
     
-    public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon ) {
+    @Override public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon ) {
         return new ProjectAction( command, namePattern, icon, null );
     }
     
-    public Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
+    @Override public Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
         return new ProjectAction( performer, namePattern, icon, null );
     }
     
-    public Action mainProjectCommandAction(String command, String name, Icon icon) {
+    @Override public Action mainProjectCommandAction(String command, String name, Icon icon) {
         return new MainProjectAction( command, name, icon );
     }
     
-    public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
+    @Override public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
         return new MainProjectAction( performer, name, icon );
     }
 
     
-    public Action fileCommandAction(String command, String name, Icon icon) {
+    @Override public Action fileCommandAction(String command, String name, Icon icon) {
         return new FileAction( command, name, icon, null );
     }
 
@@ -363,7 +364,7 @@ public class Actions implements ActionsFactory {
         return a;
     }
     
-    public Action setProjectConfigurationAction() {
+    @Override public Action setProjectConfigurationAction() {
         return SystemAction.get(ActiveConfigAction.class);
     }
 
