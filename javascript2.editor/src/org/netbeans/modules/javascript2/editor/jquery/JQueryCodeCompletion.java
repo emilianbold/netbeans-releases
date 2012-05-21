@@ -388,6 +388,9 @@ public class JQueryCodeCompletion {
 
     private Collection<String> getTagIds(String tagIdPrefix, ParserResult parserResult) {
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return Collections.emptyList();
+        }
         Project project = FileOwnerQuery.getOwner(fo);
         HashSet<String> unigue = new HashSet<String>();
         try {
@@ -408,6 +411,9 @@ public class JQueryCodeCompletion {
 
     private Collection<String> getCSSClasses(String classPrefix, ParserResult parserResult) {
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+        if(fo == null) {
+            return Collections.emptyList();
+        }
         Project project = FileOwnerQuery.getOwner(fo);
         HashSet<String> unigue = new HashSet<String>();
         try {
