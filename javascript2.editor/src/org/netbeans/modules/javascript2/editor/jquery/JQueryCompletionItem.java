@@ -214,7 +214,7 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         
         public JQuerySimpleItem(ElementHandle element, int anchorOffset, String surround, String template) {
             super(element, anchorOffset, surround);
-            this.template = (template != null && !template.isEmpty() ? ":" + template : null);
+            this.template = (template != null && !template.isEmpty() ? ":" + template : element.getName() + "${cursor}");
         }
 
         @Override

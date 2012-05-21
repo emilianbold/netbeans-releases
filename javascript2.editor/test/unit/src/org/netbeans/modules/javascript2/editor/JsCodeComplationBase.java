@@ -203,8 +203,8 @@ public class JsCodeComplationBase extends JsTestBase {
             }
         });
 
-        assertEquals(expPipeOffset, resultPipeOffset[0]);
         assertEquals(expectedContent.toString(), doc.getText(0, doc.getLength()));
+        assertEquals(expPipeOffset, resultPipeOffset[0]);
 
     }
     
