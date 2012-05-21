@@ -121,7 +121,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements ContextAw
     }
 
     @Override public Action createContextAwareInstance(Lookup context) {
-        return new SelectNodeAction((String) getValue("iconBcase"), (String) getValue(NAME), findIn, context);
+        return new SelectNodeAction((String) getValue("iconBase"), (String) getValue(NAME), findIn, context);
     }
     
 }
