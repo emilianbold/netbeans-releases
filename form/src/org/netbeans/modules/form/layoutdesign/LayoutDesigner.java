@@ -1394,10 +1394,9 @@ public final class LayoutDesigner implements LayoutConstants {
         if (newSize == Integer.MIN_VALUE) {
             units = accelerateWheel(events, units);
             newSize = currentSize + units;
-        }
-
-        if (newSize < 0 && newSize != NOT_EXPLICITLY_DEFINED) {
-            return null;
+            if (newSize < 0) {
+                newSize = 0;
+            }
         }
 
         String hint;
