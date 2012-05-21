@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
@@ -69,6 +70,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.utils.LangUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -274,7 +277,16 @@ public final class ParserProviderImpl extends CsmParserProvider {
         
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
-            parser = new FortranParserEx(ts);
+            int form = FortranParserEx.FIXED_FORM;
+            try {
+                form = LangUtils.detectFortranFormat(file.getBuffer().getText()) == LangUtils.FORTRAN_FIXED_FORMAT_VALUE ? 
+                        FortranParserEx.FIXED_FORM : 
+                        FortranParserEx.FREE_FORM;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            parser = new FortranParserEx(ts, form);
         }
 
         @Override

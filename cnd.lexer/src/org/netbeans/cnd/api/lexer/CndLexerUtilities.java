@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
+import org.netbeans.modules.cnd.utils.LangUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.lookup.Lookups;
 
@@ -216,60 +217,7 @@ public final class CndLexerUtilities {
         } catch (BadLocationException ex) {
             return FortranFormat.FIXED;
         }
-        int column = 0;
-        boolean ignoreRestLine = false;
-        for (int i = 0; i < sequence.length(); i++) {
-            char c = sequence.charAt(i);
-            if (c == '\n') {
-                column = 0;
-                ignoreRestLine = false;
-                continue;
-            }
-            if (ignoreRestLine) {
-                continue;
-            }
-            column++;
-            switch (column) {
-                case 1:
-                    if (c == 'C' || c == 'c' || c == '*') {
-                        //like to fixed format
-                        ignoreRestLine = true;
-                        break;
-                    } else if (c >= '0' && c <= '9') {
-                        //like to fixed format
-                        break;
-                    } else if (c == ' ') {
-                        // undefined format
-                        break;
-                    } else if (c == '\t') {
-                        // undefined format
-                        column = 6;
-                        break;
-                    } else {
-                        return FortranFormat.FREE;
-                    }
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    if (c >= '0' && c <= '9') {
-                        //like to fixed format
-                        break;
-                    } else if (c == ' ') {
-                        // undefined format
-                        break;
-                    } else if (c == '\t') {
-                        // undefined format
-                        column = 6;
-                        break;
-                    } else {
-                        return FortranFormat.FREE;
-                    }
-                default:
-                    break;
-            }
-        }
-        return FortranFormat.FIXED;
+        return LangUtils.detectFortranFormat(sequence) == LangUtils.FORTRAN_FIXED_FORMAT_VALUE ? FortranFormat.FIXED : FortranFormat.FREE;
     }
 
     public static boolean isCppIdentifier(CharSequence id) {
