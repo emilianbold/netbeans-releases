@@ -69,6 +69,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
@@ -102,20 +103,21 @@ public class EntityClassInfo {
     
     private EntityResourceModelBuilder builder;
     private final String entityFqn;
-    private JavaSource entitySource;
     private String name;
     private String type;
     private String packageName;
     private Collection<FieldInfo> fieldInfos;
     private FieldInfo idFieldInfo;
+    private ElementHandle<TypeElement> handle;
 
     /** Creates a new instance of ClassInfo */
-    public EntityClassInfo(String entityFqn, Project project, 
-            EntityResourceModelBuilder builder)
+    public EntityClassInfo(String entityFqn, ElementHandle<TypeElement> handle, 
+            Project project, EntityResourceModelBuilder builder)
     {
         this.entityFqn = entityFqn;
         this.fieldInfos = new ArrayList<FieldInfo>();
         this.builder = builder;
+        this.handle = handle; 
 
         extractFields(project);
 
@@ -141,18 +143,18 @@ public class EntityClassInfo {
             final JavaSource source = getJavaSource(project);
             source.runUserActionTask(new AbstractTask<CompilationController>() {
 
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(Phase.RESOLVED);
-                    ClassTree tree = JavaSourceHelper.getTopLevelClassTree(controller);
-                    assert controller.getCompilationUnit() != null : 
-                        source.getFileObjects().iterator().next().getPath();
-                    assert controller.getCompilationUnit().getPackageName() != null : 
-                        "NULL package " + source.getFileObjects().iterator().next().getPath();
-                    packageName = controller.getCompilationUnit().getPackageName().toString();
-                    name = tree.getSimpleName().toString();
-                    type = packageName + "." + name;
+                    TypeElement classElement = handle.resolve(controller);
+                    if ( classElement == null ){
+                        return;
+                    }
+                    packageName = controller.getElements().getPackageOf(classElement).
+                        getQualifiedName().toString();
+                    name = classElement.getSimpleName().toString();
+                    type = classElement.getQualifiedName().toString();
 
-                    TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
                     if (useFieldAccess(classElement, controller )) {
                         extractFields((DeclaredType)classElement.asType() , 
                                 classElement, controller);
