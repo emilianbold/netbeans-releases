@@ -1,10 +1,6 @@
 #!/bin/bash
 set -x
 
-rm /tmp/measuring-Trunk-Nightly.log
-start_time=$(date '+%s')
-export start_time
-
 #Initialize basic structure
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
