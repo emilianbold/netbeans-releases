@@ -387,7 +387,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 project = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/" + getProjectName()));
                 checkMissingServer(getProjectName());
             } else {
-                projectRoot = new File(getProjectsRootDir(), projectName);
+                projectRoot = new File(new File(getProjectsRootDir(), getJavaEEversion().name()), projectName);
                 LOGGER.log(Level.INFO, "Using project in: {0}", projectRoot.getAbsolutePath()); //NOI18N
                 if (!projectRoot.exists()) {
                     if (!getProjectType().isAntBasedProject()) {
