@@ -23,6 +23,8 @@ $phpdocDir = null;
 $phpDir = "php5";
 if (strstr(phpversion(), "5.3")) {
 	$phpDir = "php5.3";
+} elseif (strstr(phpversion(), "5.4")) {
+	$phpDir = "php5.4";
 }
 
 // Parse arguments:
@@ -554,6 +556,8 @@ function print_class ($classRef, $tabs = 0) {
 		}
 	}
 	print " {\n";
+
+        // XXX print out traits
 
 	// process constants
 	$constsRef = $classRef->getConstants();

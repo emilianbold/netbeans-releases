@@ -191,11 +191,14 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
         routerBrowseButton = new JButton();
         noteLabel = new JLabel();
         phpVersionInfoLabel = new JLabel();
+
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.runAsLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(hostnameLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.hostnameLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.portLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(urlHintLabel, " "); // NOI18N
         Mnemonics.setLocalizedText(routerLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerLabel.text")); // NOI18N
+
+        routerTextField.setColumns(20);
         Mnemonics.setLocalizedText(routerBrowseButton, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerBrowseButton.text")); // NOI18N
         routerBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -218,7 +221,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(routerTextField)
+                        .addComponent(routerTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(routerBrowseButton))
                     .addGroup(layout.createSequentialGroup()
@@ -234,7 +237,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                 .addComponent(phpVersionInfoLabel)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addComponent(noteLabel)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -259,7 +262,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                     .addComponent(routerTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(routerBrowseButton))
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(phpVersionInfoLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -307,7 +310,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
         // update hint & store project url as well (for running/debugging the project)
         private void updateAndSetUrl() {
             String url = createRunConfig().getUrlHint();
-            urlHintLabel.setText(url != null ? url : " "); // NOI18N
+            urlHintLabel.setText(url != null ? "<html><body>" + url : " "); // NOI18N
             putValue(PhpProjectProperties.URL, url);
         }
     }
