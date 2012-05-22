@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.analysis.spi;
 
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**A static analyzer. Called by the infrastructure on a given {@link Scope} to perform
@@ -75,6 +77,7 @@ public interface Analyzer extends Cancellable {
         private final String id;
         private final String displayName;
         private final String iconPath;
+        private final Image icon;
 
         /**
          *
@@ -86,6 +89,21 @@ public interface Analyzer extends Cancellable {
             this.id = id;
             this.displayName = displayName;
             this.iconPath = iconPath;
+            this.icon = null;
+        }
+        
+        /**
+         *
+         * @param id a unique id of the analyzer
+         * @param displayName the display name of the analyzer
+         * @param icon an icon associated with this analyzer
+         * @since 1.6
+         */
+        public AnalyzerFactory(String id, String displayName, Image icon) {
+            this.id = id;
+            this.displayName = displayName;
+            this.iconPath = null;
+            this.icon = icon;
         }
 
         /**If additional modules are required to run the analysis (for the given {@code context}),
@@ -225,8 +243,9 @@ public interface Analyzer extends Cancellable {
                 }
 
                 @Override
-                public String getAnalyzerIconPath(AnalyzerFactory analyzer) {
-                    return analyzer.iconPath;
+                public Image getAnalyzerIcon(AnalyzerFactory analyzer) {
+                    if (analyzer.icon != null) return analyzer.icon;
+                    else return ImageUtilities.loadImage(analyzer.iconPath);
                 }
 
                 @Override
