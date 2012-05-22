@@ -158,7 +158,7 @@ public class Actions {
     public static List<Action> getCategoryPopupActions(CategoryNode categoryNode) {
         Category category = categoryNode.getCategory();
         List<Action> actions = new ArrayList<Action>();
-        
+
         DeleteCategoryAction deleteCategoryAction = new DeleteCategoryAction(category);
         deleteCategoryAction.setEnabled(categoryNode.isOpened());
         actions.add(deleteCategoryAction);
@@ -276,15 +276,18 @@ public class Actions {
         }
     }
 
-    private static class RefreshRepositoryAction extends AbstractAction {
+    public static class RefreshRepositoryAction extends AbstractAction {
+
+        private final RepositoryNode repositoryNode;
 
         public RefreshRepositoryAction(RepositoryNode repositoryNode) {
             super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
+            this.repositoryNode = repositoryNode;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
+            repositoryNode.refreshContent();
         }
     }
 

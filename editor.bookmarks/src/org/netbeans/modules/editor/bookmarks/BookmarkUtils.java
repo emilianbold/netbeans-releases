@@ -45,12 +45,17 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.modules.editor.bookmarks.ui.BookmarksView;
 import org.openide.cookies.EditorCookie;
@@ -180,5 +185,16 @@ public final class BookmarkUtils {
         return ec;
     }
     
-}
+    public static URI toURI(Project project) {
+        return (project != null) ? project.getProjectDirectory().toURI() : null;
+    }
+    
+    public static Map<URI,Project> toURIMap(List<Project> projects) {
+        Map<URI,Project> uri2Project = new HashMap<URI, Project>(projects.size() << 1, 0.6f);
+        for (Project p : projects) {
+            uri2Project.put(toURI(p), p);
+        }
+        return uri2Project;
+    }
 
+}

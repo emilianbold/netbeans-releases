@@ -49,6 +49,8 @@ import com.sun.tools.ws.wscompile.AbortException;
 import com.sun.tools.ws.wscompile.BadCommandLineException;
 import com.sun.tools.ws.wscompile.ErrorReceiver;
 import com.sun.tools.ws.wscompile.WsimportOptions;
+import com.sun.tools.ws.wsdl.parser.MetadataFinder;
+import com.sun.tools.ws.wsdl.parser.WSDLInternalizationLogic;
 import com.sun.xml.ws.util.JAXWSUtils;
 import java.io.File;
 import java.net.URL;
@@ -227,8 +229,12 @@ public class WsdlModeler {
 
             options.parseBindings(new IdeErrorReceiver(errorHandler));
 
+            IdeErrorReceiver ideErrorReceiver = new IdeErrorReceiver(errorHandler);
+            MetadataFinder finder = new MetadataFinder( new WSDLInternalizationLogic(),
+                    options, ideErrorReceiver);
+            finder.parseWSDL();
             ideWSDLModeler =
-                    new WSDLModeler(options, new IdeErrorReceiver(errorHandler));
+                    new WSDLModeler(options, ideErrorReceiver, finder);
             Model tmpModel = ideWSDLModeler.buildModel();
 
             if (tmpModel != null) {
@@ -293,6 +299,11 @@ public class WsdlModeler {
 
         IdeErrorReceiver(WsdlErrorHandler errorHandler) {
             this.errorHandler = errorHandler;
+        }
+
+        @Override
+        public void error(Exception excptn) {
+            super.error(excptn);
         }
 
         public void warning(SAXParseException ex) throws AbortException {

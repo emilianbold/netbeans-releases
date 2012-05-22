@@ -758,6 +758,9 @@ public class VisualState implements LayoutConstants {
         int index = parent.indexOf(gap);
         if (index > 0) {
             neighbors[LEADING] = parent.getSubInterval(index-1);
+            if (neighbors[LEADING].isEmptySpace()) {
+                return null; // for robustness, 2 consecutive gaps happened somehow, would throw AE below
+            }
             gapPos[LEADING] = neighbors[LEADING].getCurrentSpace().positions[dimension][TRAILING];
         } else {
             gapPos[LEADING] = (resizing ? parent.getParent() : parent)
@@ -765,6 +768,9 @@ public class VisualState implements LayoutConstants {
         }
         if (index+1 < parent.getSubIntervalCount()) {
             neighbors[TRAILING] = parent.getSubInterval(index+1);
+            if (neighbors[TRAILING].isEmptySpace()) {
+                return null; // for robustness, 2 consecutive gaps happened somehow, would throw AE below
+            }
             gapPos[TRAILING] = neighbors[TRAILING].getCurrentSpace().positions[dimension][LEADING];
         } else {
             gapPos[TRAILING] = (resizing ? parent.getParent() : parent)
