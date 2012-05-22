@@ -119,7 +119,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
         List<FacesManagedBean> beans = getJsfManagedBeans(target, context);
         List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
         for (FacesManagedBean bean : beans) {
-            if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() == null) {
+            if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() != null) {
                 result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
             }
         }
