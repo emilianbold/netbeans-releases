@@ -195,11 +195,12 @@ cd ..
 #ML_BUILD
 if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
-    if [ ! -d $NB_ALL/l10n/.hg ] ; then
+    if [ -d $NB_ALL/l10n/.hg ] ; then
         cd $NB_ALL/l10n
         run_and_measure "hg pull"
         run_and_measure "hg update --clean --rev $L10N_BRANCH"
     else
+        rm -Rf $NB_ALL/l10n
         run_and_measure "hg clone --rev $L10N_BRANCH $ML_REPO l10n"
     fi
     
