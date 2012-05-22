@@ -55,8 +55,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JToggleButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -67,10 +72,20 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.*;
-import org.netbeans.api.project.*;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -80,7 +95,12 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.*;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -448,7 +468,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         // store signing info
         editableProps.setProperty(JNLP_SIGNING, signing);
         editableProps.setProperty(JNLP_SIGNED, "".equals(signing) ? "false" : "true"); //NOI18N
-        setOrRemove(editableProps, JNLP_SIGNING_KEY, signingKeyAlias);
+        setOrRemove(editableProps, JNLP_SIGNING_KEY, SIGNING_GENERATED.equals(signing) ? getShortProjectName() : signingKeyAlias);
         setOrRemove(editableProps, JNLP_SIGNING_KEYSTORE, signingKeyStore);
         setOrRemove(privProps, JNLP_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JNLP_SIGNING_KEY_PASSWORD, signingKeyPassword);
@@ -461,6 +481,28 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         storeProperties(editableProps, appletParamsProperties, JNLP_APPLET_PARAMS_PREFIX);
     }
 
+    /**
+     * Creates short name from project name to be used as keystore name and alias
+     * @return String with shortened project name
+     */
+    private String getShortProjectName() {
+        final int maxLen = 8; // given by old DOS max file name length
+        FileObject projDir = project.getProjectDirectory();
+        String name = projDir.getName();
+        assert name != null;
+        if(name.length() <= maxLen) { 
+            return name;
+        }
+        String result = "";
+        final double ratio = (double)name.length() / (double)maxLen;
+        for(int i = 1; i <= maxLen; i++) {
+            assert (int)Math.floor( (double)(i - 1) * ratio ) >= 0;
+            assert (int)Math.ceil( (double)i * ratio ) <= name.length();
+            result += name.charAt( i <= maxLen/2 ? (int)Math.floor( (double)(i - 1) * ratio ) : (int)Math.ceil( (double)i * ratio )-1 );
+        }
+        return result;
+    }
+    
     private void setOrRemove(EditableProperties props, String name, char [] value) {
         setOrRemove(props, name, value != null ? new String(value) : null);
     }
