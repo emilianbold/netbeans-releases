@@ -104,11 +104,9 @@ public final class LibraryManager {
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
                 CsmUID<CsmProject> library = entry.getLibrary();
-                if(library != null) {
-                    CsmProject lib = library.getObject();
-                    if (lib instanceof LibProjectImpl) {
-                        res.add((LibProjectImpl)lib);
-                    }
+                CsmProject lib = library.getObject();
+                if (lib instanceof LibProjectImpl) {
+                    res.add((LibProjectImpl)lib);
                 }
             }
         }
@@ -526,7 +524,8 @@ public final class LibraryManager {
             if (libraryUID == null) {
                 createUID();
             }
-            return libraryUID;
+            assert libraryUID != null : "libraryUID is null for folder " + getFolder();
+            return libraryUID;            
         }
 
         private synchronized void createUID() {
