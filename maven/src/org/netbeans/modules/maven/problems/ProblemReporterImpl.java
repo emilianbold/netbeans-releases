@@ -209,7 +209,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
      * and some problems encapsulate several missing artifacts.
      * @param a an artifact (scope permitted but ignored)
      */
-    public void addMissingArtifact(Artifact a) {
+    private void addMissingArtifact(Artifact a) {
         synchronized (reports) {
             a = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
             if (missingArtifacts.add(a)) {
