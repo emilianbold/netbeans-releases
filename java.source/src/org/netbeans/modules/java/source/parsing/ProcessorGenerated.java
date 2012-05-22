@@ -51,6 +51,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
@@ -80,6 +82,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     private final boolean writeable;
     private static final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
             new HashMap<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>>();
+    private ClasspathInfo owner;
     private ClassPath userSources;
     private ClassPath aptSources;
     private File cachedFile;
@@ -104,20 +107,29 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     public void bind(
+         @NonNull final ClasspathInfo  owner,
          @NonNull final ClassPath userSources,
          @NonNull final ClassPath aptSources) {
+        Parameters.notNull("owner", owner);             //NOI18N
         Parameters.notNull("userSources", userSources); //NOI18N
-        if (this.userSources != null) {
-            throw new IllegalStateException();
+        if (this.owner != null) {
+            throw new IllegalStateException(MessageFormat.format(
+                "Previous owner: {0}({1}), New owner: {2}({3})",                //NOI18N
+                this.owner,
+                System.identityHashCode(this.owner),
+                owner,
+                System.identityHashCode(owner)));
         }
-        if (this.aptSources != null) {
-            throw new IllegalStateException();
-        }
+        assert this.userSources == null;
+        assert this.aptSources == null;
+        
         if (!writeable) {
             return;
         }
+        
         this.userSources = userSources;
         this.aptSources = aptSources;
+        this.owner = owner;
     }
     
     public void register(
