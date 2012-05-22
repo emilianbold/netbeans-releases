@@ -2501,9 +2501,10 @@ class LayoutOperations implements LayoutConstants {
     }
 
     /**
-     * Fixes invalid configurations of gaps: two (or more) adjacent gaps, or
-     * adjacent components with no gap. Assumed to be used as a filter for
-     * loaded (old) forms or converted layouts that could potentially be buggy.
+     * Fixes invalid configurations of gaps, e.g. two (or more) adjacent gaps,
+     * adjacent components with no gap, invalid default gaps, etc. To be used as
+     * a filter for loaded (old) forms or converted layouts that could
+     * potentially be buggy.
      * @return true if any change was made
      */
     boolean fixSurplusOrMissingGaps(LayoutInterval group, int dimension) {
@@ -2537,6 +2538,11 @@ class LayoutOperations implements LayoutConstants {
                             interval = group.getSubInterval(i);
                             updated = true;
                         }
+                    }
+                    if (interval.getPreferredSize() == 0 && interval.getMinimumSize() == NOT_EXPLICITLY_DEFINED) {
+                        // gaps with 0 pref size and default min size render as default,
+                        // but presented to the user as 0 size; this is wrong configuration
+                        layoutModel.setIntervalSize(interval, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, interval.getMaximumSize());
                     }
                 } else if (prev != null && prev.isComponent() && interval.isComponent()) {
                     // no gap between two components
