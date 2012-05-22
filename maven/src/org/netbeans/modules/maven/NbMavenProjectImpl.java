@@ -412,8 +412,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
-        String basedir = project.getEmbedder().getLocalRepository().getBasedir();
-        File file = FileUtil.normalizeFile(new File(basedir));
+        File file = project.getEmbedder().getLocalRepositoryFile();
         FileUtil.refreshFor(file);
     }
 
