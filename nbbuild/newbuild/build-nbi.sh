@@ -104,11 +104,13 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     if [ $IS_NEW_MAC_FAILED -eq 0 ] && [ $IS_NEW_MAC_CONNECT -eq 0 ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
-        run_and_measure "scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles" "copy the bits back EN"
-        ERROR_CODE=$?
-        if [ $ERROR_CODE != 0 ]; then
-            echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
-            exit $ERROR_CODE;
+        if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
+            run_and_measure "scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles" "copy the bits back EN"
+            ERROR_CODE=$?
+            if [ $ERROR_CODE != 0 ]; then
+                echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
+                exit $ERROR_CODE;
+            fi
         fi
 	if [ 1 -eq $ML_BUILD ] ; then
 		run_and_measure "scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles" "copy the bits back ML"
