@@ -489,6 +489,20 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 _updateBackAndForward();
             }
         });
+        eng.getLoadWorker().runningProperty().addListener( new ChangeListener<Boolean> () {
+
+            @Override
+            public void changed( ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1 ) {
+                final boolean isRunning = eng.getLoadWorker().isRunning();
+                SwingUtilities.invokeLater( new Runnable() {
+
+                    @Override
+                    public void run() {
+                        propSupport.firePropertyChange( WebBrowser.PROP_RUNNING, !isRunning, isRunning );
+                    }
+                });
+            }
+        });
         container.setScene( new Scene( view ) );
         
         browser = view;
