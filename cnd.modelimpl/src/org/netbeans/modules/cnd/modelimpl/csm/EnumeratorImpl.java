@@ -127,7 +127,12 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 
     @Override
     public CharSequence getQualifiedName() {
-	return CharSequences.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+        CsmEnum e = _getEnumeration();
+        if (e != null) {
+            return CharSequences.create(e.getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
+        } else {
+            return CharSequences.create(getQualifiedNamePostfix());
+        }
     }
 
     private synchronized CsmEnum _getEnumeration() {
