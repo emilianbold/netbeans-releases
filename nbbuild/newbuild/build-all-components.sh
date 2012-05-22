@@ -180,17 +180,17 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 cd ..
 
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc"
-ERROR_CODE=$?
+#run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc"
+#ERROR_CODE=$?
 
-create_test_result "build.javadoc" "Build javadoc" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Building of Javadoc Distrubution failed"
-#    exit $ERROR_CODE;
-else
-    mv nbbuild/NetBeans-*-javadoc.zip $DIST/zip/$BASENAME-javadoc.zip
-    cp -r nbbuild/build/javadoc $DIST/
-fi
+#create_test_result "build.javadoc" "Build javadoc" $ERROR_CODE
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - Building of Javadoc Distrubution failed"
+##    exit $ERROR_CODE;
+#else
+#    mv nbbuild/NetBeans-*-javadoc.zip $DIST/zip/$BASENAME-javadoc.zip
+#    cp -r nbbuild/build/javadoc $DIST/
+#fi
 
 #ML_BUILD
 if [ $ML_BUILD == 1 ]; then

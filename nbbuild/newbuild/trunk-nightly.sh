@@ -74,7 +74,7 @@ run_and_measure
 if [ $UPLOAD_ML == 1 ]; then
     cp $DIST/zip/$BASENAME-platform-src.zip $DIST/ml/zip/
     cp $DIST/zip/$BASENAME-src.zip $DIST/ml/zip/
-    cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
+#    cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
     cp $DIST/zip/hg-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/ide-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/stable-UC-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
@@ -104,12 +104,9 @@ fi
 
 if [ $UPLOAD_ML == 1 ]; then
     run_and_measure "mv $DIST/jnlp $DIST/ml/"
-    run_and_measure "mv $DIST/javadoc $DIST/ml/"
+#    run_and_measure "mv $DIST/javadoc $DIST/ml/"
 fi
 
 if [ -z $DIST_SERVER ]; then
     exit 0;
 fi
-
-cd $TRUNK_NIGHTLY_DIRNAME
-run_and_measure "bash upload-bits.sh"
