@@ -103,9 +103,12 @@ public final class LibraryManager {
         CsmUID<CsmProject> projectUid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
-                LibProjectImpl lib = (LibProjectImpl) entry.getLibrary().getObject();
-                if (lib != null) {
-                    res.add(lib);
+                CsmUID<CsmProject> library = entry.getLibrary();
+                if(library != null) {
+                    CsmProject lib = library.getObject();
+                    if (lib instanceof LibProjectImpl) {
+                        res.add((LibProjectImpl)lib);
+                    }
                 }
             }
         }
