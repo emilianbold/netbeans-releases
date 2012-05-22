@@ -54,6 +54,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.*;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -67,25 +69,52 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * Wizard to create a new Groovy file.
+ * Wizard to create a new Groovy class/script/JUnit test.
  */
 public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
-
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-
     private transient int index;
-
     private transient WizardDescriptor.Panel[] panels;
-
     private transient WizardDescriptor wiz;
-    
     private transient GroovyProjectExtender extender;
     
+    
+    @TemplateRegistrations(value = {
+        @TemplateRegistration(
+            folder = "Groovy",
+            position = 110,
+            content = "/org/netbeans/modules/groovy/support/resources/GroovyScript.groovy",
+            scriptEngine = "freemarker",
+            displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyScript.groovy",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/support/resources/GroovyScript.html",
+            category = {"groovy", "java-main-class"}),
+
+        @TemplateRegistration(
+            folder = "Groovy",
+            position = 100,
+            content = "/org/netbeans/modules/groovy/support/resources/GroovyClass.groovy",
+            scriptEngine = "freemarker",
+            displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyClass.groovy",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/support/resources/GroovyClass.html",
+            category = {"groovy", "java-main-class"})
+
+        /*@TemplateRegistration(
+            folder = "Groovy",
+            position = 120,
+            content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.groovy",
+            scriptEngine = "freemarker",
+            displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyJUnitTest.groovy",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
+            category = {"groovy", "java-main-class"})*/
+    })
     public static GroovyFileWizardIterator create() {
         return new GroovyFileWizardIterator();
-    } 
+    }
     
     private GroovyFileWizardIterator() {
     }    
@@ -98,13 +127,9 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         assert groups != null : "Cannot return null from Sources.getSourceGroups: " + sources;
         if (groups.length == 0) {
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-            return new WizardDescriptor.Panel[] {  
-                Templates.buildSimpleTargetChooser(project, groups).create()
-            };
+            return new WizardDescriptor.Panel[] {Templates.buildSimpleTargetChooser(project, groups).create()};
         } else {
-            return new WizardDescriptor.Panel[] {
-                JavaTemplates.createPackageChooser(project, groups)
-            };
+            return new WizardDescriptor.Panel[] {JavaTemplates.createPackageChooser(project, groups)};
         }
     }
     
