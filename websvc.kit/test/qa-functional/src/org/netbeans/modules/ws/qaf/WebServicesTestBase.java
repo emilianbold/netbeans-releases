@@ -387,7 +387,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 project = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/" + getProjectName()));
                 checkMissingServer(getProjectName());
             } else {
-                projectRoot = new File(getProjectsRootDir(), projectName);
+                projectRoot = new File(new File(getProjectsRootDir(), getJavaEEversion().name()), projectName);
                 LOGGER.log(Level.INFO, "Using project in: {0}", projectRoot.getAbsolutePath()); //NOI18N
                 if (!projectRoot.exists()) {
                     if (!getProjectType().isAntBasedProject()) {
@@ -798,9 +798,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         Node node = new Node(servicesOper.getRootNode(), "Maven Repositories|" + repositoryName);
         new Action(null, "Update Index").perform(node);
         String lblCancelProgress = "Click to cancel process";
-        JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
-        btnCancel.pushNoBlock();
-        new NbDialogOperator("Cancel Running Task").yes();
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);
+            JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
+            btnCancel.pushNoBlock();
+            new NbDialogOperator("Cancel Running Task").yes();
+        } catch (TimeoutExpiredException tee) {
+            // ignore - already done in previous tests
+        } finally {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+        }
     }
     
     protected File getProjectsRootDir() throws IOException {
