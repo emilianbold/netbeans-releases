@@ -110,7 +110,7 @@ foreach ($intFunctions["internal"] as $intFunction) {
 	}
 }
 
-$intClasses = array_merge (get_declared_classes(), get_declared_interfaces());
+$intClasses = array_merge (get_declared_classes(), get_declared_interfaces(), get_declared_traits());
 foreach ($intClasses as $intClass) {
 	if (!@$processedClasses[strtolower($intClass)]) {
 		print_class (new ReflectionClass ($intClass));
@@ -525,7 +525,7 @@ function print_extension ($extRef) {
  * @param classRef ReflectionClass object
  * @param tabs integer[optional] number of tabs for indentation
  */
-function print_class ($classRef, $tabs = 0) {
+function print_class (ReflectionClass $classRef, $tabs = 0) {
 	global $processedClasses;
 	$processedClasses [strtolower($classRef->getName())] = true;
 
@@ -534,7 +534,13 @@ function print_class ($classRef, $tabs = 0) {
 	print_tabs ($tabs);
 	if ($classRef->isFinal()) print "final ";
 
-	print $classRef->isInterface() ? "interface " : "class ";
+        if ($classRef->isInterface()) {
+            print "interface ";
+        } elseif ($classRef->isTrait()) {
+            print "trait ";
+        } else {
+            print "class ";
+        }
 	print clean_php_identifier($classRef->getName())." ";
 
 	// print out parent class
@@ -557,7 +563,16 @@ function print_class ($classRef, $tabs = 0) {
 	}
 	print " {\n";
 
-        // XXX print out traits
+	// print out traits
+        $traits = $classRef->getTraits();
+        if (count($traits)) {
+            foreach ($traits as $trait => $traitInfo) {
+                print_tabs($tabs + 1);
+                print 'use ' . $trait . ';';
+		print "\n";
+            }
+            print "\n";
+        }
 
 	// process constants
 	$constsRef = $classRef->getConstants();
