@@ -41,45 +41,47 @@
  */
 package org.netbeans.modules.profiler.nbimpl.javac;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.Task;
 
 /**
- *
- * @author Jaroslav Bachorik
+ * A scan sensitive version of the java source {@linkplain Task}.
+ * Allows the subclasses to define whether they require up-to-date data or
+ * whether they would be satisfied with the last good knows one.
+ * 
+ * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
-public class ParsingUtils {
-    private static final Logger LOG = Logger.getLogger(ParsingUtils.class.getName());
-
+abstract public class ScanSensitiveTask<P> implements Task<P> {
+    private boolean uptodate;
+    
     /**
-     * Invokes a scan sensitive task at safe point and waits for it to finish
-     * @param cpInfo classpath
-     * @param t task to run
+     * Creates an instance not requiring up-to-date data
      */
-    public static void invokeScanSensitiveTask(final ClasspathInfo cpInfo, final ScanSensitiveTask<CompilationController> t) {
-        invokeScanSensitiveTask(JavaSource.create(cpInfo), t);
+    public ScanSensitiveTask() {
+        this(false);
     }
     
-    public static void invokeScanSensitiveTask(final JavaSource js, final ScanSensitiveTask<CompilationController> t) {
-        try {
-            boolean wasScanning = SourceUtils.isScanInProgress();
-            if (!t.requiresUpToDate()) {
-                js.runUserActionTask(t, true);
-            }
-            if (t.requiresUpToDate() || (wasScanning && t.shouldRetry())) {
-                js.runWhenScanFinished(t, true).get();
-            }
-        } catch (IllegalArgumentException e) {
-            LOG.log(Level.SEVERE, null, e);
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, null, e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            LOG.log(Level.SEVERE, null, e);
-        }
+    /**
+     * 
+     * @param uptodate TRUE = requires up-to-date data (eg. needs to wait for the scanning to finish)
+     */
+    public ScanSensitiveTask(boolean uptodate) {
+        this.uptodate = uptodate;
+    }
+    
+    /**
+     * Used for indication of whether the task was able to obtain required data or not.
+     * 
+     * @return <b>TRUE</b> if the task got the required data; <b>FALSE</b> otherwise
+     */
+    public boolean shouldRetry() {
+        return false;
+    }
+    
+    /**
+     * Indicates the requirements regarding the up-to-dateness of the accessed data
+     * @return <b>TRUE</b> if the task needs up-to-date data (eg. needs to wait for the scanning to finish); <b>FALSE</b> otherwise
+     */
+    final public boolean requiresUpToDate() {
+        return this.uptodate;
     }
 }
