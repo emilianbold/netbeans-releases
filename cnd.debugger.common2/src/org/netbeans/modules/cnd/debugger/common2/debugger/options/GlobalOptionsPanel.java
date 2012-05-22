@@ -130,6 +130,7 @@ public class GlobalOptionsPanel extends JPanel {
 	    header.setText(Catalog.get("DialogDescription")); // NOI18N
 	    header.setBackground((Color) javax.swing.UIManager.getDefaults().get("Label.background")); // NOI18N
             header.setMinimumSize(new Dimension(100, 62));
+            header.setPreferredSize(new Dimension(100, 62));
 
 	    gridBagConstraints = new GridBagConstraints();
 	    gridBagConstraints.gridx = 0;
