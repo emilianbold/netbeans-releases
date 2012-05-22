@@ -36,7 +36,7 @@
 
     <!-- JSDoc section - generating JSDoc lexer -->
     <target name="-gen-jsdoc-lexer" depends="-prepare-jflex">
-        <jflex file="tools/jsDocColoringScanner.flex" destdir="src" nobak="true"/>
+        <jflex file="tools/JsDocColoringScanner.flex" destdir="src" nobak="true"/>
     </target>
     <target name="-patch-jsdoc-lexer">
         <patch patchfile="tools/lexer-jsdoc.patch"
