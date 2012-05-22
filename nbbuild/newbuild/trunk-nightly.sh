@@ -48,9 +48,6 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-echo Just debug
-exit 1
-
 ###################################################################
 #
 # Deploy bits to the storage server
