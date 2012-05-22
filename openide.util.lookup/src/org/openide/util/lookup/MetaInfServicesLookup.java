@@ -482,8 +482,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                                    // 2 instances of the same class
                     Class<?> c = ((Class<?>) o);
                     try {
-                        o = null;
-                        o = CACHE.findInstance(c, o);
+                        o = CACHE.findInstance(c);
 
                         if (o == null) {
                             o = SharedClassObjectBridge.newInstance(c);
