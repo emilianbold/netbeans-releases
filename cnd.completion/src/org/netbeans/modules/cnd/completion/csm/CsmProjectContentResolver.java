@@ -177,7 +177,7 @@ public final class CsmProjectContentResolver {
                         }
                     }
                 }
-                if (elemEnum != null) {
+                if (elemEnum != null && !elemEnum.isStronglyTyped()) {
                     for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
                         CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {

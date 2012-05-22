@@ -1997,7 +1997,10 @@ enum_specifier
 {int ts = 0;
  String qid;}
 :   LITERAL_enum
-    (LITERAL_class! | LITERAL_struct!)?    
+    (
+        (LITERAL_class | LITERAL_struct)
+        {action.enum_strongly_typed(LT(1));}
+    )?
     (   (COLON ts = builtin_cv_type_specifier[ts])?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }

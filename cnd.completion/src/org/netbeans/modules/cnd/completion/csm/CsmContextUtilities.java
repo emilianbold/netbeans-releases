@@ -366,7 +366,7 @@ public class CsmContextUtilities {
                     }
                     if (CsmKindUtilities.isEnum(decl)) {
                         CsmEnum en = (CsmEnum)decl;
-                        if (en.getName().length()==0){
+                        if (!en.isStronglyTyped() && en.getName().length()==0){
                             addEnumerators(res, en, strPrefix, match, caseSensitive);
                         }
                     } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
@@ -380,7 +380,7 @@ public class CsmContextUtilities {
                             }
                             if (CsmKindUtilities.isEnum(nsDecl)) {
                                 CsmEnum en = (CsmEnum)nsDecl;
-                                if (en.getName().length()==0){
+                                if (!en.isStronglyTyped() && en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
                             }
@@ -393,7 +393,7 @@ public class CsmContextUtilities {
                             }                            
                             if (CsmKindUtilities.isEnum(member)) {
                                 CsmEnum en = (CsmEnum)member;
-                                if (en.getName().length()==0){
+                                if (!en.isStronglyTyped() && en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
                             }

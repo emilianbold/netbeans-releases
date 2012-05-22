@@ -1047,7 +1047,7 @@ public final class CsmTracer {
 //        print(sb.toString());
 //    }
     public void dumpModel(CsmEnum enumeration) {
-        print("ENUM " + enumeration.getName() + getOffsetString(enumeration, false) + ' ' + getScopeString(enumeration)); // NOI18N
+        print((enumeration.isStronglyTyped() ? "STRONGLY TYPED " : "") + "ENUM " + enumeration.getName() + getOffsetString(enumeration, false) + ' ' + getScopeString(enumeration)); // NOI18N
         indent();
         for (Iterator iter = enumeration.getEnumerators().iterator(); iter.hasNext();) {
             CsmEnumerator enumerator = (CsmEnumerator) iter.next();
