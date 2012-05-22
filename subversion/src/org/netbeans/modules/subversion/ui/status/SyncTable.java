@@ -88,6 +88,7 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.File;
 import java.util.logging.Level;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
 import org.netbeans.modules.subversion.ui.status.VersioningPanel.ModeKeeper;
 import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
@@ -193,20 +194,25 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             @Override
             public void run() {
                 int width = table.getWidth();
-                if (tableColumns.length == 3) {
-                    for (int i = 0; i < tableColumns.length; i++) {
+                TableColumnModel cModel = table.getColumnModel();
+                int columnCount = cModel.getColumnCount();
+                if (tableColumns.length != columnCount) {
+                    return;
+                }
+                if (columnCount == 3) {
+                    for (int i = 0; i < columnCount; i++) {
                         if (SyncFileNode.COLUMN_NAME_PATH.equals(tableColumns[i])) {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 60 / 100);
+                            cModel.getColumn(i).setPreferredWidth(width * 60 / 100);
                         } else {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 20 / 100);
+                            cModel.getColumn(i).setPreferredWidth(width * 20 / 100);
                         }
                     }
-                } else if (tableColumns.length == 4) {
-                    for (int i = 0; i < tableColumns.length; i++) {
+                } else if (columnCount == 4) {
+                    for (int i = 0; i < columnCount; i++) {
                         if (SyncFileNode.COLUMN_NAME_PATH.equals(tableColumns[i])) {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 55 / 100);
+                            cModel.getColumn(i).setPreferredWidth(width * 55 / 100);
                         } else {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 15 / 100);
+                            cModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                         }
                     }
                 }
