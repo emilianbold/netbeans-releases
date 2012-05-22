@@ -98,14 +98,14 @@ fi
 cd $NB_ALL
 
 #Build JNLP
-run_and_measure "ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp" "Build JNLP"
-ERROR_CODE=$?
+#run_and_measure "ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp" "Build JNLP"
+#ERROR_CODE=$?
 
-create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Cannot build JNLP"
-#    exit $ERROR_CODE;
-fi
+#create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE
+#if [ $ERROR_CODE != 0 ]; then
+#    echo "ERROR: $ERROR_CODE - Cannot build JNLP"
+##    exit $ERROR_CODE;
+#fi
 
 #Build all NBMs for stable UC - IDE + UC-only
 run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines" "Build all NBMs for stable UC - IDE + UC-only"
