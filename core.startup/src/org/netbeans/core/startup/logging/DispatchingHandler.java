@@ -51,10 +51,11 @@ import org.openide.util.RequestProcessor;
 /** Non closing handler which dispatches messagtes in different thread.
  */
 final class DispatchingHandler extends Handler implements Runnable {
+    private static final int LIMIT = 1024;
     private static RequestProcessor RP = new RequestProcessor("Logging Flush", 1, false, false); // NOI18N
     private static ThreadLocal<Boolean> FLUSHING = new ThreadLocal<Boolean>();
     private final Handler delegate;
-    private final BlockingQueue<LogRecord> queue = new LinkedBlockingQueue<LogRecord>(1000);
+    private final BlockingQueue<LogRecord> queue = new LinkedBlockingQueue<LogRecord>(LIMIT);
     private RequestProcessor.Task flush;
     private int delay;
 
@@ -75,7 +76,7 @@ final class DispatchingHandler extends Handler implements Runnable {
             for (;;) {
                 try {
                     // queue is full, schedule its clearing
-                    if (!schedule(0)) {
+                    if (!schedule(true)) {
                         return;
                     }
                     queue.put(record);
@@ -98,14 +99,23 @@ final class DispatchingHandler extends Handler implements Runnable {
             }
         }
         if (empty) {
-            schedule(delay);
+            schedule(false);
         }
     }
 
-    private boolean schedule(int d) {
+    private boolean schedule(boolean now) {
         if (!Boolean.TRUE.equals(FLUSHING.get())) {
             try {
                 FLUSHING.set(true);
+                int d;
+                if (now) {
+                    d = 0;
+                } else {
+                    int emptySpace = LIMIT - queue.size();
+                    d = delay * emptySpace / LIMIT;
+                    assert d <= delay : "d: " + d + " delay: " + delay;
+                    assert d >= 0 : "d: " + d;
+                }
                 flush.schedule(d);
             } finally {
                 FLUSHING.set(false);
@@ -154,7 +164,7 @@ final class DispatchingHandler extends Handler implements Runnable {
         for (;;) {
             LogRecord r = queue.poll();
             if (r == null) {
-                schedule(delay);
+                schedule(false);
                 break;
             }
             delegate.publish(r);
