@@ -58,7 +58,7 @@ else
     target="build-jdk-bundle-dmg"
 fi
 
-if [ -z $en_build ] then
+if [ -z $en_build ] ; then
     en_build=1
 fi
 
