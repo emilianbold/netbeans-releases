@@ -56,6 +56,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
                              position=20000)
 public class ToolTipSwitchViewAction implements NodeActionsProviderFilter {
     
+    static final String ID = "ToolTipView";
+    
     private Action switchViewAction;
 
     @Override
@@ -70,7 +72,7 @@ public class ToolTipSwitchViewAction implements NodeActionsProviderFilter {
         Action[] newActions = new Action[n+1];
         System.arraycopy(actions, 0, newActions, 0, n);
         if (switchViewAction == null) {
-            switchViewAction = VariablesSwitchViewAction.createSwitchViewAction("ToolTipView", VariablesSwitchViewAction.treeNodeFormat);
+            switchViewAction = VariablesSwitchViewAction.getSwitchViewAction(ID, VariablesSwitchViewAction.treeNodeFormat);
         }
         newActions[n] = switchViewAction;
         return newActions;
