@@ -52,7 +52,6 @@ import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.UIManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions.MakeOptionNamedEntity;
@@ -81,13 +80,9 @@ public class ProjectOptionsPanel extends JPanel {
         
         setName("TAB_ProjectsTab"); // NOI18N (used as a pattern...)
 
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            setOpaque(false);
-        } else {
-            Color c = getBackground();
-            Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
-            filePathTxt.setBackground(cc);
-        }
+        Color c = getBackground();
+        Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
+        filePathTxt.setBackground(cc);
     }
 
     public void update() {
@@ -259,6 +254,8 @@ public class ProjectOptionsPanel extends JPanel {
         filePathTxt.setText(bundle.getString("FILE_PATH_MODE_TXT")); // NOI18N
         filePathTxt.setWrapStyleWord(true);
         filePathTxt.setBorder(null);
+        filePathTxt.setMinimumSize(new java.awt.Dimension(100, 60));
+        filePathTxt.setPreferredSize(new java.awt.Dimension(100, 60));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;

@@ -52,11 +52,10 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JCheckBox;
 import javax.swing.LayoutStyle;
-import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticEntitiesProvider;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticEntity;
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -73,11 +72,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         initMnemonics();
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
-        // background color fixup
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            jPanel1.setOpaque(false);
-            setOpaque(false);
-        }
     }
 
     // for OptionsPanelSupport

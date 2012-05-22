@@ -57,9 +57,8 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
-import javax.swing.UIManager;
-import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -75,9 +74,6 @@ import org.openide.util.NbBundle;
         setName("TAB_CndOtherOptionsTab"); // NOI18N (used as a pattern...)
         initComponents();
         initGeneratedComponents();
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            setOpaque( false );
-        }
     }
 
     void applyChanges() {
