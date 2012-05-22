@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -67,6 +69,7 @@ import org.openide.util.actions.Presenter;
                              position=20000)
 public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
     
+    static final String ID = "LocalsView";
     static final String treeNodeFormat =
             "{DefaultLocalsColumn} = ({"+Constants.LOCALS_TYPE_COLUMN_ID+"}) "+"{"+Constants.LOCALS_VALUE_COLUMN_ID+"}"; // NOI18N
     private static final String VIEW_PREFERENCES_NAME = "view_preferences"; // NOI18N
@@ -74,7 +77,12 @@ public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
     private static final String VIEW_TREE_DISPLAY_FORMAT = "view_tree_display_format"; // NOI18N
     private static final String VIEW_TYPE_TABLE = "table";                  // NOI18N
     private static final String VIEW_TYPE_TREE = "tree";                    // NOI18N
+    private static final String IS_SHOW_WATCHES = "show_watches"; // NOI18N
+    private static final String IS_SHOW_EVALUTOR_RESULT = "show_evaluator_result"; // NOI18N
+    private static final String VAR_PREFERENCES_NAME = "variables_view"; // NOI18N
     
+    private static final Map<String, SwitchViewAction> switchActions = new HashMap<String, SwitchViewAction>();
+
     private Action switchViewAction;
 
     @Override
@@ -89,14 +97,38 @@ public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
         Action[] newActions = new Action[n+1];
         System.arraycopy(actions, 0, newActions, 0, n);
         if (switchViewAction == null) {
-            switchViewAction = createSwitchViewAction("LocalsView", treeNodeFormat); // NOI18N
+            switchViewAction = getSwitchViewAction();
         }
         newActions[n] = switchViewAction;
         return newActions;
     }
+    
+    static Action getSwitchViewAction() {
+        return getSwitchViewAction(ID, treeNodeFormat);
+    }
 
-    static Action createSwitchViewAction(String viewId, String treeNodeFormat) {
-        return new SwitchViewAction(viewId, treeNodeFormat);
+    private static boolean isWatchesViewNested() {
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VAR_PREFERENCES_NAME); // NOI18N
+        return preferences.getBoolean(IS_SHOW_WATCHES, true);
+    }
+
+    private static boolean isResultsViewNested() {
+        Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VAR_PREFERENCES_NAME); // NOI18N
+        return preferences.getBoolean(IS_SHOW_EVALUTOR_RESULT, true);
+    }
+
+    static synchronized Action getSwitchViewAction(String viewId, String treeNodeFormat) {
+        SwitchViewAction a = switchActions.get(viewId);
+        if (a == null) {
+            a = new SwitchViewAction(viewId, treeNodeFormat);
+            switchActions.put(viewId, a);
+        }
+        return a;
+    }
+    
+    private static synchronized SwitchViewAction getSwitchViewAction(String viewId) {
+        SwitchViewAction a = switchActions.get(viewId);
+        return a;
     }
     
     private final static class SwitchViewAction extends AbstractAction implements Presenter.Popup {
@@ -114,24 +146,55 @@ public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
         @Override
         public void actionPerformed(ActionEvent e) {
             String type = preferences.get(VIEW_TYPE, null);
+            String toType;
             if (type == null || type.equals(VIEW_TYPE_TABLE)) {
-                preferences.put(VIEW_TYPE, VIEW_TYPE_TREE);
+                toType = VIEW_TYPE_TREE;
+                preferences.put(VIEW_TYPE, toType);
                 preferences.put(VIEW_TREE_DISPLAY_FORMAT, treeNodeFormat);
             } else {
-                preferences.put(VIEW_TYPE, VIEW_TYPE_TABLE);
+                toType = VIEW_TYPE_TABLE;
+                preferences.put(VIEW_TYPE, toType);
                 preferences.remove(VIEW_TREE_DISPLAY_FORMAT);
             }
+            checkNested(toType);
         }
         
-        private void onViewAs(String type) {
+        private void onViewAs(String type, boolean checkForNested) {
             preferences.put(VIEW_TYPE, type);
             if (type.equals(VIEW_TYPE_TREE)) {
                 preferences.put(VIEW_TREE_DISPLAY_FORMAT, treeNodeFormat);
             } else {
                 preferences.remove(VIEW_TREE_DISPLAY_FORMAT);
             }
+            if (checkForNested) {
+                checkNested(type);
+            }
         }
         
+        private void checkNested(String type) {
+            if (id.equals(WatchesSwitchViewAction.ID) && isWatchesViewNested()) {
+                ((SwitchViewAction) VariablesSwitchViewAction.getSwitchViewAction()).onViewAs(type, false);
+                if (isResultsViewNested()) {
+                    ((SwitchViewAction) ResultsSwitchViewAction.getSwitchViewAction()).onViewAs(type, false);
+                }
+            }
+            if (id.equals(ResultsSwitchViewAction.ID) && isResultsViewNested()) {
+                ((SwitchViewAction) VariablesSwitchViewAction.getSwitchViewAction()).onViewAs(type, false);
+                if (isWatchesViewNested()) {
+                    ((SwitchViewAction) WatchesSwitchViewAction.getSwitchViewAction()).onViewAs(type, false);
+                }
+            }
+            if (id.equals(VariablesSwitchViewAction.ID)) {
+                if (isWatchesViewNested()) {
+                    ((SwitchViewAction) WatchesSwitchViewAction.getSwitchViewAction()).onViewAs(type, false);
+                }
+                if (isResultsViewNested()) {
+                    ((SwitchViewAction) ResultsSwitchViewAction.getSwitchViewAction()).onViewAs(type, false);
+                }
+            }
+        }
+        
+        @Override
         public JMenuItem getPopupPresenter() {
             JMenu viewAsPopup = new JMenu(NbBundle.getMessage(SwitchViewAction.class, "CTL_ViewAs_Popup"));
             JRadioButtonMenuItem tableView = new ViewAsMenuItem(VIEW_TYPE_TABLE);
@@ -151,8 +214,9 @@ public class VariablesSwitchViewAction implements NodeActionsProviderFilter {
 
             public ViewAsMenuItem(final String type) {
                 super(new AbstractAction(NbBundle.getMessage(NumericDisplayFilter.class, "CTL_View_"+type)) {
+                        @Override
                         public void actionPerformed(ActionEvent e) {
-                            onViewAs(type);
+                            onViewAs(type, true);
                         }
                     });
             }
