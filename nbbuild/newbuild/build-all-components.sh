@@ -195,7 +195,14 @@ cd ..
 #ML_BUILD
 if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
-    run_and_measure "hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n"
+    if [ ! -d $NB_ALL/l10n/.hg ] ; then
+        cd $NB_ALL/l10n
+        run_and_measure "hg pull"
+        run_and_measure "hg update --clean --rev $L10N_BRANCH"
+    else
+        run_and_measure "hg clone --rev $L10N_BRANCH $ML_REPO l10n"
+    fi
+    
     cd $NB_ALL/l10n
     run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc -Dnbms.dist.dir=${DIST}/ml/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build"
     ERROR_CODE=$?

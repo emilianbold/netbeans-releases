@@ -10,17 +10,12 @@ source init.sh
 
 rm -rf $DIST
 
-if [ ! -z $WORKSPACE ]; then
-    #I'm under hudson and have sources here, I need to clone them
-    #Clean obsolete sources first
-    run_and_measure "rm -rf $NB_ALL"
-    run_and_measure "hg clone -U $WORKSPACE $NB_ALL"
-    run_and_measure "hg -R $NB_ALL update $NB_BRANCH"
-fi
-
-#if [ $ML_BUILD == 1 ]; then
-#    cd $NB_ALL
-#    hg clone $ML_REPO $NB_ALL/l10n
+#if [ ! -z $WORKSPACE ]; then
+#    #I'm under hudson and have sources here, I need to clone them
+#    #Clean obsolete sources first
+#    run_and_measure "rm -rf $NB_ALL"
+#    run_and_measure "hg clone -U $WORKSPACE $NB_ALL"
+#    run_and_measure "hg -R $NB_ALL update $NB_BRANCH"
 #fi
 
 ###################################################################
@@ -52,6 +47,9 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Packaging failed"
     exit $ERROR_CODE;
 fi
+
+echo Just debug
+exit 1
 
 ###################################################################
 #
@@ -102,10 +100,10 @@ if [ -n $BUILD_ID ]; then
     fi
 fi
 
-if [ $UPLOAD_ML == 1 ]; then
-    run_and_measure "mv $DIST/jnlp $DIST/ml/"
+#if [ $UPLOAD_ML == 1 ]; then
+#    run_and_measure "mv $DIST/jnlp $DIST/ml/"
 #    run_and_measure "mv $DIST/javadoc $DIST/ml/"
-fi
+#fi
 
 if [ -z $DIST_SERVER ]; then
     exit 0;
