@@ -75,14 +75,16 @@ public class MvnPatternsTest extends PatternsTest {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnPatternsTest.class),
+        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(MvnPatternsTest.class),
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
-                "testSingleton1", //NOI18N
-                "testCcContainerI1", //NOI18N
+                // jersey library not in Maven dependencies
+                //"testSingleton1", //NOI18N
+                //"testCcContainerI1", //NOI18N
                 "testSingleton2", //NOI18N
-                "testContainerI1", //NOI18N
+                // jersey library not in Maven dependencies
+                //"testContainerI1", //NOI18N
                 "testContainerI2", //NOI18N
                 "testSingleton3", //NOI18N
                 "testContainerI3", //NOI18N
@@ -91,6 +93,6 @@ public class MvnPatternsTest extends PatternsTest {
                 "testNodes", //NOI18N
                 "testRun", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                ).enableModules(".*").clusters(".*").suite(); //NOI18N
     }
 }
