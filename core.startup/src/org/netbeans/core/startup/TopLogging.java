@@ -44,18 +44,17 @@
 
 package org.netbeans.core.startup;
 
+import org.netbeans.core.startup.logging.NbFormatter;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URL;
@@ -65,17 +64,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -86,8 +81,8 @@ import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.netbeans.TopSecurityManager;
+import org.netbeans.core.startup.logging.NbLogging;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
@@ -95,7 +90,6 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.xml.sax.SAXParseException;
 
 /**
  * Class that sets the java.util.logging.LogManager configuration to log into
@@ -107,33 +101,6 @@ public final class TopLogging {
     private static boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
     /** reference to the old error stream */
     private static final PrintStream OLD_ERR = System.err;
-
-    private static final PrintStream DEBUG;
-    private static final Pattern unwantedMessages;
-    static {
-        PrintStream _D = null;
-        String uMS = System.getProperty("TopLogging.unwantedMessages"); // NOI18N
-        if (uMS != null || Boolean.getBoolean("TopLogging.DEBUG")) { // NOI18N
-            try {
-                File debugLog = new File(System.getProperty("java.io.tmpdir"), "TopLogging.log"); // NOI18N
-                System.err.println("Logging sent to: " + debugLog); // NOI18N
-                _D = new PrintStream(new FileOutputStream(debugLog), true);
-            } catch (FileNotFoundException x) {
-                x.printStackTrace();
-            }
-        }
-        DEBUG = _D;
-        Pattern uMP = null;
-        if (uMS != null) {
-            try {
-                uMP = Pattern.compile(uMS);
-                DEBUG.println("On the lookout for log messages matching: " + uMS); // NOI18N
-            } catch (PatternSyntaxException x) {
-                x.printStackTrace();
-            }
-        }
-        unwantedMessages = uMP;
-    }
 
     /** Initializes the logging configuration. Invoked by <code>LogManager.readConfiguration</code> method.
      */
@@ -243,11 +210,11 @@ public final class TopLogging {
         if (!Boolean.getBoolean("netbeans.logger.noSystem")) {
             if (!(System.err instanceof LgStream)) {
                 System.setErr(new LgStream(Logger.getLogger("stderr"))); // NOI18N
-                if (DEBUG != null) DEBUG.println("initializing stderr"); // NOI18N
+                if (NbLogging.DEBUG != null) NbLogging.DEBUG.println("initializing stderr"); // NOI18N
             }
             if (!(System.out instanceof LgStream)) {
                 System.setOut(new LgStream(Logger.getLogger("stderr"))); // NOI18N
-                if (DEBUG != null) DEBUG.println("initializing stdout"); // NOI18N
+                if (NbLogging.DEBUG != null) NbLogging.DEBUG.println("initializing stdout"); // NOI18N
             }
         }
     }
@@ -660,150 +627,6 @@ public final class TopLogging {
         }
     }
 
-    /** Modified formater for use in NetBeans.
-     */
-    private static final class NbFormatter extends java.util.logging.Formatter {
-        private static String lineSeparator = System.getProperty ("line.separator"); // NOI18N
-        static java.util.logging.Formatter FORMATTER = new NbFormatter ();
-
-        public String format(java.util.logging.LogRecord record) {
-            StringBuilder sb = new StringBuilder();
-            print(sb, record, new HashSet<Throwable>());
-            String r = sb.toString();
-            if (DEBUG != null) DEBUG.print("received: " + r); // NOI18N
-            if (unwantedMessages != null && unwantedMessages.matcher(r).find()) {
-                new Exception().printStackTrace(DEBUG);
-            }
-            return r;
-        }
-
-
-        private void print(StringBuilder sb, LogRecord record, Set<Throwable> beenThere) {
-            String message = formatMessage(record);
-            if (message != null && message.indexOf('\n') != -1 && record.getThrown() == null) {
-                // multi line messages print witout any wrappings
-                sb.append(message);
-                if (message.charAt(message.length() - 1) != '\n') {
-                    sb.append(lineSeparator);
-                }
-                return;
-            }
-            if ("stderr".equals(record.getLoggerName()) && record.getLevel() == Level.INFO) { // NOI18N
-                // do not prefix stderr logging...
-                sb.append(message);
-                return;
-            }
-
-            sb.append(record.getLevel().getName());
-            addLoggerName (sb, record);
-            if (message != null) {
-                sb.append(": ");
-                sb.append(message);
-            }
-            sb.append(lineSeparator);
-            if (record.getThrown() != null && record.getLevel().intValue() != 1973) { // 1973 signals ErrorManager.USER
-                try {
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    // All other kinds of throwables we check for a stack trace.
-                    printStackTrace(record.getThrown(), pw);
-                    pw.close();
-                    sb.append(sw.toString());
-                } catch (Exception ex) {
-                }
-
-                LogRecord[] arr = extractDelegates(sb, record.getThrown(), beenThere);
-                if (arr != null) {
-                    for (LogRecord r : arr) {
-                        print(sb, r, beenThere);
-                    }
-                }
-
-                specialProcessing(sb, record.getThrown(), beenThere);
-            }
-        }
-
-        private static void addLoggerName (StringBuilder sb, java.util.logging.LogRecord record) {
-            String name = record.getLoggerName ();
-            if (!"".equals (name)) {
-                sb.append(" [");
-                sb.append(name);
-                sb.append(']');
-            }
-        }
-
-        private static LogRecord[] extractDelegates(StringBuilder sb, Throwable t, Set<Throwable> beenThere) {
-            if (!beenThere.add(t)) {
-                sb.append("warning: cyclic dependency between annotated throwables"); // NOI18N
-                return null;
-            }
-
-            if (t instanceof Callable) {
-                Object rec = null;
-                try {
-                    rec = ((Callable) t).call();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-                if (rec instanceof LogRecord[]) {
-                    return (LogRecord[])rec;
-                }
-            }
-            if (t == null) {
-                return null;
-            }
-            return extractDelegates(sb, t.getCause(), beenThere);
-        }
-
-
-        private void specialProcessing(StringBuilder sb, Throwable t, Set<Throwable> beenThere) {
-            // MissingResourceException should be printed nicely... --jglick
-            if (t instanceof MissingResourceException) {
-                MissingResourceException mre = (MissingResourceException) t;
-                String cn = mre.getClassName();
-                if (cn != null) {
-                    LogRecord rec = new LogRecord(Level.CONFIG, null);
-                    rec.setResourceBundle(NbBundle.getBundle(TopLogging.class));
-                    rec.setMessage("EXC_MissingResourceException_class_name");
-                    rec.setParameters(new Object[] { cn });
-                    print(sb, rec, beenThere);
-                }
-                String k = mre.getKey();
-                if (k != null) {
-                    LogRecord rec = new LogRecord(Level.CONFIG, null);
-                    rec.setResourceBundle(NbBundle.getBundle(TopLogging.class));
-                    rec.setMessage("EXC_MissingResourceException_key");
-                    rec.setParameters(new Object[] { k });
-                    print(sb, rec, beenThere);
-                }
-            }
-            if (t instanceof SAXParseException) {
-                // For some reason these fail to come with useful data, like location.
-                SAXParseException spe = (SAXParseException)t;
-                String pubid = spe.getPublicId();
-                String sysid = spe.getSystemId();
-                if (pubid != null || sysid != null) {
-                    int col = spe.getColumnNumber();
-                    int line = spe.getLineNumber();
-                    String msg;
-                    Object[] param;
-                    if (col != -1 || line != -1) {
-                        msg = "EXC_sax_parse_col_line"; // NOI18N
-                        param = new Object[] {String.valueOf(pubid), String.valueOf(sysid), col, line};
-                    } else {
-                        msg = "EXC_sax_parse"; // NOI18N
-                        param = new Object[] { String.valueOf(pubid), String.valueOf(sysid) };
-                    }
-                    LogRecord rec = new LogRecord(Level.CONFIG, null);
-                    rec.setResourceBundle(NbBundle.getBundle(TopLogging.class));
-                    rec.setMessage(msg);
-                    rec.setParameters(param);
-                    print(sb, rec, beenThere);
-                }
-            }
-        }
-    } // end of NbFormater
-
     /** a stream to delegate to logging.
      */
     private static final class LgStream extends PrintStream implements Runnable {
@@ -841,8 +664,8 @@ public final class TopLogging {
 
         @Override
         public void print(String s) {
-            if (unwantedMessages != null && unwantedMessages.matcher(s).find()) {
-                new Exception().printStackTrace(DEBUG);
+            if (NbLogging.DEBUG != null && !NbLogging.wantsMessage(s)) {
+                new Exception().printStackTrace(NbLogging.DEBUG);
             }
             synchronized (sb) {
                 sb.append(s);
