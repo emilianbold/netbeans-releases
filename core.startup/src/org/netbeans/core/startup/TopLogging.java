@@ -50,10 +50,10 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -162,6 +162,11 @@ public final class TopLogging {
     public static void initializeQuietly() {
         initialize(false);
     }
+    
+    public static void printStackTrace(Throwable t, PrintWriter pw) {
+        NbFormatter.printStackTrace(t, pw);
+    }
+    
     private static File previousUser;
     static final void initialize() {
         initialize(true);
@@ -375,37 +380,11 @@ public final class TopLogging {
 
         File home = Places.getUserDirectory();
         if (home != null && !CLIOptions.noLogging) {
-            try {
-                File dir = new File(new File(home, "var"), "log");
-                dir.mkdirs ();
+            File dir = new File(new File(home, "var"), "log");
+            dir.mkdirs ();
 
-                int n = Integer.getInteger("org.netbeans.log.numberOfFiles", 3); // NOI18N
-                if (n < 3) {
-                    n = 3;
-                }
-                File[] f = new File[n];
-                f[0] = new File(dir, "messages.log");
-                for (int i = 1; i < n; i++) {
-                    f[i] = new File(dir, "messages.log." + i);
-                }
-
-                if (f[n - 1].exists()) {
-                    f[n - 1].delete();
-                }
-                for (int i = n - 2; i >= 0; i--) {
-                    if (f[i].exists()) {
-                        f[i].renameTo(f[i + 1]);
-                    }
-                }
-
-                FileOutputStream fout = new FileOutputStream(f[0], false);
-                Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
-                h.setLevel(Level.ALL);
-                h.setFormatter(NbFormatter.FORMATTER);
-                defaultHandler = NbLogging.createDispatchHandler(h, 5000);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            Handler h = NbLogging.createMessagesHandler(dir);
+            defaultHandler = NbLogging.createDispatchHandler(h, 5000);
         }
 
         if (defaultHandler == null) {

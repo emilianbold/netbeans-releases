@@ -44,75 +44,80 @@ package org.netbeans.core.startup.logging;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.util.logging.Handler;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.StreamHandler;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class NbLogging {
-    /** stream to send debug messages from logging to */
-    public static final PrintStream DEBUG;
+final class MessagesHandler extends StreamHandler {
+    private final File dir;
+    private final File[] files;
+    private final long limit;
     
+    MessagesHandler(File dir) {
+        this(dir, -1, 1024 * 1024);
+    }
     
-    static final Pattern unwantedMessages;
-    static {
-        PrintStream _D = null;
-        String uMS = System.getProperty("TopLogging.unwantedMessages"); // NOI18N
-        if (uMS != null || Boolean.getBoolean("TopLogging.DEBUG")) { // NOI18N
-            try {
-                File debugLog = new File(System.getProperty("java.io.tmpdir"), "TopLogging.log"); // NOI18N
-                System.err.println("Logging sent to: " + debugLog); // NOI18N
-                _D = new PrintStream(new FileOutputStream(debugLog), true);
-            } catch (FileNotFoundException x) {
-                x.printStackTrace();
+    MessagesHandler(File dir, int count, long limit) {
+        this.dir = dir;
+    
+        if (count == -1) {
+            count = Integer.getInteger("org.netbeans.log.numberOfFiles", 3); // NOI18N
+            if (count < 3) {
+                count = 3;
             }
         }
-        DEBUG = _D;
-        Pattern uMP = null;
-        if (uMS != null) {
-            try {
-                uMP = Pattern.compile(uMS);
-                DEBUG.println("On the lookout for log messages matching: " + uMS); // NOI18N
-            } catch (PatternSyntaxException x) {
-                x.printStackTrace();
-            }
+        File[] arr = new File[count];
+        arr[0] = new File(dir, "messages.log"); // NOI18N
+        for (int i = 1; i < arr.length; i++) {
+            arr[i] = new File(dir, "messages.log." + i); // NOI18N
         }
-        unwantedMessages = uMP;
-    }
-
-    /** @return true if the message is wanted */
-    public static boolean wantsMessage(String s) {
-        return unwantedMessages == null || !unwantedMessages.matcher(s).find();
-    }
-
-    /** Factory to create non-closing, dispatch handler.
-     */
-    public static Handler createDispatchHandler(Handler handler, int flushDelay) {
-        return new DispatchingHandler(handler, flushDelay);
+        this.files = arr;
+        this.limit = limit;
+        setFormatter(NbFormatter.FORMATTER);
+        setLevel(Level.ALL);
+        
+        checkRotate(true);
+        initStream();
     }
     
-    /** Factory that creates <em>messages.log</em> handler in provided directory.
-     * @param dir directory to store logs in
-     */
-    public static Handler createMessagesHandler(File dir) {
-        return new MessagesHandler(dir);
+    private boolean checkRotate(boolean always) {
+        if (!always && files[0].length() < limit) {
+            return false;
+        }
+        flush();
+        doRotate();
+        return true;
+    }
+    
+    private void initStream() {
+        try {
+            setOutputStream(new FileOutputStream(files[0], false));
+        } catch (FileNotFoundException ex) {
+            setOutputStream(System.err);
+        }
     }
 
-    /** Does its best to close provided handler. Can close handlers created by
-     * {@link #createDispatchHandler(java.util.logging.Handler, int)} as well.
-     */
-    public static void close(Handler h) {
-        if (h == null) {
-            return;
+    @Override
+    public synchronized void publish(LogRecord record) {
+        super.publish(record);
+        if (checkRotate(false)) {
+            initStream();
         }
-        if (h instanceof DispatchingHandler) {
-            ((DispatchingHandler)h).doClose();
-        } else {
-            h.close();
+    }
+    
+    private synchronized void doRotate() {
+        int n = files.length;
+        if (files[n - 1].exists()) {
+            files[n - 1].delete();
+        }
+        for (int i = n - 2; i >= 0; i--) {
+            if (files[i].exists()) {
+                files[i].renameTo(files[i + 1]);
+            }
         }
     }
 }

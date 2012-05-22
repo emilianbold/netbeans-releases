@@ -205,7 +205,7 @@ public final class NbFormatter extends java.util.logging.Formatter {
      * @param t throwable to print
      * @param pw the destination
      */
-    static void printStackTrace(Throwable t, PrintWriter pw) {
+    public static void printStackTrace(Throwable t, PrintWriter pw) {
         doPrintStackTrace(pw, t, null);
     }
 
