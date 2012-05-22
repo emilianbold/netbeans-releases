@@ -68,13 +68,15 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     // only one of enumerationRef/enumerationUID must be used (USE_UID_TO_CONTAINER)    
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
-    private /*final*/ CsmUID<CsmEnum> enumerationUID;
+    private final CsmUID<CsmEnum> enumerationUID;
 
     private EnumeratorImpl(CsmFile file, AST ast, NameHolder name, EnumImpl enumeration) {
         super(file, getStartOffset(ast), getEndOffset(ast));
+        assert enumeration != null;
         this.name = NameCache.getManager().getString(name.getName());
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
+        assert this.enumerationUID != null;
         this.enumerationRef = null;
     }
 
@@ -88,9 +90,11 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 
     private EnumeratorImpl(EnumImpl enumeration, CharSequence name, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
+        assert enumeration != null;
         this.name = NameCache.getManager().getString(name);
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
+        assert this.enumerationUID != null;
         this.enumerationRef = null;
     }
     
@@ -128,11 +132,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     @Override
     public CharSequence getQualifiedName() {
         CsmEnum e = _getEnumeration();
-        if (e != null) {
-            return CharSequences.create(e.getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
-        } else {
-            return CharSequences.create(getQualifiedNamePostfix());
-        }
+        return CharSequences.create(e.getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
     }
 
     private synchronized CsmEnum _getEnumeration() {
