@@ -57,11 +57,15 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebEvent;
+import javafx.scene.web.WebHistory;
+import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.WebView;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -238,7 +242,15 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public boolean isForward() {
-        return true;
+        if (isInitialized()) {
+            return runInFXThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return _isForward();
+                }
+            });
+        }
+        return false;
     }
 
     @Override
@@ -247,7 +259,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             javafx.application.Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    browser.getEngine().executeScript("window.history.forward()"); // NOI18N
+                    browser.getEngine().getHistory().goForward();
                 }
             });
         }
@@ -255,7 +267,15 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public boolean isBackward() {
-        return true;
+        if (isInitialized()) {
+            return runInFXThread(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return _isBackward();
+                }
+            });
+        }
+        return false;
     }
 
     @Override
@@ -264,7 +284,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             javafx.application.Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    browser.getEngine().executeScript("window.history.back()"); // NOI18N
+                    browser.getEngine().getHistory().goBack();
                 }
             });
         }
@@ -456,6 +476,19 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 processAlert(event.getData());
             }
         });
+        eng.getHistory().getEntries().addListener( new ListChangeListener<WebHistory.Entry> () {
+            @Override
+            public void onChanged( Change<? extends Entry> change ) {
+                _updateBackAndForward();
+            }
+        });
+        eng.getHistory().currentIndexProperty().addListener( new ChangeListener<Number> () {
+
+            @Override
+            public void changed( ObservableValue<? extends Number> ov, Number t, Number t1 ) {
+                _updateBackAndForward();
+            }
+        });
         container.setScene( new Scene( view ) );
         
         browser = view;
@@ -553,4 +586,30 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         }
     }
 
+    private void _updateBackAndForward() {
+        final boolean forward = _isForward();
+        final boolean backward = _isBackward();
+        SwingUtilities.invokeLater( new Runnable() {
+
+            @Override
+            public void run() {
+                propSupport.firePropertyChange( WebBrowser.PROP_BACKWARD, !backward, backward );
+                propSupport.firePropertyChange( WebBrowser.PROP_FORWARD, !forward, forward );
+            }
+        });
+    }
+
+    private boolean _isForward() {
+        if( null == browser )
+            return false;
+        WebHistory history = browser.getEngine().getHistory();
+        return history.getCurrentIndex() < history.getEntries().size()-1;
+    }
+
+    private boolean _isBackward() {
+        if( null == browser )
+            return false;
+        WebHistory history = browser.getEngine().getHistory();
+        return history.getCurrentIndex() > 0;
+    }
 }
