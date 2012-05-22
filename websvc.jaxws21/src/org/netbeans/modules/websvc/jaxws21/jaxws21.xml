@@ -56,7 +56,8 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.libs.jaxb/modules/ext/jaxb/jaxb-xjc.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/FastInfoset.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/gmbal-api-only.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/http.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/ha-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/javax.mail_1.4.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/jaxws-rt.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/jaxws-tools.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/management-api.jar!/</resource>
@@ -64,15 +65,16 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/policy.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/saaj-impl.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/stax-ex.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/stax2-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/streambuffer.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/woodstox.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/modules/ext/jaxws22/woodstox-core-asl.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/jaxws-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/jsr181-api.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/jsr250-api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/javax.annotation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21api/modules/ext/jaxws22/api/saaj-api.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_1.0_api.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -81,6 +83,6 @@ made subject to such option by the copyright holder.
     <volume>
         <type>maven-pom</type>
         <resource>http://download.java.net/maven/1/javax.jws/poms/jsr181-api-1.0-MR1.pom</resource>
-        <resource>http://download.java.net/maven/1/com.sun.xml.ws/poms/jaxws-rt-2.1.3.pom</resource>
+        <resource>http://repo1.maven.org/maven2/com/sun/xml/ws/jaxws-rt/2.2.6-1/jaxws-rt-2.2.6-1.pom</resource>
     </volume>
 </library>

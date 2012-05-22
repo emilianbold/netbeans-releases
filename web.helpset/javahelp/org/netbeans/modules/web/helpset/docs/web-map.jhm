@@ -173,5 +173,15 @@
         
         <!-- CSH : Bean Validation Constraint wizard -->
         <mapID target="org.netbeans.modules.javaee.beanvalidation.ConstraintPanel" url="web/framework/jsf/csh/file_beanvalidationconstraint.html"/>
+<!-- Cloud TOC topics -->
+<mapID target="about-cloud" url="web/cloud/about-cloud.html"/>
+<mapID target="cloud-process" url="web/cloud/cloud_process.html"/>
+<mapID target="register-cloud" url="web/cloud/register-cloud.html"/>
+<mapID target="develop-locally" url="web/cloud/develop-locally.html"/>
+<mapID target="deploy-cloud" url="web/cloud/deploy-cloud.html"/>
+<mapID target="oracle-cloud-whitelisting" url="web/cloud/whitelisting.html"/>
+        
+<!-- Cloud support CSH topics -->
+<mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="web/cloud/csh/add-cloud-provider-oracle.html" />
 </map>
 

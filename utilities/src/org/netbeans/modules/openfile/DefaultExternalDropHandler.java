@@ -50,6 +50,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.InvalidDnDOperationException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -79,6 +80,9 @@ import org.openide.windows.TopComponent;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.windows.ExternalDropHandler.class)
 public class DefaultExternalDropHandler extends ExternalDropHandler {
     
+    private static final Logger LOG =
+            Logger.getLogger(DefaultExternalDropHandler.class.getName());
+
     public boolean canDrop(DropTargetDragEvent e) {
         return canDrop( e.getCurrentDataFlavors() );
     }
@@ -173,8 +177,13 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
         try {
             if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
                 //windows & mac
-                return (List<File>) t.getTransferData( DataFlavor.javaFileListFlavor );
-            } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
+                try {
+                    return (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+                } catch (InvalidDnDOperationException ex) { // #212390
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+            if (t.isDataFlavorSupported(getUriListDataFlavor())) {
                 //linux
                 String uriList = (String)t.getTransferData( getUriListDataFlavor() );
                 return textURIListToFileList( uriList );
@@ -183,7 +192,7 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
         } catch( IOException ex ) {
             // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
-            Logger.getLogger(DefaultExternalDropHandler.class.getName()).log(Level.FINE, null, ex);
+            LOG.log(Level.FINE, null, ex);
         }
         return null;
     }
@@ -218,7 +227,7 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
 
     List<File> textURIListToFileList( String data ) {
         List<File> list = new ArrayList<File>(1);
-        for( StringTokenizer st = new StringTokenizer(data, "\r\n");
+        for( StringTokenizer st = new StringTokenizer(data, "\r\n\u0000");
             st.hasMoreTokens();) {
             String s = st.nextToken();
             if( s.startsWith("#") ) {

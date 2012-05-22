@@ -657,7 +657,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     basicAnnArguments.add(genUtils.createAnnotationArgument("optional", false)); //NOI18N
                     annotations.add(genUtils.createAnnotation("javax.persistence.Basic", basicAnnArguments)); //NOI18N
                     //Add @NotNull constraint
-                    if (generateValidationConstraints) {   //NOI18N
+                    if (generateValidationConstraints && !m.isAutoIncrement()) {   //NOI18N
                         annotations.add(genUtils.createAnnotation("javax.validation.constraints.NotNull")); //NOI18N
                     }
                 }

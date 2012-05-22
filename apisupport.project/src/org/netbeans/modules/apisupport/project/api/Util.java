@@ -53,6 +53,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -129,7 +130,7 @@ public final class Util {
      *            file or is invalid. i.e. as it is thrown by {@link
      *            FileObject#getInputStream()}.
      */
-    public static EditableManifest loadManifest(FileObject manifestFO) throws IOException {
+    public static @NonNull EditableManifest loadManifest(@NonNull FileObject manifestFO) throws IOException {
         InputStream mfIS = manifestFO.getInputStream();
         try {
             return new EditableManifest(mfIS);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -64,12 +64,20 @@ import org.netbeans.modules.autoupdate.ui.actions.Installer;
  *
  * @author  Jiri Rechtacek
  */
-public class OperationPanel extends javax.swing.JPanel {
+public final class OperationPanel extends javax.swing.JPanel {
     
     static final String RUN_ACTION = "run-action";
     static final String RUN_IN_BACKGROUND = "run-in-background";
     
+    private final boolean runInBackground;
+    
     public OperationPanel (boolean allowRunInBackground) {
+        this(allowRunInBackground, false);
+    }
+    
+    public OperationPanel (boolean allowRunInBackground, boolean runInBackground) {
+        assert (runInBackground && allowRunInBackground) || ! runInBackground;
+        this.runInBackground = runInBackground;
         initComponents ();
         rbRestartNow.setSelected (true);
         cbRunInBackground.setVisible (allowRunInBackground);
@@ -85,6 +93,15 @@ public class OperationPanel extends javax.swing.JPanel {
         Installer.RP.post(new Runnable () {
             @Override
             public void run () {
+                if (runInBackground) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            firePropertyChange (RUN_IN_BACKGROUND, null, Boolean.TRUE);
+                        }
+                    });
+                }
                 firePropertyChange (RUN_ACTION, null, Boolean.TRUE);
             }
         }, 200);
@@ -95,6 +112,7 @@ public class OperationPanel extends javax.swing.JPanel {
             setProgressComponents (mainLabel, progressComponent, detailLabel);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     setProgressComponents (mainLabel, progressComponent, detailLabel);
                 }
@@ -108,6 +126,7 @@ public class OperationPanel extends javax.swing.JPanel {
             rbRestartNow.setVisible (visible);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     rbRestartLater.setVisible (visible);
                     rbRestartNow.setVisible (visible);
@@ -125,6 +144,7 @@ public class OperationPanel extends javax.swing.JPanel {
             cbRunInBackground.setVisible (false);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     cbRunInBackground.setVisible (false);
                 }
@@ -151,6 +171,7 @@ public class OperationPanel extends javax.swing.JPanel {
             setBodyInEQ (msg, text);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     setBodyInEQ (msg, text);
                 }
@@ -163,6 +184,7 @@ public class OperationPanel extends javax.swing.JPanel {
         
         Collections.sort(elements, new Comparator<UpdateElement>() {
 
+            @Override
                 public int compare(UpdateElement o1, UpdateElement o2) {
                     return Collator.getInstance().compare(o1.getDisplayName(), o2.getDisplayName());
                 }
@@ -172,6 +194,7 @@ public class OperationPanel extends javax.swing.JPanel {
             setBodyInEQ (msg, elements);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     setBodyInEQ (msg, elements);
                 }
@@ -209,7 +232,7 @@ public class OperationPanel extends javax.swing.JPanel {
     private JComponent getElementsComponent (List<UpdateElement> elements) {
         StringBuilder body = new StringBuilder ();
         for (UpdateElement el : elements) {
-            body.append(el.getDisplayName () + "<br>"); // NOI18N
+             body.append(el.getDisplayName ()).append("<br>"); // NOI18N
         }
         return getElementsComponent(body.toString());
     }

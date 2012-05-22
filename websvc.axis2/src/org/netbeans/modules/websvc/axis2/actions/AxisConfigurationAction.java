@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.axis2.Axis2ModelProvider;
 import org.netbeans.modules.websvc.axis2.AxisUtils;
@@ -66,6 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.NodeAction;
 
 public class AxisConfigurationAction extends NodeAction  {
@@ -131,7 +133,13 @@ public class AxisConfigurationAction extends NodeAction  {
                         axisModelChanged = true;
                     }
                 }
-                axis2Model.endTransaction();
+		try {
+		    axis2Model.endTransaction();
+		} catch (IllegalStateException ex) {
+		    Exceptions.attachSeverity(ex, Level.WARNING);
+		    Exceptions.printStackTrace(ex);
+		}
+		
 
                 if (axisModelChanged) {
                     // save axis2.xml

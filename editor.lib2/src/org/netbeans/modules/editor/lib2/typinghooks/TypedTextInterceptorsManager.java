@@ -186,6 +186,7 @@ public final class TypedTextInterceptorsManager {
     private Collection<? extends TypedTextInterceptor> getInterceptors(Document doc, Position offset) {
         List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset.getOffset(), true);
         TokenSequence<?> seq = seqs.isEmpty() ? null : seqs.get(seqs.size() - 1);
+        seq = seq == null ? TokenHierarchy.get(doc).tokenSequence() : seq;
         MimePath mimePath = seq == null ? MimePath.parse(DocumentUtilities.getMimeType(doc)) : MimePath.parse(seq.languagePath().mimePath());
         
         synchronized (cache) {

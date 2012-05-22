@@ -43,16 +43,33 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -220,7 +237,6 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private void initInitialValue(AST node, CsmScope scope) {
         if (node != null) {
             int start = 0;
-            int end = 0;
             AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
             if (tok == null && (node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
                     node.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION)) {
@@ -278,7 +294,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             if (lastInitAst != null) {
                 AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
                 if ((lastChild != null) && (lastChild instanceof CsmAST)) {
-                    end = ((CsmAST) lastChild).getEndOffset();
+                    int end = ((CsmAST) lastChild).getEndOffset();
                     initExpr = ExpressionBase.create(start, end, getContainingFile(),/* null,*/ _getScope());
                     if(!lambdas.isEmpty()) {
                         initExpr.setLambdas(lambdas);
@@ -388,6 +404,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 
     @Override
     public CsmVariableDefinition getDefinition() {
+        if (!isValid()) {
+            return null;
+        }
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE_DEFINITION) + UNIQUE_NAME_SEPARATOR + getQualifiedName();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
         return (def == null) ? null : (CsmVariableDefinition) def;

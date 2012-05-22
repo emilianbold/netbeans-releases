@@ -172,7 +172,10 @@ public class JDBCTable extends TableImplementation {
     protected void createColumns() {
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         try {
-            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
+            ResultSet rs = MetadataUtilities.getColumns(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name, "%"); // NOI18N
             try {
                 while (rs.next()) {
                     Column column = createJDBCColumn(rs).getColumn();
@@ -193,7 +196,10 @@ public class JDBCTable extends TableImplementation {
     protected void createIndexes() {
         Map<String, Index> newIndexes = new LinkedHashMap<String, Index>();
         try {
-            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getIndexInfo(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, false, true);
+            ResultSet rs = MetadataUtilities.getIndexInfo(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name, false, true);
             try {
                 JDBCIndex index = null;
                 String currentIndexName = null;
@@ -267,7 +273,10 @@ public class JDBCTable extends TableImplementation {
         protected void createForeignKeys() {
         Map<String,ForeignKey> newKeys = new LinkedHashMap<String,ForeignKey>();
         try {
-            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getImportedKeys(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name);
+            ResultSet rs = MetadataUtilities.getImportedKeys(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name);
             try {
                 JDBCForeignKey fkey = null;
                 String currentKeyName = null;
@@ -374,12 +383,14 @@ public class JDBCTable extends TableImplementation {
         return table;
     }
 
-
     protected void createPrimaryKey() {
         String pkname = null;
         Collection<Column> pkcols = new ArrayList<Column>();
         try {
-            ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getPrimaryKeys(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name); // NOI18N
+            ResultSet rs = MetadataUtilities.getPrimaryKeys(
+                    jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
+                    jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
+                    name);
             try {
                 while (rs.next()) {
                     if (pkname == null) {

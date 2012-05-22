@@ -65,7 +65,6 @@ import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import sun.nio.cs.FastCharsetProvider;
 
 /**
  *
@@ -84,7 +83,7 @@ public final class FileChooserBuilder {
             super(currentDirectoryPath, fsv);
         }
 
-
+        public abstract void setCurrentDirectory(FileObject dir);
         public abstract FileObject getSelectedFileObject();
         public abstract FileObject[] getSelectedFileObjects();
     }
@@ -167,6 +166,15 @@ public final class FileChooserBuilder {
             }
         }
 
+        @Override
+        public void setCurrentDirectory(FileObject dir) {
+            if (dir != null && dir.isFolder()) {
+                File file = FileUtil.toFile(dir);
+                if (file != null) {
+                    setCurrentDirectory(file);
+                }
+            }
+        }
     }
 
     private static class RemoteFileChooserImpl extends JFileChooserEx
@@ -240,6 +248,14 @@ public final class FileChooserBuilder {
                 }
             }
             super.setCurrentDirectory(dir);
+        }
+
+        @Override
+        public void setCurrentDirectory(FileObject fo) {
+            if (fo != null && fo.isFolder()) {
+                File dir = new FileObjectBasedFile(env, fo);
+                super.setCurrentDirectory(dir);
+            }
         }
 
         @Override

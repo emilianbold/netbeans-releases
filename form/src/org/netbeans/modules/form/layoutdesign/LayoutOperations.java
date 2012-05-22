@@ -1309,8 +1309,8 @@ class LayoutOperations implements LayoutConstants {
         boolean defaultTrailingPadding = false;
         PaddingType leadingPadding = null;
         PaddingType trailingPadding = null;
-        boolean effectiveExplicitGapLeading = false; // in case effectiveLeadingPadding is null
-        boolean effectiveExplicitGapTrailing = false; // in case effectiveTrailingPadding is null
+        boolean effectiveExplicitGapLeading = false;
+        boolean effectiveExplicitGapTrailing = false;
         boolean resizingGapLeading = false;
         boolean resizingGapTrailing = false;
         LayoutInterval zeroGapLeading = null;
@@ -1445,6 +1445,9 @@ class LayoutOperations implements LayoutConstants {
             }
             if (!subGroupTrailing) {
                 resizingGapTrailing = false;
+            }
+            if (!contentResizing) { // after removing resizing gaps the group with suppressed resizing has only fixed content
+                enableGroupResizing(group);
             }
         }
 
@@ -1812,6 +1815,11 @@ class LayoutOperations implements LayoutConstants {
         int idx = alignment == LEADING ? 0 : seq.getSubIntervalCount() - 1;
         LayoutInterval gap = seq.getSubInterval(idx);
         assert gap.isEmptySpace();
+        int prefDistance = gap.getPreferredSize();
+        if (LayoutInterval.canResize(gap) && prefDistance == NOT_EXPLICITLY_DEFINED
+                && gap.hasAttribute(LayoutInterval.ATTR_SIZE_DIFF)) {
+            return false;
+        }
         if (LayoutInterval.isAlignedAtBorder(seq, alignment)) {
             return true;
         }
@@ -1819,7 +1827,6 @@ class LayoutOperations implements LayoutConstants {
         int d = alignment == LEADING ? 1 : -1;
         LayoutInterval neighbor = seq.getSubInterval(idx+d);
 
-        int prefDistance = gap.getPreferredSize();
         if (prefDistance == NOT_EXPLICITLY_DEFINED) {
             prefDistance = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
         }
@@ -2270,10 +2277,12 @@ class LayoutOperations implements LayoutConstants {
         assert alignment == LEADING || alignment == TRAILING;
         assert gap.isEmptySpace();
 
+        boolean parentPos = false;
         if (interval.isSequential()) {
             interval = interval.getSubInterval(alignment == LEADING ? 0 : interval.getSubIntervalCount()-1);
             if (interval.isEmptySpace()) {
                 interval = LayoutInterval.getDirectNeighbor(interval, alignment^1, true);
+                parentPos = true;
             }
         }
 
@@ -2330,9 +2339,17 @@ class LayoutOperations implements LayoutConstants {
             LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
             if (neighbor != null && neighbor.isEmptySpace()) {
                 LayoutInterval next = LayoutInterval.getDirectNeighbor(neighbor, alignment, false);
-                int otherPos = next != null ? next.getCurrentSpace().positions[dimension][alignment^1] :
-                                              parent.getCurrentSpace().positions[dimension][alignment];
-                int mergedSize = (pos - otherPos) * (alignment == LEADING ? 1 : -1);
+                int mergedSize;
+                if (next != null) {
+                    mergedSize = pos - next.getCurrentSpace().positions[dimension][alignment^1];
+                } else if (!parentPos) {
+                    mergedSize = pos - parent.getCurrentSpace().positions[dimension][alignment];
+                } else {
+                    mergedSize = interval.getCurrentSpace().positions[dimension][alignment] - pos;
+                }
+                if (alignment == TRAILING) {
+                    mergedSize = -mergedSize;
+                }
                 eatGap(neighbor, gap, mergedSize);
             }
             else {

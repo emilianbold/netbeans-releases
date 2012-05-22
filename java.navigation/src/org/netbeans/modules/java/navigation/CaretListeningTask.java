@@ -139,7 +139,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             lastPosition = ts.offset();
         }
                 
-        if (ts.token() != null && ts.token().length() > 1) {
+        if (ts.token() != null && (ts.token().length() > 1 || ts.token().id() == JavaTokenId.AT)) {
             // it is magic for TreeUtilities.pathFor to proper tree
             ++lastPosition;
         }

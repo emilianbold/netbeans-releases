@@ -61,6 +61,7 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -157,7 +158,11 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
         }
         
         public void performChange() {
-            item.performSafeDelete();
+            try {
+                item.performSafeDelete();
+            } catch (IllegalStateException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         public Lookup getLookup() {
@@ -174,7 +179,11 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
         
         @Override
         public void undoChange() {
-            item.undoSafeDelete();
+            try {
+                item.undoSafeDelete();
+            } catch (IllegalStateException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
     }

@@ -108,6 +108,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -681,8 +682,14 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 iceViewHandler.setFullyQualifiedClassType("com.icesoft.faces.facelets.D2DFaceletViewHandler");  //NOI18N
                                 application.addViewHandler(iceViewHandler);
                             }
-                            model.endTransaction();
-                            model.sync();
+                            try {
+                                model.endTransaction();
+                                model.sync();
+                            } catch (IllegalStateException ex) {
+                                IOException io = new IOException("Cannot update faces-config.xml", ex);
+                                throw Exceptions.attachLocalizedMessage(io,
+                                        NbBundle.getMessage(JSFFrameworkProvider.class, "ERR_WRITE_FACES_CONFIG", Exceptions.findLocalizedMessage(ex)));
+                            }
                             DataEditorSupport editorSupport =
                                     DataObject.find(files[0]).getLookup().lookup(DataEditorSupport.class);
                             editorSupport.saveDocument();

@@ -74,6 +74,8 @@ public class Utils {
 
     private static String getTopLvlDisplayText(boolean containsActiveTask, String name, boolean isOpened) {
         String displayName;
+        //replace spaces to prevent line breaking
+        name = name.replace(" ", "&nbsp;");
         String activeText = containsActiveTask ? "<b>" + name + "</b>" : name; //NOI18N
         if (!isOpened) {
             displayName = "<html><strike>" + activeText + "</strike><html>"; //NOI18N

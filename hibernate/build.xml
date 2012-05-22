@@ -46,27 +46,4 @@ made subject to such option by the copyright holder.
 <project basedir="." default="netbeans" name="hibernate">
     <description>Builds, tests, and runs the project org.netbeans.modules.hibernate</description>
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <!-- Unit test related -->
-    <property name="derby.data.dir" value="test/unit/data"/>
-    <available file="test/unit/data/db-derby-10.2.2.0-bin"
-             property="derby.extracted"/>
-    <target name="test-preinit">
-
-        <antcall target="extract-derby"/>
-    </target>
-
-    <target name="extract-derby" unless="derby.extracted">
-        <mkdir dir="${derby.data.dir}"/>
-        <unzip src="../db/external/derby-10.2.2.0.zip" dest="${derby.data.dir}"/>
-    </target>
-
-    <target name="test-postinit">
-        <antcall target="clean-derby" />
-    </target>
-
-    <target name="clean-derby" if="derby.extracted">
-        <deltree dir="${derby.data.dir}" />
-    </target>
-
 </project>

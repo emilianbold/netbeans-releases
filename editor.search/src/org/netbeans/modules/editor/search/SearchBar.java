@@ -76,13 +76,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * This is an implementation of a Firefox(TM) style Incremental Search Side Bar.
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
-public final class SearchBar extends JPanel {
+public final class SearchBar extends JPanel implements PropertyChangeListener{
     private static SearchBar searchbarInstance = null;
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
@@ -113,6 +114,8 @@ public final class SearchBar extends JPanel {
     private SearchProperties searchProps = SearchPropertiesSupport.getSearchProperties();
     private boolean popupMenuWasCanceled = false;
     private Rectangle actualViewPort;
+    private boolean highlightCanceled = false;
+    private boolean whenOpenedWasNotVisible = false;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -163,6 +166,8 @@ public final class SearchBar extends JPanel {
         incSearchTextField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
+                if (ReplaceBar.getInstance(SearchBar.getInstance()).isVisible())
+                    ReplaceBar.getInstance(SearchBar.getInstance()).getReplaceTextField().select(0, 0);
                 hadFocusOnIncSearchTextField = true;
                 incSearchTextField.selectAll();
             }
@@ -209,6 +214,7 @@ public final class SearchBar extends JPanel {
         add(regexpCheckBox);
         highlightCheckBox = createCheckBox("CTL_Highlight", EditorFindSupport.FIND_HIGHLIGHT_SEARCH); // NOI18N
         add(highlightCheckBox);
+        EditorFindSupport.getInstance().addPropertyChangeListener(WeakListeners.propertyChange(this, EditorFindSupport.getInstance()));
         wrapAroundCheckBox = createCheckBox("CTL_WrapAround", EditorFindSupport.FIND_WRAP_SEARCH); // NOI18N
         add(wrapAroundCheckBox);
         selectCheckBoxes();
@@ -248,6 +254,14 @@ public final class SearchBar extends JPanel {
         expMenu.addAllToBarOrder(Arrays.asList(this.getComponents()));
         remove(getExpandButton());
         getExpandButton().setVisible(false);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt == null || evt.getPropertyName() == null || evt.getPropertyName().equals(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
+            Boolean value = (Boolean) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
+            highlightCheckBox.setSelected(value == null ? false : value.booleanValue());
+        }
     }
     
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
@@ -593,15 +607,20 @@ public final class SearchBar extends JPanel {
         addEnterKeystrokeFindNextTo(incSearchTextField);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         
-        hadFocusOnIncSearchTextField = true;
-        setVisible(true);
         MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
             comboBoxModelIncSearch.removeElementAt(i);
         }
         for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
             comboBoxModelIncSearch.addElement(spw.getSearchExpression());
-        incSearchTextField.setText("");
+        if (!isVisible() && isClosingSearchType())
+            whenOpenedWasNotVisible = true;
+        if (whenOpenedWasNotVisible) {
+            incSearchTextField.setText("");
+            whenOpenedWasNotVisible = false;
+        }
+        hadFocusOnIncSearchTextField = true;
+        setVisible(true);
         initBlockSearch();
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
 
@@ -617,6 +636,10 @@ public final class SearchBar extends JPanel {
             findNextButton.setEnabled(false);
         }
         actualViewPort = getActualTextComponent().getVisibleRect();
+        if (!isClosingSearchType() && highlightCanceled) {
+            searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
+            highlightCanceled = false;
+        }
     }
     
     public void looseFocus() {
@@ -632,6 +655,10 @@ public final class SearchBar extends JPanel {
             getActualTextComponent().requestFocusInWindow();
         }
         setVisible(false);
+        if (!isClosingSearchType() && getFindSupportValue(EditorFindSupport.FIND_HIGHLIGHT_SEARCH)) {
+            searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.FALSE);
+            highlightCanceled = true;
+        }            
     }
 
     private void incrementalSearch() {
@@ -861,7 +888,7 @@ public final class SearchBar extends JPanel {
         searchProps.setProperty(EditorFindSupport.FIND_REG_EXP, regexpCheckBox.isSelected());
         searchProps.setProperty(EditorFindSupport.FIND_BACKWARD_SEARCH, Boolean.FALSE);
         searchProps.setProperty(EditorFindSupport.FIND_INC_SEARCH, Boolean.TRUE);
-        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, !incSearchTextField.getText().isEmpty() && highlightCheckBox.isSelected());
+        searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, highlightCheckBox.isSelected());
         searchProps.setProperty(EditorFindSupport.FIND_WRAP_SEARCH, wrapAroundCheckBox.isSelected());
         return searchProps.getProperties();
     }

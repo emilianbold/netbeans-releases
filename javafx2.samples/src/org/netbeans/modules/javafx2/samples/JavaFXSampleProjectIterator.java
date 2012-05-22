@@ -44,9 +44,14 @@
 package org.netbeans.modules.javafx2.samples;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,9 +61,12 @@ import org.openide.util.NbBundle;
 
 /**
  * @author Martin Grebac
+ * @author Petr Somol
  */
 public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
 
+    private static final Logger LOG = Logger.getLogger(JavaFXSampleProjectIterator.class.getName());
+    
     private static final long serialVersionUID = 4L;
 
     int currentIndex;
@@ -122,9 +130,12 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
         String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
+        if(projectLocation == null || !projectLocation.exists() || name == null || name.isEmpty() || templateFO == null || platformName == null || platformName.isEmpty()) {
+            warnIssue204880();
+            throw new IOException();
+        }
         FileObject prjLoc = JavaFXSampleProjectGenerator.createProjectFromTemplate(
                 templateFO, projectLocation, name, platformName);
-
         java.util.Set set = new java.util.HashSet();
         set.add(DataObject.find(prjLoc));
 
@@ -172,6 +183,13 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
         };
         component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, list); // NOI18N
         component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
+    }
+    
+    private void warnIssue204880() {
+        LOG.log(Level.WARNING, "Detected issue 204880 occurence. Properties:" + wiz.getProperties()); // NOI18N
+        NotifyDescriptor d = new NotifyDescriptor.Message(
+                NbBundle.getMessage(JavaFXSampleProjectIterator.class,"WARN_Issue204880"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
+        DialogDisplayer.getDefault().notify(d);
     }
     
 }

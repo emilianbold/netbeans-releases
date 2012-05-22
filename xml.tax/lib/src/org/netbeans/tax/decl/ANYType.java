@@ -90,7 +90,7 @@ public class ANYType extends LeafType {
     /**
      */
     public String getName () {
-        return Util.THIS.getString ("NAME_ANY");
+        return "ANY"; // NOI18N
     }
     
     /**

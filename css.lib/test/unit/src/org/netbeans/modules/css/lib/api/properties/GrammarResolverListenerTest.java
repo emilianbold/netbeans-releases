@@ -125,7 +125,7 @@ public class GrammarResolverListenerTest extends CssTestBase {
         assertTrue(started.get());
         assertTrue(finished.get());
         
-        
+    
     }
     
     
@@ -422,28 +422,31 @@ public class GrammarResolverListenerTest extends CssTestBase {
         assertResolve(pm.getGrammarElement(), "url(images/shadow.gif) no-repeat bottom right");
     }
     
-    /*
+    
     //Bug 206035 - Incorrect background property value validation/completion
     public void testBackground2() {
         PropertyModel pm = Properties.getPropertyModel("background");
         assertResolve(pm.getGrammarElement(), "#fff url(\"../images/google\") no-repeat center left");
     }
+
     
-    public void testURI() {
-        PropertyModel pm = Properties.getPropertyModel("@uri");
-        assertResolve(pm.getGrammarElement(), "url(images/google)");
-        assertResolve(pm.getGrammarElement(), "url(../images/google)");        
-    }
+//    //should be already fixed in easel (the grammar resolver uses antlr tokens)
+//    public void testURI() {
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        
+//        PropertyModel pm = CssModuleSupport.getPropertyModel("@uri");
+//        assertResolve(pm.getGrammarElement(), "url(images/google)");
+//        assertResolve(pm.getGrammarElement(), "url(../images/google)");        
+//    }
+//    
     
     public void testBgPosition() {
         PropertyModel pm = Properties.getPropertyModel("@bg-position");
         assertResolve(pm.getGrammarElement(), "center left");
     }
     
-    public void testBgPositionDetail() {
-        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-        
+    public void testBgPositionDetail_And() {
         //the minimized grammar to reproduce the bg-position resolving problem
         String grammar = "[ center | a ] && [ center | b ]";
         
@@ -454,9 +457,29 @@ public class GrammarResolverListenerTest extends CssTestBase {
         assertResolve(grammar, "center center");        
         assertResolve(grammar, "a center");
         
-        assertResolve(grammar, "center a"); //fails
+        assertResolve(grammar, "center a"); //this used to fail
         
     }
-    */
+    
+    public void testBgPositionDetail_Collection() {
+        //the minimized grammar to reproduce the bg-position resolving problem
+        String grammar = "[ center | a ] || [ center | b ]";
+        
+        assertResolve(grammar, "center");
+        assertResolve(grammar, "b");
+        assertResolve(grammar, "a");
+        assertResolve(grammar, "b");
+        
+        assertResolve(grammar, "center b");
+        assertResolve(grammar, "b center");
+        assertResolve(grammar, "a b");
+        assertResolve(grammar, "b a");
+        assertResolve(grammar, "center center");        
+        assertResolve(grammar, "a center");
+        
+        assertResolve(grammar, "center a"); //this used to fail
+        
+    }
+    
 
 }

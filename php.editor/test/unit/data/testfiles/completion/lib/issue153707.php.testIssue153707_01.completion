@@ -81,6 +81,7 @@ PACKAGE    f                               [PUBLIC]   Test204925_07_C\d\e
 PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 CLASS      A                               [PUBLIC]   Test197084.php
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
+CLASS      A                               [PUBLIC]   issue195232.php
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
@@ -94,6 +95,7 @@ CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
+CLASS      B                               [PUBLIC]   issue195232.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
@@ -377,6 +379,7 @@ METHOD     issue157534(&$var)              [PUBLIC]   issue157534.php
 METHOD     mytest()                        [PUBLIC]   varAssignment.php
 METHOD     paramsfnc($a, $b, $c, $d)       [PUBLIC]   paramdecltypes.php
 METHOD     printMyName()                   [PUBLIC]   varTypeComment.php
+METHOD     test()                          [PUBLIC]   issue195232.php
 METHOD     test()                          [PUBLIC]   typeInPHPDoc01.php
 METHOD     test142919(FooType1 $param1, $  [PUBLIC]   issue142919.php
 METHOD     test144409Func()                [PUBLIC]   issue144409.php

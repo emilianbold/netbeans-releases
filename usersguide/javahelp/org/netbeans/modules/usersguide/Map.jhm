@@ -17,6 +17,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="ide.welcome" url="getstart/welcome.html" />
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
+<mapID target="help_on_exit_dialog" url="files/csh/files_saveonexit_db.html" />
 
 
 <!--begin Projects section-->

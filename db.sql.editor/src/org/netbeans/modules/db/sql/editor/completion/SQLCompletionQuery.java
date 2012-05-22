@@ -69,10 +69,7 @@ import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.api.metadata.DBConnMetadataModelManager;
-import org.netbeans.modules.db.metadata.model.api.Schema;
-import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.api.Tuple;
-import org.netbeans.modules.db.metadata.model.api.View;
+import org.netbeans.modules.db.metadata.model.api.*;
 import org.netbeans.modules.db.sql.analyzer.CreateStatement;
 import org.netbeans.modules.db.sql.analyzer.DeleteStatement;
 import org.netbeans.modules.db.sql.analyzer.TablesClause;
@@ -159,7 +156,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         DatabaseMetaData dmd = conn.getMetaData();
                         quoter = SQLIdentifiers.createQuoter(dmd);
                     } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        throw new MetadataException(e);
                     }
                     doQuery(newEnv, metadata, quoter);
                 }

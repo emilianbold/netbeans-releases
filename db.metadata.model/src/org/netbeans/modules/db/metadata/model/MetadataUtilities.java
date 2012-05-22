@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.db.metadata.model;
 
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -83,6 +86,112 @@ public class MetadataUtilities {
             return input;
         } else {
             return input.trim();
+        }
+    }
+
+    /**
+     * Call {@link DatabaseMetaData#getColumns(String, String, String, String)},
+     * wrapping any internal runtime exception into an {@link SQLException}.
+     */
+    public static ResultSet getColumns(DatabaseMetaData dmd, String catalog,
+            String schemaPattern, String tableNamePattern,
+            String columnNamePattern) throws SQLException {
+        try {
+            return dmd.getColumns(catalog, schemaPattern, tableNamePattern,
+                    columnNamePattern);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new SQLException(t);
+        }
+    }
+
+    /**
+     * Call {@link DatabaseMetaData#getIndexInfo(String, String, String,
+     * boolean, boolean)}, wrapping any internal runtime exception into an
+     * {@link SQLException}.
+     */
+    public static ResultSet getIndexInfo(DatabaseMetaData dmd,
+            String catalog, String schema, String table,
+            boolean unique, boolean approximate) throws SQLException {
+        try {
+            return dmd.getIndexInfo(catalog, schema, table, unique,
+                    approximate);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new SQLException(t);
+        }
+    }
+
+    /**
+     * Call {@link DatabaseMetaData#getImportedKeys(String, String, String)},
+     * wrapping any internal runtime exception into an {@link SQLException}.
+     */
+    public static ResultSet getImportedKeys(DatabaseMetaData dmd,
+            String catalog, String schema, String table) throws SQLException {
+        try {
+            return dmd.getImportedKeys(catalog, schema, table);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new SQLException(t);
+        }
+    }
+
+    /**
+     * Call {@link DatabaseMetaData#getPrimaryKeys(String, String, String)},
+     * wrapping any internal runtime exeption into an {@link SQLException}.
+     */
+    public static ResultSet getPrimaryKeys(DatabaseMetaData dmd,
+            String catalog, String schema, String table) throws SQLException {
+        try {
+            return dmd.getPrimaryKeys(catalog, schema, table);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new SQLException(t);
+        }
+    }
+
+    /**
+     * Call {@link DatabaseMetaData#getTables(String, String, String,
+     * String[])}, wrapping any internal runtime exception into an
+     * {@link SQLException}.
+     */
+    public static ResultSet getTables(DatabaseMetaData dmd,
+            String catalog, String schemaPattern, String tableNamePattern,
+            String[] types) throws SQLException {
+        try {
+            System.out.println("Debug:");
+            System.out.println("getTables " + catalog + " " + schemaPattern);
+            return dmd.getTables(catalog, schemaPattern, tableNamePattern,
+                    types);
+        } catch (SQLException e) {
+            System.out.println("Catch SQL Exception");
+            System.out.println("SQL Exception " + e);
+            throw e;
+        } catch (Throwable t) {
+            System.out.println("Catch Throwable");
+            System.out.println("Throwable" + t);
+            throw new SQLException(t);
+        }
+    }
+
+    /**
+     * Call {@link DatabaseMetaData#getProcedures(String, String, String)},
+     * wrapping any internal runtime exception into an {@link SQLException}.
+     */
+    public static ResultSet getProcedures(DatabaseMetaData dmd,
+            String catalog, String schemaPattern, String procedureNamePattern)
+            throws SQLException {
+        try {
+            return dmd.getProcedures(catalog, schemaPattern,
+                    procedureNamePattern);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new SQLException(t);
         }
     }
 }

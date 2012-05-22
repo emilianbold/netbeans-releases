@@ -114,6 +114,7 @@ public class ResultsOutlineSupport {
     private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
     private ETableColumnModel columnModel;
     private List<MatchingObjectNode> matchingObjectNodes;
+    private boolean closed = false;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
             ResultModel resultModel, List<FileObject> rootFiles,
@@ -192,11 +193,12 @@ public class ResultsOutlineSupport {
         saveColumnState();
     }
 
-    public void clean() {
+    public synchronized void clean() {
         resultModel.close();
         for (MatchingObjectNode mo : matchingObjectNodes) {
             mo.clean();
         }
+        closed = true;
     }
 
     private void loadColumnState() {
@@ -430,7 +432,10 @@ public class ResultsOutlineSupport {
         return mon;
     }
 
-    public void addMatchingObject(MatchingObject mo) {
+    public synchronized void addMatchingObject(MatchingObject mo) {
+        if (closed) {
+            return;
+        }
         for (FileObject fo : rootFiles) {
             if (fo == mo.getFileObject()
                     || FileUtil.isParentOf(fo, mo.getFileObject())) {

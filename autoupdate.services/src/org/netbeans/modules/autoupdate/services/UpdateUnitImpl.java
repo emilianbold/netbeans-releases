@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -65,7 +65,7 @@ public abstract class UpdateUnitImpl extends Object {
     private UpdateElement backup;
     private UpdateUnit updateUnit;
     
-    private Logger err = Logger.getLogger (this.getClass ().getName ());
+    private static final Logger err = Logger.getLogger (UpdateUnitImpl.class.getName ());
 
     public UpdateUnitImpl (String codename) {
         this.codeName = codename;
@@ -162,6 +162,34 @@ public abstract class UpdateUnitImpl extends Object {
         return updates;
     }
     
+    public UpdateElement findUpdateSameAsInstalled() {
+        // check if potentinally updates exist
+        if (updates != null && !updates.isEmpty()) {
+
+            // check if a module is already installed
+            if (installed == null) {
+                return null;
+            } else {
+                // compare installed with optionallly update
+                for (UpdateElement update : updates) {
+                    String uspec = update.getSpecificationVersion();
+                    String ispec = installed.getSpecificationVersion();
+                    if (uspec == null && ispec == null) {
+                        err.log(Level.FINE, "Installed UpdateElement w/o version " + installed.getCodeName() + "[" + ispec + "] has update w/o version " + update.getCodeName() + "[" + uspec + "] too");
+                        return update;
+                    } else if (uspec != null && ispec != null
+                            && new SpecificationVersion(uspec).compareTo(new SpecificationVersion(ispec)) == 0) {
+                        err.log(Level.FINE, "Installed UpdateElement " + installed.getCodeName() + "[" + ispec + "] has update with the same version " + update.getCodeName() + "[" + uspec + "]");
+                        return update;
+                    }
+                }
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+    
     private List<UpdateElement> identifyUpdates (UpdateElement installed, List<UpdateElement> updates) {
         List<UpdateElement> res = null;
 
@@ -200,6 +228,7 @@ public abstract class UpdateUnitImpl extends Object {
             res = Collections.emptyList();
         } else if (res.size() > 1) {
         Collections.sort(res,new Comparator<UpdateElement>(){
+            @Override
             public int compare(UpdateElement o1, UpdateElement o2) {
                 String sv1 = o1.getSpecificationVersion ();
                 String sv2 = o2.getSpecificationVersion ();

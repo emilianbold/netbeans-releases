@@ -14,4 +14,17 @@
             <cobertura.report.format>xml</cobertura.report.format>
         </properties>
     </action>
+    <action>
+        <actionName>jacoco</actionName>
+        <packagings>
+            <packaging>*</packaging>
+        </packagings>
+        <goals>
+            <goal>clean</goal> <!-- otherwise never removes coverage -->
+            <goal>prepare-package</goal>
+        </goals>
+        <properties>
+            <skipTests>false</skipTests>
+        </properties>
+    </action>
 </actions>

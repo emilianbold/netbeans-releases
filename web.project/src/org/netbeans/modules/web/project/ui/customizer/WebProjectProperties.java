@@ -452,6 +452,14 @@ final public class WebProjectProperties {
             }
         });
         COPY_STATIC_RESOURCE_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_COPY_STATIC_FILES_ON_SAVE);
+        COPY_STATIC_RESOURCE_ON_SAVE_MODEL.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!COPY_STATIC_RESOURCE_ON_SAVE_MODEL.isSelected()) {
+                    DEPLOY_ON_SAVE_MODEL.setSelected(false);
+                }
+            }
+        });
         DEPLOY_ON_SAVE_MODEL.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

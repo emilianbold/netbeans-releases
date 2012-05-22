@@ -687,7 +687,7 @@ class FontPanel extends JPanel {
 		// a closed ProgresMonitor.
 		if (worker.isCancelled()) {
 		    return true;
-		} else if (progressMonitor.isCanceled()) {
+		} else if (progressMonitor == null || progressMonitor.isCanceled()) {
 		    boolean withInterrupts = true;
 		    worker.cancel(withInterrupts);
 		    return true;

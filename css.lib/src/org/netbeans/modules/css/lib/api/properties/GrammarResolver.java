@@ -371,7 +371,14 @@ public class GrammarResolver {
             }
             
             Collection<GrammarElement> grammarElementsToProcess = new ArrayList<GrammarElement>(group.elements());
+            
+            //remember the grammar elements to process for the ALL and COLLECTION branch alternatives 
+            Collection<GrammarElement> branchAlternativesGrammarElementsToProcess = null;
 
+            //ALL and COLLECTIOn group: when multiple branches consumed similar input then we need to 
+            //try to resolve the whole group using each of them
+            Set<GrammarElement> alreadyTriedAlternativeBranches = new HashSet<GrammarElement>();
+            
             Map<GrammarElement, InputState> branchesResults =
                     new HashMap<GrammarElement, InputState>();
 
@@ -541,27 +548,98 @@ public class GrammarResolver {
                         assert !bestBranches.isEmpty();
 
                         //set the success state to the best branch (consumed most input)
-                        //if there are more equivalent then use the first one
-                        GrammarElement bestMatchElement = bestBranches.keySet().iterator().next();
-                        successState = branchesResults.get(bestMatchElement);
-                        //put the state of the best match back
-                        backupInputState(successState);
-                        if (LOG) {
-                            if(bestBranches.size() > 1) {
-                                log(String.format(" !cannot decide what branch to choose from %s - decided to use first best match %s, %s", bestBranches.size(), bestMatchElement.path(), successState));
-                            } else {
-                                log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+                        
+                        if (bestBranches.size() > 1) {
+                            //there're more branches consumed the same input length - we need to decide which one to use
+                            log(String.format("! more branches (%s) which consumed same input lenght found!", bestBranches.size()));
+                            
+                            //try to continue in the group processing accepting each of the alternative branch
+                            for (Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
+                                // <editor-fold defaultstate="collapsed" desc="Logging">  
+                                if(LOG) {
+                                    log(String.format("\t%s, %s %s",
+                                            entry.getKey(),
+                                            entry.getValue(),
+                                            alreadyTriedAlternativeBranches.contains(entry.getKey()) ? "(tried)" : ""));
+                                }
+                                // </editor-fold>
+                                if (branchAlternativesGrammarElementsToProcess == null) {
+                                    //first alternative attempt - remember the set of unprocessed grammar elements 
+                                    //so we can reset it back for the next alternative processing
+                                    // <editor-fold defaultstate="collapsed" desc="Logging">  
+                                    if(LOG) {
+                                        StringBuilder b = new StringBuilder();
+                                        b.append("  saving grammar elements to process: ");
+                                        for (GrammarElement e : grammarElementsToProcess) {
+                                            b.append(e);
+                                            b.append(',');
+                                        }
+                                        log(b.toString());
+                                    }
+                                // </editor-fold>
+                                    branchAlternativesGrammarElementsToProcess = new ArrayList<GrammarElement>(grammarElementsToProcess);
+                                }
                             }
                         }
                         
-                        fireRuleChoosen(group, bestMatchElement);
-                        
-                        //if we are in a COLLECTION or ALL, we need to remove 
-                        //the choosen member from the further collection processing
-                        switch (group.getType()) {
-                            case COLLECTION:
-                            case ALL:
-                                grammarElementsToProcess.remove(bestMatchElement);
+                        GrammarElement bestMatchElement = null;
+                        for (GrammarElement alternative : bestBranches.keySet()) {
+                            if (!alreadyTriedAlternativeBranches.contains(alternative)) {
+                                //not tried alternative yet - lets give it a try
+                                bestMatchElement = alternative;
+                                break;
+
+                            } else {
+                                //already tried alternative -- skip
+                            }
+                        }
+
+                        //set the bestMatchElement if there's just one alternative EVEN IF the alternative has been already tried
+                        //(the previous block of code will not set bestMatchElement)
+                        if (bestBranches.size() == 1) {
+                            bestMatchElement = bestBranches.keySet().iterator().next();
+                        }
+
+                        if (bestMatchElement == null) {
+                            //all alternative tried, no success
+                            log(String.format("! all %s alternative branches tried", bestBranches.size()));
+                        } else {
+                            
+                            if (bestBranches.size() > 1) {
+                                //if more alternatives and this is not the first attempt, reset the grammarElementsToProcess to the
+                                //state before the first alternative try
+                                if (branchAlternativesGrammarElementsToProcess != null) {
+                                    // <editor-fold defaultstate="collapsed" desc="Logging">  
+                                    StringBuilder b = new StringBuilder();
+                                    b.append("  restoring grammar elements to process: ");
+                                    for (GrammarElement e : branchAlternativesGrammarElementsToProcess) {
+                                        b.append(e);
+                                        b.append(',');
+                                    }
+                                    log(b.toString());
+                                    // </editor-fold>
+                                    grammarElementsToProcess = new ArrayList<GrammarElement>(branchAlternativesGrammarElementsToProcess);
+                                }
+                            }
+
+                            //remember we have tried this alternative
+                            alreadyTriedAlternativeBranches.add(bestMatchElement);
+
+                            successState = branchesResults.get(bestMatchElement);
+                            log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+
+                            fireRuleChoosen(group, bestMatchElement);
+                            
+                            //put the state of the best match back
+                            backupInputState(successState);
+
+                            //if we are in a COLLECTION or ALL, we need to remove 
+                            //the choosen member from the further collection processing
+                            switch (group.getType()) {
+                                case COLLECTION:
+                                case ALL:
+                                    grammarElementsToProcess.remove(bestMatchElement);
+                            }
                         }
 
                         break;

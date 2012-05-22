@@ -117,9 +117,8 @@ public class WebProjectRestSupport extends WebRestSupport {
         Profile profile = webModule.getJ2eeProfile();
         boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
             Profile.JAVA_EE_6_FULL.equals(profile); 
-        if ( !isJee6 ) {
-            extendBuildScripts();
-        }
+        
+        extendBuildScripts();
 
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         

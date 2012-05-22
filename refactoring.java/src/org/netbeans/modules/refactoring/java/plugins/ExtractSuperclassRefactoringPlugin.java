@@ -524,6 +524,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                         modifiers = make.removeModifiersModifier(modifiers, Modifier.PRIVATE);
                         modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
                         copy = make.Variable(modifiers, copy.getName(), copy.getType(), copy.getInitializer());
+                        genUtils.copyComments(tree, copy, false);
+                        genUtils.copyComments(tree, copy, true);
                     }
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {

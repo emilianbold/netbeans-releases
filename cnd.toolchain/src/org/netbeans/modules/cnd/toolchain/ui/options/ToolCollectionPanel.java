@@ -630,7 +630,7 @@ import org.openide.util.Utilities;
         if (ret == JFileChooser.CANCEL_OPTION) {
             return false;
         }
-        if (checkBaseFolder) {
+        if (false && checkBaseFolder) {
             boolean exists = false;
             try {
                 exists = HostInfoUtils.fileExists(manager.getExecutionEnvironment(), tfBaseDirectory.getText() + "/" + fileChooser.getSelectedFile().getName()); // NOI18N

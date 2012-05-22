@@ -1493,7 +1493,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx( JFXRunPanel.class );
+        return new HelpCtx( JFXRunPanel.class.getName() );
     }
 
     private List<String> updateBrowserList() {

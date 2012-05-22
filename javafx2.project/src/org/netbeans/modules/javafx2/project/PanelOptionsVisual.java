@@ -46,6 +46,7 @@ package org.netbeans.modules.javafx2.project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -622,7 +623,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                 } else {
                     File projectLoc = FileUtil.normalizeFile(new File(projectLocation));
                     File libLoc = PropertyUtils.resolveFile(projectLoc, location);
-                    if (!CollocationQuery.areCollocated(projectLoc, libLoc)) {
+                    if (!CollocationQuery.areCollocated(projectLoc.toURI(), libLoc.toURI())) {
                         settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                                 NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.relativePath")); // NOI18N
                     }
