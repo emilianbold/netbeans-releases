@@ -70,6 +70,7 @@ final class DispatchingHandler extends Handler implements Runnable {
         if (RP.isRequestProcessorThread()) {
             return;
         }
+        boolean empty = queue.isEmpty();
         if (!queue.offer(record)) {
             for (;;) {
                 try {
@@ -96,7 +97,9 @@ final class DispatchingHandler extends Handler implements Runnable {
                 }
             }
         }
-        schedule(delay);
+        if (empty) {
+            schedule(delay);
+        }
     }
 
     private boolean schedule(int d) {
@@ -145,9 +148,13 @@ final class DispatchingHandler extends Handler implements Runnable {
 
     @Override
     public void run() {
+        if (queue.isEmpty()) {
+            return;
+        }
         for (;;) {
             LogRecord r = queue.poll();
             if (r == null) {
+                schedule(delay);
                 break;
             }
             delegate.publish(r);
