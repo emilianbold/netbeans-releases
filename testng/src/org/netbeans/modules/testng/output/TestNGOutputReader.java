@@ -117,6 +117,16 @@ final class TestNGOutputReader {
     private Map<String, Report> reports;
     private int successPercentage;
     private int passedWithErrorsFailure;
+    private boolean descriptionInPassedWithErrors;
+    private String suiteName;
+    private String testCase;
+    private String parameters;
+    private String values;
+    private String duration;
+    private boolean failedInConfigurationMethod;
+    private boolean failedInAfterClassMethod;
+    private boolean failedInBeforeClassMethod;
+    private boolean canAddToStackTrace;
 
     /**
      * Creates a new instance of TestNGOutputReader
@@ -189,14 +199,46 @@ final class TestNGOutputReader {
     private List<String> txt = new ArrayList<String>();
 
     private static int x = 0;
+
+    private void handleInvocationCount(int invocationCount) {
+        double actual = (double) (invocationCount - passedWithErrorsFailure) / (double) invocationCount;
+        double expected = (double) successPercentage / 100.0;
+        if (actual == 100) {
+            testFinished("PASSED", suiteName, testCase, parameters, values, duration);
+        } else if (actual < expected) {
+            testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+        } else {
+            testFinished("PASSED with failures", suiteName, testCase, parameters, values, duration);
+        }
+    }
     /**
      */
     synchronized void verboseMessageLogged(String msg) {
         String in = getMessage(msg);
+        if(descriptionInPassedWithErrors) {
+            Matcher m = Pattern.compile(RegexpUtils.TEST_REGEX_3).matcher(in);
+            if(m.matches()) {
+                int currentInvocation = Integer.parseInt(m.group(3));
+                int invocationCount = Integer.parseInt(m.group(4));
+                if (currentInvocation == invocationCount) {
+                    handleInvocationCount(invocationCount);
+                }
+            } else {
+                assert false : "Cannot match: '" + in + "'.";
+            }
+            descriptionInPassedWithErrors = false;
+            addDescription(in.substring(0, in.lastIndexOf('(')).trim());
+            return;
+        }
         //suite starting
         if (in.startsWith("RUNNING: ")) {
             passedWithErrorsFailure = 0;
             successPercentage = -1;
+            descriptionInPassedWithErrors = false;
+            failedInAfterClassMethod = false;
+            failedInBeforeClassMethod = false;
+            failedInConfigurationMethod = false;
+            canAddToStackTrace = true;
             Matcher m = Pattern.compile(RegexpUtils.RUNNING_SUITE_REGEX).matcher(in);
             if (m.matches()) {
                 suiteStarted(m.group(1), Integer.valueOf(m.group(2)), m.group(3));
@@ -208,15 +250,18 @@ final class TestNGOutputReader {
         //suite finishing
         if (in.equals("===============================================")) {
             suiteSummary = !suiteSummary;
+
+            if(txt.size() > 0 && failedInAfterClassMethod) {
+                testStarted(suiteName, testCase, parameters, values);
+                addStackTrace(txt);
+                txt.clear();
+                testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+            }
             if (suiteSummary) {
                 suiteStat = new SuiteStats();
             } else {
                 suiteFinished(suiteStat);
                 suiteStat = null;
-            }
-            if (txt.size() > 0) {
-                addStackTrace(txt);
-                txt.clear();
             }
             return;
         } else if (suiteSummary) {
@@ -247,7 +292,13 @@ final class TestNGOutputReader {
         }
         //test
         if (in.startsWith("INVOKING: ")) {
-            if (txt.size() > 0) {
+            if(failedInBeforeClassMethod) {
+                return;
+            }
+            if(failedInConfigurationMethod) {
+                canAddToStackTrace = false;
+            }
+            if (txt.size() > 0 && !failedInConfigurationMethod) {
                 addStackTrace(txt);
                 txt.clear();
             }
@@ -291,18 +342,24 @@ final class TestNGOutputReader {
         if (in.startsWith("PASSED with failures: ")) {
             if (m.matches()) {
                 passedWithErrorsFailure++;
-                int currentInvocation = Integer.parseInt(m.group(10));
-                int invocationCount = Integer.parseInt(m.group(11));
+                int currentInvocation;
+                int invocationCount;
+
+                suiteName = m.group(1);
+                testCase = m.group(2);
+                parameters = m.group(4);
+                values = m.group(6);
+                duration = m.group(8);
+
+                try{
+                    currentInvocation = Integer.parseInt(m.group(10));
+                    invocationCount = Integer.parseInt(m.group(11));
+                } catch(NumberFormatException ex) {
+                    descriptionInPassedWithErrors = true;
+                    return;
+                }
                 if (currentInvocation == invocationCount) {
-                    double actual = (double)(invocationCount - passedWithErrorsFailure) / (double)invocationCount;
-                    double expected = (double)successPercentage / 100.0;
-                    if(actual == 100) {
-                        testFinished("PASSED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
-                    } else if (actual < expected) {
-                        testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
-                    } else {
-                        testFinished("PASSED with failures", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
-                    }
+                    handleInvocationCount(invocationCount);
                 }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
@@ -316,8 +373,18 @@ final class TestNGOutputReader {
         }
 
         if (in.startsWith("SKIPPED: ")) {
+            if (failedInBeforeClassMethod) {
+                return;
+            }
             if (m.matches()) {
-                testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                if(failedInConfigurationMethod) {
+                    if (txt.size() > 0) {
+                        addStackTrace(txt);
+                    }
+                    testFinished("FAILED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                } else {
+                    testFinished("SKIPPED", m.group(1), m.group(2), m.group(4), m.group(6), m.group(8));
+                }
             } else {
                 Matcher m2 = Pattern.compile(RegexpUtils.TEST_REGEX_2).matcher(in);
                 if (m2.matches()) {
@@ -344,6 +411,49 @@ final class TestNGOutputReader {
         }
 
         //configuration methods
+        if (in.startsWith("FAILED CONFIGURATION: ")) {
+            if (m.matches()) {
+                suiteName = m.group(1);
+                testCase = m.group(2);
+                parameters = m.group(4);
+                values = m.group(6);
+                duration = m.group(8);
+            }
+            if (in.contains(" - @AfterClass")) {
+                failedInAfterClassMethod = true;
+                if (txt.size() > 0) {
+                    addStackTrace(txt);
+                }
+            }
+            if (in.contains(" - @BeforeClass")) {
+                failedInBeforeClassMethod = true;
+            }
+            failedInConfigurationMethod = true;
+            // clear previous stacktrace of FAILED test method as we have a more serious problem in setUp/tearDown methods
+            txt.clear();
+            return;
+        }
+        if (in.startsWith("SKIPPED CONFIGURATION: ")) {
+            if(!failedInBeforeClassMethod) {
+                addStackTrace(txt);
+            }
+            if (failedInBeforeClassMethod) {
+                if (txt.size() > 0) {
+                    testStarted(suiteName, testCase, parameters, values);
+                    addStackTrace(txt);
+                    txt.clear();
+                    testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+                }
+            }
+            return;
+        }
+        if (in.startsWith("PASSED CONFIGURATION: ")) {
+            if (txt.size() > 0) {
+                addStackTrace(txt);
+                txt.clear();
+            }
+            return;
+        }
         if (in.contains(" CONFIGURATION: ")) {
 //            if (txt.size() > 0) {
 //                addStackTrace(txt);
@@ -359,7 +469,9 @@ final class TestNGOutputReader {
                 addDescription(in.trim());
             } else if (in.trim().length() > 0) {
                 //we have a stacktrace
-                txt.add(in);
+                if(canAddToStackTrace || failedInAfterClassMethod || failedInBeforeClassMethod) {
+                    txt.add(in);
+                }
             }
         }
     }
