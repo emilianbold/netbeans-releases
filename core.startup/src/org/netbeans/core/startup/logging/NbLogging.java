@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.logging.Handler;
+import java.util.logging.StreamHandler;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -53,6 +55,7 @@ import java.util.regex.PatternSyntaxException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class NbLogging {
+    /** stream to send debug messages from logging to */
     public static final PrintStream DEBUG;
     
     
@@ -82,7 +85,28 @@ public final class NbLogging {
         unwantedMessages = uMP;
     }
 
+    /** @return true if the message is wanted */
     public static boolean wantsMessage(String s) {
         return unwantedMessages == null || !unwantedMessages.matcher(s).find();
+    }
+
+    /** Factory to create non-closing, dispatch handler.
+     */
+    public static Handler createDispatchHandler(Handler handler, int flushDelay) {
+        return new DispatchingHandler(handler, flushDelay);
+    }
+
+    /** Does its best to close provided handler. Can close handlers created by
+     * {@link #createDispatchHandler(java.util.logging.Handler, int)} as well.
+     */
+    public static void close(Handler h) {
+        if (h == null) {
+            return;
+        }
+        if (h instanceof DispatchingHandler) {
+            ((DispatchingHandler)h).doClose();
+        } else {
+            h.close();
+        }
     }
 }

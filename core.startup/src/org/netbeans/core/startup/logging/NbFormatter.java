@@ -43,9 +43,12 @@ package org.netbeans.core.startup.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -102,7 +105,7 @@ public final class NbFormatter extends java.util.logging.Formatter {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 // All other kinds of throwables we check for a stack trace.
-                TopLogging.printStackTrace(record.getThrown(), pw);
+                printStackTrace(record.getThrown(), pw);
                 pw.close();
                 sb.append(sw.toString());
             } catch (Exception ex) {
@@ -193,6 +196,75 @@ public final class NbFormatter extends java.util.logging.Formatter {
                 print(sb, rec, beenThere);
             }
         }
+    }
+    private static final Map<Throwable, Integer> catchIndex = Collections.synchronizedMap(new WeakHashMap<Throwable, Integer>()); // #190623
+
+    /**
+     * For use also from NbErrorManager.
+     *
+     * @param t throwable to print
+     * @param pw the destination
+     */
+    static void printStackTrace(Throwable t, PrintWriter pw) {
+        doPrintStackTrace(pw, t, null);
+    }
+
+    /**
+     * #91541: show stack traces in a more natural order.
+     */
+    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher) {
+        //if (t != null) {t.printStackTrace(pw);return;}//XxX
+        try {
+            if (t.getClass().getMethod("printStackTrace", PrintWriter.class).getDeclaringClass() != Throwable.class) { // NOI18N
+                // Hmm, overrides it, we should not try to bypass special logic here.
+                //System.err.println("using stock printStackTrace from " + t.getClass());
+                t.printStackTrace(pw);
+                return;
+            }
+            //System.err.println("using custom printStackTrace from " + t.getClass());
+        } catch (NoSuchMethodException e) {
+            assert false : e;
+        }
+        Throwable lower = t.getCause();
+        if (lower != null) {
+            doPrintStackTrace(pw, lower, t);
+            pw.print("Caused: "); // NOI18N
+        }
+        String summary = t.toString();
+        if (lower != null) {
+            String suffix = ": " + lower;
+            if (summary.endsWith(suffix)) {
+                summary = summary.substring(0, summary.length() - suffix.length());
+            }
+        }
+        pw.println(summary);
+        StackTraceElement[] trace = t.getStackTrace();
+        int end = trace.length;
+        if (higher != null) {
+            StackTraceElement[] higherTrace = higher.getStackTrace();
+            while (end > 0) {
+                int higherEnd = end + higherTrace.length - trace.length;
+                if (higherEnd <= 0 || !higherTrace[higherEnd - 1].equals(trace[end - 1])) {
+                    break;
+                }
+                end--;
+            }
+        }
+        Integer caughtIndex = catchIndex.get(t);
+        for (int i = 0; i < end; i++) {
+            if (caughtIndex != null && i == caughtIndex) {
+                // Translate following tab -> space since formatting is bad in
+                // Output Window (#8104) and some mail agents screw it up etc.
+                pw.print("[catch] at "); // NOI18N
+            } else {
+                pw.print("\tat "); // NOI18N
+            }
+            pw.println(trace[i]);
+        }
+    }
+
+    static void registerCatchIndex(Throwable t, int index) {
+        catchIndex.put(t, index);
     }
     
 } // end of NbFormater

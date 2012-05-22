@@ -54,7 +54,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -63,17 +62,12 @@ import java.net.URLClassLoader;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.WeakHashMap;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -90,7 +84,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Class that sets the java.util.logging.LogManager configuration to log into
@@ -363,21 +356,21 @@ public final class TopLogging {
         StreamHandler s = new StreamHandler (
             pw, NbFormatter.FORMATTER
         );
-        return new NonClose(s, 50);
+        return NbLogging.createDispatchHandler(s, 50);
     }
 
-    private static NonClose streamHandler;
-    private static synchronized NonClose streamHandler() {
+    private static Handler streamHandler;
+    private static synchronized Handler streamHandler() {
         if (streamHandler == null) {
             StreamHandler sth = new StreamHandler (OLD_ERR, NbFormatter.FORMATTER);
             sth.setLevel(Level.ALL);
-            streamHandler = new NonClose(sth, 500);
+            streamHandler = NbLogging.createDispatchHandler(sth, 500);
         }
         return streamHandler;
     }
 
-    private static NonClose defaultHandler;
-    private static synchronized NonClose defaultHandler() {
+    private static Handler defaultHandler;
+    private static synchronized Handler defaultHandler() {
         if (defaultHandler != null) return defaultHandler;
 
         File home = Places.getUserDirectory();
@@ -409,7 +402,7 @@ public final class TopLogging {
                 Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
                 h.setLevel(Level.ALL);
                 h.setFormatter(NbFormatter.FORMATTER);
-                defaultHandler = new NonClose(h, 5000);
+                defaultHandler = NbLogging.createDispatchHandler(h, 5000);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -443,189 +436,12 @@ public final class TopLogging {
         }
     }
     static void close() {
-        NonClose s = streamHandler;
-        if (s != null) {
-            s.doClose();
-        }
-
-        NonClose d = defaultHandler;
-        if (d != null) {
-            d.doClose();
-        }
+        NbLogging.close(streamHandler);
+        NbLogging.close(defaultHandler);
     }
     static void exit(int exit) {
         flush(false);
         TopSecurityManager.exit(exit);
-    }
-
-    private static final Map<Throwable,Integer> catchIndex = Collections.synchronizedMap(new WeakHashMap<Throwable,Integer>()); // #190623
-
-    /** Non closing handler.
-     */
-    private static final class NonClose extends Handler
-    implements Runnable {
-        private static RequestProcessor RP = new RequestProcessor("Logging Flush", 1, false, false); // NOI18N
-        private static ThreadLocal<Boolean> FLUSHING = new ThreadLocal<Boolean>();
-
-        private final Handler delegate;
-        private final BlockingQueue<LogRecord> queue = new LinkedBlockingQueue<LogRecord>(1000);
-        private RequestProcessor.Task flush;
-        private int delay;
-
-        public NonClose(Handler h, int delay) {
-            delegate = h;
-            flush = RP.create(this, true);
-            flush.setPriority(Thread.MIN_PRIORITY);
-            this.delay = delay;
-        }
-
-        public void publish(LogRecord record) {
-            if (RP.isRequestProcessorThread()) {
-                return;
-            }
-            if (!queue.offer(record)) {
-                for (;;) {
-                    try {
-                        // queue is full, schedule its clearing
-                        if (!schedule(0)) {
-                            return;
-                        }
-                        queue.put(record);
-                        Thread.yield();
-                        break;
-                    } catch (InterruptedException ex) {
-                        // OK, ignore and try again
-                    }
-                }
-            }
-            Throwable t = record.getThrown();
-            if (t != null) {
-                StackTraceElement[] tStack = t.getStackTrace();
-                StackTraceElement[] hereStack = new Throwable().getStackTrace();
-                for (int i = 1; i <= Math.min(tStack.length, hereStack.length); i++) {
-                    if (!tStack[tStack.length - i].equals(hereStack[hereStack.length - i])) {
-                        catchIndex.put(t, tStack.length - i);
-                        break;
-                    }
-                }
-            }
-            schedule(delay);
-        }
-
-        private boolean schedule(int d) {
-            if (!Boolean.TRUE.equals(FLUSHING.get())) {
-                try {
-                    FLUSHING.set(true);
-                    flush.schedule(d);
-                } finally {
-                    FLUSHING.set(false);
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        public void flush() {
-            flush.cancel();
-            flush.waitFinished();
-            run();
-        }
-
-        public void close() throws SecurityException {
-            flush();
-            delegate.flush();
-        }
-
-        public void doClose() throws SecurityException {
-            flush();
-            delegate.close();
-        }
-
-        public @Override Formatter getFormatter() {
-            return delegate.getFormatter();
-        }
-
-        static Handler getInternal(Handler h) {
-            if (h instanceof NonClose) {
-                return ((NonClose)h).delegate;
-            }
-            return h;
-        }
-
-        public void run() {
-            for (;;) {
-                LogRecord r = queue.poll();
-                if (r == null) {
-                    break;
-                }
-                delegate.publish(r);
-            }
-            delegate.flush();
-        }
-    }
-
-    /**
-     * For use also from NbErrorManager.
-     * @param t throwable to print
-     * @param pw the destination
-     */
-    public static void printStackTrace(Throwable t, PrintWriter pw) {
-        doPrintStackTrace(pw, t, null);
-    }
-
-    /**
-     * #91541: show stack traces in a more natural order.
-     */
-    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher) {
-        //if (t != null) {t.printStackTrace(pw);return;}//XxX
-        try {
-            if (t.getClass().getMethod("printStackTrace", PrintWriter.class).getDeclaringClass() != Throwable.class) { // NOI18N
-                // Hmm, overrides it, we should not try to bypass special logic here.
-                //System.err.println("using stock printStackTrace from " + t.getClass());
-                t.printStackTrace(pw);
-                return;
-            }
-            //System.err.println("using custom printStackTrace from " + t.getClass());
-        } catch (NoSuchMethodException e) {
-            assert false : e;
-        }
-        Throwable lower = t.getCause();
-        if (lower != null) {
-            doPrintStackTrace(pw, lower, t);
-            pw.print("Caused: "); // NOI18N
-        }
-        String summary = t.toString();
-        if (lower != null) {
-            String suffix = ": " + lower;
-            if (summary.endsWith(suffix)) {
-                summary = summary.substring(0, summary.length() - suffix.length());
-            }
-        }
-        pw.println(summary);
-        StackTraceElement[] trace = t.getStackTrace();
-        int end = trace.length;
-        if (higher != null) {
-            StackTraceElement[] higherTrace = higher.getStackTrace();
-            while (end > 0) {
-                int higherEnd = end + higherTrace.length - trace.length;
-                if (higherEnd <= 0 || !higherTrace[higherEnd - 1].equals(trace[end - 1])) {
-                    break;
-                }
-                end--;
-            }
-        }
-        Integer caughtIndex = catchIndex.get(t);
-        for (int i = 0; i < end; i++) {
-            if (caughtIndex != null && i == caughtIndex) {
-                // Translate following tab -> space since formatting is bad in
-                // Output Window (#8104) and some mail agents screw it up etc.
-                pw.print("[catch] at "); // NOI18N
-            } else {
-                pw.print("\tat "); // NOI18N
-            }
-            pw.println(trace[i]);
-        }
     }
 
     private static final class LookupDel extends Handler
