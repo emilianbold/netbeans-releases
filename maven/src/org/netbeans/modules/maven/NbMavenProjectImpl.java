@@ -343,6 +343,8 @@ public final class NbMavenProjectImpl implements Project {
              newproject = res.getProject();
             if (res.hasExceptions()) {
                 problemReporter.reportExceptions(res);
+            } else {
+                problemReporter.doArtifactChecks(newproject);
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -408,7 +410,7 @@ public final class NbMavenProjectImpl implements Project {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
-        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
+        problemReporter.doIDEConfigChecks(prj);
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
