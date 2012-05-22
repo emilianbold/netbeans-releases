@@ -345,7 +345,7 @@ PropertyChangeListener {
         }
         if (event.getSource() instanceof ThreadBreakpoint) {
             Variable startedThread = event.getVariable();
-            if (startedThread instanceof ObjectVariable) {
+            if (startedThread instanceof ObjectVariable && ((ObjectVariable) startedThread).getUniqueID() != 0) {
                 // started
                 printText = selectCondition(printText, threadStartedCondition, true);
             } else {
