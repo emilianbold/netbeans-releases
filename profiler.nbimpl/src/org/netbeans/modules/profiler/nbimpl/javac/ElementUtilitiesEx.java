@@ -201,7 +201,7 @@ public class ElementUtilitiesEx {
     private static TypeElement getAnonymousFromSource(FileObject fo, final String className) throws IllegalArgumentException, IOException {
         final TypeElement[] resolvedClassElement = new TypeElement[1];
         JavaSource js = JavaSource.forFileObject(fo);
-        ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
+        js.runUserActionTask(new Task<CompilationController>() {
 
             @Override
             public void run(final CompilationController cc) throws Exception {
@@ -221,7 +221,7 @@ public class ElementUtilitiesEx {
 
                 }.scan(cc.getCompilationUnit(), null);
             }
-        });
+        }, true);
         return resolvedClassElement[0];
     }
 
