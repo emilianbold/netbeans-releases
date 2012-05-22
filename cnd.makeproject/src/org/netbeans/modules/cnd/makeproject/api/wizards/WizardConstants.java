@@ -61,7 +61,6 @@ public class WizardConstants {
     public static final String MAIN_CLASS = "mainClass"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
     public static final String PROPERTY_SIMPLE_MODE = "simpleMode"; // Boolean // NOI18N
-    public static final String PROPERTY_FULL_REMOTE = "fullRemote"; // Boolean // NOI18N
     public static final String PROPERTY_HOST_UID = "hostUID"; // String // NOI18N
     public static final String PROPERTY_SOURCE_HOST_ENV = "sourceHostEnv"; // ExecutionEnvironment // NOI18N
     public static final String PROPERTY_TOOLCHAIN = "toolchain"; // CompilerSet // NOI18N

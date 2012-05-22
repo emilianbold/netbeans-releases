@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.NewProjectWizard;
 import org.netbeans.modules.cnd.remote.projectui.wizard.ide.OpenProjectList;
@@ -185,7 +186,7 @@ public class NewRemoteProjectAction extends RemoteOpenActionBase implements Prop
 
         wizard.putProperty(ProjectTemplatePanel.PRESELECT_TEMPLATE, null);
         
-        wizard.putProperty(ProjectTemplatePanel.REMOTE_FILE_ENV, env);
+        wizard.putProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV, env);
         
         FileObject folder = (FileObject) getValue(CommonProjectActions.EXISTING_SOURCES_FOLDER);
         if (folder != null) {

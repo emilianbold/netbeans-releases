@@ -110,16 +110,11 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public static final int TYPE_DB_APPLICATION = 8;
 
     private final int wizardtype;
-    private final boolean fullRemote;
 
     private Boolean lastSimpleMode = null;
-    private String lastHostUid = null;
-    private Boolean lastSetupHost = null;
 
     private SelectHostWizardProvider selectHostWizardProvider;
-    private WizardDescriptor.Panel<WizardDescriptor> selectHostPanel;
     private WizardDescriptor.Panel<WizardDescriptor> selectBinaryPanel;
-    private int lastNewHostPanel = -1;
     
     private ProjectWizardPanels.MakeModePanel<WizardDescriptor> selectModePanel;
     private final PanelConfigureProject panelConfigureProjectTrue;
@@ -128,13 +123,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
-        this(wizardtype, name, wizardTitle, wizardACSD, false);
-    }
-
-    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
         this.wizardtype = wizardtype;
         name = name.replaceAll(" ", ""); // NOI18N
-        this.fullRemote = fullRemote;
 
         panelConfigureProjectTrue = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true);
         advancedPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
@@ -237,13 +227,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return new NewMakeProjectWizardIterator(TYPE_BINARY, name, wizardTitle, wizardACSD);
     }
 
-    public static NewMakeProjectWizardIterator newFullRemote() {
-        String name = FULL_REMOTE_PROJECT_NAME;
-        String wizardTitle = getString("Templates/Project/Native/newFullRemote.xml"); // NOI18N
-        String wizardACSD = getString("NativeFullRemoteNameACSD"); // NOI18N
-        return new NewMakeProjectWizardIterator(TYPE_MAKEFILE, name, wizardTitle, wizardACSD, true);
-    }
-
     private static boolean equals(Object o1, Object o2) {
         if (o1 == null) {
             return o2 == null;
@@ -272,54 +255,20 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 String[] steps = createSteps(panels);
             }
         } else if (wizardtype == TYPE_MAKEFILE) {
-            String hostUID = (wiz == null) ? null : (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
-            Boolean setupHost = fullRemote ? Boolean.valueOf(getSelectHostWizardProvider().isNewHost()) : null;
-
             if (panels != null) {
                 if (equals(lastSimpleMode, isSimple())) {
-                    if (fullRemote) {
-                        if (equals(lastHostUid, hostUID)) {
-                            if (equals(lastSetupHost, setupHost)) {
-                                return;
-                            }
-                        }
-                    } else {
-                        return;
-                    }
+                    return;
                 }
             }
-            lastHostUid = hostUID;
             lastSimpleMode = Boolean.valueOf(isSimple());
-            lastSetupHost = setupHost;
-            lastNewHostPanel = -1;
 
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
             List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
             final WizardDescriptor.Panel<WizardDescriptor> modeSelectionPanel = getSelectModePanel();
-            if (fullRemote) {
-                if (selectHostPanel == null) {
-                    selectHostPanel = getSelectHostWizardProvider().getSelectHostPanel();
-                }
-                panelsList.add(selectHostPanel);
-                if (getSelectHostWizardProvider().isNewHost()) {
-                    panelsList.addAll(getSelectHostWizardProvider().getAdditionalPanels());
-                    lastNewHostPanel = panelsList.size() - 1;
-                    panelsList.add(modeSelectionPanel);
-                    if (!isSimple()) {
-                        panelsList.addAll(advancedPanels);
-                    }
-                } else {
-                    panelsList.add(modeSelectionPanel);
-                    if (!isSimple()) {
-                        panelsList.addAll(advancedPanels);
-                    }
-                }
-            } else {
-                panelsList.add(modeSelectionPanel);
-                if (!isSimple()) {
-                    panelsList.addAll(advancedPanels);
-                }
+            panelsList.add(modeSelectionPanel);
+            if (!isSimple()) {
+                panelsList.addAll(advancedPanels);
             }
             panels = panelsList;
             setupSteps();
@@ -408,7 +357,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         Set<FileObject> resultSet = new HashSet<FileObject>();
         FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
@@ -492,7 +440,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setMakefileName(makefileName);
             prjParams.setConfigurations(confs);
             prjParams.setMainFile(mainFile);
-            prjParams.setFullRemote(fullRemote);
             prjParams.setHostUID(hostUID);
 
             if (wizardtype == TYPE_DB_APPLICATION) {
@@ -517,7 +464,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.putProperty(WizardConstants.PROPERTY_FULL_REMOTE, Boolean.valueOf(fullRemote));
         wiz.putProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV, NewProjectWizardUtils.getDefaultSourceEnvironment());
         index = 0;
         setupPanelsAndStepsIfNeed();
@@ -561,9 +507,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public void nextPanel() {
         if (!hasNext()) { // will call setupPanelsAndStepsIfNeed();
             throw new NoSuchElementException();
-        }
-        if (index == lastNewHostPanel && fullRemote) {
-            getSelectHostWizardProvider().apply();
         }
         index++;
     }

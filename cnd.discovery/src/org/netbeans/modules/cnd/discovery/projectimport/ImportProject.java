@@ -116,7 +116,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -169,7 +168,6 @@ public class ImportProject implements PropertyChangeListener {
     private final String hostUID;
     private final ExecutionEnvironment executionEnvironment;
     private final ExecutionEnvironment fileSystemExecutionEnvironment;
-    private final boolean fullRemote;
     private final MakeProjectOptions.PathMode pathMode;
     private CompilerSet toolchain;
     private boolean defaultToolchain;
@@ -189,9 +187,7 @@ public class ImportProject implements PropertyChangeListener {
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
-        Boolean b = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
-        fullRemote = (b == null) ? false : b.booleanValue();
-        pathMode = fullRemote ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
+        pathMode = MakeProjectOptions.getPathMode();
         projectFolder = (FSPath) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
         nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
@@ -206,7 +202,7 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             executionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
-        fileSystemExecutionEnvironment = (fullRemote) ? executionEnvironment : ExecutionEnvironmentFactory.getLocal();
+        fileSystemExecutionEnvironment = ExecutionEnvironmentFactory.getLocal();
         assert nativeProjectPath != null;
     }
 
@@ -286,12 +282,7 @@ public class ImportProject implements PropertyChangeListener {
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel;
-        if (fullRemote) { //XXX:fullRemote {
-            workingDirRel = nativeProjectFO.getPath();
-        } else {
-            workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
-        }
+        String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
         workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
@@ -330,16 +321,8 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            if (fullRemote) {
-                CndUtils.assertAbsolutePathInConsole(makefilePath);
-                // we have to switch to file objects; but can't remember it right here since it may not exist
-                // makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
-            } else {
-                // see comment above
-                // makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
-                makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath), pathMode);
-                makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
-            }
+            makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath), pathMode);
+            makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
@@ -359,7 +342,6 @@ public class ImportProject implements PropertyChangeListener {
                 .setSourceFoldersFilter(sourceFoldersFilter)
                 .setTestFolders(tests)
                 .setImportantFiles(importantItemsIterator)
-                .setFullRemote(fullRemote)
                 .setFullRemoteNativeProjectPath(nativeProjectPath)
                 .setHostUID(hostUID);
         if (makefilePath != null) {
@@ -716,14 +698,9 @@ public class ImportProject implements PropertyChangeListener {
         }
         FileObject makeFileObject = null;
         if (makefilePath != null && makefilePath.length() > 0) {
-            if (fullRemote) {
-                CndUtils.assertAbsolutePathInConsole(makefilePath);
-                makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
-            } else {
-                makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), makefilePath)));
-            }
+            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), makefilePath)));
         }
-        if (!fullRemote && makeFileObject != null) {
+        if (makeFileObject != null) {
             downloadRemoteFile(CndFileUtils.createLocalFile(makeFileObject.getPath())); // FileUtil.toFile SIC! - always local
             makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), makefilePath)));
         }

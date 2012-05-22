@@ -71,7 +71,6 @@ import org.openide.util.Utilities;
 public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY"; //NOI18N
     public static final String PRESELECT_TEMPLATE = "PRESELECT_TEMPLATE"; //NOI18N
-    public static final String REMOTE_FILE_ENV = "REMOTE_FILE_ENV"; //NOI18N
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplatesPanelGUI panel;

@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
-import org.netbeans.modules.cnd.remote.projectui.wizard.ide.ProjectTemplatePanel;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -358,13 +357,11 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
-        String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
-        hostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
-        //boolean fullRemote = (wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE) == null) ? false : ((Boolean) wiz.getProperty(WizardConstants.PROPERTY_FULL_REMOTE)).booleanValue();
+        String hostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         if (dirF != null) {
-            dirF = new FSPath(dirF.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(dirF.getPath(), (ExecutionEnvironment) wiz.getProperty(ProjectTemplatePanel.REMOTE_FILE_ENV)));
+            dirF = new FSPath(dirF.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(dirF.getPath(), (ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV)));
         }
         String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
         String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
@@ -433,7 +430,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                     provider.setupReleaseConfiguration(debug);
                 }                
             }
-            int platform = CompilerSetManager.get(((ExecutionEnvironment) wiz.getProperty(ProjectTemplatePanel.REMOTE_FILE_ENV))).getPlatform();
+            int platform = CompilerSetManager.get(((ExecutionEnvironment) wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV))).getPlatform();
             debug.getDevelopmentHost().setBuildPlatform(platform);
             MakeConfiguration release = new MakeConfiguration(dirF, "Release", conftype, hostUID, toolchain, defaultToolchain); // NOI18N
             release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);

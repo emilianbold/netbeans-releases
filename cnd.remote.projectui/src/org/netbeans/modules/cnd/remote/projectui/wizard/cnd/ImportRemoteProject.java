@@ -113,7 +113,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -174,7 +173,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
     private final String hostUID;
     private final ExecutionEnvironment executionEnvironment;
     private final ExecutionEnvironment fileSystemExecutionEnvironment;
-    private final boolean fullRemote;
     private final MakeProjectOptions.PathMode pathMode;
     private CompilerSet toolchain;
     private boolean defaultToolchain;
@@ -199,9 +197,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
 
 
     public ImportRemoteProject(WizardDescriptor wizard) {
-        Boolean b = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
-        fullRemote = (b == null) ? false : b.booleanValue();
-        pathMode = fullRemote ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
+        pathMode = MakeProjectOptions.getPathMode();
         projectFolder = (FSPath) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
         nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);
@@ -301,12 +297,9 @@ public class ImportRemoteProject implements PropertyChangeListener {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         String aHostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, aHostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel;
-        if (fullRemote) { //XXX:fullRemote {
-            workingDirRel = nativeProjectFO.getPath();
-        } else {
-            workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
-        }
+        int platform = CompilerSetManager.get(executionEnvironment).getPlatform();
+        extConf.getDevelopmentHost().setBuildPlatform(platform);
+        String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(workingDir), pathMode);
         workingDirRel = CndPathUtilitities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
@@ -345,16 +338,10 @@ public class ImportRemoteProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            if (fullRemote) {
-                CndUtils.assertAbsolutePathInConsole(makefilePath);
-                // we have to switch to file objects; but can't remember it right here since it may not exist
-                // makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
-            } else {
                 // see comment above
                 // makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
                 makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalizeSlashes(makefilePath), pathMode);
                 makefilePath = CndPathUtilitities.normalizeSlashes(makefilePath);
-            }
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
@@ -374,7 +361,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
                 .setSourceFoldersFilter(sourceFoldersFilter)
                 .setTestFolders(tests)
                 .setImportantFiles(importantItemsIterator)
-                .setFullRemote(fullRemote)
                 .setFullRemoteNativeProjectPath(nativeProjectPath)
                 .setHostUID(aHostUID);
         if (makefilePath != null) {
@@ -651,13 +637,8 @@ public class ImportRemoteProject implements PropertyChangeListener {
         }
         FileObject makeFileObject = null;
         if (makefilePath != null && makefilePath.length() > 0) {
-            if (fullRemote) {
-                CndUtils.assertAbsolutePathInConsole(makefilePath);
-                makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
-            } else {
-                nativeProjectFO.refresh();
-                makeFileObject = CndFileUtils.toFileObject(projectFolder.getFileSystem(), CndPathUtilitities.toAbsolutePath(projectFolder.getFileObject(), makefilePath));
-            }
+            nativeProjectFO.refresh();
+            makeFileObject = CndFileUtils.toFileObject(projectFolder.getFileSystem(), CndPathUtilitities.toAbsolutePath(projectFolder.getFileObject(), makefilePath));
         }
         if (makeFileObject != null && makeFileObject.isValid()) {
             DataObject dObj;

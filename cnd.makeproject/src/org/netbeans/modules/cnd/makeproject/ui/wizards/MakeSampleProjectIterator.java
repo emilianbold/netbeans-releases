@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.Make
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -145,6 +146,9 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
         FSPath projectLocation = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String name = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        if (wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null) {
+            hostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
+        }
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
