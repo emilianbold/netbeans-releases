@@ -235,7 +235,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                     throw new LayerGenerationException("Class has to be public", e, processingEnv, ar);
                 }
                 if (e.getEnclosingElement().getKind() == ElementKind.CLASS && !e.getModifiers().contains(Modifier.STATIC)) {
-                    throw new LayerGenerationException("Inner class annoated with @ActionRegistration has to be static", e);
+                    throw new LayerGenerationException("Inner class annotated with @ActionRegistration has to be static", e);
                 }
                 key = ar.key();
             } else {
