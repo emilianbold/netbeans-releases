@@ -510,6 +510,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- Issue tracking csh topics-->
 <mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
+<mapID target="org.netbeans.modules.bugzilla.repository.BugzillaRepositoryController" url="collab/csh/issues_create_tracker.html" />
 <mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="collab/csh/issues_select_keyword.html" />
 <mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="collab/csh/issues_html_response.html" />
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
@@ -521,6 +522,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- Issue tracking csh topic for JIRA plugin in kenai dashboar -->
 <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
+<mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater$JiraProxyController" url="collab/csh/issues_jiraplugin.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
