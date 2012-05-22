@@ -127,10 +127,6 @@ public class CustomizeEmptySpaceAction extends CookieAction {
             customizer,
             NbBundle.getMessage(CustomizeEmptySpaceAction.class, "TITLE_EditLayoutSpace"), // NOI18N
             true,
-            NotifyDescriptor.OK_CANCEL_OPTION,
-            NotifyDescriptor.OK_OPTION,
-            DialogDescriptor.DEFAULT_ALIGN,
-            HelpCtx.DEFAULT_HELP,
             new java.awt.event.ActionListener() {
             @Override
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -144,6 +140,8 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizeEmptySpaceAction.class, "ACSD_EditLayoutSpace")); // NOI18N
+        // setting the help id on the customizer after creating the dialog will avoid the help button
+        HelpCtx.setHelpIDString(customizer, "f1_gui_layout_space_html"); // NOI18N
         dialog.setVisible(true);
         dialog = null;
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
