@@ -113,7 +113,6 @@ public class GlobalOptionsPanel extends JPanel {
 
 	setLayout(new GridBagLayout());
 
-	setPreferredSize(new java.awt.Dimension(750, 450));
 	Catalog.setAccessibleName(this, "ACSN_OptionCustomizer"); // NOI18N
 	Catalog.setAccessibleDescription(this, "ACSD_OptionCustomizer"); // NOI18N
 
