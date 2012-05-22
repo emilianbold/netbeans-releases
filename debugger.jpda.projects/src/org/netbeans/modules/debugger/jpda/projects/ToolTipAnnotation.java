@@ -455,6 +455,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 }
             });
         } catch (ParseException ex) {
+            return false;
         }
         parsingTask.cancel(false); // for the case that scanning has not finished yet
         if (!isValid[0]) return false;
