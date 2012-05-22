@@ -64,11 +64,11 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private JScrollPane scrollPane;
     private JEditorPane editorPane;
     private Object oldValue;
+    private static JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
     
     public SearchComboBoxEditor() {
         editorPane = new JEditorPane();
         changeToOneLineEditorPane(editorPane);
-        JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent(); //NOI18N
         
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
@@ -137,17 +137,17 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N
         );
-        
+
         EditorKit kit = MimeLookup.getLookup(SearchNbEditorKit.SEARCHBAR_MIMETYPE).lookup(EditorKit.class);
         if (kit == null) {
             throw new IllegalArgumentException("No EditorKit for '" + SearchNbEditorKit.SEARCHBAR_MIMETYPE + "' mimetype."); //NOI18N
         }
         
         editorPane.setEditorKit(kit);
-        
+
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);        
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
-       
+        
         InputMap im = editorPane.getInputMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), NO_ACTION);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), NO_ACTION);
@@ -172,7 +172,8 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                 }); 
         editorPane.setBorder (
             new EmptyBorder (0, 0, 0, 0)
-        );
+        );     
+        editorPane.setBackground(referenceTextField.getBackground());
     }
 
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
