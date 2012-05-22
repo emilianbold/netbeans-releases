@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 
 /**
  *
@@ -122,7 +123,11 @@ public class Category {
     }
     
     public void refresh(){
-        refreshTasks();
+        if (loaded) {
+            refreshTasks();
+        } else {
+            DashboardViewer.getInstance().loadCategory(this);
+        }
     }
 
     private void refreshTasks() {

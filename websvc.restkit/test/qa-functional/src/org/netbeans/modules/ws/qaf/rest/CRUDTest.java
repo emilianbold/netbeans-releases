@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
@@ -246,16 +247,20 @@ public class CRUDTest extends RestTestBase {
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
+        // "Test RESTful Web Services"
         String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
         Node n = getProjectType().isAntBasedProject() ? getProjectRootNode() : getRestNode();
+        // "Configure RESR Test Client"
         n.performPopupActionNoBlock(testRestActionName);
         String testRestTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.support.Bundle", "TTL_SelectTarget");
-        NbDialogOperator wo = new NbDialogOperator(testRestTitle);
+        NbDialogOperator configureDialogOper = new NbDialogOperator(testRestTitle);
         if (getProjectType().isAntBasedProject()) {
-            wo.ok();
+            configureDialogOper.ok();
+            OutputTabOperator oto = new OutputTabOperator(getProjectName());
+            oto.waitText("(total time: "); //NOI18N
         } else {
             // cancel for Maven projects because otherwise it opens browser
-            wo.cancel();
+            configureDialogOper.cancel();
         }
     }
 

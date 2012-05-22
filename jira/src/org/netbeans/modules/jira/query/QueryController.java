@@ -708,8 +708,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onSave(true);   // invoke refresh after save
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
-        } else if (e.getSource() == panel.gotoIssueButton) {
-            onGotoIssue();
         } else if (e.getSource() == panel.webButton) {
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
@@ -962,7 +960,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     private void onGotoIssue() {
-        String keyText = panel.idTextField.getText().trim();
+        String keyText = getIdTextField();
         if(keyText == null || keyText.trim().equals("") || !validateIssueKey(keyText)) { //NOI18N
             return;
         }

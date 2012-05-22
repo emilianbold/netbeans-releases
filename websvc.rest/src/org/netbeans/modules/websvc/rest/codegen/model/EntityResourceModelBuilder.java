@@ -53,6 +53,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
@@ -79,10 +82,11 @@ public class EntityResourceModelBuilder {
             try {
                 EntityClassInfo info = null;
 
-                if (SourceGroupSupport.getFileObjectFromClassName(entity, 
-                        project) != null) 
+                ElementHandle<TypeElement> handle = SourceGroupSupport.
+                    getHandleClassName(entity, project);
+                if ( handle!= null) 
                 {
-                    info = new EntityClassInfo(entity, project, this);
+                    info = new EntityClassInfo(entity, handle , project, this);
                 }
                 if (info != null ){
                     allEntitiesClassInfoMap.put(entity, info);

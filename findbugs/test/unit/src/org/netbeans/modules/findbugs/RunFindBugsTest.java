@@ -105,7 +105,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -123,7 +123,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         SourceUtilsTestUtil.compileRecursively(sourceRoot);
 
-        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null).size());
+        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null).size());
     }
 
     public void testFieldAnnotation() throws Exception {
@@ -134,7 +134,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -150,7 +150,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -165,7 +165,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
             errors.add(ed.toString());
         }
 

@@ -36,6 +36,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  * Main window of the Anagram Game application.
@@ -67,7 +68,11 @@ public class Anagrams extends JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        new Anagrams().setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new Anagrams().setVisible(true);
+            }
+        });
     }
 
     private int wordIdx = 0;

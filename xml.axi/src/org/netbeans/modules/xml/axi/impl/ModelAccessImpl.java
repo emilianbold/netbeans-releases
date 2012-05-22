@@ -114,7 +114,7 @@ public class ModelAccessImpl extends ModelAccess {
             SchemaGeneratorFactory sgf = SchemaGeneratorFactory.getDefault();			
             sgf.updateSchema(model.getSchemaModel(), model.getSchemaDesignPattern());
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Exception during flush: ",ex); //NOI18N
+            throw new IllegalStateException("Exception during flush: ",ex); //NOI18N
         } finally {
             model.getPropertyChangeListener().clearEvents();
         }
