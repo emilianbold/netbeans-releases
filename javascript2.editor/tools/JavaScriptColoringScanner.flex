@@ -465,7 +465,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 }
 
 /* error fallback */
-.|\n                             { }
+.|\n                             { return JsTokenId.UNKNOWN; }
 <<EOF>>                          {
     if (input.readLength() > 0) {
         // backup eof
