@@ -79,7 +79,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
@@ -107,7 +106,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     @Messages("LBL_NewFileAction_Tooltip=New File...")
     public NewFile( Lookup context ) {
-        super((String) null, LBL_NewFileAction_Name(), ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newFile.png", false), context);
+        super((String) null, LBL_NewFileAction_Name(), null, context);
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, LBL_NewFileAction_Tooltip());
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );

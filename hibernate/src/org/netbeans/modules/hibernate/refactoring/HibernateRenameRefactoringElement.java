@@ -55,7 +55,11 @@ public class HibernateRenameRefactoringElement extends HibernateRefactoringEleme
     private String newName;
 
     public HibernateRenameRefactoringElement(FileObject fo, String oldName, String newName, PositionBounds position, String displayText) {
-        super(fo, oldName, position, displayText);
+        this(fo, oldName, oldName, newName, position, displayText);
+    }
+    
+    public HibernateRenameRefactoringElement(FileObject fo, String oldName, String matching, String newName, PositionBounds position, String displayText) {
+        super(fo, oldName, matching, position, displayText);
         this.newName = newName;
     }
 

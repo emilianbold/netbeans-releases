@@ -57,6 +57,7 @@ import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import edu.umd.cs.findbugs.FieldAnnotation;
 import edu.umd.cs.findbugs.FindBugs2;
+import edu.umd.cs.findbugs.FindBugsProgress;
 import edu.umd.cs.findbugs.MethodAnnotation;
 import edu.umd.cs.findbugs.PackageMemberAnnotation;
 import edu.umd.cs.findbugs.Project;
@@ -121,9 +122,9 @@ import org.openide.util.NbPreferences;
 public class RunFindBugs {
 
     public static final String PREFIX_FINDBUGS = "findbugs:";
-    private static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
+           static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
-    public static List<ErrorDescription> runFindBugs(CompilationInfo info, Preferences customSettings, String singleBug, FileObject sourceRoot, Iterable<? extends String> classNames, SigFilesValidator validator) {
+    public static List<ErrorDescription> runFindBugs(CompilationInfo info, Preferences customSettings, String singleBug, FileObject sourceRoot, Iterable<? extends String> classNames, FindBugsProgress progress, SigFilesValidator validator) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         try {
@@ -184,6 +185,10 @@ public class RunFindBugs {
             engine.setProject(p);
             engine.setNoClassOk(true);
             engine.setBugReporter(r);
+            
+            if (progress != null) {
+                engine.setProgressCallback(progress);
+            }
 
             boolean inEditor = validator != null;
             Preferences settings = customSettings != null ? customSettings : NbPreferences.forModule(RunFindBugs.class).node("global-settings");
