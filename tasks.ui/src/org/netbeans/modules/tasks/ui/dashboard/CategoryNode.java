@@ -190,18 +190,28 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
         return panel;
     }
 
-    private Action getCategoryAction() {
-        if (isOpened()) {
+    private Action getCategoryAction(CategoryNode... categoryNodes) {
+        boolean allOpened = true;
+        boolean allClosed = true;
+        for (CategoryNode categoryNode : categoryNodes) {
+            if (categoryNode.isOpened()) {
+                allClosed = false;
+            } else {
+                allOpened = false;
+            }
+        }
+        if (allOpened) {
             if (closeCategoryAction == null) {
-                closeCategoryAction = new CloseCategoryNodeAction(this);
+                closeCategoryAction = new CloseCategoryNodeAction(categoryNodes);
             }
             return closeCategoryAction;
-        } else {
+        } else if (allClosed){
             if (openCategoryAction == null) {
-                openCategoryAction = new OpenCategoryNodeAction(this);
+                openCategoryAction = new OpenCategoryNodeAction(categoryNodes);
             }
             return openCategoryAction;
         }
+        return null;
     }
 
     public final Category getCategory() {
@@ -214,9 +224,22 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     public final Action[] getPopupActions() {
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        CategoryNode[] categoryNodes = new CategoryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof CategoryNode) {
+                categoryNodes[i] = (CategoryNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getCategoryAction());
-        actions.addAll(Actions.getCategoryPopupActions(this));
+        Action categoryAction = getCategoryAction(categoryNodes);
+        if (categoryAction != null) {
+            actions.add(categoryAction);
+        }
+        actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
         return actions.toArray(new Action[actions.size()]);
     }
 

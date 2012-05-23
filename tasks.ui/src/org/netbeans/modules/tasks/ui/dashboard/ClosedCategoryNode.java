@@ -42,7 +42,6 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -64,7 +63,7 @@ public class ClosedCategoryNode extends CategoryNode {
     private TreeLabel lblName;
 
     public ClosedCategoryNode(Category category) {
-        super(category, false);
+        super(category, false, false);
     }
 
     @Override
@@ -115,8 +114,8 @@ public class ClosedCategoryNode extends CategoryNode {
             panel.setOpaque(false);
             final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category_closed.png", true)); //NOI18N
             panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-            labels.add(lblName);
             lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
+            labels.add(lblName);
             panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             return panel;
