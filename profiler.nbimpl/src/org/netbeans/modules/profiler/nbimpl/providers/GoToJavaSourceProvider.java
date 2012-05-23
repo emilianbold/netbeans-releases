@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -61,6 +62,7 @@ import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.ParsingUtils;
+import org.netbeans.modules.profiler.nbimpl.javac.ScanSensitiveTask;
 import org.netbeans.modules.profiler.spi.java.GoToSourceProvider;
 import org.netbeans.modules.profiler.ui.ProfilerProgressDisplayer;
 import org.openide.cookies.LineCookie;
@@ -79,6 +81,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = GoToSourceProvider.class)
 public final class GoToJavaSourceProvider extends GoToSourceProvider {
+    private static final Logger LOG = Logger.getLogger(GoToJavaSourceProvider.class.getName());
+    
     private static class GotoSourceRunnable implements Runnable {
         private Lookup.Provider project;
         private String className;
@@ -108,7 +112,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
 
             final JavaSource js = JavaSource.forFileObject(sourceFile);
             if (js != null) {
-                ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
+                ScanSensitiveTask<CompilationController> t = new ScanSensitiveTask<CompilationController>() {
 
                     public void run(CompilationController controller) throws Exception {
                         if (!controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).equals(JavaSource.Phase.ELEMENTS_RESOLVED)) {
@@ -136,7 +140,14 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
                             result.set(true);
                         }
                     }
-                });
+
+                    @Override
+                    public boolean shouldRetry() {
+                        return !result.get();
+                    }
+                };
+                
+                ParsingUtils.invokeScanSensitiveTask(js, t);
             }
         }
         
@@ -147,7 +158,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
     
     @Override
     @NbBundle.Messages({
-        "MSG_ScanningInProgress=Scanning in progress...",
+        "MSG_ScanningInProgress=Please Wait...",
         "# {0} - full target name Class.Method(Signature)",
         "MSG_Opening=Opening {0}",
         "# {0} - full target name Class.Method(Signature)",
@@ -247,7 +258,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
                 }
             }
         } catch (DataObjectNotFoundException e) {
-            Logger.getLogger(GoToJavaSourceProvider.class.getName()).log(Level.WARNING, "Error accessing dataobject", e);
+            LOG.log(Level.WARNING, "Error accessing dataobject", e);
         }
         return false;
     }
