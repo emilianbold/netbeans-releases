@@ -175,7 +175,7 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
         ProjectOpenedHookImpl pohi = new ProjectOpenedHookImpl((NbMavenProjectImpl) p);
         pohi.projectOpened();
         try {
-            File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+            File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
             File mArt = new File(repo, "g/m/0/m-0.jar");
             // XXX verify that p2 has not yet been loaded
             Project m = FileOwnerQuery.getOwner(mArt.toURI());
