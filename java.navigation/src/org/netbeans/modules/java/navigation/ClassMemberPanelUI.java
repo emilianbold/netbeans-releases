@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.swing.BorderFactory;
-import javax.swing.SwingUtilities;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -33,7 +32,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
@@ -50,8 +48,11 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -113,9 +114,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             new FilterSubmenuAction(filters.getInstance())            
         };
         
-        add(filtersPanel, BorderLayout.SOUTH);
-        
-        manager.setRootContext(ElementNode.getWaitNode());
+        add(filtersPanel, BorderLayout.SOUTH);        
 
         boolean expanded = NbPreferences.forModule(ClassMemberPanelUI.class).getBoolean("filtersPanelTap.expanded", true); //NOI18N
         filtersPanel.setExpanded(expanded);
@@ -147,12 +146,23 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     
-    public void showWaitNode() {
-        SwingUtilities.invokeLater(new Runnable() {
+    void showWaitNode() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                elementView.setRootVisible(true);
                manager.setRootContext(ElementNode.getWaitNode());
                lastShowWaitNodeTime = System.currentTimeMillis();
+            } 
+        });
+    }
+    
+    void clearNodes() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+               elementView.setRootVisible(false);
+               manager.setRootContext(new AbstractNode(Children.LEAF));
             } 
         });
     }
@@ -170,7 +180,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
     }
 
-    public void refresh( final Description description ) {
+    void refresh( final Description description ) {
         
         final ElementNode rootNode = getRootNode();
         
@@ -182,12 +192,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     rootNode.updateRecursively( description );
                 }
             } );            
-        } 
-        else {
-            //System.out.println("REFRES =====" + description.fileObject.getName() );
-            // New fileobject => refresh completely
-            SwingUtilities.invokeLater(new Runnable() {
-
+        } else {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
                 public void run() {
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description ) );
@@ -456,7 +463,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         }
 
         public void invokeUserAction(final MouseEvent me) {
-            SwingUtilities.invokeLater( new Runnable() {
+            Mutex.EVENT.readAccess( new Runnable() {
                 public void run() {
                     if( null != me ) {
                         ElementJavadoc doc = getDocumentation( me.getPoint() );
