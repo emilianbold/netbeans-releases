@@ -56,7 +56,6 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -132,7 +131,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
             }
             for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
                 URI prjURI = projectBookmarks.getProjectURI();
-                Project prj = FileOwnerQuery.getOwner(prjURI);
+                Project prj = BookmarkUtils.findProject(prjURI);
                 if (prj != null) {
                     saveProjectBookmarks(prj, projectBookmarks);
                     lockedBookmarkManager.removeProjectBookmarks(projectBookmarks);
