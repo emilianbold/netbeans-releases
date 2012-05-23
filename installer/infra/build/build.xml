@@ -2248,7 +2248,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </for-each>
     </target>
     <target name="generate-jdk-bundle-single-windows">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2232">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}32" else="1.7.0.4.2232">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -2259,7 +2259,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
     <target name="generate-jdk-bundle-single-windows-x64">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2264">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}64" else="1.7.0.4.2264">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -2270,7 +2270,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
     <target name="generate-jdk-bundle-single-linux">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2032">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}32" else="1.7.0.4.2032">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
@@ -2281,7 +2281,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
     <target name="generate-jdk-bundle-single-linux-x64">
-        <condition property="jdk.full.version.platform" value="${jdk.full.version}" else="1.7.0.4.2064">
+        <condition property="jdk.full.version.platform" value="${jdk.full.version}64" else="1.7.0.4.2064">
             <isset property="jdk.full.version"/>
         </condition>
 	<antcall target="generate-jdk-bundle">
