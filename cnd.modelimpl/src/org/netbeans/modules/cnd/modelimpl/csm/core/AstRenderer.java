@@ -154,7 +154,9 @@ public class AstRenderer {
                     }
                     break;
                 }
-                case CPPTokenTypes.CSM_ENUM_DECLARATION: {
+                case CPPTokenTypes.CSM_ENUM_DECLARATION: 
+                case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
+                {
                     boolean planB = false;
                     EnumImpl csmEnum = null;
                     if(objects != null) {
@@ -2052,6 +2054,7 @@ public class AstRenderer {
                 return ExpressionStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CLASS_DECLARATION:
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
+            case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                 if(new AstRenderer((FileImpl) file, null, objects).isExpressionLikeDeclaration(ast, scope)) {

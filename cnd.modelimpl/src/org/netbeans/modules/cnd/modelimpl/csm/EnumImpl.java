@@ -198,8 +198,10 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
 
     static boolean isStronglyTypedEnum(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION ||
+               ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION ||
                 ast.getType() == CPPTokenTypes.LITERAL_enum : ast;
-        if (ast.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION) {
+        if (ast.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION ||
+            ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION) {
             ast = ast.getFirstChild();
         }
         while (ast.getType() != CPPTokenTypes.LITERAL_enum) {

@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * }
  * }
  * enum class N::Outer::InnerFwd2 {
- *      int var;
+ *      E1, E2
  * }
  * @author Vladimir Voskresensky
  */
