@@ -41,25 +41,35 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.openide.util.NbBundle;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
 /**
  *
  * @author jpeska
  */
-public class OpenTaskAction extends TaskAction {
+public abstract class RepositoryAction extends AbstractAction{
 
-    public OpenTaskAction(TaskNode... taskNodes) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open"), taskNodes); //NOI18N
-    }
+    private List<RepositoryNode> repositoryNodes;
+
+        public RepositoryAction(String name, RepositoryNode... repositoryNodes) {
+            super(name);
+            this.repositoryNodes = Arrays.asList(repositoryNodes);
+        }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        for (TaskNode taskNode : getTaskNodes()) {
-            Util.openIssue(taskNode.getTask().getRepository(), taskNode.getTask().getID());
+    public boolean isEnabled() {
+        for (RepositoryNode repositoryNode : repositoryNodes) {
+            if (!repositoryNode.isOpened()) {
+                return false;
+            }
         }
+        return true;
+    }
+
+    public List<RepositoryNode> getRepositoryNodes() {
+        return repositoryNodes;
     }
 }
