@@ -48,12 +48,46 @@ for ($i = 0; $i < count($argv); ++$i) {
 if (!$phpdocDir) {
 	show_help();
 }
+
+/***************** REMOVED FUNCTIONS (START) *************************/
+
+// add these functions to $removedFunctions!
+
+if (!function_exists('ob_iconv_handler')) {
+    function ob_iconv_handler($contents, $status) {}
+}
+if (!function_exists('ob_tidyhandler')) {
+    function ob_tidyhandler($input, $mode = 0) {}
+}
+if (!function_exists('session_register')) {
+    function session_register($name, $_ = null) {}
+}
+if (!function_exists('session_unregister')) {
+    function session_unregister($name) {}
+}
+if (!function_exists('session_is_registered')) {
+    function session_is_registered($name) {}
+}
+if (!function_exists('chroot')) {
+    function chroot($directory) {}
+}
+
+/***************** REMOVED FUNCTIONS (END) *************************/
+
 $entities = parse_entities($phpdocDir);
 $extensions = get_loaded_extensions();
 $functionsDoc = parse_phpdoc_functions ($phpdocDir, $extensions);
 $fieldsDoc = parse_phpdoc_fields ($phpdocDir, $extensions);
 $classesDoc = parse_phpdoc_classes ($phpdocDir, $extensions);
 $constantsDoc = parse_phpdoc_constants ($phpdocDir);
+$removedFunctions = array(
+    'ob_iconv_handler',
+    'ob_tidyhandler',
+    'session_register',
+    'session_unregister',
+    'session_is_registered',
+    'chroot',
+);
 $functionBlackList = array(
     'oci_lob_save' => 1,
     'oci_lob_import' => 1,
@@ -137,8 +171,21 @@ foreach ($intConstants as $name => $value) {
 	}
 }
 
-
 finish_file_output("{$phpDir}/basic.php");
+
+// removed functions
+if ($splitFiles) {
+    begin_file_output();
+}
+foreach ($removedFunctions as $removedFunction) {
+	if (!@$processedFunctions[strtolower($removedFunction)]) {
+		print_function (new ReflectionFunction ($removedFunction));
+	}
+}
+if ($splitFiles) {
+    finish_file_output("{$phpDir}/removed.php");
+}
+
 
 // Create .list file
 $fp = fopen ("{$phpDir}/.list", "w");
