@@ -58,24 +58,25 @@ final class MetaInfCache {
         }
     }
 
-    public synchronized Object findInstance(Class<?> c, Object o) {
+    public synchronized Object findInstance(Class<?> c) {
         int size = knownInstances.size();
         int index = hashForClass(c, size);
         for (int i = 0; i < size; i++) {
             Reference<Object> ref = knownInstances.get(index);
-            Object obj = ref == null ? null : ref.get();
-            if (obj == null) {
+            if (ref == null) {
                 break;
             }
-            if (c == obj.getClass()) {
-                o = obj;
-                break;
+            Object obj = ref.get();
+            if (obj != null) {
+                if (c == obj.getClass()) {
+                    return obj;
+                }
             }
             if (++index == size) {
                 index = 0;
             }
         }
-        return o;
+        return null;
     }
 
     public synchronized void storeInstance(Object o) {
@@ -92,6 +93,7 @@ final class MetaInfCache {
                 if (instance == null) {
                     continue;
                 }
+                newCache.storeInstance(instance);
             }
 
             this.knownInstances.clear();

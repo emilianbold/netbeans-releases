@@ -172,6 +172,12 @@ public class ThreadBreakpointTest extends NbTestCase {
                 }
                 hitCount++;
             }
+            if (thread.getName ().startsWith ("DestroyJavaVM")) {
+                // Wait a while to gather all events.
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException iex) {}
+            }
         }
 
         public void assertFailure () {

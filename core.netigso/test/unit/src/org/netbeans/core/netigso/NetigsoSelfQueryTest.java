@@ -54,11 +54,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import org.netbeans.ArchiveResources;
 import org.netbeans.Module;
@@ -95,10 +99,9 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
 
-
-        MockServices.setServices(MockFramework.class);
+        MockServices.setServices(MockFrameworkFactory.class);
     }
-
+    
     public void testSelfInspectionIsNotArchived() throws Exception {
         Netigso nf = Lookup.getDefault().lookup(Netigso.class);
         assertNotNull("Framework found", nf);
@@ -197,291 +200,264 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
         assertTrue("org.test.pkg: " + set, set.contains("org.test.pkg"));
     }
 
-    public static final class MockFramework 
-    implements Framework, FrameworkFactory, BundleContext, Comparable<Bundle> {
-        private final List<MockBundle> bundles = new ArrayList<MockBundle>();
-        NetigsoArchive archive;
-
+    public static final class MockFrameworkFactory implements FrameworkFactory {
         @Override
         public Framework newFramework(Map map) {
-            archive = (NetigsoArchive) map.get("netigso.archive");
+            NetigsoArchive archive = (NetigsoArchive) map.get("netigso.archive");
             assertNotNull("archive provided", archive);
-            return this;
+            AtomicReference<BundleContext> ar = new AtomicReference<BundleContext>();
+            return (Framework) delegate(new MockFramework(archive, ar), ar, Framework.class, BundleContext.class);
         }
 
-        @Override
+    }
+    
+    private static Object delegate(final Object inst, AtomicReference ar, Class... types) {
+        class Del implements InvocationHandler {
+            @Override
+            public Object invoke(Object o, Method method, Object[] os) throws Throwable {
+                Method myMethod = inst.getClass().getMethod(
+                    method.getName(), method.getParameterTypes()
+                );
+                return myMethod.invoke(inst, os);
+            }
+        }
+        Object ret = Proxy.newProxyInstance(
+            NetigsoSelfQueryTest.class.getClassLoader(), 
+            types, 
+            new Del()
+        );
+        ar.set(ret);
+        return ret;
+    }
+    
+    private static final class MockFramework {
+        private final NetigsoArchive archive;
+        private final List<Bundle> bundles = new ArrayList<Bundle>();
+        private final AtomicReference<BundleContext> handler;
+        
+        public MockFramework(NetigsoArchive archive, AtomicReference<BundleContext> ab) {
+            this.archive = archive;
+            this.handler = ab;
+        }
+
         public void init() throws BundleException {
         }
 
-        @Override
         public FrameworkEvent waitForStop(long l) throws InterruptedException {
             return null;
         }
 
-        @Override
         public void start() throws BundleException {
         }
 
-        @Override
         public void start(int i) throws BundleException {
         }
 
-        @Override
         public void stop() throws BundleException {
         }
 
-        @Override
         public void stop(int i) throws BundleException {
         }
 
-        @Override
         public void uninstall() throws BundleException {
         }
 
-        @Override
         public void update() throws BundleException {
         }
 
-        @Override
         public void update(InputStream in) throws BundleException {
         }
 
-        @Override
         public long getBundleId() {
             return 0;
         }
 
-        @Override
         public String getLocation() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public String getSymbolicName() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public int getState() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Dictionary getHeaders() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference[] getRegisteredServices() {
             return new ServiceReference[0];
         }
 
-        @Override
         public ServiceReference[] getServicesInUse() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public boolean hasPermission(Object o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public URL getResource(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Dictionary getHeaders(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Class loadClass(String string) throws ClassNotFoundException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Enumeration getResources(String string) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Enumeration getEntryPaths(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public URL getEntry(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public long getLastModified() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Enumeration findEntries(String string, String string1, boolean bln) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public BundleContext getBundleContext() {
-            return this;
+            return handler.get();
         }
 
-        @Override
         public Map getSignerCertificates(int i) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Version getVersion() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public String getProperty(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Bundle getBundle() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Bundle installBundle(String url, InputStream in) throws BundleException {
             final MockBundle b = new MockBundle(url, this);
-            bundles.add(b);
-            return b;
+            final Bundle bundle = (Bundle) delegate(b, new AtomicReference(), Bundle.class);
+            bundles.add(bundle);
+            return bundle;
         }
 
-        @Override
         public Bundle installBundle(String string) throws BundleException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Bundle getBundle(long l) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Bundle[] getBundles() {
             return bundles.toArray(new Bundle[0]);
         }
 
-        @Override
         public void addServiceListener(ServiceListener sl, String string) throws InvalidSyntaxException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void addServiceListener(ServiceListener sl) {
         }
 
-        @Override
         public void removeServiceListener(ServiceListener sl) {
         }
 
-        @Override
         public void addBundleListener(BundleListener bl) {
         }
 
-        @Override
         public void removeBundleListener(BundleListener bl) {
         }
 
-        @Override
         public void addFrameworkListener(FrameworkListener fl) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void removeFrameworkListener(FrameworkListener fl) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceRegistration registerService(String[] strings, Object o, Dictionary dctnr) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceRegistration registerService(String string, Object o, Dictionary dctnr) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference[] getServiceReferences(String string, String string1) throws InvalidSyntaxException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference[] getAllServiceReferences(String string, String string1) throws InvalidSyntaxException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference getServiceReference(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Object getService(ServiceReference sr) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public boolean ungetService(ServiceReference sr) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public File getDataFile(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Filter createFilter(String string) throws InvalidSyntaxException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Object adapt(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public int compareTo(Bundle o) {
+        public int compareTo(Object o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceRegistration registerService(Class type, Object s, Dictionary dctnr) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference getServiceReference(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Collection getServiceReferences(Class type, String string) throws InvalidSyntaxException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Bundle getBundle(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
 
-    private static final class MockBundle implements Bundle, BundleContent, Comparable<Bundle> {
+    private static final class MockBundle implements BundleContent {
         private final String url;
         private final MockFramework f;
         private final NetigsoArchive archive;
@@ -493,120 +469,95 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
             this.archive = f.archive.forBundle(10, this);
         }
 
-
-
-        @Override
         public int getState() {
             return state;
         }
 
-        @Override
         public void start(int i) throws BundleException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void start() throws BundleException {
             state = Bundle.ACTIVE;
         }
 
-        @Override
         public void stop(int i) throws BundleException {
         }
 
-        @Override
         public void stop() throws BundleException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void update(InputStream in) throws BundleException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void update() throws BundleException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public void uninstall() throws BundleException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         private Dictionary empty = new Hashtable();
-        @Override
         public Dictionary getHeaders(String locale) {
             return empty;
         }
         
-        @Override
         public Dictionary getHeaders() {
             fail("Don't ever call me, call getHeaders(\"\")");
             return null;
         }
         
-        @Override
         public long getBundleId() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public String getLocation() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference[] getRegisteredServices() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public ServiceReference[] getServicesInUse() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public boolean hasPermission(Object o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public URL getResource(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public String getSymbolicName() {
             return "org.test";
         }
 
-        @Override
         public Class loadClass(String string) throws ClassNotFoundException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Enumeration getResources(String string) throws IOException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Enumeration getEntryPaths(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public URL getEntry(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public long getLastModified() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Enumeration findEntries(String string, String string1, boolean bln) {
             Set<URL> set = new HashSet<URL>();
             try {
@@ -633,33 +584,27 @@ public class NetigsoSelfQueryTest extends NetigsoHid {
             return null;
         }
 
-        @Override
         public BundleContext getBundleContext() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Map getSignerCertificates(int i) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Version getVersion() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public Object adapt(Class type) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public File getDataFile(String string) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public int compareTo(Bundle o) {
+        public int compareTo(Object o) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
