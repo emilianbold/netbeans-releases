@@ -288,7 +288,9 @@ public final class Resolver3 implements Resolver {
             Collection<CsmOffsetableDeclaration> col;
             if (ns instanceof NamespaceImpl) {
                 col = ((NamespaceImpl)ns).getDeclarationsRange(fqn,
-                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF, Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION, Kind.CLASS_FORWARD_DECLARATION});
+                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF,
+                            Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION,
+                            Kind.CLASS_FORWARD_DECLARATION, Kind.ENUM_FORWARD_DECLARATION});
 
             } else {
                 col = ns.getDeclarations();

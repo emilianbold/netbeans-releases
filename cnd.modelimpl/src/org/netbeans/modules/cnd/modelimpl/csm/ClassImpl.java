@@ -1281,4 +1281,139 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
+    public static final class EnumMemberForwardDeclaration extends EnumForwardDeclarationImpl
+            implements CsmMember, CsmClassifier {
+
+        private final CsmVisibility visibility;
+        private CsmUID<CsmEnum> enumDefinition;
+        private final CsmUID<CsmClass> containerUID;
+        private CsmClass containerRef;
+
+        private EnumMemberForwardDeclaration(CsmFile file, CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
+            super(ast, file, register);
+            visibility = curentVisibility;
+            containerUID = UIDCsmConverter.declarationToUID(containingClass);
+        }
+
+        public static EnumMemberForwardDeclaration create(CsmFile file, CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
+            EnumMemberForwardDeclaration res = new EnumMemberForwardDeclaration(file, containingClass, ast, curentVisibility, register);
+            postObjectCreateRegistration(register, res);
+            return res;
+        }
+
+        @Override
+        protected final boolean registerInProject() {
+            CsmProject project = getContainingFile().getProject();
+            if (project instanceof ProjectBase) {
+                return ((ProjectBase) project).registerDeclaration(this);
+            }
+            return false;
+        }
+
+        private void unregisterInProject() {
+            CsmProject project = getContainingFile().getProject();
+            if (project instanceof ProjectBase) {
+                ((ProjectBase) project).unregisterDeclaration(this);
+                this.cleanUID();
+            }
+        }
+
+        @Override
+        public void dispose() {
+            super.dispose();
+            onDispose();
+            CsmScope scope = getScope();
+            if (scope instanceof MutableDeclarationsContainer) {
+                ((MutableDeclarationsContainer) scope).removeDeclaration(this);
+            }
+            unregisterInProject();
+        }
+
+        @Override
+        public boolean isStatic() {
+            return false;
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        private synchronized void onDispose() {
+            if (containerRef == null) {
+                containerRef = UIDCsmConverter.UIDtoClass(containerUID);
+            }
+        }
+
+        @Override
+        public synchronized CsmClass getContainingClass() {
+            CsmClass out = containerRef;
+            if (out == null) {
+                out = containerRef = UIDCsmConverter.UIDtoClass(containerUID);
+            }
+            return out;
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return getContainingClass();
+        }
+
+        @Override
+        public CsmEnum getCsmEnum() {
+            CsmEnum cls = UIDCsmConverter.UIDtoDeclaration(enumDefinition);
+            // we need to replace i.e. ForwardClass stub
+            if (cls != null && cls.isValid() && !ForwardClass.isForwardClass(cls)) {
+                return cls;
+            } else {
+                cls = super.getCsmEnum();
+                setCsmEnum(cls);
+            }
+            return cls;
+        }
+
+        @Override
+        protected ForwardEnum createForwardEnumIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
+            ForwardEnum cls = super.createForwardEnumIfNeed(ast, scope, registerInProject);
+            enumDefinition = UIDCsmConverter.declarationToUID((CsmEnum) cls);
+            if (cls != null) {
+                RepositoryUtils.put(this);
+            }
+            return cls;
+        }
+
+        public void setCsmEnum(CsmEnum cls) {
+            enumDefinition = UIDCsmConverter.declarationToUID(cls);
+        }
+
+        @Override
+        public CharSequence getQualifiedName() {
+            CsmClass cls = getContainingClass();
+            if (cls == null) {
+                cls = getContainingClass();
+            }
+            return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+        }
+
+        ////////////////////////////////////////////////////////////////////////////
+        // impl of SelfPersistent
+        @Override
+        public void write(RepositoryDataOutput output) throws IOException {
+            super.write(output);
+            assert visibility != null;
+            PersistentUtils.writeVisibility(visibility, output);
+            assert containerUID != null;
+            UIDObjectFactory.getDefaultFactory().writeUID(containerUID, output);
+            UIDObjectFactory.getDefaultFactory().writeUID(enumDefinition, output);
+        }
+
+        public EnumMemberForwardDeclaration(RepositoryDataInput input) throws IOException {
+            super(input);
+            visibility = PersistentUtils.readVisibility(input);
+            assert visibility != null;
+            containerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+            assert containerUID != null;
+            enumDefinition = UIDObjectFactory.getDefaultFactory().readUID(input);
+        }
+    }
 }

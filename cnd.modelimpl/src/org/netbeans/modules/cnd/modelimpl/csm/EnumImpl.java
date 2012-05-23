@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * Implements CsmEnum
  * @author Vladimir Kvashin
  */
-public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
+public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     private final boolean stronglyTyped;
     private final List<CsmUID<CsmEnumerator>> enumerators;
     
@@ -72,7 +72,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
 
-    private EnumImpl(CharSequence name, String qName, boolean stronglyTyped, CsmFile file, int startOffset, int endOffset) {
+    protected EnumImpl(CharSequence name, String qName, boolean stronglyTyped, CsmFile file, int startOffset, int endOffset) {
         super(name, qName, file, startOffset, endOffset);
         this.stronglyTyped = stronglyTyped;
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
