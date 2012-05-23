@@ -530,7 +530,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             @Override
             public WebEngine call( PopupFeatures p ) {
                 if( p.hasMenu() && p.hasStatus() && p.hasToolbar() && p.isResizable() ) {
-
+                    //TODO this should be probably configurable
                     return _createNewBrowserWindow();
                 }
                 return eng;
