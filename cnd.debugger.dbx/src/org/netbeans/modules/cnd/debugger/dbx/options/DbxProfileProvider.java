@@ -62,7 +62,7 @@ public class DbxProfileProvider implements NativeDebuggerAuxObjectFactory {
      * Creates an instance of the auxiliary information object
      */
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
-	return new DbxProfile(pcs);
+	return new DbxProfile(pcs, configuration);
     }
 
     public String getAuxObjectID() {

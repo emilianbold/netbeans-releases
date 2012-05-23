@@ -78,8 +78,8 @@ public class DbxProfile extends DbgProfile {
 	pathmap = new Pathmap(this);
     }
 
-    protected DbxProfile(PropertyChangeSupport pcs) {
-	super(pcs);
+    protected DbxProfile(PropertyChangeSupport pcs, Configuration configuration) {
+	super(pcs, configuration);
 	options = new ProfileOptionSet();
 	exceptions = new Exceptions(this);
 	signals = new Signals(this);
@@ -145,7 +145,7 @@ public class DbxProfile extends DbgProfile {
 
     // interface ConfigurationAuxObject
     public ConfigurationAuxObject clone(Configuration conf) {
-	DbxProfile clone = new DbxProfile(null);
+	DbxProfile clone = new DbxProfile(null, conf);
 
 	// don't clone pcs ... we'll end up notifying listeners prematurely
 	// they will get notified on 'assign()'.
