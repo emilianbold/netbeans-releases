@@ -92,7 +92,7 @@ if [ -n $BUILD_ID ]; then
     run_and_measure "rm $DIST_SERVER2/latest.old"
     run_and_measure "mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old"
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
-    if [ $UPLOAD_ML == 0 -a ML_BUILD != 0 ]; then
+    if [ $UPLOAD_ML == 0 -a $ML_BUILD != 0 ]; then
         run_and_measure "rm -r $DIST/ml"
     fi
 fi
