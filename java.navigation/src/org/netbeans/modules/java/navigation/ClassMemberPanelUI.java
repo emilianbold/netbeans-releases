@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -62,6 +63,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author  phrebejk
  */
+@SuppressWarnings("ClassWithMultipleLoggers")
 public class ClassMemberPanelUI extends javax.swing.JPanel
         implements ExplorerManager.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
 
@@ -71,14 +73,31 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private InstanceContent selectedNodes = new InstanceContent();
     private Lookup lookup = new AbstractLookup(selectedNodes);
     private ClassMemberFilters filters;
-    
+    private final AtomicReference<State> state = new AtomicReference<State>();    
     private Action[] actions; // General actions for the panel
-    
-    private static final Rectangle ZERO = new Rectangle(0,0,1,1);
+    private RequestProcessor.Task watcherTask = WATCHER_RP.create(new Runnable() {
+        @Override
+        public void run() {
+            final State current = state.get();
+            if (current != State.DONE) {
+                LOG.log(
+                    Level.WARNING,
+                    "No scheduled navigator update in {0}ms, current state: {1}",   //NOI18N
+                    new Object[]{
+                        WATCHER_TIME,
+                        state.get()
+                    });
+            }
+        }
+    });
 
     private long lastShowWaitNodeTime = -1;
+    private static final Logger LOG = Logger.getLogger(ClassMemberPanelUI.class.getName()); //NOI18N
     private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class.getName(), 1);
+    private static final RequestProcessor WATCHER_RP = new RequestProcessor(ClassMemberPanelUI.class.getName() + ".watcher", 1, false, false);  //NOI18N
+    private static final int WATCHER_TIME = 30000; 
+    
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
@@ -153,6 +172,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                elementView.setRootVisible(true);
                manager.setRootContext(ElementNode.getWaitNode());
                lastShowWaitNodeTime = System.currentTimeMillis();
+               scheduled();
             } 
         });
     }
@@ -165,6 +185,28 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                manager.setRootContext(new AbstractNode(Children.LEAF));
             } 
         });
+    }
+    
+    private void scheduled() {
+        state.set(State.SCHEDULED);
+        boolean ae = false;
+        assert ae = true;
+        if (ae) {
+            watcherTask.schedule(WATCHER_TIME);
+        }
+    }
+    
+    void start() {
+        state.set(State.INVOKED);
+    }
+    
+    private void done() {
+        state.set(State.DONE);
+        boolean ae = false;
+        assert ae = true;
+        if (ae) {
+            watcherTask.cancel();
+        }
     }
     
     public void selectElementNode( ElementHandle<Element> eh ) {
@@ -190,6 +232,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             RP.post(new Runnable() {
                 public void run() {
                     rootNode.updateRecursively( description );
+                    done();
                 }
             } );            
         } else {
@@ -198,6 +241,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 public void run() {
                     elementView.setRootVisible(false);        
                     manager.setRootContext(new ElementNode( description ) );
+                    done();
                     boolean scrollOnExpand = getScrollOnExpand();
                     setScrollOnExpand( false );
                     elementView.setAutoWaitCursor(false);
@@ -525,5 +569,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             NbPreferences.forModule(ClassMemberPanelUI.class)
                     .putBoolean("filtersPanelTap.expanded", filtersPanel.isExpanded());
         }
+    }
+    
+    private enum State {
+        SCHEDULED,
+        INVOKED,
+        DONE
     }
 }
