@@ -155,7 +155,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
                     LOG.fine("TSH: filling the bag; enabled = " + isEnabled());
                 }
 
-                if (isEnabled()) {
+                if (isEnabled() && component.equals(EditorFindSupport.getInstance().getFocusedTextComponent())) {
                     try {
                         int [] blocks = EditorFindSupport.getInstance().getBlocks(
                             new int [] {-1, -1}, d, 0, d.getLength());
