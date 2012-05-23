@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
 
 import java.util.Collections;
@@ -51,7 +50,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class DefaultTreePathVisitor extends DefaultVisitor{
+public class DefaultTreePathVisitor extends DefaultVisitor {
+
     private final List<ASTNode> path = Collections.synchronizedList(new LinkedList<ASTNode>());
     private final List<ASTNode> unmodifiablePath;
 
@@ -71,38 +71,51 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     @Override
     public void visit(NamespaceDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(UseStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(UseStatementPart node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
-
 
     @Override
     public void visit(ArrayAccess node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ArrayCreation node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ArrayElement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Assignment node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
@@ -112,370 +125,513 @@ public class DefaultTreePathVisitor extends DefaultVisitor{
 
     @Override
     public void visit(BackTickExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Block node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(BreakStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(CastExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(CatchClause node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ConstantDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ClassDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ClassName node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(CloneExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Comment node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ConditionalExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ContinueStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(DeclareStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(DoStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(EchoStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(EmptyStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ExpressionStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(FieldAccess node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(FieldsDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ForEachStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(FormalParameter node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ForStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(FunctionDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(FunctionInvocation node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(FunctionName node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(GlobalStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Identifier node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(IfStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(IgnoreError node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Include node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(InfixExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(InLineHtml node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(InstanceOfExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(InterfaceDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ListVariable node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(MethodDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(MethodInvocation node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ParenthesisExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PostfixExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PrefixExpression node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Program node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Quote node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Reference node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ReflectionVariable node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ReturnStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Scalar node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(SingleFieldDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(StaticConstantAccess node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(StaticFieldAccess node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(StaticMethodInvocation node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(StaticStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(SwitchCase node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(SwitchStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ThrowStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(TryStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(UnaryOperation node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(Variable node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(WhileStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(ASTNode node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PHPDocBlock node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PHPDocTypeTag node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PHPDocTag node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PHPDocVarTypeTag node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PHPDocMethodTag node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(PHPDocNode node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(TraitDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(TraitMethodAliasDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(UseTraitStatement node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(UseTraitStatementPart node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     @Override
     public void visit(AnonymousObjectVariable node) {
-        addToPath(node);super.visit(node);removeFromPath();
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
     }
 
     protected void addToPath(ASTNode node) {
         path.add(0, node);
     }
-    
+
     protected void removeFromPath() {
         path.remove(0);
     }
-
 }
