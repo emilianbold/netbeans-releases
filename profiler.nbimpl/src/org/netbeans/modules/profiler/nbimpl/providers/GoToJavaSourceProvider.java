@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;

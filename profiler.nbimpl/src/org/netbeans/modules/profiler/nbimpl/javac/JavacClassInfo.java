@@ -62,7 +62,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -118,7 +117,9 @@ public class JavacClassInfo extends SourceClassInfo {
                     }
                 }, true);
             } catch (IllegalArgumentException e) {
+                LOG.log(Level.WARNING, null, e);
             } catch (IOException e) {
+                LOG.log(Level.WARNING, null, e);
             }
         }
         return rslt[0] != null ? rslt[0] : Collections.EMPTY_SET;
@@ -143,21 +144,25 @@ public class JavacClassInfo extends SourceClassInfo {
     }
     
     @Override
-    public synchronized FileObject getFile() {
-        if (src == null) {
-            src = SourceUtils.getFile(handle, cpInfo);
+    public FileObject getFile() {
+        ElementHandle<TypeElement> eh = handle;
+        ClasspathInfo ci = cpInfo;
+        synchronized(this) {
             if (src == null) {
-                String resName = handle.getBinaryName().replace('.', '/').concat(".class"); // NOI18N
-                src = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT).findResource(resName);
+                src = SourceUtils.getFile(eh, ci);
                 if (src == null) {
-                    src = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE).findResource(resName);
+                    String resName = eh.getBinaryName().replace('.', '/').concat(".class"); // NOI18N
+                    src = ci.getClassPath(ClasspathInfo.PathKind.BOOT).findResource(resName);
                     if (src == null) {
-                        src = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(resName);
+                        src = ci.getClassPath(ClasspathInfo.PathKind.COMPILE).findResource(resName);
+                        if (src == null) {
+                            src = ci.getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(resName);
+                        }
                     }
                 }
             }
+            return src;
         }
-        return src;
     }
 
     @Override
@@ -165,20 +170,25 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceMethodInfo> infos = new HashSet<SourceMethodInfo>();
         if (handle != null) {
             try {
-                getSource(false).runUserActionTask(new Task<CompilationController>() {
-                    
-                    @Override
-                    public void run(CompilationController cc) throws Exception {
-                        if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED) == JavaSource.Phase.ELEMENTS_RESOLVED) {
-                            TypeElement type = handle.resolve(cc);
-                            for (ExecutableElement method : ElementFilter.constructorsIn(type.getEnclosedElements())) {
-                                infos.add(new JavacMethodInfo(method, cc));
+                JavaSource s = getSource(false);
+                if (s != null) {
+                    s.runUserActionTask(new Task<CompilationController>() {
+
+                        @Override
+                        public void run(CompilationController cc) throws Exception {
+                            if (cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED) == JavaSource.Phase.ELEMENTS_RESOLVED) {
+                                TypeElement type = handle.resolve(cc);
+                                if (type != null) {
+                                    for (ExecutableElement method : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+                                        infos.add(new JavacMethodInfo(method, cc));
+                                    }
+                                }
                             }
                         }
-                    }
-                }, true);
+                    }, true);
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.log(Level.WARNING, null, e);
             }
         }
         return infos;
@@ -190,34 +200,32 @@ public class JavacClassInfo extends SourceClassInfo {
 
         if (handle != null) {
             try {
-                getSource(false).runUserActionTask(new Task<CompilationController>() {
+                JavaSource s = getSource(false);
+                if (s != null) {
+                    s.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController cc)
+                                throws Exception {
+                            if (cc.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
+                                return;
+                            }
 
-                    public void cancel() {
-                    }
+                            TypeElement type = handle.resolve(cc);
+                            if (type != null) {
+                                List<TypeElement> elements = ElementFilter.typesIn(type.getEnclosedElements());
 
-                    public void run(CompilationController cc)
-                            throws Exception {
-                        if (cc.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
-                            return;
+                                for (TypeElement element : elements) {
+                                    innerClasses.add(new JavacClassInfo(ElementHandle.create(element), cc));
+                                }
+
+                                addAnonymousInnerClasses(cc, innerClasses);
+                            }
                         }
-
-                        TypeElement type = handle.resolve(cc);
-                        List<TypeElement> elements = ElementFilter.typesIn(type.getEnclosedElements());
-
-                        for (TypeElement element : elements) {
-                            innerClasses.add(new JavacClassInfo(ElementHandle.create(element), cc));
-                        }
-
-                        addAnonymousInnerClasses(cc, innerClasses);
-                    }
-                }, true);
+                    }, true);
+                }
             } catch (IllegalArgumentException ex) {
-                // TODO
-                ex.printStackTrace();
+                LOG.log(Level.WARNING, null, ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (Exception ex) {
-                ex.printStackTrace();
+                LOG.log(Level.WARNING, null, ex);
             }
         }
         return innerClasses;
@@ -228,23 +236,25 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo> ifcs = new HashSet<SourceClassInfo>();
         if (handle != null) {
             try {
-                getSource(true).runUserActionTask(new Task<CompilationController>() {
+                JavaSource s = getSource(false);
+                if (s != null) {
+                    s.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement te = handle.resolve(cc);
 
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController cc) throws Exception {
-                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        TypeElement te = handle.resolve(cc);
-                        
-                        Types t = cc.getTypes();
-                        for(TypeMirror ifc : te.getInterfaces()) {
-                            TypeElement ife = (TypeElement)t.asElement(ifc);
-                            ifcs.add(new JavacClassInfo(ElementHandle.create(ife), cc));
+                            Types t = cc.getTypes();
+                            if (te != null) {
+                                for(TypeMirror ifc : te.getInterfaces()) {
+                                    TypeElement ife = (TypeElement)t.asElement(ifc);
+                                    ifcs.add(new JavacClassInfo(ElementHandle.create(ife), cc));
+                                }
+                            }
                         }
-                    }
-                }, true);
+                    }, true);
+                }
             } catch (IOException e) {
+                LOG.log(Level.WARNING, null, e);
             }    
         }
         return ifcs;
@@ -256,25 +266,27 @@ public class JavacClassInfo extends SourceClassInfo {
         
         if (handle != null) {
             try {
-                getSource(false).runUserActionTask(new Task<CompilationController>() {
+                JavaSource s = getSource(false);
+                if (s != null) {
+                    s.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController cc) throws Exception {
+                            if (cc.toPhase(JavaSource.Phase.RESOLVED) == JavaSource.Phase.RESOLVED) {
+                                TypeElement te = handle.resolve(cc);
 
-                    public void cancel() {
-                    }
+                                if (te != null) {
+                                    TypeMirror superTm = te.getSuperclass();
+                                    if (superTm != null) {
+                                        TypeElement superType = (TypeElement)cc.getTypes().asElement(superTm);
 
-                    public void run(CompilationController cc) throws Exception {
-                        if (cc.toPhase(JavaSource.Phase.RESOLVED) == JavaSource.Phase.RESOLVED) {
-                            TypeElement te = handle.resolve(cc);
-
-                            TypeMirror superTm = te.getSuperclass();
-                            if (superTm != null) {
-                                TypeElement superType = (TypeElement)cc.getTypes().asElement(superTm);
-
-                                rslt[0] = new JavacClassInfo(ElementHandle.create(superType), cc);
+                                        rslt[0] = new JavacClassInfo(ElementHandle.create(superType), cc);
+                                    }
+                                }
                             }
                         }
-                    }
-                }, true);
+                    }, true);
+                }
             } catch (IOException e) {
+                LOG.log(Level.WARNING, null, e);
             }    
         }
         return rslt[0];
@@ -327,11 +339,13 @@ public class JavacClassInfo extends SourceClassInfo {
         if (this.handle != other.handle && (this.handle == null || !this.handle.equals(other.handle))) {
             return false;
         }
-        if (this.src != null) {
-            if (this.src != other.src && !this.src.equals(other.src)){
-                return false;
-            }
-        } 
+        synchronized(this) {
+            if (this.src != null) {
+                if (this.src != other.src && !this.src.equals(other.src)){
+                    return false;
+                }
+            } 
+        }
         if (this.cpInfo != null) {
             if (this.cpInfo != other.cpInfo && !this.cpInfo.toString().equals(other.cpInfo.toString())) { // ClassPath does not implement "equals()" method and as such ClasspathInfo does effectivly neither
                 return false;

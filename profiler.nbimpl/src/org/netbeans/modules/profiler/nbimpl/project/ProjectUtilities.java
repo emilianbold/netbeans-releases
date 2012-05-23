@@ -72,8 +72,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -341,13 +341,13 @@ public final class ProjectUtilities {
             try {
                 if (projectFO.isFolder()) {
                     if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.finest("Trying: " + projectFO); //NOI18N
+                        LOGGER.log(Level.FINEST, "Trying: {0}", projectFO); //NOI18N
                     }
 
                     Project p = ProjectManager.getDefault().findProject(projectFO);
 
                     if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.finest("Got: " + ((p != null) ? getProjectName(p) : null)); //NOI18N
+                        LOGGER.log(Level.FINEST, "Got: {0}", ((p != null) ? getProjectName(p) : null)); //NOI18N
                     }
 
                     if (p != null) {
@@ -397,7 +397,7 @@ public final class ProjectUtilities {
             addSubpackages(packages, "", root); //NOI18N
         }
 
-        return packages.toArray(new String[0]);
+        return packages.toArray(new String[packages.size()]);
     }
 
 //    /**
@@ -468,32 +468,18 @@ public final class ProjectUtilities {
     }
 
     public static Project[] getSortedProjects(Project[] projects) {
-        ArrayList projectsArray = new ArrayList(projects.length);
-
-        for (int i = 0; i < projects.length; i++) {
-            projectsArray.add(projects[i]);
-        }
-
-        try {
-            Collections.sort(projectsArray,
-                             new Comparator() {
-                    public int compare(Object o1, Object o2) {
-                        Project p1 = (Project) o1;
-                        Project p2 = (Project) o2;
-
-                        return ProjectUtils.getInformation(p1).getDisplayName().toLowerCase()
-                                           .compareTo(ProjectUtils.getInformation(p2).getDisplayName().toLowerCase());
-                    }
-                });
-        } catch (Exception e) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, e.getMessage()); // just in case ProjectUtils doesn't provide expected information
-        }
-
-        ;
-
-        projectsArray.toArray(projects);
-
-        return projects;
+        Project[] sorted = new Project[projects.length];
+        System.arraycopy(projects, 0, sorted, 0, projects.length);
+        
+        Arrays.sort(sorted, new Comparator<Project>() {
+            @Override
+            public int compare(Project p1, Project p2) {
+                return ProjectUtils.getInformation(p1).getDisplayName().toLowerCase()
+                                    .compareTo(ProjectUtils.getInformation(p2).getDisplayName().toLowerCase());
+            }
+        });
+        
+        return sorted;
     }
 
     /**
@@ -567,7 +553,7 @@ public final class ProjectUtilities {
                 addSubpackages(packages1, "", root); //NOI18N
             }
 
-            storage[0] = packages1.toArray(new String[0]);
+            storage[0] = packages1.toArray(new String[packages1.size()]);
         }
 
         if (subprojects && (storage[1] == null)) {
@@ -588,7 +574,7 @@ public final class ProjectUtilities {
 
             FileObject buildFolder = getOrCreateBuildFolder(project, buildDirProp);
 
-            FileObject htmlFile = null;
+            FileObject htmlFile;
             htmlFile = profiledClassFile.getParent().getFileObject(profiledClassFile.getName(), "html"); //NOI18N
 
             if (htmlFile == null) {
@@ -607,9 +593,7 @@ public final class ProjectUtilities {
 
             htmlFile.copy(buildFolder, profiledClassFile.getName(), value).getURL();
 
-            if (htmlFile != null) {
-                return htmlFile.getURL();
-            }
+            return htmlFile.getURL();
         } catch (IOException e) {
             ErrorManager.getDefault()
                         .annotate(e, Bundle.ProjectUtilities_FailedCopyAppletFileMsg(e.getMessage()));
@@ -617,8 +601,6 @@ public final class ProjectUtilities {
 
             return null;
         }
-
-        return null;
     }
 
     public static void fetchSubprojects(final Project project, final Set<Project> projects) {
@@ -694,11 +676,12 @@ public final class ProjectUtilities {
             return; // fail early
         }
 
-        Lookup lkp = null;
+        Lookup lkp;
         if (NetBeansProfiler.getDefaultNB().getProfiledSingleFile() != null) {
             try {
                 lkp = new ProxyLookup(Lookup.getDefault(), Lookups.fixed(DataObject.find(NetBeansProfiler.getDefaultNB().getProfiledSingleFile())));
             } catch (DataObjectNotFoundException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
                 lkp = Lookup.getDefault();
             }
         } else {
@@ -803,7 +786,6 @@ public final class ProjectUtilities {
 
         // Move build-before-profiler.xml back to build.xml
         FileLock buildBackupFileLock = null;
-        FileLock buildBackup2FileLock = null;
 
         try {
             final FileObject buildFile = AntProjectSupport.get(project).getProjectBuildScript();
@@ -813,12 +795,12 @@ public final class ProjectUtilities {
                 try {
                     buildBackupFileLock = buildBackupFile.lock();
 
-                    if ((buildFile != null) && buildFile.isValid()) {
+                    if (buildFile.isValid()) {
                         buildFile.delete();
                     }
 
                     buildBackupFile.rename(buildBackupFileLock, "build", "xml"); //NOI18N
-                } catch (Exception e) {
+                } catch (IOException e) {
                     failed = true;
                     exceptionsReport.append(Bundle.ProjectUtilities_RenamingBuildFailedMsg(e.getMessage()));
                     ProfilerLogger.log(e);
@@ -838,6 +820,7 @@ public final class ProjectUtilities {
                                                     .getFileObject("profiler-build-impl.xml"); //NOI18N
 
             try {
+                buildImplFileLock = buildImplFile.lock();
                 if ((buildImplFile != null) && buildImplFile.isValid()) {
                     buildImplFile.delete();
                 }
@@ -926,15 +909,5 @@ public final class ProjectUtilities {
                 }
             }
         }
-    }
-
-    private static boolean hasSubprojects(Project project) {
-        SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
-
-        if (spp == null) {
-            return false;
-        }
-
-        return spp.getSubprojects().size() > 0;
     }
 }

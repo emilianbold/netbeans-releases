@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
@@ -52,9 +49,6 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo.Scope;
@@ -125,7 +119,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
     abstract protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps);
     
     private Set<ClassIndex.SearchScope> toSearchScope(Set<Scope> scope) {
-        Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
+        Set<ClassIndex.SearchScope> sScope = EnumSet.noneOf(ClassIndex.SearchScope.class);
         for(Scope s : scope) {
             switch (s) {
                 case DEPENDENCIES: {
