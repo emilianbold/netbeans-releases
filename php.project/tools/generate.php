@@ -284,7 +284,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
                                         $match[$key] = $val[count($val) - 1];
                                     }
                                 } else {
-                                    $methodsynopsis = preg_match ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match);
+                                    $methodsynopsis = preg_match ('@<methodsynopsis>.*?(?:<type>(.*?)</type>.*?)?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match);
                                 }
 				if ($methodsynopsis) {
 					if ($has_object_style) {
