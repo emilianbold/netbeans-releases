@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
  */
 public class DefaultTreePathVisitor extends DefaultVisitor {
 
+    // @GuardedBy(unmodifiablePath)
     private final List<ASTNode> path = Collections.synchronizedList(new LinkedList<ASTNode>());
     private final List<ASTNode> unmodifiablePath;
 
@@ -60,8 +61,18 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
     }
 
     /**
-     * ... reversed order ....
-     *
+     * Reversed order.
+     * <br /><br />
+     * You have to <b>synchronize the block</b>, where the iteration is done over this
+     * collection. E.g.:
+     * <pre>
+     * List<ASTNode> path = getPath();
+     * synchronized (path) {
+     *     for (ASTNode node : path) {
+     *         ...
+     *     }
+     * }
+     * </pre>
      *
      * @return
      */
@@ -628,10 +639,14 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
     }
 
     protected void addToPath(ASTNode node) {
-        path.add(0, node);
+        synchronized (unmodifiablePath) {
+            path.add(0, node);
+        }
     }
 
     protected void removeFromPath() {
-        path.remove(0);
+        synchronized (unmodifiablePath) {
+            path.remove(0);
+        }
     }
 }
