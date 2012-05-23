@@ -66,7 +66,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements ContextAw
     private final String findIn;
     
     @ActionID(id = "org.netbeans.modules.project.ui.SelectInProjects", category = "Window/SelectDocumentNode")
-    @ActionRegistration(displayName = "#LBL_SelectInProjectsAction_MainMenuName", iconBase=SELECT_IN_PROJECTS_ICON, lazy=false)
+    @ActionRegistration(displayName = "#LBL_SelectInProjectsAction_MainMenuName", lazy=false)
     @ActionReferences({
         @ActionReference(path = "Shortcuts", name = "DS-1"),
         @ActionReference(path = "Menu/GoTo", position = 2600, separatorBefore = 2500),
@@ -78,7 +78,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements ContextAw
     }
     
     @ActionID(id = "org.netbeans.modules.project.ui.SelectInFiles", category = "Window/SelectDocumentNode")
-    @ActionRegistration(displayName = "#LBL_SelectInFilesAction_MainMenuName", iconBase=SELECT_IN_FILES_ICON, lazy=false)
+    @ActionRegistration(displayName = "#LBL_SelectInFilesAction_MainMenuName", lazy=false)
     @ActionReferences({
         @ActionReference(path = "Shortcuts", name = "DS-2"),
         @ActionReference(path = "Menu/GoTo", position = 2700)
