@@ -66,6 +66,7 @@ public class SearchNbEditorKit extends NbEditorKit {
     public static final ExtKit.FindAction DIALOG_FIND_ACTION = new FindAction();
     public static final ExtKit.ReplaceAction DIALOG_REPLACE_ACTION = new ReplaceAction();
     public static final String SEARCHBAR_MIMETYPE = "text/x-editor-search";
+    public static final String PROP_SEARCH_CONTAINER = "diff.search.container";
 
     public static <T> T findComponent(Container container, Class<T> componentClass, int depth) {
         if (depth > 0) {
@@ -114,7 +115,7 @@ public class SearchNbEditorKit extends NbEditorKit {
                         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                         if (eui != null) {
                             JPanel jp = null;
-                            Object clientProperty = target.getClientProperty("diff.search.container");
+                            Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
                             if (clientProperty instanceof JPanel) {
                                 jp = (JPanel) clientProperty;
                             } else {

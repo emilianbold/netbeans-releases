@@ -70,7 +70,7 @@ public class SearchAction extends AbstractEditorAction {
                 //need to find if it has extended editor firsfaft, otherwise getExtComponent() will create all sidebars
                 //and other parts of full editor if action is assigned to just editor pane and broke later action logic.                
                 JPanel jp = null;
-                Object clientProperty = target.getClientProperty("diff.search.container");
+                Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
                 if (clientProperty instanceof JPanel) {
                     jp = (JPanel) clientProperty;
                 } else {
