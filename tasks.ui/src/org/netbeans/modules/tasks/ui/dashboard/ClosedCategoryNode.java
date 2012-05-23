@@ -42,7 +42,6 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -64,7 +63,7 @@ public class ClosedCategoryNode extends CategoryNode {
     private TreeLabel lblName;
 
     public ClosedCategoryNode(Category category) {
-        super(category, false);
+        super(category, false, false);
     }
 
     @Override
