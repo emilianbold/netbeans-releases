@@ -386,7 +386,12 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
         }
     }
 
+    /**
     //XXX: implement me
+    * 
+    * @since 7.63
+    */
+    @Override
     public Lookup getLookup() {
         throw new IllegalStateException("No impl yet");
     }
