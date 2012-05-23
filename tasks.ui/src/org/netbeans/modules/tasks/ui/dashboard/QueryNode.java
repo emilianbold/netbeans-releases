@@ -162,7 +162,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             labels.add(lbl);
             panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
 
-            btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(query));
+            btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(this));
             panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnTotal);
 
@@ -172,7 +172,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
             labels.add(lblSeparator);
 
-            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query, Query.QueryMode.SHOW_NEW_OR_CHANGED)); //NOI18N
+            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(Query.QueryMode.SHOW_NEW_OR_CHANGED, this)); //NOI18N
             btnChanged.setVisible(showChanged);
             panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnChanged);
@@ -189,12 +189,22 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected Action getDefaultAction() {
-        return new OpenQueryAction(query);
+        return new OpenQueryAction(this);
     }
 
     @Override
     public Action[] getPopupActions() {
-        List<Action> actions = Actions.getQueryPopupActions(this);
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        QueryNode[] queryNodes = new QueryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof QueryNode) {
+                queryNodes[i] = (QueryNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
+        List<Action> actions = Actions.getQueryPopupActions(queryNodes);
         return actions.toArray(new Action[actions.size()]);
     }
 
