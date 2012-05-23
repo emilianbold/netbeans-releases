@@ -50,15 +50,14 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.hibernate.HibernateException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -88,7 +87,7 @@ import org.openide.util.Exceptions;
  *
  * @author gowri
  */
-public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstantiatingIterator {
+public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
     private int index;
@@ -121,17 +120,12 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
             // Check for unsupported projects. #142296
             if (hibernateEnv == null) {
-                logger.info("Unsupported project " + project + ". Existing config wizard.");
+                logger.log(Level.INFO, "Unsupported project {0}. Existing config wizard.", project);
                 panels = new WizardDescriptor.Panel[]{
                             WizardErrorPanel.getWizardErrorWizardPanel()
                         };
 
             } else {
-                Project prj = Templates.getProject(wizardDescriptor);
-
-                SourceGroup[] groups = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
-                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(prj, groups, nameLocationDescriptor);
-
                 panels = new WizardDescriptor.Panel[]{
                             codeGenDescriptor
                         };
@@ -173,23 +167,28 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         return (HibernateCodeGenWizardHelper) wizardDescriptor.getProperty(PROP_HELPER);
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(HibernateCodeGenWizard.class, "Templates/Hibernate/CodeGen"); // NOI18N
 
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return getPanels()[index];
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -197,6 +196,7 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         index--;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -204,9 +204,11 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         index++;
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
@@ -242,11 +244,13 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         return false;
     }
 
+    @Override
     public Set instantiate() throws IOException {
         assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
 
+    @Override
     public final void initialize(WizardDescriptor wiz) {
         wizardDescriptor = wiz;
         project = Templates.getProject(wiz);
@@ -287,11 +291,71 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             ((TemplateWizard) wiz).setTargetName(targetName);
         }
     }
+    
+    private boolean checkConfig(FileObject revengFile){
+        JDBCMetaDataConfiguration cfg;
+        ReverseEngineeringSettings settings;
+        ClassLoader oldClassLoader = null;
+
+        File confFile = FileUtil.toFile(helper.getConfigurationFile());
+        try {
+
+            // Setup classloader.
+            logger.info("Setting up classloader");
+            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            ClassLoader ccl = env.getProjectClassLoader(
+                    env.getProjectClassPath(revengFile).toArray(new URL[]{}));
+            oldClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(ccl);
+
+            // Configuring the reverse engineering strategy
+            try {
+
+                cfg = new JDBCMetaDataConfiguration();
+
+                DefaultReverseEngineeringStrategy defaultStrategy = new DefaultReverseEngineeringStrategy();
+                ReverseEngineeringStrategy revStrategy = defaultStrategy;
+                OverrideRepository or = new OverrideRepository();
+                Configuration c = cfg.configure(confFile);
+                or.addFile(FileUtil.toFile(revengFile));
+                revStrategy = or.getReverseEngineeringStrategy(revStrategy);
+
+                settings = new ReverseEngineeringSettings(revStrategy);
+                settings.setDefaultPackageName(helper.getPackageName());
+
+                defaultStrategy.setSettings(settings);
+                revStrategy.setSettings(settings);
+
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
+                
+                DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
+                HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
+                HibernateConfiguration hibConf = hco.getHibernateConfiguration();
+                DatabaseConnection dbconn = HibernateUtil.getDBConnection(hibConf);
+                if (dbconn != null) {
+                    dbconn.getJDBCConnection();
+                }
+                
+                cfg.readFromJDBC();
+                cfg.buildMappings();                
+            } catch(HibernateException e) {
+                logger.log(Level.WARNING, "Error in hibernate initialization: {0}", e.getMessage());//NOI18N
+                throw e;
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+
+
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        }
+        return true;
+    }
 
     // Generates POJOs and hibernate mapping files based on a .reveng.xml file
     public void generateClasses(FileObject revengFile, ProgressHandle handle) throws IOException {
         JDBCMetaDataConfiguration cfg = null;
-        ReverseEngineeringSettings settings = null;
+        ReverseEngineeringSettings settings;
         ClassLoader oldClassLoader = null;
 
         File confFile = FileUtil.toFile(helper.getConfigurationFile());
@@ -337,6 +401,8 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
                 
                 cfg.readFromJDBC();
                 cfg.buildMappings();                
+            } catch(HibernateException e) {
+                throw e;
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
@@ -432,10 +498,12 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         panels = null;
     }
 
+    @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
         handle.start(3);
         try {
@@ -447,5 +515,4 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             return Collections.EMPTY_SET;
         }
     }    
-    
 }
