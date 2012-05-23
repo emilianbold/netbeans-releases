@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.awt.Color;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -462,9 +463,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 }
             }
             list.add(null);
-            for (Action a : model.getActions()){
-                list.add(a);
-            }
+            list.addAll(Arrays.asList(model.getActions()));
             return list.toArray(new Action[list.size()]);
         }
         return model.getActions();
