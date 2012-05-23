@@ -505,6 +505,22 @@ public class Operator {
             logger.fine("JDI events dispatched (resume " + (resume && (!startEventOnly)) + ")");
             logger.fine("  resume = "+resume+", startEventOnly = "+startEventOnly);
         }
+        if (isThreadEvent && suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD && !resume) {
+            // Check if it's a thread death event
+            boolean isThreadDeath = false;
+            for (Event e: eventSet) {
+                if (e instanceof ThreadDeathEvent) {
+                    isThreadDeath = true;
+                } else {
+                    isThreadDeath = false;
+                    break;
+                }
+            }
+            // We must resume the thread death event, because otherwise nobody would do that in this case.
+            if (isThreadDeath) {
+                resume = true;
+            }
+        }
         if (!resume) {
             if (!silent && suspendedAll) {
                 //TODO: Not really all might be suspended!

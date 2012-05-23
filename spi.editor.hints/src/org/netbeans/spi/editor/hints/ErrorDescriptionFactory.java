@@ -52,6 +52,7 @@ import org.netbeans.modules.editor.hints.HintsControllerImpl;
 import org.netbeans.modules.editor.hints.StaticFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.text.PositionBounds;
 import org.openide.util.Parameters;
 
 /**
@@ -242,6 +243,28 @@ public class ErrorDescriptionFactory {
         if (end < start) throw new IndexOutOfBoundsException("end < start (" + end + " < " + start + ")");
         
         return new ErrorDescription(file, id, description, details, severity, fixes, HintsControllerImpl.linePart(file, start, end));
+    }
+    
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     *
+     * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
+     *           It is recommended that providers prefix the ID with their unique prefix.
+     * @param severity the desired {@link Severity}
+     * @param description the text of the error/warning
+     * @param details optional "more details" describing the error/warning
+     * @param fixes a collection of {@link Fix}es that should be shown for the error/warning
+     * @param file for which the {@link ErrorDescription} should be created
+     * @param errorBounds start and end position of the error/warning
+     * @return a newly created {@link ErrorDescription} based on the given parameters
+     * @since 1.24
+     */
+    public static @NonNull ErrorDescription createErrorDescription(@NullAllowed String id, @NonNull Severity severity, @NonNull String description, @NullAllowed CharSequence details, @NonNull LazyFixList fixes, @NonNull FileObject file, @NonNull PositionBounds errorBounds) {
+        Parameters.notNull("severity", severity);
+        Parameters.notNull("description", description);
+        Parameters.notNull("fixes", fixes);
+        Parameters.notNull("file", file);
+        
+        return new ErrorDescription(file, id, description, details, severity, fixes, errorBounds);
     }
 
     /**

@@ -39,61 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.findbugs.installer;
+package org.netbeans.core.startup.logging;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author lahvac
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FakeAnalyzer implements Analyzer {
-
-    @Override
-    public Iterable<? extends ErrorDescription> analyze() {
-        return Collections.emptyList();
+public class MessagesHandlerTest extends NbTestCase {
+    
+    public MessagesHandlerTest(String s) {
+        super(s);
     }
-
-    @Override
-    public boolean cancel() {
-        return true;
+    
+    public void testLimitOfMessagesLogFiles() throws Exception {
+        clearWorkDir();
+        System.setProperty("netbeans.user", getWorkDirPath());
+        File logs = new File(getWorkDir(), "logs");
+        logs.mkdirs();
+        
+        MessagesHandler mh = new MessagesHandler(logs, 2, 16);
+        
+        mh.publish(new LogRecord(Level.INFO, "Hi"));
+        mh.flush();
+        assertEquals("One file", 1, logs.list().length);
+        mh.publish(new LogRecord(Level.INFO, "Message that is longer than 16 bytes"));
+        mh.flush();
+        assertEquals("Two files", 2, logs.list().length);
+        
+        mh.publish(new LogRecord(Level.INFO, "Hello!"));
+        File ml = new File(logs, "messages.log");
+        mh.flush();
+        String msg = readLog(ml);
+        
+        if (msg.indexOf("Hello!") == -1) {
+            fail("Contains the Hello! message:\n" + msg);
+        }
+        if (msg.indexOf("16 bytes!") != -1) {
+            fail("Contains no '16 bytes' message:\n" + msg);
+        }
     }
+    
+    private String readLog(File log) throws IOException {
+        DataInputStream is = new DataInputStream(new FileInputStream(log));
 
-    @ServiceProvider(service=AnalyzerFactory.class)
-    public static final class FakeAnalyzerFactory extends AnalyzerFactory {
+        byte[] arr = new byte[(int) log.length()];
+        is.readFully(arr);
+        is.close();
 
-        @Messages("DN_FindBugs=FindBugs")
-        public FakeAnalyzerFactory() {
-            super("findbugs", Bundle.DN_FindBugs(), (String) null);
-        }
-
-        @Override
-        public Iterable<? extends WarningDescription> getWarnings() {
-            return Collections.emptyList();
-        }
-
-        @Messages("DN_FindBugsIntegration=FindBugs Integration")
-        @Override
-        public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-            return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", Bundle.DN_FindBugsIntegration()));
-        }
-
-        @Override
-        public CustomizerProvider<?, ?> getCustomizerProvider() {
-            return null;
-        }
-
-        @Override
-        public Analyzer createAnalyzer(Context context) {
-            return new FakeAnalyzer();
-        }
-
+        return new String(arr);
     }
-
+    
 }

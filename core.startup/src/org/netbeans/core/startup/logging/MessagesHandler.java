@@ -39,61 +39,85 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.findbugs.installer;
+package org.netbeans.core.startup.logging;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.StreamHandler;
 
 /**
  *
- * @author lahvac
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FakeAnalyzer implements Analyzer {
-
-    @Override
-    public Iterable<? extends ErrorDescription> analyze() {
-        return Collections.emptyList();
+final class MessagesHandler extends StreamHandler {
+    private final File dir;
+    private final File[] files;
+    private final long limit;
+    
+    MessagesHandler(File dir) {
+        this(dir, -1, 1024 * 1024);
     }
-
-    @Override
-    public boolean cancel() {
+    
+    MessagesHandler(File dir, int count, long limit) {
+        this.dir = dir;
+    
+        if (count == -1) {
+            count = Integer.getInteger("org.netbeans.log.numberOfFiles", 3); // NOI18N
+            if (count < 3) {
+                count = 3;
+            }
+        }
+        File[] arr = new File[count];
+        arr[0] = new File(dir, "messages.log"); // NOI18N
+        for (int i = 1; i < arr.length; i++) {
+            arr[i] = new File(dir, "messages.log." + i); // NOI18N
+        }
+        this.files = arr;
+        this.limit = limit;
+        setFormatter(NbFormatter.FORMATTER);
+        setLevel(Level.ALL);
+        
+        checkRotate(true);
+        initStream();
+    }
+    
+    private boolean checkRotate(boolean always) {
+        if (!always && files[0].length() < limit) {
+            return false;
+        }
+        flush();
+        doRotate();
         return true;
     }
-
-    @ServiceProvider(service=AnalyzerFactory.class)
-    public static final class FakeAnalyzerFactory extends AnalyzerFactory {
-
-        @Messages("DN_FindBugs=FindBugs")
-        public FakeAnalyzerFactory() {
-            super("findbugs", Bundle.DN_FindBugs(), (String) null);
+    
+    private void initStream() {
+        try {
+            setOutputStream(new FileOutputStream(files[0], false));
+        } catch (FileNotFoundException ex) {
+            setOutputStream(System.err);
         }
-
-        @Override
-        public Iterable<? extends WarningDescription> getWarnings() {
-            return Collections.emptyList();
-        }
-
-        @Messages("DN_FindBugsIntegration=FindBugs Integration")
-        @Override
-        public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-            return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", Bundle.DN_FindBugsIntegration()));
-        }
-
-        @Override
-        public CustomizerProvider<?, ?> getCustomizerProvider() {
-            return null;
-        }
-
-        @Override
-        public Analyzer createAnalyzer(Context context) {
-            return new FakeAnalyzer();
-        }
-
     }
 
+    @Override
+    public synchronized void publish(LogRecord record) {
+        super.publish(record);
+        if (checkRotate(false)) {
+            initStream();
+        }
+    }
+    
+    private synchronized void doRotate() {
+        int n = files.length;
+        if (files[n - 1].exists()) {
+            files[n - 1].delete();
+        }
+        for (int i = n - 2; i >= 0; i--) {
+            if (files[i].exists()) {
+                files[i].renameTo(files[i + 1]);
+            }
+        }
+    }
 }

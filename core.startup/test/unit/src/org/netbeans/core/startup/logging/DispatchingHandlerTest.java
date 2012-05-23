@@ -39,61 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.findbugs.installer;
+package org.netbeans.core.startup.logging;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author lahvac
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FakeAnalyzer implements Analyzer {
-
-    @Override
-    public Iterable<? extends ErrorDescription> analyze() {
-        return Collections.emptyList();
+public class DispatchingHandlerTest extends NbTestCase {
+    
+    public DispatchingHandlerTest(String s) {
+        super(s);
     }
+    
+    public void testContinuousMessagesShouldNotPreventOutput() throws InterruptedException {
+        class MyHandler extends Handler {
+            final List<LogRecord> records = new CopyOnWriteArrayList<LogRecord>();
 
-    @Override
-    public boolean cancel() {
-        return true;
+            @Override
+            public void publish(LogRecord record) {
+                records.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+                records.clear();
+            }
+            
+        }
+        MyHandler mh = new MyHandler();
+        DispatchingHandler dh = new DispatchingHandler(mh, 100);
+        
+        for (int i = 0; i < 100; i++) {
+            dh.publish(new LogRecord(Level.INFO, "" + i));
+            Thread.sleep(10);
+            if (i > 50 && mh.records.isEmpty()) {
+                fail("There should be some records when we are at round " + i);
+            }
+        }
+        dh.flush();
+        
+        assertEquals("One hundered records now", 100, mh.records.size());
     }
-
-    @ServiceProvider(service=AnalyzerFactory.class)
-    public static final class FakeAnalyzerFactory extends AnalyzerFactory {
-
-        @Messages("DN_FindBugs=FindBugs")
-        public FakeAnalyzerFactory() {
-            super("findbugs", Bundle.DN_FindBugs(), (String) null);
-        }
-
-        @Override
-        public Iterable<? extends WarningDescription> getWarnings() {
-            return Collections.emptyList();
-        }
-
-        @Messages("DN_FindBugsIntegration=FindBugs Integration")
-        @Override
-        public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-            return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", Bundle.DN_FindBugsIntegration()));
-        }
-
-        @Override
-        public CustomizerProvider<?, ?> getCustomizerProvider() {
-            return null;
-        }
-
-        @Override
-        public Analyzer createAnalyzer(Context context) {
-            return new FakeAnalyzer();
-        }
-
-    }
-
 }
