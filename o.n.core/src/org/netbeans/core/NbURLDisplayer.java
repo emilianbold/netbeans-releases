@@ -46,6 +46,7 @@ package org.netbeans.core;
 
 import java.awt.Component;
 import java.awt.Desktop;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
@@ -62,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
 
 /**
  * Implementation of URL displayer, which shows documents in the configured web browser.
@@ -103,6 +105,7 @@ public final class NbURLDisplayer extends URLDisplayer {
         private HtmlBrowserComponent externalBrowser;
         private PreferenceChangeListener idePCL;
         private static Lookup.Result factoryResult;
+        private PropertyChangeListener tcListener;
 
         static {
             factoryResult = Lookup.getDefault().lookupResult(Factory.class);
@@ -115,16 +118,41 @@ public final class NbURLDisplayer extends URLDisplayer {
         }
 
         public NbBrowser() {
+            setListener();
+        }
+
+        /** Show URL in browser
+         * @param url URL to be shown
+         */
+        private void showUrl(URL url) {
+            if( null == brComp )
+                brComp = createDefaultBrowser();
+            brComp.setURLAndOpen(url);
+        }
+
+        /**
+         * Show URL in an external browser.
+         * @param url URL to show
+         */
+        private void showUrlExternal(URL url) {
+            if( null == externalBrowser )
+                externalBrowser = createExternalBrowser();
+            externalBrowser.setURLAndOpen(url);
+        }
+
+        private HtmlBrowserComponent createDefaultBrowser() {
             Factory browser = IDESettings.getWWWBrowser();
             if (browser == null) {
                 // Fallback.
                 browser = new SwingBrowser();
             }
-            if (brComp == null) {
-                brComp = new HtmlBrowserComponent(browser, true, true);
-                brComp.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
-            }
-            browser = IDESettings.getExternalWWWBrowser();
+            HtmlBrowserComponent res = new HtmlBrowserComponent(browser, true, true);
+            res.putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
+            return res;
+        }
+
+        private HtmlBrowserComponent createExternalBrowser() {
+            Factory browser = IDESettings.getExternalWWWBrowser();
             if (browser == null) {
                 Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
                 if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
@@ -134,23 +162,7 @@ public final class NbURLDisplayer extends URLDisplayer {
                     browser = new SwingBrowser();
                 }
             }
-            externalBrowser = new HtmlBrowserComponent(browser, true, true);
-            setListener();
-        }
-
-        /** Show URL in browser
-         * @param url URL to be shown
-         */
-        private void showUrl(URL url) {
-            brComp.setURLAndOpen(url);
-        }
-
-        /**
-         * Show URL in an external browser.
-         * @param url URL to show
-         */
-        private void showUrlExternal(URL url) {
-            externalBrowser.setURLAndOpen(url);
+            return new HtmlBrowserComponent(browser, true, true);
         }
 
         /**
@@ -171,11 +183,25 @@ public final class NbURLDisplayer extends URLDisplayer {
                                 idePCL = null;
                                 brComp = null;
                                 externalBrowser = null;
+                                TopComponent.getRegistry().removePropertyChangeListener( tcListener );
                             }
                         }
                     }
                 };
                 IDESettings.getPreferences().addPreferenceChangeListener(idePCL);
+                tcListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange( PropertyChangeEvent evt ) {
+                        if( TopComponent.Registry.PROP_TC_CLOSED.equals( evt.getPropertyName() ) ) {
+                            if( evt.getNewValue() == brComp ) {
+                                brComp = null;
+                            } else if( evt.getNewValue() == externalBrowser ) {
+                                externalBrowser = null;
+                            }
+                        }
+                    }
+                };
+                TopComponent.getRegistry().addPropertyChangeListener( tcListener );
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
