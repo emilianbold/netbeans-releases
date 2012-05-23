@@ -47,17 +47,16 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions.MakeOptionNamedEntity;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Replaces the old project system options panel.
@@ -94,8 +93,8 @@ public class ProjectOptionsPanel extends JPanel {
         }
         filePathcomboBox.setSelectedItem(makeOptions.getPathMode());
         for(JCheckBox cb : checkBoxes) {
-            MakeOptionNamedEntity entry = (MakeOptionNamedEntity) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
-            cb.setSelected(makeOptions.getBooleanProperty(entry));
+            NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
+            cb.setSelected(NamedOption.getAccessor().getBoolean(entry.getName()));
         }
 
         changed = false;
@@ -107,8 +106,8 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptions.setMakeOptions(makeOptionsTextField.getText());
         makeOptions.setPathMode((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
         for(JCheckBox cb : checkBoxes) {
-            MakeOptionNamedEntity entry = (MakeOptionNamedEntity) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
-            makeOptions.setBooleanProperty(entry, cb.isSelected());
+            NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
+            NamedOption.getAccessor().setBoolean(entry.getName(), cb.isSelected());
         }
 
         changed = false;
@@ -141,7 +140,7 @@ public class ProjectOptionsPanel extends JPanel {
         checkBoxes = new ArrayList<JCheckBox>();
         int row = 20;
         GridBagConstraints gridBagConstraints;
-        for (MakeOptionNamedEntity entry : getEntries()) {
+        for (NamedOption entry : getEntries()) {
             JCheckBox wrapper = getWrapper(entry);
             checkBoxes.add(wrapper);
             gridBagConstraints = new GridBagConstraints();
@@ -163,19 +162,18 @@ public class ProjectOptionsPanel extends JPanel {
         add(new JSeparator(), gridBagConstraints);
     }
     
-    private List<MakeOptionNamedEntity> getEntries() {
-        final Collection<? extends MakeOptionNamedEntity> allInstances = Lookup.getDefault().lookupResult(MakeOptionNamedEntity.class).allInstances();
-        return new ArrayList<MakeProjectOptions.MakeOptionNamedEntity>(allInstances);
+    private List<NamedOption> getEntries() {
+        return new ArrayList<NamedOption>(Lookups.forPath(NamedOption.MAKE_PROJECT_CATEGORY).lookupAll(NamedOption.class));
     }
     
-    private JCheckBox getWrapper(final MakeOptionNamedEntity entry) {
+    private JCheckBox getWrapper(final NamedOption entry) {
         JCheckBox cb = new JCheckBox();
         Mnemonics.setLocalizedText(cb, entry.getDisplayName());
         if (entry.getDescription() != null) {
             cb.setToolTipText(entry.getDescription());
         }
         cb.setOpaque(false);
-        cb.setSelected(MakeOptions.getInstance().getBooleanProperty(entry));
+        cb.setSelected(NamedOption.getAccessor().getBoolean(entry.getName()));
         cb.putClientProperty("MakeOptionNamedEntity", entry); //NOI18N
         return cb;
     }

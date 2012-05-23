@@ -191,7 +191,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             public void done() {}
         };
 
-        CsmErrorProvider.getDefault().getErrors(request, response);
+        CsmErrorProvider.getDefaultErrorProvider().getErrors(request, response);
         out.printf("Error count %d for file %s. The check took %d ms\n", cnt.get(), file.getName(), System.currentTimeMillis() - time); // NOI18N
     }
 
