@@ -91,7 +91,7 @@ public class ReplaceAction extends AbstractEditorAction {
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
             if (eui != null) {
                 JPanel jp = null;
-                Object clientProperty = target.getClientProperty("diff.search.container");
+                Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
                 if (clientProperty instanceof JPanel) {
                     jp = (JPanel) clientProperty;
                 } else {
