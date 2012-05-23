@@ -367,8 +367,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     }
     
     HistoryEntry getParentEntry(HistoryEntry entry) {
-        // XXX this is a hack! in case of VCS this isn't correct - the previous 
-        // doesn't necesserily has to be real parent of the revision
         return getRootNode().getPreviousEntry(entry);
     }
 
