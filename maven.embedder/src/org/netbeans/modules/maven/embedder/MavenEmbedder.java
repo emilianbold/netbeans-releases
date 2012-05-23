@@ -164,6 +164,16 @@ public final class MavenEmbedder {
             throw new IllegalStateException(ex);
         }
     }
+    
+    /**
+     * 
+     * @return normalized File for local repository root
+     * @since 2.26
+     */
+    public File getLocalRepositoryFile() {
+        String s = getLocalRepository().getBasedir();
+        return FileUtil.normalizeFile(new File(s));
+    }
 
     public synchronized Settings getSettings() {
         if (Boolean.getBoolean("no.local.settings")) { // for unit tests

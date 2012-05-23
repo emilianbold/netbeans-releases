@@ -96,7 +96,11 @@ import org.openide.util.lookup.Lookups;
  * @author mkleint
  */
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport> {
-    private static final String MISSINGJ2EE = "MISSINGJ2EE"; //NOI18N
+    private static final String MISSING_J2EE = "MISSINGJ2EE"; //NOI18N
+    private static final String MISSING_APISUPPORT = "MISSINGAPISUPPORT"; //NOI18N
+    private static final String MISSING_DEPENDENCY = "MISSING_DEPENDENCY";//NOI18N
+    private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
+    
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
 
@@ -126,7 +130,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private PropertyChangeListener listener = new PropertyChangeListener() {
         @Override public void propertyChange(PropertyChangeEvent evt) {
             if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
-                ProblemReport rep = getReportWithId(MISSINGJ2EE);
+                ProblemReport rep = getReportWithId(MISSING_J2EE);
                 if (rep != null) {
                     boolean hasj2ee = j2eeInfo != null && j2eeInfo.isEnabled();
                     if (hasj2ee) {
@@ -209,7 +213,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
      * and some problems encapsulate several missing artifacts.
      * @param a an artifact (scope permitted but ignored)
      */
-    public void addMissingArtifact(Artifact a) {
+    private void addMissingArtifact(Artifact a) {
         synchronized (reports) {
             a = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
             if (missingArtifacts.add(a)) {
@@ -220,7 +224,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         }
     }
 
-    Set<Artifact> getMissingArtifacts() {
+    public Set<Artifact> getMissingArtifacts() {
         synchronized (reports) {
             return new TreeSet<Artifact>(missingArtifacts);
         }
@@ -298,7 +302,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "The most probable cause is that part of the general Platform development support is missing as well. "
             + "Please go to Tools/Plugins and install the plugins related to NetBeans development."
     })
-    public void doBaseProblemChecks(@NonNull MavenProject project) {
+    public void doIDEConfigChecks(@NonNull MavenProject project) {
         String packaging = nbproject.getProjectWatcher().getPackagingType();
         if (NbMavenProject.TYPE_WAR.equals(packaging) ||
             NbMavenProject.TYPE_EAR.equals(packaging) ||
@@ -308,12 +312,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             }
             boolean foundJ2ee = j2eeInfo != null && j2eeInfo.isEnabled();
             if (!foundJ2ee) {
-                if (!hasReportWithId(MISSINGJ2EE)) {
+                if (!hasReportWithId(MISSING_J2EE)) {
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                         ERR_MissingJ2eeModule(),
                         MSG_MissingJ2eeModule(),
                         null);
-                    report.setId(MISSINGJ2EE);
+                    report.setId(MISSING_J2EE);
                     addReport(report);
                     if (j2eeInfo != null) {
                         j2eeInfo.addPropertyChangeListener(listener);
@@ -339,16 +343,11 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ERR_MissingApisupportModule(),
                     MSG_MissingApisupportModule(),
                     null);
+                report.setId(MISSING_APISUPPORT);
                 addReport(report);
             }
         }   
 
-        MavenProject parent = project;
-        while (parent != null) {
-            parent = checkParent(parent);
-        }
-
-        doArtifactChecks(project);
 
         // XXX undeclared Java platform
     }
@@ -363,7 +362,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
             + "The artifacts are:\n {0}"
     })
-    private void doArtifactChecks(@NonNull MavenProject project) {
+    public void doArtifactChecks(@NonNull MavenProject project) {
+        MavenProject parent = project;
+        while (parent != null) {
+            parent = checkParent(parent);
+        }
+        
         boolean missingNonSibling = false;
         List<Artifact> missingJars = new ArrayList<Artifact>();
         for (Artifact art : project.getArtifacts()) {
@@ -404,6 +408,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ERR_NonLocal(),
                     MSG_NonLocal(mess),
                     new SanityBuildAction(nbproject));
+            report.setId(MISSING_DEPENDENCY);
             addReport(report);
         }
     }
@@ -430,6 +435,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ERR_NoParent(),
                     MSG_NoParent(art.getId()),
                     new SanityBuildAction(nbproject));
+            report.setId(MISSING_PARENT);
             addReport(report);
             addMissingArtifact(art);
         }
