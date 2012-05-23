@@ -52,7 +52,7 @@ import org.openide.windows.OnShowing;
  * @author Marian Petras
  */
 @OnShowing
-public class Installer extends ModuleInstall implements Runnable {
+public class Installer implements Runnable {
 
     /**
      * {@link OnShowing} run method.
@@ -61,12 +61,5 @@ public class Installer extends ModuleInstall implements Runnable {
     public void run() {
         ActionManager.FindActionManager.getInstance().init();
         ActionManager.ReplaceActionManager.getInstance().init();
-    }
-
-    @Override
-    public void uninstalled() {
-        ActionManager.FindActionManager.getInstance().cleanup();
-        ActionManager.ReplaceActionManager.getInstance().cleanup();
-        Manager.getInstance().doCleanup();
     }
 }
