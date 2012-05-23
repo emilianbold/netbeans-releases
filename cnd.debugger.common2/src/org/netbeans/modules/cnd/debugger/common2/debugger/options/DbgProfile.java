@@ -235,7 +235,7 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
         StringBuilder retVal = new StringBuilder();
         if (params.length > 1) {
             for(int i = 1; i < params.length; i++) {
-                retVal.append("\"").append(params[i]).append("\" ");
+                retVal.append("\"").append(params[i]).append("\" ");   // NOI18N
             }
         }
         return retVal.toString();
