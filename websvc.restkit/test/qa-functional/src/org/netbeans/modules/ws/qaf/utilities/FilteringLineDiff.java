@@ -109,6 +109,11 @@ public class FilteringLineDiff extends LineDiff {
             LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
             return true;
         }
+        pkg = "org.codehaus.jettison.json.";//NOI18N
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
+            LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
+            return true;
+        }
         //to avoid having two sets of golden files (for ant/maven based projects)
         if (l1.contains("private static String DEFAULT_PU = ")) { //NOI18N
             LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
