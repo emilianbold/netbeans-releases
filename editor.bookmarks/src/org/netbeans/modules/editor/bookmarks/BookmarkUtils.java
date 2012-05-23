@@ -53,8 +53,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.modules.editor.bookmarks.ui.BookmarksView;
@@ -195,6 +198,18 @@ public final class BookmarkUtils {
             uri2Project.put(toURI(p), p);
         }
         return uri2Project;
+    }
+
+    public static KeyStroke findKeyStroke(KeyBindingSettings kbs, String actionName) {
+        if (kbs != null) {
+            for (MultiKeyBinding kb : kbs.getKeyBindings()) {
+                // Currently only work if a single-key shortcut is used for the action
+                if (actionName.equals(kb.getActionName()) && kb.getKeyStrokeCount() == 1) {
+                    return kb.getKeyStroke(0);
+                }
+            }
+        }
+        return null;
     }
 
 }

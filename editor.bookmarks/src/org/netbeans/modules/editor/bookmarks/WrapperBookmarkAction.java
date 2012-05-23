@@ -69,7 +69,7 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
     
     static final long serialVersionUID = 0L;
     
-    private Action originalAction;
+    protected Action originalAction;
 
     public WrapperBookmarkAction(Action originalAction) {
         this.originalAction = originalAction;
@@ -122,6 +122,12 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
             super(BookmarkHistoryPopupAction.createNext());
         }
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // Call action directly to handle state when no last text component is present
+            ((BaseAction)originalAction).actionPerformed(e, null);
+        }
+        
     }
 
     public static final class PopupPrevious extends WrapperBookmarkAction {
@@ -130,6 +136,12 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
             super(BookmarkHistoryPopupAction.createPrevious());
         }
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // Call action directly to handle state when no last text component is present
+            ((BaseAction)originalAction).actionPerformed(e, null);
+        }
+        
     }
 
     public static final class ClearDocumentBookmarks extends WrapperBookmarkAction {
