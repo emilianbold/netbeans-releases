@@ -52,6 +52,8 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -77,6 +79,8 @@ import org.openide.filesystems.FileObject;
  * @author Jaroslav Bachorik
  */
 public class JavacClassInfo extends SourceClassInfo {
+    private static final Logger LOG = Logger.getLogger(JavacClassInfo.class.getName());
+    
     private ElementHandle<TypeElement> handle;
     private FileObject src;
     private ClasspathInfo cpInfo;
@@ -122,20 +126,20 @@ public class JavacClassInfo extends SourceClassInfo {
 
     @Override
     public Set<SourceClassInfo> getSubclasses() {
-        final Set<SourceClassInfo>[] rslt = new Set[]{Collections.EMPTY_SET};
+        final Set<SourceClassInfo> rslt = new HashSet<SourceClassInfo>();
         if (handle != null) {
             try {
-                getSource(true).runUserActionTask(new Task<CompilationController>() {
-                    @Override
-                    public void run(CompilationController cc) throws Exception {
-                        rslt[0] = getSubclasses(cc);
+                JavaSource s = getSource(true);
+                if (s != null) {
+                    for(ElementHandle<TypeElement> eh : ElementUtilitiesEx.findImplementors(s.getClasspathInfo(), handle)) {
+                        rslt.add(new JavacClassInfo(eh));
                     }
-                }, true);
+                }
             } catch (IllegalArgumentException e) {
-            } catch (IOException e) {
+                LOG.log(Level.WARNING, null, e);
             }
         }
-        return rslt[0] != null ? rslt[0] : Collections.EMPTY_SET;
+        return rslt;
     }
     
     @Override
@@ -295,17 +299,6 @@ public class JavacClassInfo extends SourceClassInfo {
             }
         }
         return mis;
-    }
-    
-    private Set<SourceClassInfo> getSubclasses(final CompilationController cc) {
-        final Set<SourceClassInfo> subs = new HashSet<SourceClassInfo>();
-        TypeElement te = handle.resolve(cc);
-        if (te != null) {
-            for(ElementHandle<TypeElement> eh : ElementUtilitiesEx.findImplementors(cc.getClasspathInfo(), handle)) {
-                subs.add(new JavacClassInfo(eh, cc));
-            }
-        }
-        return subs;
     }
     
     private static String getSimpleName(String qualName) {
