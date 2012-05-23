@@ -60,13 +60,8 @@ import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Mutex;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 /**
  * Implementation of URL displayer, which shows documents in the configured web browser.
@@ -141,19 +136,6 @@ public final class NbURLDisplayer extends URLDisplayer {
             }
             externalBrowser = new HtmlBrowserComponent(browser, true, true);
             setListener();
-        }
-
-        /**
-         * Tries to find already opened <code>HtmlBrowserComponent</code>. In
-         * the case of success returns the instance, null otherwise.
-         */
-        private HtmlBrowserComponent findOpenedBrowserComponent() {
-            for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-                if (tc instanceof HtmlBrowserComponent) {
-                    return (HtmlBrowserComponent) tc;
-                }
-            }
-            return null;
         }
 
         /** Show URL in browser
