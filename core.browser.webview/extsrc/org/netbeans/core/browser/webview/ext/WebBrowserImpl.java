@@ -515,12 +515,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
             @Override
             public void changed( ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1 ) {
-                final boolean isRunning = eng.getLoadWorker().isRunning();
+                final boolean isLoading = eng.getLoadWorker().isRunning();
                 SwingUtilities.invokeLater( new Runnable() {
 
                     @Override
                     public void run() {
-                        propSupport.firePropertyChange( WebBrowser.PROP_RUNNING, !isRunning, isRunning );
+                        propSupport.firePropertyChange( WebBrowser.PROP_LOADING, !isLoading, isLoading );
                     }
                 });
             }
@@ -683,5 +683,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         HtmlBrowserComponent browserComponent = new HtmlBrowserComponent( factory, true, true );
         browserComponent.open();
         browserComponent.requestActive();
+        browserComponent.makeBusy( true );
     }
 }

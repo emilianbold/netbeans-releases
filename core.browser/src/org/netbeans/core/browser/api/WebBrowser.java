@@ -72,8 +72,8 @@ public abstract class WebBrowser {
     /** history property name */
     public static final String PROP_HISTORY = "history"; // NOI18N
 
-    /** running property name */
-    public static final String PROP_RUNNING = "running"; // NOI18N
+    /** loading property name */
+    public static final String PROP_LOADING = "loading"; // NOI18N
 
     /**
      * Returns visual component of html browser, it doesn't include any toolbars

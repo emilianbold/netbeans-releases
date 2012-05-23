@@ -769,6 +769,14 @@ public class HtmlBrowser extends JPanel {
         public static final String PROP_BROWSER_WAS_CLOSED = "browser.was.closed"; // NOI18N
 
         public static final String PROP_RUNNING = "running"; // NOI18N
+
+        /**
+         * Name of boolean property which is fired when the browser is busy loading
+         * its content.
+         * 
+         * @since 7.46
+         */
+        public static final String PROP_LOADING = "loading"; //NOI18N
         
         /**
         * Returns visual component of html browser.

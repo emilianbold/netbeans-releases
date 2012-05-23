@@ -134,9 +134,9 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             if ((title == null) || (title.length () < 1))
                 return;
             setToolTipText(title);
-        } else if( HtmlBrowser.Impl.PROP_RUNNING.equals (e.getPropertyName ()) ) {
-            boolean running = ((Boolean)e.getNewValue()).booleanValue();
-            makeBusy( running );
+        } else if( HtmlBrowser.Impl.PROP_LOADING.equals (e.getPropertyName ()) ) {
+            boolean loading = ((Boolean)e.getNewValue()).booleanValue();
+            makeBusy( loading );
         }
     }    
     
