@@ -378,8 +378,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             return;
         }
         int row = outline.getSelectedRow();
-        row = row - 1;
-        if(row < 0) {
+        if(row - 1 < 0) {
             return;
         }
         row = getPrevRow(row);
