@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
  *
  * @author S. Aubrecht
  */
-class HtmlBrowserImpl extends HtmlBrowser.Impl {
+public class HtmlBrowserImpl extends HtmlBrowser.Impl {
 
     private WebBrowser browser;
     private final Object LOCK = new Object();
@@ -68,6 +68,10 @@ class HtmlBrowserImpl extends HtmlBrowser.Impl {
 
     public HtmlBrowserImpl() {
         super();
+    }
+
+    public HtmlBrowserImpl( WebBrowser browser ) {
+        this.browser = browser;
     }
 
     @Override

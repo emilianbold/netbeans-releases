@@ -189,18 +189,6 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     
     @Override
     protected void componentActivated () {
-        if( null == browserComponent ) {
-            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
-            // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
-            associateLookup(getBrowserLookup());
-
-            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-            // Ensure closed browsers are not stored:
-            if (browserComponent.getBrowserComponent() != null) {
-                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-            }
-        }
         if( null != browserComponent ) {
             HtmlBrowser.Impl impl = browserComponent.getBrowserImpl();
             if( null != impl ) {
@@ -249,6 +237,18 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
 
     @Override
     protected void componentOpened() {
+        if( null == browserComponent ) {
+            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
+            // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
+            associateLookup(getBrowserLookup());
+
+            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+
+            // Ensure closed browsers are not stored:
+            if (browserComponent.getBrowserComponent() != null) {
+                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+            }
+        }
     }
 
     @Override

@@ -62,21 +62,23 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebEvent;
-import javafx.scene.web.WebHistory;
 import javafx.scene.web.WebHistory.Entry;
-import javafx.scene.web.WebView;
+import javafx.scene.web.*;
+import javafx.util.Callback;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
+import org.netbeans.core.browser.webview.HtmlBrowserImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
+import org.openide.awt.HtmlBrowser;
+import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -106,6 +108,11 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
      * Creates a new {@code WebBrowserImpl}.
      */
     public WebBrowserImpl() {
+        this( null );
+    }
+
+    private WebBrowserImpl( WebView webView ) {
+        this.browser = webView;
     }
 
     WebEngine getEngine() {
@@ -432,7 +439,22 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     private void createBrowser() {
         Platform.setImplicitExit(false);
-        WebView view = new WebView();
+        if( null == browser ) {
+            WebView view = new WebView();
+            initBrowser( view );
+
+            browser = view;
+        }
+
+        container.setScene( new Scene( browser ) );
+
+        if( null != urlToLoad ) {
+            _setURL( urlToLoad );
+            urlToLoad = null;
+        }
+    }
+
+    private void initBrowser( WebView view ) {
         view.setMinSize(100, 100);
         final WebEngine eng = view.getEngine();
         eng.setOnStatusChanged( new EventHandler<WebEvent<String>> () {
@@ -503,14 +525,17 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 });
             }
         });
-        container.setScene( new Scene( view ) );
-        
-        browser = view;
-        
-        if( null != urlToLoad ) {
-            _setURL( urlToLoad );
-            urlToLoad = null;
-        }
+        eng.setCreatePopupHandler( new Callback<PopupFeatures, WebEngine>() {
+
+            @Override
+            public WebEngine call( PopupFeatures p ) {
+                if( p.hasMenu() && p.hasStatus() && p.hasToolbar() && p.isResizable() ) {
+
+                    return _createNewBrowserWindow();
+                }
+                return eng;
+            }
+        });
     }
 
     /** Alert message with this prefix are used for page inspection-related communication. */
@@ -625,5 +650,38 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             return false;
         WebHistory history = browser.getEngine().getHistory();
         return history.getCurrentIndex() > 0;
+    }
+
+    private WebEngine _createNewBrowserWindow() {
+        final WebView newView = new WebView();
+        final WebEngine newEngine = newView.getEngine();
+        Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                final WebBrowserImpl browserImpl = new WebBrowserImpl( newView );
+                browserImpl.initBrowser( newView );
+                SwingUtilities.invokeLater( new Runnable() {
+
+                    @Override
+                    public void run() {
+                        openNewBrowserWindow( browserImpl );
+                    }
+                });
+            }
+        });
+        return newEngine;
+    }
+
+    private void openNewBrowserWindow( final WebBrowserImpl browserImpl ) {
+        HtmlBrowser.Factory factory = new HtmlBrowser.Factory() {
+
+            @Override
+            public Impl createHtmlBrowserImpl() {
+                return new HtmlBrowserImpl( browserImpl );
+            }
+        };
+        HtmlBrowserComponent browserComponent = new HtmlBrowserComponent( factory, true, true );
+        browserComponent.open();
+        browserComponent.requestActive();
     }
 }
