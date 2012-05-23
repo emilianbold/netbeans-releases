@@ -132,6 +132,7 @@ public final class WebBrowserPane {
                 false, false) {
                     @Override
                     protected void componentClosed() {
+                        super.componentClosed();
                         topComponent = null;
                     }
                 };
