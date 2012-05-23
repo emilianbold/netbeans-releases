@@ -109,7 +109,7 @@ public final class ExternalBrowserPlugin {
             Runtime.getRuntime().addShutdownHook( shutdown);
         }
         catch (IOException e) {
-            LOG.log( Level.WARNING , null , e);
+            LOG.log( Level.INFO , null , e);
         }
     }
     
