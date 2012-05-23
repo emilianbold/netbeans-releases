@@ -170,6 +170,7 @@ public final class NbURLDisplayer extends URLDisplayer {
                                 IDESettings.getPreferences().removePreferenceChangeListener(idePCL);
                                 idePCL = null;
                                 brComp = null;
+                                externalBrowser = null;
                             }
                         }
                     }
