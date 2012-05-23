@@ -246,8 +246,10 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             }
 
             Boolean direct = null;
+            AnnotationMirror arMirror = null;
             for (AnnotationMirror m : e.getAnnotationMirrors()) {
                 if (m.getAnnotationType().toString().equals(ActionRegistration.class.getCanonicalName())) {
+                    arMirror = m;
                     for (Map.Entry<? extends ExecutableElement,? extends AnnotationValue> entry : m.getElementValues().entrySet()) {
                         if (entry.getKey().getSimpleName().contentEquals("lazy")) {
                             direct = ! (Boolean) entry.getValue().getValue();
@@ -272,6 +274,9 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (direct) {
                 if (key.length() != 0) {
                     throw new LayerGenerationException("Cannot specify key and use eager registration", e, processingEnv, ar, "key");
+                }
+                if (!ar.iconBase().isEmpty()) {
+                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "iconBase unused on eager registrations", e, arMirror);
                 }
                 f.instanceAttribute("instanceCreate", Action.class);
             } else {
