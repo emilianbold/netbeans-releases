@@ -49,7 +49,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=800)
+@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=800)
 public class FixUnresolvedInclude extends NamedOption {
     public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
 

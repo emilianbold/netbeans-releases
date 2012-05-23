@@ -49,7 +49,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=700)
+@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=700)
 public class FullFileIndexer extends NamedOption {
     public static final String FULL_FILE_INDEXER = "fullFileIndexer"; // NOI18N
 

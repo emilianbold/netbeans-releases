@@ -560,7 +560,7 @@ public final class ProjectImpl extends ProjectBase {
         }
     }
 
-    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1200)
+    @ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=1200)
     public static final class ReparseOnEditOption extends NamedOption {
         private static final String NAME = "reparse-on-document-changed"; //NOI18N
         @Override
