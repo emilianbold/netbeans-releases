@@ -90,6 +90,7 @@ public abstract class TreeListNode {
     protected static void post(Runnable run) {
         rp.post(run);
     }
+    private int lastRowWidth = -1;
 
     /**
      * C'tor
@@ -163,6 +164,11 @@ public abstract class TreeListNode {
     final JComponent getRenderer(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowHeight, int rowWidth) {
         RendererPanel res = null;
         synchronized (this) {
+            //hack - in case of resizing TC fire content changed to repaint
+            if (lastRowWidth > rowWidth) {
+                fireContentChanged();
+            }
+            this.lastRowWidth = rowWidth;
             if (null == renderer) {
                 renderer = new RendererPanel(this);
             }

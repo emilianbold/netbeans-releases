@@ -804,7 +804,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             @Override
             public void run() {
                 for (RepositoryNode repositoryNode : repositoryNodes) {
-                    repositoryNode.setExpanded(true);
+                    if (repositoryNode.isOpened()) {
+                        repositoryNode.setExpanded(true);
+                    }
                 }
             }
         });

@@ -207,7 +207,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         if (checkLocalRepo && (holder.getVersion() == null || "LATEST".equals(holder.getVersion()) || "RELEASE".equals(holder.getVersion()))  //NOI18N
                 && holder.getArtifactId() != null && holder.getGroupId() != null) { //NOI18N
-            File lev1 = new File(embedder.getLocalRepository().getBasedir(), holder.getGroupId().replace('.', File.separatorChar));
+            File lev1 = new File(embedder.getLocalRepositoryFile(), holder.getGroupId().replace('.', File.separatorChar));
             File dir = new File(lev1, holder.getArtifactId());
             File fil = new File(dir, "maven-metadata-local.xml"); //NOI18N
             if (fil.exists()) {
@@ -680,7 +680,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         if (info.getArtifactId() != null && info.getGroupId() != null && info.getVersion() != null) {
             Artifact art = embedder.createArtifact(info.getGroupId(), info.getArtifactId(), info.getVersion(), null, "jar"); //NOI18N
             String repopath = embedder.getLocalRepository().pathOf(art);
-            File fil = new File(embedder.getLocalRepository().getBasedir(), repopath);
+            File fil = new File(embedder.getLocalRepositoryFile(), repopath);
             if (fil.exists()) {
                 try {
                     JarFile jf = new JarFile(fil);

@@ -114,7 +114,7 @@ public class HTMLWebPreviewable {
         public void onAttach(final WebBrowser browser) {
             attachedBrowser = browser;
             FileObject docFO = getFocusedFile();
-            if (docFO != null) {
+            if (docFO != null && browser != null) {
                 docFO.removeFileChangeListener(fileChangeListener);
                 docFO.addFileChangeListener(fileChangeListener);
                 String file2Open = null;
