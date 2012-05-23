@@ -382,8 +382,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         row = getPrevRow(row);
         if(row > -1) {
             outline.getSelectionModel().setSelectionInterval(row, row);
-            Rectangle rect = outline.getCellRect(row, 0, true);
-            outline.scrollRectToVisible(new Rectangle(new Point(0, rect.y - rect.height)));
+            scrollToVisible(row, -1);
         } 
     }
     
@@ -424,8 +423,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         row = getNextRow(row);
         if(row > -1) {
             outline.getSelectionModel().setSelectionInterval(row, row);
-            Rectangle rect = outline.getCellRect(row, 0, true);
-            outline.scrollRectToVisible(new Rectangle(new Point(0, rect.y + rect.height)));
+            scrollToVisible(row, 1);
         }
     }
 
@@ -466,6 +464,12 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     boolean isSingleSelection() {
         int[] rows = tablePanel.treeView.getOutline().getSelectedRows();
         return rows != null && rows.length == 1;
+    }
+
+    private void scrollToVisible(int row, int direction) {
+        Outline outline = tablePanel.treeView.getOutline();
+        Rectangle rect = outline.getCellRect(row, 0, true);
+        outline.scrollRectToVisible(new Rectangle(new Point(0, rect.y + direction * rect.height)));
     }
 
     /**
@@ -509,6 +513,11 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             }
             tablePanel.revalidate();
             tablePanel.repaint();
+            
+            int row = tablePanel.treeView.getOutline().getSelectedRow();
+            if(row > -1) {
+                scrollToVisible(row, 2);
+            }
         }
 
     } 
