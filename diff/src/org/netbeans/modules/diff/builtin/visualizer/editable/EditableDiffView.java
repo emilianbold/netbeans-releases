@@ -807,11 +807,19 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
+            int diffSecondStart = diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0;
+            int offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
             off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
-            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
-
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diffSecondStart);
+            int off2nextLine = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondEnd() > diffSecondStart ? diffSecondStart + 1 : diffSecondStart);
+            
             jEditorPane1.getEditorPane().setCaretPosition(off1);
-            jEditorPane2.getEditorPane().setCaretPosition(off2);
+            if(offCurrent >= off2nextLine || offCurrent < off2) {
+                // it could be somebody is editing right now,
+                // so set the caret on the diferences first lines first column only in case
+                // it isn't already somrwhere in the line 
+                jEditorPane2.getEditorPane().setCaretPosition(off2);
+            }
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
