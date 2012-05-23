@@ -85,7 +85,8 @@ import org.openide.nodes.Children;
 import org.openide.util.CharSequences;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Navigator Tree node.
@@ -103,39 +104,38 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CharSequence htmlDisplayName;
     private CharSequence scopeName = CharSequences.empty();
     private byte weight;
+    private final InstanceContent ic;
 
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, List<IndexOffsetNode> lineNumberIndex) {
         this(element, model, null, lineNumberIndex);
     }
 
     private CppDeclarationNode(CsmOffsetableDeclaration element, CsmFileModel model, CsmCompoundClassifier classifier, List<IndexOffsetNode> lineNumberIndex) {
-        super(new NavigatorChildren(element, model, classifier, lineNumberIndex), Lookups.fixed(element, model.getFileObject()));
-        object = element;
-        file = element.getContainingFile();
-        this.model = model;
-        this.weight = getObjectWeight();
-    }
-
-    private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
-        super(children, Lookups.fixed(element, model.getFileObject()));
-        object = element;
-        file = element.getContainingFile();
-        this.model = model;
-        this.weight = getObjectWeight();
+        this(new NavigatorChildren(element, model, classifier, lineNumberIndex), element, model);
     }
 
     private CppDeclarationNode(Children children, CsmFile csmFile, CsmFileModel model) {
-        super(children, Lookups.fixed(csmFile, model.getFileObject()));
-        object = csmFile;
-        file = csmFile;
-        this.model = model;
-        this.weight = getObjectWeight();
+        this(children, new InstanceContent(), csmFile, csmFile, model);
     }
-
 
     private CppDeclarationNode(Children children, CsmOffsetableDeclaration element, CsmFileModel model, boolean isFriend) {
         this(children, element, model);
         this.isFriend = isFriend;
+    }
+
+    private CppDeclarationNode(Children children, CsmOffsetable element, CsmFileModel model) {
+        this(children, new InstanceContent(), element, element.getContainingFile(), model);
+    }
+
+    private CppDeclarationNode(Children children, InstanceContent ic, CsmObject element, CsmFile file, CsmFileModel model) {
+        super(children, new AbstractLookup(ic));
+        this.object = element;
+        this.file = file;
+        this.model = model;
+        this.weight = getObjectWeight();
+        ic.add(element);
+        ic.add(model.getFileObject());
+        this.ic = ic;
     }
 
     private CharSequence createFunctionSpecializationHtmlDisplayName() {
@@ -172,7 +172,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     private byte getObjectWeight(){
         try {
-            if (CsmKindUtilities.isFunctionDefinition(getCsmObject())) {
+            if (CsmKindUtilities.isFunctionDefinition(object)) {
                 CsmFunction function = ((CsmFunctionDefinition) object).getDeclaration();
                 if (function != null && !function.equals(object) && CsmKindUtilities.isClassMember(function)) {
                     CsmClass cls = ((CsmMember) function).getContainingClass();
@@ -186,7 +186,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     isSpecialization = true;
                     scopeName = getFunctionSpecializationName(object);
                 }
-            } else if (CsmKindUtilities.isVariableDefinition(getCsmObject())) {
+            } else if (CsmKindUtilities.isVariableDefinition(object)) {
                 CsmVariable variable = ((CsmVariableDefinition) object).getDeclaration();
                 if (variable != null && !variable.equals(object) && CsmKindUtilities.isClassMember(variable)) {
                     CsmClass cls = ((CsmMember) variable).getContainingClass();
@@ -259,7 +259,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     void resetNode(CppDeclarationNode node){
-        object = node.object;
+        if (object != node.object) {
+            ic.remove(object);
+            object = node.object;
+            ic.add(object);
+        }
         if (object instanceof CsmFile) {
             file = (CsmFile) object;
         } else {
