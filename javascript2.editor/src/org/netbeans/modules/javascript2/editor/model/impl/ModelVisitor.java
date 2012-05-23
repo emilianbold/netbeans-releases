@@ -229,6 +229,13 @@ public class ModelVisitor extends PathNodeVisitor {
                             addOccurence(ident);
                         }
                     }
+                    JsObjectImpl jsObject = (JsObjectImpl)parent.getProperty(newVarName);
+                    if (jsObject != null) {
+                        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(binaryNode.rhs());
+                        for (TypeUsage type : types) {
+                            jsObject.addAssignment(type, jsObject.getDeclarationName().getOffsetRange().getEnd());
+                        }
+                    }
                 }
                 if (binaryNode.rhs() instanceof IdentNode) {
                     addOccurence((IdentNode)binaryNode.rhs());
