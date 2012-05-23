@@ -46,6 +46,9 @@ import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import edu.umd.cs.findbugs.FindBugsProgress;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,6 +70,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
@@ -248,7 +252,7 @@ public class AnalyzerImpl implements Analyzer {
 
         @Messages("DN_FindBugs=FindBugs")
         public AnalyzerFactoryImpl() {
-            super("findbugs", Bundle.DN_FindBugs(), "edu/umd/cs/findbugs/gui2/bugSplash3.png");
+            super("findbugs", Bundle.DN_FindBugs(), makeTransparent());
         }
 
         @Override
@@ -301,5 +305,30 @@ public class AnalyzerImpl implements Analyzer {
             HintsController.setErrors(warning.getFile(), RunInEditor.HINTS_KEY, Collections.singleton(warning));
         }
 
+    }
+    
+    private static Image makeTransparent() {
+        Image original = ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
+        int w = original.getWidth(null);
+        int h = original.getHeight(null);
+        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
+        
+        bi.createGraphics().drawImage(original, 0, 0, null);
+        
+        WritableRaster raster = bi.getRaster();
+        int[] buffer = new int[4];
+        
+        for (int hi = 0; hi < h; hi++) {
+            for (int wi = 0; wi < w; wi++) {
+                buffer = raster.getPixel(wi, hi, buffer);
+                
+                if (buffer[0] == 255 && buffer[1] == 255 && buffer[2] == 255 && buffer[3] == 255) {
+                    buffer[3] = 0;
+                    raster.setPixel(wi, hi, buffer);
+                }
+            }
+        }
+        
+        return bi;
     }
 }
