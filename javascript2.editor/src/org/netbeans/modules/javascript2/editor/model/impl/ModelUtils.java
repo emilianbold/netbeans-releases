@@ -298,6 +298,23 @@ public class ModelUtils {
             } else {
                 result.add(type);
             }
+        } else if (type.getType().startsWith("@call:")) {
+            String functionName = type.getType().substring(6);
+            JsObject globalObject = ModelUtils.getGlobalObject(object);
+            JsObject function = globalObject.getProperty(functionName);
+            if (function != null && function instanceof JsFunction) {
+                result.addAll(((JsFunction)function).getReturnTypes());
+            }
+        } else if(type.getType().startsWith("@anonym:")){
+            int start = Integer.parseInt(type.getType().substring(8));
+            JsObject globalObject = ModelUtils.getGlobalObject(object);
+            for(JsObject children : globalObject.getProperties().values()) {
+                if(children.getOffset() == start && children.getName().startsWith("Anonym$")) {
+                    result.add(new TypeUsageImpl(ModelUtils.createFQN(children), children.getOffset(), true));
+                    break;
+                }
+                
+            }
         }
         return result;
     }
@@ -328,6 +345,18 @@ public class ModelUtils {
                 }
             }
             return super.visit(aNode, onset);
+        }
+
+        @Override
+        public Node visit(CallNode callNode, boolean onset) {
+            if (onset) {
+                if (callNode.getFunction() instanceof ReferenceNode) {
+                    FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
+                    String name = function.getIdent().getName();
+                    result.add(new TypeUsageImpl("@call:" + name, function.getStart(), false));
+                }
+            }
+            return super.visit(callNode, onset);
         }
 
         
@@ -361,6 +390,16 @@ public class ModelUtils {
             return super.visit(lNode, onset);
         }
 
+        @Override
+        public Node visit(ObjectNode objectNode, boolean onset) {
+            if (onset) {
+                result.add(new TypeUsageImpl("@anonym:" + objectNode.getStart(), objectNode.getStart(), false));
+                return null;
+            }
+            return super.visit(objectNode, onset);
+        }
+
+        
         @Override
         public Node visit(UnaryNode uNode, boolean onset) {
             if (onset) {

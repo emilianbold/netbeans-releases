@@ -678,7 +678,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             for (IndexResult indexResult : indexResults) {
                 IndexedElement indexedElement = IndexedElement.create(indexResult);
                 JsElement element = addedProperties.get(indexedElement.getName());
-                if (startsWith(indexedElement.getName(), request.prefix) 
+                if (startsWith(indexedElement.getName(), request.prefix)
+                        && !indexedElement.isAnonymous()
                         && indexedElement.getFQN().indexOf('.', fqn.length()) == -1 
                         && indexedElement.getModifiers().contains(Modifier.PUBLIC)
                         && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {

@@ -42,10 +42,8 @@
 package org.netbeans.modules.javascript2.editor.index;
 
 import java.util.*;
-import java.util.ArrayList;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -67,11 +65,13 @@ public class IndexedElement extends JsElementImpl {
     
     private final JsElement.Kind jsKind;
     private final String fqn;
+    private final boolean isAnonymous;
     
-    public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers) {
+    public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers) {
         super(fileObject, name, isDeclared, offsetRange, modifiers);
         this.jsKind = kind;
         this.fqn = fqn;
+        this.isAnonymous = isAnonymous;
     }
 
     @Override
@@ -81,6 +81,10 @@ public class IndexedElement extends JsElementImpl {
     
     public String getFQN() {
         return this.fqn;
+    }
+    
+    public boolean isAnonymous() {
+        return isAnonymous;
     }
     
     public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
@@ -125,12 +129,13 @@ public class IndexedElement extends JsElementImpl {
         String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
         int flag = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG));
         boolean isDeclared = Flag.isDeclared(flag);
+        boolean isAnonymous = Flag.isAnonymous(flag);
         JsElement.Kind kind = Flag.getJsKind(flag);
         Set<Modifier> modifiers = Flag.getModifiers(flag);
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
         IndexedElement result;
         if (!kind.isFunction()) {
-            result = new IndexedElement(fo, name, fqn, isDeclared, kind, new OffsetRange(offset, offset + name.length()), modifiers);
+            result = new IndexedElement(fo, name, fqn, isDeclared, isAnonymous, kind, new OffsetRange(offset, offset + name.length()), modifiers);
         } else {
             Collection<TypeUsage> returnTypes = getReturnTypes(indexResult);
             Collection<String>rTypes = new ArrayList<String>();
@@ -139,7 +144,7 @@ public class IndexedElement extends JsElementImpl {
             }
             String paramText = indexResult.getValue(JsIndex.FIELD_PARAMETERS);
             LinkedHashMap<String, Collection<String>> params  = decodeParameters(paramText);
-            result = new FunctionIndexedElement(fo, name, fqn, kind, new OffsetRange(offset, offset + name.length()), modifiers, params, rTypes);
+            result = new FunctionIndexedElement(fo, name, fqn, new OffsetRange(offset, offset + name.length()), flag, params, rTypes);
         }
         return result;
     }
@@ -188,7 +193,7 @@ public class IndexedElement extends JsElementImpl {
         JsElement.Kind jsKind = property.getJSKind();
         result.append(property.getName()).append(';');  //NOI18N
         result.append(jsKind.getId()).append(';');  //NOI18N
-        result.append(property.isDeclared() ? "1" : "0").append(';'); //NOI18N
+        result.append(Flag.getFlag(property)).append(';'); //NOI18N
         if (jsKind.isFunction()) {
             result.append(codeParameters(((JsFunction)property).getParameters()));
             result.append(";");
@@ -249,7 +254,7 @@ public class IndexedElement extends JsElementImpl {
         String[] parts = text.split(";");
         String name = parts[0];
         JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
-        boolean isDeclared = "1".equals(parts[2]);
+        int flag = Integer.parseInt(parts[2]);
         String fqnOfProperty = fqn + "." + name;
         if (parts.length > 3) {
             if (jsKind.isFunction()) {
@@ -260,18 +265,18 @@ public class IndexedElement extends JsElementImpl {
                 for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
                     returnTypes.add(stringTokenizer.nextToken());
                 }
-                return new FunctionIndexedElement(fo, name, fqnOfProperty, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters, returnTypes);
+                return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes);
             }
         }
-        return new IndexedElement(fo, name, fqnOfProperty, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
+        return new IndexedElement(fo, name, fqnOfProperty, Flag.isDeclared(flag), Flag.isAnonymous(flag), jsKind,OffsetRange.NONE, Flag.getModifiers(flag));
     }
     
     public static class FunctionIndexedElement extends IndexedElement {
         private final LinkedHashMap<String, Collection<String>> parameters;
         private final Collection<String> returnTypes;
         
-        public FunctionIndexedElement(FileObject fileObject, String name, String fqn, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, LinkedHashMap<String, Collection<String>> parameters, Collection<String> returnTypes) {
-            super(fileObject, name, fqn, true, kind, offsetRange, modifiers);
+        public FunctionIndexedElement(FileObject fileObject, String name, String fqn,OffsetRange offsetRange, int flag,  LinkedHashMap<String, Collection<String>> parameters, Collection<String> returnTypes) {
+            super(fileObject, name, fqn, Flag.isDeclared(flag), Flag.isAnonymous(flag), Flag.getJsKind(flag), offsetRange, Flag.getModifiers(flag));
             this.parameters = parameters;
             this.returnTypes = returnTypes;
         }

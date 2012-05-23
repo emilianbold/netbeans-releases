@@ -369,7 +369,6 @@ public class ModelVisitor extends PathNodeVisitor {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 // create the function object
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
-                fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
                 boolean isAnonymous = false;
                 if (getPreviousFromPath(2) instanceof ReferenceNode) {
                     Node node = getPreviousFromPath(3);
@@ -382,7 +381,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                 }
-                fncScope.setAnonymous(isAnonymous);
+                fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous);
                 Set<Modifier> modifiers = fncScope.getModifiers();
                 if (isPrivate || isPrivilage) {
                     modifiers.remove(Modifier.PUBLIC);
@@ -668,7 +667,7 @@ public class ModelVisitor extends PathNodeVisitor {
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit());
-            }
+            } 
             if (!(varNode.getInit() instanceof UnaryNode)) {
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(varNode.getInit());
                 for (TypeUsage type : types) {
