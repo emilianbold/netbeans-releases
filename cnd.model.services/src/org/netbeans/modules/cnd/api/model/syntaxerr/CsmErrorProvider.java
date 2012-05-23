@@ -179,12 +179,12 @@ public abstract class CsmErrorProvider extends NamedOption {
 
         @Override
         public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public String getDescription() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
    }
 
