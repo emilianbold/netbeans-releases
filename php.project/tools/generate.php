@@ -731,6 +731,10 @@ function print_parameters ($parameters) {
 				print ", ";
 			}
 			$type = $parameter['type'];
+                        if (strpos($type, '|') !== false) {
+                            // fix 'MyClass|YourClass' cases
+                            $type = '';
+                        }
 			if ($type && !in_array($type, array(
                             'mixed',
                             'string',
