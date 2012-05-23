@@ -804,6 +804,8 @@ public final class CsmTracer {
             return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) {
             return false;
+        } else if (decl.getKind() == CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) {
+            return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
             return false;
         } else if (decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA) {
@@ -982,7 +984,16 @@ public final class CsmTracer {
                         unindent();
                         continue;
                     }
-                }            
+                } else if (member.getKind() == CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) {
+                    final CsmEnumForwardDeclaration fwdEnum = (CsmEnumForwardDeclaration) member;
+                    CsmEnum csmEnum = fwdEnum.getCsmEnum();
+                    if (csmEnum != null && cls.equals(csmEnum.getScope())) {
+                        indent();
+                        dumpModel(csmEnum);
+                        unindent();
+                        continue;
+                    }
+                }
             }
         }
         unindent();

@@ -969,7 +969,8 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
-            CsmDeclaration.Kind.ENUM
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
+            CsmDeclaration.Kind.ENUM,
         };
         List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, inspectOuterClasses, true, false);
         if (res != null && this.isSortNeeded()) {
