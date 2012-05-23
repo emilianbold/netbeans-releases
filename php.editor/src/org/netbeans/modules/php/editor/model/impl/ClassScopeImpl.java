@@ -97,8 +97,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         Expression superId = nodeInfo.getSuperClass();
         String superName = null;
         if (superId != null) {
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
             QualifiedName superClassName = QualifiedName.create(superId);
-            this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), (NamespaceScope)inScope);
+            if (namespaceScope == null) {
+                this.possibleFQSuperClassNames = Collections.emptyList();
+            } else {
+                this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), namespaceScope);
+            }
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();

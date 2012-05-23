@@ -59,6 +59,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -389,7 +390,17 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         }
 
         VariableElement ve = (VariableElement)ee.getParameters().get(0);
-        DeclaredType dt = (DeclaredType)ve.asType();
+        TypeMirror ctorType = ve.asType();
+        switch (ctorType.getKind()) {
+        case ARRAY:
+            String elemType = ((ArrayType) ctorType).getComponentType().toString();
+            throw new LayerGenerationException("Use List<" + elemType + "> rather than " + elemType + "[] in constructor", e, processingEnv, ar);
+        case DECLARED:
+            break; // good
+        default:
+            throw new LayerGenerationException("Must use SomeType (or List<SomeType>) in constructor, not " + ctorType.getKind());
+        }
+        DeclaredType dt = (DeclaredType) ctorType;
         String dtName = processingEnv.getElementUtils().getBinaryName((TypeElement)dt.asElement()).toString();
         if ("java.util.List".equals(dtName)) {
             if (dt.getTypeArguments().isEmpty()) {
@@ -406,7 +417,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             throw new LayerGenerationException("No type parameters allowed in ", ee);
         }
 
-        f.stringvalue("type", binaryName(ve.asType()));
+        f.stringvalue("type", binaryName(ctorType));
         f.methodvalue("delegate", "org.openide.awt.Actions", "inject");
         f.stringvalue("injectable", processingEnv.getElementUtils().getBinaryName((TypeElement)e).toString());
         f.stringvalue("selectionType", "EXACTLY_ONE");

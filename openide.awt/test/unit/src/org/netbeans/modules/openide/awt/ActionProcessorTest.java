@@ -693,6 +693,25 @@ public class ActionProcessorTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
     }
+
+    public void testArray() throws Exception {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A",
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.ActionEvent;\n" +
+            "import java.awt.event.ActionListener;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "public class A implements ActionListener {\n" +
+            "    public A(Integer[] params) {}\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os));
+        assertTrue("correct message:\n" + os, os.toString().contains("Integer[]"));
+    }
     
     public void testNoActionIDInReferences() throws IOException {
         clearWorkDir();
