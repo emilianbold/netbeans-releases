@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -107,7 +108,7 @@ public final class BookmarksNodeTree {
                     FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
                     ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
                     URI prjURI = projectBookmarks.getProjectURI();
-                    Project prj = FileOwnerQuery.getOwner(prjURI);
+                    Project prj = BookmarkUtils.findProject(prjURI);
                     LogicalViewProvider lvp = (prj != null) ? prj.getLookup().lookup(LogicalViewProvider.class) : null;
                     Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
                     if (prjNode == null) {
@@ -263,7 +264,7 @@ public final class BookmarksNodeTree {
         ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
             this.projectBookmarks = projectBookmarks;
             URI prjURI = projectBookmarks.getProjectURI();
-            Project prj = FileOwnerQuery.getOwner(prjURI);
+            Project prj = BookmarkUtils.findProject(prjURI);
             projectDisplayName = (prj != null)
                     ? ProjectUtils.getInformation(prj).getDisplayName()
                     : NbBundle.getMessage (BookmarksView.class, "LBL_NullProjectDisplayName");
