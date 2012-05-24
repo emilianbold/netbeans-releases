@@ -12,18 +12,18 @@
     <body>
    <h2>Profiling a Free-form Project</h2>
       <p>In a free-form project, you have to create Ant targets to be able to profile a file or project.
-      You generally want one target in your freeform project's build script
+      You generally want one target in your free-form project's build script
       for profiling a project and one target for profiling individual files.
       The first time that you choose the <tt>&quot;Profile Main Project&quot;</tt> or 
-      <tt>&quot;Profile File&quot;</tt> command on a freeform project
+      <tt>&quot;Profile File&quot;</tt> command on a free-form project
       you will need to create the targets.
       The IDE can create the targets for you based on the information for the target that is 
       mapped to the Run command for the project.</p>
     
-      <p>To profile a freeform project perform the following steps.</p>
+      <p>To profile a free-form project perform the following steps.</p>
       
       <ol>
-        <li>Set the freeform project as the main project by choosing
+        <li>Set the free-form project as the main project by choosing
             Run &gt; Set Main Project in the main menu and selecting the project.</li>
         <li>Choose Profile &gt; Profile Main Project.</li>
         <li>Click Generate in the Profile Project dialog box.</li>
@@ -32,18 +32,22 @@
             Click Run.</li>
       </ol>
 
-        <p class="note">        
-        When you click Generate in the Profile Project dialog box the IDE creates
+        <p class="note"><b>Notes.</b></p>
+        <ul>
+            <li>When you click Generate in the Profile Project dialog box the IDE creates
         a build script named <tt>ide-targets.xml</tt> and generates a target named 
         <tt>profile-nb</tt>.
         You should verify that the generated <tt>profile-nb</tt> target properly 
         takes into account all of the elements of your project. 
         In some cases you might need to modify the <tt>&lt;classpath&gt;</tt> argument 
-        in the target if it does not include all of the items in your run classpath.
-        The IDE also modifies <tt>project.xml</tt> to map the <tt>profile-nb</tt> target to
-        the Profile Project command in the IDE.</p>
-      
-    <p>For example,  the <tt>profile-nb</tt> target that the IDE generates in <tt>ide-targets.xml</tt> might
+        in the target if it does not include all of the items in your run classpath.</li>
+        
+        <li>The IDE also modifies <tt>project.xml</tt> to map the <tt>profile-nb</tt> target to
+        the Profile Project command in the IDE.
+        If you write the target from scratch you will need to also create this mapping yourself. </li>
+      </ul>
+        
+    <p>For example, the <tt>profile-nb</tt> target that the IDE generates in <tt>ide-targets.xml</tt> might
         look similar to the following.</p>
 
 <pre class="examplecode">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -64,8 +68,13 @@
     &lt;/project&gt;</pre>
     
     <p>In this example the IDE attempted to guess the runtime classpath for the project.</p>
+    
+    <p>If you do not have a run target mapped or the IDE otherwise can not determine 
+    the project's classpath or main class, the generated profile target includes "TODO" placeholders 
+    for you to fill in these values.</p>
 
-    <h3>Profiling Freeform Web Projects</h3>
+
+    <h3>Profiling Free-form Web Projects</h3>
     <p>Typically the server is started using a startup script, not the <tt>java</tt> command directly. 
     Therefore you cannot use the <code>&lt;jvmarg .../&gt;</code> element to pass additional argument to it.
     Instead, you have to modify the server startup script to configure it for profiling.</p>
@@ -82,7 +91,7 @@
 
         
     <p>For more about how to profile a free-form project and arguments you can use, see the following document
-        on configuring freeform projects.</p>
+        on configuring free-form projects.</p>
     <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://netbeans.org/kb/articles/freeform-config.html#profilej2se">
     <param name="text" value="<html><u>Creating a Target to Profile Your Java SE Application</u></html>">
@@ -96,8 +105,7 @@
             <dd><a href="profile_attach.html">Profiling Using Attach Mode</a></dd>
         </dl>
         <hr>
-        <small><a href="../credits.html">Legal
-Notices</a></small>
+        <small><a href="../credits.html">Legal Notices</a></small>
         <table border="0" cellpadding="50">
         <tr><td>&nbsp;</td></tr>
     </table>
