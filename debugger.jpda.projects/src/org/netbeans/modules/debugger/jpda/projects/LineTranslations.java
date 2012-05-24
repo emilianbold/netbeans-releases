@@ -161,6 +161,7 @@ class LineTranslations {
         synchronized (this) {
             bpLines.put(lb, line);
             lineNumberListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
                         final Map<LineBreakpoint, Integer> bpLines;
@@ -260,7 +261,7 @@ class LineTranslations {
         }
         
         // get current
-        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
         if (lineCookie == null) return null;
         return lineCookie.getLineSet ();
     }
@@ -338,7 +339,7 @@ class LineTranslations {
         private Map<DataObject, Line.Set> dataObjectToLineSet = new HashMap<DataObject, Line.Set>();
         
         synchronized void register (DataObject dataObject) {
-            LineCookie lc = dataObject.getCookie (LineCookie.class);
+            LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
             if (lc == null) return;
             dataObjectToLineSet.put (dataObject, lc.getLineSet ());
         }
@@ -356,6 +357,7 @@ class LineTranslations {
     }
     
     private class ChangedFilesListener implements ChangeListener {
+        @Override
         public void stateChanged (ChangeEvent e) {
             Set<DataObject> newDOs = new HashSet<DataObject>(
                 DataObject.getRegistry ().getModifiedSet()
@@ -385,7 +387,7 @@ class LineTranslations {
         }
         
         public synchronized void attach() throws IOException {
-            LineCookie lc = dataObject.getCookie (LineCookie.class);
+            LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
             if (lc == null) return ;
             lb.addPropertyChangeListener(this);
             try {
@@ -418,6 +420,7 @@ class LineTranslations {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             Line l;
@@ -440,7 +443,7 @@ class LineTranslations {
                         if (dataObject == null) return ;
                         dobj = dataObject;
                     }
-                    LineCookie lc = dobj.getCookie (LineCookie.class);
+                    LineCookie lc = dobj.getLookup().lookup (LineCookie.class);
                     Line newLine;
                     try {
                         int lineNumber = l.getLineNumber();
@@ -472,7 +475,7 @@ class LineTranslations {
                 }
                 Line newLine;
                 try {
-                    LineCookie lc = dobj.getCookie (LineCookie.class);
+                    LineCookie lc = dobj.getLookup().lookup (LineCookie.class);
                     newLine = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                     newLine.addPropertyChangeListener(this);
                 } catch (IndexOutOfBoundsException ioobex) {
@@ -486,7 +489,7 @@ class LineTranslations {
                 DataObject newDO = getDataObject(lb.getURL());
                 Line newLine;
                 if (newDO != null) {
-                    LineCookie lc = newDO.getCookie (LineCookie.class);
+                    LineCookie lc = newDO.getLookup().lookup (LineCookie.class);
                     try {
                         newLine = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                         newLine.addPropertyChangeListener(this);
