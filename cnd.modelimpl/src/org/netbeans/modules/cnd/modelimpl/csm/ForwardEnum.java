@@ -130,6 +130,6 @@ public final class ForwardEnum extends EnumImpl {
     }
 
     private void setTemplateDescriptor(TemplateDescriptor createIfNeeded) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException();
     }
 }
