@@ -55,10 +55,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.ButtonModel;
 import javax.swing.JFileChooser;
+import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ant.VariablesModel.Variable;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -72,10 +72,7 @@ import org.openide.util.NbBundle;
 /**
  * Accessory allowing to choose how file is referenced from a project - relative
  * or absolute.
- * 
- * <p>The panel is used from two different places - FileChooser and 
- * RelativizeFilePathCustomizer.
- * 
+ * @see FileChooser
  * @author David Konecny
  */
 public class FileChooserAccessory extends javax.swing.JPanel
@@ -86,22 +83,10 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private boolean copyAllowed;
     private JFileChooser chooser;
     private List<String> copiedRelativeFiles = null;
-    /** In RelativizeFilePathCustomizer scenario this property holds preselected file */
-    private File useThisFileInsteadOfOneFromChooser = null;
     private VariablesModel varModel;
     private boolean enableVariableBasedSelection = false;
 
     private boolean userSelection = false;
-    /**
-     * Constructor for usage from RelativizeFilePathCustomizer.
-     */
-    public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, File selectedFile) {
-        this(null, baseFolder, sharedLibrariesFolder, copyAllowed);
-        useThisFileInsteadOfOneFromChooser = selectedFile;
-        enableAccessory(true);
-        update(Collections.singletonList(useThisFileInsteadOfOneFromChooser));
-        enableVariableBasedSelection(enableVariableBasedSelection);
-    }
 
     /**
      * Constructor for usage from FileChooser.
@@ -237,9 +222,6 @@ public class FileChooserAccessory extends javax.swing.JPanel
     }
 
     private File[] getSelectedFiles() {
-        if (useThisFileInsteadOfOneFromChooser != null) {
-            return new File[]{ FileUtil.normalizeFile(useThisFileInsteadOfOneFromChooser) };
-        }
         File files[];
         if (chooser.isMultiSelectionEnabled()) {
             files = chooser.getSelectedFiles();
