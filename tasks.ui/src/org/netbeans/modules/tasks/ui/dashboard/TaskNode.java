@@ -44,6 +44,7 @@ package org.netbeans.modules.tasks.ui.dashboard;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -116,12 +117,22 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
 
     @Override
     protected Action getDefaultAction() {
-        return new OpenTaskAction(task);
+        return new OpenTaskAction(this);
     }
 
     @Override
     public Action[] getPopupActions() {
-        List<Action> actions = Actions.getTaskPopupActions(this);
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        TaskNode[] taskNodes = new TaskNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof TaskNode) {
+                taskNodes[i] = (TaskNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
+        List<Action> actions = Actions.getTaskPopupActions(taskNodes);
         return actions.toArray(new Action[actions.size()]);
     }
 

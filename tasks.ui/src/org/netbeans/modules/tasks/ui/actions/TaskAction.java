@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.api.search.impl;
-
-import org.openide.modules.ModuleInstall;
-import org.openide.util.SharedClassObject;
-
-/** Module install class for Utilities module.
  *
- * @author Jesse Glick, Petr Kuzel, Martin Ryzl
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-public class Installer extends ModuleInstall {
+package org.netbeans.modules.tasks.ui.actions;
 
-    /** Installation instance for &quot;sub-module&quot; Search.  */
-    private final org.netbeans.modules.search.Installer searchInstaller;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 
-    /** Constructs modules installer. */
-    public Installer() {
-        searchInstaller = SharedClassObject.findObject(
-                                  org.netbeans.modules.search.Installer.class,
-                                  true);
-    }
-    
-    /**
-     * Restores module. Restores &quot;sub-module&quot; Search.
-     */
-    @Override
-    public void restored() {
-        searchInstaller.restored();
-    }
-    
-    /**
-     * Uninstalls module. Uninstalls
-     * the Search &quot;sub-module&quot;.
-     */
-    @Override
-    public void uninstalled() {
-        searchInstaller.uninstalled();
-    }
-    
-    /**
-     */
-    @Override
-    public void close() {
-        searchInstaller.close();
-    }
-    
-    /**
-     */
-    @Override
-    public boolean closing() {
-        return searchInstaller.closing();
-    }
+/**
+ *
+ * @author jpeska
+ */
+public abstract class TaskAction extends AbstractAction {
 
-}
+        private List<TaskNode> taskNodes;
+
+        public TaskAction(String name, TaskNode... taskNodes) {
+            super(name);
+            this.taskNodes = Arrays.asList(taskNodes);
+        }
+
+        public List<TaskNode> getTaskNodes() {
+            return taskNodes;
+        }
+    }

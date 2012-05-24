@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,51 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.tasks.ui.actions;
 
-package org.netbeans.modules.db.sql.editor;
-
-import java.io.IOException;
-import java.io.Writer;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.ext.ExtFormatter;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 
 /**
- * Formatter for SQL
  *
- * @author Jesse Beaumont
+ * @author jpeska
  */
-public class SQLFormatter extends ExtFormatter {
-    
-    /** 
-     * Creates a new instance of SQLFormater 
-     */
-    public SQLFormatter(Class kitClass) {
-        super(kitClass);        
+public abstract class CategoryAction extends AbstractAction {
+
+    private List<CategoryNode> categoryNodes;
+
+    public CategoryAction(String name, CategoryNode... categoryNodes) {
+        super(name);
+        this.categoryNodes = Arrays.asList(categoryNodes);
     }
-    
-    /**
-     * Determines whether the specified syntax is supported by this formatter
-     */
-    protected boolean acceptSyntax(Syntax syntax) {
-	return (syntax instanceof SQLSyntax);
+
+    @Override
+    public boolean isEnabled() {
+        for (CategoryNode categoryNode : categoryNodes) {
+            if (!categoryNode.isOpened()) {
+                return false;
+            }
+        }
+        return true;
     }
-        
-    /**
-     * Reformats a portion of the document
-     */
-    public Writer reformat(BaseDocument doc, int startOffset, int endOffset, boolean indentOnly) 
-    throws BadLocationException, IOException {
-	return super.reformat(doc, startOffset, endOffset,  indentOnly);
-    }
-    
-    /**
-     * Reformats a block of text
-     */
-    public int[] getReformatBlock(JTextComponent target, String typedText) {
-        return super.getReformatBlock(target, typedText);
+
+    public List<CategoryNode> getCategoryNodes() {
+        return categoryNodes;
     }
 }

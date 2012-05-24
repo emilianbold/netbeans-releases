@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.tasks.ui.actions;
 
-package org.netbeans.modules.db.sql.editor;
-
-import java.beans.BeanDescriptor;
-import java.util.MissingResourceException;
-import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.util.NbBundle;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
 /**
- * The BeanInfo descriptor for the SQLIndentEngine
  *
- * @author Jesse Beaumont
+ * @author jpeska
  */
-public class SQLIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
+public abstract class RepositoryAction extends AbstractAction{
 
-    private BeanDescriptor beanDescriptor;
+    private List<RepositoryNode> repositoryNodes;
 
-    /**
-     * Get the bean descriptor
-     */
-    public BeanDescriptor getBeanDescriptor () {
-        if (beanDescriptor == null) {
-            beanDescriptor = new BeanDescriptor(getBeanClass());
-            beanDescriptor.setDisplayName(getMessage("LBL_SQLIndentEngine"));
-            beanDescriptor.setShortDescription(getMessage("HINT_SQLIndentEngine"));
-            beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
+        public RepositoryAction(String name, RepositoryNode... repositoryNodes) {
+            super(name);
+            this.repositoryNodes = Arrays.asList(repositoryNodes);
         }
-        return beanDescriptor;
-    }
 
-    /**
-     * Get the class of the bean described by this bean info
-     */
-    protected Class getBeanClass() {
-        return SQLIndentEngine.class;
-    }
-
-    /**
-     * Look up a resource bundle message, if it is not found locally defer to 
-     * the super implementation
-     */
-    protected String getMessage(String key) {
-        try {
-            return NbBundle.getMessage(SQLIndentEngineBeanInfo.class, key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
+    @Override
+    public boolean isEnabled() {
+        for (RepositoryNode repositoryNode : repositoryNodes) {
+            if (!repositoryNode.isOpened()) {
+                return false;
+            }
         }
+        return true;
     }
 
+    public List<RepositoryNode> getRepositoryNodes() {
+        return repositoryNodes;
+    }
 }
-
