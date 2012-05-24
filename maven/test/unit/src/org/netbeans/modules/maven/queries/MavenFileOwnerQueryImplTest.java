@@ -90,9 +90,7 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
         assertEquals(p10, foq.getOwner(art10.toURI()));
         assertEquals(null, foq.getOwner(art11.toURI()));
         foq.registerProject(p11);
-        // TBD whether it is desirable to forget whether 1.0 was. Could remember where all encountered versions were,
-        // but then the cache would fill up with *-SNAPSHOT information, and these entries would almost never be expired.
-        assertEquals(null, foq.getOwner(art10.toURI()));
+        assertEquals(p10, foq.getOwner(art10.toURI()));
         assertEquals(p11, foq.getOwner(art11.toURI()));
     }
 
