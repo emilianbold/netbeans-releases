@@ -89,8 +89,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         projectListener = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    registerProject((NbMavenProjectImpl) evt.getSource());
-                    fireChange();
+                    if (!registerProject((NbMavenProjectImpl) evt.getSource())) {
+                        fireChange();
+                    }
                 }
             }
         };
@@ -106,16 +107,23 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
     }
     
-    public void registerProject(NbMavenProjectImpl project) {
+    /**
+     * 
+     * @param project
+     * @return true if project was registered, false otherwise 
+     */
+    public boolean registerProject(NbMavenProjectImpl project) {
         MavenProject model = project.getOriginalMavenProject();
         project.getProjectWatcher().removePropertyChangeListener(projectListener);
         project.getProjectWatcher().addPropertyChangeListener(projectListener);        
         if (NbMavenProject.isErrorPlaceholder(model)) {
             LOG.log(Level.FINE, "will not register unloadable {0}", project.getPOMFile());
-            return;
+            //TODO we should remove the project's mapping in this case and wait for it to reappear loadable again
+            return false;
         }
         registerCoordinates(model.getGroupId(), model.getArtifactId(), project.getProjectDirectory().toURL());
         fireChange();
+        return true;
     }
     
     public void addChangeListener(ChangeListener list) {
