@@ -158,6 +158,9 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
         registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
+        //manually register the listener for this project, we know it's loaded and should be listening on changes.
+        //registerCoordinates() doesn't attach listeners
+        MavenFileOwnerQueryImpl.getInstance().attachProjectListener(project);
         Set<URI> uris = getProjectExternalSourceRoots(project);
         for (URI uri : uris) {
             FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);

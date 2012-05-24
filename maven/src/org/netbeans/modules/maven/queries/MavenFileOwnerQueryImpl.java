@@ -101,7 +101,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return Lookup.getDefault().lookup(MavenFileOwnerQueryImpl.class);
     }
     
-    private void attachProjectListener(NbMavenProjectImpl project) {
+    public void attachProjectListener(NbMavenProjectImpl project) {
         project.getProjectWatcher().removePropertyChangeListener(projectListener);
         project.getProjectWatcher().addPropertyChangeListener(projectListener);       
     }
