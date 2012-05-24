@@ -68,7 +68,6 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
@@ -267,8 +266,17 @@ public class CompileRunAction extends AbstractExecutorRunAction {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(context.execEnv).
                 setWorkingDirectory(context.buildDir).
                 unbufferOutput(false).
-                setArguments(context.ces.getArguments()).
                 setExecutable(context.buildDir+"/"+context.executable); // NOI18N
+        StringBuilder buf = new StringBuilder();
+        for(String arg : context.ces.getArguments()) {
+            if (buf.length() > 0) {
+                buf.append(' ');
+            }
+            buf.append(arg);
+        }
+        List<String> list = ImportUtils.parseArgs(buf.toString());
+        list = ImportUtils.normalizeParameters(list);
+        npb.setArguments(list.toArray(new String[list.size()]));
         NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
                 inputVisible(true).
