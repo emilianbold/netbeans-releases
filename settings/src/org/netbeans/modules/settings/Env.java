@@ -48,28 +48,17 @@ import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /** A provider for .settings files of a certain DTD.
  *  It creates a suitable convertor according to {@link #EA_CONVERTOR}.
  *
  * @author Jan Pokorsky
  */
-@NbBundle.Messages({
-    "CTL_SettingsFile=Settings Files"
-})
-@MIMEResolver.ExtensionRegistration(
-    displayName="#CTL_SettingsFile", 
-    extension="settings",
-    mimeType="text/x-nb-settings+xml",
-    position=44
-)
 public final class Env implements Environment.Provider {
     /** file attribute containing convertor object. Usage 
      * <code>&lt;attr name="settings.convertor" methodvalue="org.netbeans.modules.settings.XMLPropertiesConvertor.create"/>

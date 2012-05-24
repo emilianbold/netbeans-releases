@@ -81,6 +81,6 @@ public class MimeTypeTest extends NbTestCase {
         
         FileObject fo = lfs.findResource("x.settings");
         assertNotNull("File found", fo);
-        assertEquals("mime type is correct without opening the content", "text/x-nb-settings+xml", fo.getMIMEType());
+        assertEquals("mime type is correct without opening the content", "application/x-nbsettings", fo.getMIMEType());
     }
 }
