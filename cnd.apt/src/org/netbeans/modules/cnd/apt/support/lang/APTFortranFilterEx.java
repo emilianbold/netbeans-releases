@@ -60,7 +60,10 @@ final class APTFortranFilterEx implements APTLanguageFilter {
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
-    public APTFortranFilterEx() {
+    private final boolean filterContinueChar;
+    
+    public APTFortranFilterEx(String flavor) {
+        filterContinueChar = APTLanguageSupport.FLAVOR_FORTRAN_FREE.equalsIgnoreCase(flavor);
     }
 
     @Override
@@ -116,6 +119,13 @@ final class APTFortranFilterEx implements APTLanguageFilter {
                     nextToken = orig.nextToken();
                 }
                 return new FilterToken((APTToken)newToken, APTTokenTypes.FORTRAN_COMMENT);
+            }
+            if(filterContinueChar && newToken.getType() == APTTokenTypes.AMPERSAND) {
+                nextToken = orig.nextToken();
+                if (nextToken.getType() == APTTokenTypes.T_EOS) {
+                    nextToken = null;
+                    return new FilterToken((APTToken)newToken, APTTokenTypes.CONTINUE_CHAR);
+                }
             }
             return newToken;
         }

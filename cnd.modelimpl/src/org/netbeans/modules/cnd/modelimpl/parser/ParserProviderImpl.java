@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
@@ -277,14 +278,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
         
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
-            int form = FortranParserEx.FIXED_FORM;
-            try {
-                form = CndLexerUtilities.detectFortranFormat(file.getBuffer().getText()) == CndLexerUtilities.FortranFormat.FIXED ? 
-                        FortranParserEx.FIXED_FORM : 
-                        FortranParserEx.FREE_FORM;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            int form = APTLanguageSupport.FLAVOR_FORTRAN_FIXED.equals(file.getFileLanguageFlavor()) ? 
+                    FortranParserEx.FIXED_FORM : 
+                    FortranParserEx.FREE_FORM;
             
             parser = new FortranParserEx(ts, form);
         }
