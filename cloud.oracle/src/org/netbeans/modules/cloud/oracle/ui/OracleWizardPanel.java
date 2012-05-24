@@ -216,17 +216,17 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             try {
                 ai.testConnection();
             } catch (SDKException ex) {
-                LOG.log(Level.FINE, "cannot access SDK", ex);
+                LOG.log(Level.INFO, "cannot access SDK", ex);
                 asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.SDK");
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection failed", asynchError);
             } catch (ManagerException ex) {
-                LOG.log(Level.FINE, "cannot connect to oracle cloud", ex);
+                LOG.log(Level.INFO, "cannot connect to oracle cloud", ex);
                 asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.wrong.credentials");
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection failed", asynchError);
             } catch (Throwable t) {
-                LOG.log(Level.FINE, "cannot connect", t);
+                LOG.log(Level.INFO, "cannot connect", t);
                 asynchError = NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.something.wrong");
                 throw new WizardValidationException((JComponent)getComponent(), 
                         "connection exception", asynchError);
@@ -244,21 +244,21 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         }
     }
     
-    public static boolean testPassword(String identityDomain, String user, String pwd, 
+    public static boolean testPassword(String identityDomain, String user, String pwd, String javaServiceName,
             String adminURL, String sdkFolder) {
         OracleInstance ai = new OracleInstance("Oracle Cloud", 
                 OracleWizardComponent.getPrefixedUserName(identityDomain, user), 
-                pwd, adminURL, identityDomain, "", "", null, sdkFolder);
+                pwd, adminURL, identityDomain, javaServiceName, "", null, sdkFolder);
         Authenticator auth = resetCurrentAuthenticator();
         try {
             ai.testConnection();
             return true;
         } catch (SDKException ex) {
-            LOG.log(Level.FINE, "cannot access SDK", ex);
+            LOG.log(Level.INFO, "cannot access SDK", ex);
         } catch (ManagerException ex) {
-            LOG.log(Level.FINE, "cannot connect to oracle cloud", ex);
+            LOG.log(Level.INFO, "cannot connect to oracle cloud", ex);
         } catch (Throwable t) {
-            LOG.log(Level.FINE, "cannot connect", t);
+            LOG.log(Level.INFO, "cannot connect", t);
         } finally {
             if (auth != null) {
                 Authenticator.setDefault(auth);

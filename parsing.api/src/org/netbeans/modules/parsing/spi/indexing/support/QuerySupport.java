@@ -305,6 +305,8 @@ public final class QuerySupport {
             });
         } catch (IOException ioe) {
             throw ioe;
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new IOException(ex);
         }

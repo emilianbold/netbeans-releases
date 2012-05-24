@@ -50,7 +50,9 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.Element;
 
@@ -592,6 +594,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
             !params.equals(tree.getParameters()) || !thrown.equals(tree.getThrows()) || 
             mods!=tree.getModifiers() || defaultValue!=tree.getDefaultValue() || 
             body!=tree.getBody()) {
+            if ((((JCModifiers) mods).flags & Flags.GENERATEDCONSTR) != 0) {
+                mods = make.Modifiers(((JCModifiers) mods).flags & ~Flags.GENERATEDCONSTR, mods.getAnnotations());
+            }
             MethodTree n  = make.Method(mods, tree.getName().toString(), restype, typarams,
                                         params, thrown, body, defaultValue);
             
