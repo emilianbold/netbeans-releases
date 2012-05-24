@@ -172,6 +172,8 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                         severity = Severity.WARNING;
                     } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) { // owner is needed
                         severity = Severity.WARNING;
+                    } else if (CsmKindUtilities.isEnumForwardDeclaration(ref.getOwner())) { // owner is needed
+                        severity = Severity.WARNING;
                     }
                     foundError++;
                     response.addError(new ErrorInfoImpl(
