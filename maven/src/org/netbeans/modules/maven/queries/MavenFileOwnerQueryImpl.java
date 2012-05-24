@@ -108,13 +108,13 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     public void registerProject(NbMavenProjectImpl project) {
         MavenProject model = project.getOriginalMavenProject();
+        project.getProjectWatcher().removePropertyChangeListener(projectListener);
+        project.getProjectWatcher().addPropertyChangeListener(projectListener);        
         if (NbMavenProject.isErrorPlaceholder(model)) {
             LOG.log(Level.FINE, "will not register unloadable {0}", project.getPOMFile());
             return;
         }
         registerCoordinates(model.getGroupId(), model.getArtifactId(), project.getProjectDirectory().toURL());
-        project.getProjectWatcher().removePropertyChangeListener(projectListener);
-        project.getProjectWatcher().addPropertyChangeListener(projectListener);
         fireChange();
     }
     
