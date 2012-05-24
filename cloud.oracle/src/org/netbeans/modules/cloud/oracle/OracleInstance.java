@@ -256,7 +256,7 @@ public class OracleInstance {
     
     public void testConnection() throws ManagerException {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().listJobs();
+        getApplicationManager().listApplications(getIdentityDomain(), getJavaServiceName());
     }
     
     public OracleJ2EEInstance readJ2EEServerInstance() {
