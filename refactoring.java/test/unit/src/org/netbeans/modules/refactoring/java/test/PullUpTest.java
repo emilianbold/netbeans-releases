@@ -106,6 +106,172 @@ public class PullUpTest extends RefactoringTestBase {
                 new File("pullup/A.java", "package pullup; public class A extends B {}"),
                 new File("pullup/B.java", "package pullup; public class B { public int i; }"));
     }
+    
+    public void testPullUpGenMethoda() throws Exception { // #147508 - [Pull Up][Push down] Remap generic names
+        writeFilesAndWaitForScan(src,
+                new File("pullup/PullUpBaseClass.java", "package pullup;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "\n"
+                + "public class PullUpBaseClass<J> extends PullUpSuperClass<String, J> implements Serializable {\n"
+                + "     \n"
+                + "    public String field;\n"
+                + "    \n"
+                + "    public void method(J j) {\n"
+                + "        //method body\n"
+                + "        System.out.println(j.toString());\n"
+                + "    }\n"
+                + "    \n"
+                + "    public class InnerClass {\n"
+                + "        //class body\n"
+                + "        public void method() {\n"
+                + "            \n"
+                + "        }\n"
+                + "    }\n"
+                + "   \n"
+                + "    public void existing() {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    private void localyReferenced() {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    private void reference() {\n"
+                + "        localyReferenced();\n"
+                + "    }\n"
+                + "}"),
+                new File("pullup/PullUpSuperClass.java", "package pullup;\n"
+                + "\n"
+                + "public class PullUpSuperClass<B, A> {\n"
+                + "    \n"
+                + "    public void m2(A a) {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    final String field2 = \"const\";\n"
+                + "\n"
+                + "    public void existing() {\n"
+                + "        \n"
+                + "    }\n"
+                + "\n"
+                + "}"));
+        performPullUp(src.getFileObject("pullup/PullUpBaseClass.java"), 2, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/PullUpBaseClass.java", "package pullup;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "\n"
+                + "public class PullUpBaseClass<J> extends PullUpSuperClass<String, J> implements Serializable {\n"
+                + "     \n"
+                + "    public String field;\n"
+                + "    \n"
+                + "    public class InnerClass {\n"
+                + "        //class body\n"
+                + "        public void method() {\n"
+                + "            \n"
+                + "        }\n"
+                + "    }\n"
+                + "   \n"
+                + "    public void existing() {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    private void localyReferenced() {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    private void reference() {\n"
+                + "        localyReferenced();\n"
+                + "    }\n"
+                + "}"),
+                new File("pullup/PullUpSuperClass.java", "package pullup;\n"
+                + "\n"
+                + "public class PullUpSuperClass<B, A> {\n"
+                + "    \n"
+                + "    public void m2(A a) {\n"
+                + "        \n"
+                + "    }\n"
+                + "    \n"
+                + "    final String field2 = \"const\";\n"
+                + "\n"
+                + "    public void existing() {\n"
+                + "        \n"
+                + "    }\n"
+                + "    public void method(A j) {\n"
+                + "        //method body\n"
+                + "        System.out.println(j.toString());\n"
+                + "    }\n"
+                + "    \n"
+                + "\n"
+                + "}"));
+    }
+
+    public void testPullUpGenMethodb() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> { void method(X x) { } }"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<Z> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { }"));
+        performPullUpSuper(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> {}"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<Z> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { void method(Y x) { } }"));
+
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> { void method(X x) { } }"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<T> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { }"));
+        performPullUpSuper(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> {}"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<T> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { void method(String x) { } }"));
+    }
+    
+    public void testPullUpGenMethodc() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> { X method() { } }"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<Z> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { }"));
+        performPullUpSuper(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> {}"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<Z> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { Y method() { } }"));
+
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> { void method(X x) { } }"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<T> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { }"));
+        performPullUpSuper(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> {}"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<T> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { void method(String x) { } }"));
+    }
+    
+    public void testPullUpGenField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> { X x; }"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<Z> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { }"));
+        performPullUpSuper(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> {}"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<Z> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { Y x; }"));
+
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> { X x; }"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<T> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { }"));
+        performPullUpSuper(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A<X extends String> extends B<String, X> {}"),
+                new File("pullup/B.java", "package pullup; public class B<T, Z> extends C<T> { }"),
+                new File("pullup/C.java", "package pullup; public class C<Y> { String x; }"));
+    }
 
     public void testPullUpMethod() throws Exception {
         writeFilesAndWaitForScan(src,
