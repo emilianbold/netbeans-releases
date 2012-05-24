@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.glassfish.common;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +63,7 @@ public class StopProfilingTask extends BasicTask<GlassfishModule.OperationState>
      * @param stateListener state monitor to track start progress
      */
     public StopProfilingTask(final CommonServerSupport support, OperationStateListener stateListener) {
-        super(support.getInstanceProperties(), stateListener, new OperationStateListener() {
+        super(support.getInstance(), stateListener, new OperationStateListener() {
 
             @Override
            public void operationStateChanged(OperationState newState, String message) {
@@ -84,7 +82,7 @@ public class StopProfilingTask extends BasicTask<GlassfishModule.OperationState>
         Logger.getLogger("glassfish").log(Level.FINEST, "StopLocalTask.call() called on thread {0}", Thread.currentThread().getName()); // NOI18N
         
         if (support.getLocalStartProcess() != null) {
-            LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
+            LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(GlassfishModule.URL_ATTR));
             String msg = NbBundle.getMessage(BasicTask.class, "MSG_SERVER_PROFILING_STOPPED", instanceName);
             logger.write(msg, false);
             logger.stopReaders();
