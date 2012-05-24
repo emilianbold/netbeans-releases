@@ -83,6 +83,7 @@
             </folder>
 
             <folder name="Samples">
+                <attr name="position" intvalue="1850"/>
                 <folder name="Native">
                     <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.remote.projectui.wizard.cnd.Bundle#Templates/Project/Samples/Native"/>
                     <attr name="position" intvalue="650"/>
