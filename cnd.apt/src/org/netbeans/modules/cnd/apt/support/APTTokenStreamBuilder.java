@@ -86,7 +86,7 @@ public final class APTTokenStreamBuilder {
         return lexer;
     }    
 
-    public static TokenStream buildLightTokenStream(CharSequence name, char[] buf, String lang) {
+    public static TokenStream buildLightTokenStream(CharSequence name, char[] buf, String lang, String flavor) {
         APTLexer lexer = new APTLexer(buf);
         lexer.init(name.toString(), 0, lang);
         lexer.setOnlyPreproc(true);
@@ -99,7 +99,7 @@ public final class APTTokenStreamBuilder {
         return lexer;
     }     
 
-    public static TokenStream buildTokenStream(CharSequence name, char[] buf, String lang) {
+    public static TokenStream buildTokenStream(CharSequence name, char[] buf, String lang, String flavor) {
         APTLexer lexer = new APTLexer(buf);
         lexer.init(name.toString(), 0, lang);
         return lexer;

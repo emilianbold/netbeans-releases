@@ -834,7 +834,7 @@ public final class FileImpl implements CsmFile,
         ChangedSegment changedSegment = null;
         try {
             if (full) {
-                fileAPT = APTDriver.findAPT(this.getBuffer(), getFileLanguage());
+                fileAPT = APTDriver.findAPT(this.getBuffer(), getFileLanguage(), getFileLanguageFlavor());
             } else {
                 fileAPT = APTDriver.findAPTLight(this.getBuffer());
             }
