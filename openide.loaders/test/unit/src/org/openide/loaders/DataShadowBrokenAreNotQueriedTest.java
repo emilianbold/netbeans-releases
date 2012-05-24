@@ -59,16 +59,17 @@ import org.openide.util.lookup.ProxyLookup;
 /** Test that URL is not requested if there are no broken shadows.
  * @author Jaroslav Tulach
  */
-public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
+public class DataShadowBrokenAreNotQueriedTest extends NbTestCase {
     
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
     }
     
-    public DataShadowBrokenAreNotTestedTest(String name) {
+    public DataShadowBrokenAreNotQueriedTest(String name) {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         
         FileObject[] delete = FileUtil.getConfigRoot().getChildren();
@@ -79,34 +80,17 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
         UM.init();
     }
     
-    @RandomlyFails // NB-Core-Build #2009
-    public void testQueriedWhenBrokenShadowsExists() throws Exception {
-        
-        //
-        // Note: if anyone lowers the number of queries done here,
-        // then go on, this test is here just to describe the current behaviour
-        //
-        
-        
-        FileObject f1 = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/folder/original.txt");
-        assertNotNull(f1);
-        FileObject f2 = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/any/folder/original.txt");
-        assertNotNull(f2);
+    public void testNoURLMapperQueried() throws Exception {
+        UM.assertAccess("No queries to UM before the test starts", 0, 0);
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/folder/original.txt");
+        assertNotNull(fo);
         
         UM.assertAccess("No queries to UM yet", 0, 0);
-        DataObject original = DataObject.find(f1);
-        UM.assertAccess("No queries to UM still", 0, 0);
-        DataShadow s = original.createShadow(original.getFolder());
-        UM.assertAccess("One query to create the shadow and one to create the instance", 1, 1);
-        original.delete();
-        UM.assertAccess("One additional query to delete", 2, 2);
-        DataObject brokenShadow = DataObject.find(s.getPrimaryFile());
-        UM.assertAccess("Creating one broken shadow", 2, 1);
+        DataObject original = DataObject.find(fo);
         
-        DataObject original2 = DataObject.find(f2);
-        UM.assertAccess("Additional query per very data object creation", 1, 0);
+        UM.assertAccess("No queries to UM after creation of data object", 0, 0);
     }
-    
+
     private static final class UM extends URLMapper {
         private static int toURLCnt;
         private static int toFOCnt;
