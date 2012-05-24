@@ -70,6 +70,16 @@ public class PullUpTest extends RefactoringTestBase {
         super(name);
     }
 
+    public void test134034() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A { void x() { } }"),
+                new File("pullup/B.java", "package pullup; public class B extends A { void y() { super.x(); } }"));
+        performPullUp(src.getFileObject("pullup/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A { void x() { } void y() { x(); } }"),
+                new File("pullup/B.java", "package pullup; public class B extends A {}"));
+    }
+    
     public void test212934() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public class A { }"),
@@ -762,7 +772,7 @@ public class PullUpTest extends RefactoringTestBase {
         performPullUpImplements(src.getFileObject("pullup/A.java"), 0);
         verifyContent(src,
                 new File("pullup/A.java", "package pullup; public class A extends B { public void run() { } }"),
-                new File("pullup/B.java", "package pullup; import java.lang.Runnable; public class B implements Runnable { }"));
+                new File("pullup/B.java", "package pullup; public class B implements Runnable { }"));
     }
 
     public void testPullUpTwoClassesUp() throws Exception {
