@@ -2000,7 +2000,7 @@ public class AstRenderer {
 	return child != null && child.getType() == CPPTokenTypes.LESSTHAN;
     }
     
-    private boolean isScopedId(AST id) {
+    public static boolean isScopedId(AST id) {
         if (id == null) {
             return false;
         }

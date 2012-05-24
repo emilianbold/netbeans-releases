@@ -48,6 +48,7 @@ import java.util.* ;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -97,11 +98,25 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     void init2(CsmScope scope, AST ast, final CsmFile file, FileContent fileContent, boolean register) {
 	initScope(scope);
         temporaryRepositoryRegistration(register, this);
+        initEnumDefinition(scope);
         initEnumeratorList(ast, file, fileContent, register);
         if (register) {
             register(scope, true);
         }
     }    
+
+    private void initEnumDefinition(CsmScope scope) {
+        ClassImpl.MemberForwardDeclaration mfd = findMemberForwardDeclaration(scope);
+        if (mfd instanceof ClassImpl.EnumMemberForwardDeclaration && CsmKindUtilities.isEnum(this)) {
+            ClassImpl.EnumMemberForwardDeclaration fd = (ClassImpl.EnumMemberForwardDeclaration) mfd;
+            fd.setCsmEnum((CsmEnum) this);
+            CsmClass containingClass = fd.getContainingClass();
+            if (containingClass != null) {
+                // this is our real scope, not current namespace
+                initScope(containingClass);
+            }
+        }
+    }
 
     void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
         EnumeratorImpl ei = EnumeratorImpl.create(this, name, startOffset, endOffset, register);

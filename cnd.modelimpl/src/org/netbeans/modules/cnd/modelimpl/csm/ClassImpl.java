@@ -160,8 +160,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
     
     private void initClassDefinition(CsmScope scope) {
-        ClassImpl.ClassMemberForwardDeclaration fd = findClassDefinition(scope);
-        if (fd != null && CsmKindUtilities.isClass(this)) {
+        ClassImpl.MemberForwardDeclaration mfd = findMemberForwardDeclaration(scope);
+        if (mfd instanceof ClassImpl.ClassMemberForwardDeclaration && CsmKindUtilities.isClass(this)) {
+            ClassImpl.ClassMemberForwardDeclaration fd = (ClassImpl.ClassMemberForwardDeclaration) mfd;
             fd.setCsmClass((CsmClass) this);
             CsmClass containingClass = fd.getContainingClass();
             if (containingClass != null) {
@@ -698,7 +699,6 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                    case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
                         EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), fileContent, !isRenderingLocalContext());
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum,!isRenderingLocalContext());
@@ -706,6 +706,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         checkInnerIncludes(innerEnum, Collections.<CsmObject>emptyList());
                         break;
 
+                    case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
+                    {
+                        EnumMemberForwardDeclaration fd = renderEnumForwardDeclaration(token);
+                        if (fd != null) {
+                            addMember(fd, !isRenderingLocalContext());
+                            fd.init(token, ClassImpl.this, !isRenderingLocalContext());
+                            break;
+                        }
+                        break;
+                    }
                     // other members
                     case CPPTokenTypes.CSM_CTOR_DEFINITION:
                     case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
@@ -997,6 +1007,30 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return ClassMemberForwardDeclaration.create(getContainingFile(), ClassImpl.this, token, curentVisibility, !isRenderingLocalContext());
         }
 
+        private EnumMemberForwardDeclaration renderEnumForwardDeclaration(AST token) {
+            AST typeAST = token.getFirstChild();
+            if (typeAST == null) {
+                return null;
+            }
+            if (typeAST.getType() == CPPTokenTypes.LITERAL_template) {
+                typeAST = typeAST.getNextSibling();
+            }
+            if (typeAST == null || (typeAST.getType() != CPPTokenTypes.LITERAL_enum)) {
+                return null;
+            }
+            AST idAST = typeAST.getNextSibling();
+            if (idAST != null &&
+                    (idAST.getType() == CPPTokenTypes.LITERAL_struct ||
+                     idAST.getType() == CPPTokenTypes.LITERAL_class)) {
+                idAST = idAST.getNextSibling();
+            }
+            if (idAST == null || (idAST.getType() != CPPTokenTypes.CSM_QUALIFIED_ID &&
+                                  idAST.getType() != CPPTokenTypes.IDENT)) {
+                return null;
+            }
+            return EnumMemberForwardDeclaration.create(getContainingFile(), ClassImpl.this, token, curentVisibility, !isRenderingLocalContext());
+        }
+
         private boolean renderBitField(AST token) {
 
             AST typeAST = token.getFirstChild();
@@ -1146,8 +1180,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
+    public static interface MemberForwardDeclaration {}
+
     public static final class ClassMemberForwardDeclaration extends ClassForwardDeclarationImpl
-            implements CsmMember, CsmClassifier {
+            implements CsmMember, CsmClassifier, MemberForwardDeclaration {
 
         private final CsmVisibility visibility;
         private CsmUID<CsmClass> classDefinition;
@@ -1283,7 +1319,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     }
 
     public static final class EnumMemberForwardDeclaration extends EnumForwardDeclarationImpl
-            implements CsmMember, CsmClassifier {
+            implements CsmMember, CsmClassifier, MemberForwardDeclaration {
 
         private final CsmVisibility visibility;
         private CsmUID<CsmEnum> enumDefinition;
@@ -1375,12 +1411,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         @Override
         protected ForwardEnum createForwardEnumIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-            ForwardEnum cls = super.createForwardEnumIfNeed(ast, scope, registerInProject);
-            enumDefinition = UIDCsmConverter.declarationToUID((CsmEnum) cls);
-            if (cls != null) {
+            ForwardEnum enm = super.createForwardEnumIfNeed(ast, scope, registerInProject);
+            enumDefinition = UIDCsmConverter.declarationToUID((CsmEnum) enm);
+            if (enm != null) {
                 RepositoryUtils.put(this);
             }
-            return cls;
+            return enm;
         }
 
         public void setCsmEnum(CsmEnum cls) {

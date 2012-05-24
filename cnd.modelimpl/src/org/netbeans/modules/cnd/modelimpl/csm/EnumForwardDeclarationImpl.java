@@ -99,10 +99,14 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
     
     protected EnumForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
         super(file, getEnumForwardStartOffset(ast), getEnumForwardEndOffset(ast));
-        AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.IDENT);
+        if (qid == null) {
+            qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        }
         assert qid != null;
-        name = QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
-        nameParts = initNameParts(qid);
+        assert !AstRenderer.isScopedId(qid) : qid;
+        name = QualifiedNameCache.getManager().getString(AstUtil.getText(qid));
+        nameParts = new CharSequence[] {name};
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null, global);
     }
 
@@ -142,21 +146,9 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
     private static int getEnumForwardEndOffset(AST ast) {
         AST firstChild = AstRenderer.getFirstChildSkipQualifiers(ast);
         if (firstChild != null) {
-            if(firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
-                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-                if(qid != null) {
-                    return getEndOffset(qid);
-                }
-            } else if(firstChild.getType() == CPPTokenTypes.LITERAL_enum) {
-                AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-                if(qid != null) {
-                    AST nextSibling = qid.getNextSibling();
-                    if(nextSibling != null && nextSibling.getType() == CPPTokenTypes.SEMICOLON) {
-                        return getEndOffset(nextSibling);
-                    } else {
-                        return getEndOffset(qid);
-                    }
-                }                
+            AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.SEMICOLON);
+            if(qid != null) {
+                return getEndOffset(qid);
             }
         }
         return getEndOffset(ast);        
@@ -270,13 +262,13 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
             } finally {
                 ResolverFactory.releaseResolver(aResolver);
             }
-            if (result == null || ForwardClass.isForwardClass((CsmDeclaration)result) || CsmKindUtilities.isClassForwardDeclaration(result)) {
+            if (result == null || ForwardEnum.isForwardEnum((CsmDeclaration)result) || CsmKindUtilities.isEnumForwardDeclaration(result)) {
                 Resolver aResolver2 = ResolverFactory.createResolver(this);
                 try {
                     CharSequence[] nameParts2 = new CharSequence[1];
                     nameParts2[0] = nameParts[nameParts.length - 1];
                     CsmObject result2 = aResolver2.resolve(nameParts2, Resolver.CLASSIFIER);
-                    if(result == null || (result2 != null && !ForwardClass.isForwardClass((CsmDeclaration)result2) && !CsmKindUtilities.isClassForwardDeclaration(result2))) {
+                    if(result == null || (result2 != null && !ForwardEnum.isForwardEnum((CsmDeclaration)result2) && !CsmKindUtilities.isEnumForwardDeclaration(result2))) {
                         result = result2;
                     }
                 } finally {
@@ -291,8 +283,6 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
             }
             lastResult = result;
             updateCache(newParseCount, currentResolver);
-        //} else {
-        //    System.err.println("cache hit ClassForwardDeclarationImpl");
         }
         // NOTE: result shouldn't be cached. 
         // class forward could mean different things depending on other includes
