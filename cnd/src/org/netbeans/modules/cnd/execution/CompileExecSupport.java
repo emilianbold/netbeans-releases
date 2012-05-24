@@ -193,7 +193,7 @@ public final class CompileExecSupport extends ExecutionSupport {
     public String getCompileFlags() {
         String flags = (String) getEntry().getFile().getAttribute(PROP_COMPILE_FLAGS);
         if (flags == null) {
-            flags = "-g -c"; // NOI18N
+            flags = "-g"; // NOI18N
             setCompileFlags(flags);
         }
 
