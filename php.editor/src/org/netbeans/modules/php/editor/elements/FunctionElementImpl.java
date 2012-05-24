@@ -60,6 +60,7 @@ import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 import org.openide.util.Parameters;
 
 /**
@@ -192,7 +193,12 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
 
     @Override
     public String asString(PrintAs as) {
-        return this.functionSupport.asString(as, this);
+        return asString(as, TypeNameResolver.forNull());
+    }
+
+    @Override
+    public String asString(PrintAs as, TypeNameResolver typeNameResolver) {
+        return this.functionSupport.asString(as, this, typeNameResolver);
     }
 
     private static class FunctionSignatureParser {
