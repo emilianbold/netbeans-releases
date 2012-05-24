@@ -538,7 +538,7 @@ public final class NbDocument extends Object {
      * at this time for an editor cookie.
      * <br>
      * The edit to be undone may be composed from instances of various undoable edit types
-     * (see <a href="@TOP@/org/netbeans/spi/editor/document/UndoableEditWrapper.html">UndoableEditWrapper</a>).
+     * (see <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/document/UndoableEditWrapper.html">UndoableEditWrapper</a>).
      *
      * @param <T> type of undoable edit to be retrieved.
      * @param ec editor cookie providing an undo/redo manager.
@@ -547,7 +547,7 @@ public final class NbDocument extends Object {
      *  or an instance of the given type is not contained in the edit to be undone.
      * @since 6.49
      */
-    public static <T> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
+    public static <T extends UndoableEdit> T getEditToBeUndoneOfType(EditorCookie ec, Class<T> type) {
         return getEditToBeUndoneRedoneOfType(ec, type, false);
     }
 
@@ -556,7 +556,7 @@ public final class NbDocument extends Object {
      * at this time for an editor cookie.
      * <br>
      * The edit to be undone may be composed from instances of various undoable edit types
-     * (see <a href="@TOP@/org/netbeans/spi/editor/document/UndoableEditWrapper.html">UndoableEditWrapper</a>).
+     * (see <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/document/UndoableEditWrapper.html">UndoableEditWrapper</a>).
      *
      * @param <T> type of undoable edit to be retrieved.
      * @param ec editor cookie providing an undo/redo manager.
@@ -565,11 +565,11 @@ public final class NbDocument extends Object {
      *  or an instance of the given type is not contained in the edit to be redone.
      * @since 6.49
      */
-    public static <T> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
+    public static <T extends UndoableEdit> T getEditToBeRedoneOfType(EditorCookie ec, Class<T> type) {
         return getEditToBeUndoneRedoneOfType(ec, type, true);
     }
 
-    private static <T> T getEditToBeUndoneRedoneOfType(EditorCookie ec, Class<T> type, boolean redone) {
+    private static <T extends UndoableEdit> T getEditToBeUndoneRedoneOfType(EditorCookie ec, Class<T> type, boolean redone) {
         UndoRedo ur;
         if (ec instanceof CloneableEditorSupport &&
                 ((ur = ((CloneableEditorSupport)ec).getUndoRedo()) instanceof UndoRedoManager))
@@ -577,8 +577,7 @@ public final class NbDocument extends Object {
             UndoRedoManager urManager = (UndoRedoManager) ur;
             UndoableEdit edit = urManager.editToBeUndoneRedone(redone);
             if (type.isInstance(edit)) {
-                @SuppressWarnings("unchecked") T inst = (T) edit;
-                return inst;
+                return type.cast(edit);
             } else if (edit instanceof List) {
                 List<UndoableEdit> listEdit = (List<UndoableEdit>) edit;
                 for (int i = listEdit.size() -1; i >= 0; i--) { // Go from most wrapped back
