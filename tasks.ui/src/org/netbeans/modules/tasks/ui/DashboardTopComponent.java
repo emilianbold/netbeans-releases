@@ -73,13 +73,13 @@ import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 @ConvertAsProperties(dtd = "-//org.netbeans.modules.demotasklist//Dashboard//EN",
 autostore = false)
 @TopComponent.Description(preferredID = "DashboardTopComponent",
-iconBase = "org/netbeans/modules/tasks/ui/resources/kenai-small.png",
+iconBase = "org/netbeans/modules/tasks/ui/resources/dashboard.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "explorer", openAtStartup = true)
 @ActionID(category = "Window", id = "org.netbeans.modules.tasks.ui.DashboardTopComponent")
-@ActionReference(path = "Menu/Window" /*
- * , position = 333
- */)
+@ActionReference(path = "Menu/Window"
+ , position = 501
+ )
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
 preferredID = "DashboardTopComponent")
 @NbBundle.Messages({
