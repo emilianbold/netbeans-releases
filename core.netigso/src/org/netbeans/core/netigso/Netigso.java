@@ -712,11 +712,6 @@ implements Cloneable, Stamps.Updater {
         for (Module.PackageExport packageExport : m.getPublicPackages()) {
             Set<String> pkgs;
             if (packageExport.recursive) {
-                LOG.log(Level.WARNING, 
-                    "Usage of recursive export {0} in {1} is not correct. "
-                    + "Replace with individual packages!", 
-                    new Object[]{packageExport.pkg, m.getCodeNameBase()}
-                );
                 pkgs = findRecursivePkgs(m, packageExport);
             } else {
                 pkgs = Collections.singleton(packageExport.pkg);
@@ -748,7 +743,7 @@ implements Cloneable, Stamps.Updater {
                     if (lastSlash == -1) {
                         continue;
                     }
-                    String pkg = entryName.substring(0, lastSlash);
+                    String pkg = entryName.substring(0, lastSlash + 1);
                     if (pkg.startsWith(packageExport.pkg)) {
                         pkgs.add(pkg);
                     }
