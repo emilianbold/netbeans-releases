@@ -44,25 +44,29 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.OpenProjectList;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.NodeAction;
 
 /** Action opening all "subprojects" of given project
  */
+@ActionID(category="Project", id="org.netbeans.modules.project.ui.actions.OpenSubprojects")
+@ActionRegistration(displayName="#LBL_OpenSubprojectsAction_Name", lazy=/* SubprojectProvider check */false)
+@Messages("LBL_OpenSubprojectsAction_Name=Open Required Projects")
 public class OpenSubprojects extends NodeAction {
 
-    private static final String ICON = "org/netbeans/modules/project/ui/resources/openProject.png"; //NOI18N
+    @StaticResource private static final String ICON = "org/netbeans/modules/project/ui/resources/openProject.png";
 
-    /** Creates a new instance of BrowserAction */
-    public OpenSubprojects() {
-    }
-        
-    public String getName() {
-        return NbBundle.getMessage( OpenSubprojects.class, "LBL_OpenSubprojectsAction_Name" ); // NOI18N        
+    @Override public String getName() {
+        return LBL_OpenSubprojectsAction_Name();
     }
     
     @Override
@@ -70,7 +74,7 @@ public class OpenSubprojects extends NodeAction {
         return ICON;
     }
     
-    public HelpCtx getHelpCtx() {
+    @Override public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
@@ -79,7 +83,7 @@ public class OpenSubprojects extends NodeAction {
         return true;
     }
     
-    protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
+    @Override protected boolean enable(Node[] activatedNodes) {
         
         if ( activatedNodes == null || activatedNodes.length == 0 ) {
             return false; // No nodes no closing
@@ -106,7 +110,7 @@ public class OpenSubprojects extends NodeAction {
         return someSubprojects;
     }
     
-    protected void performAction(org.openide.nodes.Node[] activatedNodes) {
+    @Override protected void performAction(Node[] activatedNodes) {
     
         for( int i = 0; i < activatedNodes.length; i++ ) {
             Project p = activatedNodes[i].getLookup().lookup(Project.class);
