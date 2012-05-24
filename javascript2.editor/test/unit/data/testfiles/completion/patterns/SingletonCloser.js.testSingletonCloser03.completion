@@ -1,0 +1,7 @@
+Code completion result for source line:
+test.|createArr(); // OK: SHOW properties
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     createArr()                     [PUBLIC]   SingletonCloser.js
+METHOD     doSome()                        [PUBLIC]   SingletonCloser.js
+METHOD     getArr()                        [PUBLIC]   SingletonCloser.js
