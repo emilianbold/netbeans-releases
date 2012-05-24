@@ -523,9 +523,10 @@ public class JFXProjectGenerator {
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty(ProjectProperties.RUN_CLASSPATH, new String[]{ // NOI18N
+                    // note that dist.jar needs to be first to prevent mixups in case of multiple dependent FX projects
+                    "${dist.jar}:", // NOI18N
                     "${javac.classpath}:", // NOI18N
-                    "${build.classes.dir}:", // NOI18N
-                    "${dist.jar}",         // NOI18N
+                    "${build.classes.dir}",         // NOI18N
                 });
         ep.setProperty("debug.classpath", new String[]{ // NOI18N
                     "${run.classpath}", // NOI18N

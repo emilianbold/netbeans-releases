@@ -50,9 +50,9 @@ import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
 import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.spi.java.hints.Hint.Options;
 
 public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactoringPlugin {
 
@@ -115,7 +115,7 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
     private Iterable<? extends HintDescription> filterQueries(Iterable<? extends HintDescription> hints, boolean positive) {
         ArrayList<HintDescription> result = new ArrayList<HintDescription>();
         for (HintDescription hint: hints) {
-            if (positive ^ !hint.getMetadata().options.contains(Options.QUERY)) {
+            if (positive ^ !(hint.getMetadata().options.contains(Options.QUERY) || hint.getOptions().contains(Options.QUERY))) {
                 result.add(hint);
             }
         }
