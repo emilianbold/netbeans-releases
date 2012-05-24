@@ -165,7 +165,7 @@ FLOAT_1=[0-9]+\.[0-9]+{EXPONENT}?
 FLOAT_2=\.[0-9]+{EXPONENT}?
 FLOAT_3=[0-9]+\.{EXPONENT}?
 FLOAT_4=[0-9]+{EXPONENT}
-FLOAT={FLOAT_1} | {FLOAT_2} | {FLOAT_3} | {FLOAT_4}
+FLOAT=[\+\-]?({FLOAT_1} | {FLOAT_2} | {FLOAT_3} | {FLOAT_4})
 NUMBER={ZERO} | {DECIMAL} | {OCTAL} | {HEXADECIMAL} | {FLOAT}
 
 LITERAL=([^+#%\"',=\[\]\{\}\(\)\<\>\t\n\r@ ])+
