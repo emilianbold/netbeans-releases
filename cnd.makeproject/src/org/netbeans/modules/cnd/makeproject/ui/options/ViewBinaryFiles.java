@@ -75,7 +75,7 @@ public class ViewBinaryFiles extends NamedOption {
     }
 
     @Override
-    public Object getDefault() {
+    public Object getDefaultValue() {
         return false;
     }
 }

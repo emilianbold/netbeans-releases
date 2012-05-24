@@ -88,7 +88,7 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         }
 
         @Override
-        public Object getDefault() {
+        public Object getDefaultValue() {
             return true;
         }
 

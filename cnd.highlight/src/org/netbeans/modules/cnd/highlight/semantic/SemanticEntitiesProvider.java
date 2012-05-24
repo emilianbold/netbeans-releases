@@ -484,7 +484,7 @@ public final class SemanticEntitiesProvider {
         }
 
         @Override
-        public Object getDefault() {
+        public Object getDefaultValue() {
             return true;
         }
         

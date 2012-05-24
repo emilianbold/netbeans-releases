@@ -123,7 +123,7 @@ public abstract class CsmErrorProvider extends NamedOption {
     }
 
     @Override
-    public Object getDefault() {
+    public Object getDefaultValue() {
         return true;
     }
 
@@ -247,7 +247,7 @@ public abstract class CsmErrorProvider extends NamedOption {
     /** default instance */
     private static CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
     
-    public static synchronized CsmErrorProvider getDefaultErrorProvider() {
+    public static synchronized CsmErrorProvider getDefault() {
         return DEFAULT;
     }
 

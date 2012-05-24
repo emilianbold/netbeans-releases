@@ -71,7 +71,7 @@ public abstract class NamedOption {
 
     public abstract OptionKind getKind();
 
-    public abstract Object getDefault();
+    public abstract Object getDefaultValue();
     
     public static Accessor getAccessor() {
         return accessor;
@@ -83,7 +83,7 @@ public abstract class NamedOption {
         public final boolean getBoolean(String name) {
             NamedOption option = findOption(name);
             if (option.getKind() == OptionKind.Boolean) {
-                return preferences.getBoolean(option.getName(), (Boolean)option.getDefault());
+                return preferences.getBoolean(option.getName(), (Boolean)option.getDefaultValue());
             }
             throw new IllegalArgumentException("Option "+option.getName()+" is not boolean"); //NOI18N
         }
@@ -101,7 +101,7 @@ public abstract class NamedOption {
         public final int getInteger(String name) {
             NamedOption option = findOption(name);
             if (option.getKind() == OptionKind.Integer) {
-                return preferences.getInt(option.getName(), (Integer)option.getDefault());
+                return preferences.getInt(option.getName(), (Integer)option.getDefaultValue());
             }
             throw new IllegalArgumentException("Option "+option.getName()+" is not integer"); //NOI18N
         }
@@ -118,7 +118,7 @@ public abstract class NamedOption {
         public final String getString(String name) {
             NamedOption option = findOption(name);
             if (option.getKind() == OptionKind.String) {
-                return preferences.get(option.getName(), (String)option.getDefault());
+                return preferences.get(option.getName(), (String)option.getDefaultValue());
             }
             throw new IllegalArgumentException("Option "+option.getName()+" is not string"); //NOI18N
         }

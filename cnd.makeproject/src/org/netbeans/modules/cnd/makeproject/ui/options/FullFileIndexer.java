@@ -74,7 +74,7 @@ public class FullFileIndexer extends NamedOption {
     }
 
     @Override
-    public Object getDefault() {
+    public Object getDefaultValue() {
         return false;
     }
 }

@@ -75,7 +75,7 @@ public class DependencyChecking extends NamedOption {
     }
 
     @Override
-    public Object getDefault() {
+    public Object getDefaultValue() {
         return true;
     }
 }

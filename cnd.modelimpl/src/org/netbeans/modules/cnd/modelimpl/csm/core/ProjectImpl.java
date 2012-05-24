@@ -584,7 +584,7 @@ public final class ProjectImpl extends ProjectBase {
         }
 
         @Override
-        public Object getDefault() {
+        public Object getDefaultValue() {
             return true;
         }
     }

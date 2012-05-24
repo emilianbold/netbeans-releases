@@ -177,7 +177,7 @@ public class HighlightProvider  {
             doc.addDocumentListener(listener);
         }
         try {
-            CsmErrorProvider.getDefaultErrorProvider().getErrors(new RequestImpl(file, doc, interrupter), response);
+            CsmErrorProvider.getDefault().getErrors(new RequestImpl(file, doc, interrupter), response);
         } finally {
             if (listener != null) {
                 doc.removeDocumentListener(listener);

@@ -102,7 +102,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     }
 
     @Override
-    public Object getDefault() {
+    public Object getDefaultValue() {
         return true;//!CndUtils.isReleaseMode();
     }
     

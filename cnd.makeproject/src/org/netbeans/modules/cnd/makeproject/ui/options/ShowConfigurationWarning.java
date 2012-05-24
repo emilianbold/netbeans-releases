@@ -74,7 +74,7 @@ public class ShowConfigurationWarning extends NamedOption {
     }
 
     @Override
-    public Object getDefault() {
+    public Object getDefaultValue() {
         return true;
     }
 }
