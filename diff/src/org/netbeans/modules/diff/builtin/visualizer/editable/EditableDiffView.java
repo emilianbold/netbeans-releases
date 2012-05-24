@@ -187,6 +187,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     private static final String CONTENT_TYPE_DIFF = "text/x-diff"; //NOI18N
+    private final JPanel searchContainer;
+    private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -208,11 +210,15 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         actionsEnabled = ss2.isEditable();
         diffMarkprovider = new EditableDiffMarkProvider();        
 
+        view = new JPanel(new BorderLayout(0, 0));
+        searchContainer = new JPanel();
+        searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
+        view.add(searchContainer, BorderLayout.PAGE_END);
         if (enhancedView) {
-            view = jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+            view.add(jTabbedPane = new JTabbedPane(JTabbedPane.TOP), BorderLayout.CENTER);
         } else {
             jTabbedPane = null;
-            view = jSplitPane1;
+            view.add(jSplitPane1, BorderLayout.CENTER);
         }
         initComponents ();
 
@@ -889,6 +895,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             view.setOpaque(true);
         }   
     
+        textualEditorPane.putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+        jEditorPane1.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+        jEditorPane2.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
     }
 
     WeakHashMap<JEditorPane, FoldHierarchyListener> hieararchyListeners = new WeakHashMap<JEditorPane, FoldHierarchyListener>(2);
