@@ -223,6 +223,8 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             return 1*10+0;
         } else if(CsmKindUtilities.isClassForwardDeclaration(object)) {
             return 1*10+0;
+        } else if (CsmKindUtilities.isEnumForwardDeclaration(object)) {
+            return 1*10 + 0;
         } else if(CsmKindUtilities.isEnum(object)) {
             return 1*10+1;
         } else if(CsmKindUtilities.isTypedef(object)) {
@@ -504,7 +506,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     return null;
                 }
             }
-            if (CsmKindUtilities.isClassForwardDeclaration(element)) {
+            if (CsmKindUtilities.isClassForwardDeclaration(element) || CsmKindUtilities.isEnumForwardDeclaration(element)) {
                 node = new CppDeclarationNode(Children.LEAF, (CsmOffsetableDeclaration)element, model);
             } else {
                 node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model,lineNumberIndex);
