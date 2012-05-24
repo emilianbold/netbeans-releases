@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -109,7 +110,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         assertNotNull (provider);
         JavaPlatform[] platforms = manager.getInstalledPlatforms();
         assertNotNull (platforms);
-        assertTrue (platforms.length == 0);
+        assertEquals (1,platforms.length);
+        assertEquals(FallbackDefaultJavaPlatform.getInstance(), platforms[0]);
         JavaPlatform platform = new TestJavaPlatform ("Testing Platform",
             new Specification("j2se", new SpecificationVersion ("1.5")));
         provider.addPlatform (platform);
@@ -120,7 +122,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.removePlatform(platform);
         platforms = manager.getInstalledPlatforms();
         assertNotNull (platforms);
-        assertTrue (platforms.length == 0);
+        assertEquals (1,platforms.length);
+        assertEquals(FallbackDefaultJavaPlatform.getInstance(), platforms[0]);
     }
 
     public void testGetPlatforms() {
@@ -237,7 +240,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.removePlatform (p6);
         provider.removePlatform (p7);
         provider.removePlatform (p8);
-        assertTrue (manager.getInstalledPlatforms().length == 0);
+        assertEquals (1,manager.getInstalledPlatforms().length);
+        assertEquals (FallbackDefaultJavaPlatform.getInstance(),manager.getInstalledPlatforms()[0]);
     }
 
 
