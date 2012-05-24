@@ -45,7 +45,6 @@
 package org.openide.awt;
 
 
-import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -69,6 +68,7 @@ import javax.swing.JComponent.AccessibleJComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import org.netbeans.modules.openide.loaders.AWTTask;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -546,7 +546,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
         */
         @Override
         protected Task postCreationTask (Runnable run) {
-            return new AWTTask (run);
+            return new AWTTask (run, this);
         }
 
     } // end of Folder
