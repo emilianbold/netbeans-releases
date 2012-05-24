@@ -43,12 +43,12 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,12 +56,11 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
+final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NamedPanel, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private BuildActionsPanel component;
     private String name;
-    private boolean initialized = false;
 
     /** Create the wizard panel descriptor. */
     public BuildActionsDescriptorPanel() {
@@ -135,7 +134,6 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<Wizard
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
         getComponent().read(wizardDescriptor);
-        initialized = true;
     }
 
     @Override

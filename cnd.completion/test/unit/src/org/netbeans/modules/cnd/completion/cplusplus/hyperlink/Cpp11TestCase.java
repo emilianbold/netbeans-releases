@@ -102,7 +102,20 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
     public void testBug210291() throws Exception {
         // Bug 210291 - Unresolved ids in instantiations
         performTest("bug210291.cpp", 13, 59, "bug210291.cpp", 8, 5);
-    }    
+    }
+
+    public void testExtEnumDefition212843() throws Exception {
+        // #212843 - external enum declaration can not resolve initializer constants
+        performTest("iz212843.cpp", 5, 42, "iz212843.cpp", 2, 12);
+        performTest("iz212843.cpp", 6, 16, "iz212843.cpp", 10, 5);
+        performTest("iz212843.cpp", 7, 21, "iz212843.cpp", 14, 5);
+        performTest("iz212843.cpp", 10, 16, "iz212843.cpp", 6, 9);
+        performTest("iz212843.cpp", 11, 25, "iz212843.cpp", 5, 16);
+        performTest("iz212843.cpp", 14, 21, "iz212843.cpp", 7, 9);
+        performTest("iz212843.cpp", 14, 37, "iz212843.cpp", 2, 12);
+        performTest("iz212843.cpp", 14, 46, "iz212843.cpp", 5, 16);
+        performTest("iz212843.cpp", 14, 55, "iz212843.cpp", 5, 26);
+    }
     
 //    public void testBug210303() throws Exception {
 //        // Bug 210303 - Unresolved instantiation

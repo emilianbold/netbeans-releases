@@ -58,16 +58,18 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  */
 final class APTFortranFilter extends APTBaseLanguageFilter {
 
+    private final String flavor;
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 
-    public APTFortranFilter() {
+    public APTFortranFilter(String flavor) {
         super(true);
         initialize();
+        this.flavor = flavor;
     }
 
     @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
-        return new APTFortranFilterEx().getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream)));
+        return new APTFortranFilterEx(flavor).getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream)));
     }
 
     private void initialize() {

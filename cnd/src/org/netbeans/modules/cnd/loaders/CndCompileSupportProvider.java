@@ -37,36 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.loaders;
 
-package org.netbeans.modules.cnd.modelutil;
-
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.cnd.execution.CompileExecSupport;
+import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.InstanceContent.Convertor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Source data objects need binary support to compile and run source with main method.
  *
- * @author Sergey Grinev
+ * @author Alexander Simon
  */
-public class NamedEntityOptions {
-    private NamedEntityOptions() {}
-    
-    private static class Instantiator {
-        public static NamedEntityOptions instance = new NamedEntityOptions();
-    }
-    
-    public static NamedEntityOptions instance() {
-        return Instantiator.instance;
+@ServiceProvider(service = CndCookieProvider.class)
+public final class CndCompileSupportProvider extends CndCookieProvider {
+    static final CndCompileSupportFactory staticFactory = new CndCompileSupportFactory();
+
+    @Override
+    public void addLookup(DataObject dao, InstanceContent ic) {
+        MultiDataObject mdao = (MultiDataObject) dao;
+        if (MIMENames.isCppOrCOrFortran(dao.getPrimaryFile().getMIMEType())){
+            ic.add(mdao, staticFactory);
+        }
     }
 
-    private final Preferences preferences = NbPreferences.forModule(NamedEntityOptions.class);
+    private static class CndCompileSupportFactory implements Convertor<MultiDataObject, CompileExecSupport> {
 
-    public boolean isEnabled(NamedEntity e) {
-        return preferences.getBoolean(e.getName(), e.isEnabledByDefault());
-    }
-    
-    public void setEnabled(NamedEntity e, boolean value) {
-        preferences.putBoolean(e.getName(), value);
+        public CndCompileSupportFactory() {
+        }
+
+        @Override
+        public CompileExecSupport convert(MultiDataObject obj) {
+            return new CompileExecSupport(obj.getPrimaryEntry());
+        }
+
+        @Override
+        public Class<? extends CompileExecSupport> type(MultiDataObject obj) {
+            return CompileExecSupport.class;
+        }
+
+        @Override
+        public String id(MultiDataObject obj) {
+            return CompileExecSupport.class.getName()+obj.getPrimaryFile().getPath();
+        }
+
+        @Override
+        public String displayName(MultiDataObject obj) {
+            return id(obj);
+        }
     }
 }

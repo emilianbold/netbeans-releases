@@ -177,7 +177,7 @@ public final class CsmProjectContentResolver {
                         }
                     }
                 }
-                if (elemEnum != null) {
+                if (elemEnum != null && !elemEnum.isStronglyTyped()) {
                     for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
                         CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {
@@ -898,23 +898,28 @@ public final class CsmProjectContentResolver {
     }
 
     private Map<CharSequence, CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, Set<CsmNamespace> handledNS) {
-        handledNS.add(ns);
         Map<CharSequence, CsmNamespace> res = new LinkedHashMap<CharSequence, CsmNamespace>(); // order is important
-        // handle all nested namespaces
-        for (CsmProject lib : ns.getProject().getLibraries()) {
-            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
-            if (n != null && !handledNS.contains(n)) {
-                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+        if(ns != null) {
+            handledNS.add(ns);
+            CsmProject nsProject = ns.getProject();
+            if(nsProject != null) {
+                // handle all nested namespaces
+                for (CsmProject lib : nsProject.getLibraries()) {
+                    CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+                    if (n != null && !handledNS.contains(n)) {
+                        res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+                    }
+                }
+                for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+                    CsmNamespace nestedNs = (CsmNamespace) it.next();
+                    // TODO: consider when we add nested namespaces
+                    if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
+                        res.put(nestedNs.getQualifiedName(), nestedNs);
+                    }
+                }
             }
         }
-        for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
-            CsmNamespace nestedNs = (CsmNamespace) it.next();
-            // TODO: consider when we add nested namespaces
-            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
-                res.put(nestedNs.getQualifiedName(), nestedNs);
-            }
-        }
-        return res;
+        return res;        
     }
 
     @SuppressWarnings("unchecked")
@@ -964,7 +969,8 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
-            CsmDeclaration.Kind.ENUM
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
+            CsmDeclaration.Kind.ENUM,
         };
         List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, inspectOuterClasses, true, false);
         if (res != null && this.isSortNeeded()) {
