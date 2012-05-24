@@ -67,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -385,12 +386,13 @@ public final class FileChooserAccessory extends javax.swing.JPanel
         return fs;
     }
 
+    @Messages({"# {0} - file location", "FileChooserAccessory_no_such_file=Cannot copy nonexistent path {0} to libraries folder."})
     private void copyFiles(List<File> files, FileObject newRoot) throws IOException {
         List<File> fs = new ArrayList<File>();
         for (File file : files) {
             FileObject fo = FileUtil.toFileObject(file);
             if (fo == null) {
-                throw new FileNotFoundException(file.toString());
+                throw Exceptions.attachLocalizedMessage(new FileNotFoundException(file.toString()), FileChooserAccessory_no_such_file(file));
             }
             FileObject newFO;
             if (fo.isFolder()) {
