@@ -52,8 +52,22 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.*;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -82,7 +96,12 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -94,6 +113,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
     private static final String EA_HIDDEN = "hidden"; // NOI18N    
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
     private static final String DEFAULT_CONFIG_LABEL = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.default.label"); // NOI18N
+    private static final String WEBSTART_CONFIG_LABEL = JFXProjectUtils.makeSafe(JFXProjectProperties.RunAsType.ASWEBSTART.getDefaultConfig());
+    private static final String BROWSER_CONFIG_LABEL = JFXProjectUtils.makeSafe(JFXProjectProperties.RunAsType.INBROWSER.getDefaultConfig());
     
     private Lookup.Result<ExtWebBrowser> allBrowsers = null;
 
@@ -1226,7 +1247,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             }
         }
     }
-   
+
     private void configChanged(String activeConfig) {
         if(!configChangedRunning) {
             configChangedRunning = true;
@@ -1291,7 +1312,10 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
 
                 browserSelectionChanged(activeConfig);
             }
-            buttonDelete.setEnabled(activeConfig != null);
+            buttonDelete.setEnabled(activeConfig != null && 
+                    !activeConfig.equals(WEBSTART_CONFIG_LABEL) && 
+                    !activeConfig.equals(BROWSER_CONFIG_LABEL)
+                    );
             configChangedRunning = false;
         }
     }
