@@ -526,14 +526,21 @@ public class CsmContextUtilities {
 
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
+        CsmScope enumScope = null;
         for (int i = context.size() - 1; 0 <= i; --i) {
             CsmScope scope = context.get(i).getScope();
+            if (CsmKindUtilities.isEnum(scope)) {
+                enumScope = ((CsmEnum)scope).getScope();
+            }
             if (CsmKindUtilities.isClass(scope)
                     && (!inScope || CsmOffsetUtilities.isInClassScope((CsmClass)scope, context.getOffset()))) {
                 clazz = (CsmClass)scope;
                 break;
             }
-        }        
+        }
+        if (CsmKindUtilities.isClass(enumScope)) {
+            clazz = (CsmClass) enumScope;
+        }
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
             CsmFunction fun = getFunction(context, false);
