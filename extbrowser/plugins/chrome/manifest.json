@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
@@ -41,9 +41,17 @@
  */
 {
   "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.4",
+  "version": "0.4.5",
 
-  "background_page": "main.html",
+  "manifest_version": 2,
+
+  "background": {
+    "scripts": [
+      "common.js",
+      "chrome.js",
+      "inspect.js"
+    ]
+  },
 
   "permissions": [
     "contextMenus",
