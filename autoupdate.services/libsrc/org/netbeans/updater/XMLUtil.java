@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -128,8 +128,10 @@ public final class XMLUtil extends Object {
         // XXX note that this may fail to write out namespaces correctly if the document
         // is created with namespaces and no explicit prefixes; however no code in
         // this package is likely to be doing so
+        Transformer t = null;
         try {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t = TransformerFactory.newInstance().newTransformer();
+            LOG.info("Use XML Transformer: " + t);
             DocumentType dt = doc.getDoctype();
             if (dt != null) {
                 String pub = dt.getPublicId();
@@ -145,9 +147,9 @@ public final class XMLUtil extends Object {
             Result result = new StreamResult(out);
             t.transform(source, result);
         } catch (Exception e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            throw new IOException("XML Transformer: " + t, e);
         } catch (TransformerFactoryConfigurationError e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            throw new IOException("XML Transformer: " + t, e);
         }
     }
 
