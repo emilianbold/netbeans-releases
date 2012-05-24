@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
@@ -80,11 +81,11 @@ public class TargetClusterTestCase extends NbmAdvancedTestCase {
         return "org.yourorghere." + target + "." + global;
     }
     
-    protected UpdateElement getInstalledUpdateElement () throws IOException {
+    protected UpdateElement getInstalledUpdateElement () throws IOException, OperationException {
         return null;
     }
 
-    protected File getTargetCluster (String target, Boolean global) throws IOException {
+    protected File getTargetCluster (String target, Boolean global) throws IOException, OperationException {
         assertTrue (target + " cannot be empty.", target == null || target.length () > 0);
         String module = getCodeName (target, global);
 
@@ -108,13 +109,13 @@ public class TargetClusterTestCase extends NbmAdvancedTestCase {
         ModuleUpdateElementImpl impl = (ModuleUpdateElementImpl) Trampoline.API.impl (ue);
         assertNotNull ("Impl " + ue + " found and is instanceof ModuleUpdateElementImpl.", impl);
 
-        File targetDir = InstallManager.findTargetDirectory (getInstalledUpdateElement (), impl, false);
+        File targetDir = InstallManager.findTargetDirectory (getInstalledUpdateElement (), impl, global, false);
         assertNotNull ("Target cluster cannot be null for " + impl, targetDir);
 
         return targetDir;
     }
 
-    protected UpdateElement installModule (String codeName) throws IOException {
+    protected UpdateElement installModule (String codeName) throws IOException, OperationException {
         String catalog = generateCatalog (generateModuleElement (codeName, "1.0", true, platformDir.getName ()));
         AutoupdateCatalogProvider p = createUpdateProvider (catalog);
         p.refresh (true);
@@ -133,7 +134,7 @@ public class TargetClusterTestCase extends NbmAdvancedTestCase {
 
         assertFalse ("Available updates " + uu, uu.getAvailableUpdates ().isEmpty ());
 
-        assertEquals (codeName + " goes into platformDir.", platformDir.getName (), InstallManager.findTargetDirectory (null, Trampoline.API.impl (uu.getAvailableUpdates ().get (0)), false).getName ());
+        assertEquals (codeName + " goes into platformDir.", platformDir.getName (), InstallManager.findTargetDirectory (null, Trampoline.API.impl (uu.getAvailableUpdates ().get (0)), null, false).getName ());
 
         UpdateElement installed = installUpdateUnit (uu);
 

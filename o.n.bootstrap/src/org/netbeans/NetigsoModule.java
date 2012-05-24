@@ -61,7 +61,7 @@ import org.openide.util.Exceptions;
  * @author Jaroslav Tulach
  */
 final class NetigsoModule extends Module {
-    static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
+    private static final Logger LOG = Logger.getLogger(NetigsoModule.class.getName());
 
     private final File jar;
     private final Manifest manifest;
@@ -126,7 +126,8 @@ final class NetigsoModule extends Module {
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        assert classloader == null;
+        NetigsoModule.LOG.log(Level.FINE, "classLoaderUp {0}", getCodeNameBase()); // NOI18N
+        assert classloader == null : "already had " + classloader + " for " + this;
         classloader = new DelegateCL();
         mgr.netigsoLoaderUp(this);
     }
@@ -135,13 +136,13 @@ final class NetigsoModule extends Module {
     protected void classLoaderDown() {
         NetigsoModule.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
+        classloader = null;
         ClassLoader l = pcl.firstParent();
         if (l == null) {
             mgr.netigsoLoaderDown(this);
             return;
         }
         mgr.netigso().stopLoader(this, l);
-        classloader = null;
     }
 
     @Override

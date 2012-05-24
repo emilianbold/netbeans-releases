@@ -357,17 +357,19 @@ public final class ColoringMap {
     }
 
     private static List<String> findLegacyNonTokenColoringNames(MimePath mimePath) {
-        List<String> legacyNonTokenColoringNames = null;
+        List<String> legacyNonTokenColoringNames = new ArrayList<String>();
 
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        String namesList = prefs.get(EditorPreferencesKeys.COLORING_NAME_LIST, null); //NOI18N
-        
-        if (namesList != null && namesList.length() > 0) {
-            legacyNonTokenColoringNames = new ArrayList<String>();
-            
-            for(StringTokenizer t = new StringTokenizer(namesList, ","); t.hasMoreTokens(); ) { //NOI18N
-                String coloringName = t.nextToken().trim();
-                legacyNonTokenColoringNames.add(coloringName);
+        if (prefs != null) {
+            String namesList = prefs.get(EditorPreferencesKeys.COLORING_NAME_LIST, null); //NOI18N
+
+            if (namesList != null && namesList.length() > 0) {
+
+
+                for (StringTokenizer t = new StringTokenizer(namesList, ","); t.hasMoreTokens();) { //NOI18N
+                    String coloringName = t.nextToken().trim();
+                    legacyNonTokenColoringNames.add(coloringName);
+                }
             }
         }
         

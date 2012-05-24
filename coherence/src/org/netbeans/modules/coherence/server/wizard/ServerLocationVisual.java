@@ -299,6 +299,8 @@ public class ServerLocationVisual extends javax.swing.JPanel implements ChangeLi
         browseButton = new javax.swing.JButton();
         createLibraryCheckBox = new javax.swing.JCheckBox();
 
+        setName(org.openide.util.NbBundle.getMessage(ServerLocationVisual.class, "LBL_CoherenceCommonProperties")); // NOI18N
+
         serverLocationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/coherence/server/wizard/Bundle").getString("ServerLocationVisual.serverLocationLabel.mnemonics").charAt(0));
         serverLocationLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         serverLocationLabel.setLabelFor(serverLocationTextField);

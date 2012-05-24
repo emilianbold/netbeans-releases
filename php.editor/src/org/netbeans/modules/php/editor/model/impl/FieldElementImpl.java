@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -274,18 +275,18 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String noDollarName = getName().substring(1);
-        sb.append(noDollarName.toLowerCase()).append(";");//NOI18N
-        sb.append(noDollarName).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(";");
+        sb.append(noDollarName.toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(noDollarName).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
+        sb.append(getPhpModifiers().toFlags()).append(Signature.ITEM_DELIMITER);
         if (defaultType != null) {
             sb.append(defaultType);
         }
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         if (defaultFQType != null) {
             sb.append(defaultFQType);
         }
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

@@ -48,6 +48,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -56,8 +58,12 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Keymap;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.ext.ToolTipSupport;
 
@@ -214,7 +220,9 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         
         private JButton expButton;
+        private JComponent textToolTip;
         private boolean widthCheck = true;
+        private boolean sizeSet = false;
 
         public ExpandableTooltip(String toolTipText) {
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
@@ -233,17 +241,23 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
             expButton = new JButton(expIcon);
-            expButton.setBorder(null);
+            expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
             expButton.setBorderPainted(false);
             expButton.setContentAreaFilled(false);
             add(expButton);
-            JLabel l = new JLabel(toolTipText);
+            //JLabel l = new JLabel(toolTipText);
+            // Multi-line tooltip:
+            JTextArea l = createMultiLineToolTip(toolTipText, true);
             if (font != null) {
                 l.setFont(font);
             }
             if (foreColor != null) {
                 l.setForeground(foreColor);
             }
+            if (backColor != null) {
+                l.setBackground(backColor);
+            }
+            textToolTip = l;
             add(l);
         }
 
@@ -256,22 +270,103 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         }
 
         @Override
+        public Dimension getPreferredSize() {
+            if (!sizeSet) {
+                // Be big enough initially.
+                return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+            }
+            return super.getPreferredSize();
+        }
+        
+        @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
+            Dimension buttonSize = expButton.getPreferredSize();
             if (widthCheck) {
+                Insets insets = getInsets();
+                int textWidth = width - insets.left - buttonSize.width - insets.right;
+                height = Math.max(height, buttonSize.height);
+                textToolTip.setSize(textWidth, height);
+                Dimension textPreferredSize = textToolTip.getPreferredSize();
+                super.setSize(
+                        insets.left + buttonSize.width + textPreferredSize.width + insets.right,
+                        insets.top + Math.max(buttonSize.height, textPreferredSize.height) + insets.bottom);
+            } else {
+                if (height >= prefSize.height) { // enough height
+                    height = prefSize.height;
+                }
+                super.setSize(width, height);
+            }
+            sizeSet = true;
+        }
+        
+        private static JTextArea createMultiLineToolTip(String toolTipText, boolean wrapLines) {
+            JTextArea ta = new TextToolTip(wrapLines);
+            ta.setText(toolTipText);
+            return ta;
+        }
+
+        private static class TextToolTip extends JTextArea {
+            
+            private static final String ELIPSIS = "..."; //NOI18N
+            
+            private final boolean wrapLines;
+            
+            public TextToolTip(boolean wrapLines) {
+                this.wrapLines = wrapLines;
+                setLineWrap(false); // It's necessary to have a big width of preferred size first.
+            }
+            
+            public @Override void setSize(int width, int height) {
+                Dimension prefSize = getPreferredSize();
                 if (width >= prefSize.width) {
                     width = prefSize.width;
                 } else { // smaller available width
-                    super.setSize(width, 10000); // the height is unimportant
+                    // Set line wrapping and do super.setSize() to determine
+                    // the real height (it will change due to line wrapping)
+                    if (wrapLines) {
+                        setLineWrap(true);
+                        setWrapStyleWord(true);
+                    }
+                    
+                    super.setSize(width, Integer.MAX_VALUE); // the height is unimportant
                     prefSize = getPreferredSize(); // re-read new pref width
                 }
+                if (height >= prefSize.height) { // enough height
+                    height = prefSize.height;
+                } else { // smaller available height
+                    // Check how much can be displayed - cannot rely on line count
+                    // because line wrapping may display single physical line
+                    // into several visual lines
+                    // Before using viewToModel() a setSize() must be called
+                    // because otherwise the viewToModel() would return -1.
+                    super.setSize(width, Integer.MAX_VALUE);
+                    int offset = viewToModel(new Point(0, height));
+                    Document doc = getDocument();
+                    try {
+                        if (offset > ELIPSIS.length()) {
+                            offset -= ELIPSIS.length();
+                            doc.remove(offset, doc.getLength() - offset);
+                            doc.insertString(offset, ELIPSIS, null);
+                        }
+                    } catch (BadLocationException ble) {
+                        // "..." will likely not be displayed but otherwise should be ok
+                    }
+                    // Recalculate the prefSize as it may be smaller
+                    // than the present preferred height
+                    height = Math.min(height, getPreferredSize().height);
+                }
+                super.setSize(width, height);
             }
-            if (height >= prefSize.height) { // enough height
-                height = prefSize.height;
+            
+            @Override
+            public void setKeymap(Keymap map) {
+                //#181722: keymaps are shared among components with the same UI
+                //a default action will be set to the Keymap of this component below,
+                //so it is necessary to use a Keymap that is not shared with other JTextAreas
+                super.setKeymap(addKeymap(null, map));
             }
-            super.setSize(width, height);
         }
-
     }
 
 }

@@ -181,7 +181,7 @@ public class STSWizard implements TemplateWizard.Iterator {
 
         FileUtil.runAtomicAction(new Runnable() {
             public void run() {
-                String serviceName = Templates.getTargetName(wiz) + NbBundle.getMessage(STSWizard.class, "LBL_ServiceEnding"); //NOI18N
+                String serviceName = Templates.getTargetName(wiz);// + NbBundle.getMessage(STSWizard.class, "LBL_ServiceEnding"); //NOI18N
 
                 FileObject wsdlFolder = FileUtil.toFileObject(userDirF);
                 FileObject wsdlFO = null;

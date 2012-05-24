@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -66,32 +67,35 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
+import org.netbeans.modules.autoupdate.ui.ProblemPanel;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
+import static org.netbeans.modules.autoupdate.ui.wizards.Bundle.*;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -111,6 +115,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean indeterminateProgress = false;
     private int processedUnits = 0;
     private int totalUnits = 0;
+    private boolean userdirAsFallback;
     private static Notification restartNotification = null;
     private static  final Logger log = Logger.getLogger (InstallStep.class.getName ());
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
@@ -140,6 +145,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean canceled = false;
     private OperationException installException;
     private final boolean allowRunInBackground;
+    private final boolean runInBackground;
     
     /** Creates a new instance of OperationDescriptionStep */
     public InstallStep (InstallUnitWizardModel model) {
@@ -148,10 +154,17 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits) {
         this(model, clearLazyUnits, true);
     }
+    
     public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground) {
+        this(model, clearLazyUnits, allowRunInBackground, false);
+    }
+
+    public InstallStep (InstallUnitWizardModel model, boolean clearLazyUnits, boolean allowRunInBackground, boolean runInBackground) {
         this.model = model;
         this.clearLazyUnits = clearLazyUnits;
         this.allowRunInBackground = allowRunInBackground;
+        this.runInBackground = runInBackground;
+        this.userdirAsFallback = getPreferences().getBoolean(Utilities.PLUGIN_MANAGER_DONT_CARE_WRITE_PERMISSION, false);
     }
     
     @Override
@@ -162,7 +175,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     @Override
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new OperationPanel(allowRunInBackground);
+            panel = new OperationPanel(allowRunInBackground, runInBackground);
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                 @Override
                 public void propertyChange (PropertyChangeEvent evt) {
@@ -192,14 +205,14 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     private void doDownloadAndVerificationAndInstall () {
-        Validator v = null;
+        Validator v;
         // download
         if ((v = handleDownload ()) != null) {
-            Installer i = null;
+            Installer i;
             // verifation
             if ((i = handleValidation (v)) != null) {
                 // installation
-                Restarter r = null;
+                Restarter r;
                 if ((r = handleInstall (i)) != null) {
                     presentInstallNeedsRestart (r);
                 } else {
@@ -220,15 +233,22 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return null;
         }
         validator = null;
-        OperationContainer installContainer = model.getBaseContainer ();
-        final InstallSupport support = model.getInstallSupport ();
+        OperationContainer<InstallSupport> installContainer = model.getBaseContainer ();
+        final InstallSupport support = installContainer.getSupport ();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + installContainer.listAll () + " and invalid elements " + installContainer.listInvalid () + "\ncontainer: " + installContainer;
         assert installContainer.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + installContainer.listInvalid () + " container: " + installContainer;
         
+        if (support == null) {
+            log.warning("Download failed: OperationSupport was null because OperationContainer "
+                        + "either does not contain any elements: " + model.getBaseContainer().listAll()
+                        + " or contains invalid elements " + model.getBaseContainer().listInvalid());
+            return null;
+        }
+        
         boolean finish = false;
         while (! finish) {
-            finish = tryPerformDownload ();
+            finish = tryPerformDownload(support);
         }
         
         return validator;
@@ -277,9 +297,8 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         return true;
     }
     
-    private boolean tryPerformDownload () {
+    private boolean tryPerformDownload(final InstallSupport support) {
         validator = null;
-        final InstallSupport support = model.getInstallSupport ();
         JLabel detailLabel = null;
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
@@ -329,8 +348,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             handle.setInitialDelay (0);
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, detailLabel);
 
-            validator = support.doDownload (handle, Utilities.isGlobalInstallation());
-            if (validator == null) return true;
+            validator = support.doDownload (handle, Utilities.isGlobalInstallation(), userdirAsFallback);
             if (validator == null) return true;
             panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
             if (spareHandle != null && spareHandleStarted) {
@@ -346,7 +364,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 } else {
                     JButton tryAgain = new JButton ();
                     Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
-                    NetworkProblemPanel problem = new NetworkProblemPanel (
+                    ProblemPanel problem = new ProblemPanel (
                             getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
                             new JButton [] { tryAgain, model.getCancelButton (wd) });
                     Object ret = problem.showNetworkProblemDialog ();
@@ -354,6 +372,25 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                         // try again
                         return false;
                     } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+                        model.getCancelButton(wd).doClick();
+                    }
+                }
+            } else if (OperationException.ERROR_TYPE.WRITE_PERMISSION == ex.getErrorType()) {
+                if (runInBackground()) {
+                    handleCancel();
+                    notifyWritePermissionProblem(ex);
+                } else {
+                    JButton cancel = new JButton();
+                    Mnemonics.setLocalizedText(cancel, cancel());
+                    JButton install = new JButton();
+                    Mnemonics.setLocalizedText(install, install());
+                    ProblemPanel problem = new ProblemPanel(ex, true, new JButton[] {install, cancel});
+                    Object ret = problem.showWriteProblemDialog();
+                    if (install.equals(ret)) {
+                        // install anyway
+                        userdirAsFallback = true;
+                        return false;
+                    } else {
                         model.getCancelButton(wd).doClick();
                     }
                 }
@@ -376,7 +413,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return null;
         }
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
-        final InstallSupport support = model.getInstallSupport ();
+        final InstallSupport support = model.getBaseContainer().getSupport();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
@@ -432,7 +469,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         if (spareHandle != null && spareHandleStarted) {
             spareHandle.finish ();
         }
-        Installer tmpInst = null;
+        Installer tmpInst;
         
         try {
             tmpInst = support.doValidate (v, handle);
@@ -440,7 +477,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             if (tmpInst == null) return null;
         } catch (OperationException ex) {
             log.log (Level.INFO, ex.getMessage (), ex);
-            NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
+            ProblemPanel problem = new ProblemPanel(ex, false);
             problem.showNetworkProblemDialog ();
             handleCancel ();
             return null;
@@ -520,7 +557,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
         installException = null;
         component.setHeadAndContent (getBundle (HEAD_INSTALL), getBundle (CONTENT_INSTALL));
-        InstallSupport support = model.getInstallSupport();
+        InstallSupport support = model.getBaseContainer().getSupport();
         assert support != null : "OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         model.modifyOptionsForDisabledCancel (wd);
@@ -613,7 +650,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         panel.setBody (getBundle ("InstallStep_InstallDone_Text"), model.getAllVisibleUpdateElements ());
         panel.hideRunInBackground ();
         if (runInBackground ()) {
-            InstallSupport support = model.getInstallSupport ();
+            InstallSupport support = model.getBaseContainer().getSupport();
             resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
             support.doRestartLater (restarter);
             try {
@@ -674,7 +711,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         ActionListener onMouseClickAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                NetworkProblemPanel problem = new NetworkProblemPanel (ex.getLocalizedMessage ());
+                ProblemPanel problem = new ProblemPanel(ex, false);
                 problem.showNetworkProblemDialog ();
             }
         };
@@ -682,6 +719,24 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         String description = getBundle ("InstallSupport_InBackground_NetworkError_Details");
         NotificationDisplayer.getDefault().notify(title, 
                 ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), 
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+    }
+
+    @Messages({"inBackground_WritePermission=You don`t have permission to install plugin(s) into the installation directory.",
+        "inBackground_WritePermission_Details=details", "cancel=Cancel", "install=Install anyway"})
+    private void notifyWritePermissionProblem(final OperationException ex) {
+        // lack of privileges for writing
+        ActionListener onMouseClickAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProblemPanel problem = new ProblemPanel(ex, true);
+                problem.showWriteProblemDialog();
+            }
+        };
+        String title = inBackground_WritePermission();
+        String description = inBackground_WritePermission_Details();
+        NotificationDisplayer.getDefault().notify(title,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/ui/resources/error.png", false), // NOI18N
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
@@ -703,6 +758,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             return ;
         }
         this.wasStored = true;
+        InstallSupport support = model.getBaseContainer().getSupport();
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
                 model.doCleanup (true);
@@ -710,9 +766,14 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 Logger.getLogger (InstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }
         } else if (restarter != null) {
-            InstallSupport support = model.getInstallSupport ();
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
+            if (support == null) {
+                log.log(Level.WARNING, "Installation failed: OperationSupport was null because OperationContainer "
+                        + "does not contain any elements: " + model.getBaseContainer().listAll()
+                        + " or contains invalid elements " + model.getBaseContainer().listInvalid());
+                return ;
+            }
             if (panel.restartNow ()) {
                 resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
                 handleLazyUnits (clearLazyUnits, false);
@@ -732,7 +793,6 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     log.log (Level.INFO, x.getMessage (), x);
                 }
                 notifyInstallRestartNeeded (support, restarter); // NOI18N
-                return ;
             }
         } else {
             try {
@@ -811,4 +871,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             AutoupdateSettings.setLastCheck (null);
         }
     }
+    
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(Utilities.class);
+    }
+    
 }

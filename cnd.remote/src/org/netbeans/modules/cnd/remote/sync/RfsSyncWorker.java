@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteException;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -72,6 +73,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -88,12 +90,19 @@ import org.openide.util.RequestProcessor;
     private String remoteDir;
     private ErrorReader errorReader;
 
-    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
-        super(executionEnvironment, out, err, privProjectStorageDir, files);
+    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+            FileObject privProjectStorageDir, FSPath... paths) {
+        super(executionEnvironment, out, err, privProjectStorageDir, paths);
     }
 
     @Override
     public boolean startup(Map<String, String> env2add) {
+
+        if (SyncUtils.isDoubleRemote(executionEnvironment, fileSystem)) {
+            SyncUtils.warnDoubleRemote(executionEnvironment, fileSystem);
+            return false;
+        }
+
         RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
         remoteDir = mapper.getRemotePath("/", false); // NOI18N
         if (remoteDir == null) {
@@ -297,7 +306,6 @@ import org.openide.util.RequestProcessor;
         }
         if (rc != null) {
             rc.destroy();
-            rc = null;
         }
     }
 

@@ -42,8 +42,13 @@
 package org.netbeans.modules.tasks.ui.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 
 /**
  *
@@ -53,15 +58,20 @@ public class Category {
 
     private String name;
     private List<Issue> tasks;
+    private boolean loaded;
 
     public Category(String name, List<Issue> tasks) {
-        this.name = name;
-        this.tasks = tasks;
+        this(name, tasks, true);
     }
 
     public Category(String name) {
+        this(name, new ArrayList<Issue>(), false);
+    }
+
+    public Category(String name, List<Issue> tasks, boolean loaded) {
         this.name = name;
-        this.tasks = new ArrayList<Issue>();
+        this.tasks = tasks;
+        this.loaded = loaded;
     }
 
     public void removeTask(Issue task) {
@@ -85,7 +95,14 @@ public class Category {
     }
 
     public void setTasks(List<Issue> tasks) {
+        if (!loaded && tasks != null) {
+            loaded = true;
+        }
         this.tasks = tasks;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
     }
 
     @Override
@@ -103,5 +120,37 @@ public class Category {
         }
         final Category other = (Category) obj;
         return name.equalsIgnoreCase(other.name);
+    }
+    
+    public void refresh(){
+        if (loaded) {
+            refreshTasks();
+        } else {
+            DashboardViewer.getInstance().loadCategory(this);
+        }
+    }
+
+    private void refreshTasks() {
+        Map<Repository, List<String>> map = getTasksToRepository(this.getTasks());
+        Set<Repository> repositoryKeys = map.keySet();
+        for (Repository repository : repositoryKeys) {
+            List<String> ids = map.get(repository);
+            repository.getIssues(ids.toArray(new String[ids.size()]));
+        }
+    }
+
+    private Map<Repository, List<String>> getTasksToRepository(List<Issue> tasks) {
+        Map<Repository, List<String>> map = new HashMap<Repository, List<String>>();
+        for (Issue issue : tasks) {
+            Repository repositoryKey = issue.getRepository();
+            if (map.containsKey(repositoryKey)) {
+                map.get(repositoryKey).add(issue.getID());
+            } else {
+                ArrayList<String> list = new ArrayList<String>();
+                list.add(issue.getID());
+                map.put(repositoryKey, list);
+            }
+        }
+        return map;
     }
 }

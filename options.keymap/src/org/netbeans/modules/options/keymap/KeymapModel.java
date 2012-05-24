@@ -115,6 +115,26 @@ public class KeymapModel {
      */
     private Map<String,Set<ShortcutAction>> categoryToActions = 
             new HashMap<String,Set<ShortcutAction>>();
+    
+    private Set<String> allActionIds = new HashSet<String>();
+    
+    private Set<String> duplicateIds = new HashSet<String>();
+    
+    private void findDuplicateIds(String category, Collection<ShortcutAction> actions) {
+        for (ShortcutAction sa : actions) {
+            String id = sa.getId();
+            
+            if (!allActionIds.add(id)) {
+                duplicateIds.add(id);
+                continue;
+            }
+            // also check fallback - the classname:
+            id = LayersBridge.getOrigActionClass(sa);
+            if (id != null && !allActionIds.add(id)) {
+                duplicateIds.add(id);
+            }
+        }
+    }
 
     /**
      * Returns List (ShortcutAction) of all global and editor actions.
@@ -128,8 +148,9 @@ public class KeymapModel {
                     actions = mergeActions(actions, s, m.getName());
                 }
             }
-            categoryToActions.put(category, actions);
 
+            categoryToActions.put(category, actions);
+            findDuplicateIds(category, actions);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Category '" + category + "' actions (" + actions.size() + "), KeymapModel=" + this + ":"); //NOI18N
                 for(ShortcutAction sa : actions) {
@@ -140,12 +161,24 @@ public class KeymapModel {
         }
         return categoryToActions.get(category);
     }
+    
+    boolean isDuplicateId(String id) {
+        if (!duplicateIds.contains(id)) {
+            return false;
+        }
+        LOG.log(Level.WARNING, "Duplicate action ID used: {0}", new Object[] { id });
+        
+        return true;
+    }
 
     /**
      * Clear action caches.
      */
     public void refreshActions () {
         categoryToActions = new HashMap<String,Set<ShortcutAction>>();
+        duplicateIds = new HashSet<String>();
+        allActionIds = new HashSet<String>();
+        
         sharedActions = new HashMap<ShortcutAction, CompoundAction>();
         keyMaps = new HashMap<String, Map<ShortcutAction, Set<String>>>();
         keyMapDefaults = new HashMap<String, Map<ShortcutAction, Set<String>>>();

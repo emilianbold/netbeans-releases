@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.io.*;
 import java.util.logging.Level;
@@ -55,6 +56,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -690,6 +692,22 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         if (!getProjectType().isAntBasedProject()) {
             oto.waitText("Total time:"); //NOI18N
+            // wait progress bar dismiss
+            final Component comp = MainWindowOperator.getDefault().findSubComponent(new ComponentChooser() {
+
+                @Override
+                public boolean checkComponent(Component comp) {
+                    return "NbProgressBar".equals(comp.getClass().getSimpleName());  //NOI18N
+                }
+
+                @Override
+                public String getDescription() {
+                    return "NbProgressBar component.";  //NOI18N
+                }
+            });
+            if (comp != null) {
+                new ComponentOperator(comp).waitComponentShowing(false);
+            }
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESS") > -1); //NOI18N
             assertTrue("Deploy failed", oto.getText().indexOf("[ERROR]") < 0); //NOI18N
@@ -780,9 +798,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         Node node = new Node(servicesOper.getRootNode(), "Maven Repositories|" + repositoryName);
         new Action(null, "Update Index").perform(node);
         String lblCancelProgress = "Click to cancel process";
-        JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
-        btnCancel.pushNoBlock();
-        new NbDialogOperator("Cancel Running Task").yes();
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);
+            JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
+            btnCancel.pushNoBlock();
+            new NbDialogOperator("Cancel Running Task").yes();
+        } catch (TimeoutExpiredException tee) {
+            // ignore - already done in previous tests
+        } finally {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+        }
     }
     
     protected File getProjectsRootDir() throws IOException {
@@ -798,7 +824,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         } else {
             return new File(System.getProperty("java.io.tmpdir"));
         }
-        return f;
+        return new File(f, getJavaEEversion().name());
     }
 
     protected J2eeServerNode getServerNode() {

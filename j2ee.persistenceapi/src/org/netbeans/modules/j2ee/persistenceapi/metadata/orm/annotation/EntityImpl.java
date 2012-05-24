@@ -135,7 +135,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
                 String nm = parseResult.get("name", String.class); // NOI18N            
                 parseResult = parser.parse(am); // NOI18N
                 String qr = parseResult.get("query", String.class); // NOI18N
-                this.addNamedQuery(new NamedQueryImpl(typeElement, nm, qr));
+                this.addNamedQuery(new NamedQueryImpl(nm, qr));
             }
         }
         //
@@ -395,7 +395,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     @Override
     public NamedQuery newNamedQuery() {
-        return new NamedQueryImpl(getTypeElement(), null, null); // NOI18N
+        return new NamedQueryImpl(null, null); // NOI18N
     }
 
     @Override

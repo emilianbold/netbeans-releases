@@ -183,7 +183,7 @@ public class CasualDiff {
             current = t;
         }
 
-        if (oldTree.getKind() == Kind.METHOD || (!td.parameterPrint && oldTree.getKind() == Kind.VARIABLE)) {
+        if (oldTree.getKind() == Kind.MODIFIERS || oldTree.getKind() == Kind.METHOD || (!td.parameterPrint && oldTree.getKind() == Kind.VARIABLE)) {
             td.tokenSequence.move(start);
             if (td.tokenSequence.movePrevious() && td.tokenSequence.token().id() == JavaTokenId.WHITESPACE) {
                 String text = td.tokenSequence.token().text().toString();
@@ -832,10 +832,10 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = oldT.pos + 1);
         }
         // syntetic super() found, skip it
-        if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
+        if (diffContext.syntheticTrees.contains(oldT.stats.head)) {
             oldT.stats = oldT.stats.tail;
         }
-        if (newT.stats.head != null && newT.stats.head.pos == oldT.pos) {
+        if (diffContext.syntheticTrees.contains(newT.stats.head)) {
             newT.stats = newT.stats.tail;
         }
         PositionEstimator est = EstimatorFactory.statements(
@@ -1316,57 +1316,14 @@ public class CasualDiff {
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
         int[] methBounds = getBounds(oldT.meth);
-        if (oldT.typeargs.nonEmpty() && newT.typeargs.nonEmpty() && Kind.MEMBER_SELECT == oldT.meth.getKind()) {
+        if (Kind.MEMBER_SELECT == oldT.meth.getKind() && oldT.meth.getKind() == newT.meth.getKind()) {
             localPointer = diffSelect((JCFieldAccess) oldT.meth, (JCFieldAccess) newT.meth, methBounds, oldT.typeargs, newT.typeargs);
+        } else if (oldT.typeargs.isEmpty() && newT.typeargs.isEmpty()) {
+            localPointer = diffTree(oldT.meth, newT.meth, methBounds);
         } else {
-            JCExpression oldExp = oldT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)oldT.meth).getExpression() : null;
-            JCExpression newExp = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).getExpression() : null;
-            if(oldExp != newExp) {
-                if(oldExp == null) {
-                    printer.print(newExp);
-                    printer.print("."); //NOI18N
-                } else if(newExp == null) {
-                    int[] expBounds = getBounds(oldExp);
-                    tokenSequence.move(expBounds[1]);
-                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
-                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
-                    localPointer = tokenSequence.offset();
-                } else {
-                    int[] expBounds = getBounds(oldExp);
-                    localPointer = diffTree(oldExp, newExp, expBounds);
-                    tokenSequence.move(localPointer);
-                    copyTo(localPointer, localPointer = expBounds[1]);
-                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
-                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
-                    localPointer = tokenSequence.offset();
-                    printer.print("."); //NOI18N
-                }
-            } else if(oldExp != null) {
-                int endpos = getBounds(oldExp)[1];
-                copyTo(localPointer, localPointer = endpos+1);
-            }
-
-            boolean parens = newT.typeargs.nonEmpty();
-            localPointer = diffParameterList(oldT.typeargs,
-                    newT.typeargs,
-                    parens ? new JavaTokenId[] { JavaTokenId.LT, JavaTokenId.GT } : null,
-                    localPointer,
-                    Measure.ARGUMENT);
-            tokenSequence.move(localPointer);
-            moveToDifferentThan(tokenSequence, Direction.FORWARD, EnumSet.of(JavaTokenId.GT));
-            localPointer = tokenSequence.offset();
-            
-            Name oldName = oldT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)oldT.meth).name : ((JCIdent)oldT.meth).name;
-            Name newName = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).name : ((JCIdent)newT.meth).name;
-            
-            if (nameChanged(oldName, newName)) {
-                if(newT.meth.getKind() == Kind.MEMBER_SELECT) {
-                    printer.print(((JCFieldAccess)newT.meth).name);
-                } else {
-                    printer.print(newT.meth);
-                }
-                localPointer += oldName.length();
-            }
+            copyTo(localPointer, methBounds[0]);
+            printer.printMethodSelect(newT);
+            localPointer = methBounds[1];
         }
         if (!listsMatch(oldT.args, newT.args)) {
             if (oldT.args.nonEmpty()) {
@@ -1672,14 +1629,29 @@ public class CasualDiff {
         copyTo(localPointer, selectedBounds[0]);
         localPointer = diffTree(oldT.selected, newT.selected, selectedBounds);
         if (oldTypePar != null && newTypePar != null) {
-            int[] parBounds = getBounds(oldTypePar.head);
-            copyTo(localPointer, parBounds[0]);
-            localPointer = diffParameterList(oldTypePar, newTypePar, null, parBounds[0], Measure.ARGUMENT);
-            parBounds[1] = endPos(oldTypePar);
-            tokenSequence.move(parBounds[1]);
-            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
-            moveToSrcRelevant(tokenSequence, Direction.FORWARD);//skips > and any subsequent unimportant tokens
-            copyTo(localPointer, localPointer = tokenSequence.offset());
+            int insertHint;
+            if (oldTypePar.nonEmpty() && newTypePar.nonEmpty()) {
+                insertHint = oldTypePar.head.pos;
+            } else {
+                tokenSequence.move(selectedBounds[1]);
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                tokenSequence.moveNext();
+                insertHint = tokenSequence.offset();
+            }
+            copyTo(localPointer, localPointer = insertHint);
+            boolean parens = oldTypePar.isEmpty() && newTypePar.nonEmpty();
+            localPointer = diffParameterList(oldTypePar, newTypePar,
+                    parens ? new JavaTokenId[] { JavaTokenId.LT, JavaTokenId.GT } : null,
+                    localPointer, Measure.ARGUMENT);
+            if (oldTypePar.nonEmpty()) {
+                tokenSequence.move(endPos(oldTypePar.last()));
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD);//skips > and any subsequent unimportant tokens
+                int end = tokenSequence.offset();
+                if (newTypePar.nonEmpty())
+                    copyTo(localPointer, end);
+                localPointer = end;
+            }
         } else {
             tokenSequence.move(selectedBounds[1]);
             if (oldT.name != Names.instance(context).error) {

@@ -55,7 +55,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -100,6 +99,7 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -331,7 +331,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     private JList leftList;
     private JList rightList;
     private JEditorPane guessList;
-    private Map<String, List<String>> searchBase;
+    private Map<String,List<FileObject>> searchBase;
     private JComponent createIncludesPane(/*List<CsmInclude> includes*/) {
         leftList = new JList();
         leftList.setBorder(BorderFactory.createEmptyBorder());
@@ -606,11 +606,11 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                     if (found.indexOf('/') >= 0) {
                         found = found.substring(found.lastIndexOf('/') + 1);
                     }
-                    List<String> result = searchBase.get(found);
+                    List<FileObject> result = searchBase.get(found);
                     if (result != null) {
-                        for (Iterator<String> it = result.iterator(); it.hasNext();) {
-                            String elem = it.next();
-                            buf.append(elem).append("\n<br>"); // NOI18N
+                        for (Iterator<FileObject> it = result.iterator(); it.hasNext();) {
+                            FileObject elem = it.next();
+                            buf.append(elem.getPath()).append("\n<br>"); // NOI18N
                         }
                     }
                 } else {
@@ -697,11 +697,11 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
         if (source.lastIndexOf('.')>0){
             source = source.substring(0,source.lastIndexOf('.'))+".o";  // NOI18N
-            List<String> result = searchBase.get(source);
+            List<FileObject> result = searchBase.get(source);
             if (result != null){
-                for (Iterator<String> it = result.iterator(); it.hasNext();) {
-                    String elem = it.next();
-                    buf.append(elem).append("\n<br>"); // NOI18N
+                for (Iterator<FileObject> it = result.iterator(); it.hasNext();) {
+                    FileObject elem = it.next();
+                    buf.append(elem.getPath()).append("\n<br>"); // NOI18N
                     String path = trace(searchFor, elem, in);
                     if (path != null){
                         buf.append(path).append("\n<br>"); // NOI18N
@@ -711,10 +711,14 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
     }
     
-    private String trace(String found, String objFileName, String unit){
+    private String trace(String found, FileObject objFileName, String unit){
+        if (FileSystemProvider.getExecutionEnvironment(objFileName).isRemote()) {
+            //TODO check remote
+            return null;
+        }
         Dwarf dump = null;
         try {
-            dump = new Dwarf(objFileName);
+            dump = new Dwarf(objFileName.getPath());
             CompilationUnitIterator units = dump.iteratorCompilationUnits();
             if (units.hasNext()){
                 CompilationUnit cu = units.next();
@@ -773,33 +777,43 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         return fullName;
     }
 
-    private Map<String,List<String>> search(CsmOffsetable ppDirective){
+    private Map<String,List<FileObject>> search(CsmOffsetable ppDirective){
         CsmProject prj = ppDirective.getContainingFile().getProject();
-        HashSet<String> set = new HashSet<String>();
+        HashSet<FileObject> set = new HashSet<FileObject>();
         for (Iterator<CsmFile> it = prj.getSourceFiles().iterator(); it.hasNext();){
             CsmFile file = it.next();
-            File f = new File(file.getAbsolutePath().toString());
-            set.add(f.getParentFile().getAbsolutePath());
+            FileObject fo = file.getFileObject();
+            if (fo != null && fo.isValid()) {
+                FileObject aParent = fo.getParent();
+                if (aParent != null && aParent.isValid()) {
+                    set.add(aParent);
+                }
+            }
         }
         for (Iterator<CsmFile> it = prj.getHeaderFiles().iterator(); it.hasNext();){
             CsmFile file = it.next();
-            File f = new File(file.getAbsolutePath().toString());
-            set.add(f.getParentFile().getAbsolutePath());
+            FileObject fo = file.getFileObject();
+            if (fo != null && fo.isValid()) {
+                FileObject aParent = fo.getParent();
+                if (aParent != null && aParent.isValid()) {
+                    set.add(aParent);
+                }
+            }
         }
-        HashMap<String,List<String>> map = new HashMap<String,List<String>>();
-        for (Iterator<String> it = set.iterator(); it.hasNext();){
-            File d = new File(it.next());
-            if (d.exists() && d.isDirectory() && d.canRead()){
-                File[] ff = d.listFiles();
+        HashMap<String,List<FileObject>> map = new HashMap<String,List<FileObject>>();
+        for (Iterator<FileObject> it = set.iterator(); it.hasNext();){
+            FileObject d = it.next();
+            if (d.isValid() && d.isFolder() && d.canRead()){
+                FileObject[] ff = d.getChildren();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
-                        if (ff[i].isFile()) {
-                            List<String> l = map.get(ff[i].getName());
-                            if (l==null){
-                                l = new ArrayList<String>();
-                                map.put(ff[i].getName(),l);
+                        if (ff[i].isValid() && ff[i].isData()) {
+                            List<FileObject> l = map.get(ff[i].getNameExt());
+                            if (l == null){
+                                l = new ArrayList<FileObject>();
+                                map.put(ff[i].getNameExt(),l);
                             }
-                            l.add(ff[i].getAbsolutePath());
+                            l.add(ff[i]);
                         }
                     }
                 }

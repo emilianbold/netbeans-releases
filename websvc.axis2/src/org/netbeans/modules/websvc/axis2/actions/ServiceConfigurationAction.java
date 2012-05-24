@@ -66,6 +66,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.NodeAction;
 
 public class ServiceConfigurationAction extends NodeAction  {
@@ -149,7 +150,11 @@ public class ServiceConfigurationAction extends NodeAction  {
                     }                   
                 }
             }
-            model.endTransaction();
+	    try {
+                model.endTransaction();
+	    } catch (IllegalStateException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
 
             if (modelChanged) {
                 Project prj = FileOwnerQuery.getOwner(srcRoot);

@@ -58,6 +58,7 @@ import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.Module.PackageExport;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
@@ -226,7 +227,7 @@ class ModuleData {
         }
         String v = getMainAttribute(mf, "Bundle-Version"); // NOI18N
         if (v == null) {
-            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", m);
+            Logger.getLogger(ModuleData.class.getName()).log(Level.WARNING, "No Bundle-Version for {0}", m);
             this.specVers = new SpecificationVersion(v = "0.0");
         } else {
             this.specVers = computeVersion(v);

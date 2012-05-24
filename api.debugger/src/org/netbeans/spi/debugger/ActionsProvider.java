@@ -50,6 +50,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -188,6 +189,7 @@ public abstract class ActionsProvider {
 
         private static final String ERROR = "error in getting MIMEType";    // NOI18N
 
+        private String path;        // The file path, that declares this service, or null if not known.
         private String serviceName;
         private ContextProvider context;
         private ActionsProvider delegate;
@@ -214,6 +216,9 @@ public abstract class ActionsProvider {
         private synchronized ActionsProvider getDelegate() {
             if (delegate == null) {
                 delegate = (ActionsProvider) ContextAwareSupport.createInstance(serviceName, context);
+                if (delegate == null) {
+                    throw new IllegalStateException("No instance created for service "+serviceName+", context = "+context+", path = "+path);
+                }
                 for (ActionsProviderListener l : listeners) {
                     delegate.addActionsProviderListener(l);
                 }
@@ -309,7 +314,9 @@ public abstract class ActionsProvider {
             if (context == this.context) {
                 return this;
             } else {
-                return new ActionsProvider.ContextAware(serviceName, actions, enabledOnMIMETypes, context);
+                ContextAware ca = new ActionsProvider.ContextAware(serviceName, actions, enabledOnMIMETypes, context);
+                ca.path = path;
+                return ca;
             }
         }
 
@@ -326,9 +333,18 @@ public abstract class ActionsProvider {
             String enabledOnMIMETypesStr = (String) attrs.get(ContextAwareServiceHandler.SERVICE_ENABLED_MIMETYPES);
             String[] actions = parseArray(actionsStr);
             String[] enabledOnMIMETypes = parseArray(enabledOnMIMETypesStr);
-            return new ActionsProvider.ContextAware(serviceName,
-                                                    createSet(actions),
-                                                    createSet(enabledOnMIMETypes));
+            String path = null;
+            try {
+                Field foField = attrs.getClass().getDeclaredField("fo");
+                foField.setAccessible(true);
+                FileObject fo = (FileObject) foField.get(attrs);
+                path = fo.getPath();
+            } catch (Exception ex) {}
+            ContextAware ca = new ActionsProvider.ContextAware(serviceName,
+                                                               createSet(actions),
+                                                               createSet(enabledOnMIMETypes));
+            ca.path = path;
+            return ca;
         }
 
         private static String[] parseArray(String strArray) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -69,6 +69,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
@@ -123,10 +125,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         }
         initialTabToSelect = selIndex;
         initComponents ();
-        postInitComponents ();
         //start initialize method as soon as possible
         initTask = Utilities.startAsWorkerThread (new Runnable () {
+            @Override
             public void run () {
+                postInitComponents ();
                 initialize ();
             }
         });
@@ -190,6 +193,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
                     setWaitingState (true);
                     Utilities.startAsWorkerThread (PluginManagerUI.this,
                             new Runnable () {
+                                @Override
                                 public void run () {
                                     try {
                                         initTask.waitFinished ();
@@ -206,6 +210,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         }
         HelpCtx.setHelpIDString (this, PluginManagerUI.class.getName ());
         tpTabs.addChangeListener (new ChangeListener () {
+            @Override
             public void stateChanged (ChangeEvent evt) {
                 HelpCtx.setHelpIDString (PluginManagerUI.this, getHelpCtx ().getHelpID ());
             }
@@ -226,6 +231,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private void initialize () {
         try {
             final List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits(Utilities.getUnitTypes ());
+            Utilities.loadAcceptedLicenseIDs(uu.size());
             List<UnitCategory> precompute1 = Utilities.makeUpdateCategories (uu, false);
             List<UnitCategory> precompute2 = Utilities.makeUpdateCategories (uu, true);
             // postpone later
@@ -247,9 +253,11 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     //workaround of #96282 - Memory leak in org.netbeans.core.windows.services.NbPresenter
     private void unitilialize () {
         Utilities.startAsWorkerThread (new Runnable () {
+            @Override
             public void run () {
                 //ensures that uninitialization runs after initialization
                 initTask.waitFinished ();
+                Utilities.storeAcceptedLicenseIDs();
                 AutoupdateCheckScheduler.runCheckAvailableUpdates (0);
                 //ensure exclusivity between this uninitialization code and refreshUnits (which can run even after this dialog is disposed)
                 synchronized(initLock) {
@@ -268,6 +276,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             setProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     setProgressComponentInAwt (detail, progressComponent);
                 }
@@ -279,8 +288,24 @@ public class PluginManagerUI extends javax.swing.JPanel  {
         UnitTable table = new UnitTable(model);
         selectFirstRow(table);
         
-        UnitTab tab = new UnitTab(table, new UnitDetails(), this);
+        final UnitTab tab = new UnitTab(table, new UnitDetails(), this);
         tpTabs.add(tab, model.getTabIndex());
+        if (initTask != null) {
+            tab.setWaitingState(! initTask.isFinished());
+            initTask.addTaskListener(new TaskListener() {
+
+                @Override
+                public void taskFinished(Task task) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            tab.setWaitingState(false);
+                        }
+                    });
+                }
+            });
+        }
         decorateTabTitle(table);
         return table;
     }
@@ -313,6 +338,7 @@ public class PluginManagerUI extends javax.swing.JPanel  {
             unsetProgressComponentInAwt (detail, progressComponent);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                     unsetProgressComponentInAwt (detail, progressComponent);
                 }
@@ -441,6 +467,7 @@ private void tpTabsStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:
             final UnitCategoryTableModel availableModel = (UnitCategoryTableModel) (availableTable).getModel ();
             final Map<String, Boolean> availableState = UnitCategoryTableModel.captureState (availableModel.getUnits ());
             ((SettingsTab) tpTabs.getComponentAt (INDEX_OF_SETTINGS_TAB)).doLazyRefresh (new Runnable () { // get SettingsTab
+                @Override
                 public void run () {
                     UnitCategoryTableModel.restoreState (availableModel.getUnits (), availableState, false);
                 }

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -152,6 +152,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
+        <property name="nbm.is.preferredupdate" value=""/>
         <property name="nbm_alias" value="nb_ide"/>
         <condition property="nbm.target.dir" value="${build.dir}">
              <not>

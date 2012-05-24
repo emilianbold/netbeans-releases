@@ -67,13 +67,14 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
     }
 
     public boolean isShared() {
-        return cbShared.isSelected();
+        return !cbPrivate.isSelected();
     }
 
     public void setShared(boolean shared) {
-        cbShared.setSelected(shared);
+        cbPrivate.setSelected(!shared);
     }
     /** Creates new form NewConfigurationPanel */
+    @SuppressWarnings("LeakingThisInConstructor")
     public NewConfigurationPanel() {
         initComponents();
 
@@ -133,7 +134,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
 
         lblId = new javax.swing.JLabel();
         txtId = new javax.swing.JTextField();
-        cbShared = new javax.swing.JCheckBox();
+        cbPrivate = new javax.swing.JCheckBox();
         lblActivate = new javax.swing.JLabel();
         lblHint = new javax.swing.JLabel();
         txtActivate = new javax.swing.JTextField();
@@ -144,7 +145,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         lblId.setLabelFor(txtId);
         org.openide.awt.Mnemonics.setLocalizedText(lblId, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblId.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbShared, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbPrivate, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbPrivate.text")); // NOI18N
 
         lblActivate.setLabelFor(txtActivate);
         org.openide.awt.Mnemonics.setLocalizedText(lblActivate, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblActivate.text")); // NOI18N
@@ -155,7 +156,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         lblProperties.setLabelFor(epProperties);
         org.openide.awt.Mnemonics.setLocalizedText(lblProperties, org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.lblProperties.text")); // NOI18N
 
-        epProperties.setContentType("text/x-properties");
+        epProperties.setContentType("text/x-properties"); // NOI18N
         jScrollPane1.setViewportView(epProperties);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -169,7 +170,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                         .addComponent(lblId)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbShared)
+                            .addComponent(cbPrivate)
                             .addComponent(txtId)))
                     .addComponent(lblHint, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
@@ -190,7 +191,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
                     .addComponent(lblId)
                     .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(cbShared)
+                .addComponent(cbPrivate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblActivate)
@@ -205,13 +206,13 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         );
 
         txtId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.txtId.AccessibleContext.accessibleDescription")); // NOI18N
-        cbShared.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbShared.AccessibleContext.accessibleDescription")); // NOI18N
+        cbPrivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.cbPrivate.AccessibleContext.accessibleDescription")); // NOI18N
         txtActivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewConfigurationPanel.class, "NewConfigurationPanel.txtActivate.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cbShared;
+    private javax.swing.JCheckBox cbPrivate;
     private javax.swing.JEditorPane epProperties;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblActivate;

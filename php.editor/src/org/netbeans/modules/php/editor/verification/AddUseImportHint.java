@@ -171,12 +171,14 @@ public class AddUseImportHint extends AbstractRule {
         @Override
         public void visit(NamespaceName node) {
             if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
+                NamespaceDeclaration currenNamespace = null;
                 List<ASTNode> path = getPath();
                 ASTNode parentNode = path.get(0);
-                NamespaceDeclaration currenNamespace = null;
-                for (ASTNode oneNode : path) {
-                    if (oneNode instanceof NamespaceDeclaration) {
-                        currenNamespace = (NamespaceDeclaration) oneNode;
+                synchronized (path) {
+                    for (ASTNode oneNode : path) {
+                        if (oneNode instanceof NamespaceDeclaration) {
+                            currenNamespace = (NamespaceDeclaration) oneNode;
+                        }
                     }
                 }
                 if (isFunctionName(parentNode)) {
@@ -213,11 +215,13 @@ public class AddUseImportHint extends AbstractRule {
         @Override
         public void visit(Scalar node) {
             if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
-                List<ASTNode> path = getPath();
                 NamespaceDeclaration currenNamespace = null;
-                for (ASTNode oneNode : path) {
-                    if (oneNode instanceof NamespaceDeclaration) {
-                        currenNamespace = (NamespaceDeclaration) oneNode;
+                List<ASTNode> path = getPath();
+                synchronized (path) {
+                    for (ASTNode oneNode : path) {
+                        if (oneNode instanceof NamespaceDeclaration) {
+                            currenNamespace = (NamespaceDeclaration) oneNode;
+                        }
                     }
                 }
                 String stringValue = node.getStringValue();

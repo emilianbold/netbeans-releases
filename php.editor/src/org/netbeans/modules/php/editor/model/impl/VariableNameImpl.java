@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.TypedInstanceElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -417,8 +418,8 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        sb.append(varName.toLowerCase()).append(";");//NOI18N
-        sb.append(varName).append(";");//NOI18N
+        sb.append(varName.toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(varName).append(Signature.ITEM_DELIMITER);
         //makes little sense because the variable with the same name can exists in huge number of files
         /*
         Set<String> typeNames = new HashSet<String>(getTypeNames(getNameRange().getEnd()+1));
@@ -430,9 +431,9 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 }
             }
         }*/
-        sb.append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
+        sb.append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

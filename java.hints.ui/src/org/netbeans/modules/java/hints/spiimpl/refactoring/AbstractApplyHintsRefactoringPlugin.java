@@ -42,10 +42,21 @@
 
 package org.netbeans.modules.java.hints.spiimpl.refactoring;
 
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ModificationResult;
@@ -62,15 +73,20 @@ import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -108,17 +124,54 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w);
         Collection<RefactoringElementImplementation> fileChanges = new ArrayList<RefactoringElementImplementation>();
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-        Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, fileChanges, problems);
-
-        refactoringElements.registerTransaction(JavaRefactoringPlugin.createTransaction(new LinkedList<ModificationResult>(res)));
-
-        for (ModificationResult mr : res) {
-            for (FileObject file : mr.getModifiedFileObjects()) {
-                for (Difference d : mr.getDifferences(file)) {
-                    refactoringElements.add(refactoring, DiffElement.create(d, file, mr));
+        Map<JavaFix, ModificationResult> changesPerFix = new HashMap<JavaFix, ModificationResult>();
+        Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, fileChanges, changesPerFix, problems);
+        Set<ModificationResult> enabled = Collections.newSetFromMap(new IdentityHashMap<ModificationResult, Boolean>());
+        Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes = new HashMap<FileObject, Map<JavaFix, ModificationResult>>();
+        Map<FileObject, Set<FileObject>> affectedFiles = new HashMap<FileObject, Set<FileObject>>();
+        Map<FileObject, List<RefactoringElementImplementation>> file2Changes = new HashMap<FileObject, List<RefactoringElementImplementation>>();
+        
+        for (Entry<JavaFix, ModificationResult> changesPerFixEntry : changesPerFix.entrySet()) {
+            enabled.add(changesPerFixEntry.getValue());
+            
+            for (FileObject file : changesPerFixEntry.getValue().getModifiedFileObjects()) {
+                List<RefactoringElementImplementation> currentFileChanges = file2Changes.get(file);
+                
+                if (currentFileChanges == null) {
+                    file2Changes.put(file, currentFileChanges = new ArrayList<RefactoringElementImplementation>());
                 }
+                
+                currentFileChanges.add(new ModificationResultElement(file, changesPerFixEntry.getKey(), changesPerFixEntry.getValue(), enabled));
+                
+                Map<JavaFix, ModificationResult> perFile = file2Fixes2Changes.get(file);
+                
+                if (perFile == null) {
+                    file2Fixes2Changes.put(file, perFile = new HashMap<JavaFix, ModificationResult>());
+                }
+                
+                perFile.put(changesPerFixEntry.getKey(), changesPerFixEntry.getValue());
+                
+                Set<FileObject> aff = affectedFiles.get(file);
+                
+                if (aff == null) {
+                    affectedFiles.put(file, aff = new HashSet<FileObject>());
+                }
+                
+                aff.addAll(changesPerFixEntry.getValue().getModifiedFileObjects());
             }
         }
+        
+        for (List<RefactoringElementImplementation> changes : file2Changes.values()) {
+            Collections.sort(changes, new Comparator<RefactoringElementImplementation>() {
+                @Override public int compare(RefactoringElementImplementation o1, RefactoringElementImplementation o2) {
+                    return o1.getPosition().getBegin().getOffset() - o2.getPosition().getBegin().getOffset();
+                }
+            });
+            
+            refactoringElements.addAll(refactoring, changes);
+        }
+        
+        refactoringElements.registerTransaction(new DelegatingTransaction(enabled, file2Fixes2Changes, affectedFiles, res));
 
         for (RefactoringElementImplementation fileChange : fileChanges) {
             refactoringElements.addFileChange(refactoring, fileChange);
@@ -194,4 +247,163 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         fireProgressListenerStop();
     }
 
+    private static final class ModificationResultElement extends SimpleRefactoringElementImplementation {
+
+        private PositionBounds bounds;
+        private String displayText;
+        private FileObject parentFile;
+        private ModificationResult modification;
+        private WeakReference<String> newFileContent;
+        private final Set<ModificationResult> enabledResults;
+
+        private ModificationResultElement(FileObject parentFile, JavaFix jf, ModificationResult modification, Set<ModificationResult> enabledResults) {
+            PositionRef s = modification.getDifferences(parentFile).iterator().next().getStartPosition();
+            this.bounds = new PositionBounds(s, s);
+            this.displayText = jf.toEditorFix().getText();
+            this.parentFile = parentFile;
+            this.modification = modification;
+            this.enabledResults = enabledResults;
+        }
+
+        @Override
+        public String getDisplayText() {
+            return displayText;
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            if (enabled) {
+                enabledResults.add(modification);
+            } else {
+                enabledResults.remove(modification);
+            }
+            super.setEnabled(enabled);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabledResults.contains(modification);
+        }
+
+        @Override
+        public PositionBounds getPosition() {
+            return bounds;
+        }
+
+        @Override
+        public String getText() {
+            return displayText;
+        }
+
+        @Override
+        public void performChange() {
+        }
+
+        @Override
+        public FileObject getParentFile() {
+            return parentFile;
+        }
+
+        @Override
+        protected String getNewFileContent() {
+            String result = newFileContent != null ? newFileContent.get() : null;
+            if (result != null) return result;
+            try {
+                result = modification.getResultingSource(parentFile);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            newFileContent = new WeakReference<String>(result);
+            return result;
+        }
+    }
+    
+    private static final class DelegatingTransaction implements Transaction {
+
+        private final Set<ModificationResult> enabled;
+        private final Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes;
+        private final Map<FileObject, Set<FileObject>> affectedFiles;
+        private final Collection<? extends ModificationResult> completeModificationResult;
+        
+        private Transaction delegate;
+
+        public DelegatingTransaction(Set<ModificationResult> enabled, Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes, Map<FileObject, Set<FileObject>> affectedFiles, Collection<? extends ModificationResult> completeModificationResult) {
+            this.enabled = enabled;
+            this.file2Fixes2Changes = file2Fixes2Changes;
+            this.affectedFiles = affectedFiles;
+            this.completeModificationResult = completeModificationResult;
+        }
+        
+        @Override
+        public synchronized void commit() {
+            if (delegate == null) {
+                Set<FileObject> toRecompute = new HashSet<FileObject>();
+                
+                for (ModificationResult mr : completeModificationResult) {
+                    for (FileObject modified : mr.getModifiedFileObjects()) {
+                        if (!affectedFiles.containsKey(modified)) {
+                            assert mr.getDifferences(modified).isEmpty();
+                            continue;
+                        }
+                        for (FileObject affected : affectedFiles.get(modified)) {
+                            for (Entry<JavaFix, ModificationResult> e : file2Fixes2Changes.get(affected).entrySet()) {
+                                if (!enabled.contains(e.getValue())) {
+                                    toRecompute.add(affected);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                final Map<FileObject, Collection<JavaFix>> toRun = new HashMap<FileObject, Collection<JavaFix>>();
+                
+                for (Iterator<FileObject> it = toRecompute.iterator(); it.hasNext();) {
+                    FileObject r = it.next();
+                    
+                    for (ModificationResult mr : completeModificationResult) {
+                        List<? extends Difference> diffs = mr.getDifferences(r);
+                        
+                        if (diffs == null) continue;
+                        
+                        for (Difference c : diffs) {
+                            c.exclude(true);
+                        }
+                    }
+                    
+                    for (Entry<JavaFix, ModificationResult> e : file2Fixes2Changes.get(r).entrySet()) {
+                        if (enabled.contains(e.getValue())) {
+                            Collection<JavaFix> fixes2Run = toRun.get(r);
+                            
+                            if (fixes2Run == null) {
+                                toRun.put(r, fixes2Run = new ArrayList<JavaFix>());
+                            }
+                            
+                            fixes2Run.add(e.getKey());
+                        }
+                    }
+                }
+
+                List<ModificationResult> real = new ArrayList<ModificationResult>(completeModificationResult);
+                
+                real.addAll(BatchUtilities.applyFixes(toRun));
+                
+                delegate = JavaRefactoringPlugin.createTransaction(new LinkedList<ModificationResult>(real));
+            }
+            
+            delegate.commit();
+        }
+
+        @Override
+        public synchronized void rollback() {
+            delegate.rollback();
+        }
+        
+    }
 }

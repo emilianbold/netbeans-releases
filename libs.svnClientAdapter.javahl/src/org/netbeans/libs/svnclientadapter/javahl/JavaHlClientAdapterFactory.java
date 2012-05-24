@@ -148,7 +148,8 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
             return;
         }
         String name = "libsvnjavahl-1.so";
-        String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
+        String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/",
+            "/usr/lib64/", "/usr/lib64/jni/", "/usr/local/lib64/"};
         File location = null;
         for (String loc : locations) {
             File file = new File(loc, name);
@@ -206,13 +207,13 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     }
 
     private void loadJavahlDependencies(String locationPath) {
+        try { System.load(locationPath + "/msvcr100.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/msvcp100.dll"); }        catch (Throwable t) { }
         try { System.load(locationPath + "/libapr-1.dll"); }        catch (Throwable t) { }
         try { System.load(locationPath + "/libapriconv-1.dll"); }   catch (Throwable t) { }
         try { System.load(locationPath + "/libeay32.dll"); }        catch (Throwable t) { }
-        try { System.load(locationPath + "/libdb44.dll"); }         catch (Throwable t) { }
         try { System.load(locationPath + "/ssleay32.dll"); }        catch (Throwable t) { }
         try { System.load(locationPath + "/libaprutil-1.dll"); }    catch (Throwable t) { }
-        try { System.load(locationPath + "/intl3_svn.dll"); }       catch (Throwable t) { }
         try { System.load(locationPath + "/dbghelp.dll"); }         catch (Throwable t) { }
         try { System.load(locationPath + "/libsasl.dll"); }         catch (Throwable t) { }
         try { System.load(locationPath + "/libsvn_subr-1.dll"); }   catch (Throwable t) { }
@@ -226,7 +227,7 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     }    
     
     private File getJavahlFromExecutablePath(String libName) {
-        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/modules.subversion");
+        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/modules/subversion");
         
         String executablePath = prefs.get("svnExecBinary", "");
         if(executablePath == null || executablePath.trim().equals("")) {

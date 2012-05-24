@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,26 +47,22 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
-import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationException;
-import org.netbeans.api.autoupdate.OperationSupport;
-import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.*;
 import org.netbeans.modules.autoupdate.ui.Containers;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class InstallUnitWizardModel extends OperationWizardModel {
+public final class InstallUnitWizardModel extends OperationWizardModel {
     private Installer installer = null;
     private OperationType doOperation;
     private static Set<String> approvedLicences = new HashSet<String> ();
-    private InstallSupport support;
     private OperationContainer<InstallSupport> updateContainer = null;
     private OperationContainer<OperationSupport> customContainer = Containers.forCustomInstall ();
     private PluginManagerUI manager;
@@ -84,31 +80,30 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         updateContainer = getBaseContainer ();
     }
     
+    @Override
     public OperationType getOperation () {
         return doOperation;
     }
     
     @Override
-    public OperationContainer getBaseContainer () {
+    public OperationContainer<InstallSupport> getBaseContainer () {
         OperationContainer c = getBaseContainerImpl();
-        assert support != null || c.listAll().isEmpty() : "Non empty container: " + c + " but null support";
+        assert c.getSupport() != null || c.listAll().isEmpty() : "Non empty container[list: " + c.listAll() +
+                ", invalid: " + c.listInvalid() + "]: but support is " + c.getSupport();
         return c;
     }
     
-    private OperationContainer getBaseContainerImpl() {
+    private OperationContainer<InstallSupport> getBaseContainerImpl() {
         if (updateContainer != null) {
-            support = updateContainer.getSupport ();
             return updateContainer;
         }
         OperationContainer<InstallSupport> c = null;
         switch (getOperation ()) {
         case INSTALL :
             c = Containers.forAvailable ();
-            support = c.getSupport ();
             break;
         case UPDATE :
             c = Containers.forUpdate ();
-            support = c.getSupport ();
             break;
         case LOCAL_DOWNLOAD :
             OperationContainer<InstallSupport> forUpdateNbms    = Containers.forUpdateNbms ();
@@ -124,13 +119,13 @@ public class InstallUnitWizardModel extends OperationWizardModel {
                     "Containers.forAvailableNbms().listInvalid() should be empty but " + forAvailableNbms.listInvalid ();
                 forAvailableNbms.removeAll ();
             }
-            support = c.getSupport ();
             updateContainer = c;
             break;
         }
         return c;
     }
     
+    @Override
     public OperationContainer<OperationSupport> getCustomHandledContainer () {
         return customContainer;
     }
@@ -138,9 +133,12 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     public boolean allLicensesApproved () {
         boolean res = true;
         for (UpdateElement el : getAllUpdateElements ()) {
-            if (el.getLicence () != null && ! approvedLicences.contains (el.getLicence ())) {
-                res = false;
-                break;
+            if (! OperationType.UPDATE.equals(getOperation()) || ! Utilities.isLicenseIdApproved(el.getLicenseId())) {
+                String lic = el.getLicence ();
+                if (lic != null && ! approvedLicences.contains (lic)) {
+                    res = false;
+                    break;
+                }
             }
         }
         allLicensesTouched = true;
@@ -155,10 +153,6 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         allLicensesTouched = false;
     }
     
-    public InstallSupport getInstallSupport () {
-        return support;
-    }
-    
     public void setInstaller (Installer i) {
         installer = i;
     }
@@ -171,31 +165,24 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     public void doCleanup (boolean cancel) throws OperationException {
         try {
             if (cancel) {
-                if (support != null) {
-                    support.doCancel();
+                if (getBaseContainerImpl() != null && getBaseContainerImpl().getSupport() != null) {
+                    getBaseContainerImpl().getSupport().doCancel();
                 }
-                if (getBaseContainer ().getSupport () instanceof InstallSupport) {
-                    if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
-                        InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
-                        if (asupp != null) {
-                            asupp.doCancel ();
-                        }
-                        InstallSupport usupp = Containers.forUpdateNbms ().getSupport ();
-                        if (usupp != null) {
-                            usupp.doCancel ();
-                        }
-                        Containers.forAvailableNbms ().removeAll ();
-                        Containers.forUpdateNbms ().removeAll ();
-                    } else {
-                        InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
-                        if (isupp != null) {
-                            isupp.doCancel ();
-                        }
+                if (OperationType.LOCAL_DOWNLOAD == getOperation ()) {
+                    InstallSupport asupp = Containers.forAvailableNbms ().getSupport ();
+                    if (asupp != null) {
+                        asupp.doCancel ();
                     }
+                    InstallSupport usupp = Containers.forUpdateNbms ().getSupport ();
+                    if (usupp != null) {
+                        usupp.doCancel ();
+                    }
+                    Containers.forAvailableNbms ().removeAll ();
+                    Containers.forUpdateNbms ().removeAll ();
                 } else {
-                    OperationSupport osupp = (OperationSupport) getBaseContainer ().getSupport ();
-                    if (osupp != null) {
-                        osupp.doCancel ();
+                    InstallSupport isupp = (InstallSupport) getBaseContainer ().getSupport ();
+                    if (isupp != null) {
+                        isupp.doCancel ();
                     }
                 }
                 OperationSupport osupp = getCustomHandledContainer ().getSupport ();

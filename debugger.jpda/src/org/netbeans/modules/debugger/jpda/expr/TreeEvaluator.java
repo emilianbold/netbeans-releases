@@ -121,7 +121,7 @@ public class TreeEvaluator {
             frameIndex = indexOf(ThreadReferenceWrapper.frames(frameThread), currentFrame);
         } catch (ObjectCollectedExceptionWrapper ocex) {
             throw new InvalidExpressionException(NbBundle.getMessage(
-                TreeEvaluator.class, "CTL_EvalError_collected"));
+                TreeEvaluator.class, "CTL_EvalError_collected_context"));
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thread died
             throw new InvalidExpressionException(ex.getCause().getLocalizedMessage());

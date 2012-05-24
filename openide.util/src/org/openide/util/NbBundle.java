@@ -1450,7 +1450,7 @@ public class NbBundle extends Object {
                         reverseLocalizable = false;
                         state = WAITING_FOR_KEY;
 
-                        if (localizable ^ revLoc && isLocalizable(currentValue.toString())) {
+                        if (localizable ^ revLoc) {
                             // This value is intended to be localizable. Annotate it.
                             assert keyLine > 0;
                             toInsert = "(" + id + ":" + keyLine + ")"; // NOI18N
@@ -1479,11 +1479,6 @@ public class NbBundle extends Object {
                 default:
                     throw new IOException("should never happen"); // NOI18N
                 }
-            }
-
-            /** Heuristic for some common code items placed in bundles. */
-            private boolean isLocalizable(String value) {
-                return !value.matches("0x[0-9a-fA-F]+|https?://.+");
             }
 
         }

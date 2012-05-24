@@ -917,6 +917,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug211971.cc", 7, 25, "bug211971.cc", 3, 7);
     }
     
+    public void testBug161749() throws Exception {
+        // Bug 161749 - problems with restrict, __restrict and __restrict__
+        performTest("bug161749.c", 1, 34, "bug161749.c", 1, 19);
+        performTest("bug161749.c", 2, 34, "bug161749.c", 2, 19);
+
+        performTest("bug161749.c", 4, 40, "bug161749.c", 4, 19);
+        performTest("bug161749.c", 5, 40, "bug161749.c", 5, 19);
+
+        performTest("bug161749.c", 7, 42, "bug161749.c", 7, 19);
+        performTest("bug161749.c", 8, 42, "bug161749.c", 8, 19);
+
+        performTest("bug161749.c", 10, 44, "bug161749.c", 10, 19);
+        performTest("bug161749.c", 11, 44, "bug161749.c", 11, 19);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

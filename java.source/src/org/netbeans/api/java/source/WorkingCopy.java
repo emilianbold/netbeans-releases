@@ -80,6 +80,7 @@ import javax.tools.JavaFileObject;
 
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.TryTree;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -373,7 +374,7 @@ public class WorkingCopy extends CompilationController {
             
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
 
-    private void addNonSyntheticTree(DiffContext diffContext, Tree node) {
+    private void addSyntheticTrees(DiffContext diffContext, Tree node) {
         if (node != null && node.getKind() == Kind.EXPRESSION_STATEMENT) {
             ExpressionTree est = ((ExpressionStatementTree) node).getExpression();
 
@@ -381,8 +382,8 @@ public class WorkingCopy extends CompilationController {
                 ExpressionTree select = ((MethodInvocationTree) est).getMethodSelect();
 
                 if (select.getKind() == Kind.IDENTIFIER && ((IdentifierTree) select).getName().contentEquals("super")) {
-                    if (!getTreeUtilities().isSynthetic(diffContext.origUnit, node)) {
-                        diffContext.notSyntheticTrees.add(node);
+                    if (getTreeUtilities().isSynthetic(diffContext.origUnit, node)) {
+                        diffContext.syntheticTrees.add(node);
                     }
                 }
             }
@@ -399,11 +400,21 @@ public class WorkingCopy extends CompilationController {
 
         if (CasualDiff.OLD_TREES_VERBATIM) {
             new TreeScanner<Void, Void>() {
+                private boolean synthetic = false;
                 @Override
                 public Void scan(Tree node, Void p) {
-                    oldTrees.add(node);
-                    addNonSyntheticTree(diffContext, node);
-                    return super.scan(node, p);
+                    if (node == null) return null;
+                    boolean oldSynthetic = synthetic;
+                    try {
+                        synthetic |= getTreeUtilities().isSynthetic(diffContext.origUnit, node);
+                        if (!synthetic) {
+                            oldTrees.add(node);
+                        }
+                        addSyntheticTrees(diffContext, node);
+                        return super.scan(node, p);
+                    } finally {
+                        synthetic = oldSynthetic;
+                    }
                 }
 
                 @Override
@@ -423,13 +434,22 @@ public class WorkingCopy extends CompilationController {
                         oldTrees.remove(node.getVariable());
                     }
                 }
+
+                @Override
+                public Void visitTry(TryTree node, Void p) {
+                    try {
+                        return super.visitTry(node, p);
+                    } finally {
+                        oldTrees.removeAll(node.getResources());
+                    }
+                }
                 
             }.scan(diffContext.origUnit, null);
         } else {
             new TreeScanner<Void, Void>() {
                 @Override
                 public Void scan(Tree node, Void p) {
-                    addNonSyntheticTree(diffContext, node);
+                    addSyntheticTrees(diffContext, node);
                     return super.scan(node, p);
                 }
             }.scan(diffContext.origUnit, null);
@@ -588,7 +608,7 @@ public class WorkingCopy extends CompilationController {
         }
     }
     
-    private List<Difference> processExternalCUs(Map<?, int[]> tag2Span, Set<Tree> notSyntheticTrees) {
+    private List<Difference> processExternalCUs(Map<?, int[]> tag2Span, Set<Tree> syntheticTrees) {
         if (externalChanges == null) {
             return Collections.<Difference>emptyList();
         }
@@ -605,7 +625,7 @@ public class WorkingCopy extends CompilationController {
 
                 StringWriter target = new StringWriter();
 
-                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, notSyntheticTrees, getFileObject() != null ? getCompilationUnit() : null, getFileObject() != null ? getText() : null), tag2Span), target);
+                ModificationResult.commit(targetFile, processCurrentCompilationUnit(new DiffContext(this, templateCUT, codeForCompilationUnit(templateCUT), new PositionConverter(), targetFile, syntheticTrees, getFileObject() != null ? getCompilationUnit() : null, getFileObject() != null ? getText() : null), tag2Span), target);
                 result.add(new CreateChange(t.getSourceFile(), target.toString()));
                 target.close();
             } catch (BadLocationException ex) {
@@ -724,13 +744,13 @@ public class WorkingCopy extends CompilationController {
             }
         }
         List<Difference> result = new LinkedList<Difference>();
-        Set<Tree> notSyntheticTrees = new HashSet<Tree>();
+        Set<Tree> syntheticTrees = new HashSet<Tree>();
         
         if (getFileObject() != null) {
-            result.addAll(processCurrentCompilationUnit(new DiffContext(this, notSyntheticTrees), tag2Span));
+            result.addAll(processCurrentCompilationUnit(new DiffContext(this, syntheticTrees), tag2Span));
         }
         
-        result.addAll(processExternalCUs(tag2Span, notSyntheticTrees));
+        result.addAll(processExternalCUs(tag2Span, syntheticTrees));
 
         overlay.clearElementsCache();
         

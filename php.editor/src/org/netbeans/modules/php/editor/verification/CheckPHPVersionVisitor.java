@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -69,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
     private FileObject fobj;
-    private ArrayList<PHPVersionError> errors = new ArrayList<PHPVersionError>();
+    private ArrayList<PHPVerificationError> errors = new ArrayList<PHPVerificationError>();
 
     public CheckPHPVersionVisitor(FileObject fobj) {
         this.fobj = fobj;
@@ -101,9 +102,12 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ConstantDeclaration statement) {
-        for (ASTNode node : getPath()) {
-            if (node instanceof TypeDeclaration) {
-                return;
+        List<ASTNode> path = getPath();
+        synchronized (path) {
+            for (ASTNode node : path) {
+                if (node instanceof TypeDeclaration) {
+                    return;
+                }
             }
         }
         createError(statement);
@@ -137,13 +141,13 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         }
     }
 
-    public Collection<PHPVersionError> getErrors(){
+    public Collection<PHPVerificationError> getErrors(){
         return Collections.unmodifiableCollection(errors);
     }
 
     private  void createError(int startOffset, int endOffset){
 
-        PHPVersionError error = new PHP53VersionError(fobj, startOffset, endOffset);
+        PHPVerificationError error = new PHP53VersionError(fobj, startOffset, endOffset);
         errors.add(error);
     }
 
@@ -152,7 +156,7 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
-    private class PHP53VersionError extends PHPVersionError {
+    private class PHP53VersionError extends PHPVerificationError {
 
         private static final String KEY = "php.ver"; //NOI18N
 

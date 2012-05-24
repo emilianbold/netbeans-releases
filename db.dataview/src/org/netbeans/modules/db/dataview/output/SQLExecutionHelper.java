@@ -48,6 +48,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +58,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
@@ -132,6 +134,10 @@ class SQLExecutionHelper {
             Collection<DBTable> tables = dbMeta.generateDBTables(rs, sql, isSelect);
             DataViewDBTable dvTable = new DataViewDBTable(tables);
             dataView.setDataViewDBTable(dvTable);
+            if (resultSetNeedsReloading()) {
+                executeSQLStatement(stmt, sql);
+                rs = stmt.getResultSet();
+            }
             loadDataFrom(rs);
             DataViewUtils.closeResources(rs);
             getTotalCount(isSelect, sql, stmt);
@@ -728,5 +734,32 @@ class SQLExecutionHelper {
         NumberFormat fmt = NumberFormat.getInstance();
         fmt.setMaximumFractionDigits(3);
         return fmt.format(ms / 1000.0);
+    }
+
+    /**
+     * Check whether the result set needs reloading. Some databases close result
+     * streams when reading database metadata (e.g. Oracle DB and
+     * DatabaseMetaData.getPrimaryKeys). If there are some streamed values, the
+     * result set needs to be reloaded after meta data have been read. See
+     * #179959.
+     *
+     * @return True if and only if the result set needs to be reloaded.
+     */
+    private boolean resultSetNeedsReloading() {
+        if (!dataView.getDatabaseConnection().getDriverClass().contains(
+                "oracle")) {                                            //NOI18N
+            return false;
+        }
+        int colCnt = dataView.getDataViewDBTable().getColumnCount();
+        for (int i = 0; i < colCnt; i++) {
+            DBColumn column = dataView.getDataViewDBTable().getColumn(i);
+            int jdbcType = column.getJdbcType();
+            if (jdbcType == Types.LONGVARCHAR || jdbcType == Types.LONGNVARCHAR
+                    || jdbcType == Types.LONGVARBINARY || jdbcType == Types.BLOB
+                    || jdbcType == Types.CLOB || jdbcType == Types.NCLOB) {
+                return true;
+            }
+        }
+        return false;
     }
 }

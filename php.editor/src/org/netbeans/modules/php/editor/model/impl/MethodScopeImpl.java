@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
@@ -216,8 +217,8 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
         sb.append(getSignatureLastPart());
         return sb.toString();
     }
@@ -226,18 +227,18 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     public String getConstructorIndexSignature() {
         StringBuilder sb = new StringBuilder();
         final String typeName = getInScope().getName();
-        sb.append(typeName.toLowerCase()).append(";");//NOI18N
-        sb.append(typeName).append(";");//NOI18N
+        sb.append(typeName.toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(typeName).append(Signature.ITEM_DELIMITER);
         sb.append(getSignatureLastPart());
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 
     private String getSignatureLastPart() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getOffset()).append(";"); //NOI18N
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         List<? extends ParameterElement> parameters = getParameters();
         for (int idx = 0; idx < parameters.size(); idx++) {
             ParameterElementImpl parameter = (ParameterElementImpl) parameters.get(idx);
@@ -246,12 +247,12 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
             }
             sb.append(parameter.getSignature());
         }
-        sb.append(";"); //NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         if (returnType != null && !PredefinedSymbols.MIXED_TYPE.equalsIgnoreCase(returnType)) {
             sb.append(returnType);
         }
-        sb.append(";"); //NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(";");
+        sb.append(Signature.ITEM_DELIMITER);
+        sb.append(getPhpModifiers().toFlags()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

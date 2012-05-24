@@ -74,6 +74,8 @@ public class Utils {
 
     private static String getTopLvlDisplayText(boolean containsActiveTask, String name, boolean isOpened) {
         String displayName;
+        //replace spaces to prevent line breaking
+        name = removeSpaces(name);
         String activeText = containsActiveTask ? "<b>" + name + "</b>" : name; //NOI18N
         if (!isOpened) {
             displayName = "<html><strike>" + activeText + "</strike><html>"; //NOI18N
@@ -84,18 +86,19 @@ public class Utils {
     }
 
     public static String getTaskPlainDisplayText(Issue task, JComponent component, int maxWidth) {
-        return computeFitText(component, maxWidth, task.getDisplayName(), false);
+        return computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), false);
     }
 
     public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
-        String fitText = computeFitText(component, maxWidth, task.getDisplayName(), active);
+        String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
+        //replace spaces to prevent line breaking
+        fitText = removeSpaces(fitText);
         String activeText = active ? "<b>" + fitText + "</b>" : getFilterBoldText(fitText); //NOI18N
-        //TODO task.isFinished is not in the API
-//        if (task.isFinished()) {
-//            displayName = "<html><font color=\"gray\"><strike>" + activeText + "</strike></font><html>"; //NOI18N
-//        }
 
+        if (task.isFinished()) {
+            activeText = "<strike>" + activeText + "</strike>"; //NOI18N
+        }
         Status status = task.getStatus();
         if (status == Status.NEW && !hasFocus) {
             displayName = "<html><font color=\"green\">" + activeText + "</font></html>"; //NOI18N
@@ -162,5 +165,9 @@ public class Utils {
         } else {
             return fitText;
         }
+    }
+
+    private static String removeSpaces(String name) {
+        return name.replace(" ", "&nbsp;"); //NOI18N
     }
 }

@@ -799,6 +799,10 @@ public class Utilities {
             int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), node);
             int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), node);
 
+            if (start < 0 || end < 0 || end < start) {
+                return node.toString();
+            }
+            
             return info.getText().substring(start, end);
         }
 

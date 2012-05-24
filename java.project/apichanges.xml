@@ -109,6 +109,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="PreferredProjectPlatform">
+            <api name="general"/>
+            <summary>Added <code>PreferredProjectPlatform</code></summary>
+            <version major="1" minor="46"/>
+            <date day="20" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>PreferredProjectPlatform</code> to provide a 
+                    <code>JavaPlatform</code> which should be used for a new project.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="PreferredProjectPlatform"/>
+            <issue number="208528"/>
+        </change>
         <change id="ProfilerActions">
             <api name="general"/>
             <summary>Added 

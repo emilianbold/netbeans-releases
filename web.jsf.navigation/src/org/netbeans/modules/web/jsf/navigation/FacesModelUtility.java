@@ -130,11 +130,13 @@ public class FacesModelUtility {
             }
         }
 
-        configModel.endTransaction();
         try {
+            configModel.endTransaction();
             configModel.sync();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (IllegalStateException ise) {
+            Exceptions.printStackTrace(ise);
         }
     }
     

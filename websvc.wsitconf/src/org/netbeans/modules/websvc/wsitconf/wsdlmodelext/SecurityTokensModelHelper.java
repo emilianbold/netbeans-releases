@@ -173,7 +173,7 @@ public class SecurityTokensModelHelper {
             token.setRequireClientCertificate(require);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -425,7 +425,7 @@ public class SecurityTokensModelHelper {
 
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
         return tokenType;
@@ -454,14 +454,12 @@ public class SecurityTokensModelHelper {
             ((ExtensibilityElement)tokenType).setAnyAttribute(SecurityPolicyQName.INCLUDETOKENATTRIBUTE.getQName(configVersion), levelStr);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
    }
 
     public void setHashPassword(WSDLComponent tokenType, boolean enable) {
-        
-        System.out.println("setHAshPassword" + tokenType + ", " + enable);
         
         WSDLModel model = tokenType.getModel();
         WSDLComponentFactory wcf = model.getFactory();
@@ -492,7 +490,7 @@ public class SecurityTokensModelHelper {
             exc.printStackTrace();
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -583,7 +581,7 @@ public class SecurityTokensModelHelper {
             if (profileVersionAssertion != null) p.addExtensibilityElement((ExtensibilityElement) profileVersionAssertion);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -644,7 +642,7 @@ public class SecurityTokensModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -756,7 +754,7 @@ public class SecurityTokensModelHelper {
             }
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
         return tokenType;
@@ -895,7 +893,7 @@ public class SecurityTokensModelHelper {
             ma.setAddress(metaAddress);
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }
@@ -954,7 +952,7 @@ public class SecurityTokensModelHelper {
             
         } finally {
             if (!isTransaction) {
-                model.endTransaction();
+                WSITModelSupport.doEndTransaction(model);
             }
         }
     }

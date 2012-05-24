@@ -230,7 +230,7 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Services">
-        <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepository.settings" url="/org/netbeans/modules/mobility/project/ui/resources/KeyStoreRepository.settings">
+        <file name="org-netbeans-modules-mobility-project-security-KeyStoreRepository.settings" url="KeyStoreRepository.settings">
             <attr boolvalue="true" name="hidden"/>
         </file>
     </folder>

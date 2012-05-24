@@ -1508,11 +1508,15 @@ public class TokenFormatter {
             }
 
             private Whitespace countWhiteSpaceForPreserveExistingBracePlacement(CharSequence oldText, int lastIndentOfBracedBlock) {
-                int lines = countOfNewLines(oldText);
-                int spaces = countOfSpaces(oldText.toString(), docOptions.tabSize);
-                int lastIndexOfNewLine = oldText.toString().lastIndexOf('\n');
-                if (lastIndexOfNewLine != -1) {
-                    spaces = countOfSpaces(oldText.toString().substring(lastIndexOfNewLine + 1), docOptions.tabSize);
+                int lines = 0;
+                int spaces = 0;
+                if (oldText != null) {
+                    lines = countOfNewLines(oldText);
+                    spaces = countOfSpaces(oldText.toString(), docOptions.tabSize);
+                    int lastIndexOfNewLine = oldText.toString().lastIndexOf('\n');
+                    if (lastIndexOfNewLine != -1) {
+                        spaces = countOfSpaces(oldText.toString().substring(lastIndexOfNewLine + 1), docOptions.tabSize);
+                    }
                 }
                 return new Whitespace(lines, spaces + lastIndentOfBracedBlock);
             }

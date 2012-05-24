@@ -442,6 +442,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         }
 
         String f = file.substring(ud.length()).replace(File.separatorChar, '/');
+        if (f.startsWith("/.metadata")) {
+            // equinox runtime
+            return false;
+        }
         if (f.contains("config/Modules")) {
             return false;
         }

@@ -97,7 +97,8 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         canceled.set(true);
     }
 
-    public void run(CompilationInfo info) throws Exception {        
+    public void run(CompilationInfo info) throws Exception {
+        ui.start();
         canceled.set (false); // Task shared for one file needs reset first
         long start = System.currentTimeMillis();        
         

@@ -723,7 +723,7 @@
         <property name="config" value="&lt;default config&gt;"/>
     </target>
     
-    <target name="-check-project" depends="-check-jfx-sdk-version">
+    <target name="-check-project">
         <condition property="main-class-available">
             <isset property="javafx.main.class"/>
         </condition>
@@ -1672,7 +1672,6 @@
                     // fx:platform
                     var plat = deploy.createPlatform();
                     plat.setProject(project);
-                    plat.setJavafx("2.0+");
                     var jvmargs = project.getProperty("run.jvmargs");
                     if(jvmargs != null && jvmargs.length() > 0) {
                         var jvmargss = jvmargs.split(" ");
@@ -2117,13 +2116,20 @@
     </target>
 
 
+    <!-- Project Run Targets -->
+
+    <target name="-warn-of-preloader" depends="-check-project" if="preloader-app">
+        <fail message="Error:${line.separator}JavaFX 2 Preloader Project can not be executed directly.${line.separator}Please execute instead a JavaFX Application that uses the Preloader."/>
+    </target>
+    
+
     <!-- Running/Debugging/Profiling Standalone -->
 
-    <target name="jfxsa-run" depends="-check-jfx-runtime,run"/>
+    <target name="jfxsa-run" depends="-check-jfx-runtime,-warn-of-preloader,run"/>
 
-    <target name="jfxsa-debug" depends="jar,-check-jfx-runtime,debug"/>
+    <target name="jfxsa-debug" depends="jar,-check-jfx-runtime,-warn-of-preloader,debug"/>
     
-    <target name="jfxsa-profile" depends="-check-jfx-runtime,profile"/>
+    <target name="jfxsa-profile" depends="-check-jfx-runtime,-warn-of-preloader,profile"/>
 
 
     <!-- Shared Debugging init -->

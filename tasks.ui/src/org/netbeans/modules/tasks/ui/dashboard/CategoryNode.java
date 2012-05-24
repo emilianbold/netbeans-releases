@@ -41,19 +41,17 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.tasks.ui.LinkButton;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
+import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -64,99 +62,156 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class CategoryNode extends TreeListNode implements Comparable<CategoryNode> {
+public class CategoryNode extends TaskContainerNode implements Comparable<CategoryNode> {
 
     private final Category category;
-    private List<TaskNode> taskNodes;
-    private List<TaskNode> filteredTaskNodes;
     private JPanel panel;
     private TreeLabel lblName;
-    private final Object LOCK = new Object();
     private LinkButton btnRefresh;
-    private TreeLabel counts;
     private CloseCategoryNodeAction closeCategoryAction;
     private OpenCategoryNodeAction openCategoryAction;
-    private boolean opened;
+    private TreeLabel lblTotal;
+    private TreeLabel lblChanged;
+    final Object LOCK = new Object();
+    private TreeLabel lblSeparator;
 
-    public CategoryNode(Category category) {
-        this(category, true);
+    public CategoryNode(Category category, boolean refresh) {
+        this(category, true, refresh);
     }
 
-    public CategoryNode(Category category, boolean opened) {
-        super(true, null);
+    public CategoryNode(Category category, boolean opened, boolean refresh) {
+        super(refresh, opened, null, category.getName());
         this.category = category;
-        this.opened = opened;
         updateNodes();
     }
 
     @Override
+    protected List<Issue> load() {
+        if (isRefresh()) {
+            category.refresh();
+            setRefresh(false);
+        }
+        return new ArrayList<Issue>(category.getTasks());
+    }
+
+    @Override
     protected List<TreeListNode> createChildren() {
+        if (!category.isLoaded()) {
+            DashboardViewer.getInstance().loadCategory(category);
+        } else if (isRefresh()) {
+            category.refresh();
+            setRefresh(false);
+        }
+        updateNodes();
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
 
-    void updateContent() {
-        updateNodes();
-        refreshChildren();
+    @Override
+    List<Issue> getTasks() {
+        return category.getTasks();
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        synchronized (LOCK) {
-            if (panel == null) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true)); //NOI18N
-                panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+    void adjustTaskNode(TaskNode taskNode) {
+        taskNode.setCategory(category);
+    }
 
-                lblName = new TreeLabel(getCategory().getName());
-                panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
-                counts = new TreeLabel(getCountText());
-                panel.add(counts, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
-                panel.add(new JLabel(), new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
-                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
-                btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
-                panel.add(btnRefresh, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-            }
-            lblName.setText(Utils.getCategoryDisplayText(this));
-            lblName.setForeground(foreground);
-            counts.setText(getCountText());
-            counts.setForeground(foreground);
-            return panel;
+    @Override
+    void updateCounts() {
+        if (panel != null) {
+            lblTotal.setText(getTotalString());
+            lblChanged.setText(getChangedString());
+            boolean showChanged = getChangedTaskCount() > 0;
+            lblSeparator.setVisible(showChanged);
+            lblChanged.setVisible(showChanged);
         }
     }
 
-    private Action getCategoryAction() {
-        if (opened) {
+    @Override
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        super.configure(component, foreground, background, isSelected, hasFocus);
+        if (panel != null) {
+            if (DashboardViewer.getInstance().containsActiveTask(this)) {
+                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+            } else {
+                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
+            }
+            lblName.setText(Utils.getCategoryDisplayText(this));
+        }
+    }
+
+    @Override
+    protected JComponent createComponent(List<Issue> data) {
+        updateNodes();
+        panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        synchronized (LOCK) {
+            labels.clear();
+            buttons.clear();
+
+            final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true)); //NOI18N
+            panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+
+            lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
+            panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            labels.add(lblName);
+
+            TreeLabel lbl = new TreeLabel("("); //NOI18N
+            labels.add(lbl);
+            panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+
+            lblTotal = new TreeLabel(getTotalString());
+            panel.add(lblTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            labels.add(lblTotal);
+
+            boolean showChanged = getChangedTaskCount() > 0;
+            lblSeparator = new TreeLabel("|"); //NOI18N
+            lblSeparator.setVisible(showChanged);
+            panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+            labels.add(lblSeparator);
+
+            lblChanged = new TreeLabel(getChangedString());
+            lblChanged.setVisible(showChanged);
+            panel.add(lblChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            labels.add(lblChanged);
+
+            lbl = new TreeLabel(")"); //NOI18N
+            labels.add(lbl);
+            panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+            panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshCategoryAction(this)); //NOI18N
+            btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
+            panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+        }
+        return panel;
+    }
+
+    private Action getCategoryAction(CategoryNode... categoryNodes) {
+        boolean allOpened = true;
+        boolean allClosed = true;
+        for (CategoryNode categoryNode : categoryNodes) {
+            if (categoryNode.isOpened()) {
+                allClosed = false;
+            } else {
+                allOpened = false;
+            }
+        }
+        if (allOpened) {
             if (closeCategoryAction == null) {
-                closeCategoryAction = new CloseCategoryNodeAction(this);
+                closeCategoryAction = new CloseCategoryNodeAction(categoryNodes);
             }
             return closeCategoryAction;
-        } else {
+        } else if (allClosed){
             if (openCategoryAction == null) {
-                openCategoryAction = new OpenCategoryNodeAction(this);
+                openCategoryAction = new OpenCategoryNodeAction(categoryNodes);
             }
             return openCategoryAction;
         }
-    }
-
-    final void updateNodes() {
-        AppliedFilters appliedTaskFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
-        List<Issue> tasks = category.getTasks();
-        taskNodes = new ArrayList<TaskNode>(tasks.size());
-        filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
-        for (Issue issue : tasks) {
-            TaskNode taskNode = new TaskNode(issue, this);
-            taskNode.setCategory(category);
-            taskNodes.add(taskNode);
-            if (appliedTaskFilters.isInFilter(issue)) {
-                filteredTaskNodes.add(taskNode);
-            }
-        }
+        return null;
     }
 
     public final Category getCategory() {
@@ -164,63 +219,46 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     }
 
     public boolean isOpened() {
-        return opened;
-    }
-
-    public void setOpened(boolean opened) {
-        this.opened = opened;
+        return true;
     }
 
     @Override
     public final Action[] getPopupActions() {
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        CategoryNode[] categoryNodes = new CategoryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof CategoryNode) {
+                categoryNodes[i] = (CategoryNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getCategoryAction());
-        actions.addAll(Actions.getCategoryPopupActions(category));
+        Action categoryAction = getCategoryAction(categoryNodes);
+        if (categoryAction != null) {
+            actions.add(categoryAction);
+        }
+        actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
         return actions.toArray(new Action[actions.size()]);
     }
 
-    public List<TaskNode> getTaskNodes() {
-        return new ArrayList<TaskNode>(taskNodes);
-    }
-
-    public int getTotalCount() {
-        return filteredTaskNodes.size();
-    }
-
-    public int getModifiedCount() {
-        int modifiedCount = 0;
-        for (TaskNode taskNode : getFilteredTaskNodes()) {
-            if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
-                modifiedCount++;
-            }
-        }
-        return modifiedCount;
-    }
-
-    public List<TaskNode> getFilteredTaskNodes() {
-        return filteredTaskNodes;
-    }
-
-    public void setFilteredTaskNodes(List<TaskNode> filteredTaskNodes) {
-        this.filteredTaskNodes = filteredTaskNodes;
-    }
-
     public boolean addTaskNode(TaskNode taskNode, boolean isInFilter) {
-        if (taskNodes.contains(taskNode)) {
+        if (getTaskNodes().contains(taskNode)) {
             return false;
         }
-        taskNodes.add(taskNode);
+        getTaskNodes().add(taskNode);
         category.addTask(taskNode.getTask());
         if (isInFilter) {
-            filteredTaskNodes.add(taskNode);
+            getFilteredTaskNodes().add(taskNode);
         }
         return true;
     }
 
     public void removeTaskNode(TaskNode taskNode) {
-        taskNodes.remove(taskNode);
+        getTaskNodes().remove(taskNode);
         category.removeTask(taskNode.getTask());
-        filteredTaskNodes.remove(taskNode);
+        getFilteredTaskNodes().remove(taskNode);
     }
 
     @Override
@@ -244,7 +282,11 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
 
     @Override
     public int compareTo(CategoryNode toCompare) {
-        return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+        if (this.isOpened() != toCompare.isOpened()) {
+            return this.isOpened() ? -1 : 1;
+        } else {
+            return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
+        }
     }
 
     @Override
@@ -253,18 +295,12 @@ public class CategoryNode extends TreeListNode implements Comparable<CategoryNod
     }
 
     int indexOf(Issue task) {
-        for (int i = 0; i < taskNodes.size(); i++) {
-            TaskNode taskNode = taskNodes.get(i);
+        for (int i = 0; i < getTaskNodes().size(); i++) {
+            TaskNode taskNode = getTaskNodes().get(i);
             if (taskNode.getTask().equals(task)) {
                 return i;
             }
         }
         return -1;
-    }
-
-    private String getCountText() {
-        String bundleName = DashboardViewer.getInstance().expandNodes() ? "LBL_Matches" : "LBL_Total"; //NOI18N
-        return "(" + getTotalCount() + " " + NbBundle.getMessage(CategoryNode.class, bundleName)
-                + " | " + getModifiedCount() + " " + NbBundle.getMessage(CategoryNode.class, "LBL_Changed") + ")"; //NOI18N
     }
 }

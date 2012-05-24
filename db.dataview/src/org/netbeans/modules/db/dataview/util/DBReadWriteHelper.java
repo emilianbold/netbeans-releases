@@ -376,7 +376,7 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.DATE:
-                    ps.setDate(index, DateType.convert (valueObj));
+                    ps.setDate(index, DateType.convert(valueObj));
                     break;
 
                 case Types.TIME:

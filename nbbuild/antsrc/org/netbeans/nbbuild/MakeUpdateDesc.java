@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,6 +44,7 @@
 
 package org.netbeans.nbbuild;
 
+import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,6 +58,7 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -67,12 +69,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -193,6 +197,17 @@ public class MakeUpdateDesc extends MatchingTask {
     }
 
     
+    private String contentDescription;
+    private String contentDescriptionURL;
+
+    public void setContentDescription(String message) {
+        this.contentDescription = message;
+    }
+    public void setContentDescriptionURL(String url) {
+        this.contentDescriptionURL = url;
+    }
+
+    
     // Similar to org.openide.xml.XMLUtil methods.
     private static String xmlEscape(String s) {
         int max = s.length();
@@ -259,6 +274,12 @@ public class MakeUpdateDesc extends MatchingTask {
                 targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
             }
         }
+        boolean isPreferredUpdateDefined = false;
+        for (Collection<Module> modules : modulesByGroup.values()) {
+            for (Module m : modules) {
+                isPreferredUpdateDefined |= m.xml.getAttributeNode("preferredupdate") != null;
+            }
+        }
         boolean use25DTD = false;
         for (Collection<Module> modules : modulesByGroup.values()) {
             for (Module m : modules) {
@@ -293,7 +314,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     File desc_ent = new File(ent_name);
                     desc_ent.delete();
-                    if(useLicenseUrl) {
+                    if (isPreferredUpdateDefined) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.7//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_7.dtd\" [");
+                    } else if (useLicenseUrl) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\" [");
                     } else if (use25DTD) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\" [");
@@ -329,7 +352,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                     
                 } else {
-                    if(useLicenseUrl) {
+                    if (isPreferredUpdateDefined || (contentDescription != null && ! contentDescription.isEmpty())) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.7//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_7.dtd\" [");
+                    } else if (useLicenseUrl) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.6//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_6.dtd\">");
                     } else if (use25DTD) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\">");
@@ -342,6 +367,8 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                 }
                 writeNotification(pw);
+                pw.println ();
+                writeContentDescription(pw);
                 pw.println ();
 		Map<String,Element> licenses = new HashMap<String,Element>();
                 String prefix = null;
@@ -380,7 +407,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     for (Module m : entry.getValue()) {
                         Element module = m.xml;
                         if (module.getAttribute("downloadsize").equals("0")) {
-                            module.setAttribute("downloadsize", Long.toString(m.nbm.length()));
+                            module.setAttribute("downloadsize", Long.toString(m.nbm.length() + m.externalDownloadSize));
                         }
                         Element manifest = (Element) module.getElementsByTagName("manifest").item(0);
                         String name = manifest.getAttribute("OpenIDE-Module-Name");
@@ -462,6 +489,7 @@ public class MakeUpdateDesc extends MatchingTask {
         public File nbm;
         public String relativePath;
         public boolean autoload, eager;
+        public long externalDownloadSize;
     }
 
     private void writeNotification(PrintWriter pw) {
@@ -482,6 +510,29 @@ public class MakeUpdateDesc extends MatchingTask {
                         "<notification url=\"" + xmlEscape(notificationURL.toString()) + "\">" +
                         xmlEscape(notificationMessage) +
                         "</notification>");
+            }
+            pw.println();
+        }
+    }
+
+    private void writeContentDescription(PrintWriter pw) {
+        // write content_description message/url if defined
+        if (contentDescription == null) {
+            contentDescription = "";
+        }
+        if (contentDescriptionURL == null) {
+            contentDescriptionURL = "";
+        }
+        if (contentDescription.length() > 0 || contentDescriptionURL.length() > 0) {
+            if (contentDescription.length() == 0) {
+                pw.println("<content_description url=\"" + xmlEscape(contentDescriptionURL.toString()) + "\"/>");
+            } else if (contentDescriptionURL.length() == 0) {
+                pw.println("<content_description>" + xmlEscape(contentDescription) + "</content_description>");
+            } else {
+                pw.println(
+                        "<content_description url=\"" + xmlEscape(contentDescriptionURL.toString()) + "\">" +
+                        xmlEscape(contentDescription) +
+                        "</content_description>");
             }
             pw.println();
         }
@@ -596,6 +647,18 @@ public class MakeUpdateDesc extends MatchingTask {
                                     }
                                 }
                             }
+                            Enumeration<JarEntry> en = jar.entries();
+                            while (en.hasMoreElements()) {
+                                JarEntry e = en.nextElement();
+                                if (e.getName().endsWith(".external")) {
+                                    InputStream eStream = jar.getInputStream(e);
+                                    try {
+                                        m.externalDownloadSize += externalSize(eStream);
+                                    } finally {
+                                        eStream.close();
+                                    }
+                                }
+                            }
                             moduleCollection.add(m);
                         } finally {
                             jar.close();
@@ -611,6 +674,20 @@ public class MakeUpdateDesc extends MatchingTask {
         return r;
     }
 
+    private long externalSize(InputStream is) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        for (;;) {
+            String line = br.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("SIZE:")) {
+                return Long.parseLong(line.substring(5).trim());
+            }
+        }
+        return 0;
+    }
+    
     /**
      * Create the equivalent of {@code Info/info.xml} for an OSGi bundle.
      * @param jar a bundle

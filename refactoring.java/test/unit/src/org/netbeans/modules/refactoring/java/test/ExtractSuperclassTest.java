@@ -72,6 +72,62 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
     public ExtractSuperclassTest(String name) {
         super(name);
     }
+    
+    public void test212624() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    /**\n"
+                + "     * Method comments\n"
+                + "     */\n"
+                + "    private String value;\n"
+                + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass extends ExtractSuperClass {\n"
+                + "    \n"
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass {\n"
+                + "    /**\n"
+                + "     * Method comments\n"
+                + "     */\n"
+                + "    protected String value;\n"
+                + "}\n"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    // Method comments\n"
+                + "    private String value;\n"
+                + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass extends ExtractSuperClass {\n"
+                + "    \n"
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass {\n"
+                + "    // Method comments\n"
+                + "    protected String value;\n"
+                + "}\n"));
+    }
 
     public void test211894() throws Exception {
         writeFilesAndWaitForScan(src,

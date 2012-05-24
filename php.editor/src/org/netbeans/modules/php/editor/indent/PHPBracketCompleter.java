@@ -262,6 +262,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
         Token<?extends PHPTokenId> token;
         int curlyBalance = 0;
+        boolean curlyProcessed = false;
         if (startTokenId == PHPTokenId.PHP_CURLY_OPEN || startTokenId == PHPTokenId.PHP_FUNCTION
                 || startTokenId == PHPTokenId.PHP_CLASS) {
             boolean unfinishedComment = false;
@@ -269,13 +270,18 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 token = ts.token();
                 if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
                     curlyBalance --;
+                    curlyProcessed = true;
                 } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN
                         || (token.id() == PHPTokenId.PHP_TOKEN && "${".equals(token.text().toString()))) { //NOI18N
                     curlyBalance ++;
+                    curlyProcessed = true;
                 } else if (token.id() == PHPTokenId.PHP_COMMENT_START || token.id() == PHPTokenId.PHPDOC_COMMENT_START) {
                     unfinishedComment = true;
                 } else if (token.id() == PHPTokenId.PHP_COMMENT_END || token.id() == PHPTokenId.PHPDOC_COMMENT_END) {
                     unfinishedComment = false;
+                }
+                if (curlyBalance == 0 && curlyProcessed && ts.offset() > offset) {
+                    break;
                 }
             } while (ts.moveNext());
             if (unfinishedComment) {
@@ -995,7 +1001,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     doc.remove(start, end-start);
                 }
                 // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[' || ch == '/') {
+            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
                 // Bracket the selection
                 String selection = target.getSelectedText();
                 if (selection != null && selection.length() > 0) {
@@ -1009,7 +1015,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                             // Replace the surround-with chars?
                             if (selection.length() > 1 &&
                                     ((firstChar == '"' || firstChar == '\'' || firstChar == '(' ||
-                                    firstChar == '{' || firstChar == '[' || firstChar == '/') &&
+                                    firstChar == '{' || firstChar == '[') &&
                                     lastChar == matching(firstChar))) {
                                 doc.remove(end-1, 1);
                                 doc.insertString(end-1, Character.toString(matching(ch)), null);

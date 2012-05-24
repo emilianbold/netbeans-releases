@@ -64,11 +64,16 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import java.awt.event.ItemEvent;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Chooser for executable and project used by AttachPanel
@@ -163,9 +168,10 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
 //        executableComboBox.setModel(new DefaultComboBoxModel(paths));
 //    }
 //
-    public void setExecutablePath(String path) {
+    public void setExecutablePath(String hostName, String path) {
         executableField.setText(path);
 //        ((JTextField) executableComboBox.getEditor().getEditorComponent()).setText(path);
+        setSelectedProjectByPath(hostName, path);
     }
 
 //    public JComboBox getPathComboBox() {
@@ -481,27 +487,53 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         return (prj != null)? prj.getProjectDirectory().getPath(): "";
     }
 
-    /*package*/ void setSelectedProjectByPath(String path) {
+    /*package*/ void setSelectedProjectByPath(String hostName, String path) {
         if (path == null || path.length() == 0) {
             projectComboBox.setSelectedIndex(0);
             return;
         }
-        ProjectCBItem prj = getProjectByPath(path);
+        ProjectCBItem prj = getProjectByPath(hostName, path);
         if (prj != null) {
             projectComboBox.setSelectedItem(prj);
         }
+        else {
+            projectComboBox.setSelectedIndex(0);
+        }
     }
 
-    /*package*/ boolean containsProjectWithPath(String path) {
-        return getProjectByPath(path) != null;
+    /*package*/ boolean containsProjectWithPath(String hostName, String path) {
+        return getProjectByPath(hostName, path) != null;
     }
 
-    private ProjectCBItem getProjectByPath(String path) {
+    private ProjectCBItem getProjectByPath(String hostName, String path) {
         for(int i=0; i<projectComboBox.getModel().getSize(); i++) {
             Object item = projectComboBox.getModel().getElementAt(i);
             if (item instanceof ProjectCBItem) {
-                if (((ProjectCBItem) item).getProject().getProjectDirectory().getPath().equals(path)) {
-                    return (ProjectCBItem) item;
+                
+                FileSystem fs = FileSystemProvider.getFileSystem(Host.byName(hostName).executionEnvironment());
+                FileObject f;
+                Project prj;
+                int pos = path.indexOf(" "); // NOI18N
+                while (pos != -1) {                
+                    f = CndFileUtils.toFileObject(fs, path.substring(0, pos));
+                    if (f.isValid()) {
+                        prj = FileOwnerQuery.getOwner(f);
+                        if (prj != null) {
+                            if (((ProjectCBItem) item).getProject().equals(prj)) {
+                                return (ProjectCBItem) item;
+                            }
+                        }
+                    }
+                    pos = path.indexOf(" ", pos+1); // NOI18N
+                }
+                f = CndFileUtils.toFileObject(fs, path);
+                if (f.isValid()) {
+                    prj = FileOwnerQuery.getOwner(f);
+                    if (prj != null) {
+                        if (((ProjectCBItem) item).getProject().equals(prj)) {
+                                return (ProjectCBItem) item;
+                            }
+                        }
                 }
             }
         }

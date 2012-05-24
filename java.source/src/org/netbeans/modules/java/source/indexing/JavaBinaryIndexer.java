@@ -120,7 +120,6 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                             changed.addAll(changes.changed);
                             changed.addAll(changes.removed);
                             if (!changes.changed.isEmpty() || !changes.added.isEmpty() || !changes.removed.isEmpty()) {
-                                CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
                                 deleteSigFiles(context.getRootURI(), changed);
                                 if (changes.preBuildArgs) {
                                     preBuildArgs(context.getRootURI(),javax.swing.JComponent.class.getName());

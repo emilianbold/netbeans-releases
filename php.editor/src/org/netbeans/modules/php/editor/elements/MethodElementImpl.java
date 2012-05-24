@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 import org.openide.util.Parameters;
 
 /**
@@ -209,9 +210,13 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     @Override
     public String asString(PrintAs as) {
-        return this.functionSupport.asString(as, this);
+        return asString(as, TypeNameResolver.forNull());
     }
 
+    @Override
+    public String asString(PrintAs as, TypeNameResolver typeNameResolver) {
+        return this.functionSupport.asString(as, this, typeNameResolver);
+    }
 
     @Override
     public final PhpElementKind getPhpElementKind() {

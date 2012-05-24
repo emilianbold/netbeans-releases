@@ -62,6 +62,8 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -76,6 +78,8 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 })
 public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
            
+    private static final String WORKING_COPY_FORMAT_PROP = "svnkit.wc.17"; //NOI18N
+
     public CheckoutAction() {
     }
 
@@ -105,10 +109,13 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
         final boolean doExport = wizard.isExport();
         final boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
+        final boolean old16Format = wizard.isOldFormatPreferred();
 
         Subversion.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
+                final String oldPreference = System.getProperty(WORKING_COPY_FORMAT_PROP);
+                System.setProperty(WORKING_COPY_FORMAT_PROP, Boolean.toString(!old16Format));
                 SvnClient client;
                 try {
                     // this needs to be done in a background thread, otherwise the password won't be acquired from the keyring
@@ -117,7 +124,16 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                     SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
                     return;
                 }
-                performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
+                performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted).addTaskListener(new TaskListener() {
+                    @Override
+                    public void taskFinished (Task task) {
+                        if (oldPreference == null) {
+                            System.clearProperty(WORKING_COPY_FORMAT_PROP);
+                        } else {
+                            System.setProperty(WORKING_COPY_FORMAT_PROP, oldPreference);
+                        }
+                    }
+                });
             }
         });
     }

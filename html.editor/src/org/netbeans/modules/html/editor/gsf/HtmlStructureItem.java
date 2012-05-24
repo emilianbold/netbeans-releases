@@ -220,7 +220,8 @@ final class HtmlStructureItem implements StructureItem {
         if (attr == null) {
             return null;
         }
-        return attr.unquotedValue().toString();
+        CharSequence value = attr.unquotedValue();
+        return value != null ? value.toString() : null;
     }
 
     private List<OpenTag> gatherNonVirtualChildren(Node element) {

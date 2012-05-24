@@ -46,16 +46,18 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.api.Issue;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -65,82 +67,51 @@ import org.openide.util.RequestProcessor;
  */
 public class Actions {
 
-    public static List<Action> getTaskPopupActions(TaskNode taskNode) {
-        Issue task = taskNode.getTask();
+    public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5"); //NOI18N
+    public static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE"); //NOI18N
+
+    public static List<Action> getTaskPopupActions(TaskNode... taskNodes) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new OpenTaskAction(task));
-        actions.add(DashboardViewer.getInstance().isTaskNodeActive(taskNode) ? new DeactivateTaskAction() : new ActivateTaskAction(taskNode));
-        if (taskNode.isCategorized()) {
-            actions.add(new RemoveTaskAction(taskNode));
+        actions.add(new OpenTaskAction(taskNodes));
+        if (taskNodes.length == 1) {
+            actions.add(DashboardViewer.getInstance().isTaskNodeActive(taskNodes[0]) ? new DeactivateTaskAction() : new ActivateTaskAction(taskNodes[0]));
         }
-        actions.add(new SetCategoryAction(taskNode));
-        actions.add(new ScheduleTaskAction(task));
-        actions.add(new NotificationTaskAction(task));
-        actions.add(new RefreshTaskAction(task));
+        boolean showRemoveTask = true;
+        for (TaskNode taskNode : taskNodes) {
+            if (!taskNode.isCategorized()) {
+                showRemoveTask = false;
+            }
+        }
+        if (showRemoveTask) {
+            actions.add(new RemoveTaskAction(taskNodes));
+        }
+        actions.add(new SetCategoryAction(taskNodes));
+        actions.add(new ScheduleTaskAction(taskNodes));
+        actions.add(new NotificationTaskAction(taskNodes));
+        actions.add(new RefreshTaskAction(taskNodes));
         return actions;
     }
 
-    private static class RemoveTaskAction extends AbstractAction {
+    //<editor-fold defaultstate="collapsed" desc="task actions">
+    public static class RemoveTaskAction extends TaskAction {
 
-        private TaskNode taskNode;
-
-        public RemoveTaskAction(TaskNode taskNode) {
-            super(NbBundle.getMessage(Actions.class, "CTL_RemoveFromCat")); //NOI18N
-            this.taskNode = taskNode;
+        public RemoveTaskAction(TaskNode... taskNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_RemoveFromCat"), taskNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, DELETE_KEY);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().removeTask(taskNode);
+            for (TaskNode taskNode : getTaskNodes()) {
+                DashboardViewer.getInstance().removeTask(taskNode);
+            }
         }
     }
 
-    private static class ScheduleTaskAction extends AbstractAction {
+    private static class ScheduleTaskAction extends TaskAction {
 
-        public ScheduleTaskAction(Issue task) {
-            super("Schedule"); //NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
-        }
-    }
-
-    private static class RefreshTaskAction extends AbstractAction {
-
-        private Issue task;
-
-        public RefreshTaskAction(Issue task) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
-            this.task = task;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            task.refresh();
-        }
-    }
-
-    private static class SetCategoryAction extends AbstractAction {
-
-        private TaskNode taskNode;
-
-        public SetCategoryAction(TaskNode taskNode) {
-            super(taskNode.isCategorized() ? NbBundle.getMessage(Actions.class, "CTL_MoveTask") : NbBundle.getMessage(Actions.class, "CTL_AddToCat")); //NOI18N
-            this.taskNode = taskNode;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().addTask(taskNode);
-        }
-    }
-
-    private static class NotificationTaskAction extends AbstractAction {
-
-        public NotificationTaskAction(Issue task) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Notification")); //NOI18N
+        public ScheduleTaskAction(TaskNode... taskNodes) {
+            super("Schedule", taskNodes); //NOI18N
         }
 
         @Override
@@ -149,141 +120,11 @@ public class Actions {
         }
     }
 
-    public static List<Action> getCategoryPopupActions(Category category) {
-        List<Action> actions = new ArrayList<Action>();
-        actions.add(new DeleteCategoryAction(category));
-        actions.add(new RenameCategoryAction(category));
-        actions.add(new NotificationCategoryAction(category));
-        actions.add(new RefreshCategoryAction(category));
-        return actions;
-    }
+    public static class RefreshTaskAction extends TaskAction {
 
-    private static class DeleteCategoryAction extends AbstractAction {
-
-        private Category category;
-
-        public DeleteCategoryAction(Category category) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Delete")); //NOI18N
-            this.category = category;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().deleteCategory(category);
-        }
-    }
-
-    private static class NotificationCategoryAction extends AbstractAction {
-
-        public NotificationCategoryAction(Category category) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Notification")); //NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
-        }
-    }
-
-    private static class RefreshCategoryAction extends AbstractAction {
-
-        public RefreshCategoryAction(Category category) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
-        }
-    }
-
-    private static class RenameCategoryAction extends AbstractAction {
-
-        private Category category;
-
-        public RenameCategoryAction(Category category) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Rename")); //NOI18N
-            this.category = category;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().renameCategory(category);
-        }
-    }
-
-    public static List<Action> getRepositoryPopupActions(RepositoryNode repositoryNode) {
-        Repository repository = repositoryNode.getRepository();
-        List<Action> actions = new ArrayList<Action>();
-        actions.add(new RemoveRepositoryAction(repositoryNode));
-        actions.add(new RefreshRepositoryAction(repositoryNode));
-        actions.add(new PropertiesRepositoryAction(repository));
-        actions.add(null);
-        actions.add(new CreateTaskAction(repository));
-        actions.add(new SearchRepositoryAction(repository));
-        return actions;
-    }
-
-    private static class RemoveRepositoryAction extends AbstractAction {
-
-        private final RepositoryNode repositoryNode;
-
-        public RemoveRepositoryAction(RepositoryNode repositoryNode) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Remove")); //NOI18N
-            this.repositoryNode = repositoryNode;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            DashboardViewer.getInstance().removeRepository(repositoryNode);
-        }
-    }
-
-    private static class RefreshRepositoryAction extends AbstractAction {
-
-        public RefreshRepositoryAction(RepositoryNode repositoryNode) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new DummyAction().actionPerformed(e);
-        }
-    }
-
-    private static class PropertiesRepositoryAction extends AbstractAction {
-
-        private final Repository repository;
-
-        public PropertiesRepositoryAction(Repository repository) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Properties")); //NOI18N
-            this.repository = repository;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            RepositoryManager.getInstance().editRepository(repository);
-        }
-    }
-
-    public static List<Action> getQueryPopupActions(QueryNode queryNode) {
-        Query query = queryNode.getQuery();
-        List<Action> actions = new ArrayList<Action>();
-        actions.add(new OpenQueryAction(query));
-        //actions.add(new EditQueryAction(query));
-        actions.add(new DeleteQueryAction(query));
-        actions.add(new NotificationQueryAction(query));
-        actions.add(new RefreshQueryAction(queryNode));
-        return actions;
-    }
-
-    private static class DeleteQueryAction extends AbstractAction {
-
-        private final Query query;
-
-        public DeleteQueryAction(Query query) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Delete")); //NOI18N
-            this.query = query;
+        public RefreshTaskAction(TaskNode... taskNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), taskNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, REFRESH_KEY);
         }
 
         @Override
@@ -291,51 +132,288 @@ public class Actions {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    query.remove();
+                    for (TaskNode taskNode : getTaskNodes()) {
+                        taskNode.getTask().refresh();
+                    }
                 }
             });
         }
     }
 
-    private static class EditQueryAction extends AbstractAction {
+    private static class SetCategoryAction extends TaskAction {
 
-        private final Query query;
-
-        public EditQueryAction(Query query) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Edit")); //NOI18N
-            this.query = query;
+        public SetCategoryAction(TaskNode... taskNode) {
+            super(NbBundle.getMessage(Actions.class, "CTL_SetCat"), taskNode); //NOI18N
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            query.open(Query.QueryMode.EDIT);
+            DashboardTopComponent.findInstance().addTask(getTaskNodes().toArray(new TaskNode[getTaskNodes().size()]));
         }
     }
 
-    private static class RefreshQueryAction extends AbstractAction {
+    private static class NotificationTaskAction extends TaskAction {
 
-        private QueryNode queryNode;
-
-        public RefreshQueryAction(QueryNode queryNode) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh")); //NOI18N
-            this.queryNode = queryNode;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            queryNode.refreshContent();
-        }
-    }
-
-    private static class NotificationQueryAction extends AbstractAction {
-
-        public NotificationQueryAction(Query query) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Notification")); //NOI18N
+        public NotificationTaskAction(TaskNode... taskNode) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Notification"), taskNode); //NOI18N
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             new DummyAction().actionPerformed(e);
+        }
+    }
+    //</editor-fold>
+
+    public static List<Action> getCategoryPopupActions(CategoryNode... categoryNodes) {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new DeleteCategoryAction(categoryNodes));
+        actions.add(new RenameCategoryAction(categoryNodes));
+        actions.add(new NotificationCategoryAction(categoryNodes));
+        actions.add(new RefreshCategoryAction(categoryNodes));
+        return actions;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="category actions">
+    public static class DeleteCategoryAction extends CategoryAction {
+
+        public DeleteCategoryAction(CategoryNode... categoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Delete"), categoryNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, DELETE_KEY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DashboardTopComponent.findInstance().deleteCategory(getCategoryNodes().toArray(new CategoryNode[getCategoryNodes().size()]));
+        }
+    }
+
+    private static class NotificationCategoryAction extends CategoryAction {
+
+        public NotificationCategoryAction(CategoryNode... categoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Notification"), categoryNodes); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            new DummyAction().actionPerformed(e);
+        }
+    }
+
+    public static class RefreshCategoryAction extends CategoryAction {
+
+        public RefreshCategoryAction(CategoryNode... categoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), categoryNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, REFRESH_KEY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (CategoryNode categoryNode : getCategoryNodes()) {
+                categoryNode.refreshContent();
+            }
+        }
+    }
+
+    private static class RenameCategoryAction extends CategoryAction {
+
+        public RenameCategoryAction(CategoryNode... categoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Rename"), categoryNodes); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DashboardTopComponent.findInstance().renameCategory(getCategoryNodes().get(0).getCategory());
+        }
+
+        @Override
+        public boolean isEnabled() {
+            boolean parent = super.isEnabled();
+            boolean singleNode = getCategoryNodes().size() == 1;
+            return parent && singleNode;
+        }
+    }
+    //</editor-fold>
+
+    public static List<Action> getRepositoryPopupActions(RepositoryNode... repositoryNodes) {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new RemoveRepositoryAction(repositoryNodes));
+        actions.add(new RefreshRepositoryAction(repositoryNodes));
+        actions.add(new PropertiesRepositoryAction(repositoryNodes));
+
+        actions.add(null);
+        actions.add(new CreateTaskAction(repositoryNodes));
+        actions.add(new SearchRepositoryAction(repositoryNodes));
+        return actions;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="repository actions">
+    public static class RemoveRepositoryAction extends RepositoryAction {
+
+        public RemoveRepositoryAction(RepositoryNode... repositoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Remove"), repositoryNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, DELETE_KEY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+                DashboardViewer.getInstance().removeRepository(repositoryNode);
+            }
+        }
+    }
+
+    public static class RefreshRepositoryAction extends RepositoryAction {
+
+        public RefreshRepositoryAction(RepositoryNode... repositoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), repositoryNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, REFRESH_KEY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+                repositoryNode.refreshContent();
+            }
+        }
+    }
+
+    private static class PropertiesRepositoryAction extends RepositoryAction {
+
+        public PropertiesRepositoryAction(RepositoryNode... repositoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Properties"), repositoryNodes); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Repository repository = getRepositoryNodes().get(0).getRepository();
+            RepositoryManager.getInstance().editRepository(repository);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            boolean parent = super.isEnabled();
+            boolean singleNode = getRepositoryNodes().size() == 1;
+            return parent && singleNode;
+        }
+    }
+    //</editor-fold>
+
+    public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new OpenQueryAction(queryNodes));
+        actions.add(new DeleteQueryAction(queryNodes));
+        actions.add(new NotificationQueryAction(queryNodes));
+        actions.add(new RefreshQueryAction(queryNodes));
+        return actions;
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="query actions">
+    public static class DeleteQueryAction extends QueryAction {
+
+        public DeleteQueryAction(QueryNode... queryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Delete"), queryNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, DELETE_KEY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    for (QueryNode queryNode : getQueryNodes()) {
+                        queryNode.getQuery().remove();
+                    }
+                }
+            });
+        }
+    }
+
+    public static class RefreshQueryAction extends QueryAction {
+
+        public RefreshQueryAction(QueryNode... queryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), queryNodes); //NOI18N
+            putValue(ACCELERATOR_KEY, REFRESH_KEY);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (QueryNode queryNode : getQueryNodes()) {
+                queryNode.refreshContent();
+            }
+        }
+    }
+
+    private static class NotificationQueryAction extends QueryAction {
+
+        public NotificationQueryAction(QueryNode... queryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Notification"), queryNodes); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            new DummyAction().actionPerformed(e);
+        }
+    }
+    //</editor-fold>
+
+    public static class UniversalDeleteAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+            for (TreeListNode treeListNodes : selectedNodes) {
+                if (treeListNodes instanceof RepositoryNode) {
+                    new Actions.RemoveRepositoryAction((RepositoryNode) treeListNodes).actionPerformed(e);
+                } else if (treeListNodes instanceof CategoryNode) {
+                    new Actions.DeleteCategoryAction((CategoryNode) treeListNodes).actionPerformed(e);
+                } else if (treeListNodes instanceof QueryNode) {
+                    new Actions.DeleteQueryAction((QueryNode) treeListNodes).actionPerformed(e);
+                } else if (treeListNodes instanceof TaskNode) {
+                    new Actions.RemoveTaskAction((TaskNode) treeListNodes).actionPerformed(e);
+                }
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+            for (TreeListNode treeListNodes : selectedNodes) {
+                if (treeListNodes instanceof RepositoryNode || treeListNodes instanceof CategoryNode || treeListNodes instanceof QueryNode || treeListNodes instanceof TaskNode) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public static class UniversalRefreshAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+            for (TreeListNode treeListNode : selectedNodes) {
+                if (treeListNode instanceof RepositoryNode) {
+                    new Actions.RefreshRepositoryAction((RepositoryNode) treeListNode).actionPerformed(e);
+                } else if (treeListNode instanceof CategoryNode) {
+                    new Actions.RefreshCategoryAction((CategoryNode) treeListNode).actionPerformed(e);
+                } else if (treeListNode instanceof QueryNode) {
+                    new Actions.RefreshQueryAction((QueryNode) treeListNode).actionPerformed(e);
+                } else if (treeListNode instanceof TaskNode) {
+                    new Actions.RefreshTaskAction(((TaskNode) treeListNode)).actionPerformed(e);
+                }
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+            for (TreeListNode treeListNodes : selectedNodes) {
+                if (treeListNodes instanceof RepositoryNode || treeListNodes instanceof CategoryNode || treeListNodes instanceof QueryNode || treeListNodes instanceof TaskNode) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

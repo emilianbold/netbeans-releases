@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
@@ -87,7 +88,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -114,6 +114,7 @@ public class ResultsOutlineSupport {
     private List<TableColumn> allColumns = new ArrayList<TableColumn>(5);
     private ETableColumnModel columnModel;
     private List<MatchingObjectNode> matchingObjectNodes;
+    private boolean closed = false;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
             ResultModel resultModel, List<FileObject> rootFiles,
@@ -176,7 +177,7 @@ public class ResultsOutlineSupport {
      * are created and closed. (TODO: Add panelClosed API method to displayer.)
      */
     private void checkDetached(final HierarchyListener listenerToRemove) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 if (!outlineView.isDisplayable()) {
@@ -184,7 +185,7 @@ public class ResultsOutlineSupport {
                     onDetach();
                 }
             }
-        }, 10);
+        });
     }
 
     private synchronized void onDetach() {
@@ -192,11 +193,12 @@ public class ResultsOutlineSupport {
         saveColumnState();
     }
 
-    public void clean() {
+    public synchronized void clean() {
         resultModel.close();
         for (MatchingObjectNode mo : matchingObjectNodes) {
             mo.clean();
         }
+        closed = true;
     }
 
     private void loadColumnState() {
@@ -430,7 +432,10 @@ public class ResultsOutlineSupport {
         return mon;
     }
 
-    public void addMatchingObject(MatchingObject mo) {
+    public synchronized void addMatchingObject(MatchingObject mo) {
+        if (closed) {
+            return;
+        }
         for (FileObject fo : rootFiles) {
             if (fo == mo.getFileObject()
                     || FileUtil.isParentOf(fo, mo.getFileObject())) {

@@ -2003,6 +2003,7 @@ public class FileObjectTestHid extends TestBaseHid {
         }                
     }
 
+    @RandomlyFails // NB-Core-Build #8351 (from FileBasedFileSystemWithExtensionsTest) in implOfTestGetFileObjectForSubversion
     public void testDelete2() throws Exception {
         checkSetUp();
         

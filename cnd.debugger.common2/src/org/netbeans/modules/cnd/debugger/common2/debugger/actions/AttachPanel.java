@@ -317,32 +317,7 @@ public final class AttachPanel extends TopComponent {
         filterLabel.setLabelFor(filterCombo);
         filterCombo.setToolTipText(Catalog.get("RegExp")); //NOI18N
         filterCombo.setEditable(true);
-        filterCombo.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                String filter = (String) filterCombo.getSelectedItem();
-                if (filter != null) {
-                    refreshProcesses(null, false);
-                }
-
-            // An attempt to fix 6642223 ...
-		/* LATER
-            System.out.printf("filterCombo.actionPerformed: %s\n", evt);
-            if ("comboBoxChanged".equals(evt.getActionCommand())) {
-            // selection changed (arrow movement) do nothin
-            } else if ("comboBoxEdited".equals(evt.getActionCommand())) {
-            // selection accepted ... process it.
-            filterActivated(evt);
-            } else {
-            // fallback behaviour in case "comboBoxEdited" ever
-            // changes (see 4808758).
-            filterActivated(evt);
-            }
-             */
-            // ... but it's impossible AFAIK. See 6642299.
-            }
-        });
-
+        
         final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
             public void documentChanged(DocumentEvent e) {
@@ -591,7 +566,7 @@ public final class AttachPanel extends TopComponent {
         Object cmdobj = processModel.getValueAt(selectedRow, cmdIndex);
 
         if (cmdobj instanceof String) {
-            executableProjectPanel.setExecutablePath((String) cmdobj);
+            executableProjectPanel.setExecutablePath(getHostName(), (String) cmdobj);
 	}
     }
     
@@ -624,7 +599,7 @@ public final class AttachPanel extends TopComponent {
 
             if (path != null) {
                 executable = path.toString();
-                executableProjectPanel.setExecutablePath(executable);
+                executableProjectPanel.setExecutablePath(getHostName(), executable);
 //                executablePickList.addElement(executable);
 //                executableProjectPanel.setExecutablePaths(
 //                        executablePickList.getElementsDisplayName());
@@ -718,13 +693,20 @@ public final class AttachPanel extends TopComponent {
         return items;
     }
     
-    private void tableInfo(final String infoKey) {
+    private void tableInfo(final String infoKey, final boolean enabled) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                procTable.setEnabled(false);
+                setUIEnabled(enabled);
                 processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
             }
         });
+    }
+    
+    private void setUIEnabled(boolean st) {
+        filterCombo.setEnabled(st);
+        refreshButton.setEnabled(st);
+        hostCombo.setEnabled(st);
+        procTable.setEnabled(st);
     }
 
     /**
@@ -735,7 +717,7 @@ public final class AttachPanel extends TopComponent {
         if (!filterReady) {
             return;
         }
-
+        
         JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         Object selected = request ? filterCombo.getSelectedItem() : cbEditor.getText();
 
@@ -789,7 +771,7 @@ public final class AttachPanel extends TopComponent {
             //final boolean getAllProcesses = allProcessesCheckBox.isSelected();
             final boolean getAllProcesses = false;
 
-            tableInfo("MSG_Gathering_Data"); //NOI18N
+            tableInfo("MSG_Gathering_Data", false); //NOI18N
 
             CndRemote.validate(hostName, new Runnable() {
 
@@ -801,7 +783,7 @@ public final class AttachPanel extends TopComponent {
 
                 @Override
                 public void run() {
-                    tableInfo("MSG_PS_Failed"); //NOI18N
+                    tableInfo("MSG_PS_Failed", true); //NOI18N
                 }
             });
         } else {
@@ -866,7 +848,7 @@ public final class AttachPanel extends TopComponent {
         final PsProvider.PsData psData = getPsData();
 
         if (psData == null) {
-            tableInfo("MSG_PS_Failed"); //NOI18N
+            tableInfo("MSG_PS_Failed", true); //NOI18N
             return;
         }
 
@@ -874,7 +856,7 @@ public final class AttachPanel extends TopComponent {
 
             public void run() {
                 processModel.setDataVector(psData.processes(re), psData.header());
-                procTable.setEnabled(true);
+                setUIEnabled(true);
 
                 // It seems we need to reassign the renderer whenever we
                 // setDataVector ...
@@ -1072,12 +1054,12 @@ public final class AttachPanel extends TopComponent {
                 return false;
             }
             String selectedProject = props.getString(SELECTED_PROJECT_PROP, "");  //NOI18N
-            if (!executableProjectPanel.containsProjectWithPath(selectedProject)) {
+            if (!executableProjectPanel.containsProjectWithPath(getHostName(), selectedProject)) {
                 return false;
             }
-            executableProjectPanel.setSelectedProjectByPath(selectedProject);
+            executableProjectPanel.setSelectedProjectByPath(getHostName(), selectedProject);
             loadedPID = processes.get(0).get(psData.pidColumnIdx());
-            executableProjectPanel.setExecutablePath(props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
+            executableProjectPanel.setExecutablePath(getHostName(), props.getString(EXECUTABLE_PATH_PROP, "")); //NOI18N
             engine = new EngineDescriptor(et);
             return true;
         }

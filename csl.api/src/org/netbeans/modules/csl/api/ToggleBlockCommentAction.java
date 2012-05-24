@@ -168,6 +168,38 @@ public class ToggleBlockCommentAction extends BaseAction {
             });
         }
     }
+    
+    private int findCommentStart(BaseDocument doc, CommentHandler handler, int offsetFrom, int offsetTo) throws BadLocationException {
+        int from = Utilities.getFirstNonWhiteFwd(doc, offsetFrom, offsetTo);
+        if (from == -1) {
+            return offsetFrom;
+        }
+        String startDelim = handler.getCommentStartDelimiter();
+        if (CharSequenceUtilities.equals(
+            DocumentUtilities.getText(doc).subSequence(
+                from, Math.min(offsetTo, from + startDelim.length())),
+            startDelim)) {
+            return from;
+        }
+        
+        return offsetFrom;
+    }
+    
+    private int findCommentEnd(BaseDocument doc, CommentHandler handler, int offsetFrom, int offsetTo) throws BadLocationException {
+        int to = Utilities.getFirstNonWhiteBwd(doc, offsetTo, offsetFrom);
+        if (to == -1) {
+            return offsetTo;
+        }
+        String endDelim = handler.getCommentEndDelimiter();
+        if (DocumentUtilities.getText(doc).subSequence(
+                Math.max(offsetFrom, to - endDelim.length() + 1), to + 1).equals(endDelim)) {
+            // after end of the delimiter
+            return to + 1;
+        }
+        
+        return offsetFrom;
+
+    }
 
     private void commentUncommentBlock(JTextComponent target, TokenHierarchy<?> th, final CommentHandler commentHandler, boolean dynamicCH) throws BadLocationException {
         final Caret caret = target.getCaret();
@@ -199,7 +231,12 @@ public class ToggleBlockCommentAction extends BaseAction {
                 from = Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStart(doc, from));
                 to = Utilities.getFirstNonWhiteBwd(doc, Utilities.getRowEnd(doc, to)) + 1;
                 lineSelection = true;
+            } else {
+                // check if the line does not begin with WS+comment start or end with WS+comment end
+                from = findCommentStart(doc, commentHandler, from, to);
+                to = findCommentEnd(doc, commentHandler, from, to);
             }
+                    
         }
 
         if(!inComment && from == to) {
@@ -390,7 +427,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             int from = comments[i];
             int to = comments[++i];
 
-            if (from <= offset && to > offset && (commentEnd == null || offset < (to - commentEnd.length()))) { //end offset exclusive
+            if (from <= offset && to > offset && (commentEnd == null || offset <= (to - commentEnd.length()))) { //end offset exclusive
                 return new int[]{from, to};
             }
         }
@@ -404,7 +441,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         int lastCommentStartIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentStartDelimiter(), offset);
         int lastCommentEndIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentEndDelimiter(), offset);
 
-        return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1);
+        return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1 || lastCommentEndIndex == offset);
 
     }
 
@@ -576,7 +613,7 @@ public class ToggleBlockCommentAction extends BaseAction {
     private boolean allComments(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
         final int lineCommentStringLen = lineCommentString.length();
         for (int offset = startOffset; lineCount > 0; lineCount--) {
-            int firstNonWhitePos = offset == startOffset ? offset : Utilities.getRowFirstNonWhite(doc, offset);
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
             if (firstNonWhitePos == -1) {
                 return false;
             }
@@ -597,7 +634,8 @@ public class ToggleBlockCommentAction extends BaseAction {
 
     private void comment(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
         for (int offset = startOffset; lineCount > 0; lineCount--) {
-            doc.insertString(offset, lineCommentString, null); // NOI18N
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
+            doc.insertString(firstNonWhitePos, lineCommentString, null); // NOI18N
             offset = Utilities.getRowStart(doc, offset, +1);
         }
     }
@@ -606,7 +644,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         final int lineCommentStringLen = lineCommentString.length();
         for (int offset = startOffset; lineCount > 0; lineCount--) {
             // Get the first non-whitespace char on the current line
-            int firstNonWhitePos = offset == startOffset ? offset : Utilities.getRowFirstNonWhite(doc, offset);
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
 
             // If there is any, check wheter it's the line-comment-chars and remove them
             if (firstNonWhitePos != -1) {

@@ -1417,6 +1417,8 @@ public class Installer extends ModuleInstall implements Runnable {
             return heapDumpFile;
         }
         LOG.log(Level.INFO, "heap dump was not created at {0}", heapDumpPath);
+        LOG.log(Level.INFO, "heapdump file: exists():{0}, canRead():{1}, length:{2}",new Object[] 
+                {heapDumpFile.exists(), heapDumpFile.canRead(), heapDumpFile.length()});
         return null;
     }
     

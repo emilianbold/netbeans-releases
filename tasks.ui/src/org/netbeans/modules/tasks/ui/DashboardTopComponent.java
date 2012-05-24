@@ -64,6 +64,7 @@ import org.openide.windows.WindowManager;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 
 /**
@@ -241,9 +242,13 @@ public final class DashboardTopComponent extends TopComponent {
         }
     }
 
-    public void deleteCategory(Category category) {
+    public void deleteCategory(CategoryNode... categoryNodes) {
+        String names = "";
+        for (CategoryNode categoryNode : categoryNodes) {
+            names += categoryNode.getCategory().getName() + " ";
+        }
         NotifyDescriptor nd = new NotifyDescriptor(
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatQuestion", category.getName()), //NOI18N
+                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatQuestion", names), //NOI18N
                 NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatTitle"), //NOI18N
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
@@ -251,7 +256,7 @@ public final class DashboardTopComponent extends TopComponent {
                 NotifyDescriptor.YES_OPTION);
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
             //TODO fire event to category listeners
-            DashboardViewer.getInstance().deleteCategory(category);
+            DashboardViewer.getInstance().deleteCategory(categoryNodes);
         }
     }
 
@@ -294,14 +299,12 @@ public final class DashboardTopComponent extends TopComponent {
         return confirm;
     }
 
-    public void removeTask(TaskNode taskNode) {
-        DashboardViewer.getInstance().removeTask(taskNode);
-    }
-
-    public void addTask(TaskNode taskNode) {
+    public void addTask(TaskNode... taskNodes) {
         List<Category> categories = DashboardViewer.getInstance().getCategories();
-        if (taskNode.isCategorized()) {
-            categories.remove(taskNode.getCategory());
+        for (TaskNode taskNode : taskNodes) {
+            if (taskNode.isCategorized()) {
+                categories.remove(taskNode.getCategory());
+            }
         }
         CategoryPicker picker = new CategoryPicker(categories);
         NotifyDescriptor nd = new NotifyDescriptor(
@@ -314,7 +317,10 @@ public final class DashboardTopComponent extends TopComponent {
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
-            DashboardViewer.getInstance().addTaskToCategory(taskNode, category);
+            for (TaskNode taskNode : taskNodes) {
+                //TODO add all task at once
+                DashboardViewer.getInstance().addTaskToCategory(taskNode, category);
+            }
         }
 
     }
@@ -340,15 +346,16 @@ public final class DashboardTopComponent extends TopComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == filterTimer) {
+                DashboardViewer dashboard = DashboardViewer.getInstance();
                 filterTimer.stop();
                 if (!filterPanel.getFilterText().isEmpty()) {
                     DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
-                    int hits = DashboardViewer.getInstance().updateTaskFilter(displayTextTaskFilter, newTaskFilter);
+                    int hits = dashboard.updateTaskFilter(displayTextTaskFilter, newTaskFilter);
                     displayTextTaskFilter = newTaskFilter;
                     filterPanel.setHitsCount(hits);
                 } else {
                     if (displayTextTaskFilter != null) {
-                        DashboardViewer.getInstance().removeTaskFilter(displayTextTaskFilter, true);
+                        dashboard.removeTaskFilter(displayTextTaskFilter, true);
                         displayTextTaskFilter = null;
                     }
                     filterPanel.clear();

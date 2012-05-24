@@ -588,8 +588,15 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             }
             app.addResourceBundle(rb);
         } finally {
-            model.endTransaction();
-            model.sync();
+            try {
+                model.endTransaction();
+                model.sync();
+            } catch (IllegalStateException ex) {
+                IOException io = new IOException("Could not create faces config", ex);
+                throw Exceptions.attachLocalizedMessage(io,
+                        NbBundle.getMessage(PersistenceClientIterator.class, "ERR_UpdateFacesConfig",
+                        Exceptions.findLocalizedMessage(ex)));
+            }
             saveFacesConfig(fo);
         }
 

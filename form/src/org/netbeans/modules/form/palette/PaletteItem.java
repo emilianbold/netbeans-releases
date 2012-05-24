@@ -48,11 +48,15 @@ import java.beans.*;
 import java.awt.Image;
 
 import java.util.Collections;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.project.*;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -70,9 +74,10 @@ public final class PaletteItem implements Node.Cookie {
     ClassSource componentClassSource;
 //    Boolean isContainer_explicit;
     String componentType_explicit;
-    String componentInitializerId;
     Image icon;
     private FileObject cpRepresentative;
+    private String componentInitializerId;
+    private ComponentInitializer componentInitializer;
 
     // resolved data (derived from the raw data)
     private Class componentClass;
@@ -111,6 +116,13 @@ public final class PaletteItem implements Node.Cookie {
 
     void setComponentInitializerId(String initializerId) {
         componentInitializerId = initializerId;
+        if (initializerId == null) {
+            componentInitializer = null;
+        }
+    }
+
+    String getComponentInitializerId() {
+        return componentInitializerId;
     }
 
     /**
@@ -119,7 +131,7 @@ public final class PaletteItem implements Node.Cookie {
      * used in the same project, so ClassSource is not really needed (it is
      * normally used only for project output).
      */
-    public void setClassFromCurrentProject(String className, FileObject fileInProject) {
+    void setClassFromCurrentProject(String className, FileObject fileInProject) {
         String typeParameters = null;
         if (className != null) {
             int index = className.indexOf('<');
@@ -172,8 +184,44 @@ public final class PaletteItem implements Node.Cookie {
         return componentType_explicit;
     }
 
-    public String getInitializerId() {
-        return componentInitializerId;
+    /**
+     * Called when the user selects a palette item to add it to the form. The
+     * item initializer, if there is any, has a chance here to get data from
+     * the user.
+     * @param classPathRep FileObject of the target form, representing the classpath
+     * @return false if the user canceled adding the item, true otherwise (incl.
+     *         the case there is no initializer)
+     */
+    public boolean prepareComponentInitializer(FileObject classPathRep) {
+        componentInitializer = null;
+        // PENDING general registration of initializers
+        if (componentInitializerId != null) {
+            if (componentInitializerId.startsWith("Box.Filler")) { // NOI18N
+                componentInitializer = new BoxFillerInitializer();
+            } else if (componentInitializerId.equals(PaletteItem.TYPE_CHOOSE_BEAN)) {
+                componentInitializer = new ChooseBeanInitializer();
+            }
+        }
+        if (componentInitializer != null) {
+            return componentInitializer.prepare(this, classPathRep);
+        }
+        String className = getComponentClassName();
+        if (className != null) {
+            checkDefaultPackage(className, classPathRep);
+        }
+        return true;
+    }
+
+    /**
+     * Called when a RADComponent instance is created for the item, here it can
+     * be initialized with the date obtained in the prepare phase.
+     * @param component 
+     */
+    public void initializeComponent(RADComponent component) {
+        if (componentInitializer != null) {
+            componentInitializer.initializeComponent(component);
+            componentInitializer = null;
+        }
     }
 
     /** @return whether the component of this palette item is a visual component
@@ -262,6 +310,27 @@ public final class PaletteItem implements Node.Cookie {
         itemDataObject.tooltip = null;
         itemDataObject.icon16 = null;
         itemDataObject.icon32 = null;
+    }
+
+    static boolean checkDefaultPackage(String className, FileObject classPathRep) {
+        if (className.indexOf('.') == -1) { // Issue 79573
+            ClassPath cp = ClassPath.getClassPath(classPathRep,  ClassPath.SOURCE);
+            String resName = cp != null ? cp.getResourceName(classPathRep) : null;
+            if (resName != null && resName.indexOf('/') > 0) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(FormUtils.getBundleString("MSG_DefaultPackageBean"), // NOI18N
+                                                 NotifyDescriptor.WARNING_MESSAGE));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // -------
+
+    interface ComponentInitializer {
+        boolean prepare(PaletteItem item, FileObject classPathRep);
+        void initializeComponent(RADComponent metacomp);
     }
 
     // -------

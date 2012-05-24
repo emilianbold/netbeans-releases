@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -77,15 +78,16 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
         private final Set<String> checkedDirs = new HashSet<String>();
         private UploadStatus uploadStatus;
 
-        public Uploader(Project project, ExecutionEnvironment execEnv) {
+        public Uploader(Project project, ExecutionEnvironment execEnv) throws IOException {
             this.project = project;
             this.execEnv = execEnv;
             pathMap = HostInfoProvider.getMapper(this.execEnv);
-            File privProjectStorageDir = RemoteProjectSupport.getPrivateStorage(project);
+            FileObject privProjectStorageDir = RemoteProjectSupport.getPrivateStorage(project);
             fileData = FileData.get(privProjectStorageDir, execEnv);
         }
 
 
+        @Override
         public void process(File file, Writer err) throws RemoteSyncSupport.PathMapperException, InterruptedException, ExecutionException, IOException {
             String remotePath = pathMap.getRemotePath(file.getAbsolutePath(), false);
             if (remotePath == null) {
@@ -105,6 +107,7 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
             }
         }
 
+        @Override
         public void close() {
             fileData.store();
         }
@@ -123,7 +126,8 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
 
     }
 
-    public RemoteSyncSupport.Worker getUploader(Project project, ExecutionEnvironment execEnv) {
+    @Override
+    public RemoteSyncSupport.Worker getUploader(Project project, ExecutionEnvironment execEnv) throws IOException {
         return new Uploader(project, execEnv);
     }
 

@@ -65,7 +65,7 @@ import org.openide.util.NbPreferences;
 /**
  *
  */
-public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider {
+public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private ChangeListener l;
     private static final String ADMIN_URL = "https://javaservices.cloud.oracle.com"; // NOI18N
@@ -338,8 +338,4 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         }
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(OracleWizardComponent.class.getName());
-    }
 }

@@ -121,8 +121,23 @@ public class JsfVariablesModel {
                     public boolean accepts(Element node) {
                         if(node.type() == ElementType.OPEN_TAG) {
                             OpenTag openTag = (OpenTag)node;
-                            return openTag.getAttribute(VALUE_NAME) != null &&
-                                    openTag.getAttribute(VARIABLE_NAME) != null;
+                            Attribute valueName = openTag.getAttribute(VALUE_NAME);
+                            Attribute variableName = openTag.getAttribute(VARIABLE_NAME);
+                    
+                            //accept open tags with "value" and "var" attributes with some non-empty value
+                            
+                            CharSequence valueName_value = valueName != null 
+                                    ? valueName.unquotedValue()
+                                    : null;
+                            
+                            CharSequence variableName_value = variableName != null 
+                                    ? variableName.unquotedValue()
+                                    : null;
+                            
+                            return valueName_value != null 
+                                    && valueName_value.length() > 0
+                                    && variableName_value != null
+                                    && variableName_value.length() > 0;
                         }
                         return false;
                     }
@@ -136,10 +151,6 @@ public class JsfVariablesModel {
                     //instead of the expression language, the code needs to be taken from
                     //the original document
                     Attribute valueAttr = ot.getAttribute(VALUE_NAME);
-                    if(valueAttr.unquotedValue().length() == 0) {
-                        //empty value, skip this one
-                        continue;
-                    }
                     
                     int doc_from = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset());
                     int doc_to = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset() + valueAttr.value().length());

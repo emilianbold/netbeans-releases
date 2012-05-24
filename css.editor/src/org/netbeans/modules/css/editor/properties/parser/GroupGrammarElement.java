@@ -57,21 +57,29 @@ public class GroupGrammarElement extends GrammarElement {
 
         /**
          * One of the group members needs to be resolved.
+         * 
+         * Represented by the | operator in the grammar definition: a | b
          */
         SET,
         
         /** 
          * Any of the elements can be present in the value (at least one of them????).
+         * 
+         * Represented by the || operator in the grammar definition: a || b
          */
         COLLECTION,
         
         /**
          * All of the group members needs to be resolved in the defined order.
+         * 
+         * Represented by empty operator (WS) in the grammar definition: a b
          */
         LIST,
         
         /**
          * All of the group members needs to be present in arbitrary order
+         * 
+         * Represented by the && operator in the grammar definition: a && b
          */
         ALL;
     }

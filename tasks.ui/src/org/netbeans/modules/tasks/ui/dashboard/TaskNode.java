@@ -42,6 +42,9 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -59,7 +62,7 @@ import org.netbeans.modules.tasks.ui.utils.Utils;
  *
  * @author jpeska
  */
-public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
+public class TaskNode extends TreeListNode implements Comparable<TaskNode>, PropertyChangeListener {
 
     private Issue task;
     private JPanel panel;
@@ -71,6 +74,13 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
         //super(task.hasSubtasks(), parent);
         super(false, parent);
         this.task = task;
+        this.task.addPropertyChangeListener(this);
+    }
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        this.task.removePropertyChangeListener(this);
     }
 
     @Override
@@ -99,21 +109,30 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
             lblName = new TreeLabel();
             panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
         }
-        lblName.setText(Utils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), hasFocus));
+        lblName.setText(Utils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
         lblName.setToolTipText(task.getTooltip());
         lblName.setForeground(foreground);
-        fireContentChanged();
         return panel;
     }
 
     @Override
     protected Action getDefaultAction() {
-        return new OpenTaskAction(task);
+        return new OpenTaskAction(this);
     }
 
     @Override
     public Action[] getPopupActions() {
-        List<Action> actions = Actions.getTaskPopupActions(this);
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        TaskNode[] taskNodes = new TaskNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof TaskNode) {
+                taskNodes[i] = (TaskNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
+        List<Action> actions = Actions.getTaskPopupActions(taskNodes);
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -183,7 +202,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
             int idOther = Integer.parseInt(toCompare.task.getID());
             if (id < idOther) {
                 return 1;
-            } else  if (id > idOther){
+            } else if (id > idOther) {
                 return -1;
             } else {
                 return 0;
@@ -194,5 +213,12 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
     @Override
     public String toString() {
         return task.getDisplayName();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
+            fireContentChanged();
+        }
     }
 }

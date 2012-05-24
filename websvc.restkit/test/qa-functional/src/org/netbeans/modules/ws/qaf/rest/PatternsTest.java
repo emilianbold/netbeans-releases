@@ -138,7 +138,7 @@ public class PatternsTest extends RestTestBase {
     public void setUp() throws Exception {
         super.setUp();
         // add Jersey library, otherwise package org.codehaus.jettison is not added from server libraries, see issue #206526
-        if (!PatternsTest.jerseyAdded) {
+        if (!PatternsTest.jerseyAdded && getProjectType().isAntBasedProject()) {
             ProjectRootNode prn = ProjectsTabOperator.invoke().getProjectRootNode(getProjectName());
             prn.select();
             if (prn.isCollapsed()) {
@@ -295,11 +295,24 @@ public class PatternsTest extends RestTestBase {
      */
     public void testNodes() {
         Node restNode = getRestNode();
-        if (getJavaEEversion() == JavaEEVersion.JAVAEE5) {
-            assertEquals("missing nodes?", 22, restNode.getChildren().length); //NOI18N
-        } else if (getJavaEEversion() == JavaEEVersion.JAVAEE6) {
-            assertEquals("missing nodes?", 20, restNode.getChildren().length); //NOI18N
+        int expectedCount = 0;
+        switch (getJavaEEversion()) {
+            case JAVAEE5 :
+                if (getProjectType().isAntBasedProject()) {
+                    expectedCount = 22;
+                } else {
+                    expectedCount = 15;
+                }
+                break;
+            case JAVAEE6:
+                if (getProjectType().isAntBasedProject()) {
+                    expectedCount = 20;
+                } else {
+                    expectedCount = 20;
+                }
+                break;
         }
+        assertEquals("missing nodes?", expectedCount, restNode.getChildren().length); //NOI18N
         restNode.tree().clickOnPath(restNode.getTreePath(), 2);
         assertTrue("Node not collapsed", restNode.isCollapsed());
     }

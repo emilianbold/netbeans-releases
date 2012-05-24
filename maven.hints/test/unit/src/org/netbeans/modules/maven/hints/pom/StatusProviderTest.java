@@ -42,47 +42,47 @@
 package org.netbeans.modules.maven.hints.pom;
 
 import java.io.File;
-import java.net.URL;
-import java.util.List;
-import org.apache.maven.model.building.ModelProblem;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author mkleint
  */
-public class StatusProviderTest {
-    
-    public StatusProviderTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
-    @Before
-    public void setUp() {
-    }
-    
-    @After
-    public void tearDown() {
+public class StatusProviderTest extends NbTestCase {
+
+    public StatusProviderTest(String name) {
+        super(name);
     }
 
-    @Test
-    public void testModelLoading() throws Exception {
-        //#212152
-        URL file = getClass().getClassLoader().getResource("org/netbeans/modules/maven/hints/pom/pom-with-warnings.xml");
-        File fil = new File(file.toURI());
-        List<ModelProblem> result = StatusProvider.runMavenValidationImpl(fil);
-        assertEquals(5, result.size());
+    @Override protected void setUp() throws Exception {
+        clearWorkDir();
     }
+
+    public void testModelLoading() throws Exception { // #212152
+        // new File(StatusProviderTest.class.getResource(...).toURI()) may not work in all environments, e.g. testdist
+        File pom = new File(getWorkDir(), "pom.xml");
+        InputStream is = StatusProviderTest.class.getResourceAsStream("pom-with-warnings.xml");
+        try {
+            OutputStream os = new FileOutputStream(pom);
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+        assertEquals("["
+                + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-compiler-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 22, column 12, "
+                + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-surefire-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 72, column 12, "
+                + "[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-war-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 64, column 12, "
+                + "[WARNING] The <reporting> section is deprecated, please move the reports to the <configuration> section of the new Maven Site Plugin. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 102, column 13, "
+                + "[ERROR] 'reporting.plugins.plugin.version' for org.apache.maven.plugins:maven-surefire-report-plugin is missing. @ test:mavenproject4:1.0-SNAPSHOT, pom.xml, line 127, column 12]",
+                StatusProvider.runMavenValidationImpl(pom).toString().replace(pom.getAbsolutePath(), "pom.xml"));
+    }
+
 }

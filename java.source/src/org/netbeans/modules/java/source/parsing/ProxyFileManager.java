@@ -98,7 +98,7 @@ public class ProxyFileManager implements JavaFileManager {
     private final JavaFileManager aptSources;
     private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;
-    private final GeneratedFileMarker marker;
+    private final ProcessorGenerated processorGeneratedFiles;
     private final SiblingSource siblings;
     private JavaFileObject lastInfered;
     private String lastInferedResult;
@@ -114,12 +114,12 @@ public class ProxyFileManager implements JavaFileManager {
             final JavaFileManager aptSources,
             final JavaFileManager outputhPath,
             final MemoryFileManager memoryFileManager,
-            final GeneratedFileMarker marker,
+            final ProcessorGenerated processorGeneratedFiles,
             final SiblingSource siblings) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
-        assert marker != null;
+        assert processorGeneratedFiles != null;
         assert siblings != null;
         this.bootPath = bootPath;
         this.classPath = classPath;
@@ -127,7 +127,7 @@ public class ProxyFileManager implements JavaFileManager {
         this.aptSources = aptSources;
         this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
-        this.marker = marker;
+        this.processorGeneratedFiles = processorGeneratedFiles;
         this.siblings = siblings;
     }
 
@@ -262,11 +262,7 @@ public class ProxyFileManager implements JavaFileManager {
             if(sib.length() != 0) {                
                 siblings.push(asURL(sib));                
             } else {
-                try {
-                    markerFinished();
-                } finally {
-                    siblings.pop();
-                }
+                siblings.pop();
             }
         } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) || 
                    AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
@@ -291,11 +287,7 @@ public class ProxyFileManager implements JavaFileManager {
                 }
                 siblings.push(bestSoFar);
             } else {
-                try {
-                    markerFinished();
-                } finally {
-                    siblings.pop();
-                }
+                siblings.pop();
             }
         }
         for (JavaFileManager m : getFileManager(ALL)) {
@@ -400,58 +392,32 @@ public class ProxyFileManager implements JavaFileManager {
 
     @SuppressWarnings("unchecked")
     private <T extends javax.tools.FileObject> T mark(final T result, JavaFileManager.Location l) throws MalformedURLException {
-        GeneratedFileMarker.Type type = null;
+        ProcessorGenerated.Type type = null;
         if (l == StandardLocation.CLASS_OUTPUT) {
-            type = GeneratedFileMarker.Type.RESOURCE;
+            type = ProcessorGenerated.Type.RESOURCE;
         } else if (l == StandardLocation.SOURCE_OUTPUT) {
-            type = GeneratedFileMarker.Type.SOURCE;
+            type = ProcessorGenerated.Type.SOURCE;
         }
         final boolean hasSibling = siblings.getProvider().hasSibling();
-        final boolean write = marker.allowsWrite() || !hasSibling;
+        final boolean write = processorGeneratedFiles.canWrite() || !hasSibling;
         if (result != null && hasSibling) {
-            if (type == GeneratedFileMarker.Type.SOURCE) {
-                marker.mark(result, type);
-            } else if (type == GeneratedFileMarker.Type.RESOURCE) {
+            if (type == ProcessorGenerated.Type.SOURCE) {
+                processorGeneratedFiles.register(
+                    siblings.getProvider().getSibling(),
+                    result,
+                    type);
+            } else if (type == ProcessorGenerated.Type.RESOURCE) {
                 try {
                     result.openInputStream().close();
                 } catch (IOException ioe) {
                     //Marking only created files
-                    marker.mark(result, type);
+                    processorGeneratedFiles.register(
+                        siblings.getProvider().getSibling(),
+                        result,
+                        type);
                 }
             }
         }
         return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
-
-    private void markerFinished() {
-        if (siblings.getProvider().hasSibling()) {
-            marker.finished(siblings.getProvider().getSibling(), this);
-        }
-    }
-
-    @Trusted
-    private static final class NullFileObject extends ForwardingInferableJavaFileObject {
-        private NullFileObject (@NonNull final InferableJavaFileObject delegate) {
-            super (delegate);
-        }
-
-        @Override
-        public OutputStream openOutputStream() throws IOException {
-            return new NullOutputStream();
-        }
-
-        @Override
-        public Writer openWriter() throws IOException {
-            return new OutputStreamWriter(openOutputStream());
-        }
-    }
-
-
-    private static class NullOutputStream extends OutputStream {
-        @Override
-        public void write(int b) throws IOException {
-            //pass
-        }
-    }
-
 }

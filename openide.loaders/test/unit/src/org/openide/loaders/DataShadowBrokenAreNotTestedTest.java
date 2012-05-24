@@ -74,17 +74,17 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
             delete[i].delete();
         }
         
-        UM.cnt = 0;
+        UM.init();
     }
     
     public void testNoURLMapperQueried() throws Exception {
         FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/folder/original.txt");
         assertNotNull(fo);
         
-        assertEquals("No queries to UM yet", 0, UM.cnt);
+        UM.assertAccess("No queries to UM yet", 0, 0);
         DataObject original = DataObject.find(fo);
         
-        assertEquals("No queries to UM after creation of data object", 0, UM.cnt);
+        UM.assertAccess("No queries to UM after creation of data object", 0, 0);
     }
 
     @RandomlyFails // NB-Core-Build #2009
@@ -101,31 +101,47 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
         FileObject f2 = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/any/folder/original.txt");
         assertNotNull(f2);
         
-        assertEquals("No queries to UM yet", 0, UM.cnt);
+        UM.assertAccess("No queries to UM yet", 0, 0);
         DataObject original = DataObject.find(f1);
-        assertEquals("No queries to UM still", 0, UM.cnt);
+        UM.assertAccess("No queries to UM still", 0, 0);
         DataShadow s = original.createShadow(original.getFolder());
-        assertEquals("One query to create the shadow and one to create the instance", 2, UM.cnt);
+        UM.assertAccess("One query to create the shadow and one to create the instance", 1, 1);
         original.delete();
-        assertEquals("One additional query to delete", 3, UM.cnt);
+        UM.assertAccess("One additional query to delete", 2, 2);
         DataObject brokenShadow = DataObject.find(s.getPrimaryFile());
-        assertEquals("Creating one broken shadow", 5, UM.cnt);
+        UM.assertAccess("Creating one broken shadow", 2, 1);
         
         DataObject original2 = DataObject.find(f2);
-        assertEquals("Additional query per very data object creation", 6, UM.cnt);
+        UM.assertAccess("Additional query per very data object creation", 1, 0);
     }
     
     private static final class UM extends URLMapper {
-        public static int cnt;
+        private static int toURLCnt;
+        private static int toFOCnt;
+
+        static void init() {
+            toFOCnt = 0;
+            toURLCnt = 0;
+        }
         
+        @Override
         public URL getURL(FileObject fo, int type) {
-            cnt++;
+            toURLCnt++;
             return null;
         }
         
+        @Override
         public FileObject[] getFileObjects(URL url) {
-            cnt++;
+            toFOCnt++;
             return null;
+        }
+        
+        public static void assertAccess(String msg, int expectURL, int expectFO) {
+            DataShadow.waitUpdatesProcessed();
+            assertEquals(msg + " file object check", expectFO, toFOCnt);
+            assertEquals(msg + " to url check", expectURL, toURLCnt);
+            toFOCnt = 0;
+            toURLCnt = 0;
         }
     }
     

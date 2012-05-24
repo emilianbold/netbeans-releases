@@ -44,104 +44,103 @@ package org.netbeans.modules.tasks.ui.dashboard;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.tasks.ui.LinkButton;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
-import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
-import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author jpeska
  */
-public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparable<QueryNode> {
+public class QueryNode extends TaskContainerNode implements Comparable<QueryNode> {
 
     private final Query query;
     private JPanel panel;
-    private List<TreeLabel> labels;
-    private List<LinkButton> buttons;
     private TreeLabel lblName;
-    private List<TaskNode> taskNodes;
-    private List<TaskNode> filteredTaskNodes;
-    private final Object LOCK = new Object();
-    private boolean refresh;
     private LinkButton btnChanged;
     private LinkButton btnTotal;
     private QueryListener queryListener;
-    private TaskListener taskListener;
+    final Object LOCK = new Object();
     private TreeLabel lblSeparator;
 
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
-        super(true, parent, query.getDisplayName());
+        super(refresh, true, parent, query.getDisplayName());
         this.query = query;
-        labels = new ArrayList<TreeLabel>();
-        buttons = new ArrayList<LinkButton>();
         updateNodes();
         queryListener = new QueryListener();
         query.addPropertyChangeListener(queryListener);
-        this.refresh = refresh;
     }
 
-    private void updateNodes() {
-        AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
-        Collection<Issue> issues = query.getIssues();
-        removeTaskListeners();
-        if (taskListener == null) {
-            taskListener = new TaskListener();
+    @Override
+    protected List<Issue> load() {
+        if (isRefresh()) {
+            query.refresh();
+            setRefresh(false);
         }
-        taskNodes = new ArrayList<TaskNode>(issues.size());
-        filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
-        for (Issue issue : issues) {
-            issue.addPropertyChangeListener(taskListener);
-            TaskNode taskNode = new TaskNode(issue, this);
-            taskNodes.add(taskNode);
-            if (appliedFilters.isInFilter(issue)) {
-                filteredTaskNodes.add(taskNode);
-            }
-        }
+        return new ArrayList<Issue>(query.getIssues());
     }
 
     @Override
     protected void dispose() {
         super.dispose();
         query.removePropertyChangeListener(queryListener);
-        removeTaskListeners();
-    }
-
-    @Override
-    protected List<Issue> load() {
-        if (refresh) {
-            query.refresh();
-            refresh = false;
-        }
-        return new ArrayList<Issue>(query.getIssues());
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
+        if (isRefresh()) {
+            removeTaskListeners();
+            query.refresh();
+            updateNodes();
+            setRefresh(false);
+        }
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
     }
 
     @Override
+    void updateContent() {
+        updateNodes();
+        refreshChildren();
+    }
+
+    @Override
+    void updateCounts() {
+        if (panel != null) {
+            btnTotal.setText(getTotalString());
+            btnChanged.setText(getChangedString());
+            boolean showChanged = getChangedTaskCount() > 0;
+            lblSeparator.setVisible(showChanged);
+            btnChanged.setVisible(showChanged);
+        }
+    }
+
+    @Override
+    List<Issue> getTasks() {
+        return new ArrayList<Issue>(query.getIssues());
+    }
+
+    @Override
+    void adjustTaskNode(TaskNode taskNode) {
+    }
+
+    @Override
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        synchronized (LOCK) {
-            for (JLabel lbl : labels) {
-                lbl.setForeground(foreground);
-            }
-            for (LinkButton lb : buttons) {
-                lb.setForeground(foreground, isSelected);
+        super.configure(component, foreground, background, isSelected, hasFocus);
+        if (panel != null) {
+            if (DashboardViewer.getInstance().containsActiveTask(this)) {
+                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+            } else {
+                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
             }
         }
     }
@@ -151,112 +150,61 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
         updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
-
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
-            int col = 0;
+
             lblName = new TreeLabel(query.getDisplayName());
             panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             labels.add(lblName);
 
-            TreeLabel lbl;
-            if (getTotalTaskCount() > 0) {
-                lbl = new TreeLabel("("); //NOI18N
-                labels.add(lbl);
-                panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+            TreeLabel lbl = new TreeLabel("("); //NOI18N
+            labels.add(lbl);
+            panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
 
-                btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(query));
-                panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                buttons.add(btnTotal);
-                lblSeparator = new TreeLabel(""); //NOI18N
-                panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
-                labels.add(lblSeparator);
-                if (getChangedTaskCount() > 0) {
-                    lblSeparator.setText("|"); //NOI18N
-                    btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query, Query.QueryMode.SHOW_NEW_OR_CHANGED)); //NOI18N
-                    panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                    buttons.add(btnChanged);
-                }
+            btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(this));
+            panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            buttons.add(btnTotal);
 
-                lbl = new TreeLabel(")"); //NOI18N
-                labels.add(lbl);
-                panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-            }
+            boolean showChanged = getChangedTaskCount() > 0;
+            lblSeparator = new TreeLabel("|"); //NOI18N
+            lblSeparator.setVisible(showChanged);
+            panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+            labels.add(lblSeparator);
+
+            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(Query.QueryMode.SHOW_NEW_OR_CHANGED, this)); //NOI18N
+            btnChanged.setVisible(showChanged);
+            panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            buttons.add(btnChanged);
+
+
+            lbl = new TreeLabel(")"); //NOI18N
+            labels.add(lbl);
+            panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
             panel.add(new JLabel(), new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
-            if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-            } else {
-                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
-            }
         }
         return panel;
     }
 
-    private void updateContent() {
-        updateCounts();
-        fireContentChanged();
-        refreshChildren();
-    }
-
-    private void updateCounts() {
-        updateNodes();
-        if (btnTotal != null) {
-            btnTotal.setText(getTotalString());
-        }
-        String changedString = getChangedString();
-        if (lblSeparator != null) {
-            if (changedString.isEmpty()) {
-                lblSeparator.setText("");
-            } else {
-                lblSeparator.setText("|");
-            }
-        }
-        if (btnChanged != null) {
-            btnChanged.setText(changedString);
-        }
-    }
-
-    public void refreshContent() {
-        refresh = true;
-        refresh();
-    }
-
-    public List<TaskNode> getFilteredTaskNodes() {
-        return filteredTaskNodes;
-    }
-
-    public void setFilteredTaskNodes(List<TaskNode> filteredTaskNodes) {
-        this.filteredTaskNodes = filteredTaskNodes;
-    }
-
-    public List<TaskNode> getTaskNodes() {
-        return taskNodes;
-    }
-
-    public int getChangedTaskCount() {
-        int count = 0;
-        for (TaskNode taskNode : filteredTaskNodes) {
-            if (taskNode.getTask().getStatus() != Issue.Status.UPTODATE) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    public int getTotalTaskCount() {
-        return filteredTaskNodes.size();
-    }
-
     @Override
     protected Action getDefaultAction() {
-        return new OpenQueryAction(query);
+        return new OpenQueryAction(this);
     }
 
     @Override
     public Action[] getPopupActions() {
-        List<Action> actions = Actions.getQueryPopupActions(this);
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        QueryNode[] queryNodes = new QueryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof QueryNode) {
+                queryNodes[i] = (QueryNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
+        List<Action> actions = Actions.getQueryPopupActions(queryNodes);
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -294,38 +242,11 @@ public class QueryNode extends AsynchronousNode<List<Issue>> implements Comparab
         return this.query.getDisplayName();
     }
 
-    private String getTotalString() {
-        String bundleName = DashboardViewer.getInstance().expandNodes() ? "LBL_Matches" : "LBL_Total"; //NOI18N
-        return getTotalTaskCount() + " " + NbBundle.getMessage(QueryNode.class, bundleName);
-    }
-
-    private String getChangedString() {
-        return getChangedTaskCount() == 0 ? "" : getChangedTaskCount() + " " + NbBundle.getMessage(QueryNode.class, "LBL_Changed");//NOI18N
-    }
-
-    private void removeTaskListeners() {
-        if (taskListener != null) {
-            for (TaskNode taskNode : getFilteredTaskNodes()) {
-                taskNode.getTask().removePropertyChangeListener(taskListener);
-            }
-        }
-    }
-
     private class QueryListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-                updateContent();
-            }
-        }
-    }
-
-    private class TaskListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
                 updateContent();
             }
         }

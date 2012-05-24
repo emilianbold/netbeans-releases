@@ -131,8 +131,6 @@ public class MakeListOfNBM extends Task {
         if ( moduleName == null ) throw new BuildException( "You have to specify the main module's file" );
         if ( fs == null ) throw new BuildException( "You have to specify the fileset of files included in this module" );
 
-        log ("Generating information for Auto Update...");
-        
         UpdateTracking track = new UpdateTracking( outputFile.getAbsolutePath() );
         Attributes attr;
         JarFile jar = null;
@@ -157,6 +155,9 @@ public class MakeListOfNBM extends Task {
         if (codename == null) {
             throw new BuildException("Manifest in jar file "+module.getAbsolutePath()+" does not contain OpenIDE-Module", getLocation());
         }
+        String cnb = codename.replaceFirst("/\\d+$", "");
+
+        log("Generating Auto Update information for " + cnb);
 
         String versionTag = osgi[0] ? "Bundle-Version" : "OpenIDE-Module-Specification-Version"; // NOI18N
         String versionSpecNum = attr.getValue(versionTag);
@@ -269,7 +270,7 @@ public class MakeListOfNBM extends Task {
         for( int j=0; j < include.length; j++ ){
             String path = include[j].replace(File.separatorChar, '/');
             if (osgi[0] && !path.equals(moduleName) &&
-                    !path.equals("config/Modules/" + codename.replaceFirst("/\\d+$", "").replace('.', '-') + ".xml")) {
+                    !path.equals("config/Modules/" + cnb.replace('.', '-') + ".xml")) {
                 throw new BuildException("Cannot include other files with an OSGi bundle: " + path, getLocation());
             }
             try {

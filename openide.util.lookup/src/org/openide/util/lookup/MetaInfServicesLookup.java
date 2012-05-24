@@ -74,10 +74,9 @@ import org.openide.util.lookup.implspi.SharedClassObjectBridge;
  * @see "#14722"
  */
 final class MetaInfServicesLookup extends AbstractLookup {
-
-    private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
+    static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
+    private static final MetaInfCache CACHE = new MetaInfCache(512);
     private static Reference<Executor> RP = new WeakReference<Executor>(null);
-    
     static synchronized Executor getRP() {
         Executor res = RP.get();
         if (res == null) {
@@ -90,17 +89,6 @@ final class MetaInfServicesLookup extends AbstractLookup {
             RP = new SoftReference<Executor>(res);
         }
         return res;
-    }
-    /*TBD: Inject RequestProcessor somehow
-     new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
-     */
-    private static int knownInstancesCount;
-    private static final List<Reference<Object>> knownInstances;
-    static {
-        knownInstances = new ArrayList<Reference<Object>>();
-        for (int i = 0; i < 512; i++) {
-            knownInstances.add(null);
-        }
     }
 
     /** A set of all requested classes.
@@ -494,58 +482,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
                                    // 2 instances of the same class
                     Class<?> c = ((Class<?>) o);
                     try {
-                        o = null;
-
-                        synchronized (knownInstances) { // guards only the static cache
-                            int size = knownInstances.size();
-                            int index = hashForClass(c, size);
-                            for (int i = 0; i < size; i++) {
-                                Reference<Object> ref = knownInstances.get(index);
-                                Object obj = ref == null ? null : ref.get();
-                                if (obj == null) {
-                                    break;
-                                }
-                                if (c == obj.getClass()) {
-                                    o = obj;
-                                    break;
-                                }
-                                if (++index == size) {
-                                    index = 0;
-                                }
-                            }
-                        }
+                        o = CACHE.findInstance(c);
 
                         if (o == null) {
                             o = SharedClassObjectBridge.newInstance(c);
-
-                            synchronized (knownInstances) { // guards only the static cache
-                                hashPut(o);
-
-                                int size = knownInstances.size();
-                                if (knownInstancesCount > size * 2 / 3) {
-                                    LOGGER.log(Level.CONFIG, "Cache of size {0} is 2/3 full. Rehashing.", size);
-                                    HashSet<Reference<Object>> all = new HashSet<Reference<Object>>();
-                                    all.addAll(knownInstances);
-                                    for (int i = 0; i < size; i++) {
-                                        knownInstances.set(i, null);
-                                    }
-                                    for (int i = 0; i < size; i++) {
-                                        knownInstances.add(null);
-                                    }
-                                    knownInstancesCount = 0;
-                                    for (Reference<Object> r : all) {
-                                        if (r == null) {
-                                            continue;
-                                        }
-                                        Object instance = r.get();
-                                        if (instance == null) {
-                                            continue;
-                                        }
-                                        hashPut(instance);
-                                    }
-                                }
-
-                            }
+                            CACHE.storeInstance(o);
                         }
 
                         // Do not assign to instance var unless there is a complete synch
@@ -578,27 +519,6 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
         protected @Override boolean creatorOf(Object obj) {
             return obj == object;
-        }
-        private static int hashForClass(Class<?> c, int size) {
-            return Math.abs(c.hashCode() % size);
-        }
-
-        private static void hashPut(Object o) {
-            Class<?> c = o.getClass();
-            int size = knownInstances.size();
-            int index = hashForClass(c, size);
-            for (int i = 0; i < size; i++) {
-                Reference<Object> ref = knownInstances.get(index);
-                Object obj = ref == null ? null : ref.get();
-                if (obj == null) {
-                    knownInstances.set(index, new WeakReference<Object>(o));
-                    knownInstancesCount++;
-                    break;
-                }
-                if (++index == size) {
-                    index = 0;
-                }
-            }
         }
 
     }

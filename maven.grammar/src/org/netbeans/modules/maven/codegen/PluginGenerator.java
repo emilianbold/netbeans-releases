@@ -43,11 +43,8 @@
  */
 package org.netbeans.modules.maven.codegen;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -61,14 +58,11 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginContainer;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -77,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({"NAME_Plugin=Plugin...",
            "TIT_Add_plugin=Add new plugin"})
-public class PluginGenerator implements CodeGenerator {
+public class PluginGenerator extends AbstractGenerator<POMModel> {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=200)
     public static class Factory implements CodeGenerator.Factory {
@@ -94,13 +88,9 @@ public class PluginGenerator implements CodeGenerator {
         }
     }
 
-    private POMModel model;
-    private JTextComponent component;
-    
     /** Creates a new instance of PluginGenerator */
     private PluginGenerator(POMModel model, JTextComponent component) {
-        this.model = model;
-        this.component = component;
+        super(model, component);
     }
 
     @Override
@@ -109,77 +99,62 @@ public class PluginGenerator implements CodeGenerator {
     }
 
     @Override
-    public void invoke() {
-        try {
-            model.sync();
-        } catch (IOException ex) {
-            Logger.getLogger(PluginGenerator.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for pom.xml file", ex); //NOI18N
-        }
-        if (!model.getState().equals(State.VALID)) {
-            //TODO report somehow, status line?
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(PluginGenerator.class, "MSG_Cannot_Parse"));
-            return;
-        }
-
+    protected void doInvoke() {
         FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
         assert fo != null;
         org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
         assert prj != null;
 
-        NewPluginPanel pluginPanel = new NewPluginPanel();
+        final NewPluginPanel pluginPanel = new NewPluginPanel();
         DialogDescriptor dd = new DialogDescriptor(pluginPanel,
                 TIT_Add_plugin());
         
         pluginPanel.setNotificationLineSupport(dd.createNotificationLineSupport());
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
-            NBVersionInfo vi = pluginPanel.getPlugin();
+            final NBVersionInfo vi = pluginPanel.getPlugin();
             if (vi != null) {
-                //boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
-                int newPos = -1;
-                try {
-                    model.startTransaction();
-                    int pos = component.getCaretPosition();
-                    PluginContainer container = findContainer(pos, model);
+                writeModel(new ModelWriter() {
+                    @Override
+                    public int write() {
+                        int pos = component.getCaretPosition();
+                        PluginContainer container = findContainer(pos, model);
 
-                    Plugin plug = model.getFactory().createPlugin();
-                    plug.setGroupId(vi.getGroupId());
-                    plug.setArtifactId(vi.getArtifactId());
-                    plug.setVersion(vi.getVersion());
+                        Plugin plug = model.getFactory().createPlugin();
+                        plug.setGroupId(vi.getGroupId());
+                        plug.setArtifactId(vi.getArtifactId());
+                        plug.setVersion(vi.getVersion());
 
-                    if (pluginPanel.isConfiguration()) {
-                        Configuration config = model.getFactory().createConfiguration();
-                        //it would be nice to figure all mandatory parameters without a default value..
-                        config.setSimpleParameter("foo", "bar");
-                        plug.setConfiguration(config);
-                    }
+                        if (pluginPanel.isConfiguration()) {
+                            Configuration config = model.getFactory().createConfiguration();
+                            //it would be nice to figure all mandatory parameters without a default value..
+                            config.setSimpleParameter("foo", "bar");
+                            plug.setConfiguration(config);
+                        }
 
-                    if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
-                        PluginExecution ex = model.getFactory().createExecution();
-                        String id = null;
-                        for (String goal : pluginPanel.getGoals()) {
-                            ex.addGoal(goal);
-                            if (id == null) {
-                                id = goal;
+                        if (pluginPanel.getGoals() != null && pluginPanel.getGoals().size() > 0) {
+                            PluginExecution ex = model.getFactory().createExecution();
+                            String id = null;
+                            for (String goal : pluginPanel.getGoals()) {
+                                ex.addGoal(goal);
+                                if (id == null) {
+                                    id = goal;
+                                }
                             }
+                            if (id !=null) {
+                                ex.setId(id);
+                            }
+                            plug.addExecution(ex);
+                            //shall we add execution configuration if
                         }
-                        if (id !=null) {
-                            ex.setId(id);
-                        }
-                        plug.addExecution(ex);
-                        //shall we add execution configuration if
-                    }
 
-                    container.addPlugin(plug);
-                    newPos = model.getAccess().findPosition(plug.getPeer());
-                } finally {
-                    model.endTransaction();
-                }
-                if (newPos != -1) {
-                    component.setCaretPosition(newPos);
-                }
+                        container.addPlugin(plug);
+                        return model.getAccess().findPosition(plug.getPeer());                        
+                    }
+                });
             }
         }
     }
+ 
     private PluginContainer findContainer(int pos, POMModel model) {
         Component dc = model.findComponent(pos);
         while (dc != null) {

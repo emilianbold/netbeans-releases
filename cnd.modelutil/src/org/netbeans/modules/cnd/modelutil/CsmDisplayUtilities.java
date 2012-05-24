@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -84,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
@@ -173,7 +173,8 @@ public class CsmDisplayUtilities {
         CharSequence tooltipText = null;
         if (CsmKindUtilities.isMethod(item)) {
             CharSequence functionDisplayName = getFunctionText((CsmFunction)item);
-            CsmClass methodDeclaringClass = ((CsmMember) item).getContainingClass();
+            CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction)item);
+            CsmClass methodDeclaringClass = ((CsmMember) meth).getContainingClass();
             CharSequence displayClassName = methodDeclaringClass.getQualifiedName();
             String key = "DSC_MethodTooltip";  // NOI18N
             if (CsmKindUtilities.isConstructor(item)) {
@@ -275,8 +276,10 @@ public class CsmDisplayUtilities {
 
     private static CharSequence getFunctionText(CsmFunction fun) {
         StringBuilder txt = new StringBuilder();
-        if (CsmKindUtilities.isMethod(fun) && ((CsmMethod)fun).isVirtual()) {
-            txt.append("virtual "); // NOI18N
+        if (CsmKindUtilities.isMethod(fun)) {
+            if (((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).isVirtual()) {
+                txt.append("virtual "); // NOI18N
+            }
         }
         txt.append(fun.getReturnType().getText()).append(' '); // NOI18N
         // NOI18N
@@ -293,7 +296,7 @@ public class CsmDisplayUtilities {
         }
         txt.append(')');
         if (CsmKindUtilities.isMethod(fun)) {
-            CsmMethod mtd = (CsmMethod)fun;
+            CsmMethod mtd  = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun);
             if (mtd.isConst()) {
                 txt.append(" const"); // NOI18N
             }

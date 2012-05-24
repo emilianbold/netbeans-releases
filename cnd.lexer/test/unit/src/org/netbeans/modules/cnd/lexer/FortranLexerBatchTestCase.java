@@ -48,6 +48,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities.FortranFormat;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
@@ -72,16 +73,16 @@ public class FortranLexerBatchTestCase extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
-    protected InputAttributes getLexerAttributes(boolean freeFormat) {
+    protected InputAttributes getLexerAttributes(FortranFormat format) {
         InputAttributes lexerAttrs = new InputAttributes();
         lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_MAXIMUM_TEXT_WIDTH, 132, true);
-        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, freeFormat, true);
+        lexerAttrs.setValue(FortranTokenId.languageFortran(), CndLexerUtilities.FORTRAN_FREE_FORMAT, format, true);
         return lexerAttrs;
     }
 
     public void testAloneBackSlash() {
         String text = "\n";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
 
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
@@ -90,7 +91,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testComments() {
         String text = "!abc\ncabc";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.LINE_COMMENT_FREE, "!abc");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NEW_LINE, "\n");
@@ -99,7 +100,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testContinuation() {
         String text = "     1100";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, "     ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.LINE_CONTINUATION_FIXED, "1");
@@ -108,7 +109,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testContinuation2() {
         String text = "     DO";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, "     ");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.LINE_CONTINUATION_FIXED, "D");
@@ -117,7 +118,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testIdentifiers() {
         String text = "a ab aB2 2a x\nyZ\r\nz";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(true));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FREE));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.IDENTIFIER, "a");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -138,7 +139,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testApostropheChar() {
         String text = "id'";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.IDENTIFIER, "id");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.APOSTROPHE_CHAR, "'");
@@ -146,7 +147,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testStringLiterals() {
         String text = "\"\" \"a\"\"\" \"\\\"\" \"\\\\\" \"\\\\\\\"\" \"\\n\" \"a";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.STRING_LITERAL, "\"\"");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -167,7 +168,7 @@ public class FortranLexerBatchTestCase extends TestCase {
     public void testNumberLiterals() {
         String text = "0 00 09 1 12" +
                 " o'7' b'101' z'A1' 1.1 1e1 1d1";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(true));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FREE));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_INT, "0");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -195,7 +196,7 @@ public class FortranLexerBatchTestCase extends TestCase {
     public void testNumberLiterals2() {
         String text = "12345 09 1 12" +
                 " o'7' b'101' z'A1' 1.1 1e1 1d1";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.NUM_LITERAL_INT, "12345");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -220,7 +221,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testOperators() {
         String text = "** * / + - // == /= < <= > >=";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(true));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FREE));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.OP_POWER, "**");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -250,7 +251,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testOperators2() {
         String text = "\t** * / + - // == /= < <= > >=";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, "\t");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.OP_POWER, "**");
@@ -299,7 +300,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testKeywords() {
         String text = getAllKeywords();
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(true));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FREE));
         TokenSequence<?> ts = hi.tokenSequence();
 
         //    CndLexerUnitTest.dumpTokens(ts, "ts");
@@ -614,7 +615,7 @@ public class FortranLexerBatchTestCase extends TestCase {
                 "_Complex\n" +
                 "_Bool\n" +
                 " char";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(true));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FREE));
         TokenSequence<?> ts = hi.tokenSequence();
 
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.FortranTokenId.KW_INT, "int");
@@ -674,7 +675,7 @@ public class FortranLexerBatchTestCase extends TestCase {
     public void testNonKeywords() {
         String text = "asma autos b br car dou doubl finall im i ifa inti throwx ";
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(true));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FREE));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.IDENTIFIER, "asma");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, " ");
@@ -705,7 +706,7 @@ public class FortranLexerBatchTestCase extends TestCase {
     public void testNonKeywords2() {
         String text = "\tasma autos b br car dou doubl finall im i ifa inti throwx ";
 
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, "\t");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.IDENTIFIER, "asma");
@@ -737,7 +738,7 @@ public class FortranLexerBatchTestCase extends TestCase {
 
     public void testTab() {
         String text = "\tprint *";
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(false));
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, FortranTokenId.languageFortran(), null, getLexerAttributes(FortranFormat.FIXED));
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.WHITESPACE, "\t");
         LexerTestUtilities.assertNextTokenEquals(ts, FortranTokenId.KW_PRINT, "print");

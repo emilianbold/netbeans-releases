@@ -2341,6 +2341,7 @@ declarator[int kind, int level]
     ;
 
 restrict_declarator[int kind, int level]
+{CPPParser.TypeQualifier tq; }
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
@@ -2357,7 +2358,7 @@ restrict_declarator[int kind, int level]
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
         restrict_declarator[kind, level]
     |   
-        (literal_restrict!)? direct_declarator[kind, level]
+        (literal_restrict! (tq = cv_qualifier)* )? direct_declarator[kind, level]
     ;
 
 direct_declarator[int kind, int level]
@@ -4238,7 +4239,7 @@ protected
 literal_typeof : LITERAL_typeof | LITERAL___typeof | LITERAL___typeof__ ;
 
 protected
-literal_restrict : LITERAL_restrict | LITERAL___restrict;
+literal_restrict : LITERAL_restrict | LITERAL___restrict | LITERAL___restrict__;
 
 protected
 literal_complex : LITERAL__Complex | LITERAL___complex__ | LITERAL___complex;

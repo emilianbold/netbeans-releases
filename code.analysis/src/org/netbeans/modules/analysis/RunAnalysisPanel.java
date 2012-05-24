@@ -48,6 +48,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -242,6 +244,32 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 resultChanged(null);
             }
         });
+        
+        configurationCombo.addActionListener(new ActionListener() {
+            Object currentItem = configurationCombo.getSelectedItem();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object tempItem = configurationCombo.getSelectedItem();
+                if (tempItem instanceof String) {
+                    configurationCombo.setSelectedItem(currentItem);
+                } else {
+                    currentItem = tempItem;
+                }
+            }
+        });
+        
+        inspectionCombo.addActionListener(new ActionListener() {
+            Object currentItem = inspectionCombo.getSelectedItem();
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Object tempItem = inspectionCombo.getSelectedItem();
+                if (!(tempItem instanceof AnalyzerAndWarning)) {
+                    inspectionCombo.setSelectedItem(currentItem);
+                } else {
+                    currentItem = tempItem;
+                }
+            }
+        });
     }
 
     void started() {
@@ -266,12 +294,13 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         }
     }
 
+    @Messages({"LBL_Predefined=Predefined", "LBL_Custom=Custom"})
     public void updateConfigurations(DialogState state) {
         analyzers = analyzersResult.allInstances();
         
         Object selectedConfiguration = null;
         DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
-        configurationModel.addElement("Predefined");
+        configurationModel.addElement(Bundle.LBL_Predefined());
         configurationModel.addElement(null);
         
         for (AnalyzerFactory analyzer : analyzers) {
@@ -281,7 +310,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             configurationModel.addElement(analyzer);
         }
 
-        configurationModel.addElement("Custom");
+        configurationModel.addElement(Bundle.LBL_Custom());
 
         for (Configuration c : ConfigurationsManager.getDefault().getConfigurations()) {
             if (c.id().equals(state.selectedConfiguration)) {
@@ -524,9 +553,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         updatePlugins();
     }//GEN-LAST:event_configurationComboActionPerformed
 
+    @Messages("LBL_Configurations=Configurations")
     private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
         AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null, null);
-        DialogDescriptor nd = new DialogDescriptor(panel, "Configurations", true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
+        DialogDescriptor nd = new DialogDescriptor(panel, Bundle.LBL_Configurations(), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             panel.save();
@@ -541,6 +571,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         updateEnableDisable();
     }//GEN-LAST:event_singleInspectionRadioActionPerformed
 
+    @Messages("LBL_Browse=Browse Inspections")
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
         Object selectedInspection = inspectionCombo.getSelectedItem();
         AnalyzerFactory analyzerToSelect;
@@ -555,7 +586,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         }
 
         AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, analyzerToSelect, warningToSelect);
-        DialogDescriptor nd = new DialogDescriptor(panel, "Configurations", true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
+        DialogDescriptor nd = new DialogDescriptor(panel, Bundle.LBL_Browse(), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             inspectionCombo.setSelectedItem(warningId2Description.get(panel.getIdToRun()));
@@ -614,7 +645,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             this.indent = indent;
         }
 
-        @Messages({"LBL_RunAllAnalyzers=All Analyzers", "LBL_RunAnalyzer={0}"})
+        @Messages({"LBL_RunAllAnalyzers=All Analyzers", "# {0} - the analyzer that should be run", "LBL_RunAnalyzer={0}"})
         @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value == null) {
                 value = Bundle.LBL_RunAllAnalyzers();
@@ -705,7 +736,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             this.project = project;
         }
         @Override
-        @Messages("DN_CurrentProject=Current Project ({0})")
+        @Messages({"# {0} - project display name", "DN_CurrentProject=Current Project ({0})"})
         public String getDisplayName() {
             return Bundle.DN_CurrentProject(ProjectUtils.getInformation(project).getDisplayName());
         }
@@ -730,7 +761,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             this.packName = packName;
         }
         @Override
-        @Messages("DN_CurrentPackage=Current Package ({0})")
+        @Messages({"# {0} - package display name", "DN_CurrentPackage=Current Package ({0})"})
         public String getDisplayName() {
             return Bundle.DN_CurrentPackage(packName);
         }
@@ -752,7 +783,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             this.file = file;
         }
         @Override
-        @Messages("DN_CurrentFile=Current File ({0})")
+        @Messages({"# {0} - file display name", "DN_CurrentFile=Current File ({0})"})
         public String getDisplayName() {
             return Bundle.DN_CurrentFile(file.getNameExt());
         }

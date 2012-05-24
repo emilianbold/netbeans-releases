@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.IndexScope;
@@ -96,8 +97,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         Expression superId = nodeInfo.getSuperClass();
         String superName = null;
         if (superId != null) {
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
             QualifiedName superClassName = QualifiedName.create(superId);
-            this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), (NamespaceScope)inScope);
+            if (namespaceScope == null) {
+                this.possibleFQSuperClassNames = Collections.emptyList();
+            } else {
+                this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), namespaceScope);
+            }
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();
@@ -330,9 +336,9 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         final QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             sb.append(superClassName.toString());
@@ -347,17 +353,17 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 sb.append(qualifiedName.toString());
             }
         }
-        sb.append(";");//NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         List<? extends String> superInterfaceNames = getSuperInterfaceNames();
         StringBuilder ifaceSb = new StringBuilder();
         for (String iface : superInterfaceNames) {
             if (ifaceSb.length() > 0) {
                 ifaceSb.append(",");//NOI18N
             }
-            ifaceSb.append(iface);//NOI18N
+            ifaceSb.append(iface);
         }
         sb.append(ifaceSb);
         if (ifaceSb.length() > 0) {
@@ -368,12 +374,12 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 if (fqIfaceSb.length() > 0) {
                     fqIfaceSb.append(",");//NOI18N
                 }
-                fqIfaceSb.append(fQSuperInterfaceName.toString());//NOI18N
+                fqIfaceSb.append(fQSuperInterfaceName.toString());
             }
             sb.append(fqIfaceSb);
         }
-        sb.append(";");//NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(";");
+        sb.append(Signature.ITEM_DELIMITER);
+        sb.append(getPhpModifiers().toFlags()).append(Signature.ITEM_DELIMITER);
         if (!usedTraits.isEmpty()) {
             StringBuilder traitSb = new StringBuilder();
             for (QualifiedName usedTrait : usedTraits) {
@@ -384,7 +390,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             }
             sb.append(traitSb);
         }
-        sb.append(";"); //NOI18N
+        sb.append(Signature.ITEM_DELIMITER);
         //TODO: add ifaces
         return sb.toString();
     }
@@ -402,15 +408,15 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public String getDefaultConstructorIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(";");//NOI18N
-        sb.append(getName()).append(";");//NOI18N
-        sb.append(getOffset()).append(";");//NOI18N
-        sb.append(";");//NOI18N
-        sb.append(";");//NOI18N
-        sb.append(BodyDeclaration.Modifier.PUBLIC).append(";");
+        sb.append(getName().toLowerCase()).append(Signature.ITEM_DELIMITER);
+        sb.append(getName()).append(Signature.ITEM_DELIMITER);
+        sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
+        sb.append(Signature.ITEM_DELIMITER);
+        sb.append(Signature.ITEM_DELIMITER);
+        sb.append(BodyDeclaration.Modifier.PUBLIC).append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
-        sb.append(qualifiedName.toString()).append(";");//NOI18N
+        sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
 
         return sb.toString();
 

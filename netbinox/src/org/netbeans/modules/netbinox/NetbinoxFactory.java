@@ -82,6 +82,7 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put("osgi.instance.area", userArea); // NOI18N
         configMap.put("osgi.instance.area.default", userArea); // NOI18N
         final String installArea = toFileURL(findInstallArea());
+        LOG.log(Level.INFO, "Install area set to {0}", installArea); // NOI18N
         configMap.put("osgi.install.area", installArea); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
@@ -135,11 +136,16 @@ public class NetbinoxFactory implements FrameworkFactory {
         return ia;
     }
 
-    private static int findCommonPrefix(String s1, String s2) {
+    static int findCommonPrefix(String s1, String s2) {
         int len = Math.min(s1.length(), s2.length());
+        int max = 0;
         for (int i = 0; i < len; i++) {
-            if (s1.charAt(i) != s2.charAt(i)) {
-                return i;
+            final char ch = s1.charAt(i);
+            if (ch != s2.charAt(i)) {
+                return max;
+            }
+            if (ch == '/' || ch == File.separatorChar) {
+                max = i + 1;
             }
         }
         return len;

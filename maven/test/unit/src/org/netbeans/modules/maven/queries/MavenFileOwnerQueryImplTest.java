@@ -62,7 +62,7 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
     }
 
     public void testFindCoordinates() throws Exception {
-        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
         assertEquals("[test, prj, 1.0]", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(new File(repo, "test/prj/1.0/prj-1.0.jar"))));
         assertEquals("[my.test, prj, 1.0-SNAPSHOT]", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(new File(repo, "my/test/prj/1.0-SNAPSHOT/prj-1.0-SNAPSHOT.pom"))));
         assertEquals("null", Arrays.toString(MavenFileOwnerQueryImpl.findCoordinates(new File(repo, "test/prj/1.0"))));
@@ -81,7 +81,7 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
                 + "<packaging>jar</packaging><version>1.1</version></project>");
         NbMavenProjectImpl p11 = (NbMavenProjectImpl) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prj11));
         MavenFileOwnerQueryImpl foq = MavenFileOwnerQueryImpl.getInstance();
-        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
         File art10 = new File(repo, "test/prj/1.0/prj-1.0.jar");
         File art11 = new File(repo, "test/prj/1.1/prj-1.1.jar");
         assertEquals(null, foq.getOwner(art10.toURI()));

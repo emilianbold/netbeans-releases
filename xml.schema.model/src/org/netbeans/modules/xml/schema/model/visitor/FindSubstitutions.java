@@ -114,7 +114,8 @@ public final class FindSubstitutions {
             try {
                 SchemaModel referencedModel = reference.resolveReferencedModel();
                 Schema referencedSchema = referencedModel.getSchema();
-                if (schemas.add(referencedSchema)) { //Don't add schema references more than once
+                // issue #212265; referencedSchema is sometimes null, reason not known (yet)
+                if (referencedSchema != null && schemas.add(referencedSchema)) { //Don't add schema references more than once
                     collectReferencedSchemas(referencedSchema, schemas);
                 }
             } catch (@SuppressWarnings("unused") CatalogModelException ex) {

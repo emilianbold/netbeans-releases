@@ -91,8 +91,8 @@ import org.openide.util.HelpCtx;
     "NewCustomConfiguration_CpuString=&CPU",
     "NewCustomConfiguration_MemoryString=M&emory",
     "NewCustomConfiguration_NewConfigDialogCaption=New Custom Configuration",
-    "NewCustomConfiguration_DuplicateConfigDialogCaption=Duplicate Configuration ({0})",
-    "NewCustomConfiguration_RenameConfigDialogCaption=Rename Configuration ({0})",
+    "NewCustomConfiguration_DuplicateConfigDialogCaption=Duplicate Configuration",
+    "NewCustomConfiguration_RenameConfigDialogCaption=Rename Configuration",
     "NewCustomConfiguration_NewConfigString=New Configuration",
     "NewCustomConfiguration_NewMonitorString=New Monitoring",
     "NewCustomConfiguration_NewCpuString=New CPU Analysis",
@@ -164,7 +164,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
                                                                  ProfilingSettings[] availableConfigurations) {
         NewCustomConfiguration ncc = getDefault();
         ncc.setupDuplicateConfiguration(originalConfiguration, availableConfigurations);
-        String title = Bundle.NewCustomConfiguration_DuplicateConfigDialogCaption(originalConfiguration.getSettingsName());
+        String title = Bundle.NewCustomConfiguration_DuplicateConfigDialogCaption();
         
         return displayDialog(ncc, title);
     }
@@ -203,7 +203,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
                                                         ProfilingSettings[] availableConfigurations) {
         NewCustomConfiguration ncc = getDefault();
         ncc.setupRenameConfiguration(originalConfiguration, availableConfigurations);
-        String title = Bundle.NewCustomConfiguration_RenameConfigDialogCaption(originalConfiguration.getSettingsName());
+        String title = Bundle.NewCustomConfiguration_RenameConfigDialogCaption();
 
         return displayDialog(ncc, title);
     }
@@ -449,7 +449,7 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         // nameTextfield
         nameTextfield = new JTextField();
         nameTextfield.getDocument().addDocumentListener(this);
-        nameTextfield.setPreferredSize(new Dimension(280, nameTextfield.getPreferredSize().height));
+        nameTextfield.setPreferredSize(new Dimension(380, nameTextfield.getPreferredSize().height));
         nameTextfield.getAccessibleContext().setAccessibleDescription(Bundle.NewCustomConfiguration_NameLabelAccessDescr());
         nameLabel.setLabelFor(nameTextfield);
         constraints = new GridBagConstraints();

@@ -173,6 +173,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
         panelLookupWithNodes = new PanelLookupWithNodes();
         panelLookupListener = new PanelLookupListener();
         navigatorTC.addPropertyChangeListener(this);
+        //Add listener on custom topComponent - NavDisplayer navigatorTC doesnt have to be an instance of TopComponent
+        if (navigatorTC != navigatorTC.getTopComponent()) {
+            navigatorTC.getTopComponent().addPropertyChangeListener(this);
+        }
         TopComponent.getRegistry().addPropertyChangeListener(this);
         installActions();
     }
@@ -362,18 +366,22 @@ public final class NavigatorController implements LookupListener, PropertyChange
             }
         }
         loadingProviders = true;
-        requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        showProviders(providers, force);
-                    }
-                });
-            }
-        });
+        if (navigatorTC.allowAsyncUpdate()) {
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    final List<NavigatorPanel> providers = obtainProviders(nodes, panelsPolicy, lkpHints);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProviders(providers, force);
+                        }
+                    });
+                }
+            });
+        } else {
+            showProviders(obtainProviders(nodes, panelsPolicy, lkpHints), force);
+        }
         } finally {
             if (!loadingProviders) {
                 inUpdate = false;
@@ -631,6 +639,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
             }
         } else if (NavigatorDisplayer.PROP_PANEL_SELECTION.equals(evt.getPropertyName())) {
             activatePanel((NavigatorPanel) evt.getNewValue());
+        } else if ("ancestor".equals(evt.getPropertyName())) {
+            if (evt.getSource() == navigatorTC.getTopComponent()) {
+                boolean shown = evt.getNewValue() != null;
+                makeActive(shown);
+            }
         }
     }
 

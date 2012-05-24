@@ -48,8 +48,14 @@
     application, specify the servlet's URL-pattern here. The IDE generates a servlet's 
     URL-pattern in the <tt>WEB-INF/web.xml</tt> file when you use the New File 
     (Ctrl-N) wizard to create a servlet.</li>
-  <li><b>Deploy on Save.</b> Specifies whether changed files are automatically
-    redeployed. This option saves you time when you run or debug your application in the IDE.</li>
+  <li><b>Deploy on Save.</b> When selected, when you save files the Java files are 
+    automatically compiled, non-Java files are copied to the build directory and 
+    the files are redeployed to the server. 
+    Enabling Deploy on Save automatically enables the Copy Static Resources on Save 
+    and Compile on Save options.
+    The Deploy on Save option saves you time when you run or debug your application in the IDE and
+    ensures that all new and modified files in the build directory are automatically 
+    redeployed to the server.</li>
     <li><b>VM Options.</b> Type options that are used for running main classes or unit tests.</li>
 </ul>
 <dl>

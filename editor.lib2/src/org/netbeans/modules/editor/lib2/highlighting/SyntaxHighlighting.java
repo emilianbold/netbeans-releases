@@ -70,6 +70,7 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.ListenerList;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.util.Lookup;
@@ -79,6 +80,9 @@ import org.openide.util.WeakListeners;
 
 /**
  * The syntax coloring layer.
+ * <br/>
+ * It excludes newline chars from any colorings so that if e.g. a whitespace highlighting is set
+ * the rest of line after newline is not colored.
  * 
  * @author Vita Stejskal
  * @author Miloslav Metelka
@@ -112,8 +116,6 @@ implements TokenHierarchyListener, ChangeListener {
     private TokenHierarchy<? extends Document> hierarchy = null;
 
     private long version = 0;
-    
-    private AttributeSet cachedAttrs;
     
     /** Creates a new instance of SyntaxHighlighting */
     public SyntaxHighlighting(Document document) {
@@ -323,279 +325,295 @@ implements TokenHierarchyListener, ChangeListener {
     
     private final class HSImpl implements HighlightsSequence {
         
-        private static final int S_NORMAL = 1;
-        private static final int S_EMBEDDED_HEAD = 2;
-        private static final int S_EMBEDDED_TAIL = 3;
-        private static final int S_DONE = 4;
+        private static final int S_INIT = 0;
+        private static final int S_TOKEN = 1; // Attempt to branch current token
+        private static final int S_NEXT_TOKEN = 2; // Fetch next token
+        private static final int S_EMBEDDED_HEAD = 3; // On head of an embedding (in front of its first token)
+        private static final int S_EMBEDDED_TAIL = 4; // Just above last token of the embedding
+        private static final int S_DONE = 5;
 
         private final long version;
         private final TokenHierarchy<? extends Document> scanner;
         private final int startOffset;
         private final int endOffset;
+        private final CharSequence docText;
+        private int newlineOffset;
+        private int partsEndOffset; // In case '\n' is in the middle of token this is end offset of the whole token
+
+        // Last found highlight's startOffset, endOffset and attributes
+        private int hiStartOffset;
+        private int hiEndOffset;
+        private AttributeSet hiAttrs;
         
         private List<TSInfo<?>> sequences;
-        private int state = -1;
+        private int state = S_INIT;
         private LogHelper logHelper;
         
         public HSImpl(long version, TokenHierarchy<? extends Document> scanner, int startOffset, int endOffset) {
             this.version = version;
             this.scanner = scanner;
+            startOffset = Math.max(startOffset, 0); // Tests may request Integer.MIN_VALUE for startOffset
             this.startOffset = startOffset;
+            this.sequences = new ArrayList<TSInfo<?>>(4);
+            this.hiStartOffset = startOffset;
+            this.hiEndOffset = startOffset;
+            Document doc = scanner.inputSource();
+            this.docText = DocumentUtilities.getText(doc);
+            endOffset = Math.min(endOffset, docText.length());
             this.endOffset = endOffset;
-            this.sequences = null;
+            newlineOffset = -1;
+            updateNewlineOffset(startOffset);
+            @SuppressWarnings("unchecked")
+            TokenSequence<TokenId> seq = (TokenSequence<TokenId>) scanner.tokenSequence();
+            if (seq != null) {
+                seq.move(startOffset);
+                TSInfo<TokenId> tsInfo = new TSInfo<TokenId>(seq);
+                sequences.add(tsInfo);
+                state = S_NEXT_TOKEN;
+            } else {
+                state = S_DONE;
+            }
             if (LOG.isLoggable(Level.FINE)) {
                 logHelper = new LogHelper();
                 logHelper.startTime = System.currentTimeMillis();
+                LOG.fine("SyntaxHighlighting.HSImpl <" + startOffset + "," + endOffset + ">\n"); // NOI18N
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, "Highlighting caller", new Exception()); // NOI18N
+                }
             }
         }
         
         public @Override boolean moveNext() {
             synchronized (SyntaxHighlighting.this) {
-                if (checkVersion()) {
-                    if (sequences == null) {
-                        sequences = new ArrayList<TSInfo<?>>();
-                        
-                        // initialize
-                        @SuppressWarnings("unchecked")
-                        TokenSequence<TokenId> seq = (TokenSequence<TokenId>) scanner.tokenSequence();
-                        if (seq != null) {
-                            seq.move(startOffset);
-                            TSInfo<TokenId> tsInfo = new TSInfo<TokenId>(seq);
-                            sequences.add(tsInfo);
-                            state = S_NORMAL;
-                        } else {
-                            state = S_DONE;
-                        }
-                    }
-                } else {
-                    state = S_DONE;
+                if (state == S_DONE) {
+                    return false;
                 }
 
-                while (state != S_DONE) {
-                    switch (state) {
-                        case S_NORMAL:
-                            // The current token is a normal one
-                            state = moveTheSequence();
-                            break;
-
-                        case S_EMBEDDED_HEAD:
-                            // The current token contains embedded language and we have processed it's head
-                            TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-                            tsInfo.ts.moveStart();
-                            if (tsInfo.ts.moveNext()) {
-                                state = S_NORMAL;
-                            } else {
-                                throw new IllegalStateException("Invalid state"); //NOI18N
-                            }
-                            break;
-
-                        case S_EMBEDDED_TAIL:
-                            // The current token contains embedded language and we have processed it's tail
-                            sequences.remove(sequences.size() - 1);
-                            state = moveTheSequence();
-                            break;
-
-                        case S_DONE:
-                            // We have gone through all the tokens in all sequences
-                            break;
-
-                        default:
-                            throw new IllegalStateException("Invalid state: " + state); //NOI18N
+                if (!checkVersion()) {
+                    finish();
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("SyntaxHighlighting: Version changed => HSImpl finished at offset=" + hiEndOffset); // NOI18N
                     }
-
-                    if (state == S_NORMAL) {
-                        // We have moved to the next normal token, so look what it is
-                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-                        TokenSequence seq = tsInfo.ts;
-                        TokenSequence<?> embeddedSeq = seq.embedded();
-                        while (embeddedSeq != null && embeddedSeq.moveNext()) {
-                            @SuppressWarnings("unchecked")
-                            TokenSequence<TokenId> lts = (TokenSequence<TokenId>) embeddedSeq;
-                            sequences.add(new TSInfo<TokenId>(lts));
-
-                            if (embeddedSeq.offset() + embeddedSeq.token().length() < startOffset) {
-                                embeddedSeq.move(startOffset);
-                                if (!embeddedSeq.moveNext()) {
-                                    state = S_EMBEDDED_TAIL;
-                                    break;
-                                }
-                            } else if (embeddedSeq.offset() > seq.offset()) {
-                                state = S_EMBEDDED_HEAD;
-                                break;
-                            }
-
-                            seq = embeddedSeq;
-                            embeddedSeq = seq.embedded();
-                        }
-                    }
-                    
-                    cachedAttrs = null;
-                    if (state != S_DONE && getAttributes() != null) { // getAttributes() fills cachedAttrs
-                        break;
-                    }
+                    return false;
                 }
 
-                if (LOG.isLoggable(Level.FINE)) {
-                    if (state != S_DONE) {
-                        logHelper.tokenCount++;
+                // Check whether processing multiple parts into that token was split due to presence of '\n' char(s)
+                if (partsEndOffset != 0) { // Fetch next part
+                    while (hiEndOffset == newlineOffset) { // Newline at highlight start
+                        hiEndOffset++; // Skip newline
+                        if (updateNewlineOffset(hiEndOffset)) { // Reached endOffset
+                            finish();
+                            return false;
+                        }
+                        if (hiEndOffset >= partsEndOffset) { // Reached end of parts only by newlines
+                            finishParts();
+                            return moveTheSequence();
+                        }
+                    }
+                    hiStartOffset = hiEndOffset;
+                    if (newlineOffset < partsEndOffset) {
+                        hiEndOffset = newlineOffset;
                     } else {
-                        LOG.fine("SyntaxHighlighting for " + scanner.inputSource() + //NOI18N
-                                ":\n-> returned " + logHelper.tokenCount + " token highlights for <" + //NOI18N
-                                startOffset + "," + endOffset + //NOI18N
-                                "> in " + //NOI18N
-                                (System.currentTimeMillis() - logHelper.startTime) + " ms.\n"); //NOI18N
+                        hiEndOffset = partsEndOffset;
+                        finishParts();
                     }
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("  SH.moveNext(): part-Highlight: <" + hiStartOffset + "," + // NOI18N
+                                hiEndOffset + "> attrs=" + hiAttrs + " " + stateToString() + // NOI18N
+                                ", pEOffset=" + partsEndOffset + ", seq#=" + sequences.size() + "\n"); // NOI18N
+                    }
+                    return true;
                 }
 
-//                if (state != S_DONE) {
-//                    TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-//                    LOG.fine("HSImpl@" + Integer.toHexString(System.identityHashCode(this)) + " <" + startOffset + ", " + endOffset + ">: " +
-//                        "state=" + state + ", positioned at <" + getStartOffset() + ", " + getEndOffset() + ">");
-//                } else {
-//                    LOG.fine("HSImpl@" + Integer.toHexString(System.identityHashCode(this)) + " <" + startOffset + ", " + endOffset + ">: " +
-//                        "S_DONE");
-//                }
-
-                return state != S_DONE;
+                return moveTheSequence();
             }
         }
 
         public @Override int getStartOffset() {
-            synchronized (SyntaxHighlighting.this) {
-                switch (state) {
-                    case S_NORMAL: {
-                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-                        return Math.max(tsInfo.ts.offset(), startOffset);
-                    }
-                    case S_EMBEDDED_HEAD: {
-                        TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
-                        return Math.max(embeddedTSInfo.ts.offset(), startOffset);
-                    }
-                    case S_EMBEDDED_TAIL: {
-                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-                        tsInfo.ts.moveEnd();
-                        if (tsInfo.ts.movePrevious()) {
-                            return Math.max(tsInfo.ts.offset() + tsInfo.ts.token().length(), startOffset);
-                        } else {
-                            throw new IllegalStateException("Invalid state"); //NOI18N
-                        }
-                    }
-                    case S_DONE:
-                        throw new NoSuchElementException();
-
-                    default:
-                        throw new IllegalStateException("Invalid state " + state + ", call moveNext() first."); //NOI18N
-                }
-            }
+            return hiStartOffset;
         }
 
         public @Override int getEndOffset() {
-            synchronized (SyntaxHighlighting.this) {
-                switch (state) {
-                    case S_NORMAL: {
-                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-                        return Math.min(tsInfo.ts.offset() + tsInfo.ts.token().length(), endOffset);
-                    }
-                    case S_EMBEDDED_HEAD: {
-                        TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-                        tsInfo.ts.moveStart();
-                        if (tsInfo.ts.moveNext()) {
-                            return Math.min(tsInfo.ts.offset(), endOffset);
-                        } else {
-                            TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
-                            return Math.min(embeddedTSInfo.ts.offset() + embeddedTSInfo.ts.token().length(), endOffset);
-                        }
-                    }
-                    case S_EMBEDDED_TAIL:
-                        TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
-                        return Math.min(embeddedTSInfo.ts.offset() + embeddedTSInfo.ts.token().length(), endOffset);
-
-                    case S_DONE:
-                        throw new NoSuchElementException();
-
-                    default:
-                        throw new IllegalStateException("Invalid state " + state + ", call moveNext() first."); //NOI18N
-                }
-            }
+            return hiEndOffset;
         }
 
         public @Override AttributeSet getAttributes() {
-            if (cachedAttrs != null) {
-                return cachedAttrs;
-            }
-            synchronized (SyntaxHighlighting.this) {
+            return hiAttrs;
+        }
+        
+        private boolean moveTheSequence() {
+            boolean done = false;
+            boolean log = LOG.isLoggable(Level.FINE);
+            do {
+                TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
                 switch (state) {
-                    case S_NORMAL:
-                        return findAttribs(sequences.size() - 1);
+                    case S_TOKEN:
+                        TokenSequence<?> embeddedSeq = tsInfo.ts.embedded();
+                        if (embeddedSeq != null) {
+                            @SuppressWarnings("unchecked")
+                            TSInfo<TokenId> embeddedTSInfo = new TSInfo<TokenId>((TokenSequence<TokenId>) embeddedSeq);
+                            sequences.add(embeddedTSInfo);
+                            if (embeddedTSInfo.moveNextToken(startOffset, endOffset)) { // Embedded token sequence has at least one token
+                                int headLen = embeddedTSInfo.tokenOffset - hiEndOffset;
+                                if (headLen > 0) {
+                                    state = S_EMBEDDED_HEAD;
+                                    done = assignHighlightOrPart(embeddedTSInfo.tokenOffset, embeddedTSInfo.tokenAttrs);
+                                    if (log) {
+                                        LOG.fine(" S_TOKEN -> S_EMBEDDED_HEAD, token<" + tsInfo.tokenOffset + // NOI18N
+                                                "," + tsInfo.tokenEndOffset + "> headLen=" + headLen + "\n"); // NOI18N
+                                    }
+                                } // else: No head -> attempt further nested embedding on current emb.token
+                            } else { // No tokens in embedded sequence
+                                state = S_EMBEDDED_TAIL;
+                                done = assignHighlightOrPart(tsInfo);
+                                if (log) {
+                                    LOG.fine(" S_TOKEN -> S_EMBEDDED_TAIL\n");
+                                }
+                            }
+                        } else { // embeddedSeq == null
+                            state = S_NEXT_TOKEN;
+                            done = assignHighlightOrPart(tsInfo);
+                        }
+                        break;
+
+                    case S_NEXT_TOKEN:
+                        if (tsInfo.moveNextToken(startOffset, endOffset)) {
+                            state = S_TOKEN;
+                            if (log) {
+                                logHelper.tokenCount++;
+                            }
+                        } else { // No more tokens
+                            if (sequences.size() > 1) {
+                                TSInfo<?> outerTSInfo = sequences.get(sequences.size() - 2);
+                                state = S_EMBEDDED_TAIL;
+                                if (tsInfo.tokenEndOffset < outerTSInfo.tokenEndOffset) {
+                                    done = assignHighlightOrPart(outerTSInfo);
+                                }
+                            } else { // Outer sequence => stop processing
+                                sequences.clear();
+                                finish();
+                                if (log) {
+                                    LOG.fine("SyntaxHighlighting: " + scanner.inputSource() + //NOI18N
+                                            ":\n-> returned " + logHelper.tokenCount + " token highlights for <" + //NOI18N
+                                            startOffset + "," + endOffset + //NOI18N
+                                            "> in " + //NOI18N
+                                            (System.currentTimeMillis() - logHelper.startTime) + " ms.\n"); //NOI18N
+                                    LOG.finer(tsInfo.ts.toString());
+                                    LOG.fine("\n");
+                                }
+                                return false;
+                            }
+                        }
+                        break;
 
                     case S_EMBEDDED_HEAD:
+                        // Current token contains embedded language and we have processed its head
+                        // First token is fetched already so just use it.
+                        state = S_TOKEN;
+                        break;
+
                     case S_EMBEDDED_TAIL:
-                        return findAttribs(sequences.size() - 2);
-
-                    case S_DONE:
-                        throw new NoSuchElementException();
-
-                    default:
-                        throw new IllegalStateException("Invalid state " + state + ", call moveNext() first."); //NOI18N
-                }
-            }
-        }
-        
-        private AttributeSet findAttribs(int seqIdx) {
-            TSInfo<?> tsInfo = sequences.get(seqIdx);
-            AttributeSet attrs = tsInfo.findCurrentAttrs();
-            if (LOG.isLoggable(Level.FINE)) {
-                // Add token info to the tooltip
-                Token<?> token = tsInfo.ts.token();
-                TokenId tokenId = token.id();
-                attrs = AttributesUtilities.createComposite(
-                    AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, 
-                        "<html>" //NOI18N
-                        + "<b>Token:</b> " + token.text() //NOI18N
-                        + "<br><b>Id:</b> " + tokenId.name() //NOI18N
-                        + "<br><b>Category:</b> " + tokenId.primaryCategory() //NOI18N
-                        + "<br><b>Ordinal:</b> " + tokenId.ordinal() //NOI18N
-                        + "<br><b>Mimepath:</b> " + tsInfo.ts.languagePath().mimePath() //NOI18N
-                    ),
-                    attrs 
-                );
-            }
-
-            return attrs;
-        }
-
-        private int moveTheSequence() {
-            TSInfo<?> tsInfo = sequences.get(sequences.size() - 1);
-            
-            if (tsInfo.ts.moveNext()) {
-                if (tsInfo.ts.offset() < endOffset) {
-                    return S_NORMAL;
-                } else {
-                    return S_DONE;
-                }
-            } else {
-                if (sequences.size() > 1) {
-                    TSInfo<?> embeddedTSInfo = sequences.get(sequences.size() - 2);
-                    tsInfo.ts.moveEnd();
-                    if (tsInfo.ts.movePrevious()) {
-                        if ((tsInfo.ts.offset() + tsInfo.ts.token().length()) < (embeddedTSInfo.ts.offset() + embeddedTSInfo.ts.token().length())) {
-                            return S_EMBEDDED_TAIL;
-                        } else {
-                            sequences.remove(sequences.size() - 1);
-                            return moveTheSequence();
+                        // The current token contains embedded language and we have processed it's tail
+                        state = S_NEXT_TOKEN;
+                        sequences.remove(sequences.size() - 1);
+                        if (log) {
+                            LOG.fine("S_EMBEDDED_TAIL -> S_NEXT_TOKEN; sequences.size()=" + sequences.size() + "\n"); // NOI18N
                         }
-                    } else {
-                        throw new IllegalStateException("Invalid state"); //NOI18N
-                    }
-                } else {
-                    sequences.clear();
-                    return S_DONE;
+                        break;
+
+                    default: // Includes S_INIT and S_DONE
+                        throw new IllegalStateException("Invalid state: " + state); //NOI18N
                 }
+            } while (!done);
+
+            if (log) {
+                LOG.fine("SH.moveTheSequence(): Highlight: <" + hiStartOffset + "," + hiEndOffset + // NOI18N
+                        "> attrs=" + hiAttrs + " " + stateToString() + ", seq#=" + sequences.size() + "\n"); // NOI18N
             }
+            return true; // Highlight assigned
         }
         
+        private boolean assignHighlightOrPart(TSInfo<?> tsInfo) {
+            return assignHighlightOrPart(tsInfo.tokenEndOffset, tsInfo.tokenAttrs);
+        }
+
+        /**
+         * Assign full token or its initial part as a next highlight.
+         *
+         * @param tokenEndOffset
+         * @param attrs
+         * @return true if highlight was assigned successfully or false if it could not be assigned
+         *  due to token consisting of all newlines.
+         */
+        private boolean assignHighlightOrPart(int tokenEndOffset, AttributeSet attrs) {
+            while (hiEndOffset == newlineOffset) { // Newline at highlight start
+                hiEndOffset++; // Skip newline
+                if (updateNewlineOffset(hiEndOffset) || hiEndOffset >= tokenEndOffset) { // Reached endOffset
+                    hiStartOffset = hiEndOffset;
+                    return false;
+                }
+            }
+            hiStartOffset = hiEndOffset;
+            if (newlineOffset < tokenEndOffset) {
+                hiEndOffset = newlineOffset;
+                partsEndOffset = tokenEndOffset;
+            } else {
+                hiEndOffset = tokenEndOffset;
+            }
+            hiAttrs = attrs;
+            return true;
+        }
+        
+        /**
+         * Update newlineOffset.
+         *
+         * @param offset scan start offset. If '\n' right at offset then
+         *  newlineOffset will be == offset.
+         */
+        private boolean updateNewlineOffset(int offset) {
+            while (offset < endOffset) {
+                if (docText.charAt(offset) == '\n') {
+                    newlineOffset = offset;
+                    return false;
+                }
+                offset++;
+            }
+            newlineOffset = endOffset;
+            return true;
+        }
+        
+        private void finishParts() {
+            partsEndOffset = 0;
+        }
+
+        private void finish() {
+            state = S_DONE;
+            hiStartOffset = endOffset;
+            hiEndOffset = endOffset;
+            hiAttrs = null;
+        }
+
         private boolean checkVersion() {
             return this.version == SyntaxHighlighting.this.version;
+        }
+        
+        private String stateToString() {
+            switch (state) {
+                case S_INIT:
+                    return "S_INIT"; // NOI18N
+                case S_TOKEN:
+                    return "S_TOKEN"; // NOI18N
+                case S_NEXT_TOKEN:
+                    return "S_NEXT_TOKEN"; // NOI18N
+                case S_EMBEDDED_HEAD:
+                    return "S_EMBEDDED_HEAD"; // NOI18N
+                case S_EMBEDDED_TAIL:
+                    return "S_EMBEDDED_TAIL"; // NOI18N
+                case S_DONE:
+                    return "S_DONE"; // NOI18N
+                default:
+                    throw new IllegalStateException("Unknown state=" + state); // NOI18N
+            }
         }
 
     } // End of HSImpl class
@@ -724,6 +742,12 @@ implements TokenHierarchyListener, ChangeListener {
         final TokenSequence<T> ts;
         
         final FCSInfo<T> fcsInfo;
+        
+        int tokenOffset;
+        
+        int tokenEndOffset;
+        
+        AttributeSet tokenAttrs;
 
         /**
          * @param ts
@@ -744,12 +768,49 @@ implements TokenHierarchyListener, ChangeListener {
             fcsInfo = findFCSInfo(mimePathExt, innerLanguage);
         }
         
-        AttributeSet findCurrentAttrs() {
-            return findAttrs(ts.token().id());
-        }
-        
-        AttributeSet findAttrs(T tokenId) {
-            return fcsInfo.findAttrs(tokenId);
+        boolean moveNextToken(int limitStartOffset, int limitEndOffset) {
+            if (ts.moveNext()) {
+                Token<T> token = ts.token();
+                tokenOffset = ts.offset();
+                tokenEndOffset = tokenOffset + token.length();
+                if (tokenEndOffset <= limitStartOffset) {
+                    // Must move the sequence forward by bin-search
+                    ts.move(limitStartOffset);
+                    if (!ts.moveNext()) { // limitStartOffset above tokens (in tail section)
+                        return false;
+                    }
+                    token = ts.token();
+                    tokenOffset = ts.offset();
+                    tokenEndOffset = tokenOffset + token.length();
+                }
+                tokenOffset = Math.max(tokenOffset, limitStartOffset);
+                T id = token.id();
+                if (tokenEndOffset > limitEndOffset) {
+                    if (tokenOffset >= limitEndOffset) {
+                        return false;
+                    } else {
+                        tokenEndOffset = limitEndOffset;
+                    }
+                }
+                tokenAttrs = fcsInfo.findAttrs(id);
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    // Add token info to the tooltip
+                    tokenAttrs = AttributesUtilities.createComposite(
+                            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip,
+                            "<html>" //NOI18N
+                            + "<b>Token:</b> " + token.text() //NOI18N
+                            + "<br><b>Id:</b> " + id.name() //NOI18N
+                            + "<br><b>Category:</b> " + id.primaryCategory() //NOI18N
+                            + "<br><b>Ordinal:</b> " + id.ordinal() //NOI18N
+                            + "<br><b>Mimepath:</b> " + ts.languagePath().mimePath() //NOI18N
+                            ),
+                            tokenAttrs);
+                }
+                return true;
+            } else {
+                return false;
+            }
         }
 
     }

@@ -228,4 +228,26 @@ implements AbstractLookupBaseHid.Impl {
         assertEquals ("One serialiazble", 1, ser.allItems ().size ());
         assertEquals ("And it is c", c, ser.allInstances ().iterator ().next ());
     }
+    
+    public void testQueryImplClass() throws Exception {
+        class Excl implements Runnable {
+            @Override
+            public void run() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        }
+        class C extends Excl {
+        }
+        
+        Object c = new C();
+        Lookup l1 = Lookups.singleton(c);
+        Lookup l2 = Lookups.exclude(l1, new Class[] {Excl.class});
+
+        Runnable run = l2.lookup(Runnable.class);
+        C res = l2.lookup(C.class);
+        assertEquals("Consistent with subtypes of an super interface", run, res);
+        
+        assertNull("The Runnable is excluded", run);
+        assertNull("That is why the impl has to be excluded as well", res);
+    }
 }

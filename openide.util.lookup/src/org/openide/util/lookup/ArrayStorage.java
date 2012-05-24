@@ -105,7 +105,11 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
 
             // cannot happen as the beginTransaction ensured we can finish 
             // correctly
-            throw new IllegalStateException();
+            throw new IllegalStateException(
+                "current objects: " + Arrays.toString(changed.current) +
+                "\nnew objects: " + Arrays.toString(changed.arr) + 
+                "\ncnt: " + changed.cnt
+            );
         } else {
             // doing remainAll after that, let Transaction hold the new array
             int newIndex = changed.addPair(item);
