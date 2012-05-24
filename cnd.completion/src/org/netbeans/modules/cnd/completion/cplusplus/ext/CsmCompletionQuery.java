@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
@@ -651,7 +652,11 @@ abstract public class CsmCompletionQuery {
             }
             return ret;
         } else if(CsmKindUtilities.isEnum(classifier)) {
-            ret.addAll(((CsmEnum)classifier).getEnumerators());
+            for (CsmEnumerator enumerator : ((CsmEnum) classifier).getEnumerators()) {
+                if (CsmSortUtilities.matchName(enumerator.getName(), name, exactMatch, exactMatch)) {
+                    ret.add(enumerator);
+                }
+            }
             return ret;
         }
         return ret;

@@ -70,6 +70,7 @@ import java.util.StringTokenizer;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -165,6 +166,8 @@ public final class CsmProjectContentResolver {
                     }
                 } else if (CsmKindUtilities.isEnum(ob)) {
                     elemEnum = (CsmEnum) ob;
+                } else if (CsmKindUtilities.isEnumForwardDeclaration(ob)) {
+                    elemEnum = ((CsmEnumForwardDeclaration)ob).getCsmEnum();
                 } else {
                     // for typedef check whether it defines unnamed enum
                     assert CsmKindUtilities.isTypedef(ob);
@@ -174,6 +177,8 @@ public final class CsmProjectContentResolver {
                         CsmClassifier classifier = type.getClassifier();
                         if (CsmKindUtilities.isEnum(classifier)) {
                             elemEnum = (CsmEnum) classifier;
+                        } else if (CsmKindUtilities.isEnumForwardDeclaration(classifier)) {
+                            elemEnum = ((CsmEnumForwardDeclaration)classifier).getCsmEnum();
                         }
                     }
                 }
@@ -947,12 +952,14 @@ public final class CsmProjectContentResolver {
         // unnamed enum
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
         List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNested, true);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         CsmDeclaration.Kind classAndEnumeratorKinds[] = {
             CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF,
             CsmDeclaration.Kind.ENUMERATOR
         };
@@ -1039,6 +1046,7 @@ public final class CsmProjectContentResolver {
         // unnamed enum
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
         List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, true);
