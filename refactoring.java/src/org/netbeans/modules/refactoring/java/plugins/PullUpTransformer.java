@@ -72,6 +72,7 @@ public class PullUpTransformer extends RefactoringVisitor {
 
     private MemberInfo<ElementHandle<? extends Element>>[] members;
     private Element targetType;
+    private Element sourceType;
     private PullUpRefactoring refactoring;
     public PullUpTransformer(PullUpRefactoring refactoring) {
         this.refactoring = refactoring;
@@ -82,6 +83,7 @@ public class PullUpTransformer extends RefactoringVisitor {
     public void setWorkingCopy(WorkingCopy copy) throws ToPhaseException {
         super.setWorkingCopy(copy);
         this.targetType = refactoring.getTargetType().resolve(copy);
+        this.sourceType = refactoring.getSourceType().resolveElement(copy);
     }
 
     @Override
@@ -91,184 +93,192 @@ public class PullUpTransformer extends RefactoringVisitor {
         boolean classIsAbstract = el.getKind().isInterface();
         ClassTree njuClass = tree;
         if (el.equals(targetType)) {
-            //target type
-            //add members
-            List<String> imports = new ArrayList<String>();
-            for (int i = 0; i<members.length; i++) {
-                if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
-                    Element member = members[i].getElementHandle().resolve(workingCopy);
-                    imports.add(member.asType().toString()); //add may-be necessary import
-                    njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
-                    rewrite(tree, njuClass);
-                } else {
-                    if (members[i].isMakeAbstract()) {
-                        
-                        if (!classIsAbstract) {
-                            classIsAbstract = true;
-                            Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
-                            mod.add(Modifier.ABSTRACT);
-                            mod.remove(Modifier.FINAL);
-                            ModifiersTree modifiers = make.Modifiers(mod);
-                            rewrite(njuClass.getModifiers(), modifiers);
-                        }
-                        
-                        Element methodElm = members[i].getElementHandle().resolve(workingCopy);
-                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(methodElm);
-                        Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
+            addMembersToTarget(njuClass, tree, classIsAbstract, el, genUtils);
+        } else if (el.equals(sourceType)) {
+            removeMembersFromSource(njuClass, tree, classIsAbstract);
+        }
+        return super.visitClass(tree, p);
+    }
+
+    private void addMembersToTarget(ClassTree njuClass, ClassTree tree, boolean classIsAbstract, Element el, GeneratorUtilities genUtils) {
+        //target type
+        //add members
+        List<String> imports = new ArrayList<String>();
+        for (int i = 0; i<members.length; i++) {
+            if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
+                Element member = members[i].getElementHandle().resolve(workingCopy);
+                imports.add(member.asType().toString()); //add may-be necessary import
+                njuClass = make.addClassImplementsClause(njuClass, make.Identifier(members[i].getElementHandle().resolve(workingCopy)));
+                rewrite(tree, njuClass);
+            } else {
+                if (members[i].isMakeAbstract()) {
+                    
+                    if (!classIsAbstract) {
+                        classIsAbstract = true;
+                        Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
                         mod.add(Modifier.ABSTRACT);
                         mod.remove(Modifier.FINAL);
-                        // abstract method cannot be synchronized
-                        mod.remove(Modifier.SYNCHRONIZED);
-                        if (el.getKind().isInterface()) {
-                            mod.remove(Modifier.PUBLIC);
-                            mod.remove(Modifier.PROTECTED);
-                            mod.remove(Modifier.PRIVATE);
-                            mod.remove(Modifier.ABSTRACT);
-                        }
-                        if (mod.contains(Modifier.PRIVATE)) {
-                            mod.remove(Modifier.PRIVATE);
-                            mod.add(Modifier.PROTECTED);
-                        }
-                        MethodTree nju = make.Method(
-                                make.Modifiers(mod),
-                                method.getName(),
-                                method.getReturnType(),
-                                method.getTypeParameters(),
-                                method.getParameters(),
-                                method.getThrows(),
-                                (BlockTree) null,
-                                (ExpressionTree)method.getDefaultValue());
-                        nju = genUtils.importFQNs(nju);
-                        method = genUtils.importComments(method, workingCopy.getTrees().getPath(methodElm).getCompilationUnit());
-                        genUtils.copyComments(method, nju, false);
-                        genUtils.copyComments(method, nju, true);
-                        njuClass = genUtils.insertClassMember(njuClass, nju);
-                        rewrite(tree, njuClass);
-                    } else {                        
-                        Element methodElm = members[i].getElementHandle().resolve(workingCopy);
-                        TreePath mpath = workingCopy.getTrees().getPath(members[i].getElementHandle().resolve(workingCopy));
-                        Tree newMethodTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
-                        newMethodTree = genUtils.importFQNs(newMethodTree);
-                        
-                        if (methodElm.getModifiers().contains(Modifier.PRIVATE)) {
-                            if (members[i].getGroup() == Group.METHOD) {
-                                MethodTree oldOne = (MethodTree) newMethodTree;
-                                MethodTree m = make.Method(
-                                        make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
-                                        oldOne.getName(),
-                                        oldOne.getReturnType(),
-                                        oldOne.getTypeParameters(),
-                                        oldOne.getParameters(),
-                                        oldOne.getThrows(),
-                                        oldOne.getBody(),
-                                        (ExpressionTree) oldOne.getDefaultValue());
-                                genUtils.copyComments(oldOne, m, false);
-                                genUtils.copyComments(oldOne, m, true);
-                                njuClass = genUtils.insertClassMember(njuClass, m);
-                            } else if (members[i].getGroup() == Group.FIELD) {
-                                VariableTree oldOne = (VariableTree) newMethodTree;
-                                VariableTree m = make.Variable(
-                                        make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
-                                        oldOne.getName(),
-                                        oldOne.getType(),
-                                        oldOne.getInitializer());
-                                genUtils.copyComments(oldOne, m, false);
-                                genUtils.copyComments(oldOne, m, true);
-                                njuClass = genUtils.insertClassMember(njuClass, m);
-                            } else if (members[i].getGroup() == Group.TYPE) {
-                                ClassTree oldOne = (ClassTree) newMethodTree;
-                                Tree m = null;
-                                switch (methodElm.getKind()) {
-                                    case CLASS:
-                                        m = make.Class(
-                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
-                                                oldOne.getSimpleName(),
-                                                oldOne.getTypeParameters(),
-                                                oldOne.getExtendsClause(),
-                                                oldOne.getImplementsClause(),
-                                                oldOne.getMembers());
-                                        break;
-                                    case INTERFACE:
-                                        m = make.Interface(
-                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
-                                                oldOne.getSimpleName(),
-                                                oldOne.getTypeParameters(),
-                                                oldOne.getImplementsClause(),
-                                                oldOne.getMembers());
-                                        break;
-                                    case ANNOTATION_TYPE:
-                                        m = make.AnnotationType(
-                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
-                                                oldOne.getSimpleName(),
-                                                oldOne.getMembers());
-                                        break;
-                                    case ENUM:
-                                        m = make.Enum(
-                                                make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
-                                                oldOne.getSimpleName(),
-                                                oldOne.getImplementsClause(),
-                                                oldOne.getMembers());
-                                        break;
-                                }
-                                                                
-                                genUtils.copyComments(oldOne, m, false);
-                                genUtils.copyComments(oldOne, m, true);
-                                njuClass = genUtils.insertClassMember(njuClass, m);
-                                
+                        ModifiersTree modifiers = make.Modifiers(mod);
+                        rewrite(njuClass.getModifiers(), modifiers);
+                    }
+                    
+                    Element methodElm = members[i].getElementHandle().resolve(workingCopy);
+                    MethodTree method = (MethodTree) workingCopy.getTrees().getTree(methodElm);
+                    Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
+                    mod.add(Modifier.ABSTRACT);
+                    mod.remove(Modifier.FINAL);
+                    // abstract method cannot be synchronized
+                    mod.remove(Modifier.SYNCHRONIZED);
+                    if (el.getKind().isInterface()) {
+                        mod.remove(Modifier.PUBLIC);
+                        mod.remove(Modifier.PROTECTED);
+                        mod.remove(Modifier.PRIVATE);
+                        mod.remove(Modifier.ABSTRACT);
+                    }
+                    if (mod.contains(Modifier.PRIVATE)) {
+                        mod.remove(Modifier.PRIVATE);
+                        mod.add(Modifier.PROTECTED);
+                    }
+                    MethodTree nju = make.Method(
+                            make.Modifiers(mod),
+                            method.getName(),
+                            method.getReturnType(),
+                            method.getTypeParameters(),
+                            method.getParameters(),
+                            method.getThrows(),
+                            (BlockTree) null,
+                            (ExpressionTree)method.getDefaultValue());
+                    nju = genUtils.importFQNs(nju);
+                    method = genUtils.importComments(method, workingCopy.getTrees().getPath(methodElm).getCompilationUnit());
+                    genUtils.copyComments(method, nju, false);
+                    genUtils.copyComments(method, nju, true);
+                    njuClass = genUtils.insertClassMember(njuClass, nju);
+                    rewrite(tree, njuClass);
+                } else {                        
+                    Element methodElm = members[i].getElementHandle().resolve(workingCopy);
+                    TreePath mpath = workingCopy.getTrees().getPath(members[i].getElementHandle().resolve(workingCopy));
+                    Tree newMethodTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
+                    newMethodTree = genUtils.importFQNs(newMethodTree);
+                    
+                    if (methodElm.getModifiers().contains(Modifier.PRIVATE)) {
+                        if (members[i].getGroup() == Group.METHOD) {
+                            MethodTree oldOne = (MethodTree) newMethodTree;
+                            MethodTree m = make.Method(
+                                    make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                    oldOne.getName(),
+                                    oldOne.getReturnType(),
+                                    oldOne.getTypeParameters(),
+                                    oldOne.getParameters(),
+                                    oldOne.getThrows(),
+                                    oldOne.getBody(),
+                                    (ExpressionTree) oldOne.getDefaultValue());
+                            genUtils.copyComments(oldOne, m, false);
+                            genUtils.copyComments(oldOne, m, true);
+                            njuClass = genUtils.insertClassMember(njuClass, m);
+                        } else if (members[i].getGroup() == Group.FIELD) {
+                            VariableTree oldOne = (VariableTree) newMethodTree;
+                            VariableTree m = make.Variable(
+                                    make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                    oldOne.getName(),
+                                    oldOne.getType(),
+                                    oldOne.getInitializer());
+                            genUtils.copyComments(oldOne, m, false);
+                            genUtils.copyComments(oldOne, m, true);
+                            njuClass = genUtils.insertClassMember(njuClass, m);
+                        } else if (members[i].getGroup() == Group.TYPE) {
+                            ClassTree oldOne = (ClassTree) newMethodTree;
+                            Tree m = null;
+                            switch (methodElm.getKind()) {
+                                case CLASS:
+                                    m = make.Class(
+                                            make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                            oldOne.getSimpleName(),
+                                            oldOne.getTypeParameters(),
+                                            oldOne.getExtendsClause(),
+                                            oldOne.getImplementsClause(),
+                                            oldOne.getMembers());
+                                    break;
+                                case INTERFACE:
+                                    m = make.Interface(
+                                            make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                            oldOne.getSimpleName(),
+                                            oldOne.getTypeParameters(),
+                                            oldOne.getImplementsClause(),
+                                            oldOne.getMembers());
+                                    break;
+                                case ANNOTATION_TYPE:
+                                    m = make.AnnotationType(
+                                            make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                            oldOne.getSimpleName(),
+                                            oldOne.getMembers());
+                                    break;
+                                case ENUM:
+                                    m = make.Enum(
+                                            make.addModifiersModifier(make.removeModifiersModifier(oldOne.getModifiers(), Modifier.PRIVATE), Modifier.PROTECTED),
+                                            oldOne.getSimpleName(),
+                                            oldOne.getImplementsClause(),
+                                            oldOne.getMembers());
+                                    break;
                             }
-                        } else {
-                            njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
+                                                            
+                            genUtils.copyComments(oldOne, m, false);
+                            genUtils.copyComments(oldOne, m, true);
+                            njuClass = genUtils.insertClassMember(njuClass, m);
+                            
                         }
-                        rewrite(tree, njuClass);
-                        if (methodElm.getModifiers().contains(Modifier.ABSTRACT)  && !classIsAbstract) {
-                            classIsAbstract = true;
-                            Set<Modifier> mod = new HashSet<Modifier>(tree.getModifiers().getFlags());
-                            mod.add(Modifier.ABSTRACT);
-                            mod.remove(Modifier.FINAL);
-                            ModifiersTree modifiers = make.Modifiers(mod);
-                            rewrite(tree.getModifiers(), modifiers);
-                        }
+                    } else {
+                        njuClass = genUtils.insertClassMember(njuClass, newMethodTree);
                     }
-                }
-            }
-            try {
-                if (imports.size() > 0) {
-                    CompilationUnitTree newCut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
-                    rewrite(workingCopy.getCompilationUnit(), newCut);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        } else {
-            for (int i=0; i<members.length; i++) {
-                if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
-                    for (Tree t:njuClass.getImplementsClause()) {
-                        Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
-                        if (currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
-                            njuClass = make.removeClassImplementsClause(njuClass, t);
-                            rewrite(tree, njuClass);
-                        }
-                    }
-                } else {
-                    Element current = workingCopy.getTrees().getElement(getCurrentPath());
-                    Element currentMember = members[i].getElementHandle().resolve(workingCopy);
-                    if (currentMember.getEnclosingElement().equals(current)) {
-                        if (classIsAbstract || !members[i].isMakeAbstract()
-                                || (currentMember.getModifiers().contains(Modifier.ABSTRACT) && targetType.getKind().isInterface())) {
-                            // in case of interface always remove pulled method
-                            njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
-                            rewrite(tree, njuClass);
-                        } else if (members[i].isMakeAbstract() && currentMember.getModifiers().contains(Modifier.PRIVATE)) {
-                            MethodTree method = (MethodTree) workingCopy.getTrees().getTree(currentMember);
-                            ModifiersTree mods = make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE);
-                            mods = make.addModifiersModifier(mods, targetType.getKind().isInterface() ? Modifier.PUBLIC:Modifier.PROTECTED);
-                            rewrite(method.getModifiers(), mods);
-                        }
+                    rewrite(tree, njuClass);
+                    if (methodElm.getModifiers().contains(Modifier.ABSTRACT)  && !classIsAbstract) {
+                        classIsAbstract = true;
+                        Set<Modifier> mod = new HashSet<Modifier>(tree.getModifiers().getFlags());
+                        mod.add(Modifier.ABSTRACT);
+                        mod.remove(Modifier.FINAL);
+                        ModifiersTree modifiers = make.Modifiers(mod);
+                        rewrite(tree.getModifiers(), modifiers);
                     }
                 }
             }
         }
-        return super.visitClass(tree, p);
+        try {
+            if (imports.size() > 0) {
+                CompilationUnitTree newCut = RefactoringUtils.addImports(workingCopy.getCompilationUnit(), imports, make);
+                rewrite(workingCopy.getCompilationUnit(), newCut);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void removeMembersFromSource(ClassTree njuClass, ClassTree tree, boolean classIsAbstract) {
+        for (int i=0; i<members.length; i++) {
+            if (members[i].getGroup()==MemberInfo.Group.IMPLEMENTS) {
+                for (Tree t:njuClass.getImplementsClause()) {
+                    Element currentInterface = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
+                    if (currentInterface.equals(members[i].getElementHandle().resolve(workingCopy))) {
+                        njuClass = make.removeClassImplementsClause(njuClass, t);
+                        rewrite(tree, njuClass);
+                    }
+                }
+            } else {
+                Element current = workingCopy.getTrees().getElement(getCurrentPath());
+                Element currentMember = members[i].getElementHandle().resolve(workingCopy);
+                if (currentMember.getEnclosingElement().equals(current)) {
+                    if (classIsAbstract || !members[i].isMakeAbstract()
+                            || (currentMember.getModifiers().contains(Modifier.ABSTRACT) && targetType.getKind().isInterface())) {
+                        // in case of interface always remove pulled method
+                        njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
+                        rewrite(tree, njuClass);
+                    } else if (members[i].isMakeAbstract() && currentMember.getModifiers().contains(Modifier.PRIVATE)) {
+                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(currentMember);
+                        ModifiersTree mods = make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE);
+                        mods = make.addModifiersModifier(mods, targetType.getKind().isInterface() ? Modifier.PUBLIC:Modifier.PROTECTED);
+                        rewrite(method.getModifiers(), mods);
+                    }
+                }
+            }
+        }
     }
     
 }

@@ -68,8 +68,18 @@ public class PullUpTest extends RefactoringTestBase {
 
     public PullUpTest(String name) {
         super(name);
-   }
-    
+    }
+
+    public void test212934() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A { }"),
+                new File("pullup/B.java", "package pullup; import java.io.Serializable; public class B extends A implements Serializable { } class T implements Serializable { }"));
+        performPullUpImplements(src.getFileObject("pullup/B.java"), 0);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; import java.io.Serializable; public class A implements Serializable { }"),
+                new File("pullup/B.java", "package pullup; import java.io.Serializable; public class B extends A { } class T implements Serializable { }"));
+    }
+
     public void test206683() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public class A extends B { public int i; }"),
@@ -186,10 +196,10 @@ public class PullUpTest extends RefactoringTestBase {
                 + "\n"
                 + "}"));
     }
-    
+
     public void testPullUpAllComments() throws Exception { // #210915 - Refactoring Pull Up Leaves Single Comment in Sub Class
         writeFilesAndWaitForScan(src, new File("t/SuperClass.java",
-                  "/*\n"
+                "/*\n"
                 + " * To change this template, choose Tools | Templates\n"
                 + " * and open the template in the editor.\n"
                 + " */\n"
@@ -248,7 +258,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "}"));
         performPullUp(src.getFileObject("t/SuperClass.java"), -1, Boolean.FALSE);
         verifyContent(src, new File("t/SuperClass.java",
-                  "/*\n"
+                "/*\n"
                 + " * To change this template, choose Tools | Templates\n"
                 + " * and open the template in the editor.\n"
                 + " */\n"
@@ -446,7 +456,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "public interface PullUpSuperIface {\n"
                 + "}"));
         performPullUpIface(src.getFileObject("pullup/PullUpBaseClass.java"), 2, 0, Boolean.TRUE);
-            verifyContent(src,
+        verifyContent(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
                 + "\n"
                 + "public class PullUpBaseClass implements PullUpSuperIface {\n"
@@ -584,7 +594,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "    public abstract void method();\n"
                 + "}"));
     }
-    
+
     public void testPullUpAbsMethod() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
@@ -712,7 +722,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "public interface PullUpSuperIface {\n"
                 + "}"));
         performPullUpIface(src.getFileObject("pullup/PullUpBaseClass.java"), 2, 0, Boolean.TRUE);
-            verifyContent(src,
+        verifyContent(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
                 + "\n"
                 + "public abstract class PullUpBaseClass implements PullUpSuperIface {\n"
@@ -745,8 +755,8 @@ public class PullUpTest extends RefactoringTestBase {
                 + "}"));
     }
 
-        public void testPullUpInterface() throws Exception {
-            writeFilesAndWaitForScan(src,
+    public void testPullUpInterface() throws Exception {
+        writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public class A extends B implements Runnable { public void run() { } }"),
                 new File("pullup/B.java", "package pullup; public class B { }"));
         performPullUpImplements(src.getFileObject("pullup/A.java"), 0);
@@ -786,7 +796,7 @@ public class PullUpTest extends RefactoringTestBase {
                 new File("pullup/A.java", "package pullup; public class A extends B { private method() { foo() } }"),
                 new File("pullup/B.java", "package pullup; public class B { protected void foo() { } }"));
     }
-        
+
     private void performPullUpImplements(FileObject source, final int position, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
@@ -795,14 +805,14 @@ public class PullUpTest extends RefactoringTestBase {
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = info.getCompilationUnit();
-                
+
                 final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
-                
+
                 TypeMirror superclass = classEl.getSuperclass();
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
-                
+
                 MemberInfo[] members = new MemberInfo[1];
                 TypeMirror implementedInterface = classEl.getInterfaces().get(position);
                 members[0] = MemberInfo.create(RefactoringUtils.typeToElement(implementedInterface, info), info, MemberInfo.Group.IMPLEMENTS);
@@ -812,7 +822,7 @@ public class PullUpTest extends RefactoringTestBase {
                 r[0].setMembers(members);
             }
         }, true);
-        
+
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 
@@ -826,23 +836,22 @@ public class PullUpTest extends RefactoringTestBase {
 
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
-    
+
     private void performPullUpIface(FileObject source, final int position, final int iface, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
-
             @Override
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = info.getCompilationUnit();
-                
+
                 final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
-                
+
                 TypeMirror superclass = classEl.getInterfaces().get(iface);
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
-                
+
                 MemberInfo[] members = new MemberInfo[1];
                 Tree member = classTree.getMembers().get(position);
                 Element el = info.getTrees().getElement(new TreePath(classPath, member));
@@ -854,7 +863,7 @@ public class PullUpTest extends RefactoringTestBase {
                 r[0].setMembers(members);
             }
         }, true);
-        
+
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 
@@ -868,7 +877,7 @@ public class PullUpTest extends RefactoringTestBase {
 
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
-    
+
     private void performPullUp(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
@@ -877,14 +886,14 @@ public class PullUpTest extends RefactoringTestBase {
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = info.getCompilationUnit();
-                
+
                 final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
-                
+
                 TypeMirror superclass = classEl.getSuperclass();
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
-                
+
                 MemberInfo[] members;
                 if(position < 0) {
                     List<? extends Tree> classMembers = classTree.getMembers();
@@ -911,7 +920,7 @@ public class PullUpTest extends RefactoringTestBase {
                 r[0].setMembers(members);
             }
         }, true);
-        
+
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 
@@ -925,7 +934,7 @@ public class PullUpTest extends RefactoringTestBase {
 
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
-    
+
     private void performPullUpSuper(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
@@ -934,16 +943,16 @@ public class PullUpTest extends RefactoringTestBase {
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = info.getCompilationUnit();
-                
+
                 final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 final TreePath classPath = info.getTrees().getPath(cut, classTree);
                 TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
-                
+
                 TypeMirror superclass = classEl.getSuperclass();
                 TypeElement superEl = (TypeElement) info.getTypes().asElement(superclass);
                 TypeMirror supersuperclass = superEl.getSuperclass();
                 TypeElement supersuperEl = (TypeElement) info.getTypes().asElement(supersuperclass);
-                
+
                 MemberInfo[] members = new MemberInfo[1];
                 Tree member = classTree.getMembers().get(position);
                 Element el = info.getTrees().getElement(new TreePath(classPath, member));
@@ -955,7 +964,7 @@ public class PullUpTest extends RefactoringTestBase {
                 r[0].setMembers(members);
             }
         }, true);
-        
+
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 
