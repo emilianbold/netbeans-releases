@@ -291,66 +291,6 @@ public class HibernateCodeGenWizard implements WizardDescriptor.ProgressInstanti
             ((TemplateWizard) wiz).setTargetName(targetName);
         }
     }
-    
-    private boolean checkConfig(FileObject revengFile){
-        JDBCMetaDataConfiguration cfg;
-        ReverseEngineeringSettings settings;
-        ClassLoader oldClassLoader = null;
-
-        File confFile = FileUtil.toFile(helper.getConfigurationFile());
-        try {
-
-            // Setup classloader.
-            logger.info("Setting up classloader");
-            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
-            ClassLoader ccl = env.getProjectClassLoader(
-                    env.getProjectClassPath(revengFile).toArray(new URL[]{}));
-            oldClassLoader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(ccl);
-
-            // Configuring the reverse engineering strategy
-            try {
-
-                cfg = new JDBCMetaDataConfiguration();
-
-                DefaultReverseEngineeringStrategy defaultStrategy = new DefaultReverseEngineeringStrategy();
-                ReverseEngineeringStrategy revStrategy = defaultStrategy;
-                OverrideRepository or = new OverrideRepository();
-                Configuration c = cfg.configure(confFile);
-                or.addFile(FileUtil.toFile(revengFile));
-                revStrategy = or.getReverseEngineeringStrategy(revStrategy);
-
-                settings = new ReverseEngineeringSettings(revStrategy);
-                settings.setDefaultPackageName(helper.getPackageName());
-
-                defaultStrategy.setSettings(settings);
-                revStrategy.setSettings(settings);
-
-                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
-                
-                DataObject confDataObject = DataObject.find(helper.getConfigurationFile());
-                HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
-                HibernateConfiguration hibConf = hco.getHibernateConfiguration();
-                DatabaseConnection dbconn = HibernateUtil.getDBConnection(hibConf);
-                if (dbconn != null) {
-                    dbconn.getJDBCConnection();
-                }
-                
-                cfg.readFromJDBC();
-                cfg.buildMappings();                
-            } catch(HibernateException e) {
-                logger.log(Level.WARNING, "Error in hibernate initialization: {0}", e.getMessage());//NOI18N
-                throw e;
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-
-
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldClassLoader);
-        }
-        return true;
-    }
 
     // Generates POJOs and hibernate mapping files based on a .reveng.xml file
     public void generateClasses(FileObject revengFile, ProgressHandle handle) throws IOException {
