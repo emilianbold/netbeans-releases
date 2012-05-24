@@ -427,7 +427,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             int from = comments[i];
             int to = comments[++i];
 
-            if (from <= offset && to > offset && (commentEnd == null || offset < (to - commentEnd.length()))) { //end offset exclusive
+            if (from <= offset && to > offset && (commentEnd == null || offset <= (to - commentEnd.length()))) { //end offset exclusive
                 return new int[]{from, to};
             }
         }
@@ -441,7 +441,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         int lastCommentStartIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentStartDelimiter(), offset);
         int lastCommentEndIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentEndDelimiter(), offset);
 
-        return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1);
+        return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1 || lastCommentEndIndex == offset);
 
     }
 
