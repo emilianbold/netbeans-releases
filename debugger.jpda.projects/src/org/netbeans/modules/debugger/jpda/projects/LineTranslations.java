@@ -55,16 +55,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
@@ -307,7 +310,7 @@ class LineTranslations {
             blu = lineUpdaters.remove(lb);
         }
         if (blu != null) {
-            blu.detach();
+            blu.destroy();
         }
         //if (timeStampToRegistry.isEmpty () && translatedBreakpoints.isEmpty()) {
         //    DataObject.getRegistry ().removeChangeListener (changedFilesListener);
@@ -384,6 +387,8 @@ class LineTranslations {
         public BreakpointLineUpdater(LineBreakpoint lb, DataObject dataObject) {
             this.lb = lb;
             this.dataObject = dataObject;
+            DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+            des.addPropertyChangeListener(this);
         }
         
         public synchronized void attach() throws IOException {
@@ -404,6 +409,12 @@ class LineTranslations {
                 line.removePropertyChangeListener(this);
             }
         }
+        
+        public void destroy() {
+            detach();
+            DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+            des.removePropertyChangeListener(this);
+        }
 
         private void update(Line l) {
             try {
@@ -423,10 +434,34 @@ class LineTranslations {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
+            if (EditorCookie.Observable.PROP_OPENED_PANES.equals(propertyName)) {
+                DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+                JEditorPane[] openedPanes = des.getOpenedPanes();
+                if (openedPanes == null) {
+                    synchronized (this) {
+                        if (line != null) {
+                            detach();
+                            line = null;
+                        }
+                    }
+                } else {
+                    synchronized (this) {
+                        if (line == null) {
+                            try {
+                                attach();
+                            } catch (IOException ioex) {}
+                        }
+                    }
+                }
+                return ;
+            }
             Line l;
             boolean ul;
             synchronized (this) {
                 l = this.line;
+                if (l == null) {
+                    return ;
+                }
                 ul = this.updatingLine;
             }
             if (Line.PROP_LINE_NUMBER.equals(propertyName) && l == evt.getSource()) {
@@ -486,6 +521,9 @@ class LineTranslations {
                 }
             }
             if (LineBreakpoint.PROP_URL.equals(propertyName)) {
+                DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+                des.removePropertyChangeListener(this);
+
                 DataObject newDO = getDataObject(lb.getURL());
                 Line newLine;
                 if (newDO != null) {
@@ -512,6 +550,8 @@ class LineTranslations {
                     // attach
                     this.line = newLine;
                 }
+                des = newDO.getLookup().lookup(DataEditorSupport.class);
+                des.addPropertyChangeListener(this);
             }
         }
         
