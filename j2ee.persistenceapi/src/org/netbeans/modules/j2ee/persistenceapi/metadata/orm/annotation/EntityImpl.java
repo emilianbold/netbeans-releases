@@ -355,6 +355,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     @Override
     public void setNamedQuery(int index, NamedQuery value) {
+        if(nqs == null) nqs = new ArrayList<NamedQuery>();
         nqs.set(index, value); // NOI18N
     }
 
@@ -375,7 +376,7 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     @Override
     public NamedQuery[] getNamedQuery() {
-        return nqs.toArray(new NamedQuery[]{}); // NOI18N
+        return nqs!=null ? nqs.toArray(new NamedQuery[]{}) : new NamedQuery[]{}; // NOI18N
     }
 
     @Override

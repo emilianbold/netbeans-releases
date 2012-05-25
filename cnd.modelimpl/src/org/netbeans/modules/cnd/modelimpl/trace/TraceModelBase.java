@@ -43,6 +43,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -202,13 +203,42 @@ public class TraceModelBase {
         return (projectUID == null) ? null : (ProjectBase) projectUID.getObject();
     }
 
+    public ProjectBase reopenProject(NativeProject platformProject) {
+        ProjectBase reopened = model.addProject(platformProject, platformProject.getProjectDisplayName(), true);
+        projectUID = reopened.getUID();
+        return reopened;
+    }
+
     public static void closeProject(CsmProject project) {
         closeProject(project, false);
     }
 
     public static void closeProject(CsmProject project, boolean cleanRepository) {
         Object platformProject = project.getPlatformProject();
+        assert platformProject != null;
         ((ModelImpl) CsmModelAccessor.getModel()).closeProject(platformProject, cleanRepository);
+        Task waitTask = ((ModelImpl) CsmModelAccessor.getModel()).enqueueModelTask(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }, "");
+        waitTask.waitFinished();
+        boolean hasProject;
+        do {
+            hasProject = false;
+            for (CsmProject csmProject : ((ModelImpl) CsmModelAccessor.getModel()).projects()) {
+                if (platformProject.equals(csmProject.getPlatformProject())) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    hasProject = true;
+                    break;
+                }
+            }
+        } while (hasProject);
     }
 
     public void resetProject() {
@@ -254,7 +284,7 @@ public class TraceModelBase {
             wasWait = waitParsed(main, trace);
             if (main.getLibraries().size() > 0) {
                 if (trace) {
-                    System.err.println("checking libraries");
+                    System.err.println("checking libraries for " + main);
                 }
                 for (Iterator<CsmProject> it = main.getLibraries().iterator(); it.hasNext();) {
                     CsmProject lib = it.next();

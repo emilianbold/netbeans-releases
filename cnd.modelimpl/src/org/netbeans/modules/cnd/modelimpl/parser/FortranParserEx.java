@@ -153,11 +153,11 @@ public class FortranParserEx {
 //            int i = 0;
 //            Token token = tokens.get(i);
 //            while (token.getType() != -1) {
-//                System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+//                System.out.println(token.getType() + " " + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
 //                i++;
 //                token = tokens.get(i);
 //            }
-//            System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+//            System.out.println(token.getType() + " " + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
             
         } catch (Throwable t) {
             System.out.println(t);

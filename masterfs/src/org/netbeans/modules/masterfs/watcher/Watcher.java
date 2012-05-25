@@ -123,6 +123,9 @@ public final class Watcher extends AnnotationProvider {
         }
         if (fo.isData()) {
             fo = fo.getParent();
+            if (!fo.isFolder()) {
+                return;
+            }
         }
         ext.unregister(fo);
     }
