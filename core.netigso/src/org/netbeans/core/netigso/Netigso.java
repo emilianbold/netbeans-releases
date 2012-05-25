@@ -590,10 +590,8 @@ implements Cloneable, Stamps.Updater {
         }
         if (netigsoExp != null) {
             man.getMainAttributes().putValue("Export-Package", netigsoExp); // NOI18N
-        } else if (exp != null) {
-            man.getMainAttributes().putValue("Export-Package", substitutePkg(m)); // NOI18N
         } else {
-            man.getMainAttributes().putValue("Export-Package", m.getCodeNameBase()); // NOI18N
+            man.getMainAttributes().putValue("Export-Package", substitutePkg(m)); // NOI18N
         }
         JarOutputStream jos = new JarOutputStream(os, man);
         jos.close();
@@ -723,6 +721,9 @@ implements Cloneable, Stamps.Updater {
                 exported.append(sep).append(p.replace('/', '.'));
                 sep = ",";
             }
+        }
+        if (exported.length() == 0) {
+            exported.append(m.getCodeNameBase());
         }
         return exported.toString();
     }
