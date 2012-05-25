@@ -59,6 +59,7 @@ public interface CsmImageName {
     static final String STRUCT = RESOURCE_BASE+"struct_16.png"; // NOI18N
     static final String UNION = RESOURCE_BASE+"union_16.png"; // NOI18N
     static final String ENUMERATION = RESOURCE_BASE+"enumeration_16.png"; // NOI18N
+    static final String ENUMERATION_FWD = RESOURCE_BASE+"enumeration_fwd_16.png"; // NOI18N
     static final String ENUMERATOR = RESOURCE_BASE+"enumeration_item_16.png"; // NOI18N
     static final String TYPEDEF = RESOURCE_BASE+"typedef_16.png"; // NOI18N
 

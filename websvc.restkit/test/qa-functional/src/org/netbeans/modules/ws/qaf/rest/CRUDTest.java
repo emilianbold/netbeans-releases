@@ -261,6 +261,7 @@ public class CRUDTest extends RestTestBase {
         if (getProjectType().isAntBasedProject()) {
             configureDialogOper.ok();
             OutputTabOperator oto = new OutputTabOperator(getProjectName());
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
             oto.waitText("(total time: "); //NOI18N
         } else {
             // cancel for Maven projects because otherwise it opens browser

@@ -44,7 +44,14 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -56,15 +63,16 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelutil.NamedEntity;
-import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Project implementation
@@ -528,16 +536,8 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             delay = TraceFlags.REPARSE_DELAY;
-            boolean doReparse = NamedEntityOptions.instance().isEnabled(new NamedEntity() {
-                @Override
-                public String getName() {
-                    return "reparse-on-document-changed"; //NOI18N
-                }
-                @Override
-                public boolean isEnabledByDefault() {
-                    return true;
-                }
-            });
+            NamedOption.getAccessor().getBoolean(ReparseOnEditOption.NAME);
+            boolean doReparse = NamedOption.getAccessor().getBoolean(ReparseOnEditOption.NAME);
             if (doReparse) {
                 if (file.getLastParseTime() / (delay+1) > 2) {
                     delay = Math.max(delay, file.getLastParseTime()+2000);
@@ -557,6 +557,35 @@ public final class ProjectImpl extends ProjectBase {
                 task.cancelTask();
             }
             editedFiles.clear();
+        }
+    }
+
+    @ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=1200)
+    public static final class ReparseOnEditOption extends NamedOption {
+        private static final String NAME = "reparse-on-document-changed"; //NOI18N
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(ProjectImpl.class, "Show-reparse-on-document-changed"); //NOI18N
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(ProjectImpl.class, "Show-reparse-on-document-changed-AD"); //NOI18N
+        }
+
+        @Override
+        public OptionKind getKind() {
+            return OptionKind.Boolean;
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return true;
         }
     }
 }

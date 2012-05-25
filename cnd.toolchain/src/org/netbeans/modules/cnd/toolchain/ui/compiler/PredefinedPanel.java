@@ -53,7 +53,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler;
@@ -89,8 +88,6 @@ public class PredefinedPanel extends javax.swing.JPanel {
         updatePanels(false);
 
         resetButton.getAccessibleContext().setAccessibleDescription(getString("RESET_BUTTON_AD"));
-
-        setOpaque(false);
     }
 
     private void updatePanels(final boolean reset) {
@@ -171,23 +168,48 @@ public class PredefinedPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         includes = new javax.swing.JPanel();
         macros = new javax.swing.JPanel();
-        resetButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        resetButton = new javax.swing.JButton();
 
-        setOpaque(false);
+        setLayout(new java.awt.GridBagLayout());
 
-        includes.setBackground(new java.awt.Color(255, 51, 51));
         includes.setOpaque(false);
         includes.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(includes, gridBagConstraints);
 
-        macros.setBackground(new java.awt.Color(204, 204, 0));
         macros.setOpaque(false);
         macros.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        add(macros, gridBagConstraints);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/compiler/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("CODE_ASSISTANCE_COMMENT")); // NOI18N
+        jLabel1.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(jLabel1, gridBagConstraints);
+
         org.openide.awt.Mnemonics.setLocalizedText(resetButton, bundle.getString("RESET_BUTTON_TXT")); // NOI18N
         resetButton.setOpaque(false);
         resetButton.addActionListener(new java.awt.event.ActionListener() {
@@ -195,32 +217,11 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 resetButtonActionPerformed(evt);
             }
         });
-
-        jLabel1.setText(bundle.getString("CODE_ASSISTANCE_COMMENT")); // NOI18N
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
-                .addComponent(macros, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(resetButton)))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(macros, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(resetButton)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(resetButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
@@ -284,10 +285,6 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 setCustomCellRenderer(new MyDefaultListCellRenderer(defs, "include")); // NOI18N
             }
             getDefaultButton().setVisible(false);
-
-            if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-                getDataPanel().setOpaque(false);
-            }
         }
 
         @Override
@@ -427,9 +424,9 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 setCustomCellRenderer(new MyDefaultListCellRenderer(defs, "macro")); // NOI18N
             }
             getDefaultButton().setVisible(false);
-            if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-                getDataPanel().setOpaque(false);
-            }
+            getUpButton().setVisible(false);
+            getDownButton().setVisible(false);
+            getCopyButton().setVisible(false);
         }
 
         @Override
@@ -468,19 +465,6 @@ public class PredefinedPanel extends javax.swing.JPanel {
         @Override
         public char getAddButtonMnemonics() {
             return getString("MAddButtonMn").charAt(0); // NOI18N
-        }
-
-        @Override
-        public char getCopyButtonMnemonics() {
-            return getString("MCopyButtonMn").charAt(0); // NOI18N
-        }
-
-        @Override
-        public String copyAction(String o) {
-            if (defs != null) {
-                defs.setUserAdded(true, getListDataSize());
-            }
-            return o;
         }
 
         @Override
@@ -526,37 +510,6 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 }
             }
         }
-
-        @Override
-        public char getUpButtonMnemonics() {
-            return getString("MUpButtonMn").charAt(0); // NOI18N
-        }
-
-        @Override
-        public void upAction(int from) {
-            if (defs != null) {
-                boolean fromValue = defs.isUserAdded(from);
-                boolean toValue = defs.isUserAdded(from - 1);
-                defs.setUserAdded(fromValue, from - 1);
-                defs.setUserAdded(toValue, from);
-            }
-        }
-
-        @Override
-        public char getDownButtonMnemonics() {
-            return getString("MDownButtonMn").charAt(0); // NOI18N
-        }
-
-        @Override
-        public void downAction(int from) {
-            if (defs != null) {
-                boolean fromValue = defs.isUserAdded(from);
-                boolean toValue = defs.isUserAdded(from + 1);
-                defs.setUserAdded(fromValue, from + 1);
-                defs.setUserAdded(toValue, from);
-            }
-        }
-
     }
 
     private static final class MyDefaultListCellRenderer extends DefaultListCellRenderer {
