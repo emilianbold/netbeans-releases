@@ -245,6 +245,7 @@ public class PhpParserErrorTest extends PHPTestBase {
     }
 
     public void testIssue198572() throws Exception {
+        // fails on Mac
         checkErrors("testfiles/parser/issue198572.php");
     }
 }
