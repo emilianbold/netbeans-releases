@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -107,6 +108,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
@@ -650,7 +652,11 @@ abstract public class CsmCompletionQuery {
             }
             return ret;
         } else if(CsmKindUtilities.isEnum(classifier)) {
-            ret.addAll(((CsmEnum)classifier).getEnumerators());
+            for (CsmEnumerator enumerator : ((CsmEnum) classifier).getEnumerators()) {
+                if (CsmSortUtilities.matchName(enumerator.getName(), name, exactMatch, exactMatch)) {
+                    ret.add(enumerator);
+                }
+            }
             return ret;
         }
         return ret;
@@ -975,6 +981,11 @@ abstract public class CsmCompletionQuery {
                     }
                 } else {
                     visibleObjects.add(elem);
+                }
+            } else if (CsmKindUtilities.isEnumForwardDeclaration(elem) || CsmClassifierResolver.getDefault().isForwardEnum(elem)) {
+                if (!hasClassifier.get()) {
+                    visibleObjects.add(elem);
+                    td.add(elem);
                 }
             } else if (CsmKindUtilities.isClassForwardDeclaration(elem) || CsmClassifierResolver.getDefault().isForwardClass(elem)) {
                 if (!hasClassifier.get()) {
@@ -2740,6 +2751,8 @@ abstract public class CsmCompletionQuery {
 
         public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN);
 
+        public CsmResultItem.ForwardEnumResultItem createForwardEnumResultItem(CsmEnumForwardDeclaration cls, int classDisplayOffset, boolean displayFQN);
+
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
 
         public CsmResultItem.EnumeratorResultItem createFileLocalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN);
@@ -2833,6 +2846,11 @@ abstract public class CsmCompletionQuery {
         @Override
         public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN) {
             return new CsmResultItem.ForwardClassResultItem(cls, classDisplayOffset, displayFQN, FAKE_PRIORITY);
+        }
+
+        @Override
+        public CsmResultItem.ForwardEnumResultItem createForwardEnumResultItem(CsmEnumForwardDeclaration cls, int classDisplayOffset, boolean displayFQN) {
+            return new CsmResultItem.ForwardEnumResultItem(cls, classDisplayOffset, displayFQN, FAKE_PRIORITY);
         }
 
         @Override
@@ -2982,6 +3000,8 @@ abstract public class CsmCompletionQuery {
                 return getCsmItemFactory().createClassResultItem((CsmClass) csmObj, classDisplayOffset, false);
             } else if (CsmKindUtilities.isClassForwardDeclaration(csmObj)) {
                 return getCsmItemFactory().createForwardClassResultItem((CsmClassForwardDeclaration) csmObj, classDisplayOffset, false);
+            } else if (CsmKindUtilities.isEnumForwardDeclaration(csmObj)) {
+                return getCsmItemFactory().createForwardEnumResultItem((CsmEnumForwardDeclaration) csmObj, classDisplayOffset, false);
             } else if (CsmKindUtilities.isField(csmObj)) {
                 return getCsmItemFactory().createFieldResultItem((CsmField) csmObj);
             } else if (CsmKindUtilities.isConstructor(csmObj)) { // must be checked before isMethod, because constructor is method too
@@ -3065,6 +3085,14 @@ abstract public class CsmCompletionQuery {
                 CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) elem;
                 if (fd.getCsmClass() != null) {
                     item = factory.createClassResultItem(fd.getCsmClass(), classDisplayOffset, false);
+                } else {
+                    // TODO fix me!
+                    continue;
+                }
+            } else if (CsmKindUtilities.isEnumForwardDeclaration(elem)) {
+                CsmEnumForwardDeclaration fd = (CsmEnumForwardDeclaration) elem;
+                if (fd.getCsmEnum() != null) {
+                    item = factory.createEnumResultItem(fd.getCsmEnum(), classDisplayOffset, false);
                 } else {
                     // TODO fix me!
                     continue;

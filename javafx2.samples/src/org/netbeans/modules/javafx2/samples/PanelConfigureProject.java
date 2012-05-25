@@ -65,7 +65,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     private final String title;
     private WizardDescriptor wizardDescriptor;
     private PanelConfigureProjectVisual component;
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     /** Create the wizard panel descriptor. */
     public PanelConfigureProject(String title) {
@@ -113,7 +113,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
@@ -138,7 +138,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
-        ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
+        d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     
 }

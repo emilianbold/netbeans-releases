@@ -50,11 +50,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import javax.swing.JFileChooser;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -64,19 +62,19 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -87,22 +85,14 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     private final SelectModeDescriptorPanel controller;
     private volatile boolean initialized = false;
+    private static final String SOURCES_FILE_KEY = "sourcesField"; // NOI18N
+    private ExecutionEnvironment env;
+    private FileSystem fileSystem;
 
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeDescriptorPanel controller) {
         this.controller = controller;
         initComponents();
-        sourceFolderLabel.setVisible(controller.isFullRemote());
-        sourceFolder.setVisible(controller.isFullRemote());
-        sourceBrowseButton.setVisible(controller.isFullRemote());
-        if (!controller.isFullRemote()) {
-            // the same dir is ised for both project metadata and existing sources;
-            // but "existing sources" in more clear title
-            projectFolderLabel.setText(sourceFolderLabel.getText());
-            if (controller.getExistingFolder() != null) {
-                projectFolder.setText(controller.getExistingFolder());
-            }
-        }
         instructions.setEditorKit(new HTMLEditorKit());
         instructions.setBackground(instructionPanel.getBackground());
         disableHostSensitiveComponents();
@@ -110,42 +100,17 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     private void addListeners(){
-        projectFolder.getDocument().addDocumentListener(new DocumentAdapter() {
+        ((EditableComboBox)sourceFolder).addChangeListener(new ActionListener() {
             @Override
-            protected void update(DocumentEvent e) {
-                String path = projectFolder.getText();
-                controller.getWizardStorage().setProjectPath(path);
-                if (!controller.isFullRemote()) {
-                    if (!path.isEmpty()) {
-                        String normalizedPath = CndFileUtils.normalizeAbsolutePath(path);
-                        controller.getWizardStorage().setSourcesFileObject(CndFileUtils.toFileObject(normalizedPath));
-                    }
-                }
-                updateInstruction();
-            }
-        });
-        sourceFolder.getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void update(DocumentEvent e) {
-                String path = sourceFolder.getText();
+            public void actionPerformed(ActionEvent e) {
+                String path = ((EditableComboBox)sourceFolder).getText();
                 FileObject fileObject;
-                String projectName = null;
                 if (path.isEmpty()) {
                     fileObject = null;
                 } else {
-                    //fileObject = RemoteFileUtil.getFileObject(path, env,
-                    ExecutionEnvironment env = getSelectedExecutionEnvironment();
-                    fileObject = RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
-                    projectName = (fileObject == null) ? null : fileObject.getNameExt();
+                    fileObject = fileSystem.findResource(path);
                 }
                 controller.getWizardStorage().setSourcesFileObject(fileObject);
-                if (projectFolder.getText().isEmpty()) {
-                    if (projectName != null && ! projectName.isEmpty() ) {
-                        File projectLocation = ProjectChooser.getProjectsFolder();
-                        File projectFile = CndFileUtils.createLocalFile(projectLocation, projectName);
-                        projectFolder.setText(projectFile.getAbsolutePath());
-                    }
-                }
                 updateInstruction();
             }
         });
@@ -218,16 +183,13 @@ public class SelectModePanel extends javax.swing.JPanel {
         simpleMode = new javax.swing.JRadioButton();
         advancedMode = new javax.swing.JRadioButton();
         modeLabel = new javax.swing.JLabel();
-        projectFolderLabel = new javax.swing.JLabel();
-        projectFolder = new javax.swing.JTextField();
-        projectBrowseButton = new javax.swing.JButton();
         toolchainComboBox = new javax.swing.JComboBox();
         toolchainLabel = new javax.swing.JLabel();
         hostComboBox = new javax.swing.JComboBox();
         hostLabel = new javax.swing.JLabel();
         sourceFolderLabel = new javax.swing.JLabel();
-        sourceFolder = new javax.swing.JTextField();
         sourceBrowseButton = new javax.swing.JButton();
+        sourceFolder = new EditableComboBox();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
@@ -247,7 +209,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -263,7 +225,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         simpleMode.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
@@ -275,7 +237,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         advancedMode.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
@@ -284,52 +246,23 @@ public class SelectModePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(modeLabel, bundle.getString("SelectModeLabelText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(modeLabel, gridBagConstraints);
-
-        projectFolderLabel.setLabelFor(projectFolder);
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_PROJECT_FOLDER")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(projectFolderLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(projectFolder, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(projectBrowseButton, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_BROWSE_PROJECT_FOLDER")); // NOI18N
-        projectBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                projectBrowseButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        add(projectBrowseButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(toolchainComboBox, gridBagConstraints);
 
+        toolchainLabel.setLabelFor(toolchainComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(toolchainLabel, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "LBL_TOOLCHAIN")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
         add(toolchainLabel, gridBagConstraints);
@@ -341,22 +274,22 @@ public class SelectModePanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(hostComboBox, gridBagConstraints);
 
+        hostLabel.setLabelFor(hostComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "LBL_HOST")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
         add(hostLabel, gridBagConstraints);
 
-        sourceFolderLabel.setLabelFor(projectFolder);
+        sourceFolderLabel.setLabelFor(sourceFolder);
         org.openide.awt.Mnemonics.setLocalizedText(sourceFolderLabel, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_SOURCES_FOLDER")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -364,14 +297,6 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceFolderLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(sourceFolder, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(sourceBrowseButton, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "SELECT_MODE_BROWSE_PROJECT_FOLDER")); // NOI18N
         sourceBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -382,31 +307,18 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(sourceBrowseButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        add(sourceFolder, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void projectBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectBrowseButtonActionPerformed
-        String seed = projectFolder.getText();
-        JFileChooser fileChooser;
-        String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_BUTTON_TXT"); // NOI18N
-        fileChooser = new FileChooser( // Sic! - project is always local
-                NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
-                approveButtonText,
-                JFileChooser.DIRECTORIES_ONLY,
-                null,
-                seed,
-                false);
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
-        File selectedFile = fileChooser.getSelectedFile();
-        if (selectedFile != null) { // seems paranoidal, but once I've seen NPE otherwise 8-()
-            String path = selectedFile.getPath();
-            projectFolder.setText(path);
-        }
-}//GEN-LAST:event_projectBrowseButtonActionPerformed
 
     private void hostComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_hostComboBoxItemStateChanged
         if (!initialized) {
@@ -420,8 +332,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 }//GEN-LAST:event_hostComboBoxItemStateChanged
 
     private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceBrowseButtonActionPerformed
-        CndUtils.assertTrue(controller.isFullRemote());
-        String seed = sourceFolder.getText();
+        String seed = ((EditableComboBox)sourceFolder).getText();
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_BUTTON_TXT"); // NOI18N
         String title = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"); //NOI18N
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
@@ -439,13 +350,25 @@ public class SelectModePanel extends javax.swing.JPanel {
         File selectedFile = fileChooser.getSelectedFile();
         if (selectedFile != null) { // seems paranoidal, but once I've seen NPE otherwise 8-()
             String path = selectedFile.getPath();
-            sourceFolder.setText(path);
+            ((EditableComboBox)sourceFolder).setText(path);
         }
     }//GEN-LAST:event_sourceBrowseButtonActionPerformed
     
     void read(WizardDescriptor wizardDescriptor) {
         initialized = false;
         updateControls();
+
+        env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+        if (env != null) {
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(env));
+        } else {
+            env = ExecutionEnvironmentFactory.getLocal();
+        }
+        fileSystem = FileSystemProvider.getFileSystem(env);
+        ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
+        String binary = "";
+        ((EditableComboBox)sourceFolder).read(binary);
+        
         String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean isDefaultCompilerSet = Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
@@ -461,7 +384,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
     void updateControls() {
         updateInstruction();
     }
@@ -480,19 +403,20 @@ public class SelectModePanel extends javax.swing.JPanel {
         return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
-
     void store(WizardDescriptor wizardDescriptor) {
         if (simpleMode.isSelected()) {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim());
-        String folderPath = projectFolder.getText().trim();
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, ((EditableComboBox)sourceFolder).getText().trim());
+        ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
+        ((EditableComboBox)sourceFolder).store();
+        String folderPath = ((EditableComboBox)sourceFolder).getText().trim();
         if (CndPathUtilitities.isPathAbsolute(folderPath)) {
-            File file = CndFileUtils.createLocalFile(folderPath);
-            file = FileUtil.normalizeFile(file);
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, file);
+            String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folderPath, env);
+            FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
         }
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
@@ -525,7 +449,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     boolean valid() {
         messageKind = noMessage;
-        String path = projectFolder.getText().trim();
+        String path = ((EditableComboBox)sourceFolder).getText().trim();
         try {
             if (path.length() == 0) {
                 return false;
@@ -534,48 +458,37 @@ public class SelectModePanel extends javax.swing.JPanel {
                 messageKind = notFolder;
                 return false;
             }
-            File projectDirFile = FileUtil.normalizeFile(CndFileUtils.createLocalFile(path)); // it's project folder - always local
-            File projectDirParent = projectDirFile.getParentFile();
-            // in the cse of full remote the directory should not necessarily exist, but its parent should
-            File fileToCheck = controller.isFullRemote() ? projectDirParent : projectDirFile;
-            if (fileToCheck == null || !fileToCheck.isDirectory() || !fileToCheck.canRead()) {
-                if (fileToCheck == null) {
-                    messageKind = notRoot;
-                }
-                else if(fileToCheck.isDirectory()) {
-                    messageKind = cannotReadFolder;
-                } else {
-                    messageKind = notFolder;
-                }
-                path = (fileToCheck == null) ? "" : fileToCheck.getAbsolutePath(); //NOI18N
+            FileObject projectDirFO = fileSystem.findResource(path); // can be null
+            if (projectDirFO == null || !projectDirFO.isValid()) {
+                messageKind = notFolder;
                 return false;
             }
-
+            if (!projectDirFO.isFolder()) {
+                messageKind = notFolder;
+                return false;
+            }
+            if (!projectDirFO.canRead()) {
+                messageKind = cannotReadFolder;
+                return false;
+            }
+            
             if (simpleMode.isSelected()) {
-                if (!fileToCheck.canWrite()) {
+                if (!projectDirFO.canWrite()) {
                     messageKind = cannotWriteFolder;
-                    path = fileToCheck.getAbsolutePath();
                     return false;
                 }
-                File nbFile = CndFileUtils.createLocalFile(
-                        CndFileUtils.createLocalFile(path, MakeConfiguration.NBPROJECT_FOLDER),
-                        MakeConfiguration.PROJECT_XML);
-                if (nbFile.exists()) {
+                FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+                if (nbProjFO != null && nbProjFO.isValid()) {
                     messageKind = alreadyNbPoject;
                     return false;
                 }
-                if (projectDirFile.isDirectory()) {
-                    FileObject fo = CndFileUtils.toFileObject(projectDirFile);
-                    if (fo != null && fo.isValid()) {
-                        try {
-                            if (ProjectManager.getDefault().findProject(fo) != null) {
-                                messageKind = alreadyNbPoject;
-                                return false;
-                            }
-                        } catch (IOException ex) {
-                        } catch (IllegalArgumentException ex) {
-                        }
+                try {
+                    if (ProjectManager.getDefault().findProject(projectDirFO) != null) {
+                        messageKind = alreadyNbPoject;
+                        return false;
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
             if (ConfigureUtils.findConfigureScript(controller.getWizardStorage().getSourcesFileObject()) != null) {
@@ -616,12 +529,9 @@ public class SelectModePanel extends javax.swing.JPanel {
     private javax.swing.JTextPane instructions;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel modeLabel;
-    private javax.swing.JButton projectBrowseButton;
-    private javax.swing.JTextField projectFolder;
-    private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JRadioButton simpleMode;
     private javax.swing.JButton sourceBrowseButton;
-    private javax.swing.JTextField sourceFolder;
+    private javax.swing.JComboBox sourceFolder;
     private javax.swing.JLabel sourceFolderLabel;
     private javax.swing.JComboBox toolchainComboBox;
     private javax.swing.JLabel toolchainLabel;

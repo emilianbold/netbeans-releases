@@ -43,26 +43,21 @@ and name of the project's main class. </p>
     example, you might accomplish this in the <tt>compile</tt> 
     target of your build script by including the argument <tt>debug="true"</tt> in the <tt>&lt;javac&gt;</tt> task.</li>
 
-    <li>If the output of a free-form project is on the classpath of another project, 
+    <li>Set the output of the free-form project.
+    If the output of a free-form project is on the classpath of another project, 
     map the free-form project's source packages to their outputs. This ensures that you can use the 
     debugger to step into the project's sources when you start a debugging session in a 
-    project that has a dependency on the free-form project. You can do this in the Output
-    panel of the Project Properties dialog box for the free-form project. You can open the 
-    Project Properties dialog box by right-clicking the project's node in the 
-    Projects window and choosing Properties.<!--TODO explain this more?--></li>
+    project that has a dependency on the free-form project.
+        To declare the output files, right-click the free-form project 
+    node and choose Properties. Then click the Output category in the Properties window
+    and specify the output file for each source folder.</li>
 
-    <li>Set the target JDK in your Ant script and specify the source 
-    level in the  Project Properties dialog box. When you step into JDK 
+    <li>Confirm that the target JDK is set in your Ant script and the source 
+    level is specified in the Project Properties dialog box. When you step into JDK 
     classes, the IDE searches the platforms registered in the Java Platform Manager
     for a Java platform with a matching source level. If no matching Java platform
     is found, the IDE opens the source code for the IDE's default platform.</li>
         
-    <li>If you have a free-form project on the classpath of another project, you 
-    must declare the free-form project's output files in order to step into classes 
-    from the project. To declare the output files, right-click the free-form project 
-    node and choose Properties. Then click Outputs and specify the output file 
-    for each source folder.</li>
-
     <li>Create a target in your build script for debugging and map that target to 
     the IDE's Debug Project command. The IDE can assist you by generating a basic target 
     and mapping, but you might need to modify the target. See 
@@ -71,10 +66,10 @@ and name of the project's main class. </p>
     Web Project</a> for step-by-step instructions.</li>
 </ul>
 
-<p>For a full guide to configuring free-form projects, see:
+<p>For a full guide to configuring free-form projects, see the following document.</p>
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
-    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="content" value="http://www.netbeans.org/kb/articles/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/articles/freeform-config.html</u></html>">
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
 </object></p>
@@ -88,9 +83,7 @@ and name of the project's main class. </p>
 
 <hr><small><a href="../credits.html">Legal Notices</a></small>
 
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table></body>
 </html>

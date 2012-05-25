@@ -45,8 +45,6 @@ package org.netbeans.modules.cnd.toolchain.ui.compiler;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import javax.swing.JList;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,26 +54,27 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.IsChangedListener;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -92,10 +91,6 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     public ParserSettingsPanel() {
         setName("TAB_CodeAssistanceTab"); // NOI18N
         initComponents();
-
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            setOpaque(false);
-        }
 
         //infoTextArea.setBackground(collectionPanel.getBackground());
         //setPreferredSize(new java.awt.Dimension(600, 700));
@@ -290,9 +285,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         collectionPanel = new javax.swing.JPanel();
         compilerCollectionLabel = new javax.swing.JLabel();
         compilerCollectionComboBox = new javax.swing.JComboBox();
-        scrollPane = new javax.swing.JScrollPane();
         tabPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
+
+        setPreferredSize(new java.awt.Dimension(400, 400));
+        setLayout(new java.awt.BorderLayout());
 
         collectionPanel.setOpaque(false);
 
@@ -307,7 +304,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             .addGroup(collectionPanelLayout.createSequentialGroup()
                 .addComponent(compilerCollectionLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compilerCollectionComboBox, 0, 433, Short.MAX_VALUE)
+                .addComponent(compilerCollectionComboBox, 0, 340, Short.MAX_VALUE)
                 .addContainerGap())
         );
         collectionPanelLayout.setVerticalGroup(
@@ -317,54 +314,20 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 .addComponent(compilerCollectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        scrollPane.setOpaque(false);
+        add(collectionPanel, java.awt.BorderLayout.PAGE_START);
 
         tabPanel.setOpaque(false);
-
-        javax.swing.GroupLayout tabPanelLayout = new javax.swing.GroupLayout(tabPanel);
-        tabPanel.setLayout(tabPanelLayout);
-        tabPanelLayout.setHorizontalGroup(
-            tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-        );
-        tabPanelLayout.setVerticalGroup(
-            tabPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-        );
-
+        tabPanel.setLayout(new java.awt.BorderLayout());
+        tabPanel.add(tabbedPane, java.awt.BorderLayout.CENTER);
         tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ParserSettingsPanel.class, "COMPILERS_TABBEDPANE_AN")); // NOI18N
         tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParserSettingsPanel.class, "COMPILERS_TABBEDPANE_AD")); // NOI18N
 
-        scrollPane.setViewportView(tabPanel);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(collectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, 0)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 543, Short.MAX_VALUE)
-                    .addGap(0, 0, 0)))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(collectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(277, Short.MAX_VALUE))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(36, 36, 36)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
-                    .addGap(0, 0, 0)))
-        );
+        add(tabPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel collectionPanel;
     private javax.swing.JComboBox compilerCollectionComboBox;
     private javax.swing.JLabel compilerCollectionLabel;
-    private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel tabPanel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables

@@ -65,6 +65,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test212841() throws Exception {
+        // #212841 - C++11 strongly typed enum incorrectly handled by code assistance
+        performStaticTest("iz212841.cpp");
+    }
+
     public void test191610() throws Exception {
         // #191610 unresolved reference to class declared with outer scope 
         performStaticTest("iz191610.cc");
