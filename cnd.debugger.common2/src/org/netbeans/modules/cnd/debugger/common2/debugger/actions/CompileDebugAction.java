@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 
+import java.io.IOException;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.actions.CompileRunActionBase;
@@ -54,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -117,7 +119,11 @@ public class CompileDebugAction extends CompileRunActionBase {
             profile.setBaseDir(buildDir);
             profile.setRunDir(buildDir);
             tab.closeInputOutput();
-            tab = IOProvider.get("Terminal").getIO(tabName, true); //NOI18N
+            tab = IOProvider.get("Terminal").getIO(tabName, false); //NOI18N
+            try {
+                tab.getOut().reset();
+            } catch (IOException ex) {
+            }
             
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -134,6 +140,7 @@ public class CompileDebugAction extends CompileRunActionBase {
                         @Override
                         public void executionFinished(int rc) {
                             //tab.getOut().println("Finish "+executable);
+                            tab.getOut().close();
                         }
                     });
                     NativeDebuggerManager.get().debug(buildDir + "/" + executable, // NOI18N
