@@ -590,9 +590,11 @@ implements Cloneable, Stamps.Updater {
         }
         if (netigsoExp != null) {
             man.getMainAttributes().putValue("Export-Package", netigsoExp); // NOI18N
-        } else {
+        } else if (exp != null) {
             man.getMainAttributes().putValue("Export-Package", substitutePkg(m)); // NOI18N
-        }
+        } else {
+            man.getMainAttributes().putValue("Export-Package", m.getCodeNameBase()); // NOI18N
+        }        
         JarOutputStream jos = new JarOutputStream(os, man);
         jos.close();
         return new ByteArrayInputStream(os.toByteArray());
@@ -706,8 +708,13 @@ implements Cloneable, Stamps.Updater {
     private static String substitutePkg(Module m) {
         StringBuilder exported = new StringBuilder();
         String sep = "";
+        PackageExport[] pblk = m.getPublicPackages();
+        if (pblk == null) {
+            pblk = new PackageExport[1];
+            pblk[0] = new PackageExport("", true);
+        }
         
-        for (Module.PackageExport packageExport : m.getPublicPackages()) {
+        for (Module.PackageExport packageExport : pblk) {
             Set<String> pkgs;
             if (packageExport.recursive) {
                 pkgs = findRecursivePkgs(m, packageExport);
