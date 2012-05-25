@@ -128,7 +128,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("third/third.cpp");
         performStaticTest("forth/forth.cpp");
     }
-    
+
     public void testRedFilesWhenProjectClose202433() throws Exception {
         // #202433 - parser errors in studio system includes
         CsmModel model = super.getModel();
@@ -142,6 +142,14 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("includedLibrary/lib_header.h");
         performStaticTest("otherLibrary/other_lib_header.h");
         performStaticTest("second/second.cpp");
+    }
+
+    public void testRedFilesWhenNoReparseProject210898() throws Exception {
+        // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
+        CsmModel model = super.getModel();
+        assertNotNull("null model", model);
+        performStaticTest("first/first.cpp");
+        performStaticTest("fifth/fifth.cpp");
     }
 
     public void DISABLED_testRedFilesWhenReopenProject210898() throws Exception {
