@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 public final class TestModelHelper {
     private final TraceModel traceModel;
     private CharSequence projectName;
+    private NativeProject platformProject;
     /**
      * Creates a new instance of TestModelHelper
      */
@@ -70,10 +72,12 @@ public final class TestModelHelper {
             List<String> sysIncludes, List<String> usrIncludes, List<String> libProjectsPaths) throws Exception {
         traceModel.setIncludePaths(sysIncludes, usrIncludes, libProjectsPaths);
         traceModel.test(new String[]{projectRoot}, System.out, System.err);
+        getProject();
     } 
     
     public void initParsedProject(String projectRoot) throws Exception {
         traceModel.test(new String[]{projectRoot}, System.out, System.err);
+        getProject();
         //traceModel.test(new File(projectRoot), System.out, System.err);
     }     
     
@@ -81,11 +85,19 @@ public final class TestModelHelper {
         ProjectBase project = traceModel.getProject();
         if (projectName == null) {
             projectName = project.getName();
+            platformProject = (NativeProject) project.getPlatformProject();
         }
         return project;
     }
 
+    public ProjectBase reopenProject() {
+        assert platformProject != null;
+        ProjectBase project = traceModel.reopenProject(platformProject);
+        return project;
+    }
+
     public CharSequence getProjectName() {
+        assert projectName != null;
         return projectName;
     }
 
