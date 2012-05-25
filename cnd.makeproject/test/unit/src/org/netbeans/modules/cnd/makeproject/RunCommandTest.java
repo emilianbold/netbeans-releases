@@ -59,10 +59,10 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Nikolay Koldunov
  */
-public class RunCommandTestCase extends CndBaseTestCase{
+public class RunCommandTest extends CndBaseTestCase{
     static MakeConfiguration conf;
 
-    public RunCommandTestCase(String testName) {
+    public RunCommandTest(String testName) {
         super(testName);
         
         File folderBase = getBaseFolder();
