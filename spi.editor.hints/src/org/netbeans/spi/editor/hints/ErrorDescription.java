@@ -121,7 +121,7 @@ public final class ErrorDescription {
     }
 
     /**
-     * @return where the error will be marked in the document.
+     * @return where the error will be marked in the document or <code>null</code> if no place to mark
      */
     public PositionBounds getRange() {
         return span;
@@ -137,9 +137,9 @@ public final class ErrorDescription {
     @Override
     public String toString() {
         try {
-            return span.getBegin().getLine() + ":" + span.getBegin().getColumn() + "-" + span.getEnd().getLine() + ":" + span.getEnd().getColumn() + ":" + severity.getDisplayName() + ":" + description;
+            return (span != null ? span.getBegin().getLine() + ":" + span.getBegin().getColumn() + "-" + span.getEnd().getLine() + ":" + span.getEnd().getColumn() : "<no-span>") + ":" + severity.getDisplayName() + ":" + description;
         } catch (IOException ex) {
-            throw (IllegalStateException) new IllegalStateException().initCause(ex);
+            throw new IllegalStateException(ex);
         }
     }
 
@@ -158,10 +158,14 @@ public final class ErrorDescription {
         if (this.severity != other.severity && (this.severity == null || !this.severity.equals(other.severity))) {
             return false;
         }
-        if (this.span.getBegin().getOffset() != other.span.getBegin().getOffset()) {
-            return false;
-        }
-        if (this.span.getEnd().getOffset() != other.span.getEnd().getOffset()) {
+        if (this.span != null && other.span != null) {
+            if (this.span.getBegin().getOffset() != other.span.getBegin().getOffset()) {
+                return false;
+            }
+            if (this.span.getEnd().getOffset() != other.span.getEnd().getOffset()) {
+                return false;
+            }
+        } else if (this.span != other.span) {
             return false;
         }
         if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
@@ -175,8 +179,8 @@ public final class ErrorDescription {
         int hash = 3;
         hash = 17 * hash + (this.description != null ? this.description.hashCode() : 0);
         hash = 17 * hash + (this.severity != null ? this.severity.hashCode() : 0);
-        hash = 17 * hash + this.span.getBegin().getOffset();
-        hash = 17 * hash + this.span.getEnd().getOffset();
+        hash = 17 * hash + (this.span != null ? this.span.getBegin().getOffset() : 0);
+        hash = 17 * hash + (this.span != null ? this.span.getEnd().getOffset() : 0);
         hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
         return hash;
     }
