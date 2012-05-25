@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.model.api.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -51,79 +55,42 @@ import org.netbeans.modules.css.model.api.*;
 public final class ElementFactoryImpl implements ElementFactory {
 
     private Model model;
-    
+
     public ElementFactoryImpl(Model model) {
         this.model = model;
     }
+    
+    private static final String IMPLEMENTATIONS_PACKAGE = StyleSheetI.class.getPackage().getName();
+    private static final char IMPLEMENTATIONS_SUFFIX = 'I'; //NOI18N
+
+    //rule: grammar element name, first char in upper case + "I" postfix
+    /* test */ static String getImplementingClassNameForNodeType(NodeType nodeType) {
+        StringBuilder sb = new StringBuilder();
+        String typeName = nodeType.name();
+        
+        sb.append(IMPLEMENTATIONS_PACKAGE);
+        sb.append('.');
+        sb.append(Character.toUpperCase(typeName.charAt(0)));
+        sb.append(typeName.substring(1));
+        sb.append(IMPLEMENTATIONS_SUFFIX);
+        return sb.toString();
+    }
 
     public Element createElement(Model model, Node node) {
-        //TODO use reflection
-        switch (node.type()) {
-            case imports:
-                return new ImportsI(model, node);
-            case importItem:
-                return new ImportItemI(model, node);
-            case resourceIdentifier:
-                return new ResourceIdentifierI(model, node);
-            case media:
-                return new MediaI(model, node);
-            case mediaQueryList:
-                return new MediaQueryListI(model, node);
-            case mediaQuery:
-                return new MediaQueryI(model, node);
-            case mediaExpression:
-                return new MediaExpressionI(model, node);
-            case mediaFeature:
-                return new MediaFeatureI(model, node);
-            case mediaType:
-                return new MediaTypeI(model, node);
-            case mediaQueryOperator:
-                return new MediaQueryOperatorI(model, node);
-            case namespaces:
-                return new NamespacesI(model, node);
-            case namespace:
-                return new NamespaceI(model, node);
-            case namespacePrefixName:
-                return new NamespacePrefixNameI(model, node);
-            case body:
-                return new BodyI(model, node);
-            case bodyItem:
-                return new BodyItemI(model, node);
-            case rule:
-                return new RuleI(model, node);
-            case selectorsGroup:
-                return new SelectorsGroupI(model, node);
-            case declarations:
-                return new DeclarationsI(model, node);
-            case declaration:
-                return new DeclarationI(model, node);
-            case selector:
-                return new SelectorI(model, node);
-            case property:
-                return new PropertyI(model, node);
-            case propertyValue:
-                return new PropertyValueI(model, node);
-            case expr:
-                return new ExpressionI(model, node);
-            case prio:
-                return new PrioI(model, node);
-            case charSet:
-                return new CharSetI(model, node);
-            case charSetValue:
-                return new CharSetValueI(model, node);
-            case styleSheet:
-                return new StyleSheetI(model, node);
-            case page:
-                return new PageI(model, node);                
-            case ws:
-                return new PlainElementI(model, node);
-                
-            default:
-                System.err.println("No case in ElementsFactory.createElement(...) for node type '" + node.type() + "'! Using PlainElement as the default.");
-                return new PlainElementI(model, node);
+        try {
+            Class<?> clazz = Class.forName(getImplementingClassNameForNodeType(node.type()));
+            Constructor<?> constructor = clazz.getConstructor(Model.class, Node.class);
+            return (Element) constructor.newInstance(model, node);
+        } catch (ClassNotFoundException cnfe ) {
+            //no implementation found - use default
+            return new PlainElementI(model, node);
+        } catch (/* NoSuchMethodException, SecurityException,
+                 InstantiationException, IllegalAccessException, IllegalArgumentException, 
+                 InvocationTargetException */ Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
-    
+
     @Override
     public StyleSheet createStyleSheet() {
         return new StyleSheetI(model);
@@ -281,8 +248,6 @@ public final class ElementFactoryImpl implements ElementFactory {
         pv.setExpression(expression);
         return pv;
     }
-    
-    
 
     @Override
     public Expression createExpression() {
@@ -320,7 +285,7 @@ public final class ElementFactoryImpl implements ElementFactory {
     public MediaExpression createMediaExpression() {
         return new MediaExpressionI(model);
     }
-    
+
     @Override
     public MediaExpression createMediaExpression(MediaFeature mediaFeature, Expression expression) {
         MediaExpression me = createMediaExpression();
@@ -331,7 +296,7 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public MediaFeature createMediaFeature() {
-       return new MediaFeatureI(model);
+        return new MediaFeatureI(model);
     }
 
     @Override
@@ -351,9 +316,9 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public Page createPage(CharSequence source) {
-        return  new PageI(model, source);
+        return new PageI(model, source);
     }
-    
+
     @Override
     public MediaQueryOperator createMediaQueryOperator(CharSequence text) {
         return new MediaQueryOperatorI(model, text);
@@ -374,8 +339,8 @@ public final class ElementFactoryImpl implements ElementFactory {
         MediaQuery mq = createMediaQuery();
         mq.setMediaQueryOperator(mediaQueryOperator);
         mq.setMediaType(mediaType);
-        
-        for(MediaExpression me : mediaExpression) {
+
+        for (MediaExpression me : mediaExpression) {
             mq.addMediaExpression(me);
         }
         return mq;
@@ -384,7 +349,7 @@ public final class ElementFactoryImpl implements ElementFactory {
     @Override
     public MediaQueryList createMediaQueryList(MediaQuery... mediaQuery) {
         MediaQueryList mql = createMediaQueryList();
-        for(MediaQuery mq : mediaQuery) {
+        for (MediaQuery mq : mediaQuery) {
             mql.addMediaQuery(mq);
         }
         return mql;
@@ -394,7 +359,7 @@ public final class ElementFactoryImpl implements ElementFactory {
     public Media createMedia(MediaQueryList mediaQueryList, Rule... rule) {
         Media media = createMedia();
         media.setMediaQueryList(mediaQueryList);
-        for(Rule r : rule) {
+        for (Rule r : rule) {
             media.addRule(r);
         }
         return media;
@@ -403,11 +368,9 @@ public final class ElementFactoryImpl implements ElementFactory {
     @Override
     public Media createMedia(MediaQueryList mediaQueryList, Page... page) {
         Media media = createMedia();
-        for(Page p : page) {
+        for (Page p : page) {
             media.addPage(p);
         }
         return media;
     }
-
-    
 }
