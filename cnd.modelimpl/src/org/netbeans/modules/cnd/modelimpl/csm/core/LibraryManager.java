@@ -590,6 +590,7 @@ public final class LibraryManager {
                 }
             }
         }
+        printOut.flush();
     }
 
 }
