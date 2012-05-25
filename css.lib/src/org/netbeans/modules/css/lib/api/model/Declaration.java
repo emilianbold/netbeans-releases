@@ -115,7 +115,7 @@ public class Declaration extends Item {
     }
 
     public Item getValue() {
-        Node propertyNode = NodeUtil.query(node, "propertyValue/expr");
+        Node propertyNode = NodeUtil.query(node, "propertyValue/expression");
         return propertyNode != null ? new Item(snapshot, propertyNode) : null;
     }
 

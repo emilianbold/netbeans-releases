@@ -369,7 +369,7 @@ mediaType
  ;
  
 mediaExpression
- : '(' ws? mediaFeature ws? ( ':' ws? expr )? ')' ws?
+ : '(' ws? mediaFeature ws? ( ':' ws? expression )? ')' ws?
  ;
  
 mediaFeature
@@ -629,7 +629,7 @@ pseudo
                 ( 
                     ( IDENT | GEN )
                     ( // Function
-                        ws? LPAREN ws? ( expr | '*' )? RPAREN
+                        ws? LPAREN ws? ( expression | '*' )? RPAREN
                     )?
                 )
                 |
@@ -650,7 +650,7 @@ declaration
     }
 
 propertyValue
-	:	expr
+	:	expression
 	;
 
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
@@ -681,7 +681,7 @@ prio
     : IMPORTANT_SYM ws?
     ;
     
-expr
+expression
     : term (operator term)*
     ;
     
@@ -715,7 +715,7 @@ function
 	: 	functionName ws?
 		LPAREN ws?
 		( 
-			expr
+			expression
 		| 
 		  	(
 				fnAttribute (COMMA ws? fnAttribute )*				
@@ -744,7 +744,7 @@ fnAttributeName
 	;
 	
 fnAttributeValue
-	: expr
+	: expression
 	;
     
 hexColor
