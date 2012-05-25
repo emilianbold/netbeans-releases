@@ -170,6 +170,7 @@ public class DatabaseConnector {
             Throwable cause = null;
             Connection con = connection;
             try {
+                driverSpecCache.clear();
                 setConnection(null); // fires change
                 con.close();
             } catch (Exception exc) {
@@ -201,7 +202,7 @@ public class DatabaseConnector {
         } else {
             connection = null;
         }
-
+        driverSpecCache.clear();
         notifyChange();
     }
 
