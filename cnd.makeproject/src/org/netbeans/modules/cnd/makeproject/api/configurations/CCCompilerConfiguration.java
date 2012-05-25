@@ -295,9 +295,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         sheet.put(set0);
         if (conf.isCompileConfiguration() && folder == null) {
             Sheet.Set bset = getBasicSet();
-            sheet.put(bset);
-            bset.put(standardProp);
-            if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
+            sheet.put(bset);            
+            if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler                
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));
@@ -307,6 +306,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                 set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
                 set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                 sheet.put(set2);
+            } else {
+                bset.put(standardProp);
             }
             if (getMaster() != null) {
                 sheet.put(getInputSet());
@@ -347,7 +348,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             }
         }  
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            set0.put(standardProp);
+            if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                set0.put(standardProp);
+            }
         }
         
         return sheet;
