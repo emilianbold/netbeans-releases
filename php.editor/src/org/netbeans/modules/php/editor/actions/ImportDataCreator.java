@@ -68,7 +68,7 @@ public class ImportDataCreator {
 
     private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
         final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
-        Collections.sort(sortedTypeElements, new TypeElementsCompoarator());
+        Collections.sort(sortedTypeElements, new TypeElementsComparator());
         return sortedTypeElements;
     }
 
@@ -229,7 +229,7 @@ public class ImportDataCreator {
         }
     }
 
-    private static class TypeElementsCompoarator implements Comparator<TypeElement> {
+    private static class TypeElementsComparator implements Comparator<TypeElement> {
 
         @Override
         public int compare(TypeElement o1, TypeElement o2) {
