@@ -157,6 +157,7 @@ public class PHPIndexTest extends PHPNavTestBase {
      */
     @Test
     public void testGetClasses_preferred() throws Exception {
+        // fails on Mac
         Collection<TypeElement> ccClasses = new ArrayList<TypeElement>(index.getClasses(NameKind.exact("CCC")));
         assertEquals(2, ccClasses.size());
         TypeElement[] classesArray = ccClasses.toArray(new TypeElement[ccClasses.size()]);

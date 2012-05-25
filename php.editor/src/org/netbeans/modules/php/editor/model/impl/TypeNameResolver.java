@@ -83,13 +83,7 @@ public abstract class TypeNameResolver {
     }
 
     public static TypeNameResolver forFullyQualifiedName(final Scope scope, final int offset) {
-        return new TypeNameResolver() {
-
-            @Override
-            public QualifiedName resolve(final QualifiedName qualifiedName) {
-                return VariousUtils.getFullyQualifiedName(qualifiedName, offset, scope);
-            }
-        };
+        return new FullyQualifiedTypeNameResolver(scope, offset);
     }
 
     public static TypeNameResolver forQualifiedName(final Scope scope, final int offset) {
@@ -168,6 +162,85 @@ public abstract class TypeNameResolver {
             }
             return result;
         }
+    }
+
+
+
+
+
+    private static class FullyQualifiedTypeNameResolver extends BaseTypeNameResolver {
+
+        public FullyQualifiedTypeNameResolver(final Scope scope, final int offset) {
+            super(scope, offset);
+        }
+
+        @Override
+        protected QualifiedName processFullyQualifiedName(final QualifiedName fullyQualifiedName, final NamespaceScope namespaceScope) {
+            return fullyQualifiedName;
+        }
+
+        @Override
+        protected QualifiedName processQualifiedName(final QualifiedName qualifiedName, final NamespaceScope namespaceScope) {
+            return resolveFullyQualifiedName(qualifiedName, namespaceScope);
+        }
+
+        @Override
+        protected QualifiedName processUnQualifiedName(final QualifiedName unQualifiedName, final NamespaceScope namespaceScope) {
+            return resolveFullyQualifiedName(unQualifiedName, namespaceScope);
+        }
+
+        private QualifiedName resolveFullyQualifiedName(final QualifiedName qualifiedName, final NamespaceScope namespaceScope) {
+            QualifiedName result = qualifiedName;
+            String firstSegmentName = qualifiedName.getSegments().getFirst();
+            UseScope matchedUseScope = null;
+            int lastOffset = -1;
+            for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                // trying to make a FQ from exact use element, they are FQ by default
+                if (useElement.getNameRange().containsInclusive(getOffset())) {
+                    result = QualifiedName.create(true, qualifiedName.getSegments());
+                    break;
+                } else if (useElement.getOffset() < getOffset()) {
+                    AliasedName aliasName = useElement.getAliasedName();
+                    if (aliasName != null) {
+                        if (firstSegmentName.equals(aliasName.getAliasName())) {
+                            matchedUseScope = useElement;
+                            continue;
+                        }
+                    } else {
+                        if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
+                            matchedUseScope = useElement;
+                            lastOffset = useElement.getOffset();
+                        }
+                    }
+                }
+            }
+            if (matchedUseScope != null) {
+                result = resolveForMatchedUseScope(result, matchedUseScope);
+            } else if (!result.getKind().isFullyQualified()) {
+                String fullNamespaceName = namespaceScope.getNamespaceName().toString();
+                if (result.getKind().isQualified()) {
+                    fullNamespaceName += fullNamespaceName.trim().isEmpty() ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR;
+                    fullNamespaceName += result.getNamespaceName();
+                }
+                result = QualifiedName.createFullyQualified(result.getName(), fullNamespaceName);
+            }
+            return result;
+        }
+
+        private QualifiedName resolveForMatchedUseScope(final QualifiedName qualifiedName, final UseScope matchedUseScope) {
+            QualifiedName result = qualifiedName;
+            final ArrayList<String> segments = new ArrayList();
+            for (StringTokenizer st = new StringTokenizer(matchedUseScope.getName(), NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); st.hasMoreTokens();) {
+                String token = st.nextToken();
+                segments.add(token);
+            }
+            final List<String> origName = result.getSegments();
+            for (int i = 1; i < origName.size(); i++) {
+                segments.add(origName.get(i));
+            }
+            return QualifiedName.create(true, segments);
+        }
+
     }
 
 
