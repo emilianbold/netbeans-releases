@@ -92,9 +92,9 @@ public class ImportDataCreator {
 
     private void processTypeName(final int index, final String typeName) {
         data.names[index] = typeName;
-        Set<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
-        Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-        Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        Collection<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
+        Collection<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
+        Collection<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
         if (filteredTypeElements.isEmpty()) {
             insertEmptyData(index);
         } else {
@@ -102,10 +102,10 @@ public class ImportDataCreator {
         }
     }
 
-    private Set<TypeElement> fetchPossibleTypes(final String typeName) {
-        Set<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
-        Set<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
-        Set<TypeElement> possibleTypes = new HashSet<TypeElement>();
+    private Collection<TypeElement> fetchPossibleTypes(final String typeName) {
+        Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
+        Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
+        Collection<TypeElement> possibleTypes = new HashSet<TypeElement>();
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
         return possibleTypes;
@@ -120,7 +120,7 @@ public class ImportDataCreator {
         data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
     }
 
-    private void insertPossibleData(final int index, final Set<TypeElement> filteredTypeElements, final String typeName) {
+    private void insertPossibleData(final int index, final Collection<TypeElement> filteredTypeElements, final String typeName) {
         Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
         data.variants[index] = new String[sortedTypeElements.size() + 1];
         data.icons[index] = new Icon[data.variants[index].length];
@@ -150,9 +150,9 @@ public class ImportDataCreator {
         Arrays.sort(data.variants[index], new VariantsComparator());
     }
 
-    private Set<TypeElement> filterDuplicates(final Set<TypeElement> possibleTypes) {
-        Set<TypeElement> result = new HashSet<TypeElement>();
-        Set<String> filteredTypeElements = new HashSet<String>();
+    private Collection<TypeElement> filterDuplicates(final Collection<TypeElement> possibleTypes) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
+        Collection<String> filteredTypeElements = new HashSet<String>();
         for (TypeElement typeElement : possibleTypes) {
             String typeElementName = typeElement.toString();
             if (!filteredTypeElements.contains(typeElementName)) {
@@ -163,8 +163,8 @@ public class ImportDataCreator {
         return result;
     }
 
-    private Set<TypeElement> filterExactUnqualifiedName(final Set<TypeElement> possibleTypes, final String typeName) {
-        Set<TypeElement> result = new HashSet<TypeElement>();
+    private Collection<TypeElement> filterExactUnqualifiedName(final Collection<TypeElement> possibleTypes, final String typeName) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getFullyQualifiedName().toString().endsWith(typeName)) {
                 result.add(typeElement);
