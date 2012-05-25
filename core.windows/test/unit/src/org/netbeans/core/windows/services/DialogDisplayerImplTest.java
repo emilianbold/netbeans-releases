@@ -136,8 +136,8 @@ public class DialogDisplayerImplTest extends NbTestCase {
                 try {
                     notify ();
                     long t = System.currentTimeMillis ();
-                    wait (15000);
-                    if (System.currentTimeMillis () - t > 13000) {
+                    wait (40000);
+                    if (System.currentTimeMillis () - t > 37000) {
                         // this is wrong
                         setState(3);
                         // wait for the dialog to finish
@@ -181,7 +181,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         }
 
         assertEquals ("Returns as closed, if cannot access AWT", NotifyDescriptor.CLOSED_OPTION, res);
-        
+
         synchronized (b) {
             b.notify ();
             LOG.info("Before wait " + b.getState());
