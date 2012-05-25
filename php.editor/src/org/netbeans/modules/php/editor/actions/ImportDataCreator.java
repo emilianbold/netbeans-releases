@@ -66,6 +66,12 @@ public class ImportDataCreator {
     private boolean shouldShowUsesPanel = false;
     private final Options options;
 
+    private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
+        final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
+        Collections.sort(sortedTypeElements, new TypeElementsCompoarator());
+        return sortedTypeElements;
+    }
+
     public ImportDataCreator(final Map<String, List<UsedNamespaceName>> usedNames, final Index phpIndex, final QualifiedName currentNamespace, final Options options) {
         this.usedNames = usedNames;
         this.phpIndex = phpIndex;
@@ -115,11 +121,12 @@ public class ImportDataCreator {
     }
 
     private void insertPossibleData(final int index, final Set<TypeElement> filteredTypeElements, final String typeName) {
-        data.variants[index] = new String[filteredTypeElements.size() + 1];
+        Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
+        data.variants[index] = new String[sortedTypeElements.size() + 1];
         data.icons[index] = new Icon[data.variants[index].length];
         data.usedNamespaceNames.put(index, usedNames.get(typeName));
         int i = -1;
-        for (TypeElement typeElement : filteredTypeElements) {
+        for (TypeElement typeElement : sortedTypeElements) {
             data.variants[index][++i] = typeElement.getFullyQualifiedName().toString();
             data.icons[index][i] = IconsUtils.getElementIcon(typeElement.getPhpElementKind());
             if (i == 0) {
@@ -136,7 +143,7 @@ public class ImportDataCreator {
             }
         } else {
             QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
-            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(filteredTypeElements)) || hasExactName(filteredTypeElements, exactMatchName)) {
+            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
                 data.defaults[index] = data.variants[index][i];
             }
         }
@@ -186,7 +193,7 @@ public class ImportDataCreator {
         return result;
     }
 
-    private boolean hasDefaultNamespaceName(final Set<TypeElement> possibleTypes) {
+    private boolean hasDefaultNamespaceName(final Collection<TypeElement> possibleTypes) {
         boolean result = false;
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getNamespaceName().isDefaultNamespace()) {
@@ -197,7 +204,7 @@ public class ImportDataCreator {
         return result;
     }
 
-    private boolean hasExactName(final Set<TypeElement> typeElements, final QualifiedName exactName) {
+    private boolean hasExactName(final Collection<TypeElement> typeElements, final QualifiedName exactName) {
         boolean result = false;
         for (TypeElement typeElement : typeElements) {
             if (typeElement.getFullyQualifiedName().equals(exactName)) {
@@ -220,6 +227,15 @@ public class ImportDataCreator {
             }
             return result;
         }
+    }
+
+    private static class TypeElementsCompoarator implements Comparator<TypeElement> {
+
+        @Override
+        public int compare(TypeElement o1, TypeElement o2) {
+            return o1.getFullyQualifiedName().toString().compareToIgnoreCase(o2.getFullyQualifiedName().toString()) * -1;
+        }
+
     }
 
 }
