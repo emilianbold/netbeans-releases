@@ -210,7 +210,10 @@ public abstract class ModelElement implements Element {
         Class clazz = getModelClass(e);
         ClassElement ce = new ClassElement(clazz, e);
         ClassElement old = CLASSELEMENTS.set(index, ce);
-        fireElementRemoved(old.getElement());
+        if(old.getElement() != null) {
+            //the ClassElement may contain just the placeholder so no element
+            fireElementRemoved(old.getElement());
+        }
         fireElementAdded(e);
         
         return old == null ? null : old.getElement();

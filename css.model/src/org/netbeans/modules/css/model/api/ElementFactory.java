@@ -53,6 +53,10 @@ public interface ElementFactory {
 
     public CharSetValue createCharSetValue();
 
+    public FontFace createFontFace();
+    
+    public FontFace createFontFace(Declarations declarations);
+    
     public Imports createImports();
 
     public ImportItem createImportItem();

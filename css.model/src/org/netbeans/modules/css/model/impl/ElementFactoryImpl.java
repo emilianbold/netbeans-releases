@@ -107,6 +107,18 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     @Override
+    public FontFace createFontFace() {
+        return new FontFaceI(model);
+    }
+
+    @Override
+    public FontFace createFontFace(Declarations declarations) {
+        FontFace fontFace = createFontFace();
+        fontFace.setDeclarations(declarations);
+        return fontFace;
+    }
+
+    @Override
     public Imports createImports() {
         return new ImportsI(model);
     }

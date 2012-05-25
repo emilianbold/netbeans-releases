@@ -76,6 +76,11 @@ public class BodyItemI extends ModelElement implements BodyItem {
             element = page;
         }
         
+        @Override
+        public void elementAdded(FontFace fontFace) {
+            element = fontFace;
+        }
+        
     };
 
     public BodyItemI(Model model) {
