@@ -41,70 +41,71 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.lib.api.Node;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
- * Temporary solution for not yet implemented models for | media | page |
- * counterStyle | fontFace | moz_document
  *
  * @author marekfukala
  */
-public class BodyItemI extends ModelElement implements BodyItem {
+public class BodyITest extends ModelTestBase {
 
-    private Element element;
-
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
-        @Override
-        public void elementAdded(PlainElement plainElement) {
-            element = plainElement;
-        }
-
-        @Override
-        public void elementAdded(Rule rule) {
-            element = rule;
-        }
-
-        @Override
-        public void elementAdded(Media media) {
-            element = media;
-        }
-        
-        @Override
-        public void elementAdded(Page page) {
-            element = page;
-        }
-        
-    };
-
-    public BodyItemI(Model model) {
-        super(model);
+    public BodyITest(String name) {
+        super(name);
     }
 
-    public BodyItemI(Model model, Node node) {
-        super(model, node);
-        initChildrenElements();
+    public void testPage() throws BadLocationException, ParseException {
+        String code = "@page:left { margin-left: 2cm }";
+        
+        StyleSheet styleSheet = createStyleSheet(code);
+        
+//        TestUtil.dumpResult(TestUtil.parse(code));
+        
+        List<Page> pages = styleSheet.getBody().getPages();
+        assertNotNull(pages);
+        assertEquals(1, pages.size());
+        
+        Page page = pages.get(0);
+        assertNotNull(page);
+        
+        assertEquals(code, page.getContent().toString());
+        
     }
     
-    @Override
-    public Element getElement() {
-        return element;
-    }
+    public void testAddRemovePage() {
+        String code = "@page:left { margin-left: 2cm }";
+        
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        
+        List<Page> pages = styleSheet.getBody().getPages();
+        assertNotNull(pages);
+        assertEquals(1, pages.size());
+        
+        Page page = pages.get(0);
+        assertNotNull(page);
+        
+        assertEquals(code, page.getContent().toString());
+        
+        styleSheet.getBody().removePage(page);
+        
+        pages = styleSheet.getBody().getPages();
+        assertNotNull(pages);
+        assertEquals(0, pages.size());
+        
+        assertEquals("", model.getModelSource().toString());
 
-    @Override
-    public void setElement(Element element) {
-        super.setElement(element);
-    }
-
-    @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
-    }
-    
-      @Override
-    protected Class getModelClass() {
-        return BodyItem.class;
+        ElementFactory ef = model.getElementFactory();
+        Page newPage = ef.createPage("@page { margin: 3cm }");
+        
+        styleSheet.getBody().addPage(newPage);
+        
+        assertEquals("@page { margin: 3cm }", model.getModelSource().toString());
+        
     }
     
 }

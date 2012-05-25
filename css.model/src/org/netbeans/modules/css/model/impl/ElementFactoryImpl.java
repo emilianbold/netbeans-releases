@@ -113,9 +113,13 @@ public final class ElementFactoryImpl implements ElementFactory {
                 return new CharSetValueI(model, node);
             case styleSheet:
                 return new StyleSheetI(model, node);
-
+            case page:
+                return new PageI(model, node);                
             case ws:
+                return new PlainElementI(model, node);
+                
             default:
+                System.err.println("No case in ElementsFactory.createElement(...) for node type '" + node.type() + "'! Using PlainElement as the default.");
                 return new PlainElementI(model, node);
         }
     }
@@ -346,6 +350,11 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     @Override
+    public Page createPage(CharSequence source) {
+        return  new PageI(model, source);
+    }
+    
+    @Override
     public MediaQueryOperator createMediaQueryOperator(CharSequence text) {
         return new MediaQueryOperatorI(model, text);
     }
@@ -399,6 +408,6 @@ public final class ElementFactoryImpl implements ElementFactory {
         }
         return media;
     }
-    
+
     
 }

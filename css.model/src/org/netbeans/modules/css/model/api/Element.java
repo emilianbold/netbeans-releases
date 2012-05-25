@@ -52,10 +52,16 @@ import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
  * @author marekfukala
  */
 public interface Element {
+    
+    public Element getParent();
 
+    public void setParent(Element e);
+    
     public int addElement(Element e);
 
     public Element removeElement(int index);
+    
+    public boolean removeElement(Element e);
     
     public void insertElement(int index, Element element);
 

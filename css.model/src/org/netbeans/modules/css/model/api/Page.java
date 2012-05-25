@@ -42,6 +42,13 @@
 package org.netbeans.modules.css.model.api;
 
 /**
+ * Paged media http://dev.w3.org/csswg/css3-page/ doesn't seem 
+ * to be actively developed, neither the specification nor the 
+ * browsers adoption.
+ *
+ * So the {@link Page} class is just plain element and doesn't support
+ * any operation on its grammar subelements.
+ * 
  *
  * @author marekfukala
  */

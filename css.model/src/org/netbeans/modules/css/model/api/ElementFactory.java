@@ -139,4 +139,6 @@ public interface ElementFactory {
     
     public Page createPage();
     
+    public Page createPage(CharSequence source);
+    
 }

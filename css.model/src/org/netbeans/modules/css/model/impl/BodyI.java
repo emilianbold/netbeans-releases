@@ -118,7 +118,47 @@ public class BodyI extends ModelElement implements Body {
         bi.setElement(media);
         addElement(bi);
     }
+    
+    @Override
+    public List<Page> getPages() {
+        List<Page> rules = new ArrayList<Page>();
+        for(BodyItem bi : getBodyItems()) {
+            if(bi.getElement() instanceof Page) {
+                rules.add((Page)bi.getElement());
+            }
+        }
+        return Collections.unmodifiableList(rules);
+    }
+    
+    @Override
+    public void addPage(Page page) {
+        BodyItem bi = model.getElementFactory().createBodyItem();
+        bi.setElement(page);
+        addElement(bi);
+    }
 
+    private boolean removeBodyItemChild(Element element) {
+        Element bodyItem = element.getParent();
+        assert bodyItem != null;
+        bodyItem.removeElement(element);
+        return removeElement(bodyItem);
+    }
+    
+    @Override
+    public boolean removeRule(Rule rule) {
+        return removeBodyItemChild(rule);
+    }
+
+    @Override
+    public boolean removeMedia(Media media) {
+        return removeBodyItemChild(media);
+    }
+
+    @Override
+    public boolean removePage(Page page) {
+        return removeBodyItemChild(page);
+    }
+    
     @Override
     protected ModelElementListener getElementListener() {
         return elementListener;
@@ -128,6 +168,6 @@ public class BodyI extends ModelElement implements Body {
     protected Class getModelClass() {
         return Body.class;
     }
-    
-    
+
+       
 }

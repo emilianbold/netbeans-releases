@@ -63,6 +63,7 @@ public abstract class ModelElement implements Element {
     private Collection<ElementListener> LISTENERS;
     protected final Model model;
     private Node node;
+    private Element parent;
     
     //used in there's no document to get the indent from
     private static final String DEFAULT_INDENT = "    "; //NOI18N
@@ -74,6 +75,16 @@ public abstract class ModelElement implements Element {
     public ModelElement(Model model, Node node) {
         this(model);
         this.node = node;
+    }
+
+    @Override
+    public Element getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(Element e) {
+        parent = e;
     }
 
     @Override
@@ -131,11 +142,17 @@ public abstract class ModelElement implements Element {
     }
 
     private void fireElementAdded(Element e) {
+        //set new parent to the element 
+        e.setParent(this);
+
         ModelElementListener.Support.fireElementAdded(e, getElementListener());
         fireElementChanged();
     }
 
     private void fireElementRemoved(Element e) {
+        //remove the parent
+        e.setParent(null);
+        
         ModelElementListener.Support.fireElementRemoved(e, getElementListener());
         fireElementChanged();
     }
@@ -195,7 +212,7 @@ public abstract class ModelElement implements Element {
         ClassElement old = CLASSELEMENTS.set(index, ce);
         fireElementRemoved(old.getElement());
         fireElementAdded(e);
-
+        
         return old == null ? null : old.getElement();
     }
 
@@ -217,6 +234,15 @@ public abstract class ModelElement implements Element {
             return removedElement;
         }
         return null;
+    }
+    
+    @Override
+    public boolean removeElement(Element element) {
+        int index = getElementIndex(element);
+        if (index == -1) {
+            return false;
+        }
+        return removeElement(index) != null; 
     }
 
     @Override

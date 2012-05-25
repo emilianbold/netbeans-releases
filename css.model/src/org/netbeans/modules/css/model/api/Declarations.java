@@ -53,6 +53,6 @@ public interface Declarations extends Element {
     
     public void addDeclaration(Declaration declaration);
     
-    public void removeDeclaration(Declaration declaration);
+    public boolean removeDeclaration(Declaration declaration);
     
 }

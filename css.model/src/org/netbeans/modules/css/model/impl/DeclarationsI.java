@@ -117,11 +117,12 @@ public class DeclarationsI extends ModelElement implements Declarations {
     }
 
     @Override
-    public void removeDeclaration(Declaration declaration) {
+    public boolean removeDeclaration(Declaration declaration) {
         int index = getElementIndex(declaration);
         if (index == -1) {
-            return;
+            return false;
         }
+        
         removeElement(index); //remove the declaration
 
         //update the whitespaces in the preceding plain element
@@ -149,6 +150,8 @@ public class DeclarationsI extends ModelElement implements Declarations {
                 wipeWhitespaces(after, true);
             }
         }
+        
+        return true;
         
     }
 
