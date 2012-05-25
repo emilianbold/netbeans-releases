@@ -102,6 +102,11 @@ public class BodyI extends ModelElement implements Body {
     }
     
     @Override
+    public boolean removeRule(Rule rule) {
+        return removeBodyItemChild(rule);
+    }
+    
+    @Override
     public List<Media> getMedias() {
         List<Media> rules = new ArrayList<Media>();
         for(BodyItem bi : getBodyItems()) {
@@ -118,7 +123,65 @@ public class BodyI extends ModelElement implements Body {
         bi.setElement(media);
         addElement(bi);
     }
+    
+    @Override
+    public boolean removeMedia(Media media) {
+        return removeBodyItemChild(media);
+    }
+    
+    @Override
+    public List<Page> getPages() {
+        List<Page> rules = new ArrayList<Page>();
+        for(BodyItem bi : getBodyItems()) {
+            if(bi.getElement() instanceof Page) {
+                rules.add((Page)bi.getElement());
+            }
+        }
+        return Collections.unmodifiableList(rules);
+    }
+    
+    @Override
+    public void addPage(Page page) {
+        BodyItem bi = model.getElementFactory().createBodyItem();
+        bi.setElement(page);
+        addElement(bi);
+    }
 
+    @Override
+    public boolean removePage(Page page) {
+        return removeBodyItemChild(page);
+    }
+    
+    @Override
+    public List<FontFace> getFontFaces() {
+        List<FontFace> rules = new ArrayList<FontFace>();
+        for(BodyItem bi : getBodyItems()) {
+            if(bi.getElement() instanceof FontFace) {
+                rules.add((FontFace)bi.getElement());
+            }
+        }
+        return Collections.unmodifiableList(rules);
+    }
+    
+    @Override
+    public void addFontFace(FontFace fontFace) {
+        BodyItem bi = model.getElementFactory().createBodyItem();
+        bi.setElement(fontFace);
+        addElement(bi);
+    }
+
+    @Override
+    public boolean removeFontFace(FontFace fontFace) {
+        return removeBodyItemChild(fontFace);
+    }
+    
+    private boolean removeBodyItemChild(Element element) {
+        Element bodyItem = element.getParent();
+        assert bodyItem != null;
+        bodyItem.removeElement(element);
+        return removeElement(bodyItem);
+    }
+    
     @Override
     protected ModelElementListener getElementListener() {
         return elementListener;
@@ -128,6 +191,7 @@ public class BodyI extends ModelElement implements Body {
     protected Class getModelClass() {
         return Body.class;
     }
-    
-    
+
+
+       
 }

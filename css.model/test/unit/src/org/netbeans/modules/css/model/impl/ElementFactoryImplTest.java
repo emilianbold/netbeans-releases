@@ -39,79 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
 
-import java.util.List;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.api.NodeType;
 
 /**
  *
  * @author marekfukala
  */
-public interface Body extends Element {
-    
-    /**
-     * List of body items as declared in the source. 
-     */
-    public List<BodyItem> getBodyItems();
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the rule type
-     */
-    public List<Rule> getRules();
-    
-    /**
-     * Adds a new Rule at the end of the Body
-     */
-    public void addRule(Rule rule);
-    
-    /**
-     * Remove the Rule element
-     */
-    public boolean removeRule(Rule rule);
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the media type
-     */
-    public List<Media> getMedias();
-    
-    /**
-     * Adds a new Media at the end of the Body
-     */
-    public void addMedia(Media media);
-    
-    /**
-     * Remove the Media element
-     */
-    public boolean removeMedia(Media media);
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the page type
-     */
-    public List<Page> getPages();
-    
-    /**
-     * Adds a new Page at the end of the Body
-     */
-    public void addPage(Page media);
-    
-    /**
-     * Remove the Page element
-     */
-    public boolean removePage(Page page);
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the page type
-     */
-    public List<FontFace> getFontFaces();
-    
-    /**
-     * Adds a new FontFace at the end of the Body
-     */
-    public void addFontFace(FontFace fontFace);
-    
-    /**
-     * Remove the FontFace element
-     */
-    public boolean removeFontFace(FontFace fontFace);
+public class ElementFactoryImplTest extends NbTestCase {
+
+    public ElementFactoryImplTest(String name) {
+        super(name);
+    }
+
+    public void testGetImplementingClassNameForNodeType() {
+        assertEquals("org.netbeans.modules.css.model.impl.CharSetI", 
+                ElementFactoryImpl.getImplementingClassNameForNodeType(NodeType.charSet));
+        assertEquals("org.netbeans.modules.css.model.impl.ImportItemI", 
+                ElementFactoryImpl.getImplementingClassNameForNodeType(NodeType.importItem));
+        assertEquals("org.netbeans.modules.css.model.impl.WsI", 
+                ElementFactoryImpl.getImplementingClassNameForNodeType(NodeType.ws));
+        
+    }
     
 }

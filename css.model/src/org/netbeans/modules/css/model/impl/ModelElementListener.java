@@ -44,6 +44,8 @@ package org.netbeans.modules.css.model.impl;
 import org.netbeans.modules.css.model.api.*;
 
 /**
+ * TODO: generate this class!!! It's very error prone to have to always add
+ * methods here whenever a new element is introduced
  *
  * @author marekfukala
  */
@@ -54,6 +56,8 @@ public interface ModelElementListener {
     public void elementAdded(CharSet charSet);
 
     public void elementAdded(CharSetValue charSetValue);
+
+    public void elementAdded(FontFace fontFace);
 
     public void elementAdded(Imports imports);
 
@@ -112,6 +116,8 @@ public interface ModelElementListener {
     public void elementRemoved(CharSet charSet);
 
     public void elementRemoved(CharSetValue charSetValue);
+    
+    public void elementRemoved(FontFace fontFace);
 
     public void elementRemoved(Imports imports);
 
@@ -176,6 +182,8 @@ public interface ModelElementListener {
                 listener.elementAdded((CharSet) element);
             } else if (element instanceof CharSetValue) {
                 listener.elementAdded((CharSetValue) element);
+            } else if (element instanceof FontFace) {
+                listener.elementAdded((FontFace)element);
             } else if (element instanceof Imports) {
                 listener.elementAdded((Imports) element);
             } else if (element instanceof ImportItem) {
@@ -238,6 +246,8 @@ public interface ModelElementListener {
                 listener.elementRemoved((CharSetValue) element);
             } else if (element instanceof Imports) {
                 listener.elementRemoved((Imports) element);
+            }else if (element instanceof FontFace) {
+                listener.elementRemoved((FontFace)element);
             } else if (element instanceof ImportItem) {
                 listener.elementRemoved((ImportItem) element);
             } else if (element instanceof ResourceIdentifier) {
@@ -302,6 +312,10 @@ public interface ModelElementListener {
 
         @Override
         public void elementAdded(CharSetValue charSetValue) {
+        }
+
+        @Override
+        public void elementAdded(FontFace fontFace) {
         }
 
         @Override
@@ -390,6 +404,10 @@ public interface ModelElementListener {
 
         @Override
         public void elementRemoved(CharSetValue charSetValue) {
+        }
+
+        @Override
+        public void elementRemoved(FontFace fontFace) {
         }
 
         @Override

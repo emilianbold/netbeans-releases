@@ -71,6 +71,16 @@ public class BodyItemI extends ModelElement implements BodyItem {
             element = media;
         }
         
+        @Override
+        public void elementAdded(Page page) {
+            element = page;
+        }
+        
+        @Override
+        public void elementAdded(FontFace fontFace) {
+            element = fontFace;
+        }
+        
     };
 
     public BodyItemI(Model model) {

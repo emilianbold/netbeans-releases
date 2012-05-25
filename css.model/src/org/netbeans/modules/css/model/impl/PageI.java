@@ -46,7 +46,6 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Page;
 
 /**
- *
  * @author marekfukala
  */
 public class PageI extends PlainElementI implements Page {

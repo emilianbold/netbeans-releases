@@ -1040,14 +1040,14 @@ public class CssCompletion implements CodeCompletionHandler {
 
             case error:
                 NodeType parentType = node.parent().type();
-                if (!(parentType == NodeType.term || parentType == NodeType.expr || parentType == NodeType.operator)) {
+                if (!(parentType == NodeType.term || parentType == NodeType.expression || parentType == NodeType.operator)) {
                     break;
                 }
             //fall through
 
             case function:
             case term:
-            case expr:
+            case expression:
             case operator: {
                 //value cc with prefix
                 //a. for term nodes
@@ -1094,7 +1094,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
 
-                Node expressionNode = NodeUtil.query(declaratioNode, "propertyValue/expr"); //NOI18N
+                Node expressionNode = NodeUtil.query(declaratioNode, "propertyValue/expression"); //NOI18N
 
                 String expressionText = context.getSnapshot().getText().subSequence(
                         expressionNode.from(),

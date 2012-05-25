@@ -53,6 +53,10 @@ public interface ElementFactory {
 
     public CharSetValue createCharSetValue();
 
+    public FontFace createFontFace();
+    
+    public FontFace createFontFace(Declarations declarations);
+    
     public Imports createImports();
 
     public ImportItem createImportItem();
@@ -138,5 +142,7 @@ public interface ElementFactory {
     public Media createMedia(MediaQueryList mediaQueryList, Page... page);
     
     public Page createPage();
+    
+    public Page createPage(CharSequence source);
     
 }

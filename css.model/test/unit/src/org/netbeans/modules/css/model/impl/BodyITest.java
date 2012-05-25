@@ -39,79 +39,73 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
 
 import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public interface Body extends Element {
+public class BodyITest extends ModelTestBase {
+
+    public BodyITest(String name) {
+        super(name);
+    }
+
+    public void testPage() throws BadLocationException, ParseException {
+        String code = "@page:left { margin-left: 2cm }";
+        
+        StyleSheet styleSheet = createStyleSheet(code);
+        
+//        TestUtil.dumpResult(TestUtil.parse(code));
+        
+        List<Page> pages = styleSheet.getBody().getPages();
+        assertNotNull(pages);
+        assertEquals(1, pages.size());
+        
+        Page page = pages.get(0);
+        assertNotNull(page);
+        
+        assertEquals(code, page.getContent().toString());
+        
+    }
     
-    /**
-     * List of body items as declared in the source. 
-     */
-    public List<BodyItem> getBodyItems();
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the rule type
-     */
-    public List<Rule> getRules();
-    
-    /**
-     * Adds a new Rule at the end of the Body
-     */
-    public void addRule(Rule rule);
-    
-    /**
-     * Remove the Rule element
-     */
-    public boolean removeRule(Rule rule);
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the media type
-     */
-    public List<Media> getMedias();
-    
-    /**
-     * Adds a new Media at the end of the Body
-     */
-    public void addMedia(Media media);
-    
-    /**
-     * Remove the Media element
-     */
-    public boolean removeMedia(Media media);
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the page type
-     */
-    public List<Page> getPages();
-    
-    /**
-     * Adds a new Page at the end of the Body
-     */
-    public void addPage(Page media);
-    
-    /**
-     * Remove the Page element
-     */
-    public boolean removePage(Page page);
-    
-    /**
-     * Unmodifiable subset of the body items - contains just body items of the page type
-     */
-    public List<FontFace> getFontFaces();
-    
-    /**
-     * Adds a new FontFace at the end of the Body
-     */
-    public void addFontFace(FontFace fontFace);
-    
-    /**
-     * Remove the FontFace element
-     */
-    public boolean removeFontFace(FontFace fontFace);
+    public void testAddRemovePage() {
+        String code = "@page:left { margin-left: 2cm }";
+        
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        
+        List<Page> pages = styleSheet.getBody().getPages();
+        assertNotNull(pages);
+        assertEquals(1, pages.size());
+        
+        Page page = pages.get(0);
+        assertNotNull(page);
+        
+        assertEquals(code, page.getContent().toString());
+        
+        styleSheet.getBody().removePage(page);
+        
+        pages = styleSheet.getBody().getPages();
+        assertNotNull(pages);
+        assertEquals(0, pages.size());
+        
+        assertEquals("", model.getModelSource().toString());
+
+        ElementFactory ef = model.getElementFactory();
+        Page newPage = ef.createPage("@page { margin: 3cm }");
+        
+        styleSheet.getBody().addPage(newPage);
+        
+        assertEquals("@page { margin: 3cm }", model.getModelSource().toString());
+        
+    }
     
 }

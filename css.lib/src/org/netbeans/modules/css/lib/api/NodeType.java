@@ -70,7 +70,7 @@ public enum NodeType {
     elementSubsequent,
     elementName,
     esPred,
-    expr,
+    expression,
     /**
      * @font-face { ... }
      */
