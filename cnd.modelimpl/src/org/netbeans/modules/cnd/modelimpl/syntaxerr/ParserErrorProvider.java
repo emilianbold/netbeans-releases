@@ -41,23 +41,29 @@
  */
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
-import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
-import org.netbeans.modules.cnd.antlr.RecognitionException;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Error provider based on parser errors
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=10)
+@ServiceProviders({
+@ServiceProvider(service=CsmErrorProvider.class, position=10),
+@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=900)
+})
 public class ParserErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLE = CndUtils.getBoolean("cnd.parser.error.provider", true);
@@ -86,5 +92,15 @@ public class ParserErrorProvider extends CsmErrorProvider {
     @Override
     public String getName() {
         return "syntax-error"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(ParserErrorProvider.class, "Show-syntax-error"); //NOI18N
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(ParserErrorProvider.class, "Show-syntax-error-AD"); //NOI18N
     }
 }

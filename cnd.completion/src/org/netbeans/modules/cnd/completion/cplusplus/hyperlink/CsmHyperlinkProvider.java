@@ -315,7 +315,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                         item = (CsmVariable) csmObject;
                     }
                 }
-            } else if (CsmClassifierResolver.getDefault().isForwardClass(csmObject)) {
+            } else if (CsmClassifierResolver.getDefault().isForwardClassifier(csmObject)) {
                 CsmClassifier cls = CsmClassifierResolver.getDefault().getOriginalClassifier((CsmClassifier)csmObject, csmFile);
                 if (CsmKindUtilities.isOffsetable(cls)) {
                     item = (CsmOffsetable) cls;

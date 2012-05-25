@@ -40,12 +40,13 @@
             good chance that the generated debug target will work without further customization.</li>
         </ul>
     
-    <p>To create a debug target for a free-form project:
+    <p>Perform the following steps to create a debug target for a free-form project.</p>
     <ol>
-        <li>In the Projects window, right-click the project's node and choose Set as Main Project.</li>
+        <li>Set the free-form project as the main project by choosing
+            Run &gt; Set Main Project in the main menu and selecting the project.</li>
         <li>Choose Debug &gt; Debug Main Project from the main menu.</li>
-        <li>In the Debug Project dialog box that appears, click Generate.
-        <p>A target called <tt>debug-nb</tt> is created in a file called <tt>ide-targets.xml</tt>. 
+        <li>Click Generate in the Debug Project dialog box.
+        <p>When you click Generate a target named <tt>debug-nb</tt> is created in a file named <tt>ide-targets.xml</tt>. 
         The generated <tt>ide-targets.xml</tt> file is a build script that 
         imports your main <tt>build.xml</tt> file, so your debug target can take advantage of 
         targets and properties set by or referenced by your main build script.</p>
@@ -58,21 +59,16 @@
         <tt>&lt;classpath&gt;</tt> argument in the target if it does not include all of the items 
         in your run classpath.</li>
     </ol>
-    <p>Once the target is created, you can start debugging. To start debugging:
+    <p>After the target is created, you can perform the following steps to start debugging the project.</p>
     <ol>
         <li>Set a breakpoint in your main class. You can do so by clicking in the left margin of 
         the line where you want to set the breakpoint. The line with the breakpoint is 
         highlighted in pink.</li>
-        <li>Once again, right-click the project's node and choose Debug Project.
+        <li>Right-click the project's node again and choose Debug Project.
         <p>The target should run and start execution of the program. Progress of the 
         running target is shown in the Output window and the status of the debugger is 
         shown in the status bar at the bottom of the Output window.</li>
     </ol>
-
-    <!--<p>
-    For example, the IDE will attempt to specify an appropriate classpath for debugging based 
-    on the run classpath in your build script. If the IDE does not findxxxgenerate a target generated target does not account for additional classpath items, 
-    so you would need to add those. to which attribute?--><p></p>
 
 
     <h3> A Typical Free-Form Project Debug Target </h3>
@@ -89,71 +85,39 @@
         <li>Runs the application in debug mode, passing the <tt>jpda.address</tt> property
         as the address at which to connect to the debugger.</li>
     </ul>
-    <!--TODO - document these extra options?<pre>&lt;target name=&quot;debug&quot; depends=&quot;compile&quot; description=&quot;Debug Project&quot;&gt;
-    &lt;fail unless=&quot;netbeans.home&quot;&gt;This target can only run inside the IDE.&lt;/fail&gt;
-    &lt;!--><!-- Optional - If source roots are properly declared in project, should
-    work without setting source path.     
-    &lt;sourcepath path=&quot;debug.sourcepath&quot;/&gt; -->
-    <p>A generated debug target where the IDE is able to guess the runtime classpath looks something 
-    like the following (where <tt><i>italicized</i></tt> items would have values specific to your project):
-
+    
+    <p>For example, if the IDE is able to guess the runtime classpath the <tt>debug-nb</tt> target 
+        that the IDE generates in <tt>ide-targets.xml</tt> might look similar to the following.</p>
+    
     <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
     &lt;project basedir=".." name="<i>YourProjectName</i>"&gt;
-    &lt;import file="../build.xml"/&gt;
-    &lt;!-- TODO: edit the following target according to your needs --&gt;
-    &lt;!-- (more info: http://www.netbeans.org/kb/55/freeform-config.html#debugj2se) --&gt;
-    &lt;target name="debug-nb"&gt;
-    &lt;nbjpdastart addressproperty="jpda.address" name="<i>NameOfProject</i>" transport="dt_socket"&gt;
-    &lt;classpath path="<i>ClasspathSpecifiedInYourRunTarget</i>"/&gt;
-    &lt;/nbjpdastart&gt;
-    &lt;java classname="<i>MainClassSpecifiedInRunTarget</i>" classpath="<i>ClasspathSpecifiedInYourRunTarget</i>" fork="true"&gt;
-    &lt;jvmarg value="-Xdebug"/&gt;
-    &lt;jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/&gt;
-    &lt;/java&gt;
-    &lt;/target&gt;
+        &lt;import file="../build.xml"/&gt;
+        &lt;!-- TODO: edit the following target according to your needs --&gt;
+        &lt;!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#debugj2se) --&gt;
+        &lt;target name="debug-nb" depends="init,compile"&gt;
+            &lt;nbjpdastart addressproperty="jpda.address" name="<i>NameOfProject</i>" transport="dt_socket"&gt;
+            &lt;classpath path="<i>ClasspathSpecifiedInYourRunTarget</i>"/&gt;
+            &lt;/nbjpdastart&gt;
+            &lt;java classname="<i>MainClassSpecifiedInRunTarget</i>" classpath="<i>ClasspathSpecifiedInYourRunTarget</i>" fork="true"&gt;
+                &lt;jvmarg value="-Xdebug"/&gt;
+                &lt;jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/&gt;
+            &lt;/java&gt;
+        &lt;/target&gt;
     &lt;/project&gt;</pre>
 
 
-    <p>If you do not have a run target mapped or the IDE otherwise can not determine 
+    <p>If you do not have a run target mapped or the IDE otherwise cannot determine 
     the project's classpath or main class, the generated debug target includes "TODO" placeholders 
-    for you to fill in these values as in the example below.</p>
-    <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-    &lt;project basedir=".." name="<i>YourProjectName</i>"&gt;
-    &lt;!-- TODO: edit the following target according to your needs --&gt;
-    &lt;!-- (more info: http://www.netbeans.org/kb/55/freeform-config.html#debugj2se) --&gt;
-    &lt;target name="debug-nb"&gt;
-    &lt;path id="cp"&gt;
-    &lt;!-- TODO configure the runtime classpath for your project here: --&gt;
-    &lt;/path&gt;
-    &lt;nbjpdastart addressproperty="jpda.address" name="<i>NameOfProject</i>" transport="dt_socket"&gt;
-    &lt;classpath refid="cp"/&gt;
-    &lt;/nbjpdastart&gt;
-    &lt;!-- TODO configure the main class for your project here: --&gt;
-    &lt;java classname="<i>some.main.Class</i>" fork="true"&gt;
-    &lt;classpath refid="cp"/&gt;
-    &lt;jvmarg value="-Xdebug"/&gt;
-    &lt;jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/&gt;
-    &lt;/java&gt;
-    &lt;/target&gt;
-    &lt;/project&gt;</pre>
-    <p>To specify the runtime classpath, insert <tt>pathelement</tt> elements within the <tt>path</tt> 
-    element and point them to the directories that contain the items in your classpath. For example, you 
-can use the <tt>location</tt> attribute of <tt>pathelement</tt> to specify 
-the location of the classpath items relative to your project directory. The project directory 
- is usually the one that contains the project's <tt>build.xml</tt> file. Below is an example:
-<pre>&lt;path id="cp"&gt;
-    &lt;pathelement location="libs"&gt;  
-    &lt;pathelement location="build"&gt;
-&lt;/path&gt;</pre>
-		
+    for you to fill in these values.</p>
+    
 	
     <a name="map_projectxml"></a>
-        <h3>Manually Mapping a Target to a Menu Item</h3>
+    <h3>Manually Mapping a Target to a Menu Item</h3>
     <p>When you have the IDE generate a target, the IDE automatically provides 
     the mapping between the target and the IDE command's menu item. However, if you have 
     created the target manually, you need to also create the mapping manually.</p>
   
-    <p><b>To map the Debug Project command to a  target in an external Ant script: </b>
+    <p><b>Perform the following steps to map the Debug Project command to a target in an external Ant script.</b>
     <ol>
         <li>Open the project's <tt>project.xml</tt> file and add the following to <tt>&lt;ide-actions&gt;</tt>:
         <pre>  &lt;action name=&quot;debug&quot;&gt;
@@ -175,28 +139,25 @@ knowledge of where your sources are. See
 <a href="proj_free_debug_about.html">About Debugging Free-Form Projects</a> for more 
 information.</p>
 
-    <p>For a full guide to configuring free-form projects, see:
+    <p>For a full guide to configuring free-form projects, see the following document.</p>
     
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="content" value="http://www.netbeans.org/kb/55/freeform-config.html">
-    <param name="text" value="<html><u>http://www.netbeans.org/kb/55/freeform-config.html</u></html>">
+    <param name="content" value="http://www.netbeans.org/kb/articles/freeform-config.html">
+    <param name="text" value="<html><u>http://www.netbeans.org/kb/articles/freeform-config.html</u></html>">
     <param name="textFontSize" value="medium">
     <param name="textColor" value="blue">
   </object></p>
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
-  <dd><a href="proj_webfree_debug.html">Creating A Debug Target for a Free-Form 
-    Web Project</a></dd>
+  <dd><a href="proj_webfree_debug.html">Creating A Debug Target for a Free-Form Web Project</a></dd>
   <dd><a href="proj_free_targets.html">Mapping an Ant Target to an IDE Command</a></dd>
   <dd><a href="proj_free_nbtargs.html">Storing IDE Targets in a Separate Ant Script</a></dd>
 </dl>
 
     <hr><small><a href="../credits.html">Legal Notices</a></small>
 
-    <table border="0" cellpadding="20">
-        <tr><td>&nbsp;</td></tr>
-        <tr><td>&nbsp;</td></tr>
+    <table border="0" cellpadding="50">
         <tr><td>&nbsp;</td></tr>
     </table></body>
 </html>

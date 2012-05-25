@@ -61,30 +61,35 @@ public class SearchAction extends AbstractEditorAction {
         
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-                if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit)
-                    target = SearchBar.getInstance().getActualTextComponent();
-                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                if (eui != null) {
-                    //need to find if it has extended editor firsfaft, otherwise getExtComponent() will create all sidebars
-                    //and other parts of full editor if action is assigned to just editor pane and broke later action logic.
+        if (target != null) {
+            if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit) {
+                target = SearchBar.getInstance().getActualTextComponent();
+            }
+            EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+            if (eui != null) {
+                //need to find if it has extended editor firsfaft, otherwise getExtComponent() will create all sidebars
+                //and other parts of full editor if action is assigned to just editor pane and broke later action logic.                
+                JPanel jp = null;
+                Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
+                if (clientProperty instanceof JPanel) {
+                    jp = (JPanel) clientProperty;
+                } else {
                     JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
                     if (comp != null) {
-                        JPanel jp = SearchNbEditorKit.findComponent(comp, SearchNbEditorKit.SearchJPanel.class, 5);
-                        if (jp != null) {
-                            SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
-                            jp.add(searchBarInstance);
-                            ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
-                            if (replaceBarInstance.isVisible()) {
-                                replaceBarInstance.looseFocus();
-                            }
-                            searchBarInstance.gainFocus();
-                            SearchNbEditorKit.makeSearchAndReplaceBarPersistent();
-                            return;
-                        } 
+                        jp = SearchNbEditorKit.findComponent(comp, SearchNbEditorKit.SearchJPanel.class, 5);
                     }
-                    SearchNbEditorKit.DIALOG_FIND_ACTION.actionPerformed(evt, target);
+                }
+                if (jp != null) {
+                    SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
+                    jp.add(searchBarInstance);
+                    ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
+                    if (replaceBarInstance.isVisible()) {
+                        replaceBarInstance.looseFocus();
+                    }
+                    searchBarInstance.gainFocus();
+                    SearchNbEditorKit.makeSearchAndReplaceBarPersistent();
                 }
             }
         }
+    }
     }

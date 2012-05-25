@@ -48,6 +48,8 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.MakeSamplePanel;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,7 +57,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, WizardDescriptor.FinishablePanel<WizardDescriptor> {
+public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>, NamedPanel {
 
     private WizardDescriptor wizardDescriptor;
     private String name;
@@ -162,6 +164,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         initialized = false;
     }
 
+    @Override
     public void setFinishPanel(boolean finishPanel) {
         this.finishPanel = finishPanel;
     }

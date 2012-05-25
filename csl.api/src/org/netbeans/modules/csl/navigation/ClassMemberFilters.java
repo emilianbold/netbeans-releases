@@ -110,6 +110,10 @@ public final class ClassMemberFilters {
         boolean statik = filters.isSelected(SHOW_STATIC);
         boolean fields = filters.isSelected(SHOW_FIELDS);
         // XXX Enable later boolean inherited = filters.isSelected(SHOW_INHERITED);
+        
+        if (original == null || original.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
 
         List<StructureItem> result = new ArrayList<StructureItem>(original.size());
       

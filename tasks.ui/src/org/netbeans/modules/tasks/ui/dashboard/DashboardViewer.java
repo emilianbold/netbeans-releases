@@ -42,6 +42,7 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -53,6 +54,7 @@ import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.CreateCategoryAction;
 import org.netbeans.modules.tasks.ui.actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
@@ -157,6 +159,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         taskHits = 0;
         treeList.setModel(model);
+        attachActions();
         dashboardComponent.setViewportView(treeList);
         dashboardComponent.invalidate();
         dashboardComponent.revalidate();
@@ -335,15 +338,19 @@ public final class DashboardViewer implements PropertyChangeListener {
         storeCategory(category);
     }
 
-    public void deleteCategory(final Category category) {
-        //TODO lock categNodes
-        CategoryNode categoryNode = mapCategoryToNode.remove(category);
-        model.removeRoot(categoryNode);
-        categoryNodes.remove(categoryNode);
+    public void deleteCategory(final CategoryNode... toDelete) {
+        for (CategoryNode categoryNode : toDelete) {
+            model.removeRoot(categoryNode);
+            categoryNodes.remove(categoryNode);
+        }
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
-                DashboardStorage.getInstance().deleteCategory(category.getName());
+                String[] names = new String[toDelete.length];
+                for (int i = 0; i < names.length; i++) {
+                    names[i] = toDelete[i].getCategory().getName();
+                }
+                DashboardStorage.getInstance().deleteCategories(names);
             }
         });
     }
@@ -616,6 +623,15 @@ public final class DashboardViewer implements PropertyChangeListener {
         return expandedNodes.contains(node);
     }
 
+    public List<TreeListNode> getSelectedNodes(){
+        List<TreeListNode> nodes = new ArrayList<TreeListNode>();
+        Object[] selectedValues = treeList.getSelectedValues();
+        for (Object object : selectedValues) {
+            nodes.add((TreeListNode)object);
+        }
+        return nodes;
+    }
+
     public void loadData() {
         requestProcessor.post(new Runnable() {
             @Override
@@ -804,7 +820,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             @Override
             public void run() {
                 for (RepositoryNode repositoryNode : repositoryNodes) {
-                    repositoryNode.setExpanded(true);
+                    if (repositoryNode.isOpened()) {
+                        repositoryNode.setExpanded(true);
+                    }
                 }
             }
         });
@@ -828,5 +846,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (TreeListNode node : nodesToRemove) {
             removeRootFromModel(node);
         }
+    }
+
+    private void attachActions() {
+        treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.REFRESH_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalRefreshAction"); //NOI18N
+        treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalRefreshAction", new Actions.UniversalRefreshAction());//NOI18N
+
+        treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.DELETE_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction"); //NOI18N
+        treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
     }
 }

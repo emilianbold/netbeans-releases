@@ -61,4 +61,10 @@ public class JavaClassPathConstants {
      */
     public static final String PROCESSOR_PATH = "classpath/processor";
     
+    /**
+     * A part of the compilation classpath which is not included into runtime classpath.
+     * @since 1.39
+     */
+    public static final String COMPILE_ONLY = "classpath/compile_only";
+    
 }

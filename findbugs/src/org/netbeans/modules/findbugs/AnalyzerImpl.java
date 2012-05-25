@@ -46,6 +46,10 @@ import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import edu.umd.cs.findbugs.FindBugsProgress;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +63,9 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
@@ -67,6 +74,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
@@ -165,7 +173,7 @@ public class AnalyzerImpl implements Analyzer {
     @Messages({"ERR_CompiledWithErrors=Some Files Compiled with Errors",
                "DESC_CompiledWithErrors=Some of the analyzed files were compiled with errors. This may lead to incorrect or missing warnings from FindBugs."
     })
-    private List<ErrorDescription> doRunFindBugs(FileObject sourceRoot, final int start, final int size, AtomicBoolean warnedAboutUncompilable) {
+    private List<ErrorDescription> doRunFindBugs(final FileObject sourceRoot, final int start, final int size, AtomicBoolean warnedAboutUncompilable) {
         if (ErrorsCache.isInError(sourceRoot, true) && !warnedAboutUncompilable.get()) {
             warnedAboutUncompilable.set(true);
             ctx.reportAnalysisProblem(Bundle.ERR_CompiledWithErrors(), Bundle.DESC_CompiledWithErrors());
@@ -175,7 +183,7 @@ public class AnalyzerImpl implements Analyzer {
             processingThread = Thread.currentThread();
         }
         try {
-            FindBugsProgress progress = new FindBugsProgress() {
+            final FindBugsProgress progress = new FindBugsProgress() {
                 private double[] sizePerPart;
                 private int doneParts;
                 private double perTick;
@@ -223,7 +231,15 @@ public class AnalyzerImpl implements Analyzer {
                     ctx.progress((int) incrementalDone);
                 }
             };
-            return RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sourceRoot, null, progress, null);
+            final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+            JavaSource.create(ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, ClassPath.EMPTY)).runUserActionTask(new Task<CompilationController>() {
+                @Override public void run(CompilationController parameter) throws Exception {
+                    result.addAll(RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sourceRoot, null, progress, null));
+                }
+            }, true);
+            return result;
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
         } finally {
             synchronized(this) {
                 processingThread = null;
@@ -248,7 +264,7 @@ public class AnalyzerImpl implements Analyzer {
 
         @Messages("DN_FindBugs=FindBugs")
         public AnalyzerFactoryImpl() {
-            super("findbugs", Bundle.DN_FindBugs(), "edu/umd/cs/findbugs/gui2/bugSplash3.png");
+            super("findbugs", Bundle.DN_FindBugs(), makeTransparent());
         }
 
         @Override
@@ -301,5 +317,30 @@ public class AnalyzerImpl implements Analyzer {
             HintsController.setErrors(warning.getFile(), RunInEditor.HINTS_KEY, Collections.singleton(warning));
         }
 
+    }
+    
+    private static Image makeTransparent() {
+        Image original = ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
+        int w = original.getWidth(null);
+        int h = original.getHeight(null);
+        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
+        
+        bi.createGraphics().drawImage(original, 0, 0, null);
+        
+        WritableRaster raster = bi.getRaster();
+        int[] buffer = new int[4];
+        
+        for (int hi = 0; hi < h; hi++) {
+            for (int wi = 0; wi < w; wi++) {
+                buffer = raster.getPixel(wi, hi, buffer);
+                
+                if (buffer[0] == 255 && buffer[1] == 255 && buffer[2] == 255 && buffer[3] == 255) {
+                    buffer[3] = 0;
+                    raster.setPixel(wi, hi, buffer);
+                }
+            }
+        }
+        
+        return bi;
     }
 }

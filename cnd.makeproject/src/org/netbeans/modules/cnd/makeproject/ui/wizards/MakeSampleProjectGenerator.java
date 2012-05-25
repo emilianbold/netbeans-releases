@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -178,7 +179,13 @@ public class MakeSampleProjectGenerator {
                 env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
                 String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
                 CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
-                int platform = compilerSetManager.getPlatform();
+                ExecutionEnvironment projectEE = FileSystemProvider.getExecutionEnvironment(prjLoc);
+                int platform;
+                if (projectEE.isLocal()) {
+                    platform = compilerSetManager.getPlatform();
+                } else {
+                    platform = CompilerSetManager.get(projectEE).getPlatform();
+                }
                 CompilerSet compilerSet = prjParams.getToolchain();
                 compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
                 String variant = null;

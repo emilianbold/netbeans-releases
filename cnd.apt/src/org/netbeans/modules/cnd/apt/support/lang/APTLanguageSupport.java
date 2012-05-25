@@ -66,6 +66,8 @@ public final class APTLanguageSupport {
 
     public static final String FLAVOR_CPP11  = "C++11"; // NOI18N
     public static final String FLAVOR_UNKNOWN  = ""; // NOI18N
+    public static final String FLAVOR_FORTRAN_FIXED  = "Fortran Fixed"; // NOI18N
+    public static final String FLAVOR_FORTRAN_FREE  = "Fortran Free"; // NOI18N
     
     private APTLanguageSupport() {
     }
@@ -115,7 +117,7 @@ public final class APTLanguageSupport {
                 filter = new APTGnuCppFilter();
             }
         } else if (lang.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
-            filter = new APTFortranFilter();
+            filter = new APTFortranFilter(flavor);
         } else {
             APTUtils.LOG.log(Level.WARNING, "unsupported language {0}", lang); // NOI18N
         }

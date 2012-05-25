@@ -94,8 +94,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -153,23 +157,24 @@ public class ImportExecutable implements PropertyChangeListener {
     private void createProject() {
         String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT);
         sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH);
-        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        FSPath projectFolder = (FSPath) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String projectName = (String) map.get(WizardConstants.PROPERTY_NAME);
         dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
         String baseDir;
         if (projectFolder != null) {
-            projectFolder = CndFileUtils.normalizeFile(projectFolder);
-            baseDir = projectFolder.getAbsolutePath();
+            projectFolder = new FSPath(projectFolder.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(projectFolder.getPath(), FileSystemProvider.getExecutionEnvironment(projectFolder.getFileSystem())));
+            baseDir = projectFolder.getPath();
             if (projectName == null) {
-                projectName = projectFolder.getName();
+                projectName = CndPathUtilitities.getBaseName(baseDir);
             }
         } else {
             String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
             if (projectName == null) {
-                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(binaryPath).getName());
+                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilitities.getBaseName(binaryPath));
             }
+            ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
             baseDir = projectParentFolder + File.separator + projectName;
-            projectFolder = CndFileUtils.createLocalFile(baseDir);
+            projectFolder = new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(baseDir, ee));
         }
         String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
@@ -258,7 +263,7 @@ public class ImportExecutable implements PropertyChangeListener {
             @Override
             public void run() {
                 try {
-                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportExecutable.class, "ImportExecutable.Progress")); // NOI18N
                     progress.start();
                     Applicable applicable = null;
                     try {

@@ -98,7 +98,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
                               //TODO can the .jar extension be hardwired? on CP..
                             File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
                             File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
-                            URI localRepo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()).toURI();
+                            URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
                             URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
                             if (!rel.isAbsolute()) {
                                 String groupId = rel.getPath();

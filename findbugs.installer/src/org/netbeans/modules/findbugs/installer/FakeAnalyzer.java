@@ -70,7 +70,7 @@ public class FakeAnalyzer implements Analyzer {
 
         @Messages("DN_FindBugs=FindBugs")
         public FakeAnalyzerFactory() {
-            super("findbugs", Bundle.DN_FindBugs(), null);
+            super("findbugs", Bundle.DN_FindBugs(), (String) null);
         }
 
         @Override

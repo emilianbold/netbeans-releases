@@ -82,6 +82,7 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put("osgi.instance.area", userArea); // NOI18N
         configMap.put("osgi.instance.area.default", userArea); // NOI18N
         final String installArea = toFileURL(findInstallArea());
+        LOG.log(Level.INFO, "Install area set to {0}", installArea); // NOI18N
         configMap.put("osgi.install.area", installArea); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N

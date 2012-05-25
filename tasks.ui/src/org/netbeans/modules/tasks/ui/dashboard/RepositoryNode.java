@@ -139,11 +139,11 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                     btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                     panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-                    btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(getRepository())); //NOI18N
+                    btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(this)); //NOI18N
                     btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
                     panel.add(btnSearch, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-                    btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(getRepository())); //NOI18N
+                    btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
                     btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
                     panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
                 }
@@ -179,10 +179,47 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     @Override
     public final Action[] getPopupActions() {
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        RepositoryNode[] repositoryNodes = new RepositoryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof RepositoryNode) {
+                repositoryNodes[i] = (RepositoryNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getRepositoryAction());
-        actions.addAll(Actions.getRepositoryPopupActions(this));
+        Action repositoryAction = getRepositoryAction(repositoryNodes);
+        if (repositoryAction != null) {
+            actions.add(repositoryAction);
+        }
+        actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private Action getRepositoryAction(RepositoryNode... repositoryNodes) {
+        boolean allOpened = true;
+        boolean allClosed = true;
+        for (RepositoryNode repositoryNode : repositoryNodes) {
+            if (repositoryNode.isOpened()) {
+                allClosed = false;
+            } else {
+                allOpened = false;
+            }
+        }
+        if (allOpened) {
+            if (closeRepositoryAction == null) {
+                closeRepositoryAction = new CloseRepositoryNodeAction(this);
+            }
+            return closeRepositoryAction;
+        } else if (allClosed){
+            if (openRepositoryAction == null) {
+                openRepositoryAction = new OpenRepositoryNodeAction(this);
+            }
+            return openRepositoryAction;
+        }
+        return null;
     }
 
     public List<QueryNode> getQueryNodes() {
@@ -267,20 +304,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     Collection<Query> getQueries() {
         return repository.getQueries();
-    }
-
-    private Action getRepositoryAction() {
-        if (isOpened()) {
-            if (closeRepositoryAction == null) {
-                closeRepositoryAction = new CloseRepositoryNodeAction(this);
-            }
-            return closeRepositoryAction;
-        } else {
-            if (openRepositoryAction == null) {
-                openRepositoryAction = new OpenRepositoryNodeAction(this);
-            }
-            return openRepositoryAction;
-        }
     }
 
     ImageIcon getRepositoryIcon() {
