@@ -53,6 +53,7 @@ import org.openide.util.lookup.Lookups;
 public abstract class NamedOption {
     public static final String HIGHLIGTING_CATEGORY = "CND/options/highlighting"; //NOI18N
     public static final String MAKE_PROJECT_CATEGORY = "CND/options/makeProject"; //NOI18N
+    public static final String HINTS_CATEGORY = "CND/options/hints"; //NOI18N
     public static final String OTHER_CATEGORY = "CND/options/other"; //NOI18N
     
     private static final Accessor accessor = new Accessor();
@@ -133,7 +134,7 @@ public abstract class NamedOption {
         }
 
         private NamedOption findOption(String name) {
-            for (String category: Arrays.asList(HIGHLIGTING_CATEGORY, MAKE_PROJECT_CATEGORY, OTHER_CATEGORY)) {
+            for (String category: Arrays.asList(HIGHLIGTING_CATEGORY, HINTS_CATEGORY, MAKE_PROJECT_CATEGORY, OTHER_CATEGORY)) {
                 for (NamedOption option : Lookups.forPath(category).lookupAll(NamedOption.class)) {
                     if (name.equals(option.getName())) {
                         return option;

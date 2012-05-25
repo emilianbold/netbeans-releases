@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.masterfs.watcher;
 
+import java.io.File;
 import org.netbeans.modules.masterfs.providers.Notifier;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -49,6 +50,8 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +98,24 @@ public class WatcherTest extends NbTestCase {
         root.removeFileChangeListener(listener);
         
         notify.assertRegistered("Path has been cleared", (String)null);
+    }
+
+    public void testRemoveListenerFromAFileObj() throws Exception {
+        File f = new File(new File(getWorkDir(), "dir"), "X.txt");
+        final File pf = f.getParentFile();
+        pf.mkdirs();
+        f.createNewFile();
+        
+        FileObject fo = FileUtil.toFileObject(f);
+        assertTrue("Is data", fo.isData());
+        
+        f.delete();
+        pf.delete();
+        FileObject parent = FileUtil.toFileObject(getWorkDir()).createData("dir");
+        assertTrue("Also data", parent.isData());
+        
+        
+        fo.removeFileChangeListener(new FileChangeAdapter());
     }
     
     public void testGarbageCollectListener() throws Exception {
