@@ -76,6 +76,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.filters.BaseFilterReader;
+import org.apache.tools.ant.filters.ChainableReader;
 import org.apache.tools.ant.filters.LineContainsRegExp;
 import org.apache.tools.ant.taskdefs.Concat;
 import org.apache.tools.ant.taskdefs.Concat.TextElement;
@@ -360,6 +362,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
                 LineContainsRegExp filter = new LineContainsRegExp();
                 filter.addConfiguredRegexp(linePattern);
                 ch.addLineContainsRegExp(filter);
+                ch.add(new DuplKeys());
                 concat.addFilterChain(ch);
                 concat.addFilterChain(bundleFilter);
             }
@@ -561,5 +564,76 @@ implements FileNameMapper, URIResolver, EntityResolver {
         public boolean isFilesystemOnly() {
             return false;
         }
+    }
+
+    private class DuplKeys extends BaseFilterReader
+    implements ChainableReader {
+        private Map<String,String> map;
+        private String line;
+        private int lineIdx;
+        
+        public DuplKeys() {
+        }
+
+        public DuplKeys(Reader in) {
+            super(new BufferedReader(in));
+        }
+
+        @Override
+        public Reader chain(Reader rdr) {
+            return new DuplKeys(rdr);
+        }
+        
+        private BufferedReader in() {
+           return (BufferedReader) in;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (line != null) {
+                if (lineIdx < line.length()) {
+                    return line.charAt(lineIdx++);
+                } else {
+                    line = null;
+                    return '\n';
+                }
+            }
+            do { 
+                line = in().readLine();
+                if (line == null) {
+                    return -1;
+                }
+            } while (line.startsWith("#"));
+            lineIdx = 0;
+            if (line.startsWith(" ")) {
+                return read();
+            }
+
+            int equals = line.indexOf('=');
+            if (equals == -1) {
+                return read();
+            }
+            String key = line.substring(0, equals).trim();
+            final String value = line.substring(equals + 1);
+            if (map == null) {
+                map = new HashMap<String, String>();
+            }
+            if (map.containsKey(key)) {
+                final String oldValue = map.get(key);
+                if (!value.equals(oldValue)) {
+                    final String msg = "The key " + key + 
+                        " is duplicated and values are not identical: '" + 
+                        value + "' and '" + oldValue + "'!";
+                    throw new BuildException(msg);
+                }
+                // ignore the line
+                line = null;
+                return read();
+            }
+            map.put(key, value);
+            return read();
+        }
+        
+        
     }
 }
