@@ -313,7 +313,7 @@ public class Repository implements Serializable {
 
     /** list of filesystems (FileSystem) */
     private ArrayList<FileSystem> fileSystems;
-    private transient ArrayList<FileSystem> fileSystemsClone;
+    private transient List<FileSystem> fileSystemsClone = Collections.emptyList();
 
     /** the system filesystem */
     private FileSystem system;
@@ -581,9 +581,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final Enumeration<? extends FileSystem> getFileSystems() {
-        ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
-
-        return java.util.Collections.enumeration(tempFileSystems);
+        return Collections.enumeration(fileSystemsClone);
     }
 
     /** Returns enumeration of all filesystems.
@@ -602,7 +600,7 @@ public class Repository implements Serializable {
      */
     @Deprecated
     public final FileSystem[] toArray() {
-        ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
+        List<FileSystem> tempFileSystems = fileSystemsClone;
 
         FileSystem[] fss = new FileSystem[tempFileSystems.size()];
         tempFileSystems.toArray(fss);

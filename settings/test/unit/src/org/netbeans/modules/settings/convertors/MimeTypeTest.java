@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.settings.convertors;
 
-package org.openide.awt;
-
-import org.netbeans.modules.openide.loaders.AWTTask;
-import java.awt.EventQueue;
-import java.util.logging.Level;
-import org.netbeans.junit.Log;
-import static org.junit.Assert.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.LocalFileSystem;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+/** Integration test to verify the mime type of .settings file can be
+ * found without opening the input stream.
  */
-public class AWTTaskTest extends NbTestCase {
+public class MimeTypeTest extends NbTestCase {
 
-    public AWTTaskTest(String name) {
+    public MimeTypeTest(String name) {
         super(name);
     }
-
-    @Override protected Level logLevel() {
-        return Level.INFO; // just do not print the stack trace to stderr
+    
+    public static Test suite() {
+        return NbModuleSuite.allModules(MimeTypeTest.class);
     }
-
-    public void testRun() throws Exception {
-        class R implements Runnable {
-            @Override public void run() {
-                throw new IllegalStateException();
+    
+    public void testIsMimeTypeRegistered() throws Exception {
+        class LFS extends LocalFileSystem {
+            @Override
+            protected InputStream inputStream(String name) throws FileNotFoundException {
+                fail("Don't call me: " + name);
+                throw new FileNotFoundException();
             }
         }
-        R run = new R();
-
-        CharSequence log = Log.enable("org.openide.awt", Level.WARNING);
-        AWTTask instance = new AWTTask(run, null);
-
-        waitEQ();
-        assertTrue("Finished", instance.isFinished());
-
-        if (!log.toString().contains("IllegalStateException")) {
-            fail("There should be IllegalStateException:\n" + log);
-        }
+        
+        clearWorkDir();
+        
+        new File(getWorkDir(), "x.settings").createNewFile();
+        
+        LFS lfs = new LFS();
+        lfs.setRootDirectory(getWorkDir());
+        
+        FileObject fo = lfs.findResource("x.settings");
+        assertNotNull("File found", fo);
+        assertEquals("mime type is correct without opening the content", "application/x-nbsettings", fo.getMIMEType());
     }
-
-    static void waitEQ() throws Exception {
-        EventQueue.invokeAndWait(new Runnable() {
-            @Override public void run() {
-            }
-        });
-    }
-
 }
