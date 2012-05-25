@@ -65,8 +65,14 @@ public class ErrorDescriptionFactory {
     private ErrorDescriptionFactory() {
     }
 
-    /**
-     * Should be called inside document read lock to assure consistency
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     * 
+     * Call from inside a document read lock to ensure the meaning of lineNumber
+     * does not change while this method runs.
+     * 
+     * If the lineNumber is greater than the number of lines in the given document,
+     * the very last line will be used.
+     * 
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull Document doc, int lineNumber) {
         Parameters.notNull("severity", severity);
@@ -75,8 +81,14 @@ public class ErrorDescriptionFactory {
         return createErrorDescription(severity, description, new StaticFixList(), doc, lineNumber);
     }
     
-    /**
-     * Should be called inside document read lock to assure consistency
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     * 
+     * Call from inside a document read lock to ensure the meaning of lineNumber
+     * does not change while this method runs.
+     * 
+     * If the lineNumber is greater than the number of lines in the given document,
+     * the very last line will be used.
+     * 
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull List<Fix> fixes, @NonNull Document doc, int lineNumber) {
         Parameters.notNull("severity", severity);
@@ -86,8 +98,14 @@ public class ErrorDescriptionFactory {
         return createErrorDescription(severity, description, new StaticFixList(fixes), doc, lineNumber);
     }
     
-    /**
-     * Should be called inside document read lock to assure consistency
+    /**Create a new {@link ErrorDescription} with the given parameters.
+     * 
+     * Call from inside a document read lock to ensure the meaning of lineNumber
+     * does not change while this method runs.
+     * 
+     * If the lineNumber is greater than the number of lines in the given document,
+     * the very last line will be used.
+     * 
      */
     public static @NonNull ErrorDescription createErrorDescription(@NonNull Severity severity, @NonNull String description, @NonNull LazyFixList fixes, @NonNull Document doc, int lineNumber) {
         return createErrorDescription(null, severity, description, null, fixes, doc, lineNumber);
@@ -95,8 +113,12 @@ public class ErrorDescriptionFactory {
 
     /**Create a new {@link ErrorDescription} with the given parameters.
      *
-     * Should be called inside document read lock to assure consistency
-     *
+     * Call from inside a document read lock to ensure the meaning of lineNumber
+     * does not change while this method runs.
+     * 
+     * If the lineNumber is greater than the number of lines in the given document,
+     * the very last line will be used.
+     * 
      * @param id an optional ID of the {@link ErrorDescription}. Should represent a "type" of an error/warning.
      *           It is recommended that providers prefix the ID with their unique prefix.
      * @param severity the desired {@link Severity}

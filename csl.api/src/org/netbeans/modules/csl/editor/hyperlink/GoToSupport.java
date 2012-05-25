@@ -343,8 +343,15 @@ public class GoToSupport {
         DeclarationFinder finder = lang.getDeclarationFinder();
         assert finder != null;
         OffsetRange range = finder.getReferenceSpan(doc, offset);
-        assert range != null && range != OffsetRange.NONE;
-
+        // rather check for consistency, we are calling to client code:
+        if (range == null || range == OffsetRange.NONE) {
+            LOG.log(Level.WARNING, "Inconsistent DeclarationFinder {0} for offset {1}",
+                new Object[] {
+                    finder,
+                    offset
+            });
+            return null;
+        }
         return new int[]{range.getStart(), range.getEnd()};
     }
 
