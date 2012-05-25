@@ -807,7 +807,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private String getDefaultRemoteProjectDir(ExecutionEnvironment env) {
         String res;
         try {
-            res = HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                res = HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            } else {
+                res = "/"; //NOI18N
+            }
         } catch (IOException ex) {
             res = "/"; //NOI18N
         } catch (ConnectionManager.CancellationException ex) {
