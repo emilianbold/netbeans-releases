@@ -11,3 +11,5 @@ int main202433_Fifth() {
     var2.foo2();
     return 1;
 }
+
+Unresolved_Type_To_Check_For_Problems varResolved;
