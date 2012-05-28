@@ -3572,7 +3572,7 @@ public class Reformatter implements ReformatTask {
                                     } else {
                                         col++;
                                     }
-                                    if (!s.equals(text.substring(lastWSPos, endOff)))
+                                    if (endOff > lastWSPos && !s.equals(text.substring(lastWSPos, endOff)))
                                         addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                                 } else if (pendingDiff != null) {
                                     String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
