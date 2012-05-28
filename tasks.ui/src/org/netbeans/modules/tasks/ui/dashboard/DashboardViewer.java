@@ -42,13 +42,14 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -249,37 +250,39 @@ public final class DashboardViewer implements PropertyChangeListener {
         return dashboardComponent;
     }
 
-    public void addTaskToCategory(TaskNode taskNode, Category category) {
-        TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
-        //task is already categorized (task exists within categories)
-        if (categorizedTaskNode != null) {
-            //task is already in this category, do nothing
-            if (category.equals(categorizedTaskNode.getCategory())) {
-                return;
+    public void addTaskToCategory(Category category, TaskNode... taskNodes) {
+        for (TaskNode taskNode : taskNodes) {
+            TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
+            //task is already categorized (task exists within categories)
+            if (categorizedTaskNode != null) {
+                //task is already in this category, do nothing
+                if (category.equals(categorizedTaskNode.getCategory())) {
+                    return;
+                }
+                //task is already in another category, dont add new taskNode but move existing one
+                taskNode = categorizedTaskNode;
             }
-            //task is already in another category, dont add new taskNode but move existing one
-            taskNode = categorizedTaskNode;
-        }
-        CategoryNode destCategoryNode = mapCategoryToNode.get(category);
-        final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
-        final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
-        TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
-        if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
-            //remove from old category
-            if (taskNode.isCategorized()) {
-                removeTask(taskNode);
+            CategoryNode destCategoryNode = mapCategoryToNode.get(category);
+            final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
+            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
+            TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
+            if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
+                //remove from old category
+                if (taskNode.isCategorized()) {
+                    removeTask(taskNode);
+                }
+                //set new category
+                toAdd.setCategory(category);
+                if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
+                    DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+                }
+                ArrayList<Issue> toSelect = new ArrayList<Issue>();
+                toSelect.add(taskNode.getTask());
+                destCategoryNode.updateContentAndSelect(toSelect);
             }
-            //set new category
-            toAdd.setCategory(category);
-            if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
-                DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+            if (isTaskInFilter && !isCatInFilter) {
+                addCategoryToModel(destCategoryNode);
             }
-            ArrayList<Issue> toSelect = new ArrayList<Issue>();
-            toSelect.add(taskNode.getTask());
-            destCategoryNode.updateContentAndSelect(toSelect);
-        }
-        if (isTaskInFilter && !isCatInFilter) {
-            addCategoryToModel(destCategoryNode);
         }
         storeCategory(category);
     }
@@ -331,7 +334,7 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void addCategory(Category category) {
         //add category to the model - sorted
-        CategoryNode newCategoryNode = new CategoryNode(category, true);
+        CategoryNode newCategoryNode = new CategoryNode(category, false);
         categoryNodes.add(newCategoryNode);
         mapCategoryToNode.put(category, newCategoryNode);
         addCategoryToModel(newCategoryNode);
@@ -636,6 +639,12 @@ public final class DashboardViewer implements PropertyChangeListener {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
+                // w8 with loading to preject ot be opened
+                try {
+                    OpenProjects.getDefault().openProjects().get();
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                }
                 titleRepositoryNode.setProgressVisible(true);
                 titleCategoryNode.setProgressVisible(true);
                 loadRepositories();
