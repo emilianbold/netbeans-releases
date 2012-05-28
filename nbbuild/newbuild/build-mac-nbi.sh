@@ -15,9 +15,6 @@ if [ -z $BUILD_NBJDK7 ]; then
     BUILD_NBJDK7=0
 fi
 
-OUTPUT_DIR="$DIST/installers"
-export OUTPUT_DIR
-
 # Run new builds
 sh $NB_ALL/installer/mac/newbuild/init.sh
 sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $EN_BUILD $ML_BUILD $BUILD_NBJDK7 $LOCALES
@@ -29,7 +26,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
-    cp -r $WORKSPACE/dist_en/* $DIST/bundles
+    cp -r $WORKSPACE/installer/mac/newbuild/dist_en/* $DIST/bundles
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Cannot copy installers"
@@ -37,21 +34,13 @@ if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
     fi
 fi
 if [ 1 -eq $ML_BUILD ] ; then
-    cp -r $WORKSPACE/dist/* $DIST/ml/bundles
+    cp -r $WORKSPACE/installer/mac/newbuild/dist/* $DIST/ml/bundles
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Cannot copy installers"
         exit $ERROR_CODE;
     fi
 fi
-
-if [ -d $DIST/ml ]; then
-    mv $OUTPUT_DIR/ml/* $DIST/ml
-    rm -rf $OUTPUT_DIR/ml
-fi
-
-mv $OUTPUT_DIR/* $DIST
-rmdir $OUTPUT_DIR
 
 ###################################################################
 #
