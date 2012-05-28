@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -113,6 +114,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private Set<TreeListNode> expandedNodes;
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
+    static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
