@@ -324,6 +324,15 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("inc211143.h");
     }
 
+    
+    public void testBug212905() throws Exception {
+        Level oldLevel = Logger.getLogger("cnd.logger").getLevel();
+        Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
+        // Bug 212905 - StackOverflowError at java.util.WeakHashMap.eq
+        performStaticTest("bug212905.cpp");
+        Logger.getLogger("cnd.logger").setLevel(oldLevel);
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

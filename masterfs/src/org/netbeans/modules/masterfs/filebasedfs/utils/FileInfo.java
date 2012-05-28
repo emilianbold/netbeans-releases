@@ -108,10 +108,14 @@ public final class FileInfo {
 
     public boolean  exists() {
         if (exists == -1) {
-            if (getFile().getPath().equals("\\\\")) { // UNC root
+            exists = 0;
+            if (FileChangedManager.getInstance().exists(getFile())) {
                 exists = 1;
             } else {
-                exists = (FileChangedManager.getInstance().exists(getFile())) ? 1 : 0;
+                String path = getFile().getPath();
+                if (path.startsWith("\\\\") && path.indexOf('\\', 2) == -1) { // NOI18N
+                    exists = 1;
+                }
             }
         }
         return (exists == 0) ? false : true;
@@ -195,6 +199,8 @@ public final class FileInfo {
                         filename = filename.substring(0, secondSlash);
                     }
                     retVal = new File(filename);
+                } else {
+                    retVal = getFile();
                 }
             }
             
