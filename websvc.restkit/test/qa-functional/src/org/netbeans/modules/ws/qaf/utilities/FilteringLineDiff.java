@@ -110,7 +110,7 @@ public class FilteringLineDiff extends LineDiff {
             return true;
         }
         pkg = "org.codehaus.jettison.json.";//NOI18N
-        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, "")) || l1.startsWith("import " + pkg) || l2.startsWith("import " + pkg)) {
             LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
             return true;
         }

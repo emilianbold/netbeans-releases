@@ -48,10 +48,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -60,11 +63,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.findbugs.RunFindBugs.SigFilesValidator;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -129,13 +134,18 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
             }
         }.scan(parameter.getCompilationUnit(), null);
 
+        final AtomicLong latest = new AtomicLong(-1);
+        final AtomicReference<String> newTimeStampsString = new AtomicReference<String>();
+        
         List<ErrorDescription> bugs = RunFindBugs.runFindBugs(parameter, null, null, sourceRoot, classNames, null, new SigFilesValidator() {
             @Override public boolean validate(Iterable<? extends FileObject> files) {
                 StringBuilder timeStamps = new StringBuilder();
 
                 for (FileObject f : files) {
                     if (timeStamps.length() != 0) timeStamps.append("-");
-                    timeStamps.append(f.lastModified().getTime());
+                    long ts = f.lastModified().getTime();
+                    timeStamps.append(ts);
+                    latest.set(Math.max(latest.get(), ts));
                 }
                 
                 String timeStampsString = timeStamps.toString();
@@ -145,14 +155,33 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
                     return false;
                 }
 
-                previousTimeStamps = timeStampsString;
+                newTimeStampsString.set(timeStampsString);
                 return true;
             }
         });
 
         if (cancel.get() || bugs == null) return;
-
+        
+        long documentTimeStamp;
+        
+        DataObject d = DataObject.find(parameter.getFileObject());
+        
+        if (d.isModified()) {
+            Document doc = parameter.getDocument();
+            
+            documentTimeStamp = doc != null ? DocumentUtilities.getDocumentTimestamp(doc) : 0;
+        } else {
+            documentTimeStamp = parameter.getFileObject().lastModified().getTime();
+        }
+        
+        if (documentTimeStamp > 0 && latest.get() > 0 && documentTimeStamp > latest.get()) {
+            LOG.log(Level.FINE, "Document is too new for the classfiles, skipping FindBugs in editor (classfiles timestamp {0}, document timestamp {1})", new Object[] {latest.get(), documentTimeStamp});
+            return ;
+        }
+        
         HintsController.setErrors(parameter.getFileObject(), HINTS_KEY, bugs);
+        
+        previousTimeStamps = newTimeStampsString.get();
     }
 
     @Override public void cancel() {

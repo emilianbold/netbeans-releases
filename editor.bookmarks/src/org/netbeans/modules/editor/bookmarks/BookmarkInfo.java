@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.util.Comparator;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -147,15 +148,18 @@ public final class BookmarkInfo {
     }
     
     public String getDescription(boolean fullPath, boolean useName, boolean useKey) {
-        return getDescription((this != BOOKMARKS_WINDOW)
-                ? (fullPath 
-                        ? getFileBookmarks().getFileObject().getPath()
-                        : getFileBookmarks().getFileObject().getNameExt())
-                : null,
-                useName,
-                useKey,
-                false
-                );
+        String fileDescription;
+        if (this != BOOKMARKS_WINDOW) {
+            FileObject fo = getFileBookmarks().getFileObject();
+            if (fo != null) {
+                fileDescription = fullPath ? fo.getPath() : fo.getNameExt();
+            } else {
+                fileDescription = NbBundle.getMessage(BookmarkInfo.class, "LBL_NonExistentFile");
+            }
+        } else {
+            fileDescription = null;
+        }
+        return getDescription(fileDescription, useName, useKey, false);
     }
 
     public String getDescription(String fileDescription, boolean useName, boolean useKey, boolean forHtml) {

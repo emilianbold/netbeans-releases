@@ -114,8 +114,15 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         }
         
         String key = oldkey + ":" + version;
+        String prevKey = reversePrefs().get(owner.toString(), null);
+        if (prevKey != null && !prevKey.equals(key)) {
+            prefs().remove(prevKey);
+        }
+        
         prefs().put(key, owner.toString());
+        reversePrefs().put(owner.toString(), key);
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
+        
     }
     
     /**
@@ -347,8 +354,11 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return null;
     }
 
-    private static Preferences prefs() {
+    static Preferences prefs() {
         return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"); // NOI18N
     }
 
+    private static Preferences reversePrefs() {
+        return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("reverseExternalOwners"); // NOI18N
+    }
 }

@@ -4053,29 +4053,27 @@ public final class LayoutDesigner implements LayoutConstants {
                 trailingNeighbor = null;
             }
 
-            if (!wasResizing
-                && ((leadingGap != null && LayoutInterval.canResize(leadingGap))
-                    || (trailingGap != null && LayoutInterval.canResize(trailingGap))))
-                wasResizing = true;
+            boolean gapsResizing = (leadingGap != null && LayoutInterval.canResize(leadingGap))
+                                || (trailingGap != null && LayoutInterval.canResize(trailingGap));
 
             LayoutInterval superParent = parent.getParent();
 
             // [check for last interval (count==1), if parallel superParent try to re-add the interval]
             if (parent.getSubIntervalCount() == 0) { // nothing remained
                 int idx = layoutModel.removeInterval(parent);
-                intervalRemoved(superParent, idx, wasResizing, dimension);
+                intervalRemoved(superParent, idx, wasResizing || gapsResizing, dimension);
                 return;
             } else { // the sequence remains
-                boolean losingResizing = wasResizing && !LayoutInterval.contentWantResize(parent);
+                boolean restoreResizing = gapsResizing || (wasResizing && !LayoutInterval.contentWantResize(parent));
 
                 if ((leadingNeighbor != null && trailingNeighbor != null) // inside a sequence
                     || (leadingNeighbor != null && ((trailingGap != null && LayoutInterval.canResize(trailingGap))
-                                                    || (!losingResizing && LayoutInterval.getEffectiveAlignment(leadingNeighbor, TRAILING, true) == TRAILING)))
+                                                    || (!restoreResizing && LayoutInterval.getEffectiveAlignment(leadingNeighbor, TRAILING, true) == TRAILING)))
                     || (trailingNeighbor != null && ((leadingGap != null && LayoutInterval.canResize(leadingGap))
-                                                    || (!losingResizing && LayoutInterval.getEffectiveAlignment(trailingNeighbor, LEADING, true) == LEADING)))) {
+                                                    || (!restoreResizing && LayoutInterval.getEffectiveAlignment(trailingNeighbor, LEADING, true) == LEADING)))) {
                     // in the middle or at aligned side - create a placeholder gap (filling the original space)
                     int min, pref = Integer.MIN_VALUE, max;
-                    if (!losingResizing) {
+                    if (!restoreResizing) {
                         min = max = USE_PREFERRED_SIZE;
                     } else {
                         min = (leadingNeighbor == null && leadingGap != null && leadingGap.getMinimumSize() == 0)
@@ -4112,7 +4110,7 @@ public final class LayoutDesigner implements LayoutConstants {
                     destroyRedundantGroups(superParent);
                 } else { // this is an "open" end - compensate the size in the parent
                     int resizingAlignment = -1;
-                    if (losingResizing) { // could affect effective alignment of the rest of the sequence
+                    if (restoreResizing) { // could affect effective alignment of the rest of the sequence
                         if (leadingNeighbor == null && parent.getAlignment() == LEADING) {
                             layoutModel.setIntervalAlignment(parent, TRAILING);
                             resizingAlignment = LEADING; // return the alignment if a compensating resizing gap is added later
@@ -4143,7 +4141,7 @@ public final class LayoutDesigner implements LayoutConstants {
                         parent.getCurrentSpace().set(dimension, l, t);
                         exclude = parent;
                     }
-                    LayoutInterval adjusted = operations.maintainSize(superParent, losingResizing,
+                    LayoutInterval adjusted = operations.maintainSize(superParent, restoreResizing,
                             dimension, exclude, exclude.getCurrentSpace().size(dimension), true);
                     if (adjusted != null) {
                         operations.optimizeGaps2(adjusted, dimension);
@@ -4170,7 +4168,7 @@ public final class LayoutDesigner implements LayoutConstants {
                         }
                     }
 
-                    if (losingResizing && resizingAlignment != -1) {
+                    if (restoreResizing && resizingAlignment != -1) {
                         // return back original alignment if resizing was returned to the sequence
                         LayoutInterval parentResizingAgain = (resizingAlignment == LEADING ?
                                                trailingNeighbor : leadingNeighbor).getParent();
@@ -4181,7 +4179,7 @@ public final class LayoutDesigner implements LayoutConstants {
                     }
                 }
 
-                if (losingResizing && !LayoutInterval.canResize(superParent) && !LayoutInterval.contentWantResize(superParent)) {
+                if (restoreResizing && !LayoutInterval.canResize(superParent) && !LayoutInterval.contentWantResize(superParent)) {
                     operations.enableGroupResizing(superParent); // cancel suppressed resizing
                 }
             }

@@ -251,9 +251,12 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                                 return;
                             }
                         }
-                        InputLocation location = nbprj.getMavenProject().getModel().getLocation("properties").getLocation(prop);//NOI18N
-                        if (location != null) {
-                            openAtSource(location);
+                        InputLocation propLoc = nbprj.getMavenProject().getModel().getLocation("properties");
+                        if (propLoc != null) { //#212984
+                            InputLocation location = propLoc.getLocation(prop);
+                            if (location != null) {
+                                openAtSource(location);
+                            }
                         }
                     }
                 }
