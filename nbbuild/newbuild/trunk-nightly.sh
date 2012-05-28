@@ -10,13 +10,15 @@ source init.sh
 
 rm -rf $DIST
 
-#if [ ! -z $WORKSPACE ]; then
+if [ ! -z $WORKSPACE ]; then
 #    #I'm under hudson and have sources here, I need to clone them
 #    #Clean obsolete sources first
-#    run_and_measure "rm -rf $NB_ALL"
-#    run_and_measure "hg clone -U $WORKSPACE $NB_ALL"
-#    run_and_measure "hg -R $NB_ALL update $NB_BRANCH"
-#fi
+    run_and_measure "rm -rf $NB_ALL"
+    run_and_measure "hg clone -U $WORKSPACE $NB_ALL"
+    run_and_measure "hg -R $NB_ALL update $NB_BRANCH"
+fi
+TIP=`hg tip --template '{rev}'`
+export TIP
 
 ###################################################################
 #
@@ -78,7 +80,10 @@ fi
 run_and_measure
 
 cd $TRUNK_NIGHTLY_DIRNAME
-run_and_measure "bash build-nbi.sh" "build-nbi in total"
+
+wget --no-proxy http://localhost:8080/job/Fake-Fake/buildWithParameters?TIP=$TIP > /dev/null
+
+run_and_measure "bash build-nbi-generic.sh" "build-nbi-generic in total"
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
