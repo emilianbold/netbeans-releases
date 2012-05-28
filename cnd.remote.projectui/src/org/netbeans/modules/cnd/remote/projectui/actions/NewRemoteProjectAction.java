@@ -89,7 +89,7 @@ import org.openide.windows.WindowManager;
 
 
 @ActionID(id = "org.netbeans.modules.cnd.remote.actions.NewRemoteProjectAction", category = "Project")
-@ActionRegistration(iconInMenu = true, displayName = "#NewRemoteProjectAction.submenu.title")
+@ActionRegistration(iconInMenu = true, displayName = "#NewRemoteProjectAction.submenu.title", lazy = false)
 @ActionReferences({
     //@ActionReference(path = "Menu/File", position = 510),
     @ActionReference(path = "Toolbars/Remote", position = 1000)
