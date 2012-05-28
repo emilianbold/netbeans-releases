@@ -418,6 +418,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         try {
             if (!lazyScan) {
+                lazyScan = true; // scan only one exact method...no nested methods (even though that they shouldn't exist)
                 scan(node.getFunction().getFormalParameters());
                 scan(node.getFunction().getBody());
             }
@@ -794,42 +795,44 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression parameterName = node.getParameterName();
         Expression parameterType = node.getParameterType();
         Scope scp = modelBuilder.getCurrentScope();
-        FunctionScopeImpl fncScope = (FunctionScopeImpl) scp;
-        while (parameterName instanceof Reference) {
-            Reference ref = (Reference) parameterName;
-            Expression expression = ref.getExpression();
-            if (expression instanceof Variable || expression instanceof Reference) {
-                parameterName = expression;
+//        if (scp instanceof FunctionScope) {
+            FunctionScopeImpl fncScope = (FunctionScopeImpl) scp;
+            while (parameterName instanceof Reference) {
+                Reference ref = (Reference) parameterName;
+                Expression expression = ref.getExpression();
+                if (expression instanceof Variable || expression instanceof Reference) {
+                    parameterName = expression;
+                }
             }
-        }
-        List<? extends ParameterElement> parameters = fncScope.getParameters();
-        if (parameterName instanceof Variable) {
-            for (ParameterElement parameter : parameters) {
-                Set<TypeResolver> types = parameter.getTypes();
-                String typeName = null;
-                for (TypeResolver typeResolver : types) {
-                    if (typeResolver.isResolved()) {
-                        QualifiedName typeQualifiedName = typeResolver.getTypeName(false);
-                        if (typeQualifiedName != null) {
-                            typeName = typeQualifiedName.toString();
+            List<? extends ParameterElement> parameters = fncScope.getParameters();
+            if (parameterName instanceof Variable) {
+                for (ParameterElement parameter : parameters) {
+                    Set<TypeResolver> types = parameter.getTypes();
+                    String typeName = null;
+                    for (TypeResolver typeResolver : types) {
+                        if (typeResolver.isResolved()) {
+                            QualifiedName typeQualifiedName = typeResolver.getTypeName(false);
+                            if (typeQualifiedName != null) {
+                                typeName = typeQualifiedName.toString();
+                            }
                         }
                     }
-                }
-                VariableNameImpl var = createParameter(fncScope, parameter);
-                if (!types.isEmpty() && var != null) {
-                    VarAssignmentImpl varAssignment = var.createAssignment(fncScope, false, fncScope.getBlockRange(), parameter.getOffsetRange(), typeName);
-                    var.addElement(varAssignment);
+                    VariableNameImpl var = createParameter(fncScope, parameter);
+                    if (!types.isEmpty() && var != null) {
+                        VarAssignmentImpl varAssignment = var.createAssignment(fncScope, false, fncScope.getBlockRange(), parameter.getOffsetRange(), typeName);
+                        var.addElement(varAssignment);
+                    }
                 }
             }
-        }
 
-        if (parameterName instanceof Variable) {
-            if (parameterType instanceof NamespaceName) {
-                Kind[] kinds = {Kind.CLASS, Kind.IFACE};
-                occurencesBuilder.prepare(kinds, (NamespaceName) parameterType, fncScope);
+            if (parameterName instanceof Variable) {
+                if (parameterType instanceof NamespaceName) {
+                    Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+                    occurencesBuilder.prepare(kinds, (NamespaceName) parameterType, fncScope);
+                }
+                occurencesBuilder.prepare((Variable) parameterName, fncScope);
             }
-            occurencesBuilder.prepare((Variable) parameterName, fncScope);
-        }
+//        }
         super.visit(node);
     }
 
