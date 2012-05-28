@@ -71,7 +71,7 @@ import org.openide.util.actions.Presenter;
  * @author Alexander Simon
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.projectui.actions.ConnectionStatusAction", category = "Project")
-@ActionRegistration(iconInMenu = true, displayName = "#ConnectionStatusAction.submenu.title")
+@ActionRegistration(iconInMenu = true, displayName = "#ConnectionStatusAction.submenu.title", lazy = false)
 @ActionReference(path = "Toolbars/Remote", position = 450)
 public class ConnectionStatusAction  extends AbstractAction implements Presenter.Toolbar, PropertyChangeListener, ConnectionListener {
 
