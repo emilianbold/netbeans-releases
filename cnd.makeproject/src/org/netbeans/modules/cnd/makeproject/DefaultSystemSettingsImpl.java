@@ -42,25 +42,36 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
+import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * This is an implementation of DefaultSystemSetting.
  * It provides  
  * @author Leonid Mesnik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class)
-public class DefaultSystemSettingsImpl extends DefaultSystemSettings {    
+@ServiceProviders({
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class),
+@ServiceProvider(service = NativeProjectExecutionProvider.class, path = NativeProjectExecutionProvider.PATH, position = 1000),
+@ServiceProvider(service = NativeFileSearchProvider.class, path = NativeFileSearchProvider.PATH, position = 1000)
+})
+public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements NativeProjectExecutionProvider, NativeFileSearchProvider {
     private static AbstractCompiler getDefaultCompiler(NativeFileItem.Language language) {
         PredefinedToolKind kind;
         switch (language) {
@@ -102,5 +113,26 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public NativeExitStatus execute(NativeProject project, String executable, String[] env, String... args) throws IOException {
+        // TODO: default
+        project.getFileSystem();
+        return null;
+    }
+
+    @Override
+    public String getPlatformName(NativeProject project) {
+        // TODO: default
+        project.getFileSystem();
+        return null;
+    }
+
+    @Override
+    public NativeFileSearch getNativeFileSearch(NativeProject project) {
+        // TODO: default
+        project.getFileSystem();
+        return null;
     }
 }
