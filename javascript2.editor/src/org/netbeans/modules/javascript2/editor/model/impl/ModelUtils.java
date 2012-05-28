@@ -364,9 +364,14 @@ public class ModelUtils {
         @Override
         public Node visit(IdentNode iNode, boolean onset) {
             if (onset) {
-                if (getPath().isEmpty() && iNode.getName().equals("this")) {   //NOI18N
-                    result.add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
+                if (getPath().isEmpty()) {
+                    if (iNode.getName().equals("this")) {   //NOI18N
+                        result.add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
+                    } else {
+                        result.add(new TypeUsageImpl(iNode.getName(), iNode.getStart(), false));
+                    }
                 }
+                return null;
             }
             return super.visit(iNode, onset);
         }

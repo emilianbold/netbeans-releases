@@ -62,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -515,23 +516,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             } else {
                                 // just property
                                 Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
-
                                 if (lastTypeAssignment.isEmpty()) {
                                     lastResolvedObjects.add(type);
                                 } else {
-                                    for (Type typeName : lastTypeAssignment) {
-                                        boolean wasFound = false;
-                                        for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                                            if (object.getName().equals(typeName.getType())) {
-                                                lastResolvedObjects.add(object);
-                                                wasFound = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!wasFound) {
-                                            lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
-                                        }
-                                    }
+                                    resolveAssignments(type, request, lastResolvedObjects, lastResolvedTypes);
                                     break;
                                 }
                             }
@@ -695,6 +683,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
     }
+
+    private void resolveAssignments(JsObject jsObject, CompletionRequest request, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
+        Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(request.anchor);
+        for (Type typeName : assignments) {
+            JsObject byOffset = findObjectForOffset(typeName.getType(), request.anchor, request.result.getModel());
+            if (byOffset != null) {
+                resolvedObjects.add(byOffset);
+                resolveAssignments(byOffset, request, resolvedObjects, resolvedTypes);
+            } else {
+                resolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
+            }
+        }
+    }
+    
+    private JsObject findObjectForOffset(String name, int offset, Model model) {
+        for (JsObject object : model.getVariables(offset)) {
+            if (object.getName().equals(name)) {
+                return object;
+            }
+        }
+        return null;
+    }
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
         JsParserResult result = (JsParserResult)request.info;
@@ -787,7 +797,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        
     }
     
     private Collection<JsObject> getLibrariesGlobalObjects() {

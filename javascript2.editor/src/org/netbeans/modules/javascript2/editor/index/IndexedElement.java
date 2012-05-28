@@ -261,9 +261,11 @@ public class IndexedElement extends JsElementImpl {
                 String paramsText = parts[3];
                 LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
                 Collection<String> returnTypes = new ArrayList();
-                String returnTypesText = parts[4];
-                for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
-                    returnTypes.add(stringTokenizer.nextToken());
+                if (parts.length > 4) {
+                    String returnTypesText = parts[4];
+                    for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
+                        returnTypes.add(stringTokenizer.nextToken());
+                    }
                 }
                 return new FunctionIndexedElement(fo, name, fqnOfProperty, OffsetRange.NONE, flag, parameters, returnTypes);
             }
