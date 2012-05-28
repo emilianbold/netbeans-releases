@@ -540,7 +540,8 @@ public class Reformatter implements ReformatTask {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
-                        tokens.moveNext();
+                        if (!tokens.moveNext())
+                            tokens.movePrevious();
                     }
                     if (startPos >= endPos)
                         endPos = -1;
