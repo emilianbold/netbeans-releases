@@ -2704,7 +2704,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        return uid;
+        return out;
     }
 
     @Override
