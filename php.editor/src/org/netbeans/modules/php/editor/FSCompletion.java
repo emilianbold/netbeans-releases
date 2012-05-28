@@ -93,8 +93,10 @@ public class FSCompletion implements CompletionProvider {
     public FSCompletion() {
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         return new AsyncCompletionTask(new AsyncCompletionQuery() {
+            @Override
             protected void query(final CompletionResultSet resultSet, final Document doc, final int caretOffset) {
                 try {
                     FileObject file = NavUtils.getFile(doc);
@@ -164,6 +166,7 @@ public class FSCompletion implements CompletionProvider {
         }, component);
     }
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;
     }
@@ -260,6 +263,7 @@ public class FSCompletion implements CompletionProvider {
             this.currentFile = currentFile;
         }
 
+        @Override
         public boolean accept(FileObject file) {
             if (file.equals(currentFile) || isNbProjectMetadata(file)){
                 return false; //do not include self in the cc result
@@ -330,6 +334,7 @@ public class FSCompletion implements CompletionProvider {
             });
         }
 
+        @Override
         public void defaultAction(JTextComponent component) {
             doSubstitute(component, null, 0);
             if (!file.isFolder()) {
@@ -337,6 +342,7 @@ public class FSCompletion implements CompletionProvider {
             }
         }
 
+        @Override
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
                 String strToAdd = null;
@@ -350,34 +356,42 @@ public class FSCompletion implements CompletionProvider {
             }
         }
 
+        @Override
         public int getPreferredWidth(Graphics g, Font defaultFont) {
             return CompletionUtilities.getPreferredWidth(file.getNameExt(), null, g, defaultFont);
         }
 
+        @Override
         public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
             CompletionUtilities.renderHtml(icon, file.getNameExt(), null, g, defaultFont, defaultColor, width, height, selected);
         }
 
+        @Override
         public CompletionTask createDocumentationTask() {
             return null;
         }
 
+        @Override
         public CompletionTask createToolTipTask() {
             return null;
         }
 
+        @Override
         public boolean instantSubstitution(JTextComponent component) {
             return false; //????
         }
 
+        @Override
         public int getSortPriority() {
             return -1000;
         }
 
+        @Override
         public CharSequence getSortText() {
             return getText();
         }
 
+        @Override
         public CharSequence getInsertPrefix() {
             return getText();
         }
