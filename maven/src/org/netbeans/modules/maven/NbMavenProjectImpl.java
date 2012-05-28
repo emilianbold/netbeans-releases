@@ -179,7 +179,7 @@ public final class NbMavenProjectImpl implements Project {
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
         userFolderUpdater = new Updater("settings.xml");//NOI18N
         problemReporter = new ProblemReporterImpl(this);
-        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(projectFO, problemReporter);
+        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, problemReporter);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
