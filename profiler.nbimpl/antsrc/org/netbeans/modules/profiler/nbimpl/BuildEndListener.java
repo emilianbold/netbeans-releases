@@ -41,66 +41,48 @@
  */
 package org.netbeans.modules.profiler.nbimpl;
 
-import java.io.File;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.LogLevel;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
-import org.openide.filesystems.FileUtil;
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildListener;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
-public class StartProfilerTask extends Task {
-    private String freeformStr = "";
-    private boolean isFreeForm = false;
-    private AtomicBoolean connectionCancel = new AtomicBoolean();
-    
+class BuildEndListener implements BuildListener {
+    private final AtomicBoolean cancel;
+
+    BuildEndListener(AtomicBoolean cancel) {
+        this.cancel = cancel;
+    }
+
     @Override
-    public void execute() throws BuildException {
-        ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
-        if (s == null && isFreeForm) {
-            File baseDir = getProject().getBaseDir();
-            if (baseDir != null) {
-                Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(baseDir));
-                if (p != null) {
-                    s = ProfilerLauncher.Session.createSession(p);
-                }
-            }
-            
-        }
-        if (s != null) {
-            Map<String, String> props = s.getProperties();
-            if (props != null) {
-                for(Map.Entry<String, String> e : props.entrySet()) {
-                    getProject().setProperty(e.getKey(), e.getValue());
-                }
-                if (isFreeForm) {
-                    getProject().setProperty("profiler.configured", "true"); // NOI18N
-                }
-                
-                getProject().addBuildListener(new BuildEndListener(connectionCancel));
-                
-                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings(), connectionCancel)) {
-                    throw new BuildException("User abort"); // NOI18N
-                }
-            }
-        }
+    public void buildStarted(BuildEvent be) {
+    }
+
+    @Override
+    public void targetStarted(BuildEvent be) {
+    }
+
+    @Override
+    public void targetFinished(BuildEvent be) {
+    }
+
+    @Override
+    public void taskStarted(BuildEvent be) {
+    }
+
+    @Override
+    public void taskFinished(BuildEvent be) {
+    }
+
+    @Override
+    public void messageLogged(BuildEvent be) {
+    }
+
+    @Override
+    public void buildFinished(BuildEvent be) {
+        this.cancel.set(true);
     }
     
-    public void setFreeform(String val) {
-        freeformStr = val;
-        isFreeForm = Boolean.parseBoolean(val);
-    }
-    
-    public String getFreeform() {
-        return freeformStr;
-    }
 }
