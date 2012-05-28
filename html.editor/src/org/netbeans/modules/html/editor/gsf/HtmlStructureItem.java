@@ -149,6 +149,10 @@ final class HtmlStructureItem implements StructureItem {
                 //lazy load the nested items
                 //we need a parser result to be able to find Element for the ElementHandle
                 Source source = Source.create(getElementHandle().getFileObject());
+                if(source == null) {
+                    //file deleted
+                    return Collections.emptyList();
+                }
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
