@@ -108,7 +108,21 @@ public class Imports {
         Fix allFix = null;
         if (ctx.isBulkMode() && !violatingImports.isEmpty()) {
             Fix af = new ImportsFix(violatingImports, kind).toEditorFix();
-            return Collections.singletonList(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString()), af));
+            TreePath tp = ctx.getPath();
+            long pos = Integer.MAX_VALUE;
+            
+            for (TreePathHandle h : violatingImports) {
+                TreePath currentPath = h.resolve(ctx.getInfo());
+                assert currentPath != null;
+                long currentPos = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(currentPath.getCompilationUnit(), currentPath.getLeaf());
+                
+                if (currentPos < pos) {
+                    tp = currentPath;
+                    pos = currentPos;
+                }
+            }
+            
+            return Collections.singletonList(ErrorDescriptionFactory.forTree(ctx, tp, NbBundle.getMessage(Imports.class, "DN_Imports_" + kind.toString() + "_Multi", violatingImports.size()), af));
         }
         if (violatingImports.size() > 1) {
             allFix = new ImportsFix(violatingImports, kind).toEditorFix();

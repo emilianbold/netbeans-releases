@@ -126,7 +126,7 @@ public final class FileBasedURLMapper extends URLMapper {
         FileObject retVal = null;
         File file;
         try {
-            file = FileUtil.normalizeFile(uri2File(url.toURI()));
+            file = FileUtil.normalizeFile(url2F(url));
         } catch (URISyntaxException e) {
             LOG.log(Level.INFO, "URL=" + url, e); // NOI18N
             return null;
@@ -181,13 +181,14 @@ public final class FileBasedURLMapper extends URLMapper {
         }
         return p;
     }
-    
 
-    static File uri2File(URI uri) { // #207060: UNC; candidate for API (#46813)
-        if (uri.getHost() == null) {
-            return new File(uri);
+    static File url2F(final URL url) throws URISyntaxException {
+        File file;
+        if (url.getHost() == null || url.getHost().length() == 0) {
+            file = new File(url.toURI());
         } else {
-            return new File("\\\\" + uri.getHost() + uri.getPath().replace('/', '\\'));
+            file = new File("\\\\" + url.getHost() + url.getPath().replace('/', '\\')); // NOI18N
         }
-    }    
+        return file;
+    }
 }

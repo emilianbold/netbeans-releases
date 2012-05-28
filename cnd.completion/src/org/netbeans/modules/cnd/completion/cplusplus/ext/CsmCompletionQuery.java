@@ -49,10 +49,12 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -140,6 +142,8 @@ abstract public class CsmCompletionQuery {
 
     private static final int MAX_DEPTH = 15;
 
+    Set<CsmExpression> antiLoop = new HashSet<CsmExpression>();
+        
     // the only purpose of this method is that NbJavaCompletionQuery
     // can use it to retrieve baseDocument's fileobject and create correct
     // CompletionResolver with the correct classpath of project to which the file belongs
@@ -952,7 +956,9 @@ abstract public class CsmCompletionQuery {
                                 cppts = uts;
                             }
                         }
-                        if(cppts != null) {
+                        if(cppts != null && !antiLoop.contains(initialValue)) {
+                            antiLoop.add(initialValue);
+
                             CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
                             tp.enableTemplateSupport(true);
                             CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
