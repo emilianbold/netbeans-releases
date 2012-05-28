@@ -21,7 +21,7 @@ export OUTPUT_DIR
 # Run new builds
 cd $NB_ALL/installer/infra/build
 
-run_and_measure "bash build.sh"
+bash build.sh
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -71,7 +71,7 @@ if [ -z $DONT_SIGN_INSTALLER ]; then
 fi
 
 cd $DIST
-run_and_measure "bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters"
+bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
 ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
@@ -80,7 +80,7 @@ fi
 
 if [ $ML_BUILD == 1 ]; then
     cd $DIST/ml
-    run_and_measure "bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters"
+    bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
