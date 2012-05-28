@@ -28,6 +28,23 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
+    cp -r $WORKSPACE/dist_en/* $DIST/bundles
+    ERROR_CODE=$?
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Cannot copy installers"
+        exit $ERROR_CODE;
+    fi
+fi
+if [ 1 -eq $ML_BUILD ] ; then
+    cp -r $WORKSPACE/dist/* $DIST/ml/bundles
+    ERROR_CODE=$?
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Cannot copy installers"
+        exit $ERROR_CODE;
+    fi
+fi
+
 if [ -d $DIST/ml ]; then
     mv $OUTPUT_DIR/ml/* $DIST/ml
     rm -rf $OUTPUT_DIR/ml
@@ -69,17 +86,21 @@ if [ -z $DONT_SIGN_INSTALLER ]; then
 
 fi
 
-cd $DIST
-bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
-ERROR_CODE=$?
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
-#    exit $ERROR_CODE;
+if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
+    cd $DIST
+    #bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
+    bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk
+    ERROR_CODE=$?
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
+    #    exit $ERROR_CODE;
+    fi
 fi
 
 if [ $ML_BUILD == 1 ]; then
     cd $DIST/ml
-    bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
+    #bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
+    bash ${SCRIPTS_DIR}/files-info.sh bundles
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
