@@ -882,7 +882,13 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
      * @return
      */
     protected String getIdTextField () {
-        return panel.getIssuePrefixText() + panel.idTextField.getText().trim();
+        String id = null;
+        try {
+            id = panel.getIssuePrefixText() + panel.idTextField.getText().trim();
+            return id;
+        } finally {
+            Jira.LOG.log(Level.FINE, "getIdTextField returns {0}", id); // NOI18N
+        }
     }
 
     private void setAsSaved() {
@@ -1002,6 +1008,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             public void run() {
                 handle.start();
                 try {
+                    Jira.LOG.log(Level.FINE, "open issue {0}", key);
                     openIssue((NbJiraIssue) repository.getIssue(key.toUpperCase()));
                 } finally {
                     handle.finish();
