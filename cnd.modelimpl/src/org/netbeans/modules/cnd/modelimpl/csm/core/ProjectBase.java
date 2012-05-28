@@ -944,19 +944,21 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             checkConsistency();
-            CreateFilesWorker worker = new CreateFilesWorker(this);
-            worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
+            CreateFilesWorker worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
+            worker.createProjectFilesIfNeed(sources, true);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
-                worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
+                worker.createProjectFilesIfNeed(headers, false);
             }
+            worker.finishProjectFilesCreation();
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 if (!TraceFlags.DEBUG_BROKEN_REPOSITORY) {
                     System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 }
-                validator = null;
                 reopenUnit();
-                worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
-                worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
+                worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, null);
+                worker.createProjectFilesIfNeed(sources, true);
+                worker.createProjectFilesIfNeed(headers, false);
+                worker.finishProjectFilesCreation();
             }
             checkConsistency();
         } finally {
@@ -1012,7 +1014,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     final FileImpl createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, FileModel lwm,
-            ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
+            ProjectSettingsValidator validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
 
         FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
         if (fileAndHandler == null) {
