@@ -19,9 +19,8 @@ OUTPUT_DIR="$DIST/installers"
 export OUTPUT_DIR
 
 # Run new builds
-cd $NB_ALL/installer/infra/build
-
-bash build.sh
+sh $NB_ALL/installer/mac/newbuild/init.sh
+sh $NB_ALL/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $EN_BUILD $ML_BUILD $BUILD_NBJDK7 $LOCALES > $MAC_LOG_NEW 2>&1 &
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
