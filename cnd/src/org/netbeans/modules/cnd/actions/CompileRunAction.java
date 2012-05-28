@@ -81,7 +81,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Alexander Simon
  */
-public class CompileRunAction extends AbstractExecutorRunAction {
+public class CompileRunAction extends CompileRunActionBase {
 
     public CompileRunAction() {
         super.putValue("key", "CndCompileRunAction");// NOI18N
@@ -108,11 +108,11 @@ public class CompileRunAction extends AbstractExecutorRunAction {
     }
 
 
-    public static void performAction(Node node) {
+    public void performAction(Node node) {
         performAction(node, null, getProject(node), null);
     }
 
-    private static Future<Integer> performAction(final Node node, final Writer outputListener, final Project project, final InputOutput inputOutput) {
+    private Future<Integer> performAction(final Node node, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private NativeExecutionService es;
@@ -140,7 +140,7 @@ public class CompileRunAction extends AbstractExecutorRunAction {
         return null;
     }
 
-    private static NativeExecutionService prepare(Node node, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private NativeExecutionService prepare(Node node, final Writer outputListener, Project project, InputOutput inputOutput) {
         CompileExecSupport ces = node.getLookup().lookup(CompileExecSupport.class);
         if (ces == null) {
             trace("Node "+node+" does not have CompileExecSupport"); //NOI18N
@@ -196,7 +196,7 @@ public class CompileRunAction extends AbstractExecutorRunAction {
         Map<String, String> envMap = getEnv(execEnv, node, project, null);
         if (inputOutput == null) {
             // Tab Name
-            String tabName = execEnv.isLocal() ? getString("COMPILE_RUN_LABEL", node.getName()) : getString("COMPILE_RUN_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
+            String tabName = getTabName(node, execEnv);
             InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
             _tab.closeInputOutput(); // Close it...
             final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
@@ -227,7 +227,7 @@ public class CompileRunAction extends AbstractExecutorRunAction {
             @Override
             public void executionFinished(int rc) {
                 if (rc == 0) {
-                    runExecutable(runContext);
+                    runContext.run();
                 }
             }
         };
@@ -261,44 +261,57 @@ public class CompileRunAction extends AbstractExecutorRunAction {
         // Execute the shellfile
         return NativeExecutionService.newService(npb, descr, "Compile"); // NOI18N
     }
-
-    private static void runExecutable(RunContext context) {
-        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(context.execEnv).
-                setWorkingDirectory(context.buildDir).
-                unbufferOutput(false).
-                setExecutable(context.buildDir+"/"+context.executable); // NOI18N
-        StringBuilder buf = new StringBuilder();
-        for(String arg : context.ces.getArguments()) {
-            if (buf.length() > 0) {
-                buf.append(' ');
-            }
-            buf.append(arg);
-        }
-        List<String> list = ImportUtils.parseArgs(buf.toString());
-        list = ImportUtils.normalizeParameters(list);
-        npb.setArguments(list.toArray(new String[list.size()]));
-        NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
-                frontWindow(true).
-                inputVisible(true).
-                inputOutput(context.tab).
-                outLineBased(true).
-                showProgress(!CndUtils.isStandalone()).
-                postMessageDisplayer(new PostMessageDisplayer.Default("Run")); // NOI18N
-        NativeExecutionService.newService(npb, descr, "Run").run(); // NOI18N
+    
+    protected String getTabName(Node node, ExecutionEnvironment execEnv) {
+        return execEnv.isLocal() ? getString("COMPILE_RUN_LABEL", node.getName()) : getString("COMPILE_RUN_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
     }
     
-    private static final class RunContext {
+    protected Runnable getRunnable(String tabName, InputOutput tab, ExecutionEnvironment execEnv, String buildDir, String executable, CompileExecSupport ces) {
+        return new RunContext(tab, execEnv, buildDir, executable, ces);
+    }
+    
+    private static final class RunContext implements Runnable {
+
         private final InputOutput tab;
         private final ExecutionEnvironment execEnv;
         private final String buildDir;
         private final String executable;
         private final CompileExecSupport ces;
+
         private RunContext(InputOutput tab, ExecutionEnvironment execEnv, String buildDir, String executable, CompileExecSupport ces) {
             this.tab = tab;
             this.execEnv = execEnv;
             this.buildDir = buildDir;
             this.executable = executable;
             this.ces = ces;
+        }
+
+        @Override
+        public void run() {
+            NativeProcessBuilder npb = NativeProcessBuilder.
+                    newProcessBuilder(execEnv).
+                    setWorkingDirectory(buildDir).
+                    unbufferOutput(false).
+                    setExecutable(buildDir + "/" + executable); // NOI18N
+            StringBuilder buf = new StringBuilder();
+            for (String arg : ces.getArguments()) {
+                if (buf.length() > 0) {
+                    buf.append(' ');
+                }
+                buf.append(arg);
+            }
+            List<String> list = ImportUtils.parseArgs(buf.toString());
+            list = ImportUtils.normalizeParameters(list);
+            npb.setArguments(list.toArray(new String[list.size()]));
+            NativeExecutionDescriptor descr = new NativeExecutionDescriptor().
+                    controllable(true).
+                    frontWindow(true).
+                    inputVisible(true).
+                    inputOutput(tab).
+                    outLineBased(true).
+                    showProgress(!CndUtils.isStandalone()).
+                    postMessageDisplayer(new PostMessageDisplayer.Default("Run")); // NOI18N
+            NativeExecutionService.newService(npb, descr, "Run").run(); // NOI18N
         }
     }
 }

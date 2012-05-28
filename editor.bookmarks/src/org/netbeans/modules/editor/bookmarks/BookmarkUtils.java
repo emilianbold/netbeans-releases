@@ -199,7 +199,9 @@ public final class BookmarkUtils {
         if (projectURI != null) {
             try {
                 FileObject prjFO = URLMapper.findFileObject(projectURI.toURL());
-                return ProjectManager.getDefault().findProject(prjFO);
+                if (prjFO != null && prjFO.isFolder()) {
+                    return ProjectManager.getDefault().findProject(prjFO);
+                }
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {

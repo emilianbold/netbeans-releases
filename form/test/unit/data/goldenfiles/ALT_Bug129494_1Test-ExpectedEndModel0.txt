@@ -41,7 +41,7 @@
                               </Group>
                               <EmptySpace min="$pref" pref="56" max="$pref" attributes="0"/>
                           </Group>
-                          <Component id="jTextField2" alignment="leading" min="$pref" pref="340" max="$pref" attributes="1026"/>
+                          <Component id="jTextField2" min="$pref" pref="340" max="$pref" attributes="1026"/>
                       </Group>
                       <Group type="parallel" groupAlignment="leading" attributes="0">
                           <Group type="parallel" alignment="trailing" groupAlignment="leading" max="$pref" attributes="0">

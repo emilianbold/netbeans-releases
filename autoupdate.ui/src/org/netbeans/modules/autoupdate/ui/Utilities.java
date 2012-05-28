@@ -118,7 +118,7 @@ public class Utilities {
                     res.add(cat);
                     names.add(catName);
                 }
-                String licenseId = el.getLicenseId();
+                String licenseId = el == null ? null : el.getLicenseId();
                 if (licenseId != null) {
                     if (licenseId.contains(",")) {
                         if (getAcceptedLicenseIds().addAll(Arrays.asList(licenseId.split(",")))) {

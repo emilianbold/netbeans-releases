@@ -1398,15 +1398,15 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
         @Override
         public CsmEnum getCsmEnum() {
-            CsmEnum cls = UIDCsmConverter.UIDtoDeclaration(enumDefinition);
-            // we need to replace i.e. ForwardClass stub
-            if (cls != null && cls.isValid() && !ForwardClass.isForwardClass(cls)) {
-                return cls;
+            CsmEnum enm = UIDCsmConverter.UIDtoDeclaration(enumDefinition);
+            // we need to replace i.e. ForwardEnum stub
+            if (enm != null && enm.isValid() && !ForwardEnum.isForwardEnum(enm)) {
+                return enm;
             } else {
-                cls = super.getCsmEnum();
-                setCsmEnum(cls);
+                enm = super.getCsmEnum();
+                setCsmEnum(enm);
             }
-            return cls;
+            return enm;
         }
 
         @Override

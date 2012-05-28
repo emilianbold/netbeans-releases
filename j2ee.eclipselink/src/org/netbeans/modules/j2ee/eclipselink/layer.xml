@@ -54,6 +54,9 @@ made subject to such option by the copyright holder.
             <file name="eclipselink.xml" url="eclipselink_lib.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.eclipselink.Bundle#eclipselink"/>
             </file>
+            <file name="jpa20-persistence.xml" url="jpa20-persistence.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.eclipselink.Bundle#jpa20-persistence"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
