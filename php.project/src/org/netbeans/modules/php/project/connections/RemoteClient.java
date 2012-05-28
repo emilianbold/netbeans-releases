@@ -1292,68 +1292,6 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return true;
     }
 
-    /**
-     * Similar to {@link File#renameTo(java.io.File)} but uses {@link FileObject}s.
-     * @param source a source file, must exist.
-     * @param target a target file, cannot exist.
-     * @return <code>true</code> if the rename was successful, <code>false</code> otherwise.
-     */
-    private static boolean renameLocalFileTo(FileObject source, File target) {
-        long start = 0L;
-        if (LOGGER.isLoggable(Level.FINE)) {
-            start = System.currentTimeMillis();
-        }
-        assert source.isValid() : "Source file must exist " + source;
-        assert !target.exists() : "Target file cannot exist " + target;
-
-
-        String name = getName(target.getName());
-        String ext = FileUtil.getExtension(target.getName());
-
-        boolean moved = false;
-        try {
-            FileLock lock = source.lock();
-            try {
-                source.rename(lock, name, ext);
-                moved = true;
-            } catch (IOException exc) {
-                LOGGER.log(Level.INFO, null, exc);
-            } finally {
-                lock.releaseLock();
-            }
-        } catch (IOException exc) {
-            LOGGER.log(Level.WARNING, null, exc);
-        }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("Move %s -> %s took: %sms", source, target, (System.currentTimeMillis() - start)));
-        }
-        return moved;
-    }
-
-    private void deleteLocalFile(FileObject fileObject, String logMsgPrefix) {
-        if (fileObject == null || !fileObject.isValid()) {
-            return;
-        }
-        try {
-            fileObject.delete();
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", fileObject.getName()));
-            }
-        } catch (IOException e) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: FALSE", fileObject.getName()));
-            }
-        }
-    }
-
-    private static String getName(String fileName) {
-        int index = fileName.lastIndexOf('.'); // NOI18N
-        if (index == -1) {
-            return fileName;
-        }
-        return fileName.substring(0, index);
-    }
-
     private Set<TransferFile> getFiles(Set<TransferFile> all) {
         Set<TransferFile> files = new HashSet<TransferFile>();
         for (TransferFile file : all) {
