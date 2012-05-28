@@ -172,10 +172,6 @@ final class CreateFilesWorker {
         }
     }
 
-    void createProjectFilesIfNeed(List<NativeFileItem> sources, List<NativeFileItem> headers) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     private class CreateFileRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
         private final List<NativeFileItem> nativeFileItems;
