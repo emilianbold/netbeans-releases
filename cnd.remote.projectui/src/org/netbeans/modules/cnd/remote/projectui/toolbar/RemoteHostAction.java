@@ -101,7 +101,7 @@ import org.openide.util.actions.Presenter;
  * @author Alexander Simon
  */
 @ActionID(id = "org.netbeans.modules.cnd.remote.projectui.toolbar.RemoteHostAction", category = "Project")
-@ActionRegistration(displayName = "#RemoteHostAction.label")
+@ActionRegistration(displayName = "#RemoteHostAction.label", lazy = false)
 @ActionReference(path = "Toolbars/Remote", position = 550)
 public class RemoteHostAction extends CallableSystemAction implements PropertyChangeListener, ContextAwareAction {
 
