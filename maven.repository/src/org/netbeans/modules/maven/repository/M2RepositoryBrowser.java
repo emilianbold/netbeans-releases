@@ -171,6 +171,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
     }
 
     private static class RootNodes extends ChildFactory.Detachable<Union2<RepositoryInfo,QueryRequest>> implements ChangeListener, FileChangeListener {
+        boolean addNotifyCalled = false;
         @Override protected boolean createKeys(List<Union2<RepositoryInfo,QueryRequest>> toPopulate) {
             for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                 toPopulate.add(Union2.<RepositoryInfo,QueryRequest>createFirst(info));
@@ -193,11 +194,14 @@ public final class M2RepositoryBrowser extends AbstractNode {
             RepositoryPreferences.getInstance().addChangeListener(this);
             FileUtil.addFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
             addChangeListener(this);
+            addNotifyCalled = true;
         }
         @Override protected void removeNotify() {
             RepositoryPreferences.getInstance().removeChangeListener(this);
             removeChangeListener(this);
-            FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+            if (addNotifyCalled) { //#213038
+                FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+            }
         }
         @Override public void stateChanged(ChangeEvent e) {
             refresh(false);
