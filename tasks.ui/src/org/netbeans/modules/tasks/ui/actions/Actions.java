@@ -74,7 +74,9 @@ public class Actions {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new OpenTaskAction(taskNodes));
         if (taskNodes.length == 1) {
-            actions.add(DashboardViewer.getInstance().isTaskNodeActive(taskNodes[0]) ? new DeactivateTaskAction() : new ActivateTaskAction(taskNodes[0]));
+            AbstractAction action = DashboardViewer.getInstance().isTaskNodeActive(taskNodes[0]) ? new DeactivateTaskAction() : new ActivateTaskAction(taskNodes[0]);
+            action.setEnabled(false);
+            actions.add(action);
         }
         boolean showRemoveTask = true;
         for (TaskNode taskNode : taskNodes) {
@@ -117,6 +119,11 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             new DummyAction().actionPerformed(e);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
         }
     }
 
@@ -162,6 +169,11 @@ public class Actions {
         public void actionPerformed(ActionEvent e) {
             new DummyAction().actionPerformed(e);
         }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
+        }
     }
     //</editor-fold>
 
@@ -197,6 +209,11 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             new DummyAction().actionPerformed(e);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
         }
     }
 
@@ -353,6 +370,11 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             new DummyAction().actionPerformed(e);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
         }
     }
     //</editor-fold>

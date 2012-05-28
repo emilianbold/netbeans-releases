@@ -106,7 +106,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         project = proj;
         this.aux = aux;
         profileHandler = prof;
-        DEFAULT = M2Configuration.createDefault(project);
+        DEFAULT = M2Configuration.createDefault(project.getProjectDirectory());
         //read the active one..
         Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, false);
         if (el != null) {
@@ -329,7 +329,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         SortedSet<M2Configuration> config = new TreeSet<M2Configuration>();
 //        config.add(DEFAULT);
         for (String prof : profs) {
-            M2Configuration c = new M2Configuration(prof, project);
+            M2Configuration c = new M2Configuration(prof, project.getProjectDirectory());
             c.setActivatedProfiles(Collections.singletonList(prof));
             config.add(c);
         }
@@ -366,7 +366,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 for (int i = 0; i < len; i++) {
                     Element enEl = (Element)list.item(i);
                     
-                    M2Configuration c = new M2Configuration(enEl.getAttribute(CONFIG_ID_ATTR), project);
+                    M2Configuration c = new M2Configuration(enEl.getAttribute(CONFIG_ID_ATTR), project.getProjectDirectory());
                     String profs = enEl.getAttribute(CONFIG_PROFILES_ATTR);
                     if (profs != null) {
                         String[] s = profs.split(" ");
