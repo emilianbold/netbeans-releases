@@ -42,13 +42,14 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -638,6 +639,12 @@ public final class DashboardViewer implements PropertyChangeListener {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
+                // w8 with loading to preject ot be opened
+                try {
+                    OpenProjects.getDefault().openProjects().get();
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                }
                 titleRepositoryNode.setProgressVisible(true);
                 titleCategoryNode.setProgressVisible(true);
                 loadRepositories();
