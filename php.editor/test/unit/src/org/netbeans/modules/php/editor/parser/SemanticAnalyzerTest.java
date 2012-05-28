@@ -201,4 +201,8 @@ public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
     public void testConstAccessInFiledDeclaration() throws Exception {
         checkSemantic("testfiles/constantsInFiledsDeclColoring.php");
     }
+
+    public void testIssue213105() throws Exception {
+        checkSemantic("testfiles/issue213105.php");
+    }
 }
