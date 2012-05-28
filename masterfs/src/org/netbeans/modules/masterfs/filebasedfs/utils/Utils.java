@@ -51,6 +51,22 @@ import org.openide.util.Utilities;
  * @author rmatous
  */
 public class Utils {
+    private static final Boolean SENSITIVE = findCase();
+    private static Boolean findCase() {
+        String userDef = System.getProperty("org.netbeans.modules.masterfs.case"); // NOI18N
+        if ("insensitive".equals(userDef)) { // NOI18N
+            return false;
+        } 
+        if ("sensitive".equals(userDef)) { // NOI18N
+            return true;
+        }
+        assert userDef == null : "Wrong value " + userDef;
+        if (Utilities.isMac()) {
+            return false;
+        }
+        return null;
+    }
+    
     public static boolean equals(File f1, File f2) {
         if (f1 == null) {
             return f2 == null;
@@ -58,17 +74,28 @@ public class Utils {
         if (f2 == null) {
             return f1 == null;
         }
-        if (Utilities.isMac()) {
+        if (SENSITIVE == null) {
+            return f1.equals(f2);
+        }
+        if (SENSITIVE) {
+            // same as in UnixFileSystem
+            return f1.getPath().compareTo(f2.getPath()) == 0;
+        } else {
+            // same as in Win32FileSystem
             return f1.getPath().compareToIgnoreCase(f2.getPath()) == 0;
         }
-        return f1.equals(f2);
     }
     public static int hashCode(final File file) {
-        if (Utilities.isMac()) {
+        if (SENSITIVE == null) {
+            return file.hashCode();
+        }
+        if (SENSITIVE) {
+            // same as in UnixFileSystem
+            return file.getPath().hashCode() ^ 1234321;
+        } else {
             // same as in Win32FileSystem
             return file.getPath().toLowerCase(Locale.ENGLISH).hashCode() ^ 1234321;
         }
-        return file.hashCode();
     }
     
     public static String getRelativePath(final File dir, final File file) {
