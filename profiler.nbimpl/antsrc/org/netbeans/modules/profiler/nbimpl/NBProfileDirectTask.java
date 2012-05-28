@@ -47,9 +47,11 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
-import org.netbeans.modules.profiler.ProfilerModule;
-import org.openide.util.NbBundle;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.tools.ant.types.LogLevel;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 
 
@@ -96,6 +98,8 @@ public final class NBProfileDirectTask extends Task {
     private String jvmProperty = DEFAULT_JVM_PROPERTY;
     private String mainClass = null;
     private int interactive = INTERACTIVE_AUTO;
+    
+    private AtomicBoolean connectionCancel = new AtomicBoolean();
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
     public void setInteractive(NBProfileDirectTask.YesNoAuto arg) {
@@ -162,10 +166,13 @@ public final class NBProfileDirectTask extends Task {
                 for(Map.Entry<String, String> e : props.entrySet()) {
                     getProject().setProperty(e.getKey(), e.getValue());
                 }
-                if (!org.netbeans.modules.profiler.nbimpl.NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
+                getProject().setProperty("profiler.jvmargs", "-J-Dprofiler.pre72=true"); // NOI18N
+                
+                getProject().addBuildListener(new BuildEndListener(connectionCancel));
+                
+                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings(), connectionCancel)) {
                     throw new BuildException("User abort"); // NOI18N
                 }
-                getProject().setProperty("profiler.jvmargs", "-J-Dprofiler.pre72=true"); // NOI18N
             }
         } else {
             throw new BuildException("User abort");// NOI18N
