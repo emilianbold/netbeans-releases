@@ -702,6 +702,8 @@ public class HtmlBrowser extends JPanel {
                 bForward.setEnabled(browserImpl.isForward());
             } else if (property.equals(Impl.PROP_BACKWARD) && (bBack != null)) {
                 bBack.setEnabled(browserImpl.isBackward());
+            } else if (property.equals(Impl.PROP_LOADING) && (bStop != null)) {
+                bStop.setEnabled(((Boolean)evt.getNewValue()).booleanValue());
             }
         }
 
