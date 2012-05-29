@@ -70,6 +70,10 @@ import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -586,9 +590,10 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
         ensureConnected();
 
-        String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
+        String baseLocalAbsolutePath = FileUtil.normalizeFile(baseLocalDir).getAbsolutePath();
         List<TransferFile> baseFiles = new LinkedList<TransferFile>();
         for (File f : filesToDownload) {
+            f = FileUtil.normalizeFile(f);
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
                 TransferFile tf;
@@ -700,6 +705,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         }
     }
 
+    @NbBundle.Messages("RemoteClient.download.ignored.byUser=Download ignored by user.")
     private void downloadFileInternal(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
         File localFile = getLocalFile(new File(file.getBaseLocalDirectoryPath()), file);
         if (file.isLink()) {
@@ -803,14 +809,19 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                             LOGGER.fine(String.format("File %s copied to %s: %s", tmpLocalFile, localFile, success));
                         }
                     }
+                    if (success) {
+                        transferSucceeded(transferInfo, file);
+                    } else {
+                        transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
+                    }
+                } catch (DownloadSkipException ex) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("File %s ignored by user (unsaved changes in the local file)", localFile));
+                    }
+                    transferIgnored(transferInfo, file, Bundle.RemoteClient_download_ignored_byUser());
                 } finally {
                     LOGGER.fine("Tmp local file cleanup");
                     tmpLocalFile.cleanup();
-                }
-                if (success) {
-                    transferSucceeded(transferInfo, file);
-                } else {
-                    transferFailed(transferInfo, file, getOperationFailureMessage(Operation.DOWNLOAD, file.getName()));
                 }
             }
         } else {
@@ -881,14 +892,20 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return TmpLocalFile.onDisk();
     }
 
-    private boolean copyTmpLocalFile(final TmpLocalFile source, final File target) {
+    @NbBundle.Messages({
+        "RemoteClient.file.replaceUnsavedContent.title=Confirm replacement",
+        "# {0} - file name",
+        "RemoteClient.file.replaceUnsavedContent.question=Replace unsaved file \"{0}\" with the content from the server?"
+    })
+    private boolean copyTmpLocalFile(final TmpLocalFile source, final File target) throws DownloadSkipException {
         final AtomicBoolean moved = new AtomicBoolean();
+        final AtomicBoolean downloadSkipped = new AtomicBoolean();
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
                 FileObject foTarget = ensureTargetExists(FileUtil.normalizeFile(target));
                 if (foTarget == null) {
-                    moved.getAndSet(false);
+                    moved.set(false);
                     return;
                 }
 
@@ -898,12 +915,16 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 OutputStream out;
                 try {
                     // lock the target file
-                    lock = foTarget.lock();
+                    lock = lockFile(foTarget);
+                    if (lock == null) {
+                        moved.set(false);
+                        return;
+                    }
                     try {
                         in = source.getInputStream();
                         if (in == null) {
                             // definitely should not happen
-                            moved.getAndSet(false);
+                            moved.set(false);
                             return;
                         }
                         try {
@@ -913,7 +934,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                             out = foTarget.getOutputStream(lock);
                             try {
                                 FileUtil.copy(in, out);
-                                moved.getAndSet(true);
+                                moved.set(true);
                             } finally {
                                 out.close();
                             }
@@ -925,7 +946,9 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     }
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Error while moving local file", ex);
-                    moved.getAndSet(false);
+                    moved.set(false);
+                } catch (DownloadSkipException ex) {
+                    downloadSkipped.set(true);
                 }
             }
 
@@ -966,9 +989,37 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                     return null;
                 }
             }
+
+            private FileLock lockFile(FileObject fo) throws IOException, DownloadSkipException {
+                try {
+                    return fo.lock();
+                } catch (FileAlreadyLockedException lockedException) {
+                    if (warnChangedFile(fo)) {
+                        PhpProjectUtils.saveFile(fo);
+                        // XXX remove once #213141 is fixed
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ex) {
+                        }
+                        return fo.lock();
+                    } else {
+                        throw new DownloadSkipException();
+                    }
+                }
+            }
+
+            private boolean warnChangedFile(FileObject file) {
+                NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(Bundle.RemoteClient_file_replaceUnsavedContent_question(file.getNameExt()),
+                        Bundle.RemoteClient_file_replaceUnsavedContent_title(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
+                return DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
+            }
+
         });
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("Content of tmp local file copied into %s: %s", target.getName(), moved.get()));
+        }
+        if (downloadSkipped.get()) {
+            throw new DownloadSkipException();
         }
         return moved.get();
     }
@@ -1290,68 +1341,6 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             return false;
         }
         return true;
-    }
-
-    /**
-     * Similar to {@link File#renameTo(java.io.File)} but uses {@link FileObject}s.
-     * @param source a source file, must exist.
-     * @param target a target file, cannot exist.
-     * @return <code>true</code> if the rename was successful, <code>false</code> otherwise.
-     */
-    private static boolean renameLocalFileTo(FileObject source, File target) {
-        long start = 0L;
-        if (LOGGER.isLoggable(Level.FINE)) {
-            start = System.currentTimeMillis();
-        }
-        assert source.isValid() : "Source file must exist " + source;
-        assert !target.exists() : "Target file cannot exist " + target;
-
-
-        String name = getName(target.getName());
-        String ext = FileUtil.getExtension(target.getName());
-
-        boolean moved = false;
-        try {
-            FileLock lock = source.lock();
-            try {
-                source.rename(lock, name, ext);
-                moved = true;
-            } catch (IOException exc) {
-                LOGGER.log(Level.INFO, null, exc);
-            } finally {
-                lock.releaseLock();
-            }
-        } catch (IOException exc) {
-            LOGGER.log(Level.WARNING, null, exc);
-        }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("Move %s -> %s took: %sms", source, target, (System.currentTimeMillis() - start)));
-        }
-        return moved;
-    }
-
-    private void deleteLocalFile(FileObject fileObject, String logMsgPrefix) {
-        if (fileObject == null || !fileObject.isValid()) {
-            return;
-        }
-        try {
-            fileObject.delete();
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: TRUE", fileObject.getName()));
-            }
-        } catch (IOException e) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine(String.format(logMsgPrefix + "File %s deleted: FALSE", fileObject.getName()));
-            }
-        }
-    }
-
-    private static String getName(String fileName) {
-        int index = fileName.lastIndexOf('.'); // NOI18N
-        if (index == -1) {
-            return fileName;
-        }
-        return fileName.substring(0, index);
     }
 
     private Set<TransferFile> getFiles(Set<TransferFile> all) {
