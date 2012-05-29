@@ -1034,7 +1034,7 @@ public class JavacParser extends Parser {
                     //fix CompilationUnitTree.getLineMap:
                     long startM = System.currentTimeMillis();
                     char[] chars = snapshot.getText().toString().toCharArray();
-                    ((LineMapImpl) cu.getLineMap()).build(chars, chars.length, '\0');
+                    ((LineMapImpl) cu.getLineMap()).build(chars, chars.length);
                     LOGGER.log(Level.FINER, "Rebuilding LineMap took: {0}", System.currentTimeMillis() - startM);
 
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
