@@ -95,8 +95,8 @@ public class HtmlBrowser extends JPanel {
     /** currently used implementation of browser */
     final Impl browserImpl;
 
-    /** true = do not listen on changes of URL on cbLocation */
-    private boolean everythinkIListenInCheckBoxIsUnimportant = false;
+    /** true = ignore changes in location field */
+    private boolean ignoreChangeInLocationField = false;
 
     /** toolbar visible property */
     private boolean toolbarVisible = false;
@@ -575,13 +575,13 @@ public class HtmlBrowser extends JPanel {
      */
     private void updateLocationBar() {
         if (toolbarVisible) {
-            everythinkIListenInCheckBoxIsUnimportant = true;
+            ignoreChangeInLocationField = true;
 
             String url = browserImpl.getLocation();
 
             txtLocation.setText(url);
 
-            everythinkIListenInCheckBoxIsUnimportant = false;
+            ignoreChangeInLocationField = false;
         }
     }
 
@@ -696,7 +696,7 @@ public class HtmlBrowser extends JPanel {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == txtLocation) {
                 // URL manually changed
-                if (everythinkIListenInCheckBoxIsUnimportant) {
+                if (ignoreChangeInLocationField) {
                     return;
                 }
 
