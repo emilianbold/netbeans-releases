@@ -351,7 +351,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         public void stateChanged(ChangeEvent e) {
                             if (e instanceof NativeProcessChangeEvent) {
                                 if (((NativeProcessChangeEvent) e).state == NativeProcess.State.FINISHED) {
-                                    if (!executor.isAlive()) {
+                                    if (!postedKill) {
                                         NativeDebuggerManager.warning(// In order to avoid catching the exception from exitValue()
                                                 Catalog.format(
                                                     "MSG_GdbUnexpectedlyStopped",   // NOI18N
