@@ -44,6 +44,7 @@ package org.netbeans.modules.masterfs.watcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
@@ -129,18 +130,17 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
             return;
         }
         clearWorkDir();
-
-        File one = new File(getWorkDir(), "one");
-        File two = new File(one, "two");
-        File three = new File(two, "three");
-        three.mkdirs();
-        assertTrue("Directory two created", two.isDirectory());
-        assertExec("Symlink created OK", makeSymlink(two, getWorkDir()));
-        
-        File l = new File(new File(getWorkDir(), "lnk"), "three");
-        assertTrue("Link exists", l.exists());
-        assertTrue("Link is directory", l.isDirectory());
-        assertAcyclic(l);
+        final File wd = getWorkDir();
+        doAcyclicTesting(wd);
+    }
+    public void testAcyclicSymlinkInASymlinkInASpace() throws Exception {
+        if (Utilities.isWindows()) {
+            return;
+        }
+        clearWorkDir();
+        final File wd = new File(getWorkDir(), "space in path");
+        wd.mkdirs();
+        doAcyclicTesting(wd);
     }
 
     @Override
@@ -217,11 +217,11 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         return makeSymlink(orig.getPath(), where);
     }
     private Process makeSymlink(String orig, File where) throws IOException {
-        final String exec = "/bin/ln -s " + orig + " lnk";
+        final String[] exec = { "/bin/ln", "-s", orig,  "lnk" };
         try {
             return Runtime.getRuntime().exec(exec, null, where);
         } catch (IOException ex) {
-            Exceptions.attachMessage(ex, "cmd: " + exec + " at: " + where);
+            Exceptions.attachMessage(ex, "cmd: " + Arrays.toString(exec) + " at: " + where);
             throw ex;
         }
     }
@@ -243,5 +243,19 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
             }
             sb.append((char)is.read());
         }
+    }
+
+    private void doAcyclicTesting(final File wd) throws Exception {
+        File one = new File(wd, "one");
+        File two = new File(one, "two");
+        File three = new File(two, "three");
+        three.mkdirs();
+        assertTrue("Directory two created", two.isDirectory());
+        assertExec("Symlink created OK", makeSymlink(two, wd));
+        
+        File l = new File(new File(wd, "lnk"), "three");
+        assertTrue("Link exists", l.exists());
+        assertTrue("Link is directory", l.isDirectory());
+        assertAcyclic(l);
     }
 }
