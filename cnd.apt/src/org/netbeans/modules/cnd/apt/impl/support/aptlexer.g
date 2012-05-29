@@ -553,11 +553,17 @@ tokens {
 {
     private boolean reportErrors;
     private Language lang;
+    private Flavor flavor;
     private APTLexerCallback callback;
     public static enum Language {
         C,
         CPP,
         FORTRAN
+    };
+    public static enum Flavor {
+        UNKNOWN,
+        FORTRAN_FIXED,
+        FORTRAN_FREE,
     };
 
     public interface APTLexerCallback {
@@ -568,7 +574,7 @@ tokens {
         this.callback = callback;
     }
 
-    public void init(String filename, int flags, String language) {
+    public void init(String filename, int flags, String language, String flavor) {
         preprocPossible = true;
         preprocPending = false;
         reportErrors = true;
@@ -576,9 +582,17 @@ tokens {
         setFilename(filename);
 
         if(language.equalsIgnoreCase(APTLanguageSupport.FORTRAN)) {
-            lang = Language.FORTRAN;
+            this.lang = Language.FORTRAN;
         } else {
-            lang = Language.CPP;
+            this.lang = Language.CPP;
+        }
+
+        if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FIXED)) {
+            this.flavor = Flavor.FORTRAN_FIXED;
+        } else if(flavor.equalsIgnoreCase(APTLanguageSupport.FLAVOR_FORTRAN_FREE)) {
+            this.flavor = Flavor.FORTRAN_FREE;
+        } else {
+            this.flavor = Flavor.UNKNOWN;
         }
 
 //        if ((flags & CPPParser.CPP_SUPPRESS_ERRORS) > 0) {
@@ -848,7 +862,7 @@ tokens {
 /* Comments: */
 
 FORTRAN_COMMENT options { constText=true; } :
-    {lang == Language.FORTRAN && inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ')}?
+    {lang == Language.FORTRAN && (inputState.getColumn() == 1 && (LA(2)=='\r' || LA(2)=='\n' || LA(2)==' ') || (flavor == Flavor.FORTRAN_FREE && LA(1) == '!') )}?
     ('!' | ('c'|'C') | '*')
     (~('\n' | '\r'))*
     {$setType(FORTRAN_COMMENT);}

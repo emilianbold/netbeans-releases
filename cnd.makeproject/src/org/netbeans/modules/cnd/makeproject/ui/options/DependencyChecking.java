@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -49,8 +49,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(service=MakeProjectOptions.MakeOptionNamedEntity.class, position=400)
-public class DependencyChecking extends MakeProjectOptions.MakeOptionNamedEntity {
+@ServiceProvider(path=NamedOption.MAKE_PROJECT_CATEGORY, service=NamedOption.class, position=400)
+public class DependencyChecking extends NamedOption {
     // Dependency checking
     public static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     
@@ -70,7 +70,12 @@ public class DependencyChecking extends MakeProjectOptions.MakeOptionNamedEntity
     }
 
     @Override
-    public boolean isEnabledByDefault() {
+    public OptionKind getKind() {
+        return OptionKind.Boolean;
+    }
+
+    @Override
+    public Object getDefaultValue() {
         return true;
     }
 }

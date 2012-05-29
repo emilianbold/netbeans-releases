@@ -551,7 +551,9 @@ public class Flow {
             
             scan(node.getStatement(), null);
 
-            beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
+            variable2State = mergeOr(beforeLoop, variable2State);
+            resume(node.getCondition(), resumeBefore);
+            beforeLoop = new HashMap<VariableElement, State>(variable2State);
 
             scan(node.getCondition(), null);
             scan(node.getStatement(), null);
@@ -611,7 +613,9 @@ public class Flow {
             scan(node.getStatement(), null);
             scan(node.getUpdate(), null);
 
-            beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
+            variable2State = mergeOr(beforeLoop, variable2State);
+            resume(node.getCondition(), resumeBefore);
+            beforeLoop = new HashMap<VariableElement, State>(variable2State);
 
             scan(node.getCondition(), null);
             scan(node.getStatement(), null);
@@ -739,7 +743,9 @@ public class Flow {
 
             scan(node.getStatement(), null);
 
-            beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
+            variable2State = mergeOr(beforeLoop, variable2State);
+            resume(node.getStatement(), resumeBefore);
+            beforeLoop = new HashMap<VariableElement, State>(variable2State);
 
             scan(node.getStatement(), null);
 

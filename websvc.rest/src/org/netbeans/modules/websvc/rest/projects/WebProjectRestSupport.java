@@ -318,13 +318,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     @Override
-    public String getApplicationPath() throws IOException {
-        String pathFromDD = getApplicationPathFromDD();
-        String applPath = getApplicationPathFromAnnotations(pathFromDD);
-        return (applPath == null ? super.getApplicationPath() : applPath);
-    }
-
-    private String getApplicationPathFromAnnotations(final String applPathFromDD) {
+    protected String getApplicationPathFromAnnotations(final String applPathFromDD) {
         List<RestApplication> restApplications = getRestApplications();
         if (applPathFromDD == null) {
             if (restApplications.size() == 0) {

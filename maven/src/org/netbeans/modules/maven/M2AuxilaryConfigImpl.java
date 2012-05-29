@@ -88,19 +88,21 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private static final Logger LOG = Logger.getLogger(M2AuxilaryConfigImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(M2AuxilaryConfigImpl.class);
     private static final int SAVING_DELAY = 100;
-    private final NbMavenProjectImpl project;
     private RequestProcessor.Task savingTask;
     private Document scheduledDocument;
     private Date timeStamp = new Date(0);
     private Document cachedDoc;
     private final Object configIOLock = new Object();
+    private final FileObject projectDirectory;
+    private final ProblemReporterImpl reporter;
 
-    public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
-        this.project = proj;
+    public M2AuxilaryConfigImpl(FileObject dir, ProblemReporterImpl problemReporter) {
+        this.projectDirectory = dir;
+        this.reporter = problemReporter;
         savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
-                    project.getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
+                    projectDirectory.getFileSystem().runAtomicAction(new AtomicAction() {
                         public @Override void run() throws IOException {
                             Document doc;
                             synchronized (M2AuxilaryConfigImpl.this) {
@@ -111,17 +113,17 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 scheduledDocument = null;
                             }
                             synchronized (configIOLock) {
-                                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                                FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
                                 if (doc.getDocumentElement().getElementsByTagName("*").getLength() > 0) {
-                                    OutputStream out = config == null ? project.getProjectDirectory().createAndOpen(CONFIG_FILE_NAME) : config.getOutputStream();
-                                    LOG.log(Level.FINEST, "Write configuration file for {0}", project.getProjectDirectory());
+                                    OutputStream out = config == null ? projectDirectory.createAndOpen(CONFIG_FILE_NAME) : config.getOutputStream();
+                                    LOG.log(Level.FINEST, "Write configuration file for {0}", projectDirectory);
                                     try {
                                         XMLUtil.write(doc, out, "UTF-8"); //NOI18N
                                     } finally {
                                         out.close();
                                     }
                                 } else if (config != null) {
-                                    LOG.log(Level.FINEST, "Delete empty configuration file for {0}", project.getProjectDirectory());
+                                    LOG.log(Level.FINEST, "Delete empty configuration file for {0}", projectDirectory);
                                     config.delete();
                                 }
                             }
@@ -179,7 +181,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
                 return el;
             }
-            final FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+            final FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
             if (config != null) {
                 if (config.lastModified().after(timeStamp)) {
                     // we need to re-read the config file..
@@ -188,14 +190,13 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         cachedDoc = doc;
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
-                        ProblemReporterImpl impl = project.getProblemReporter();
-                        if (!impl.hasReportWithId(BROKEN_NBCONFIG)) {
+                        if (!reporter.hasReportWithId(BROKEN_NBCONFIG)) {
                             ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                                     TXT_Problem_Broken_Config(),
                                     DESC_Problem_Broken_Config(ex.getMessage()),
                                     new OpenConfigAction(config));
                             rep.setId(BROKEN_NBCONFIG);
-                            impl.addReport(rep);
+                            reporter.addReport(rep);
                         }
                         LOG.log(Level.INFO, ex.getMessage(), ex);
                         cachedDoc = null;
@@ -218,7 +219,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             }
             return null;
         } else {
-            String str = (String) project.getProjectDirectory().getAttribute(AUX_CONFIG);
+            String str = (String) projectDirectory.getAttribute(AUX_CONFIG);
             if (str != null) {
                 Document doc;
                 try {
@@ -240,7 +241,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (scheduledDocument != null) {
                 doc = scheduledDocument;
             } else {
-                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
                 if (config != null) {
                     try {
                         doc = loadConfig(config);
@@ -258,7 +259,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         } else {
-            String str = (String) project.getProjectDirectory().getAttribute(AUX_CONFIG);
+            String str = (String) projectDirectory.getAttribute(AUX_CONFIG);
             if (str != null) {
                 try {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
@@ -284,13 +285,13 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (scheduledDocument == null) {
                     scheduledDocument = doc;
                 }
-                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + project.getProjectDirectory(), new Exception());
+                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + projectDirectory, new Exception());
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
                     ByteArrayOutputStream wr = new ByteArrayOutputStream();
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
+                    projectDirectory.setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, "error writing private auxiliary configuration", ex);
                 }
@@ -301,7 +302,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     public @Override synchronized boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) throws IllegalArgumentException {
         Document doc = null;
-        FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+        FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
         if (shared) {
             if (scheduledDocument != null) {
                 doc = scheduledDocument;
@@ -326,7 +327,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         } else {
-            String str = (String) project.getProjectDirectory().getAttribute(AUX_CONFIG);
+            String str = (String) projectDirectory.getAttribute(AUX_CONFIG);
             if (str != null) {
                 try {
                     doc = XMLUtil.parse(new InputSource(new StringReader(str)), false, true, null, null);
@@ -348,13 +349,13 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 if (scheduledDocument == null) {
                     scheduledDocument = doc;
                 }
-                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + project.getProjectDirectory(), new Exception());
+                LOG.log(Level.FINEST, "Schedule saving of configuration fragment for " + projectDirectory, new Exception());
                 savingTask.schedule(SAVING_DELAY);
             } else {
                 try {
                     ByteArrayOutputStream wr = new ByteArrayOutputStream();
                     XMLUtil.write(doc, wr, "UTF-8"); //NOI18N
-                    project.getProjectDirectory().setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
+                    projectDirectory.setAttribute(AUX_CONFIG, wr.toString("UTF-8"));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

@@ -158,6 +158,9 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
         registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
+        //manually register the listener for this project, we know it's loaded and should be listening on changes.
+        //registerCoordinates() doesn't attach listeners
+        MavenFileOwnerQueryImpl.getInstance().attachProjectListener(project);
         Set<URI> uris = getProjectExternalSourceRoots(project);
         for (URI uri : uris) {
             FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -413,8 +416,17 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
             return;
         }
-        if (groupId.contains("${") || artifactId.contains("${")) {
-            LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId in {0}", basedir);
+        String version = model.getVersion();
+        if (version == null && parent != null) {
+            version = parent.getVersion();
+        }
+        if (version == null) {
+            LOGGER.log(Level.WARNING, "no version in {0}", pom);
+            return;
+        }        
+        
+        if (groupId.contains("${") || artifactId.contains("${") || version.contains("${")) {
+            LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId/version in {0}", basedir);
             FileObject basedirFO = FileUtil.toFileObject(basedir);
             if (basedirFO != null) {
                 try {
@@ -437,7 +449,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
         } else {
             try {
-                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, basedir.toURI().toURL());
+                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, version, basedir.toURI().toURL());
             } catch (MalformedURLException x) {
                 LOGGER.log(Level.FINE, null, x);
             }

@@ -152,7 +152,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -945,29 +944,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
             checkConsistency();
-            CreateFilesWorker worker = new CreateFilesWorker(this);
-            worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
+            CreateFilesWorker worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
+            worker.createProjectFilesIfNeed(sources, true);
             if (status != Status.Validating  || RepositoryUtils.getRepositoryErrorCount(this) == 0){
-                worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
+                worker.createProjectFilesIfNeed(headers, false);
             }
+            worker.finishProjectFilesCreation();
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 if (!TraceFlags.DEBUG_BROKEN_REPOSITORY) {
                     System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
                 }
-                validator = null;
                 reopenUnit();
-                worker.createProjectFilesIfNeed(sources, true, readOnlyRemovedFilesSet, validator);
-                worker.createProjectFilesIfNeed(headers, false, readOnlyRemovedFilesSet, validator);
+                worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, null);
+                worker.createProjectFilesIfNeed(sources, true);
+                worker.createProjectFilesIfNeed(headers, false);
+                worker.finishProjectFilesCreation();
             }
             checkConsistency();
-            if (validator != null && false) {
-                // update all opened libraries using our storages associated with libs
-                for (CsmProject lib : this.getLibraries()) {
-                    ProjectBase libProject = (ProjectBase)lib;
-                    libProject.mergeFileContainerFromStorage(this);
-                }
-                checkConsistency();
-            }
         } finally {
             disposeLock.readLock().unlock();
             if (TraceFlags.TIMING) {
@@ -1021,7 +1014,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     final FileImpl createIfNeed(NativeFileItem nativeFile, boolean isSourceFile, FileModel lwm,
-            ProjectSettingsValidator validator, List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged) {
+            ProjectSettingsValidator validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
 
         FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile, isSourceFile);
         if (fileAndHandler == null) {
@@ -1718,25 +1711,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         return out;
-    }
-
-    private void mergeFileContainerFromStorage(ProjectBase startPrj) {
-        Storage storage = startPrj.getIncludedLibraryStorage(this);
-        // we are library and were asked to update own file container
-        // based on storage kept in dependent project (i.e. when project was opened)
-        Map<CharSequence, FileEntry> internalMap = storage.getInternalMap();
-        try {
-            for (Map.Entry<CharSequence, FileEntry> storageEntry : internalMap.entrySet()) {
-                CharSequence key = storageEntry.getKey();
-                this.onFileIncluded(startPrj, key, null, null, ProjectBase.GATHERING_MACROS, true);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void mergeFromStorage(Storage storage) {
-
     }
 
     private boolean updateFileEntryBasedOnIncludedStatePair(
@@ -2730,7 +2704,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        return uid;
+        return out;
     }
 
     @Override

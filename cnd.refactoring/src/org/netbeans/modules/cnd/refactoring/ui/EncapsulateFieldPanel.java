@@ -339,7 +339,6 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jScrollField = new javax.swing.JScrollPane();
         jTableFields = new javax.swing.JTable();
         jInlineMethods = new javax.swing.JCheckBox();
-        jAddInlineKeyword = new javax.swing.JCheckBox();
 
         jLblTitle.setLabelFor(jTableFields);
         org.openide.awt.Mnemonics.setLocalizedText(jLblTitle, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "LBL_FieldList")); // NOI18N
@@ -401,13 +400,6 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jTableFields.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "ACSD_jTableFields")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jInlineMethods, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jInlineMethods.text")); // NOI18N
-        jInlineMethods.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jInlineMethodsActionPerformed(evt);
-            }
-        });
-
-        jAddInlineKeyword.setText(org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jAddInlineKeyword.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -416,6 +408,23 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jCheckAccess)
+                    .addComponent(jInlineMethods)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLblAccessVis)
+                            .addComponent(jLblFieldVis)
+                            .addComponent(jLblInsertPoint)
+                            .addComponent(jLblSort)
+                            .addComponent(jLblJavadoc))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jComboInsertPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jComboSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jComboJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jComboField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(125, 125, 125))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jScrollField, javax.swing.GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -425,27 +434,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                             .addComponent(jButtonSelectGetters)
                             .addComponent(jButtonSelectSetters))
                         .addGap(12, 12, 12))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jCheckAccess)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(jInlineMethods)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addComponent(jAddInlineKeyword, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLblAccessVis)
-                                .addComponent(jLblFieldVis)
-                                .addComponent(jLblInsertPoint)
-                                .addComponent(jLblSort)
-                                .addComponent(jLblJavadoc))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jComboInsertPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jComboSort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jComboJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jComboField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addComponent(jLblTitle)))
+                    .addComponent(jLblTitle))
                 .addContainerGap())
         );
 
@@ -489,9 +478,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                     .addComponent(jLblAccessVis)
                     .addComponent(jComboAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jInlineMethods)
-                    .addComponent(jAddInlineKeyword))
+                .addComponent(jInlineMethods)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jCheckAccess)
                 .addContainerGap())
@@ -530,13 +517,8 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     makeSelection(true, 3);
 }//GEN-LAST:event_jButtonSelectSettersActionPerformed
 
-    private void jInlineMethodsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jInlineMethodsActionPerformed
-        jAddInlineKeyword.setEnabled(jInlineMethods.isSelected());
-    }//GEN-LAST:event_jInlineMethodsActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jAddInlineKeyword;
     private javax.swing.JButton jButtonSelectAll;
     private javax.swing.JButton jButtonSelectGetters;
     private javax.swing.JButton jButtonSelectNone;
@@ -651,7 +633,6 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
         if (hasOutOfClassMemberDefinitions) {
             jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false));
-            jAddInlineKeyword.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_KEYWORD_PROPERTY, false));
             jInlineMethods.setEnabled(true);
         } else {
             jInlineMethods.setSelected(true);
@@ -699,15 +680,6 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         return inline;
     }
 
-    public boolean isMethodMarkedAsInlined() {
-        boolean inline = jInlineMethods.isSelected();
-        if (inline) {
-            inline = jAddInlineKeyword.isSelected();
-            NbPreferences.forModule(DeclarationGenerator.class).putBoolean(DeclarationGenerator.INLINE_KEYWORD_PROPERTY, inline);
-        }
-        return inline;
-    }
-    
     public boolean isCheckAccess() {
         ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
         return ALWAYS_USE_ACCESSORS;

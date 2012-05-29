@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -61,7 +60,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
@@ -75,13 +73,10 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
-import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -184,10 +179,6 @@ public class MakeProjectGeneratorImpl {
         createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
-        p.setRemoteMode(prjParams.getRemoteMode());
-        if (prjParams.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            p.setRemoteFileSystemHost(ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID()));
-        }
         if(prjParams.getDatabaseConnection() != null) {
             Preferences prefs = ProjectUtils.getPreferences(p, ProjectSupport.class, true);
             prefs.put(PROP_DBCONN, prjParams.getDatabaseConnection());
@@ -200,15 +191,6 @@ public class MakeProjectGeneratorImpl {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
-        if (prjParams.getFullRemote()) {
-            RemoteSyncFactory factory = RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
-            CndUtils.assertNotNull(factory, "Can not find sync factory for full remote"); //NOI18N
-            for (Configuration conf : confs) {
-                MakeConfiguration mk = (MakeConfiguration) conf;
-                mk.setFixedRemoteSyncFactory(factory);
-                mk.setRemoteMode(RemoteProject.Mode.REMOTE_SOURCES);
-            }
-        }
         if (prjParams.getCustomizerId() != null) {
             dirFO.createData("cndcustomizerid." + prjParams.getCustomizerId()); // NOI18N
         }
@@ -231,30 +213,7 @@ public class MakeProjectGeneratorImpl {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         
-        FileObject sourceBaseFO;
-        if (prjParams.getFullRemote()) {
-            // mode
-            Element fullRemoteNode = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE);
-            fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name()));
-            data.appendChild(fullRemoteNode);
-            // host
-            Element rfsHostNode = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST);
-            rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID()));
-            data.appendChild(rfsHostNode);
-            // mount point
-            String remoteProjectPath = prjParams.getFullRemoteNativeProjectPath();
-            Element rfsBaseDir = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_BASE_DIR);
-            rfsBaseDir.appendChild(doc.createTextNode(remoteProjectPath));
-            data.appendChild(rfsBaseDir);
-            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID());
-            sourceBaseFO = FileSystemProvider.getFileObject(env, remoteProjectPath);
-            if (sourceBaseFO == null) {
-                throw new FileNotFoundException("File does not exist: " + env + ':' + remoteProjectPath); //NOI18N
-            }
-        } else {
-            sourceBaseFO = dirFO;
-        }
-
+        FileObject sourceBaseFO = dirFO;
         h.putPrimaryConfigurationData(data, true);
 
         //EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -281,7 +240,8 @@ public class MakeProjectGeneratorImpl {
 
             @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders,
+                        logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, false); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 
                 projectDescriptor.save();
                 // finish postponed activity when project metadata is ready
@@ -296,7 +256,7 @@ public class MakeProjectGeneratorImpl {
         //} else {
             task.run();
         //}
-        if (!prjParams.getFullRemote() && !prjParams.isMakefileProject()) {
+        if (!prjParams.isMakefileProject()) {
             FileObject baseDirFileObject = projectDescriptor.getBaseDirFileObject();
             FileObject createData = baseDirFileObject.createData(projectDescriptor.getProjectMakefileName());
             // create Makefile

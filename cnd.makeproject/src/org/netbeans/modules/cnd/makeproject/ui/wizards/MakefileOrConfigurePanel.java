@@ -50,13 +50,15 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -146,7 +148,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     makefileRadioButton.setSelected(true);
                     selected = true;
                 }
-                String configureScript = ConfigureUtils.findConfigureScript(path);
+                String configureScript;
+                ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                if (env != null) {
+                    FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
+                    configureScript = ConfigureUtils.findConfigureScript(fileSystem.findResource(path));
+                } else {
+                    configureScript = ConfigureUtils.findConfigureScript(path);
+                }
                 if (configureScript != null) {
                     if (!selected) {
                         configureRadioButton.setSelected(true);
@@ -239,7 +248,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 String mn = makefileNameTextField.getText();
                 int i = mn.replace('\\', '/').lastIndexOf('/');
                 if (i > 0) {// && !configureNameTextField.getText().isEmpty()) {
-                    String cn = ConfigureUtils.findConfigureScript(mn.substring(0,i));
+                    String cn;
+                    ExecutionEnvironment env = (ExecutionEnvironment) settings.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                    if (env != null) {
+                        FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
+                        cn = ConfigureUtils.findConfigureScript(fileSystem.findResource(mn.substring(0,i)));
+                    } else {
+                        cn = ConfigureUtils.findConfigureScript(mn.substring(0,i));
+                    }
                     if (cn != null && NewProjectWizardUtils.fileExists(cn, controller.getWizardDescriptor())) {
                         configureNameTextField.setText(cn);
                     }
@@ -542,7 +558,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }//GEN-LAST:event_makefileRadioButtonActionPerformed
     
     private void configureBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBrowseButtonActionPerformed
-        String seed = null;
+        String seed;
         if (makefileNameTextField.getText().length() > 0) {
             seed = makefileNameTextField.getText();
         } else if (FileChooser.getCurrentChooserFile() != null) {
@@ -568,7 +584,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }//GEN-LAST:event_configureBrowseButtonActionPerformed
     
     private void makefileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_makefileBrowseButtonActionPerformed
-        String seed = null;
+        String seed;
         if (makefileNameTextField.getText().length() > 0) {
             seed = makefileNameTextField.getText();
         } else if (FileChooser.getCurrentChooserFile() != null) {
@@ -628,6 +644,6 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     // End of variables declaration//GEN-END:variables
     
     private static String getString(String s) {
-        return NbBundle.getBundle(BuildActionsPanel.class).getString(s);
+        return NbBundle.getMessage(BuildActionsPanel.class, s);
     }
 }

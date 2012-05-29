@@ -154,7 +154,7 @@ public final class APTFileCacheEntry {
 
     @Override
     public String toString() {
-        return "APT cache for " + filePath; // NOI18N
+        return "APT cache " + (isSerial() ? "Serial" : "Shared") + " with " + cache.size() + " entries for " + filePath; // NOI18N
     }
 
     private boolean needTraceValue(int val) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.loaders;
 
-package org.netbeans.modules.cnd.modelutil;
+import org.netbeans.modules.cnd.execution.CompileExecSupport;
+import org.netbeans.modules.cnd.source.spi.CndPropertiesProvider;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Sheet;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * This should be implemented by any highlighting data providers who wants to have properties
  *
- * @author Sergey Grinev
+ * @author Alexander Simon
  */
-public interface NamedEntity {
-    String getName();
-    boolean isEnabledByDefault();
+@ServiceProvider(service=CndPropertiesProvider.class)
+public class CndPropertiesProviderImpl extends CndPropertiesProvider {
+
+    @Override
+    public void addExtraProperties(DataNode node, Sheet sheet) {
+        DataObject dao = node.getDataObject();
+        CompileExecSupport ces = dao.getLookup().lookup(CompileExecSupport.class);
+        if (ces != null) {
+            Sheet.Set set = sheet.get(Sheet.PROPERTIES);
+            ces.addProperties(set);
+        }
+    }
 }

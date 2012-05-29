@@ -232,12 +232,12 @@ STRUCT Derived2 (Derived2 ) [164:1/3177-166:2/3292] lcurly=3201 SCOPE: $Global$
             PARAMETERS:
             RETURNS void TEXT=void  [165:5/3207-165:9/3211]
 VARIABLE x [171:1/3339-171:18/3356]  TYPE: *int TEXT=int*  [171:1/3339-171:5/3343]  INIT: text='nullptr'  SCOPE: $Global$ 
-ENUM Enumeration [175:1/3397-180:2/3480] SCOPE: $Global$ 
+STRONGLY TYPED ENUM Enumeration [175:1/3397-180:2/3480] SCOPE: $Global$ 
     Val1
     Val2
     Val3
     Val4
-ENUM Enum2 [182:1/3483-182:45/3527] SCOPE: $Global$ 
+STRONGLY TYPED ENUM Enum2 [182:1/3483-182:45/3527] SCOPE: $Global$ 
     Val1
     Val2
 ENUM Enum3 [184:1/3530-184:39/3568] SCOPE: $Global$ 
@@ -575,12 +575,12 @@ STRUCT Derived2 (Derived2 ) [164:1/3177-166:2/3292] lcurly=3201 SCOPE: $Global$
             PARAMETERS:
             RETURNS void TEXT=void  [165:5/3207-165:9/3211]
 VARIABLE x [171:1/3339-171:18/3356]  TYPE: *int TEXT=int*  [171:1/3339-171:5/3343]  INIT: text='nullptr'  SCOPE: $Global$ 
-ENUM Enumeration [175:1/3397-180:2/3480] SCOPE: $Global$ 
+STRONGLY TYPED ENUM Enumeration [175:1/3397-180:2/3480] SCOPE: $Global$ 
     Val1
     Val2
     Val3
     Val4
-ENUM Enum2 [182:1/3483-182:45/3527] SCOPE: $Global$ 
+STRONGLY TYPED ENUM Enum2 [182:1/3483-182:45/3527] SCOPE: $Global$ 
     Val1
     Val2
 ENUM Enum3 [184:1/3530-184:39/3568] SCOPE: $Global$ 

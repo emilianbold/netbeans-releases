@@ -47,7 +47,9 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -56,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
+public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NamedPanel, ChangeListener {
     private WizardDescriptor wizardDescriptor;
     private SelectBinaryPanelVisual component;
     private String name;
@@ -161,29 +163,29 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
     }
 
     public static class BinaryWizardStorage {
-        private String binaryPath = ""; // NOI18N
-        private String sourceFolderPath = ""; // NOI18N
+        private FSPath binaryPath;
+        private FSPath sourceFolderPath;
         private final SelectBinaryPanel controller;
 
         public BinaryWizardStorage(SelectBinaryPanel controller) {
             this.controller = controller;
         }
 
-        public String getBinaryPath() {
+        public FSPath getBinaryPath() {
             return binaryPath;
         }
 
-        public void setBinaryPath(String path) {
-            this.binaryPath = path.trim();
+        public void setBinaryPath(FSPath path) {
+            this.binaryPath = path;
             controller.validate();
         }
 
-        public String getSourceFolderPath() {
+        public FSPath getSourceFolderPath() {
             return sourceFolderPath;
         }
 
-        public void setSourceFolderPath(String path) {
-            this.sourceFolderPath = path.trim();
+        public void setSourceFolderPath(FSPath path) {
+            this.sourceFolderPath = path;
             controller.validate();
         }
 
