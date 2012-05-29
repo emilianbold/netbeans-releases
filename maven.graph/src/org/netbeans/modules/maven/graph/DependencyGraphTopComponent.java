@@ -112,6 +112,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     private static final Logger LOG = Logger.getLogger(DependencyGraphTopComponent.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(DependencyGraphTopComponent.class);
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
@@ -514,7 +515,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         if (prj != null && it1.hasNext()) {
             final DependencyNode root = it1.next();
             final POMModel model = it3.hasNext() ? it3.next() : null;
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override public void run() {
                     scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
                     GraphConstructor constr = new GraphConstructor(scene);
@@ -621,7 +622,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }
 
     private void setPaneText(String text, boolean progress)  {
-        JComponent vView = null;
+        JComponent vView;
         if (progress) {
             JPanel panel = new JPanel();
             JProgressBar pb = new JProgressBar();

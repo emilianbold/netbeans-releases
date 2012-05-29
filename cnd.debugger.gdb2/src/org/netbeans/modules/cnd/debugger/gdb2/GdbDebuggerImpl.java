@@ -354,10 +354,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                     if (!executor.isAlive()) {
                                         NativeDebuggerManager.warning(// In order to avoid catching the exception from exitValue()
                                                 Catalog.format(
-                                                    "MSG_GdbUnexpectedlyStopped", 
+                                                    "MSG_GdbUnexpectedlyStopped",   // NOI18N
                                                     executor.getExitValue()
                                                 )
-                                        );  // NOI18N
+                                        );
                                     }
                                     kill();
                                 }

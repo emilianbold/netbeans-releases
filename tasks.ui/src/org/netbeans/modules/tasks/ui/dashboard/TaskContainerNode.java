@@ -42,6 +42,7 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,6 +58,7 @@ import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -240,8 +242,13 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-                updateNodes();
-                updateCounts();
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateNodes();
+                        updateCounts();
+                    }
+                });
             }
         }
     }
