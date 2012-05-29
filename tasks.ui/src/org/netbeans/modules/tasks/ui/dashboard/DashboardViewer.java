@@ -356,8 +356,12 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void deleteCategory(final CategoryNode... toDelete) {
         String names = "";
-        for (CategoryNode categoryNode : toDelete) {
-            names += categoryNode.getCategory().getName() + " ";
+        for (int i = 0; i < toDelete.length; i++) {
+            CategoryNode categoryNode = toDelete[i];
+            names += categoryNode.getCategory().getName();
+            if (i != toDelete.length - 1) {
+                names += ", ";
+            }
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
@@ -488,8 +492,12 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void removeRepository(final RepositoryNode... toRemove) {
         String names = "";
-        for (RepositoryNode repositoryNode : toRemove) {
-            names += repositoryNode.getRepository().getDisplayName() + " ";
+        for (int i = 0; i < toRemove.length; i++) {
+            RepositoryNode repositoryNode = toRemove[i];
+            names += repositoryNode.getRepository().getDisplayName();
+            if (i != toRemove.length - 1) {
+                names += ", ";
+            }
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveRepoTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveQuestion", names);
@@ -542,8 +550,12 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void deleteQuery(QueryNode... toDelete) {
         String names = "";
-        for (QueryNode queryNode : toDelete) {
-            names += queryNode.getQuery().getDisplayName() + " ";
+        for (int i = 0; i < toDelete.length; i++) {
+            QueryNode queryNode = toDelete[i];
+            names += queryNode.getQuery().getDisplayName();
+            if (i != toDelete.length - 1) {
+                names += ", ";
+            }
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
