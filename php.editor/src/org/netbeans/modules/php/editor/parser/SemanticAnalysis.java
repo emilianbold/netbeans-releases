@@ -273,6 +273,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         @Override
+        public void visit(TraitMethodAliasDeclaration node) {
+            if (node.getNewMethodName() != null) {
+                addOffsetRange(node.getNewMethodName(), ColoringAttributes.METHOD_SET);
+            }
+        }
+
+        @Override
         public void visit(MethodInvocation node) {
             Identifier identifier = null;
             if (node.getMethod().getFunctionName().getName() instanceof Variable) {

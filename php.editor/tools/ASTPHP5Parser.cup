@@ -1713,6 +1713,13 @@ class_name:traitName T_PAAMAYIM_NEKUDOTAYIM string_st:oldMethodName T_AS traits_
     RESULT = new TraitMethodAliasDeclaration(traitNameleft, endright, oldMethodId, newMethodId, traitName, null);
 :}
 
+| string_st:oldMethodName T_AS traits_alias_modifier:modifier T_SEMICOLON:end
+{:
+    Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    Identifier newMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);
+    RESULT = new TraitMethodAliasDeclaration(oldMethodNameleft, endright, oldMethodId, newMethodId, null, modifier);
+:}
+
 | string_st:oldMethodName T_AS traits_alias_modifier:modifier string_st:newMethodName T_SEMICOLON:end
 {:
     Identifier oldMethodId = new Identifier(oldMethodNameleft, oldMethodNameright, oldMethodName);

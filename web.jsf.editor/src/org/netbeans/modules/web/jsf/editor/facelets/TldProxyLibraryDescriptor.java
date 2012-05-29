@@ -87,6 +87,11 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
     }
 
     @Override
+    public String getPrefix() {
+        return source.getPrefix();
+    }
+
+    @Override
     public Map<String, Tag> getTags() {
         if(tld == null) {
             return source.getTags();
@@ -173,6 +178,11 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
                 return TldProxyLibraryDescriptor.this.getNamespace();
             }
 
+            @Override
+            public String getPrefix() {
+                return TldProxyLibraryDescriptor.this.getPrefix();
+            }
+            
             @Override
             public Map<String, Tag> getTags() {
                 return tags;

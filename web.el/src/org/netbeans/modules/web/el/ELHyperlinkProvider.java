@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstMethodArguments;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
@@ -236,6 +238,12 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
                     if (node == null) {
                         return;
                     }
+                    
+                    if(node instanceof AstMethodArguments) {
+                        node = node.jjtGetParent(); 
+                        assert node instanceof AstDotSuffix;
+                    }
+                    
                     result.add(Pair.<Node, ELElement>of(node, elElement));
                 }
             });
