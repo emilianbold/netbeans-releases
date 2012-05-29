@@ -307,11 +307,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         storeCategory(categoryNode.getCategory());
     }
 
-    public List<Category> getCategories() {
+    public List<Category> getCategories(boolean openedOnly) {
         synchronized (LOCK_CATEGORIES) {
             List<Category> list = new ArrayList<Category>(categoryNodes.size());
-            for (CategoryNode CategoryNode : categoryNodes) {
-                list.add(CategoryNode.getCategory());
+            for (CategoryNode categoryNode : categoryNodes) {
+                if (!(openedOnly && !categoryNode.isOpened())) {
+                    list.add(categoryNode.getCategory());
+                }
             }
             return list;
         }
