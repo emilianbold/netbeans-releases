@@ -3051,7 +3051,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
             MIValue frameValue = (results != null) ? results.valueOf("frame") : null; // NOI18N
-
+            MITList frameTuple;
+            MITList stack;
+            boolean visited = false;
 	    // Mac 10.4 gdb provides no "frame" attribute
 
             // For the scenario that stack view is closed and local view
@@ -3063,23 +3065,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
 	    if (srcResults != null) {
-                MITList stack = srcResults.valueOf("stack").asList(); // NOI18N
+                stack = srcResults.valueOf("stack").asList(); // NOI18N
 		if (false) {
 		    // We have information about what src location we're
 		    // stopped in.
-		    MITList frameTuple = null;
 		    if (frameValue != null)
 			frameTuple = frameValue.asTuple();
 		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size(), breakpoint);
 
 		} else {
                     frameValue = ((MIResult)stack.asList().get(0)).value();
-		    MITList frameTuple = frameValue.asTuple();
+		    frameTuple = frameValue.asTuple();
 		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
                 }
                 
-                MITList frameTuple = null;
-                boolean visited = false;
                 // find the first frame with source info if dis was not requested
                 for (MITListItem stf : stack.asList()) {
                     frameTuple = ((MIResult)stf).value().asTuple();
@@ -3088,12 +3087,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     }
                     visited = true;
                 }
-		setVisitedLocation(MILocation.make(this, frameTuple, null, visited, stack.size(), breakpoint));
-                
+		
                 state().isUpAllowed = !homeLoc.bottomframe();
                 state().isDownAllowed = !homeLoc.topframe();
                 setStack(srcRecord);
-	    }
+	    } else {
+                frameTuple = frameValue.asTuple();
+                stack = null;
+            }
+            
+            setVisitedLocation(MILocation.make(this, frameTuple, null, visited, (stack == null ? 0 :stack.size()), breakpoint));
 
 //            if (get_frames || get_locals) {
 //                showStackFrames();
@@ -3302,7 +3305,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             new MiCommandImpl("-stack-list-frames") { // NOI18N
                 @Override
                 protected void onDone(MIRecord record) {
-                    genericStoppedWithSrc(stopRecord, record);
+                        genericStoppedWithSrc(stopRecord, record);
                     finish();
                 }
                 @Override
