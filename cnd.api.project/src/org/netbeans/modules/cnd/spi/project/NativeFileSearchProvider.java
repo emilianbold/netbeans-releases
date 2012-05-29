@@ -39,27 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.navigation.docview;
+package org.netbeans.modules.cnd.spi.project;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 
-@ActionID(category = "Window", id = DocViewAction.ID)
-@ActionRegistration(displayName = "#CTL_ShowDocViewAction")
-@ActionReference(path = "Menu/Window/Other", position = 570)
-@Messages("CTL_ShowDocViewAction=C/C++ Documentation")
-public final class DocViewAction implements ActionListener {
-    static final String ID = "org.netbeans.modules.cnd.navigation.docview.DocViewAction"; //NOI18N
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public interface NativeFileSearchProvider {
+    /**
+     * constant to register services
+     */
+    public static String PATH = "CND/NativeFileSearchProvider"; // NOI18N
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        TopComponent win = DocViewTopComponent.findInstance();
-        win.open();
-        win.requestActive();
-    }
+    /**
+     * *
+     * Searcher for find project file by name
+     *
+     * @return searcher, or null if can not provide any info
+     */
+    NativeFileSearch getNativeFileSearch(NativeProject project);
 }

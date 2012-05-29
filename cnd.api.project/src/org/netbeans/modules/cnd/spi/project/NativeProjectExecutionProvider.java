@@ -39,27 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.navigation.docview;
+package org.netbeans.modules.cnd.spi.project;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
-import org.openide.windows.TopComponent;
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 
-@ActionID(category = "Window", id = DocViewAction.ID)
-@ActionRegistration(displayName = "#CTL_ShowDocViewAction")
-@ActionReference(path = "Menu/Window/Other", position = 570)
-@Messages("CTL_ShowDocViewAction=C/C++ Documentation")
-public final class DocViewAction implements ActionListener {
-    static final String ID = "org.netbeans.modules.cnd.navigation.docview.DocViewAction"; //NOI18N
+/**
+ *
+ * @author Vladimir Voskresensky
+ */
+public interface NativeProjectExecutionProvider {
+    /**
+     * constant to register services
+     */
+    public static String PATH = "CND/NativeProjectExecutionProvider"; // NOI18N
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        TopComponent win = DocViewTopComponent.findInstance();
-        win.open();
-        win.requestActive();
-    }
+    /**
+     * Execute a command from user's PATH in the context of the native project
+     *
+     * @param executable Executable name (not path)
+     * @param env Additional environment variables
+     * @param args Arguments
+     * @return NativeExitStatus status if executed, null if can not execute (allow to pass to the next provider)
+     */
+    NativeExitStatus execute(NativeProject project, final String executable, final String[] env, final String... args) throws IOException;
+
+    /**
+     * Return the name of the development platform (Solaris-x86, Solaris-sparc,
+     * MacOSX, Windows, Linux-x86)
+     *
+     * @return development platform name, null if can not execute (allow to pass to the next provider)
+     */
+    String getPlatformName(NativeProject project);
+
 }
