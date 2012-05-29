@@ -248,4 +248,8 @@ public class PhpParserErrorTest extends PHPTestBase {
         // fails on Mac
         checkErrors("testfiles/parser/issue198572.php");
     }
+
+    public void testIssue213080() throws Exception {
+        checkErrors("testfiles/parser/issue213080.php");
+    }
 }

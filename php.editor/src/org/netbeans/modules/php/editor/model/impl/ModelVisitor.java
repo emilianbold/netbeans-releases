@@ -418,6 +418,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         try {
             if (!lazyScan) {
+                lazyScan = true; // scan only one exact method...no nested methods (even though that they shouldn't exist)
                 scan(node.getFunction().getFormalParameters());
                 scan(node.getFunction().getBody());
             }
@@ -652,7 +653,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(FieldAccess node) {
         Variable field = node.getField();
-        if (field.isDollared()) {
+        if (field.isDollared() || field instanceof ReflectionVariable) {
             scan(field);
         } else {
             occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
