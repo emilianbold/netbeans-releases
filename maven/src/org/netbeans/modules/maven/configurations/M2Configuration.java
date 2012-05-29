@@ -52,15 +52,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.NonNull;
+import static org.netbeans.modules.maven.configurations.Bundle.*;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -70,30 +70,33 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
 
     public static final String DEFAULT = "%%DEFAULT%%"; //NOI18N
     
-    static M2Configuration createDefault(NbMavenProjectImpl prj) {
-        return new M2Configuration(DEFAULT, prj);
+    static M2Configuration createDefault(FileObject projectDirectory) {
+        return new M2Configuration(DEFAULT, projectDirectory);
     }
     
     private @NonNull final String id;
     private List<String> profiles;
-    private final NbMavenProjectImpl project;
     public static final String FILENAME = "nbactions.xml"; //NOI18N
     public static final String FILENAME_PREFIX = "nbactions-"; //NOI18N
     public static final String FILENAME_SUFFIX = ".xml"; //NOI18N
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
     private final Map<String,String> properties = new HashMap<String,String>();
+    private final FileObject projectDirectory;
     
-    public M2Configuration(String id, NbMavenProjectImpl proj) {
+    public M2Configuration(String id, FileObject projectDirectory) {
         assert id != null;
         this.id = id;
-        this.project = proj;
+        this.projectDirectory = projectDirectory;
         profiles = Collections.<String>emptyList();
     }
 
-    public @Override String getDisplayName() {
+    
+     @Override       
+     @Messages("TXT_DefaultConfig=<default config>")
+     public String getDisplayName() {
         if (DEFAULT.equals(id)) {
-            return NbBundle.getMessage(M2Configuration.class, "TXT_DefaultConfig");
+            return TXT_DefaultConfig();
         }
         return id;
     }
@@ -146,7 +149,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     }
 
     public @Override InputStream getActionDefinitionStream() {
-        FileObject fo = project.getProjectDirectory().getFileObject(getFileNameExt(id));
+        FileObject fo = projectDirectory.getFileObject(getFileNameExt(id));
         lastTimeExists = fo != null;
         if (fo != null) {
             try {
@@ -191,7 +194,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     
     @Override
     protected boolean reloadStream() {
-        FileObject fo = project.getProjectDirectory().getFileObject(getFileNameExt(id));
+        FileObject fo = projectDirectory.getFileObject(getFileNameExt(id));
         boolean prevExists = lastTimeExists;
         lastTimeExists = fo != null;
         return ((fo == null && prevExists) || (fo != null && fo.lastModified().after(lastModified)));

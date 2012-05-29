@@ -67,7 +67,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         assertEquals("g:m:jar:0", p.getLookup().lookup(NbMavenProject.class).getMavenProject().getId());
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
-        pr.doIDEConfigChecks(p.getLookup().lookup(NbMavenProject.class).getMavenProject());
+        pr.doIDEConfigChecks();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "par", "0", null, "pom", null, new DefaultArtifactHandler("pom"))), pr.getMissingArtifacts());
     }
@@ -79,7 +79,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
-        pr.doIDEConfigChecks(p.getLookup().lookup(NbMavenProject.class).getMavenProject());
+        pr.doIDEConfigChecks();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "plug", "0", null, "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }
@@ -91,7 +91,7 @@ public class ProblemReporterImplTest extends NbTestCase { // #175472
             "</project>");
         Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(getWorkDir()));
         ProblemReporterImpl pr = p.getLookup().lookup(ProblemReporterImpl.class);
-        pr.doIDEConfigChecks(p.getLookup().lookup(NbMavenProject.class).getMavenProject());
+        pr.doIDEConfigChecks();
         assertFalse(pr.getReports().isEmpty());
         assertEquals(Collections.singleton(new DefaultArtifact("g", "b", "1.0-SNAPSHOT", "compile", "jar", null, new DefaultArtifactHandler("jar"))), pr.getMissingArtifacts());
     }

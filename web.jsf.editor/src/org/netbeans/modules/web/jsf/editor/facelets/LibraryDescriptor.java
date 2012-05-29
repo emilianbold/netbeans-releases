@@ -50,6 +50,8 @@ import org.netbeans.modules.web.jsfapi.api.Tag;
  */
 public interface LibraryDescriptor {
 
+    public String getPrefix();
+    
     public String getNamespace();
 
     public Map<String, Tag> getTags();
