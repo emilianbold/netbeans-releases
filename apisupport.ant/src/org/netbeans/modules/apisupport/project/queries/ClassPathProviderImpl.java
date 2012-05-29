@@ -235,7 +235,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
         }
         if (type.equals(ClassPath.SOURCE)) {
-            for (Map.Entry<String,String> entry : project.evaluator().getProperties().entrySet()) {
+            Map<String,String> properties = project.evaluator().getProperties();
+            if (properties != null) {
+            for (Map.Entry<String,String> entry : properties.entrySet()) {
                 if (entry.getKey().startsWith(NbModuleProject.SOURCE_START)) {
                     FileObject jar = project.getHelper().resolveFileObject(entry.getValue());
                     if (jar != null) {
@@ -245,6 +247,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                         }
                     }
                 }
+            }
             }
         }
         // Something not supported.
