@@ -45,9 +45,9 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -362,6 +361,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     }
                 }
             }
+            if (prototype != null && ModelImpl.instance().isProjectDisabled(prototype)){
+                return null;
+            }
+                    
             FileSystem fs;
             try {
                 fs = file.getFileSystem();
@@ -369,21 +372,18 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 Exceptions.printStackTrace(ex);
                 fs = CndFileUtils.getLocalFileSystem();
             }
-                    
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
             if (prototype == null) {
                 // Some default implementation should be provided.
-                sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang)));
-                sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang));
+                sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
+                sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, impl));
             } else {
-                if (ModelImpl.instance().isProjectDiabled(prototype)){
-                    return null;
-                }
                 sysIncludes.addAll(prototype.getSystemIncludePaths());
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
+            impl.checkPaths();
             impl.addFile(file);
             set.add(impl.findFileItem(file));
             return impl;
@@ -395,10 +395,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
             this.projectRoot = projectRoot;
             this.fileSystem = getFileSystem(projectRoot);
-            this.sysIncludes = createIncludes(sysIncludes);
-            this.usrIncludes = createIncludes(usrIncludes);
-            this.sysMacros = new ArrayList<String>(sysMacros);
-            this.usrMacros = new ArrayList<String>(usrMacros);
+            this.sysIncludes = sysIncludes;
+            this.usrIncludes = usrIncludes;
+            this.sysMacros = sysMacros;
+            this.usrMacros = usrMacros;
         }
         
         private static FileSystem getFileSystem(FileObject fo) {
@@ -410,18 +410,21 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
         }
 
-        private List<FSPath> createIncludes(List<FSPath> src) {
-            List<FSPath> result = new ArrayList<FSPath>(src.size());
-            for (FSPath path : src) {
-                if (CndPathUtilitities.isPathAbsolute(path.getPath())) {
-                    result.add(path);
-                } else {
-                    CndUtils.assertTrueInConsole(false, "Can not maconvert "); //NOI18N
+        private void checkPaths() {
+            check(sysIncludes);
+            check(usrIncludes);
+        }
+        
+        private void check(List<FSPath> list) {
+            for(Iterator<FSPath> it = list.iterator(); it.hasNext();){
+                FSPath path = it.next();
+                if (!CndPathUtilitities.isPathAbsolute(path.getPath())) {
+                    CndUtils.assertTrueInConsole(false, "Can not convert "+path.getPath()); //NOI18N
+                    it.remove();
                 }
             }
-            return result;
         }
-
+        
         private void addFile(FileObject file) {
             DataObject dobj = NativeProjectProvider.getDataObject(file);
             NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dobj);

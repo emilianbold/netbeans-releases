@@ -62,12 +62,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -705,6 +705,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     /*package*/ NativeExitStatus execute(String executable, String[] env, String... args) throws IOException {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ExecutionEnvironment ev = makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+        return execute(ev, executable, env, args);
+    }
+    
+    /*package*/ static NativeExitStatus execute(ExecutionEnvironment ev, String executable, String[] env, String... args) throws IOException {
         if (ev.isLocal()) {
             String exePath = Path.findCommand(executable);
             if (exePath == null) {
