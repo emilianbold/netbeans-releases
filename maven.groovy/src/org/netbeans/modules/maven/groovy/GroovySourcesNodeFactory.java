@@ -75,7 +75,8 @@ import org.openide.nodes.Node;
 public class GroovySourcesNodeFactory implements NodeFactory {
 
     // Copied from NbMavenProjectImpl because it's not part of the Maven API !!
-    private static final String PROP_PROJECT = "MavenProject"; //NOI18N
+    private static final String PROP_PROJECT = "MavenProject";   //NOI18N
+    private static final String PROP_RESOURCE = "RESOURCES";      //NOI18N
     
     private static final String MAIN_GROOVY = "src/main/groovy"; //NOI18N
     private static final String TEST_GROOVY = "src/test/groovy"; //NOI18N
@@ -162,10 +163,11 @@ public class GroovySourcesNodeFactory implements NodeFactory {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (PROP_PROJECT.equals(evt.getPropertyName())) {
+            final String propertyName = evt.getPropertyName();
+            if (PROP_PROJECT.equals(propertyName) || PROP_RESOURCE.equals(propertyName)) {
                 fireChange();
             }
-            if (PROP_PROJECT.equals(evt.getPropertyName())) {
+            if (PROP_PROJECT.equals(propertyName) || PROP_RESOURCE.equals(propertyName)) {
                 if (MAIN_GROOVY.equals(evt.getNewValue()) || TEST_GROOVY.equals(evt.getNewValue())) {
                     fireChange();
                     checkFileObject((String)evt.getNewValue());
