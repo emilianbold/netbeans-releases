@@ -39,24 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.jna;
+package org.netbeans.modules.php.project.connections;
 
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Utilities;
+/**
+ * Thrown when user skips download of a file.
+ * <p>
+ * User has some unsaved changes in a file and file download in in progress;
+ * user is asked whether he wants to replace the file - if the answer is No,
+ * this exception can be thrown.
+ */
+public class DownloadSkipException extends Exception {
 
-public class Installer extends ModuleInstall {
+    private static final long serialVersionUID = 65768332435654L;
 
-    @Override
-    public void validate() {
-        super.validate();
-        //#211655
-        System.setProperty( "jna.boot.library.name", "jnidispatch-340" ); //NOI18N
-        if( Utilities.isUnix() ) {
-            //workaround for JNA issue #66 https://github.com/twall/jna/pull/66
-            //should be obsolete when upgradind to a new version of JNA
-            String tmp = System.getProperty( "java.io.tmpdir" ); //NOI18N
-            tmp = tmp + "/netbeans-" + System.getProperty( "user.name" ); //NOI18N
-            System.setProperty( "java.io.tmpdir", tmp ); //NOI18N
-        }
-    }
 }

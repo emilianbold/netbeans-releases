@@ -39,24 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.jna;
+package org.netbeans.modules.php.editor;
 
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Utilities;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public class Installer extends ModuleInstall {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion208193Test extends PHPCodeCompletionTestBase {
+
+    public PHPCodeCompletion208193Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test208193/issue208193.php", "$this->^indexRet1();", false);
+    }
 
     @Override
-    public void validate() {
-        super.validate();
-        //#211655
-        System.setProperty( "jna.boot.library.name", "jnidispatch-340" ); //NOI18N
-        if( Utilities.isUnix() ) {
-            //workaround for JNA issue #66 https://github.com/twall/jna/pull/66
-            //should be obsolete when upgradind to a new version of JNA
-            String tmp = System.getProperty( "java.io.tmpdir" ); //NOI18N
-            tmp = tmp + "/netbeans-" + System.getProperty( "user.name" ); //NOI18N
-            System.setProperty( "java.io.tmpdir", tmp ); //NOI18N
-        }
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test208193/"))
+            })
+        );
     }
+
 }

@@ -87,16 +87,16 @@
               </Group>
               <Group type="parallel" groupAlignment="leading" attributes="0">
                   <Group type="sequential" attributes="0">
-                      <EmptySpace max="Short.MAX_VALUE" attributes="512"/>
+                      <EmptySpace pref="20" max="Short.MAX_VALUE" attributes="0"/>
                       <Component id="jTabbedPane1" min="$pref" pref="100" max="$pref" attributes="0"/>
-                      <EmptySpace min="$pref" pref="35" max="$pref" attributes="0"/>
+                      <EmptySpace pref="175" max="Short.MAX_VALUE" attributes="0"/>
                   </Group>
                   <Group type="sequential" alignment="leading" attributes="0">
                       <EmptySpace max="$pref" attributes="1024"/>
                       <Component id="jScrollPane1" min="$pref" pref="153" max="$pref" attributes="0"/>
+                      <EmptySpace max="Short.MAX_VALUE" attributes="1536"/>
                   </Group>
               </Group>
-              <EmptySpace min="$pref" pref="140" max="$pref" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

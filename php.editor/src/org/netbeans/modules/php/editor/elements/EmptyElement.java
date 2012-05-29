@@ -39,24 +39,67 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.libs.jna;
+package org.netbeans.modules.php.editor.elements;
 
-import org.openide.modules.ModuleInstall;
-import org.openide.util.Utilities;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 
-public class Installer extends ModuleInstall {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class EmptyElement extends PhpElementImpl implements TypeMemberElement {
+    private final TypeElement enclosingType;
+
+    public EmptyElement(final TypeElement enclosingType) {
+        super("__EMPTY__", enclosingType.getName(), enclosingType.getFilenameUrl(), enclosingType.getOffset(), enclosingType.getElementQuery()); //NOI18N
+        this.enclosingType = enclosingType;
+    }
 
     @Override
-    public void validate() {
-        super.validate();
-        //#211655
-        System.setProperty( "jna.boot.library.name", "jnidispatch-340" ); //NOI18N
-        if( Utilities.isUnix() ) {
-            //workaround for JNA issue #66 https://github.com/twall/jna/pull/66
-            //should be obsolete when upgradind to a new version of JNA
-            String tmp = System.getProperty( "java.io.tmpdir" ); //NOI18N
-            tmp = tmp + "/netbeans-" + System.getProperty( "user.name" ); //NOI18N
-            System.setProperty( "java.io.tmpdir", tmp ); //NOI18N
-        }
+    public String getSignature() {
+        return "";
     }
+
+    @Override
+    public PhpElementKind getPhpElementKind() {
+        return PhpElementKind.EMPTY;
+    }
+
+    @Override
+    public TypeElement getType() {
+        return enclosingType;
+    }
+
+    @Override
+    public boolean isStatic() {
+        return false;
+    }
+
+    @Override
+    public boolean isPublic() {
+        return true;
+    }
+
+    @Override
+    public boolean isProtected() {
+        return false;
+    }
+
+    @Override
+    public boolean isPrivate() {
+        return false;
+    }
+
+    @Override
+    public boolean isFinal() {
+        return false;
+    }
+
+    @Override
+    public boolean isAbstract() {
+        return false;
+    }
+
 }
