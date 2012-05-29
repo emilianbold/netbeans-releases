@@ -40,16 +40,24 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-NetBeans = new Object();
+// Check if the page is initialized already
+if (!(typeof(NetBeans) === 'object'
+    && typeof(NetBeans.GLASSPANE_ID) === 'string'
+    && document.getElementById(NetBeans.GLASSPANE_ID) !== null)) {
 
-// Name of attribute used for element's identification
-NetBeans.ATTR_ID = ':netbeans_id';
+NetBeans = new Object();
 
 // Name of attribute used to store original URL of the stylesheet
 NetBeans.ATTR_URL = ':netbeans_url';
 
-// Name of attribute used to mark document elements created by the plugin
-NetBeans.ATTR_ARTIFICIAL = ':netbeans_artificial';
+// Name of attribute used to mark document elements created by NetBeans
+NetBeans.ATTR_ARTIFICIAL = ':netbeans_generated';
+
+// Name of attribute used to mark (temporarily) selected elements
+NetBeans.ATTR_SELECTED = ':netbeans_selected';
+
+// Name of attribute used to mark (temporarily) highlighted elements
+NetBeans.ATTR_HIGHLIGHTED = ':netbeans_highlighted';
 
 // ID of canvas element that serves as a glass-pane
 NetBeans.GLASSPANE_ID = 'netbeans_glasspane';
@@ -61,52 +69,61 @@ NetBeans.RELOAD_PARAM = 'netbeans_reload';
 // Counter used to generate element IDs
 NetBeans.nextId = 0;
 
-// Array of selected elements - every item of this array is in the form
-// {element: theActualElement; ... additional element data ... }
+// Selected elements
 NetBeans.selection = [];
 
+// Next selection (under construction)
+NetBeans.nextSelection = [];
+
+// Highlighted elements
+NetBeans.highlight = [];
+
+// Next highlight (under construction)
+NetBeans.nextHighlight = [];
+
 NetBeans.getMatchedCSSRulesAvailable = !!document.defaultView.getMatchedCSSRules;
-
-// Returns XML encoding of document elements.
-// The XML contains name of the elements and
-// NetBeans ID attributes only.
-NetBeans.getDOM = function() {
-    var self = this;
-    var code = function(e) {
-        var result = '';
-        if (e.nodeType == 1) {
-            // Set ID attribute if necessary
-            if (typeof(e[self.ATTR_ID]) === 'undefined') {
-                e[self.ATTR_ID] = self.nextId++;
-            }
-
-            if (!e.getAttribute(self.ATTR_ARTIFICIAL)) { // skip artificial elements
-                result += '<' + e.tagName;
-                result += ' '+self.ATTR_ID+'=\"'+e[self.ATTR_ID]+'\"';
-                if (e.id && e.id !== "") {
-                    result += ' id="'+e.id+'"';
-                }
-                if (e.className && e.className !== "") {
-                    result += ' class="'+e.className+'"';
-                }
-                result += '>';
-                var i;
-                for (i=0; i<e.childNodes.length; i++) {
-                    result += code(e.childNodes[i],i);
-                }
-                result += '</' + e.tagName + '>';
-            }
-        }
-        return result;
-    }
-    return code(document.documentElement);
-};
 
 // Clears element selection
 NetBeans.clearSelection = function() {
     this.selection = [];
     this.repaintGlassPane();
 };
+
+// Initializes/clears the next selection
+NetBeans.initNextSelection = function() {
+    this.nextSelection = [];
+}
+
+// Initializes/clears the next highlight
+NetBeans.initNextHighlight = function() {
+    this.nextHighlight = [];
+}
+
+// Adds an element into the next selection
+NetBeans.addElementToNextSelection = function(element) {
+    if (this.nextSelection.indexOf(element) == -1) {
+        this.nextSelection.push(element);
+    }
+}
+
+// Adds an element into the next highlight
+NetBeans.addElementToNextHighlight = function(element) {
+    if (this.nextHighlight.indexOf(element) == -1) {
+        this.nextHighlight.push(element);
+    }
+}
+
+// Finishes the next selection, i.e., switches the next selection to current selection
+NetBeans.finishNextSelection = function() {
+    this.selection = this.nextSelection;
+    this.repaintGlassPane();
+}
+
+// Finishes the next highlight, i.e., switches the next highlight to current highlight
+NetBeans.finishNextHighlight = function() {
+    this.highlight = this.nextHighlight;
+    this.repaintGlassPane();
+}
 
 // (object instanceof Element) doesn't work in content scripts
 // in Firefox (because of implicit wrapping by XPCNativeWrapper).
@@ -634,8 +651,8 @@ NetBeans.insertGlassPane = function() {
     canvas.style.top = 0;
     canvas.style.left = 0;
     canvas.style.zIndex = zIndex;
-    canvas.addEventListener('click', function(event) {
-        var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
+    canvas.style.pointerEvents = 'none';
+    var getElementForEvent = function(event) {
         canvas.style.visibility = 'hidden';
         var element = document.elementFromPoint(event.clientX, event.clientY);
         // Do not select helper elements introduced by page inspection
@@ -643,13 +660,39 @@ NetBeans.insertGlassPane = function() {
             element = element.parentNode;
         }
         canvas.style.visibility = 'visible';
-        var handle = self.getElementHandle(element);
-        postMessageToNetBeans({
-            message: 'selection',
-            selection: handle
-        });
-        self.selectElements([element]);
+        return element;
+    };
+
+    // Selection handler
+    canvas.addEventListener('click', function(event) {
+        var element = getElementForEvent(event);
+        // HACK: notify NetBeans
+        element.setAttribute(self.ATTR_SELECTED, 'true');
+        element.removeAttribute(self.ATTR_SELECTED);
     });
+
+    // Mouse-over highlight
+    var lastHighlighted = null;
+    canvas.addEventListener('mousemove', function(event) {
+        var element = getElementForEvent(event);
+        if (lastHighlighted !== element) {
+            lastHighlighted = element;
+            // HACK: notify NetBeans
+            element.setAttribute(self.ATTR_HIGHLIGHTED, 'true');
+            element.removeAttribute(self.ATTR_HIGHLIGHTED);
+        }
+    });
+
+    // Clear highlight when the mouse leaves the window
+    canvas.addEventListener('mouseout', function(e) {
+        if (e.toElement === null) {
+            lastHighlighted = null;
+            // HACK notify NetBeans
+            canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'false');
+            canvas.removeAttribute(self.ATTR_HIGHLIGHTED);
+        }
+    });
+
     document.body.appendChild(canvas);
     
     // Selection Mode checkbox
@@ -662,7 +705,6 @@ NetBeans.insertGlassPane = function() {
     var selectionMode = document.createElement('input');
     selectionMode.type = 'checkbox';
     selectionMode.setAttribute(this.ATTR_ARTIFICIAL, true);
-    selectionMode.setAttribute('checked', true);
     selectionMode.addEventListener('click', this.switchSelectionMode);
     toolbox.appendChild(selectionMode);
     var selectionText = document.createTextNode('Selection Mode');
@@ -693,24 +735,32 @@ NetBeans.repaintGlassPane = function() {
         ctx.canvas.height = height;
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = "#0000FF";
-        for (var i=0; i<NetBeans.selection.length; i++) {
-            var selectedElement = NetBeans.selection[i];
-            var rects = selectedElement.getClientRects();
-            for (var j=0; j<rects.length; j++) {
-                var rect = rects[j];
-                ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
-                ctx.stroke();
-            }
-        }
+        this.paintElements(ctx, NetBeans.selection);
+        ctx.globalAlpha = 0.25;
+        this.paintElements(ctx, NetBeans.highlight);
     } else {
         console.log('canvas.getContext not supported!');
     }
 }
 
-if (NetBeans.getMatchedCSSRulesAvailable) {
-  // Insert copies of cross-origin stylesheets
-  NetBeans.insertCopiesOfCrossOriginStylesheets();
+NetBeans.paintElements = function(ctx, elements) {
+    for (var i=0; i<elements.length; i++) {
+        var selectedElement = elements[i];
+        var rects = selectedElement.getClientRects();
+        for (var j=0; j<rects.length; j++) {
+            var rect = rects[j];
+            ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+            ctx.stroke();
+        }
+    }
 }
+
+//if (NetBeans.getMatchedCSSRulesAvailable) {
+//  // Insert copies of cross-origin stylesheets
+//  NetBeans.insertCopiesOfCrossOriginStylesheets();
+//}
 
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
+
+}

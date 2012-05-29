@@ -79,11 +79,11 @@ public class MatchedRulesPanel extends JPanel {
      */
     private void update() {
         Collection<ElementHandle> selection;
-        if (pageModel == null) {
+//        if (pageModel == null) {
             selection = Collections.EMPTY_LIST;
-        } else {
-            selection = pageModel.getSelectedElements();
-        }
+//        } else {
+//            selection = pageModel.getSelectedElements();
+//        }
         final int selectionSize = selection.size();
         final Map<ElementHandle, List<PageModel.RuleInfo>> ruleData;
         final ElementHandle selectedElement;
@@ -141,7 +141,7 @@ public class MatchedRulesPanel extends JPanel {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
-                if (PageModel.PROP_SELECTED_ELEMENTS.equals(propName)) {
+                if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
                     update();
                 }
             }

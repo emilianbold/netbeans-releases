@@ -46,7 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.w3c.dom.Document;
+import org.openide.nodes.Node;
 
 /**
  * Model of an inspected web-page.
@@ -54,42 +54,48 @@ import org.w3c.dom.Document;
  * @author Jan Stola
  */
 public abstract class PageModel {
+    public static final String PROP_DOCUMENT = "document"; // NOI18N
     /** Name of the property that is fired when the set of selected elements is changed. */
-    public static final String PROP_SELECTED_ELEMENTS = "selectedElements"; // NOI18N
+    public static final String PROP_SELECTED_NODES = "selectedNodes"; // NOI18N
+    /** Name of the property that is fired when the set of highlighted nodes is changed. */
+    public static final String PROP_HIGHLIGHTED_NODES = "highlightedNodes"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
     /**
-     * Returns a simplified DOM of the page that can be used to determine
-     * the structure of the elements only. It doesn't contain any other
-     * information (like attributes or style information).
+     * Returns the document node.
      * 
-     * @return simplified DOM of the page.
+     * @return document node.
      */
-    public abstract Document getDocument();
+    public abstract Node getDocumentNode();
 
     /**
-     * Sets the selected elements in the page.
+     * Sets the selected nodes.
      * 
-     * @param elements elements to select in the page.
+     * @param nodes nodes to select in the page.
      */
-    public abstract void setSelectedElements(Collection<ElementHandle> elements);
+    public abstract void setSelectedNodes(List<? extends Node> nodes);
 
     /**
-     * Returns selected elements.
+     * Returns selected nodes.
      * 
-     * @return selected elements.
+     * @return selected nodes.
      */
-    public abstract Collection<ElementHandle> getSelectedElements();
+    public abstract List<? extends Node> getSelectedNodes();
 
     /**
-     * Returns attributes of the specified element.
+     * Sets the highlighted nodes.
      * 
-     * @param element element whose attributes should be returned.
-     * @return map with attribute information, it maps the name of
-     * the attribute to its value.
+     * @param nodes highlighted nodes.
      */
-    public abstract Map<String,String> getAtrributes(ElementHandle element);
+    public abstract void setHighlightedNodes(List<? extends Node> nodes);
+
+    /**
+     * Returns highlighted nodes.
+     * 
+     * @return highlighted nodes.
+     */
+    public abstract List<? extends Node> getHighlightedNodes();
 
     /**
      * Returns computed style of the specified element.
@@ -121,6 +127,11 @@ public abstract class PageModel {
      * @param resource resource to reload.
      */
     public abstract void reloadResource(ResourceInfo resource);
+
+    /**
+     * Disposes this page model.
+     */
+    protected abstract void dispose();
 
     /**
      * Adds a property change listener.

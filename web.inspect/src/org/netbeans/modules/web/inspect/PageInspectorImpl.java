@@ -43,17 +43,11 @@ package org.netbeans.modules.web.inspect;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
-import org.netbeans.modules.web.browser.spi.ScriptExecutor;
-import org.netbeans.modules.web.inspect.script.Script;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -94,28 +88,24 @@ public class PageInspectorImpl extends PageInspector {
     public static PageInspectorImpl getDefault() {
         return (PageInspectorImpl)PageInspector.getDefault();
     }
-
+    
     @Override
     public void inspectPage(Lookup pageContext) {
         synchronized (LOCK) {
             if (pageModel != null) {
-                if (pageModel instanceof PageModelImpl) {
-                    ((PageModelImpl)pageModel).dispose();
-                }
+                pageModel.dispose();
                 if (messageDispatcher != null) {
                     messageDispatcher.removeMessageListener(messageListener);
                 }
             }
-            ScriptExecutor executor = pageContext.lookup(ScriptExecutor.class);
-            if (executor != null) {
-                pageModel = new PageModelImpl(executor);
+            WebKitDebugging webKit = pageContext.lookup(WebKitDebugging.class);
+            if (webKit != null) {
+                pageModel = new WebKitPageModel(webKit);
                 messageDispatcher = pageContext.lookup(MessageDispatcher.class);
                 if (messageDispatcher != null) {
                     messageListener = new InspectionMessageListener(pageModel);
                     messageDispatcher.addMessageListener(messageListener);
                 }
-                String initScript = Script.getScript("initialization"); // NOI18N
-                executor.execute(initScript);
             } else {
                 pageModel = null;
                 messageDispatcher = null;
@@ -217,18 +207,18 @@ public class PageInspectorImpl extends PageInspector {
                     }
                 }
             } else {
-                try {
-                    JSONObject message = (JSONObject)JSONValue.parseWithException(messageTxt);
-                    Object type = message.get(MESSAGE_TYPE);
-                    if (MESSAGE_SELECTION.equals(type)) {
-                        JSONObject jsonHandle = (JSONObject)message.get(MESSAGE_SELECTION);
-                        ElementHandle handle = ElementHandle.forJSONObject(jsonHandle);
-                        pageModel.setSelectedElements(Collections.singleton(handle));
-                    }
-                } catch (ParseException ex) {
-                    Logger.getLogger(PageInspectorImpl.class.getName())
-                            .log(Level.INFO, "Ignoring message that is not in JSON format: {0}", messageTxt); // NOI18N
-                }
+//                try {
+//                    JSONObject message = (JSONObject)JSONValue.parseWithException(messageTxt);
+//                    Object type = message.get(MESSAGE_TYPE);
+//                    if (MESSAGE_SELECTION.equals(type)) {
+//                        JSONObject jsonHandle = (JSONObject)message.get(MESSAGE_SELECTION);
+//                        ElementHandle handle = ElementHandle.forJSONObject(jsonHandle);
+//                        pageModel.setSelectedElements(Collections.singleton(handle));
+//                    }
+//                } catch (ParseException ex) {
+//                    Logger.getLogger(PageInspectorImpl.class.getName())
+//                            .log(Level.INFO, "Ignoring message that is not in JSON format: {0}", messageTxt); // NOI18N
+//                }
             }
         }
 

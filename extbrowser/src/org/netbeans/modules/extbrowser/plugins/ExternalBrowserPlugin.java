@@ -583,6 +583,11 @@ public final class ExternalBrowserPlugin {
             transport.attach();
             webkitDebugger.getDebugger().enable();
             session = factory.createDebuggingSession(webkitDebugger);
+            
+            PageInspector inspector = PageInspector.getDefault();
+            if (inspector != null) {
+                inspector.inspectPage(browserImpl.getLookup());
+            }
         }
 
         private void deinitialize() {

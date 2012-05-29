@@ -335,6 +335,17 @@ public class Node {
         return (String)getProperties().get("value"); // NOI18N
     }
 
+    /**
+     * Determines whether this node was injected by NetBeans or whether
+     * it is part of the original document.
+     * 
+     * @return {@code true} when the node was injected by NetBeans,
+     * returns {@code false} when the node is part of the original document.
+     */
+    public boolean isInjectedByNetBeans() {
+        return getAttribute(":netbeans_generated") != null; // NOI18N
+    }
+
     // PENDING
     //getContentDocument()
     

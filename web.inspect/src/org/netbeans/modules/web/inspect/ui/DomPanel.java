@@ -42,33 +42,38 @@
 package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import org.netbeans.modules.web.inspect.ElementHandle;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
- * Panel that displays DOM Tree of the inspected page.
+ * Panel that displays DOM tree of the inspected page.
  *
  * @author Jan Stola
  */
@@ -103,6 +108,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             pageModel.addPropertyChangeListener(createModelListener());
             manager.addPropertyChangeListener(createSelectedNodesListener());
             update(true);
+            updateHighlight();
         }
     }
 
@@ -110,10 +116,137 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
      * Initializes the tree view.
      */
     private void initTreeView() {
-        treeView = new BeanTreeView();
+        treeView = new BeanTreeView() {
+            {
+                MouseAdapter listener = createTreeMouseListener();
+                tree.addMouseListener(listener);
+                tree.addMouseMotionListener(listener);
+                tree.setCellRenderer(createTreeCellRenderer(tree.getCellRenderer()));
+            }
+        };
         treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         treeView.setRootVisible(false);
+    }
+
+    /**
+     * Creates a mouse listener for the DOM tree.
+     * 
+     * @return mouse listener for the DOM tree.
+     */
+    private MouseAdapter createTreeMouseListener() {
+        return new MouseAdapter() {
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                processEvent(e);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                processEvent(e);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                processEvent(null);
+                // Make sure that lastHover != <any potential value>
+                // i.e., make sure that change in hover is triggered when
+                // mouse returns into this component
+                lastHover = new Object();
+            }
+
+            // The last node we were hovering over.
+            private Object lastHover = null;
+            
+            /**
+             * Processes the specified mouse event.
+             * 
+             * @param e mouse event to process.
+             */
+            private void processEvent(MouseEvent e) {
+                Object hover = null;
+                if (e != null) {
+                    JTree tree = (JTree)e.getSource();
+                    TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                    if  (path != null) {
+                        hover = path.getLastPathComponent();
+                    }
+                }
+                if (hover != lastHover) {
+                    lastHover = hover;
+                    List<? extends Node> highlight;
+                    if (hover != null) {
+                        Node node = Visualizer.findNode(hover);
+                        highlight = Arrays.asList(node);
+                    } else {
+                        highlight = Collections.EMPTY_LIST;
+                    }
+                    pageModel.setHighlightedNodes(highlight);
+                    treeView.repaint();
+                }
+            }
+            
+        };
+    }
+
+    /**
+     * Highlighted (visualizer) nodes.
+     * This collection is for rendering purposes only.
+     */
+    final List highlightedTreeNodes = new ArrayList();
+
+    /**
+     * Forces update of the set of highlighted nodes.
+     */
+    final void updateHighlight() {
+        synchronized (highlightedTreeNodes) {
+            highlightedTreeNodes.clear();
+            for (Node node : pageModel.getHighlightedNodes()) {
+                TreeNode visualizer = Visualizer.findVisualizer(node);
+                highlightedTreeNodes.add(visualizer);
+            }
+            treeView.repaint();
+        }
+    }
+
+    /**
+     * Determines whether the given (visualizer) node is highlighted.
+     * 
+     * @param treeNode (visualizer) node to check.
+     * @return {@code true} when the specified node should be highlighted,
+     * returns {@code false} otherwise.
+     */
+    boolean isHighlighted(Object treeNode) {
+        synchronized (highlightedTreeNodes) {
+            return highlightedTreeNodes.contains(treeNode);
+        }
+    } 
+
+    /**
+     * Creates a cell renderer for the DOM tree.
+     * 
+     * @param delegate delegating/original tree renderer.
+     * @return call renderer for the DOM tree.
+     */
+    private TreeCellRenderer createTreeCellRenderer(final TreeCellRenderer delegate) {
+        return new DefaultTreeCellRenderer() {
+            // Color used for hovering highlight
+            private Color hoverColor = UIManager.getColor("Tree.selectionBackground").brighter().brighter(); // NOI18N
+
+            @Override
+            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                JLabel component;
+                if (!selected && highlightedTreeNodes.contains(value)) {
+                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
+                    component.setBackground(hoverColor);
+                    component.setOpaque(true);
+                } else {
+                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                }
+                return component;
+            }
+        };
     }
 
     /**
@@ -141,15 +274,16 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                final Document document = pageModel.getDocument();
+                // Make sure that the document node is created
+                pageModel.getDocumentNode();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        update(rebuild, document);
+                        update(rebuild, null);
                         RP.post(new Runnable() {
                             @Override
                             public void run() {
-                                updateSelectionFromModel(false);
+//                                updateSelectionFromModel(false);
                             }
                         });
                     }
@@ -169,24 +303,25 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     private void update(boolean rebuild, Document document) {
         updatingView  = true;
         try {
-            if (document == null) {
-                Node root = new AbstractNode(Children.LEAF);
-                replace(treeView, noDomLabel);
-                manager.setRootContext(root);
-            } else {
-                Element documentElement = document.getDocumentElement();
-                if (rebuild) {
-                    ElementNode root = new ElementNode();
-                    root.setElement(documentElement);
-                    manager.setRootContext(new FakeRootNode(root, getContextActions()));
-                } else {
-                    // Trying to keep the selected nodes and expanded branches in the tree view
-                    FakeRootNode fakeRoot = (FakeRootNode)manager.getRootContext();
-                    ElementNode oldRoot = (ElementNode)fakeRoot.getRealRoot();
-                    oldRoot.setElement(documentElement);
-                }
+//            if (document == null) {
+//                Node root = new AbstractNode(Children.LEAF);
+//                replace(treeView, noDomLabel);
+//                manager.setRootContext(root);
+//            } else {
+                manager.setRootContext(pageModel.getDocumentNode());
+//                Element documentElement = document.getDocumentElement();
+//                if (rebuild) {
+//                    ElementNode root = new ElementNode();
+//                    root.setElement(documentElement);
+//                    manager.setRootContext(new FakeRootNode(root, getContextActions()));
+//                } else {
+//                    // Trying to keep the selected nodes and expanded branches in the tree view
+//                    FakeRootNode fakeRoot = (FakeRootNode)manager.getRootContext();
+//                    ElementNode oldRoot = (ElementNode)fakeRoot.getRealRoot();
+//                    oldRoot.setElement(documentElement);
+//                }
                 replace(noDomLabel, treeView);
-            }
+//            }
         } finally {
             updatingView = false;
         }
@@ -247,57 +382,80 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
-                if (PageModel.PROP_SELECTED_ELEMENTS.equals(propName)) {
-                    updateSelectionFromModel(true);
+                if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
+                    List<? extends Node> nodes = pageModel.getSelectedNodes();
+                    final Node[] selection = nodes.toArray(new Node[nodes.size()]);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updatingView = true;
+                            try {
+                                manager.setSelectedNodes(selection);
+                            } catch (PropertyVetoException pvex) {
+                                Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
+                            } finally {
+                                updatingView = false;
+                            }
+                        }
+                    });
+                } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateHighlight();
+                        }
+                    });
+                } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
+                    update(true);
                 }
             }
         };
     }
 
-    /**
-     * Updates selection in this view from the model.
-     * 
-     * @param triggeredByModel determines whether this selection update
-     * was triggered by selection change in the model.
-     */
-    private void updateSelectionFromModel(boolean triggeredByModel) {
-        Collection<ElementHandle> selection = pageModel.getSelectedElements();
-        final List<Node> nodeSelection = new ArrayList<Node>();
-        for (ElementHandle handle : selection) {
-            Node root = manager.getRootContext();
-            if (root instanceof FakeRootNode) {
-                root = ((FakeRootNode)root).getRealRoot();
-            }
-            if (root instanceof ElementNode) {
-                ElementNode node = ((ElementNode)root).locate(handle);
-                if (node == null) {
-                    if (triggeredByModel) {
-                        // Selected node not found => try to refresh the view
-                        // from the model to get the missing node
-                        update(false);
-                        // No need to continue, selection will be updated
-                        // as a result of DOM tree update
-                        return;
-                    }
-                } else {
-                    nodeSelection.add(node);
-                }
-            }
-        }
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updatingView = true;
-                try {
-                    manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
-                } catch (PropertyVetoException pvex) {
-                    Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
-                } finally {
-                    updatingView = false;
-                }
-            }
-        });
-    }
+//    /**
+//     * Updates selection in this view from the model.
+//     * 
+//     * @param triggeredByModel determines whether this selection update
+//     * was triggered by selection change in the model.
+//     */
+//    private void updateSelectionFromModel(boolean triggeredByModel) {
+//        Collection<ElementHandle> selection = pageModel.getSelectedElements();
+//        final List<Node> nodeSelection = new ArrayList<Node>();
+//        for (ElementHandle handle : selection) {
+//            Node root = manager.getRootContext();
+//            if (root instanceof FakeRootNode) {
+//                root = ((FakeRootNode)root).getRealRoot();
+//            }
+//            if (root instanceof ElementNode) {
+//                ElementNode node = ((ElementNode)root).locate(handle);
+//                if (node == null) {
+//                    if (triggeredByModel) {
+//                        // Selected node not found => try to refresh the view
+//                        // from the model to get the missing node
+//                        update(false);
+//                        // No need to continue, selection will be updated
+//                        // as a result of DOM tree update
+//                        return;
+//                    }
+//                } else {
+//                    nodeSelection.add(node);
+//                }
+//            }
+//        }
+//        EventQueue.invokeLater(new Runnable() {
+//            @Override
+//            public void run() {
+//                updatingView = true;
+//                try {
+//                    manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
+//                } catch (PropertyVetoException pvex) {
+//                    Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
+//                } finally {
+//                    updatingView = false;
+//                }
+//            }
+//        });
+//    }
 
     /**
      * Creates a listener for selected nodes.
@@ -313,23 +471,13 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     if (updatingView) {
                         // This change was triggered by update from the model
                         // => no need to synchronize back into the model.
-                        // In fact, synchronization back into the model could be
-                        // harmful when some part of the selection is not found among
-                        // the displayed nodes (when the view is not 100% up to date).
                         return;
                     }
-                    Node[] nodes = manager.getSelectedNodes();
-                    final List<ElementHandle> elements = new ArrayList<ElementHandle>(nodes.length);
-                    for (Node node : nodes) {
-                        ElementHandle handle = node.getLookup().lookup(ElementHandle.class);
-                        if (handle != null) {
-                            elements.add(handle);
-                        }
-                    }
+                    final Node[] nodes = manager.getSelectedNodes();
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            pageModel.setSelectedElements(elements);
+                            pageModel.setSelectedNodes(Arrays.asList(nodes));
                         }
                     });
                 }

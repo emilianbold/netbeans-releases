@@ -63,7 +63,7 @@ import org.openide.windows.TopComponent;
 @TopComponent.Description(
         preferredID = DomTC.ID,
         persistenceType = TopComponent.PERSISTENCE_ALWAYS,
-        iconBase = ElementNode.ICON_BASE)
+        iconBase = "org/netbeans/modules/web/inspect/resources/domElement.png") // NOI18N
 @TopComponent.Registration(
         mode = "navigator", // NOI18N
         position = 600,

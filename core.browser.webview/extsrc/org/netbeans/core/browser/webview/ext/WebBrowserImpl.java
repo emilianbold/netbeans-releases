@@ -132,7 +132,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                         createBrowser();
                     }
                 });
-                initComponentPopupMenu(container);
+                //initComponentPopupMenu(container);
                 initialized = true;
             }
         }
@@ -362,7 +362,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             }
             browserListners.clear();
             container = null;
-            lastURLNoLongerDisplayed();
+            paneClosed();
         }
     }
 
@@ -473,7 +473,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
         eng.locationProperty().addListener(new ChangeListener<String>() {
             @Override public void changed(ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
-                lastURLNoLongerDisplayed();
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -616,9 +615,9 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     /**
-     * Invoked when the web-browser pane is closed or when the displayed URL is changed.
+     * Invoked when the web-browser pane is closed.
      */
-    private void lastURLNoLongerDisplayed() {
+    private void paneClosed() {
         MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
         if (dispatcher != null) {
             dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);

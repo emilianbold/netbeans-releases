@@ -129,7 +129,7 @@ public class ElementNode extends AbstractNode {
             public void run() {
                 PageModel pageModel = PageInspectorImpl.getDefault().getPage();
                 ElementHandle handle = ElementHandle.forElement(element);
-                updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(handle));
+//                updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(handle));
                 updateProperties(SET_STYLE_INDEX, pageModel.getComputedStyle(handle));
             }
         });

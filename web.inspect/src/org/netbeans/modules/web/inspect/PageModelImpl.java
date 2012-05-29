@@ -53,6 +53,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.netbeans.modules.web.browser.spi.ScriptExecutor;
+import org.openide.nodes.Node;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -95,7 +96,8 @@ public class PageModelImpl extends PageModel {
     /**
      * Disposes this page model.
      */
-    void dispose() {
+    @Override
+    protected void dispose() {
         // PENDING
     }
     
@@ -124,71 +126,71 @@ public class PageModelImpl extends PageModel {
         return executor.execute(script);
     }
 
-    @Override
-    public Document getDocument() {
-        Document document = null;
-        try {
-            Object xml = executeScript("NetBeans.getDOM()"); // NOI18N
-            if (xml != ScriptExecutor.ERROR_RESULT) {
-                InputSource source = new InputSource(new StringReader(xml.toString()));
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
-                // Set document URL
-                Object url = executeScript("document.URL"); // NOI18N
-                if (url != ScriptExecutor.ERROR_RESULT) {
-                    document.setDocumentURI(url.toString());
-                }
-            }
-        } catch (SAXException ex) {
-            LOG.log(Level.INFO, null, ex);
-        } catch (IOException ex) {
-            LOG.log(Level.INFO, null, ex);
-        } catch (ParserConfigurationException ex) {
-            LOG.log(Level.INFO, null, ex);
-        }
-        return document;
-    }
+//    @Override
+//    public Document getDocument() {
+//        Document document = null;
+//        try {
+//            Object xml = executeScript("NetBeans.getDOM()"); // NOI18N
+//            if (xml != ScriptExecutor.ERROR_RESULT) {
+//                InputSource source = new InputSource(new StringReader(xml.toString()));
+//                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
+//                // Set document URL
+//                Object url = executeScript("document.URL"); // NOI18N
+//                if (url != ScriptExecutor.ERROR_RESULT) {
+//                    document.setDocumentURI(url.toString());
+//                }
+//            }
+//        } catch (SAXException ex) {
+//            LOG.log(Level.INFO, null, ex);
+//        } catch (IOException ex) {
+//            LOG.log(Level.INFO, null, ex);
+//        } catch (ParserConfigurationException ex) {
+//            LOG.log(Level.INFO, null, ex);
+//        }
+//        return document;
+//    }
 
-    @Override
-    public void setSelectedElements(Collection<ElementHandle> elements) {
-        synchronized (LOCK) {
-            selectedElements = elements;
-        }
-        List<JSONObject> jsonHandles = new ArrayList<JSONObject>(elements.size());
-        for (ElementHandle handle : elements) {
-            JSONObject jsonHandle = handle.toJSONObject();
-            jsonHandles.add(jsonHandle);
-        }
-        JSONArray array = new JSONArray();
-        array.addAll(jsonHandles);
-        String code = array.toString();
-        executeScript("NetBeans.selectElements("+code+")"); // NOI18N
-        firePropertyChange(PROP_SELECTED_ELEMENTS, null, null);
-    }
+//    @Override
+//    public void setSelectedElements(Collection<ElementHandle> elements) {
+//        synchronized (LOCK) {
+//            selectedElements = elements;
+//        }
+//        List<JSONObject> jsonHandles = new ArrayList<JSONObject>(elements.size());
+//        for (ElementHandle handle : elements) {
+//            JSONObject jsonHandle = handle.toJSONObject();
+//            jsonHandles.add(jsonHandle);
+//        }
+//        JSONArray array = new JSONArray();
+//        array.addAll(jsonHandles);
+//        String code = array.toString();
+//        executeScript("NetBeans.selectElements("+code+")"); // NOI18N
+//        firePropertyChange(PROP_SELECTED_ELEMENTS, null, null);
+//    }
+//
+//    @Override
+//    public Collection<ElementHandle> getSelectedElements() {
+//        synchronized (LOCK) {
+//            return Collections.unmodifiableCollection(selectedElements);
+//        }
+//    }
 
-    @Override
-    public Collection<ElementHandle> getSelectedElements() {
-        synchronized (LOCK) {
-            return Collections.unmodifiableCollection(selectedElements);
-        }
-    }
-
-    @Override
-    public Map<String, String> getAtrributes(ElementHandle element) {
-        Map<String,String> map;
-        JSONObject jsonHandle = element.toJSONObject();
-        String code = jsonHandle.toString();
-        Object result = executeScript("NetBeans.getAttributes("+code+")"); // NOI18N
-        if (result == ScriptExecutor.ERROR_RESULT) {
-            map = Collections.EMPTY_MAP;
-        } else if (result instanceof JSONObject) {
-            JSONObject json = (JSONObject)result;
-            map = toMap(json);
-        } else {
-            LOG.log(Level.INFO, "Unexpected attributes: {0}", result); // NOI18N
-            map = Collections.EMPTY_MAP;
-        }
-        return map;
-    }
+//    @Override
+//    public Map<String, String> getAtrributes(ElementHandle element) {
+//        Map<String,String> map;
+//        JSONObject jsonHandle = element.toJSONObject();
+//        String code = jsonHandle.toString();
+//        Object result = executeScript("NetBeans.getAttributes("+code+")"); // NOI18N
+//        if (result == ScriptExecutor.ERROR_RESULT) {
+//            map = Collections.EMPTY_MAP;
+//        } else if (result instanceof JSONObject) {
+//            JSONObject json = (JSONObject)result;
+//            map = toMap(json);
+//        } else {
+//            LOG.log(Level.INFO, "Unexpected attributes: {0}", result); // NOI18N
+//            map = Collections.EMPTY_MAP;
+//        }
+//        return map;
+//    }
 
     @Override
     public Map<String, String> getComputedStyle(ElementHandle element) {
@@ -286,6 +288,31 @@ public class PageModelImpl extends PageModel {
             LOG.log(Level.INFO, "Unexpected matched rules: {0}", result); // NOI18N
         }
         return rules;
+    }
+
+    @Override
+    public Node getDocumentNode() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setSelectedNodes(List<? extends Node> nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<? extends Node> getSelectedNodes() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void setHighlightedNodes(List<? extends Node> nodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<? extends Node> getHighlightedNodes() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

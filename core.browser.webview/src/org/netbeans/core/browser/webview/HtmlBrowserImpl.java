@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
@@ -119,6 +120,11 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl {
         transport.attach();
         webkitDebugger.getDebugger().enable();
         session = debuggerFactory.createDebuggingSession(webkitDebugger);
+
+        PageInspector inspector = PageInspector.getDefault();
+        if (inspector != null) {
+            inspector.inspectPage(getLookup());
+        }
     }
     
     private void destroy() {

@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -61,7 +62,7 @@ public class Script {
     /** Extension of the script files. */
     private static final String EXTENSION = ".js"; // NOI18N
     /** Map with already loaded scripts, it maps name of the script to the script. */
-    private static Map<String,String> scripts = new HashMap<String,String>();
+    private static Map<String,String> scripts = Collections.synchronizedMap(new HashMap<String,String>());
 
     /**
      * Returns script with the specified name.
