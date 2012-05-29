@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.csl.api.ElementKind;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public enum PhpElementKind {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion208193Test extends PHPCodeCompletionTestBase {
 
-    INDEX, PROGRAM, INCLUDE,
-    IFACE, CLASS, USE_ALIAS,
-    METHOD, FIELD, TYPE_CONSTANT,
-    VARIABLE, CONSTANT, FUNCTION,
-    NAMESPACE_DECLARATION, USE_STATEMENT, CONSTRUCTOR,
-    TRAIT, TRAIT_CONFLICT_RESOLUTION, TRAIT_METHOD_ALIAS, EMPTY;
-
-    public final ElementKind getElementKind() {
-        switch (this) {
-            case CLASS:
-                return ElementKind.CLASS;
-            case TYPE_CONSTANT:
-                return ElementKind.CONSTANT;
-            case CONSTANT:
-                return ElementKind.CONSTANT;
-            case FIELD:
-                return ElementKind.FIELD;
-            case FUNCTION:
-                return ElementKind.METHOD;
-            case IFACE:
-                return ElementKind.INTERFACE;
-            case METHOD:
-                return ElementKind.METHOD;
-            case VARIABLE:
-                return ElementKind.VARIABLE;
-            case NAMESPACE_DECLARATION:
-                return ElementKind.PACKAGE;
-        }
-        return ElementKind.OTHER;
+    public PHPCodeCompletion208193Test(String testName) {
+        super(testName);
     }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test208193/issue208193.php", "$this->^indexRet1();", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test208193/"))
+            })
+        );
+    }
+
 }
