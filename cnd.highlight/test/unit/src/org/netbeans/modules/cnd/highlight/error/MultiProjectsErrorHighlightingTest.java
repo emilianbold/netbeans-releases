@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -162,6 +163,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
     }
 
     private void doTestRedFilesWhenReopenProject210898(boolean reparse) throws Exception {
+        int parseCount = FileImpl.getParseCount();
         assertTrue("reposiroty Must Be ON " + TraceFlags.PERSISTENT_REPOSITORY, TraceFlags.PERSISTENT_REPOSITORY);
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
         CsmModel model = super.getModel();
@@ -173,9 +175,11 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         // fifth project defines macro which defines extra classes
         CsmProject macroDefinedProject = super.getProject(PROJECT_FIFTH);
         assertNotNull("null project for first", macroDefinedProject);
+        assertEquals("reparse was detected ", parseCount, FileImpl.getParseCount());
         // close project which uses this extra classes
         super.closeProject(PROJECT_FIFTH);
 //        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
+//        assertEquals("reparse was detected ", parseCount, FileImpl.getParseCount());
         if (reparse) {
             // reparse all projects
             super.reparseAllProjects();
@@ -185,5 +189,8 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("first/first.cpp");
         super.reopenProject(PROJECT_FIFTH, true);
         performStaticTest("fifth/fifth.cpp");
+        if (!reparse) {
+//            assertEquals("reparse was detected ", parseCount, FileImpl.getParseCount());
+        }
     }
 }
