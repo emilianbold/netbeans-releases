@@ -128,7 +128,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         URL generatedUnitTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit"));
         URL generatedFunctionalTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional"));
         String fileU = file.toURL().toString();
-        if (srcDir != null &&
+        if (srcDir != null && generatedClasses != null &&
                 (FileUtil.isParentOf(srcDir, file) || file == srcDir || fileU.startsWith(generatedClasses.toString()))) {
             // Regular sources.
             if (type.equals(ClassPath.COMPILE)) {
@@ -148,7 +148,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 }
                 return source;
             }
-        } else if (testSrcDir != null &&
+        } else if (testSrcDir != null && generatedUnitTestClasses != null &&
                 (FileUtil.isParentOf(testSrcDir, file) || file == testSrcDir || fileU.startsWith(generatedUnitTestClasses.toString()))) {
             // Unit tests.
             // XXX refactor to use project.supportedTestTypes
@@ -170,7 +170,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 }
                 return testSource;
             }
-        } else if (funcTestSrcDir != null &&
+        } else if (funcTestSrcDir != null && generatedFunctionalTestClasses != null &&
                 (FileUtil.isParentOf(funcTestSrcDir, file) || file == funcTestSrcDir || fileU.startsWith(generatedFunctionalTestClasses.toString()))) {
             // Functional tests.
             if (type.equals(ClassPath.SOURCE)) {
