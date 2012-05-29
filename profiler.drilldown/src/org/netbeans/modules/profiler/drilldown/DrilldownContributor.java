@@ -73,7 +73,8 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
     private static final Logger LOGGER = Logger.getLogger(DrilldownContributor.class.getName());
     private DrillDown dd;
     volatile private boolean drillDownGroupOpened;
-
+    volatile private boolean toolBarInitialized = false;
+    
     @Override
     public void addToCpuResults(final LiveFlatProfilePanel cpuPanel, final ProfilerToolbar toolBar, ProfilerClient client, Lookup.Provider project) {
         final List<StatisticalModule> additionalStats = new ArrayList<StatisticalModule>();
@@ -127,8 +128,11 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
             }
         });
 
-        toolBar.addFiller();
-        toolBar.add(drillDownWin.getPresenter());
+        if (!toolBarInitialized) {
+            toolBar.addFiller();
+            toolBar.add(drillDownWin.getPresenter());
+            toolBarInitialized = true;
+        }
     }
 
     @Override
