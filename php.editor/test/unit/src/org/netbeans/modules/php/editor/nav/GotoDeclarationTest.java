@@ -856,6 +856,14 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "$this->do^Something();", "public function ^doSomething() //so");
     }
 
+    public void testIssue213133_01() throws Exception {
+        checkDeclaration(getTestPath(), "echo $test->{Te^st::$CHECK};", "class ^Test {");
+    }
+
+    public void testIssue213133_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo $test->{Test::$CH^ECK};", "    public static $^CHECK = \"check\";");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

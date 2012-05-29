@@ -1032,6 +1032,30 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "$this->do^Something();", true);
     }
 
+    public void testIssue213133_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Te^st {", true);
+    }
+
+    public void testIssue213133_02() throws Exception {
+        checkOccurrences(getTestPath(), "echo $test->{Te^st::$CHECK};", true);
+    }
+
+    public void testIssue213133_03() throws Exception {
+        checkOccurrences(getTestPath(), "echo Te^st::$CHECK;", true);
+    }
+
+    public void testIssue213133_04() throws Exception {
+        checkOccurrences(getTestPath(), "public static $CH^ECK = \"check\";", true);
+    }
+
+    public void testIssue213133_05() throws Exception {
+        checkOccurrences(getTestPath(), "echo $test->{Test::$CH^ECK};", true);
+    }
+
+    public void testIssue213133_06() throws Exception {
+        checkOccurrences(getTestPath(), "echo Test::$CH^ECK;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
