@@ -44,22 +44,31 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.swing.JEditorPane;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.editor.BaseDocument;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -69,6 +78,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -210,6 +221,9 @@ class LineTranslations {
             if (lineSet == null) return currentLineNumber;
             //System.err.println("  lineSet = "+lineSet+"date = "+lineSet.getDate());
             try {
+                lineSet.getOriginal(0); // To assure, that the set is updated.
+            } catch (IndexOutOfBoundsException ioobex) {}
+            try {
                 //Line line = lineSet.getCurrent(currentLineNumber);
                 //System.err.println("  current line = "+line);
                 //System.err.println("  original line = "+lineSet.getOriginalLineNumber(line));
@@ -272,11 +286,11 @@ class LineTranslations {
     Line getLine (String url, int lineNumber, Object timeStamp) {
         //System.err.println("LineTranslations.getLine("+lineNumber+", "+timeStamp+")");
         Line.Set ls = getLineSet (url, timeStamp);
-        //System.err.println("  Line.Set = "+ls+", date = "+ls.getDate());
-        //System.err.println("  current("+(lineNumber-1)+") = "+ls.getCurrent (lineNumber - 1));
-        //System.err.println("  originl("+(lineNumber-1)+") = "+ls.getOriginal (lineNumber - 1));
         if (ls == null) return null;
         try {
+            //System.err.println("  Line.Set = "+ls+", date = "+ls.getDate());
+            //System.err.println("  current("+(lineNumber-1)+") = "+ls.getCurrent (lineNumber - 1));
+            //System.err.println("  originl("+(lineNumber-1)+") = "+ls.getOriginal (lineNumber - 1));
             if (timeStamp == null)
                 return ls.getCurrent (lineNumber - 1);
             else
@@ -377,16 +391,19 @@ class LineTranslations {
         }
     }
     
-    private class BreakpointLineUpdater implements PropertyChangeListener {
+    private class BreakpointLineUpdater implements PropertyChangeListener, DocumentListener, ActionListener {
         
         private final LineBreakpoint lb;
         private DataObject dataObject;
         private Line line;
+        private final List<Line> lineHasChanged = new ArrayList<Line>();
+        private final Timer lineChangePostProcess = new Timer(1000, this);
         private boolean updatingLine = false;
         
         public BreakpointLineUpdater(LineBreakpoint lb, DataObject dataObject) {
             this.lb = lb;
             this.dataObject = dataObject;
+            lineChangePostProcess.setRepeats(false);
             DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
             des.addPropertyChangeListener(this);
         }
@@ -398,6 +415,16 @@ class LineTranslations {
             try {
                 this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                 line.addPropertyChangeListener(this);
+                StyledDocument document = NbDocument.getDocument(new Lookup.Provider() {
+                                              @Override
+                                              public Lookup getLookup() {
+                                                  return line.getLookup();
+                                              }
+                                          });
+                if (document instanceof BaseDocument) {
+                    BaseDocument bd = (BaseDocument) document;
+                    bd.addPostModificationDocumentListener(this);
+                }
             } catch (IndexOutOfBoundsException ioobex) {
                 // ignore document changes for BP with bad line number
             }
@@ -465,7 +492,7 @@ class LineTranslations {
                 ul = this.updatingLine;
             }
             if (Line.PROP_LINE_NUMBER.equals(propertyName) && l == evt.getSource()) {
-                update(l);
+                lineHasChanged(l);
                 return ;
             }
             if (Line.PROP_TEXT.equals(propertyName) && l == evt.getSource()) {
@@ -553,6 +580,40 @@ class LineTranslations {
                 des = newDO.getLookup().lookup(DataEditorSupport.class);
                 des.addPropertyChangeListener(this);
             }
+        }
+        
+        private void lineHasChanged(Line l) {
+            if (!lineHasChanged.contains(l)) {
+                lineHasChanged.add(l);
+            }
+            lineChangePostProcess.restart();
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            lineMightChange();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            lineMightChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            lineMightChange();
+        }
+        
+        private void lineMightChange() {
+            while (!lineHasChanged.isEmpty()) {
+                Line l = lineHasChanged.remove(0);
+                update(l);
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            lineMightChange();
         }
         
     }
