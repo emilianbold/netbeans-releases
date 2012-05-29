@@ -540,7 +540,8 @@ public class Reformatter implements ReformatTask {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
-                        tokens.moveNext();
+                        if (!tokens.moveNext())
+                            tokens.movePrevious();
                     }
                     if (startPos >= endPos)
                         endPos = -1;
@@ -3571,7 +3572,7 @@ public class Reformatter implements ReformatTask {
                                     } else {
                                         col++;
                                     }
-                                    if (!s.equals(text.substring(lastWSPos, endOff)))
+                                    if (endOff > lastWSPos && !s.equals(text.substring(lastWSPos, endOff)))
                                         addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                                 } else if (pendingDiff != null) {
                                     String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
