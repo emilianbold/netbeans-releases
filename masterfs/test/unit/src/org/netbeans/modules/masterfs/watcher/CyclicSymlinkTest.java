@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /** Check behavior of symlinks.
@@ -133,6 +134,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         File two = new File(one, "two");
         File three = new File(two, "three");
         three.mkdirs();
+        assertTrue("Directory two created", two.isDirectory());
         assertExec("Symlink created OK", makeSymlink(two, getWorkDir()));
         
         File l = new File(new File(getWorkDir(), "lnk"), "three");
@@ -215,7 +217,13 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         return makeSymlink(orig.getPath(), where);
     }
     private Process makeSymlink(String orig, File where) throws IOException {
-        return Runtime.getRuntime().exec("/bin/ln -s " + orig + " lnk", null, where);
+        final String exec = "/bin/ln -s " + orig + " lnk";
+        try {
+            return Runtime.getRuntime().exec(exec, null, where);
+        } catch (IOException ex) {
+            Exceptions.attachMessage(ex, "cmd: " + exec + " at: " + where);
+            throw ex;
+        }
     }
 
     private void assertExec(String msg, Process proc) throws Exception {
