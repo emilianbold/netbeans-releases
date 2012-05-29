@@ -83,24 +83,24 @@ import org.openide.util.Exceptions;
  */
 public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
-    private static Set<ELTokenId> keywordELTokenIds = null;
+    private static Set<String> keywordFixedTexts = null;
 
     /**
-     * Gets Set of {@link ELTokenId}s with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.<br/>
-     * Result is resolved and stored on first method call into static field {@link #keywordELTokenIds}.
+     * Gets Set of {@link ELTokenId#fixedText()} values with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.<br/>
+     * Result is resolved and stored on first method call into static field {@link #keywordFixedTexts}.
      * On next call is returned the same Set instance.
-     * @return Set of {@link ELTokenId}s with {@link ELTokenId.ELTokenCategories.KEYWORDS} category
+     * @return Set of {@link ELTokenId#fixedText()} values with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.
      */
-    private static synchronized Set<ELTokenId> getKeywordELTokenIds() {
-        if (keywordELTokenIds == null) {
-            keywordELTokenIds = new HashSet<ELTokenId>();
+    private static synchronized Set<String> getKeywordFixedTexts() {
+        if (keywordFixedTexts == null) {
+            keywordFixedTexts = new HashSet<String>();
             for (ELTokenId elTokenId : ELTokenId.values()) {
                 if (ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elTokenId)) {
-                    keywordELTokenIds.add(elTokenId);
+                    keywordFixedTexts.add(elTokenId.fixedText());
                 }
             }
         }
-        return keywordELTokenIds;
+        return keywordFixedTexts;
     }
  
     @Override
@@ -261,16 +261,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 }
                 
                 // Now check methodName or propertyName is EL keyword.
-                boolean isKeyword = false;
-                for (ELTokenId elTokenId : getKeywordELTokenIds()) {
-                    if (propertyName.equals(elTokenId.fixedText()) || 
-                            methodName.equals(elTokenId.fixedText()) ) {
-                        isKeyword = true;
-                        break;
-                    }
-                }
-                
-                if (isKeyword) {
+                if (getKeywordFixedTexts().contains(propertyName) || 
+                        getKeywordFixedTexts().contains(methodName) ) {
                     continue;
                 }
                 
