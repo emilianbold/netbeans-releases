@@ -243,7 +243,7 @@ public class CompileAction extends AbstractExecutorRunAction {
         list = ImportUtils.normalizeParameters(list);
         npb.setExecutable(compilerPath);
         npb.setArguments(list.toArray(new String[list.size()]));
-        inputOutput.getOut().println(compilerPath+" "+argsFlat.toString());
+        inputOutput.getOut().println(compilerPath+" "+argsFlat.toString()); // NOI18N
         inputOutput.getOut().flush();
 
         NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
