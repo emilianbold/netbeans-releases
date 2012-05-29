@@ -590,9 +590,10 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
         ensureConnected();
 
-        String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
+        String baseLocalAbsolutePath = FileUtil.normalizeFile(baseLocalDir).getAbsolutePath();
         List<TransferFile> baseFiles = new LinkedList<TransferFile>();
         for (File f : filesToDownload) {
+            f = FileUtil.normalizeFile(f);
             if (isVisible(f)) {
                 LOGGER.log(Level.FINE, "File {0} added to download queue", f);
                 TransferFile tf;
