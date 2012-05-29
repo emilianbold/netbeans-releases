@@ -64,7 +64,6 @@ import org.openide.windows.WindowManager;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 
 /**
@@ -237,24 +236,6 @@ public final class DashboardTopComponent extends TopComponent {
         }
     }
 
-    public void deleteCategory(CategoryNode... categoryNodes) {
-        String names = "";
-        for (CategoryNode categoryNode : categoryNodes) {
-            names += categoryNode.getCategory().getName() + " ";
-        }
-        NotifyDescriptor nd = new NotifyDescriptor(
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatQuestion", names), //NOI18N
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatTitle"), //NOI18N
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null,
-                NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            //TODO fire event to category listeners
-            DashboardViewer.getInstance().deleteCategory(categoryNodes);
-        }
-    }
-
     public Category createCategory() {
         categoryNamePanel = new CategoryNamePanel(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CreateCatNameLabel"), ""); //NOI18N
 
@@ -382,7 +363,6 @@ public final class DashboardTopComponent extends TopComponent {
 
     private class CategoryNameDocumentListener implements DocumentListener {
 
-
         public CategoryNameDocumentListener() {
         }
 
@@ -401,7 +381,7 @@ public final class DashboardTopComponent extends TopComponent {
             checkCategoryName();
         }
 
-        private void checkCategoryName(){
+        private void checkCategoryName() {
             if (categoryNamePanel.getCategoryName().isEmpty()) {
                 categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrEmpty")); //NOI18N
                 categoryNameDialog.setValid(false);

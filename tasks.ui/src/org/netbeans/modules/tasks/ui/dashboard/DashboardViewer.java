@@ -69,6 +69,8 @@ import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -351,22 +353,30 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void deleteCategory(final CategoryNode... toDelete) {
-        synchronized (LOCK_CATEGORIES) {
-            for (CategoryNode categoryNode : toDelete) {
-                model.removeRoot(categoryNode);
-                categoryNodes.remove(categoryNode);
-            }
+        String names = "";
+        for (CategoryNode categoryNode : toDelete) {
+            names += categoryNode.getCategory().getName() + " ";
         }
-        requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                String[] names = new String[toDelete.length];
-                for (int i = 0; i < names.length; i++) {
-                    names[i] = toDelete[i].getCategory().getName();
+        String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        if (confirmDelete(title, message)) {
+            synchronized (LOCK_CATEGORIES) {
+                for (CategoryNode categoryNode : toDelete) {
+                    model.removeRoot(categoryNode);
+                    categoryNodes.remove(categoryNode);
                 }
-                DashboardStorage.getInstance().deleteCategories(names);
             }
-        });
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    String[] names = new String[toDelete.length];
+                    for (int i = 0; i < names.length; i++) {
+                        names[i] = toDelete[i].getCategory().getName();
+                    }
+                    DashboardStorage.getInstance().deleteCategories(names);
+                }
+            });
+        }
     }
 
     public void setCategoryOpened(CategoryNode categoryNode, boolean opened) {
@@ -474,17 +484,29 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public void removeRepository(final RepositoryNode repositoryNode) {
-        synchronized (LOCK_REPOSITORIES) {
-            repositoryNodes.remove((RepositoryNode) repositoryNode);
+    public void removeRepository(final RepositoryNode... toRemove) {
+        String names = "";
+        for (RepositoryNode repositoryNode : toRemove) {
+            names += repositoryNode.getRepository().getDisplayName() + " ";
         }
-        model.removeRoot(repositoryNode);
-        requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                repositoryNode.getRepository().remove();
+        String title = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveRepoTitle");
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveQuestion", names);
+        if (confirmDelete(title, message)) {
+            for (RepositoryNode repositoryNode : toRemove) {
+                synchronized (LOCK_REPOSITORIES) {
+                    repositoryNodes.remove((RepositoryNode) repositoryNode);
+                }
+                model.removeRoot(repositoryNode);
             }
-        });
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (RepositoryNode repositoryNode : toRemove) {
+                        repositoryNode.getRepository().remove();
+                    }
+                }
+            });
+        }
     }
 
     public void setRepositoryOpened(RepositoryNode repositoryNode, boolean opened) {
@@ -512,6 +534,20 @@ public final class DashboardViewer implements PropertyChangeListener {
                         newNode.setExpanded(true);
                     }
                 });
+            }
+        }
+    }
+
+    public void deleteQuery(QueryNode... toDelete) {
+        String names = "";
+        for (QueryNode queryNode : toDelete) {
+            names += queryNode.getQuery().getDisplayName() + " ";
+        }
+        String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        if (confirmDelete(title, message)) {
+            for (QueryNode queryNode : toDelete) {
+                queryNode.getQuery().remove();
             }
         }
     }
@@ -930,5 +966,23 @@ public final class DashboardViewer implements PropertyChangeListener {
 
         treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.DELETE_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction"); //NOI18N
         treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
+    }
+
+    private boolean confirmDelete(String title, String message) {
+        String names = "";
+        for (CategoryNode categoryNode : categoryNodes) {
+            names += categoryNode.getCategory().getName() + " ";
+        }
+        NotifyDescriptor nd = new NotifyDescriptor(
+                message, //NOI18N
+                title, //NOI18N
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.YES_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            return true;
+        }
+        return false;
     }
 }

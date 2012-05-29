@@ -52,14 +52,14 @@ import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
  */
 public abstract class TaskAction extends AbstractAction {
 
-        private List<TaskNode> taskNodes;
+        private TaskNode[] taskNodes;
 
         public TaskAction(String name, TaskNode... taskNodes) {
             super(name);
-            this.taskNodes = Arrays.asList(taskNodes);
+            this.taskNodes = taskNodes;
         }
 
-        public List<TaskNode> getTaskNodes() {
+        public TaskNode[] getTaskNodes() {
             return taskNodes;
         }
     }
