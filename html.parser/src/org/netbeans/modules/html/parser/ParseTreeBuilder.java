@@ -189,16 +189,26 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             match.setMatchingOpenTag(openTag);
 
             //set logical end of the paired open tag
-            openTag.setSemanticEndOffset(match.to());
+            int match_end = match.to();
+            if(match_end == -1) {
+                //the close delimiter not yet lexed so no tag end offset set yet!
+                //woraround - compute the end offset
+                match_end = match.from() + match.name().length() + 2 /* "/>".length() */;
+            }
+            openTag.setSemanticEndOffset(match_end);
         } else {
             //no match found, the open tag node's logical range should be set to something meaningful -
             //to the latest end tag found likely causing this element to be popped
             CloseTag latestEndTag = physicalEndTagsQueue.peek();
             if(latestEndTag != null) {
-                openTag.setSemanticEndOffset(latestEndTag.from());
+                if(latestEndTag.from() != -1) {
+                    openTag.setSemanticEndOffset(latestEndTag.from());
+                }
             } else if(startTag != null) {
-                //or to an open tag which implies this tag to be closed
-                openTag.setSemanticEndOffset(tag_lt_offset);
+                if(tag_lt_offset != -1) {
+                    //or to an open tag which implies this tag to be closed
+                    openTag.setSemanticEndOffset(tag_lt_offset);
+                }
             } else {
                 //the rest - simply current token offset
                 openTag.setSemanticEndOffset(offset);
@@ -315,6 +325,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                     case BEFORE_ATTRIBUTE_VALUE:
                     case ATTRIBUTE_VALUE_UNQUOTED:
                     case NON_DATA_END_TAG_NAME:
+                    case SELF_CLOSING_START_TAG:
                         //+1 ... add the > char itself
                         tag_gt_offset = offset + 1;
                         break;
