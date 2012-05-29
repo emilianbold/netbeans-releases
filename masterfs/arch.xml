@@ -522,7 +522,7 @@ No.
 <answer id="exec-property">
     <api name="org.netbeans.modules.masterfs.case" category="private" group="systemproperty" type="export">
     To address problems when mixing various types of network file systems 
-    (as described in bug <a href="http://netbeans.org/bugzilla/show_bug.cgi?id=198946">198946</a>)
+    (as described in bug <code>198946</code>)
     there is a special property <code>org.netbeans.modules.masterfs.case</code>
     that can be set to <code>sensitive</code> or <code>insensitive</code> value
     in order to override the system default. This is intended only for end user
