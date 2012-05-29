@@ -418,6 +418,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         try {
             if (!lazyScan) {
+                lazyScan = true; // scan only one exact method...no nested methods (even though that they shouldn't exist)
                 scan(node.getFunction().getFormalParameters());
                 scan(node.getFunction().getBody());
             }
