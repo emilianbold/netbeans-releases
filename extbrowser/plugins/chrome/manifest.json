@@ -41,15 +41,9 @@
  */
 {
   "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.5",
+  "version": "0.4.6",
 
-  "background": {
-    "scripts": [
-      "common.js",
-      "chrome.js",
-      "inspect.js"
-    ]
-  },
+  "background_page": "main.html",
 
   "permissions": [
     "contextMenus",
