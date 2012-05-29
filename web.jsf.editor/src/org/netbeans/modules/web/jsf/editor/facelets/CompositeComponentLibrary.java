@@ -178,6 +178,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             return CompositeComponentLibrary.this.getNamespace();
         }
 
+        @Override
+        public String getPrefix() {
+            return null;
+        }
+        
         private class LazyLoadingTag extends GenericTag {
 
             private CompositeComponent cc;
