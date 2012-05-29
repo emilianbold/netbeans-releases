@@ -76,6 +76,8 @@ PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      Inter                           [PUBLIC]   issue208193.php
+CLASS      Interf                          [PUBLIC]   issue208193.php
 CLASS      Interface1                      [PUBLIC]   test204104.php
 CLASS      Interface1                      [PUBLIC]   test204104_02.php
 CLASS      Interface2                      [PUBLIC]   test204104.php

@@ -52,11 +52,11 @@ import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
  */
 public abstract class RepositoryAction extends AbstractAction{
 
-    private List<RepositoryNode> repositoryNodes;
+    private RepositoryNode[] repositoryNodes;
 
         public RepositoryAction(String name, RepositoryNode... repositoryNodes) {
             super(name);
-            this.repositoryNodes = Arrays.asList(repositoryNodes);
+            this.repositoryNodes = repositoryNodes;
         }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class RepositoryAction extends AbstractAction{
         return true;
     }
 
-    public List<RepositoryNode> getRepositoryNodes() {
+    public RepositoryNode[] getRepositoryNodes() {
         return repositoryNodes;
     }
 }

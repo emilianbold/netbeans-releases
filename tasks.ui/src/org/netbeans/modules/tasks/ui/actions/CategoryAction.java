@@ -52,11 +52,11 @@ import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
  */
 public abstract class CategoryAction extends AbstractAction {
 
-    private List<CategoryNode> categoryNodes;
+    private CategoryNode[] categoryNodes;
 
     public CategoryAction(String name, CategoryNode... categoryNodes) {
         super(name);
-        this.categoryNodes = Arrays.asList(categoryNodes);
+        this.categoryNodes = categoryNodes;
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class CategoryAction extends AbstractAction {
         return true;
     }
 
-    public List<CategoryNode> getCategoryNodes() {
+    public CategoryNode[] getCategoryNodes() {
         return categoryNodes;
     }
 }

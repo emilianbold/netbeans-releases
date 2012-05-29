@@ -52,14 +52,14 @@ import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
  */
 public abstract class QueryAction extends AbstractAction{
 
-    private List<QueryNode> queryNodes;
+    private QueryNode[] queryNodes;
 
         public QueryAction(String name, QueryNode... queryNodes) {
             super(name);
-            this.queryNodes = Arrays.asList(queryNodes);
+            this.queryNodes = queryNodes;
         }
 
-    public List<QueryNode> getQueryNodes() {
+    public QueryNode[] getQueryNodes() {
         return queryNodes;
     }
 }

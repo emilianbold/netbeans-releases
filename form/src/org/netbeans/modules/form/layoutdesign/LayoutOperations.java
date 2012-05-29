@@ -1014,6 +1014,7 @@ class LayoutOperations implements LayoutConstants {
         }
 
         layoutModel.removeInterval(interval);
+        // TODO compensate possible group shrinking when removing the biggest interval
         if (interval.getAlignment() == DEFAULT) {
             layoutModel.setIntervalAlignment(interval, parent.getGroupAlignment());
         }
