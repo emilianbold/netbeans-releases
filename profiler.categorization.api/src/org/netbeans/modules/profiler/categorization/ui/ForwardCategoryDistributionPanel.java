@@ -245,7 +245,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
 
     @Override
     public boolean supportsProject(Lookup.Provider project) {
-        return ProjectCategorization.isAvailable(getProject());
+        return ProjectCategorization.isAvailable(project);
     }
     
     //~ Methods ------------------------------------------------------------------------------------------------------------------
