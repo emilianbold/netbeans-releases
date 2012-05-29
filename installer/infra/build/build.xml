@@ -668,7 +668,7 @@ jarsigner.storepass=${jarsigner.storepass}
     
     <target name="-post-init-clean" depends="-remove-wrong-locale-files">
         <delete dir="${nbi.cache.dir}/raw" failonerror="false"/>
-        <delete failonerror="false">
+        <delete failonerror="false" verbose="true">
             <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- glassfish-mod-sun -->
                 <include name="**/glassfish-mod-sun,*"/>
@@ -693,8 +693,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 <exclude name="**/tomcat*${tomcat.full.version}*"/>
                 
 		<!-- wtk -->
-                <exclude name="**/wtk*"/>
-                <exclude name="**/javamesdk*"/>
+                <include name="**/wtk*"/>
+                <include name="**/javamesdk*"/>
 
 		<!-- JDK -->
                 <exclude name="**/jdk*"/>
