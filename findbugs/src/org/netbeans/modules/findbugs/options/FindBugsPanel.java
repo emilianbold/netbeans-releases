@@ -337,6 +337,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         if (toSelect != null) {
             bugsTree.setSelectionPath(toSelect);
+            bugsTree.scrollPathToVisible(toSelect);
         } else {
             Logger.getLogger(FindBugsPanel.class.getName()).log(Level.WARNING, "cannot find bug to select ({0})", id);
         }

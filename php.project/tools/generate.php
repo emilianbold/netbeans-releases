@@ -23,6 +23,8 @@ $phpdocDir = null;
 $phpDir = "php5";
 if (strstr(phpversion(), "5.3")) {
 	$phpDir = "php5.3";
+} elseif (strstr(phpversion(), "5.4")) {
+	$phpDir = "php5.4";
 }
 
 // Parse arguments:
@@ -46,11 +48,46 @@ for ($i = 0; $i < count($argv); ++$i) {
 if (!$phpdocDir) {
 	show_help();
 }
+
+/***************** REMOVED FUNCTIONS (START) *************************/
+
+// add these functions to $removedFunctions!
+
+if (!function_exists('ob_iconv_handler')) {
+    function ob_iconv_handler($contents, $status) {}
+}
+if (!function_exists('ob_tidyhandler')) {
+    function ob_tidyhandler($input, $mode = 0) {}
+}
+if (!function_exists('session_register')) {
+    function session_register($name, $_ = null) {}
+}
+if (!function_exists('session_unregister')) {
+    function session_unregister($name) {}
+}
+if (!function_exists('session_is_registered')) {
+    function session_is_registered($name) {}
+}
+if (!function_exists('chroot')) {
+    function chroot($directory) {}
+}
+
+/***************** REMOVED FUNCTIONS (END) *************************/
+
+$entities = parse_entities($phpdocDir);
 $extensions = get_loaded_extensions();
 $functionsDoc = parse_phpdoc_functions ($phpdocDir, $extensions);
 $fieldsDoc = parse_phpdoc_fields ($phpdocDir, $extensions);
 $classesDoc = parse_phpdoc_classes ($phpdocDir, $extensions);
 $constantsDoc = parse_phpdoc_constants ($phpdocDir);
+$removedFunctions = array(
+    'ob_iconv_handler',
+    'ob_tidyhandler',
+    'session_register',
+    'session_unregister',
+    'session_is_registered',
+    'chroot',
+);
 $functionBlackList = array(
     'oci_lob_save' => 1,
     'oci_lob_import' => 1,
@@ -108,7 +145,7 @@ foreach ($intFunctions["internal"] as $intFunction) {
 	}
 }
 
-$intClasses = array_merge (get_declared_classes(), get_declared_interfaces());
+$intClasses = array_merge (get_declared_classes(), get_declared_interfaces(), get_declared_traits());
 foreach ($intClasses as $intClass) {
 	if (!@$processedClasses[strtolower($intClass)]) {
 		print_class (new ReflectionClass ($intClass));
@@ -134,8 +171,21 @@ foreach ($intConstants as $name => $value) {
 	}
 }
 
-
 finish_file_output("{$phpDir}/basic.php");
+
+// removed functions
+if ($splitFiles) {
+    begin_file_output();
+}
+foreach ($removedFunctions as $removedFunction) {
+	if (!@$processedFunctions[strtolower($removedFunction)]) {
+		print_function (new ReflectionFunction ($removedFunction));
+	}
+}
+if ($splitFiles) {
+    finish_file_output("{$phpDir}/removed.php");
+}
+
 
 // Create .list file
 $fp = fopen ("{$phpDir}/.list", "w");
@@ -281,7 +331,7 @@ function parse_phpdoc_functions ($phpdocDir, $extensions) {
                                         $match[$key] = $val[count($val) - 1];
                                     }
                                 } else {
-                                    $methodsynopsis = preg_match ('@<methodsynopsis>.*?<type>(.*?)</type>.*?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match);
+                                    $methodsynopsis = preg_match ('@<methodsynopsis>.*?(?:<type>(.*?)</type>.*?)?<methodname>(.*?)</methodname>(.*?)</methodsynopsis>@s', $description, $match);
                                 }
 				if ($methodsynopsis) {
 					if ($has_object_style) {
@@ -523,7 +573,7 @@ function print_extension ($extRef) {
  * @param classRef ReflectionClass object
  * @param tabs integer[optional] number of tabs for indentation
  */
-function print_class ($classRef, $tabs = 0) {
+function print_class (ReflectionClass $classRef, $tabs = 0) {
 	global $processedClasses;
 	$processedClasses [strtolower($classRef->getName())] = true;
 
@@ -532,7 +582,13 @@ function print_class ($classRef, $tabs = 0) {
 	print_tabs ($tabs);
 	if ($classRef->isFinal()) print "final ";
 
-	print $classRef->isInterface() ? "interface " : "class ";
+        if ($classRef->isInterface()) {
+            print "interface ";
+        } elseif ($classRef->isTrait()) {
+            print "trait ";
+        } else {
+            print "class ";
+        }
 	print clean_php_identifier($classRef->getName())." ";
 
 	// print out parent class
@@ -554,6 +610,17 @@ function print_class ($classRef, $tabs = 0) {
 		}
 	}
 	print " {\n";
+
+	// print out traits
+        $traits = $classRef->getTraits();
+        if (count($traits)) {
+            foreach ($traits as $trait => $traitInfo) {
+                print_tabs($tabs + 1);
+                print 'use ' . $trait . ';';
+		print "\n";
+            }
+            print "\n";
+        }
 
 	// process constants
 	$constsRef = $classRef->getConstants();
@@ -664,6 +731,10 @@ function print_parameters ($parameters) {
 				print ", ";
 			}
 			$type = $parameter['type'];
+                        if (strpos($type, '|') !== false) {
+                            // fix 'MyClass|YourClass' cases
+                            $type = '';
+                        }
 			if ($type && !in_array($type, array(
                             'mixed',
                             'string',
@@ -984,27 +1055,8 @@ function print_doccomment ($ref, $tabs = 0) {
  * @return string
  */
 function xml_to_phpdoc ($str) {
-	$str = str_replace ("&return.success;", "Returns true on success or false on failure.", $str);
-	$str = str_replace ("&return.falseforfailure;", " or &false; on failure", $str);
-	$str = str_replace ("&return.void;", "", $str);
-	$str = str_replace ("&true;", "true", $str);
-	$str = str_replace ("&null;", "null", $str);
-	$str = str_replace ("&php.ini;", "###(i)###php.ini###(/i)###", $str); // XXX will be replaced in strip_tags_special()
-	$str = str_replace ("&false;", "false", $str);
-	$str = str_replace ("&example.outputs;", "The above example will output:", $str);
-	$str = str_replace ("&resource;", "resource", $str);
-	$str = str_replace ("&style.oop;", "Oriented object style", $str);
-	$str = str_replace ("&style.procedural;", "Procedural style", $str);
-	$str = str_replace ("&example.outputs.similar;", "The above example will output something similar to:", $str);
-	$str = str_replace ("&gmp.parameter;", "It can be either a GMP number resource, or a numeric string given that it is possible to convert the latter to a number.", $str);
-	$str = str_replace ("&oci.parameter.connection;", "An Oracle connection identifier, returned by <function>oci_connect</function>, <function>oci_pconnect</function>, or <function>oci_new_connect</function>.", $str);
-	$str = str_replace ("&oci.arg.statement.id;", "A valid OCI8 statement identifier created by <function>oci_parse</function> and executed by <function>oci_execute</function>, or a <literal>REF CURSOR</literal> statement identifier.", $str);
-	$str = str_replace ("&oci.db;", '<p>Contains the <literal>Oracle instance</literal> to connect to. It can be an Easy Connect string, or a Connect Name from the <filename>tnsnames.ora</filename> file, or the name of a local Oracle instance.</p><p>If not specified, PHP uses environment variables such as <constant>TWO_TASK</constant> (on Linux) or <constant>LOCAL</constant> (on Windows) and <constant>ORACLE_SID</constant> to determine the <literal>Oracle instance</literal> to connect to. </p><p>To use the Easy Connect naming method, PHP must be linked with Oracle 10g or greater Client libraries. The Easy Connect string for Oracle 10g is of the form: <emphasis>[//]host_name[:port][/service_name]</emphasis>. With Oracle 11g, the syntax is: <emphasis>[//]host_name[:port][/service_name][:server_type][/instance_name]</emphasis>. Service names can be found by running the Oracle utility <literal>lsnrctl status</literal> on the database server machine.</p><p>The <filename>tnsnames.ora</filename> file can be in the Oracle Net search path, which includes <filename>$ORACLE_HOME/network/admin</filename> and <filename>/etc</filename>.  Alternatively set <literal>TNS_ADMIN</literal> so that <filename>$TNS_ADMIN/tnsnames.ora</filename> is read.  Make sure the web daemon has read access to the file.</p>', $str);
-	$str = str_replace ("&oci.charset;", "Determines the character set used by the Oracle Client libraries.  The character set does not need to match the character set used by the database.  If it doesn't match, Oracle will do its best to convert data to and from the database character set.  Depending on the character sets this may not give usable results.  Conversion also adds some time overhead.", $str);
-        $str = str_replace ("&oci.sessionmode;", 'This parameter is available since version PHP 5 (PECL OCI8 1.1) and accepts the following values: <constant>OCI_DEFAULT</constant>, <constant>OCI_SYSOPER</constant> and <constant>OCI_SYSDBA</constant>. If either <constant>OCI_SYSOPER</constant> or <constant>OCI_SYSDBA</constant> were specified, this function will try to establish privileged connection using external credentials. Privileged connections are disabled by default. To enable them you need to set <link linkend="ini.oci8.privileged-connect">oci8.privileged_connect</link> to <literal>On</literal>.', $str);
-	$str = str_replace ("&note.ctype.parameter.integer;", "<p>If an integer between -128 and 255 inclusive is provided, it is interpreted as the ASCII value of a single character (negative values have 256 added in order to allow characters in the Extended ASCII range). Any other integer is interpreted as a string containing the decimal digits of the integer.</p>", $str);
-	$str = str_replace ("&Alias;", "Alias of", $str);
-	$str = str_replace ("&Description;", "Description", $str);
+    $str = str_replace ("&php.ini;", "###(i)###php.ini###(/i)###", $str); // XXX will be replaced in strip_tags_special()
+    $str = replace_entities($str);
         $str = strip_tags_special ($str);
 	$str = preg_replace ("/  */", " ", $str);
 	$str = str_replace ("*/", "* /", $str);
@@ -1153,6 +1205,57 @@ function method_to_phpdoc($str) {
         }
     }
     return $str;
+}
+
+function parse_entities($phpdocDir) {
+    $entities = array();
+    parse_entities_from_file($entities, $phpdocDir, '/en/language-defs.ent');
+    parse_entities_from_file($entities, $phpdocDir, '/en/language-snippets.ent');
+    parse_entities_from_file($entities, $phpdocDir, '/doc-base/docbook/docbook-xml/ent/isonum.ent');
+    parse_entities_from_file($entities, $phpdocDir, '/doc-base/entities/global.ent');
+    return $entities;
+}
+function parse_entities_from_file(array &$entities, $phpdocDir, $filepath) {
+    $content = file_get_contents($phpdocDir . $filepath);
+    $matches = array();
+    preg_match_all('%\!ENTITY\s+(\S+)\s+([\'"])([^\\2]+?)\\2\s*>%m', $content, $matches);
+    if (array_key_exists(1, $matches) && count($matches[1])) {
+        for ($i = 0; $i < count($matches[2]); $i++) {
+            $entities['&' . $matches[1][$i] . ';'] = $matches[3][$i];
+        }
+    }
+}
+function replace_entities($text) {
+    global $entities;
+    $matches = array();
+    while (preg_match_all('%(\&(?!#)\S+?\;)%', $text, $matches)) {
+        if (count($matches[1])) {
+            foreach ($matches[1] as $e) {
+                $replace = null;
+                if (array_key_exists($e, $entities)) {
+                    $replace = $entities[$e];
+                }
+                if ($replace === null) {
+                    switch ($e) {
+                        case '&$a));':
+                            // code sample
+                        case '&reference.strings.charsets;':
+                            // entity not found
+                            break;
+                        default:
+                            die('Entity "' . $e . '" not found' . "\n");
+                    }
+                }
+                $text = str_replace($e, $replace, $text);
+            }
+        }
+    }
+    // return back &lt; and &gt;
+    $keep = array(
+        '&#38;#60;' => '&lt;',
+        '&#x0003E;' => '&gt;',
+    );
+    return str_replace(array_keys($keep), $keep, $text);
 }
 
 /**

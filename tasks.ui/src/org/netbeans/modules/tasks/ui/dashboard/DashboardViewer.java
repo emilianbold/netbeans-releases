@@ -46,13 +46,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.CreateCategoryAction;
 import org.netbeans.modules.tasks.ui.actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
@@ -100,6 +104,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final TitleNode titleRepositoryNode;
     private final Object LOCK = new Object();
     private Map<Category, CategoryNode> mapCategoryToNode;
+    private Map<Issue, TaskNode> mapTaskToNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
     private AppliedFilters<Issue> appliedTaskFilters;
@@ -109,6 +114,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private Set<TreeListNode> expandedNodes;
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
+    static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -134,6 +140,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         mapCategoryToNode = new HashMap<Category, CategoryNode>();
+        mapTaskToNode = new HashMap<Issue, TaskNode>();
         categoryNodes = new ArrayList<CategoryNode>();
         repositoryNodes = new ArrayList<RepositoryNode>();
 
@@ -155,6 +162,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         taskHits = 0;
         treeList.setModel(model);
+        attachActions();
         dashboardComponent.setViewportView(treeList);
         dashboardComponent.invalidate();
         dashboardComponent.revalidate();
@@ -183,6 +191,21 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             });
         }
+    }
+
+    void setSelection(Collection<Issue> toSelect) {
+        for (Issue issue : toSelect) {
+            TaskNode taskNode = mapTaskToNode.get(issue);
+            TreeListNode parent = taskNode.getParent();
+            if (!parent.isExpanded()) {
+                parent.setExpanded(true);
+            }
+            treeList.setSelectedValue(taskNode, true);
+        }
+    }
+
+    void addTaskMapEntry(Issue issue, TaskNode taskNode) {
+        mapTaskToNode.put(issue, taskNode);
     }
 
     private static class Holder {
@@ -229,36 +252,39 @@ public final class DashboardViewer implements PropertyChangeListener {
         return dashboardComponent;
     }
 
-    public void addTaskToCategory(TaskNode taskNode, Category category) {
-        TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
-        //task is already categorized (task exists within categories)
-        if (categorizedTaskNode != null) {
-            //task is already in this category, do nothing
-            if (category.equals(categorizedTaskNode.getCategory())) {
-                return;
+    public void addTaskToCategory(Category category, TaskNode... taskNodes) {
+        for (TaskNode taskNode : taskNodes) {
+            TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
+            //task is already categorized (task exists within categories)
+            if (categorizedTaskNode != null) {
+                //task is already in this category, do nothing
+                if (category.equals(categorizedTaskNode.getCategory())) {
+                    return;
+                }
+                //task is already in another category, dont add new taskNode but move existing one
+                taskNode = categorizedTaskNode;
             }
-            //task is already in another category, dont add new taskNode but move existing one
-            taskNode = categorizedTaskNode;
-        }
-        CategoryNode destCategoryNode = mapCategoryToNode.get(category);
-        final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
-        final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
-        TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
-        if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
-            //remove from old category
-            if (taskNode.isCategorized()) {
-                removeTask(taskNode);
+            CategoryNode destCategoryNode = mapCategoryToNode.get(category);
+            final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
+            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
+            TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
+            if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
+                //remove from old category
+                if (taskNode.isCategorized()) {
+                    removeTask(taskNode);
+                }
+                //set new category
+                toAdd.setCategory(category);
+                if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
+                    DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+                }
+                ArrayList<Issue> toSelect = new ArrayList<Issue>();
+                toSelect.add(taskNode.getTask());
+                destCategoryNode.updateContentAndSelect(toSelect);
             }
-            //set new category
-            toAdd.setCategory(category);
-            if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
-                DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+            if (isTaskInFilter && !isCatInFilter) {
+                addCategoryToModel(destCategoryNode);
             }
-            model.contentChanged(destCategoryNode);
-            destCategoryNode.updateContent();
-        }
-        if (isTaskInFilter && !isCatInFilter) {
-            addCategoryToModel(destCategoryNode);
         }
         storeCategory(category);
     }
@@ -310,22 +336,26 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void addCategory(Category category) {
         //add category to the model - sorted
-        CategoryNode newCategoryNode = new CategoryNode(category, true);
+        CategoryNode newCategoryNode = new CategoryNode(category, false);
         categoryNodes.add(newCategoryNode);
         mapCategoryToNode.put(category, newCategoryNode);
         addCategoryToModel(newCategoryNode);
         storeCategory(category);
     }
 
-    public void deleteCategory(final Category category) {
-        //TODO lock categNodes
-        CategoryNode categoryNode = mapCategoryToNode.remove(category);
-        model.removeRoot(categoryNode);
-        categoryNodes.remove(categoryNode);
+    public void deleteCategory(final CategoryNode... toDelete) {
+        for (CategoryNode categoryNode : toDelete) {
+            model.removeRoot(categoryNode);
+            categoryNodes.remove(categoryNode);
+        }
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
-                DashboardStorage.getInstance().deleteCategory(category.getName());
+                String[] names = new String[toDelete.length];
+                for (int i = 0; i < names.length; i++) {
+                    names[i] = toDelete[i].getCategory().getName();
+                }
+                DashboardStorage.getInstance().deleteCategories(names);
             }
         });
     }
@@ -338,7 +368,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         Category category = categoryNode.getCategory();
         final CategoryNode newNode;
         if (opened) {
-            newNode = new CategoryNode(category);
+            newNode = new CategoryNode(category, false);
         } else {
             newNode = new ClosedCategoryNode(category);
         }
@@ -598,10 +628,25 @@ public final class DashboardViewer implements PropertyChangeListener {
         return expandedNodes.contains(node);
     }
 
+    public List<TreeListNode> getSelectedNodes(){
+        List<TreeListNode> nodes = new ArrayList<TreeListNode>();
+        Object[] selectedValues = treeList.getSelectedValues();
+        for (Object object : selectedValues) {
+            nodes.add((TreeListNode)object);
+        }
+        return nodes;
+    }
+
     public void loadData() {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
+                // w8 with loading to preject ot be opened
+                try {
+                    OpenProjects.getDefault().openProjects().get();
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                }
                 titleRepositoryNode.setProgressVisible(true);
                 titleCategoryNode.setProgressVisible(true);
                 loadRepositories();
@@ -612,7 +657,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         });
     }
 
-    void loadCategory(Category category) {
+    public void loadCategory(Category category) {
         DashboardStorage storage = DashboardStorage.getInstance();
         List<TaskEntry> taskEntries = storage.readCategory(category.getName());
         category.setTasks(loadTasks(taskEntries));
@@ -628,8 +673,8 @@ public final class DashboardViewer implements PropertyChangeListener {
             // was category opened
             boolean open = !names.contains(categoryEntry.getCategoryName());
             if (open) {
-                List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
-                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks)));
+                //List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
+                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName()), true));
             } else {
                 catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
             }
@@ -747,7 +792,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (RepositoryNode repositoryNode : repositoryNodes) {
             repositoryNode.updateContent();
         }
-
+        mapTaskToNode.clear();
         setRepositories(repositoryNodes);
         setCategories(categoryNodes);
     }
@@ -782,6 +827,16 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                for (RepositoryNode repositoryNode : repositoryNodes) {
+                    if (repositoryNode.isOpened()) {
+                        repositoryNode.setExpanded(true);
+                    }
+                }
+            }
+        });
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
@@ -802,5 +857,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (TreeListNode node : nodesToRemove) {
             removeRootFromModel(node);
         }
+    }
+
+    private void attachActions() {
+        treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.REFRESH_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalRefreshAction"); //NOI18N
+        treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalRefreshAction", new Actions.UniversalRefreshAction());//NOI18N
+
+        treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.DELETE_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction"); //NOI18N
+        treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
     }
 }

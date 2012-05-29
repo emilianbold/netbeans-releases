@@ -162,7 +162,7 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
 
         // iconBase is optional but if set then shoud be in classpath
         if (dfr.iconBase().length() > 0) {
-            builder.validateResource(dfr.iconBase(), e.getEnclosingElement(), dfr, "icon", true);
+            builder.validateResource(dfr.iconBase(), e.getEnclosingElement(), dfr, "iconBase", true);
             f.stringvalue("iconBase", dfr.iconBase());
         }
 

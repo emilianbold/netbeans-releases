@@ -1094,11 +1094,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 if (lineOffset > 0) {
                     char c = 0;
                     for (int i = lineOffset - 1; i >= 0; i--) {
-                        c = line.charAt(i);
-                        if (!isPHPIdentifierPart(c) && c != '\\') {
-                            break;
-                        } else {
-                            start = i;
+                        assert i >= 0 && i <= line.length() - 1 : "line:" + line + " | i:" + i + " | line.length():" + line.length() + " | lineBegin:" + lineBegin + " | lineEnd:" + lineEnd + " | caretOffset:" + caretOffset;
+                        if (i >= 0 && i <= line.length() - 1) {
+                            c = line.charAt(i);
+                            if (!isPHPIdentifierPart(c) && c != '\\') {
+                                break;
+                            } else {
+                                start = i;
+                            }
                         }
                     }
                     if (start == lineOffset && c == '?'

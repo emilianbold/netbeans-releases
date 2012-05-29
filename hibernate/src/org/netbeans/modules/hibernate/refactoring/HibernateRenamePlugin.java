@@ -186,6 +186,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                     for( OccurrenceItem foundPlace : foundPlaces) {
                         HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                 oldBinaryName,
+                                foundPlace.getMatching(),
                                 newBinaryName,
                                 foundPlace.getLocation(),
                                 foundPlace.getText());
@@ -233,6 +234,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
                     for (OccurrenceItem foundPlace : foundPlaces) {
                         HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                 oldVariableName,
+                                foundPlace.getMatching(),
                                 newVariableName,
                                 foundPlace.getLocation(),
                                 foundPlace.getText());

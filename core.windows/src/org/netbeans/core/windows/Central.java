@@ -2149,7 +2149,11 @@ final class Central implements ControllerHandler {
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode(mode, draggable.getTopComponent());
         } else {
-            dockMode( mode, draggable.getMode() );
+            if( mode.getKind() != draggable.getKind() ) {
+                mergeModes( draggable.getMode(), mode, 0 );
+            } else {
+                dockMode( mode, draggable.getMode() );
+            }
         }
         updateViewAfterDnD(true);
     }

@@ -78,20 +78,20 @@ public class ClassMemberPanel implements NavigatorPanelWithUndo {
     public void panelActivated(final Lookup context) {
         assert context != null;
         INSTANCE = this;
-        getClassMemberPanelUI().showWaitNode();
+        final ClassMemberPanelUI panel = getClassMemberPanelUI();
         RP.post( new Runnable () {
             @Override
             public void run () {
                 ClassMemberNavigatorJavaSourceFactory f = ClassMemberNavigatorJavaSourceFactory.getInstance();
                 if (f != null)
-                    f.setLookup(context, getClassMemberPanelUI());
+                    f.setLookup(context, panel);
             }
         });
     }
 
     @Override
     public void panelDeactivated() {
-        getClassMemberPanelUI().showWaitNode(); // To clear the ui
+        getClassMemberPanelUI().clearNodes();
         INSTANCE = null;
         //Even the setLookup(EMPTY) is fast, has to be called in RP to keep ordering
         RP.post( new Runnable () {

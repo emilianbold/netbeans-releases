@@ -124,35 +124,21 @@ public class HistoryRootNode extends AbstractNode {
     }
     
     private void addEntries(HistoryEntry[] entries, boolean vcs) {
-        // remove previous
-        Children children = getChildren();
-        List<Node> toRemove = new LinkedList<Node>();
-        Node[] nodes = children.getNodes();
-        for (Node node : nodes) {
-            HistoryEntry he = node.getLookup().lookup(HistoryEntry.class);
-            if(he != null && he.isLocalHistory() == !vcs) {
-                toRemove.add(node);
-            } 
-        }
-        children.remove(toRemove.toArray(new Node[toRemove.size()]));
-        
         // add new
+        List<Node> nodes = new LinkedList<Node>();
         for (HistoryEntry e : entries) {
             if(!revisionEntries.containsKey(e.getDateTime().getTime())) {
                 revisionEntries.put(e.getDateTime().getTime(), e);
                 if(vcs) {
                     vcsCount++;
                 }
+                nodes.add(RevisionNode.create(e));
             } 
         }
         if(loadNextNode != null) {
             loadNextNode.refreshMessage();
         }
-        nodes = new Node[entries.length];
-        for (int i = 0; i < nodes.length; i++) {
-            nodes[i] = RevisionNode.create(entries[i]);
-        }
-        getChildren().add(nodes);
+        getChildren().add(nodes.toArray(new Node[nodes.size()]));
     }
 
     public synchronized void addWaitNode() {

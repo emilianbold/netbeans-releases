@@ -277,13 +277,17 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    if (! (conf instanceof MakeConfiguration)) {
 		cachedPathMap = null;
 	    } else {
-		MakeConfiguration mc = (MakeConfiguration) conf;
-		ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
-                RemoteSyncFactory syncFactory = mc.getRemoteSyncFactory();                
-		cachedPathMap = (syncFactory == null) ? null : syncFactory.getPathMap(ee);
+		cachedPathMap = getPathMapFromConfig(conf);
 	    }
 	}
 	return cachedPathMap;
+    }
+    
+    public static PathMap getPathMapFromConfig(Configuration conf) {
+        MakeConfiguration mc = (MakeConfiguration) conf;
+        ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
+        RemoteSyncFactory syncFactory = mc.getRemoteSyncFactory();                
+        return (syncFactory == null) ? null : syncFactory.getPathMap(ee);
     }
 
     public final String localToRemote(String who, String path) {

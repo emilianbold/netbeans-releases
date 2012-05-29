@@ -42,26 +42,24 @@
 package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author jpeska
  */
-public class SearchRepositoryAction extends AbstractAction {
+public class SearchRepositoryAction extends RepositoryAction {
 
-    private final Repository repository;
-
-    public SearchRepositoryAction(Repository repository) {
-        super(NbBundle.getMessage(Actions.class, "CTL_Search")); //NOI18N
-        this.repository = repository;
+    public SearchRepositoryAction(RepositoryNode... repositoryNodes) {
+        super(NbBundle.getMessage(Actions.class, "CTL_Search"), repositoryNodes); //NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Util.createNewQuery(repository);
+        for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+            Util.createNewQuery(repositoryNode.getRepository());
+        }
     }
 }

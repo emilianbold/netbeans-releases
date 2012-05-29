@@ -369,8 +369,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.setDisplayName(getString("LBL_Other")); // NOI18N
             set.setShortDescription(getString("HINT_Other")); // NOI18N
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.addLeadingStarInComment));
-//            set.put(new BooleanNodeProp(language, preferences, EditorOptions.useBlockComment));
-//            set.put(new BooleanNodeProp(language, preferences, EditorOptions.useInlineKeyword));
+            set.put(new BooleanNodeProp(language, preferences, EditorOptions.useBlockComment));
+            set.put(new BooleanNodeProp(language, preferences, EditorOptions.useInlineKeyword));
             sheet.put(set);
         }
 

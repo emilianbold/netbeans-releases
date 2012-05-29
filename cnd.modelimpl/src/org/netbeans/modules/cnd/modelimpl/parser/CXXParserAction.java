@@ -57,6 +57,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int DECL_SPECIFIER__TYPE_SPECIFIER = 4;
     
     void enum_declaration(Token token);
+    void enum_strongly_typed(Token token);
     void enum_name(Token token);
     void enum_body(Token token);
     void enumerator(Token token);

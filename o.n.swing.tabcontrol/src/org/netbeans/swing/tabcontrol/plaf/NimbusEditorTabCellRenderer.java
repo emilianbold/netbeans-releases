@@ -97,7 +97,11 @@ final class NimbusEditorTabCellRenderer extends AbstractTabCellRenderer {
     }    
 
     protected int getCaptionYAdjustment() {
-        return 0;
+        return -2;
+    }
+
+    protected int getIconYAdjustment() {
+        return -3;
     }
 
     public Dimension getPadding() {

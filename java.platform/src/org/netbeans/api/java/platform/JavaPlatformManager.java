@@ -108,7 +108,7 @@ public final class JavaPlatformManager {
                 return defaultPlatform;
             }
         }
-        return new FallbackDefaultJavaPlatform();
+        return FallbackDefaultJavaPlatform.getInstance();
     }
 
     /** Gets an array of JavaPlatfrom objects.
@@ -122,7 +122,11 @@ public final class JavaPlatformManager {
             }
             cachedPlatforms = _cachedPlatforms;
         }
-        return cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
+        return cachedPlatforms.isEmpty() ?
+            new JavaPlatform[] {
+                FallbackDefaultJavaPlatform.getInstance()
+            }:
+            cachedPlatforms.toArray(new JavaPlatform[cachedPlatforms.size()]);
     }
 
     /**

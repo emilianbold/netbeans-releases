@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 
@@ -65,6 +66,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String PROVIDER = "DW:provider"; // NOI18N
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
     public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
+    public static final String FILE_SYSTEM = "DW:fileSystem"; // NOI18N
     public static final String LOG_FILE = "DW:logFile"; // NOI18N
     public static final String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
     public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
@@ -139,6 +141,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setBuildResult(String binaryPath) {
         putProperty(BUILD_RESULT, binaryPath);
+    }
+
+    @Override
+    public FileSystem getFileSystem() {
+        return (FileSystem) getProperty(FILE_SYSTEM);
+    }
+    
+    @Override
+    public void setFileSystem(FileSystem fs) {
+        putProperty(FILE_SYSTEM, fs);
     }
     
     @Override
@@ -356,6 +368,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildResult(String binaryPath) {
             wizard.putProperty(BUILD_RESULT, binaryPath);
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
+            return (FileSystem) wizard.getProperty(FILE_SYSTEM);
+        }
+        
+        @Override
+        public void setFileSystem(FileSystem fs) {
+            wizard.putProperty(FILE_SYSTEM, fs);
         }
         
         @Override
@@ -582,6 +604,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildResult(String binaryPath) {
             map.put(BUILD_RESULT, binaryPath);
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
+            return (FileSystem) map.get(FILE_SYSTEM);
+        }
+        
+        @Override
+        public void setFileSystem(FileSystem fs) {
+            map.put(FILE_SYSTEM, fs);
         }
         
         @Override

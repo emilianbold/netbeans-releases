@@ -41,46 +41,51 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
+import java.awt.Color;
+import java.awt.EventQueue;
+import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
+import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
+import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author jpeska
  */
-public abstract class TaskContainerNode extends TreeListNode {
+public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     private List<TaskNode> taskNodes;
     private List<TaskNode> filteredTaskNodes;
     private TaskListener taskListener;
     private boolean refresh;
-    private ProgressLabel lblProgress;
-    private List<JComponent> totalCountComp;
-    private List<JComponent> changedCountComp;
     private final Object LOCK = new Object();
-    final Object UI_LOCK = new Object();
+    private Collection<Issue> toSelect;
+    protected List<TreeLabel> labels;
+    protected List<LinkButton> buttons;
 
-    public TaskContainerNode(boolean expandable, TreeListNode parent) {
-        this(false, expandable, parent);
+    public TaskContainerNode(boolean expandable, TreeListNode parent, String title) {
+        this(false, expandable, parent, title);
     }
 
-    public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent) {
-        super(expandable, parent);
+    public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
+        super(expandable, parent, title);
         this.refresh = refresh;
-        lblProgress = createProgressLabel();
-        totalCountComp = new ArrayList<JComponent>();
-        changedCountComp = new ArrayList<JComponent>();
+        labels = new ArrayList<TreeLabel>();
+        buttons = new ArrayList<LinkButton>();
     }
-
-    abstract void updateContent();
 
     abstract List<Issue> getTasks();
 
@@ -88,35 +93,27 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     abstract void updateCounts();
 
-    abstract boolean isLoaded();
-
-    @Override
-    protected void childrenLoadingStarted() {
-        synchronized (UI_LOCK) {
-            if (refresh || !isLoaded()) {
-                hideCounts();
-                lblProgress.setVisible(true);
-            }
-        }
-    }
-
     @Override
     protected void childrenLoadingFinished() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                synchronized (UI_LOCK) {
-                    lblProgress.setVisible(false);
-                    showCounts();
-                    updateCounts();
+                if (toSelect != null) {
+                    DashboardViewer.getInstance().setSelection(toSelect);
+                    toSelect = null;
                 }
             }
         });
     }
 
     @Override
-    protected void childrenLoadingTimedout() {
-        //TODO error message
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        for (JLabel lbl : labels) {
+            lbl.setForeground(foreground);
+        }
+        for (LinkButton lb : buttons) {
+            lb.setForeground(foreground, isSelected);
+        }
     }
 
     @Override
@@ -125,14 +122,35 @@ public abstract class TaskContainerNode extends TreeListNode {
         removeTaskListeners();
     }
 
-    public final List<TaskNode> getFilteredTaskNodes() {
-        return filteredTaskNodes;
+    void updateContent() {
+        updateContentAndSelect(null);
+    }
+
+    void updateContentAndSelect(Collection<Issue> toSelect) {
+        this.toSelect = toSelect;
+        final boolean empty = getChildren().isEmpty();
+        boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
+        updateNodes();
+        updateCounts();
+        // expand node if needed
+        if (expand) {
+            setExpanded(true);
+        }
+
+        // if getChildren().isEmpty() is true, refresh was already performed in setExpanded
+        if (!empty || !expand) {
+            refreshChildren();
+        }
     }
 
     public final void refreshContent() {
         refresh = true;
-        setExpanded(true);
-        updateContent();
+        refresh();
+        refreshChildren();
+    }
+
+    public final List<TaskNode> getFilteredTaskNodes() {
+        return filteredTaskNodes;
     }
 
     public final List<TaskNode> getTaskNodes() {
@@ -167,7 +185,8 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     final void updateNodes() {
         synchronized (LOCK) {
-            AppliedFilters appliedFilters = DashboardViewer.getInstance().getAppliedTaskFilters();
+            DashboardViewer dashboard = DashboardViewer.getInstance();
+            AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
             List<Issue> issues = getTasks();
             removeTaskListeners();
             if (taskListener == null) {
@@ -181,6 +200,7 @@ public abstract class TaskContainerNode extends TreeListNode {
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
                 if (appliedFilters.isInFilter(issue)) {
+                    dashboard.addTaskMapEntry(issue, taskNode);
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -194,18 +214,6 @@ public abstract class TaskContainerNode extends TreeListNode {
 
     final String getChangedString() {
         return getChangedTaskCount() + " " + NbBundle.getMessage(TaskContainerNode.class, "LBL_Changed");//NOI18N
-    }
-
-    final void addTotalCountComp(JComponent component) {
-        totalCountComp.add(component);
-    }
-
-    final void addChangedCountComp(JComponent component) {
-        changedCountComp.add(component);
-    }
-
-    final ProgressLabel getLblProgress() {
-        return lblProgress;
     }
 
     final void removeTaskListeners() {
@@ -229,32 +237,18 @@ public abstract class TaskContainerNode extends TreeListNode {
         }
     }
 
-    private void showCounts() {
-        for (JComponent component : totalCountComp) {
-            component.setVisible(true);
-        }
-
-        boolean showChanged = getChangedTaskCount() > 0;
-        for (JComponent component : changedCountComp) {
-            component.setVisible(showChanged);
-        }
-    }
-
-    final void hideCounts() {
-        for (JComponent component : totalCountComp) {
-            component.setVisible(false);
-        }
-        for (JComponent component : changedCountComp) {
-            component.setVisible(false);
-        }
-    }
-
     private class TaskListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-                updateContent();
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateNodes();
+                        updateCounts();
+                    }
+                });
             }
         }
     }

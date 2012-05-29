@@ -77,6 +77,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 
@@ -85,9 +88,12 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -179,17 +185,21 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         if (pane != null) {
             Document doc = pane.getDocument();
-            Source source = Source.create(doc);
+            final Source source = Source.create(doc);
             if (source != null) {
-                try {
-                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                        public @Override void run(ResultIterator resultIterator) throws Exception {
-                            GsfHintsManager.refreshHints(resultIterator);
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                                public @Override void run(ResultIterator resultIterator) throws Exception {
+                                    GsfHintsManager.refreshHints(resultIterator);
+                                }
+                            });
+                        } catch (ParseException ex) {
+                            LOG.log(Level.WARNING, null, ex);
                         }
-                    });
-                } catch (ParseException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
+                    }
+                });
             }
         }
     }

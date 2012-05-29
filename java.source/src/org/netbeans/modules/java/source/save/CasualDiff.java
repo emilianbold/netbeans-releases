@@ -832,10 +832,10 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = oldT.pos + 1);
         }
         // syntetic super() found, skip it
-        if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
+        if (diffContext.syntheticTrees.contains(oldT.stats.head)) {
             oldT.stats = oldT.stats.tail;
         }
-        if (newT.stats.head != null && newT.stats.head.pos == oldT.pos) {
+        if (diffContext.syntheticTrees.contains(newT.stats.head)) {
             newT.stats = newT.stats.tail;
         }
         PositionEstimator est = EstimatorFactory.statements(

@@ -62,6 +62,10 @@ public class CXXParserEmptyActionImpl implements CXXParserActionEx {
     }
 
     @Override
+    public void enum_strongly_typed(Token token) {
+    }
+
+    @Override
     public void enum_name(Token token) {
     }
 

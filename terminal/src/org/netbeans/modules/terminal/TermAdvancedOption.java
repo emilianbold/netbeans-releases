@@ -145,12 +145,6 @@ public final class TermAdvancedOption extends OptionsPanelController {
 
     // implement OptionsPanelController
     @Override
-    public Lookup getLookup() {
-	return null;
-    }
-
-    // implement OptionsPanelController
-    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
     }
 

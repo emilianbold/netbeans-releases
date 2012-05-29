@@ -474,36 +474,38 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             final BookmarkInfo bookmark = selectedBookmark;
             if (bookmark != displayedBookmarkInfo) {
                 final FileObject fo = bookmark.getFileBookmarks().getFileObject();
-                try {
-                    DataObject dob = DataObject.find(fo);
-                    final EditorCookie ec = dob.getCookie(EditorCookie.class);
-                    if (ec != null) {
-                        Document doc = ec.getDocument();
-                        if (doc == null) {
-                            // Open document on background
-                            RequestProcessor.getDefault().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        final Document d = ec.openDocument();
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                showPreview(fo, d, bookmark);
-                                            }
-                                        });
-                                    } catch (IOException ex) {
-                                        Exceptions.printStackTrace(ex);
+                if (fo != null) {
+                    try {
+                        DataObject dob = DataObject.find(fo);
+                        final EditorCookie ec = dob.getCookie(EditorCookie.class);
+                        if (ec != null) {
+                            Document doc = ec.getDocument();
+                            if (doc == null) {
+                                // Open document on background
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            final Document d = ec.openDocument();
+                                            SwingUtilities.invokeLater(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    showPreview(fo, d, bookmark);
+                                                }
+                                            });
+                                        } catch (IOException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
                                     }
-                                }
-                            });
-                        } else { // doc != null
-                            showPreview(fo, doc, bookmark);
+                                });
+                            } else { // doc != null
+                                showPreview(fo, doc, bookmark);
+                            }
                         }
+                    } catch (DataObjectNotFoundException ex) {
+                        // Ignore preview
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    // Ignore preview
-                }
+                } // else: file does not exist -> ignore preview
             }
         }
     }

@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.awt.EventQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
+import org.openide.loaders.FolderInstance;
 import org.openide.util.Mutex;
 import org.openide.util.Task;
 
@@ -60,10 +61,12 @@ public final class AWTTask extends org.openide.util.Task {
     private static final EDT WAKE_UP = new EDT();
     private static final Runnable PROCESSOR = new Processor();
 
+    private final Object id;
     private boolean executed;
-
-    public AWTTask (Runnable r) {
+    private final Logger LOG = Logger.getLogger("org.openide.awt.Toolbar");
+    public AWTTask (Runnable r, FolderInstance id) {
         super (r);
+        this.id = id;
         PENDING.add(this);
         Mutex.EVENT.readAccess (PROCESSOR);
     }
@@ -71,14 +74,27 @@ public final class AWTTask extends org.openide.util.Task {
     @Override
     public void run () {
         if (!executed) {
+            long l = System.currentTimeMillis();
             try {
                 super.run ();
             } catch (ThreadDeath t) {
                 throw t;
             } catch (Throwable t) {
-                Logger.getLogger("org.openide.awt.Toolbar").log(Level.WARNING, "Error in AWT task", t); // NOI18N
+                LOG.log(Level.WARNING, "Error in AWT task", t); // NOI18N
             } finally {
                 executed = true;
+                long took = System.currentTimeMillis() - l;
+                Level level = Level.FINER;
+                if (took > 100) {
+                    level = Level.FINE;
+                }
+                if (took > 500) {
+                    level = Level.INFO;
+                }
+                if (took > 3000) {
+                    level = Level.WARNING;
+                }
+                LOG.log(level, "Too long AWTTask: {0} ms for {1}", new Object[]{took, id}); // NOI18N
             }
         }
     }
