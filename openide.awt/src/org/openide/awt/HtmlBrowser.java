@@ -44,12 +44,7 @@
 
 package org.openide.awt;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -58,27 +53,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import javax.swing.*;
+import org.openide.util.*;
 
 /**
 * Object that provides viewer for HTML pages.
@@ -463,6 +443,7 @@ public class HtmlBrowser extends JPanel {
         class URLSetter implements Runnable {
             private boolean sameHosts = false;
 
+            @Override
             public void run() {
                 if (!SwingUtilities.isEventDispatchThread()) {
                     if ("nbfs".equals(url.getProtocol())) { // NOI18N
@@ -675,6 +656,7 @@ public class HtmlBrowser extends JPanel {
         /**
         * Listens on changes in HtmlBrowser.Impl.
         */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
 
@@ -710,6 +692,7 @@ public class HtmlBrowser extends JPanel {
         /**
         * Listens on changes in HtmlBrowser visual components.
         */
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == txtLocation) {
                 // URL manually changed
@@ -984,6 +967,7 @@ public class HtmlBrowser extends JPanel {
         public TrivialURLDisplayer() {
         }
 
+        @Override
         public void showURL(URL u) {
             if (Desktop.isDesktopSupported()) {
                 Desktop d = Desktop.getDesktop();
