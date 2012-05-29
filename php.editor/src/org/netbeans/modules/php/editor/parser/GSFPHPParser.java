@@ -104,10 +104,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         long startTime = System.currentTimeMillis();
         FileObject file = snapshot.getSource().getFileObject();
-//        ParseListener listener = request.listener;
-
-//        ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-//        request.listener.started(beginEvent);
         PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(file);
         if (!projectPropertiesListenerAdded) {
             PropertyChangeListener weakListener = WeakListeners.propertyChange(this, languageProperties);
@@ -150,9 +146,6 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 assert context.sanitizedSource != null;
                 sanitizedSource = true;
                 source = context.sanitizedSource;
-//                System.out.println("------- " + sanitizing.name() + "-------------------");
-//                System.out.println(source);
-//                System.out.println("------------------------------------------------------");
             } else {
                 // Try next trick
                 return sanitize(context, sanitizing, errorHandler);
@@ -164,21 +157,13 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
-        //if (!sanitizedSource) {
         parser.setErrorHandler(errorHandler);
-//        }
-//        else {
-//            parser.setErrorHandler(null);
-//        }
 
         java_cup.runtime.Symbol rootSymbol = parser.parse();
         if (scanner.getCurlyBalance() != 0 && !sanitizedSource) {
             sanitizeSource(context, Sanitize.MISSING_CURLY, null);
             if (context.sanitizedSource != null) {
                 context.source = context.getSanitizedSource();
-//                System.out.println("---------- Curly  -------------");
-//                System.out.println(context.sanitizedSource);
-//                System.out.println("-----------------------");
                 source = context.source;
                 scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
@@ -220,10 +205,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 LOGGER.fine("The parser value is not a Program: " + rootSymbol.value);
                 result = sanitize(context, sanitizing, errorHandler);
             }
-
-            //if (!sanitizedSource) {
             result.setErrors(errorHandler.displaySyntaxErrors(program));
-            //}
         } else { // there was no rootElement
             result = sanitize(context, sanitizing, errorHandler);
             result.setErrors(errorHandler.displayFatalError());
@@ -727,7 +709,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         /**
          * Try tu fix incomplete 'require("' function for FS code complete
          */
-        REQUIRE_FUNCTION_INCOMPLETE,}
+        REQUIRE_FUNCTION_INCOMPLETE,
+    }
 
     /**
      * Parsing context
