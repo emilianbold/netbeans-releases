@@ -50,12 +50,14 @@ import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.common.CommonUtils;
+import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.lib.profiler.ui.cpu.LiveFlatProfilePanel;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModuleContainer;
 import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalModule;
 import org.netbeans.lib.profiler.ui.LiveResultsWindowContributor;
 import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
+import org.netbeans.modules.profiler.categorization.api.Category;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -74,7 +76,7 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
 
     @Override
     public void addToCpuResults(final LiveFlatProfilePanel cpuPanel, final ProfilerToolbar toolBar, ProfilerClient client, Lookup.Provider project) {
-        List<StatisticalModule> additionalStats = new ArrayList<StatisticalModule>();
+        final List<StatisticalModule> additionalStats = new ArrayList<StatisticalModule>();
 
         dd = Lookup.getDefault().lookup(DrillDownFactory.class).createDrillDown(project, client);
         if (dd != null) {
@@ -99,7 +101,12 @@ public class DrilldownContributor extends LiveResultsWindowContributor.Adapter {
                 public void dataChanged() {
                 }
 
-                public void drillDownPathChanged(List list) {
+                public void drillDownPathChanged(List<Category> list) {
+                    Mark m = list.get(list.size() - 1).getAssignedMark();
+                    
+                    for(StatisticalModule s : additionalStats) {
+                        s.setSelectedMark(m);
+                    }
                     cpuPanel.updateLiveResults();
                 }
             });
