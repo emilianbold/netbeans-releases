@@ -153,12 +153,20 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     @Override
     public Collection<? extends TypeUsage> getReturnTypes() {
-        if (!areReturnTypesResolved) {
-            resolveTypes();
+        Collection<TypeUsage> returns = new HashSet();
+        for(TypeUsage type : returnTypes) {
+             if (((TypeUsageImpl)type).isResolved()) {
+                returns.add(type);
+            } else {
+                 JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
+                 if(jsObject != null) {
+                     returns.addAll(resolveAssignments(jsObject, type.getOffset()));
+                 }
+            }
         }
-        return Collections.unmodifiableCollection(this.returnTypes);
+        return returns;
     }    
-    
+        
     public void addReturnType(TypeUsage type) {
         this.returnTypes.add(type);
     }

@@ -3,5 +3,5 @@ _|arr[1] = 10;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      _arr                            [PRIVATE]  SingletonCloser.js
-METHOD     _privateWork(): unresolved      [PRIVATE]  SingletonCloser.js
+METHOD     _privateWork()                  [PRIVATE]  SingletonCloser.js
 VARIABLE   _rx                             [PRIVATE]  SingletonCloser.js
