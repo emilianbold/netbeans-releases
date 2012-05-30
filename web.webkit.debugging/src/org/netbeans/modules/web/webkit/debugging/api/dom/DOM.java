@@ -127,6 +127,10 @@ public class DOM {
                     updateNodesMap(subNode);
                 }
             }
+            Node document = node.getContentDocument();
+            if (document != null) {
+                updateNodesMap(document);
+            }
         }
     }
 

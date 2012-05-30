@@ -59,13 +59,15 @@ public class Node {
     private List<Node> children;
     /** Attributes of the node. */
     private List<Attribute> attributes;
+    /** Content document (for {@code Frame} nodes). */
+    private Node contentDocument;
 
     /**
      * Creates a new {@code Node} that corresponds to the given JSONObject.
      * 
      * @param node JSONObject describing the node.
      */
-    public Node(JSONObject node) {
+    Node(JSONObject node) {
         this.properties = node;
 
         // Children
@@ -88,10 +90,17 @@ public class Node {
             }
         }
 
+        // Content document
+        JSONObject document = (JSONObject)getProperties().get("contentDocument"); // NOI18N
+        if (document != null) {
+            contentDocument = new Node(document);
+        }
+
         // Cleanup
         node.remove("childNodeCount"); // NOI18N
         node.remove("children"); // NOI18N
         node.remove("attributes"); // NOI18N
+        node.remove("contentDocument"); // NOI18N
     }
 
     /**
@@ -346,8 +355,15 @@ public class Node {
         return getAttribute(":netbeans_generated") != null; // NOI18N
     }
 
-    // PENDING
-    //getContentDocument()
+    /**
+     * Returns a content document.
+     * 
+     * @return content document (for {@code FrameOwner} nodes)
+     * or {@code null} (otherwise).
+     */
+    public Node getContentDocument() {
+        return contentDocument;
+    }
     
     // PENDING
     //getShadowRoots()
