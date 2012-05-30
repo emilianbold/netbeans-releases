@@ -106,14 +106,6 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         setName (""); // NOI18N
         setLayout (new BorderLayout ());
         this.browserFactory = fact;
-//        add (browserComponent = new HtmlBrowser (fact, toolbar, statusLine), BorderLayout.CENTER);
-//
-//        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-//
-//        // Ensure closed browsers are not stored:
-//        if (browserComponent.getBrowserComponent() != null) {
-//            putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-//        }
         setToolTipText(NbBundle.getBundle(HtmlBrowser.class).getString("HINT_WebBrowser")); //NOI18N
         //don't use page title for display name as it can be VERY long
         setName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
@@ -125,6 +117,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         return PERSISTENCE_NEVER;
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent e) {
         if( HtmlBrowser.Impl.PROP_STATUS_MESSAGE.equals(e.getPropertyName()) ) {
             StatusDisplayer.getDefault().setStatusText(browserComponent.getBrowserImpl().getStatusMessage());
@@ -200,6 +193,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         super.componentActivated ();
         SwingUtilities.invokeLater( new Runnable() {
 
+            @Override
             public void run() {
                 setEnableHome(enableHome);
                 setEnableLocation(enableLocation);
@@ -238,16 +232,8 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     @Override
     protected void componentOpened() {
         if( null == browserComponent ) {
-            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
-            // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
-            associateLookup(getBrowserLookup());
-
-            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-            // Ensure closed browsers are not stored:
-            if (browserComponent.getBrowserComponent() != null) {
-                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-            }
+            browserComponent = createBrowser( browserFactory, toolbarVisible, statusVisible );
+            initBrowser();
         }
     }
 
@@ -255,7 +241,23 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     public java.awt.Image getIcon () {
         return new ImageIcon (HtmlBrowser.class.getResource ("/org/openide/resources/html/htmlView.gif")).getImage ();   // NOI18N
     }
-    
+
+    protected HtmlBrowser createBrowser( HtmlBrowser.Factory factory, boolean showToolbar, boolean showStatus ) {
+        return new HtmlBrowser( factory, showToolbar, showStatus );
+    }
+
+    private void initBrowser() {
+        add( browserComponent, BorderLayout.CENTER );
+        // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
+        associateLookup(getBrowserLookup());
+
+        browserComponent.getBrowserImpl().addPropertyChangeListener (this);
+
+        // Ensure closed browsers are not stored:
+        if (browserComponent.getBrowserComponent() != null) {
+            putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+        }
+    }
 
     // public methods ....................................................................................
 
@@ -378,16 +380,8 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
 
     public void setURLAndOpen( URL url ) {
         if( null == browserComponent ) {
-            add (browserComponent = new HtmlBrowser (browserFactory, toolbarVisible, statusVisible), BorderLayout.CENTER);
-            // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
-            associateLookup(getBrowserLookup());
-
-            browserComponent.getBrowserImpl().addPropertyChangeListener (this);
-
-            // Ensure closed browsers are not stored:
-            if (browserComponent.getBrowserComponent() != null) {
-                putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
-            }
+            browserComponent = createBrowser( browserFactory, toolbarVisible, statusVisible );
+            initBrowser();
         }
         browserComponent.setURL(url);
         if( null != browserComponent.getBrowserComponent() ) {

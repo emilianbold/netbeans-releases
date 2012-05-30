@@ -126,6 +126,7 @@ public class HtmlBrowser extends JPanel {
     final Component browserComponent;
     private JPanel head;
     private RequestProcessor rp = new RequestProcessor();
+    private final JToolBar extraToolbar;
 
     // init ......................................................................
 
@@ -149,12 +150,27 @@ public class HtmlBrowser extends JPanel {
     /**
     * Creates new html browser.
      *
-     * @param fact Factory that is used for creation. If null is passed it searches for 
+     * @param fact Factory that is used for creation. If null is passed it searches for
      *             a factory providing displayable component.
      * @param toolbar visibility of toolbar
      * @param statusLine visibility of statusLine
     */
     public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine) {
+        this( fact, toolbar, statusLine, null );
+    }
+
+    /**
+    * Creates new html browser.
+     *
+     * @param fact Factory that is used for creation. If null is passed it searches for 
+     *             a factory providing displayable component.
+     * @param toolbar visibility of toolbar
+     * @param statusLine visibility of statusLine
+     * @param extraToolbar Additional toolbar to be displayed under the default
+     * toolbar with location field and back/forward buttons.
+     * @since 7.47
+    */
+    public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine, JToolBar extraToolbar) {
         Impl impl = null;
         Component comp = null;
 
@@ -183,6 +199,7 @@ public class HtmlBrowser extends JPanel {
 
         browserImpl = impl;
         browserComponent = comp;
+        this.extraToolbar = extraToolbar;
 
         setLayout(new BorderLayout(0, 2));
 
@@ -355,8 +372,11 @@ public class HtmlBrowser extends JPanel {
         head.add(txtLocation, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,4), 0, 0));
         head.add(bReload, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,4), 0, 0));
         head.add(bStop, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+        if( null != extraToolbar ) {
+            head.add(extraToolbar, new GridBagConstraints(0, 1, 5, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,0,0,0), 0, 0));
+        }
 
-        head.setBorder( BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        head.setBorder( BorderFactory.createEmptyBorder(8, 10, null == extraToolbar ? 8 : 3, 10));
 
         if (browserImpl != null) {
             bBack.setEnabled(browserImpl.isBackward());

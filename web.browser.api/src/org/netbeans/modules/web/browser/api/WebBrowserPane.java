@@ -42,14 +42,18 @@
 package org.netbeans.modules.web.browser.api;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import org.netbeans.core.HtmlBrowserComponent;
+import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.util.Lookup;
 
 /**
@@ -67,6 +71,7 @@ public final class WebBrowserPane {
     private HtmlBrowserComponent topComponent;
     private boolean wrapEmbeddedBrowserInTopComponent;
     private boolean createTopComponent = false;
+    private JToolBar developerToolbar;
     
 //    WebBrowserPane(HtmlBrowserComponent comp) {
 //        this(comp.getBrowserImpl(), null, false, comp);
@@ -126,16 +131,30 @@ public final class WebBrowserPane {
     
     private synchronized HtmlBrowserComponent getTopComponent() {
         if (topComponent == null && createTopComponent) {
+            developerToolbar = new JToolBar();
+
             // below constructor sets some TopComponent properties and needs
             // to be therefore called in AWT thread:
-            topComponent = new HtmlBrowserComponent(descriptor.getFactory(), 
-                false, false) {
-                    @Override
-                    protected void componentClosed() {
-                        super.componentClosed();
-                        topComponent = null;
-                    }
-                };
+            topComponent = new HtmlBrowserComponent(descriptor.getFactory(), false, false) {
+
+                @Override
+                protected void componentOpened() {
+                    super.componentOpened();
+                    initDevToolbar();
+                }
+
+                @Override
+                protected void componentClosed() {
+                    super.componentClosed();
+                    topComponent = null;
+                }
+
+                @Override
+                protected HtmlBrowser createBrowser( Factory factory, boolean showToolbar, boolean showStatus ) {
+                    return new HtmlBrowser( factory, showToolbar, showStatus, developerToolbar );
+                }
+
+            };
         }
         return topComponent;
     }
@@ -286,6 +305,55 @@ public final class WebBrowserPane {
         for (WebBrowserPaneListener listener : listeners) {
             listener.browserEvent(new WebBrowserRunningStateChangedEvent(this));
         }
+    }
+
+    private void initDevToolbar() {
+        developerToolbar.setFloatable( false );
+        developerToolbar.setFocusable( false );
+
+        DefaultComboBoxModel zoomModel = new DefaultComboBoxModel();
+        zoomModel.addElement( "200%" ); //NOI18N
+        zoomModel.addElement( "150%" ); //NOI18N
+        zoomModel.addElement( "100%" ); //NOI18N
+        zoomModel.addElement( "75%" ); //NOI18N
+        zoomModel.addElement( "50%" ); //NOI18N
+        final JComboBox comboZoom = new JComboBox(zoomModel);
+        comboZoom.setEditable( true );
+        if( comboZoom.getEditor().getEditorComponent() instanceof JTextField )
+            ((JTextField)comboZoom.getEditor().getEditorComponent()).setColumns( 4 );
+        comboZoom.setSelectedItem( "100%" ); //NOI18N
+        comboZoom.addItemListener( new ItemListener() {
+
+            @Override
+            public void itemStateChanged( ItemEvent e ) {
+                if( e.getStateChange() == ItemEvent.DESELECTED )
+                    return;
+                String newZoom = zoom( comboZoom.getSelectedItem().toString() );
+                comboZoom.setSelectedItem( newZoom );
+            }
+        });
+        comboZoom.setEnabled( null != topComponent.getLookup().lookup( Zoomable.class ) );
+        developerToolbar.add( comboZoom );
+    }
+
+    private String zoom( String zoomFactor ) {
+        if( null == topComponent || zoomFactor.trim().isEmpty() )
+            return null;
+
+        Zoomable zoomable = topComponent.getLookup().lookup( Zoomable.class );
+        if( null == zoomable )
+            return null;
+        try {
+            zoomFactor = zoomFactor.replaceAll( "\\%", ""); //NOI18N
+            zoomFactor = zoomFactor.trim();
+            double zoom = Double.parseDouble( zoomFactor );
+            zoom = Math.abs( zoom )/100;
+            zoomable.zoom( zoom );
+            return (int)(100*zoom) + "%";
+        } catch( NumberFormatException nfe ) {
+            //ignore
+        }
+        return null;
     }
     
     /**

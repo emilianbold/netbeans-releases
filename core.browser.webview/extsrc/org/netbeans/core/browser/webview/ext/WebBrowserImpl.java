@@ -62,6 +62,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.*;
 import javafx.util.Callback;
@@ -99,6 +100,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private final List<WebBrowserListener> browserListners = new ArrayList<WebBrowserListener>();
     private final Object LOCK = new Object();
     private WebView browser;
+    private ScrollPane scrollPane;
     private String status;
     private boolean initialized;
     /** Lookup of this web-browser tab. */
@@ -158,7 +160,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 new MessageDispatcherImpl(),
                 new ScriptExecutorImpl(this),
                 transport,
-                Factory.createWebKitDebugging(transport)
+                Factory.createWebKitDebugging(transport),
+                new ZoomAndResizeImpl(this)
         );
         return l;
     }
@@ -446,6 +449,13 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             browser = view;
         }
 
+//        scrollPane = new ScrollPane();
+////        Group grp = new Group();
+////        grp.getChildren().add( browser );
+////        grp.setAutoSizeChildren( false );
+//        scrollPane.setContent( browser );
+//        scrollPane.setFitToHeight( true );
+//        scrollPane.setFitToWidth( true );
         container.setScene( new Scene( browser ) );
 
         if( null != urlToLoad ) {
@@ -684,5 +694,15 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         browserComponent.open();
         browserComponent.requestActive();
         browserComponent.makeBusy( true );
+    }
+
+    void zoom( final double zoomFactor ) {
+        Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.setScaleX( zoomFactor );
+                browser.setScaleY( zoomFactor );
+            }
+        });
     }
 }
