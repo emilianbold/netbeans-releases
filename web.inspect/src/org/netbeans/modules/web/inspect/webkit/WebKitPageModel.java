@@ -98,6 +98,11 @@ public class WebKitPageModel extends PageModel {
      * Prepares the page for inspection.
      */
     private void initializePage() {
+        // documentUpdated event is not delivered when no node information
+        // was sent to the client => requesting document node to make sure
+        // that we obtain next documentUpdated event (that we need to be able
+        // to reinitialize the page)
+        getDocumentNode();
         String initScript = Script.getScript("initialization"); // NOI18N
         webKit.getRuntime().evaluate(initScript);
     }
