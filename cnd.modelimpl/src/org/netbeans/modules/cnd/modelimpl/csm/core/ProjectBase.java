@@ -1313,6 +1313,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return null;
         }
         Object lock = entry.getLock();
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (lock) {
             for (PreprocessorStatePair pair : entry.getStatePairs()) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(pair.state);
@@ -1320,7 +1321,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     return pair.state;
                 }
             }
-            Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey);
+            Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey, dependentProjects);
             for (FileEntry fileEntry : includedFileEntries) {
                 // return the first with non empty states collection
                 for (State state : fileEntry.getPrerocStates()) {
@@ -1337,13 +1338,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (entry == null) {
             return Collections.emptyList();
         }
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
         Object lock = entry.getLock();
         Collection<PreprocessorStatePair> out;
         synchronized (lock) {
             Collection<PreprocessorStatePair> containerStatePairs = entry.getStatePairs();
             if (hasClosedStartEntry(lock, containerStatePairs)) {
                 // need to merge from dependent projects' storages
-                Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey);
+                Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey, dependentProjects);
                 FileEntry mergeEntry = FileContainer.createFileEntryForMerge(fileKey);
                 for (FileEntry fileEntry : includedFileEntries) {
                     for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
@@ -1367,13 +1369,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.emptyList();
         }
 
+        Collection<ProjectBase> dependentProjects = getDependentProjects();
         Collection<APTPreprocHandler.State> states;
         Object lock = entry.getLock();
         synchronized (lock) {
             Collection<PreprocessorStatePair> containerStatePairs = entry.getStatePairs();
             if (hasClosedStartEntry(lock, containerStatePairs)) {
                 // need to merge from dependent projects' storages
-                Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey);
+                Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey, dependentProjects);
                 FileEntry mergeEntry = FileContainer.createFileEntryForMerge(fileKey);
                 for (FileEntry fileEntry : includedFileEntries) {
                     for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
@@ -1741,7 +1744,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Object stateLock = getFileContainer().getLock(fileKey);
         Collection<State> states = new ArrayList<State>(dependentProjects.size() + 1);
         synchronized (stateLock) {
-            Collection<FileEntry> entries = this.getIncludedFileEntries(stateLock, fileKey);
+            Collection<FileEntry> entries = this.getIncludedFileEntries(stateLock, fileKey, dependentProjects);
             for (FileEntry fileEntry : entries) {
                 states.addAll(fileEntry.getPrerocStates());
             }
@@ -1749,9 +1752,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return states;
     }
 
-    private Collection<FileEntry> getIncludedFileEntries(Object stateLock, CharSequence fileKey) {
+    private Collection<FileEntry> getIncludedFileEntries(Object stateLock, CharSequence fileKey, Collection<ProjectBase> dependentProjects) {
         assert Thread.holdsLock(stateLock) : " must hold state lock for " + fileKey;
-        Collection<ProjectBase> dependentProjects = getDependentProjects();
         Collection<FileEntry> out = new ArrayList<FileEntry>(dependentProjects.size() + 1);
         FileEntry ownEntry = this.includedFileContainer.getIncludedFileEntry(stateLock, this, fileKey);
         if (ownEntry != null) {
