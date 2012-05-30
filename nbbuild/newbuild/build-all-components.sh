@@ -21,7 +21,7 @@ cd  $NB_ALL
 mkdir -p nbbuild/netbeans
 
 #Build source packages
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config" "Build source packages"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
 ERROR_CODE=$?
 
 create_test_result "build.source.package" "Build Source package" $ERROR_CODE
@@ -32,7 +32,7 @@ else
     mv nbbuild/build/*-src-* $DIST/zip/$BASENAME-src.zip
 fi
 
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=platform build-source-config"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=platform build-source-config
 ERROR_CODE=$?
 
 create_test_result "build.source.platform" "Build Platform Source package" $ERROR_CODE
@@ -44,7 +44,7 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines,vars" "Build the NB IDE first - no validation tests!"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines,vars
 ERROR_CODE=$?
 
 create_test_result "build.IDE" "Build IDE" $ERROR_CODE
@@ -60,7 +60,7 @@ TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=$JDK_HOME
 # standard NetBeans unit and UI validation tests
-run_and_measure "ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER commit-validation" "standard NetBeans unit and UI validation tests"
+ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER commit-validation
 ERROR_CODE=$?
 
 create_test_result "test.commit-validation" "Commit Validation" $ERROR_CODE
@@ -84,7 +84,7 @@ fi
 rm -rf $NB_ALL/nbbuild/netbeans/nb/servicetag
 rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
 
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
 ERROR_CODE=$?
 
 create_test_result "build.test.dist" "Build Test Distribution" $ERROR_CODE
@@ -98,7 +98,7 @@ fi
 cd $NB_ALL
 
 #Build JNLP
-#run_and_measure "ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp" "Build JNLP"
+#ant -Djnlp.codebase=http://bits.netbeans.org/dev/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
 #ERROR_CODE=$?
 
 #create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE
@@ -108,7 +108,7 @@ cd $NB_ALL
 #fi
 
 #Build all NBMs for stable UC - IDE + UC-only
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines" "Build all NBMs for stable UC - IDE + UC-only"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 create_test_result "build.NBMs" "Build all NBMs" $ERROR_CODE
@@ -118,7 +118,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 # Separate IDE nbms from stableuc nbms.
-run_and_measure "ant -f nbbuild/build.xml move-ide-nbms -Dnbms.source.location=${DIST}/uc2 -Dnbms.target.location=${DIST}/uc" "Separate IDE nbms from stableuc nbms."
+ant -f nbbuild/build.xml move-ide-nbms -Dnbms.source.location=${DIST}/uc2 -Dnbms.target.location=${DIST}/uc
 ERROR_CODE=$?
 
 create_test_result "get.ide.NBMs" "Extract IDE NBMs from all the built NBMs" $ERROR_CODE
@@ -129,7 +129,7 @@ fi
 
 
 #Build 110n kit for HG files
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml hg-l10n-kit -Dl10n.kit=${DIST}/zip/hg-l10n-$BUILDNUMBER.zip" "Build 110n kit for HG files"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml hg-l10n-kit -Dl10n.kit=${DIST}/zip/hg-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
 create_test_result "build.hg.l10n" "Build 110n kit for HG files" $ERROR_CODE
@@ -139,7 +139,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build l10n kit for IDE modules
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc -Dl10n.kit=${DIST}/zip/ide-l10n-$BUILDNUMBER.zip" "Build l10n kit for IDE modules"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc -Dl10n.kit=${DIST}/zip/ide-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
 create_test_result "build.modules.l10n" "Build l10n kit for IDE modules" $ERROR_CODE
@@ -149,7 +149,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build l10n kit for stable uc modules
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc2 -Dl10n.kit=${DIST}/zip/stableuc-l10n-$BUILDNUMBER.zip"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml l10n-kit -Dnbms.location=${DIST}/uc2 -Dl10n.kit=${DIST}/zip/stableuc-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
 create_test_result "build.modules.l10n" "Build l10n kit for stable uc modules" $ERROR_CODE
@@ -160,7 +160,7 @@ fi
 
 cd nbbuild
 #Build catalog for IDE NBMs
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml" "Build catalog for IDE NBMs"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.ide.catalog" "Build UC catalog for IDE modules" $ERROR_CODE
@@ -170,7 +170,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build catalog for Stable UC NBMs
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml" "Build catalog for Stable UC NBMs"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.stableuc.catalog" "Build UC catalog for stable UC modules" $ERROR_CODE
@@ -180,7 +180,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 cd ..
 
-#run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc"
+#ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/javadoctools/build.xml build-javadoc
 #ERROR_CODE=$?
 
 #create_test_result "build.javadoc" "Build javadoc" $ERROR_CODE
@@ -197,15 +197,15 @@ if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
     if [ -d $NB_ALL/l10n/.hg ] ; then
         cd $NB_ALL/l10n
-        run_and_measure "hg pull"
-        run_and_measure "hg update --clean --rev $L10N_BRANCH"
+        hg pull
+        hg update --clean --rev $L10N_BRANCH
     else
         rm -Rf $NB_ALL/l10n
-        run_and_measure "hg clone --rev $L10N_BRANCH $ML_REPO l10n"
+        hg clone --rev $L10N_BRANCH $ML_REPO l10n
     fi
     
     cd $NB_ALL/l10n
-    run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc -Dnbms.dist.dir=${DIST}/ml/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build"
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml -Dlocales=$LOCALES -Ddist.dir=$NB_ALL/nbbuild/netbeans-ml -Dnbms.dir=${DIST}/uc -Dnbms.dist.dir=${DIST}/ml/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS build
     ERROR_CODE=$?
 
     create_test_result "build.ML.IDE" "Build ML IDE" $ERROR_CODE
@@ -231,7 +231,7 @@ if [ $ML_BUILD == 1 ]; then
 
     cd $NB_ALL/nbbuild
     #Build catalog for ML FU NBMs
-    run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc -Dcatalog.file=${DIST}/ml/uc/catalog.xml"
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc -Dcatalog.file=${DIST}/ml/uc/catalog.xml
     ERROR_CODE=$?
 
     create_test_result "build.ML.FU.catalog" "Build ML FU catalog" $ERROR_CODE
@@ -250,7 +250,7 @@ if [ $ML_BUILD == 1 ]; then
     #    exit $ERROR_CODE;
 #    fi
 
-    run_and_measure "cp -r $NB_ALL/nbbuild/netbeans/* $NB_ALL/nbbuild/netbeans-ml/"
+    cp -r $NB_ALL/nbbuild/netbeans/* $NB_ALL/nbbuild/netbeans-ml/
 
     cd $NB_ALL/nbbuild
     #Remove the build helper files
@@ -339,7 +339,7 @@ if [ ! -z $UC_NBMS_DIR ]; then
 fi
 
 #Build catalog for FU NBMs
-run_and_measure "ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml" "Build catalog for FU NBMs"
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE

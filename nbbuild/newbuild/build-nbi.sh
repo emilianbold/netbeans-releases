@@ -62,7 +62,7 @@ fi
 
 cd $NB_ALL/installer/infra/build
 
-run_and_measure "bash build.sh"
+bash build.sh"
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -105,7 +105,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
         if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
-            run_and_measure "scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles" "copy the bits back EN"
+            scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
             ERROR_CODE=$?
             if [ $ERROR_CODE != 0 ]; then
                 echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
@@ -113,7 +113,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
             fi
         fi
 	if [ 1 -eq $ML_BUILD ] ; then
-		run_and_measure "scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles" "copy the bits back ML"
+		scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles
                 ERROR_CODE=$?
                 if [ $ERROR_CODE != 0 ]; then
                     echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get ml installers"
@@ -160,17 +160,21 @@ if [ -z $DONT_SIGN_INSTALLER ]; then
 
 fi
 
-cd $DIST
-run_and_measure "bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters"
-ERROR_CODE=$?
-if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
-#    exit $ERROR_CODE;
+if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
+    cd $DIST
+    #bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
+    bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk
+    ERROR_CODE=$?
+    if [ $ERROR_CODE != 0 ]; then
+        echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
+    #    exit $ERROR_CODE;
+    fi
 fi
 
 if [ $ML_BUILD == 1 ]; then
     cd $DIST/ml
-    run_and_measure "bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters"
+    #bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
+    bash ${SCRIPTS_DIR}/files-info.sh bundles
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
