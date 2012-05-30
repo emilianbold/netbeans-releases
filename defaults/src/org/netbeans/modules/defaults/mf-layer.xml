@@ -1122,6 +1122,7 @@ made subject to such option by the copyright holder.
             <file name="AS-F8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-PopTopmostCallAction.instance"/>
             </file>
+            <file name="AS-I.removed"/>
             <file name="C-1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/bookmark-history-popup-previous.instance"/>
             </file>
@@ -1230,12 +1231,11 @@ made subject to such option by the copyright holder.
             <file name="DAS-H.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.instance"/>
             </file>
-            <file name="DS-F7.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewProject.instance"/>
-            </file>
             <file name="D-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-type-GoToType.instance"/>
             </file>
+            <file name="DS-F7.removed"/>
+            <file name="DS-J.removed"/>
             <file name="DELETE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
             </file>
