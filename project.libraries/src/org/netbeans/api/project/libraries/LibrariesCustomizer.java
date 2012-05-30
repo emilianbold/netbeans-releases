@@ -71,7 +71,7 @@ public final class LibrariesCustomizer {
      * @param activeLibrary if not null the activeLibrary is selected in the opened customizer
      * @return true if user pressed OK and libraries were sucessfully modified
      */
-    @Messages("TXT_LibrariesManager=Library Manager")
+    @Messages("TXT_LibrariesManager=Ant Library Manager")
     public static boolean showCustomizer (Library activeLibrary, LibraryManager libraryManager) {
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
                 new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (libraryManager.getArea());
