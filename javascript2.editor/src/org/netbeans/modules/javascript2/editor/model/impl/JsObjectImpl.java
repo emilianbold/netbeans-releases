@@ -199,7 +199,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
-        types.add(new TypeUsageImpl(typeName.getType(), offset, ((TypeUsageImpl)typeName).isResolved()));
+        types.add(typeName);
     }
 
     @Override
@@ -212,6 +212,22 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 result = assignments.get(position);
             }
         }
+        if (!result.isEmpty()) {
+            Collection<TypeUsage> resolved = new HashSet();
+            for(TypeUsage item : result) {
+                TypeUsageImpl type = (TypeUsageImpl)item;
+                if (type.isResolved()) {
+                    resolved.add(type);
+                } else {
+                    JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
+                    if(jsObject != null) {
+                        resolved.addAll(resolveAssignments(jsObject, offset));
+                    }
+                }
+            }
+            result = resolved;
+        }
+        
         
         return result;
     }
@@ -234,6 +250,50 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     @Override
     public boolean hasExactName() {
         return hasName;
+    }
+    
+    protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset) {
+        Collection<String> visited = new HashSet();  // for preventing infinited loops
+        return resolveAssignments(jsObject, offset, visited);
+    }
+    
+    protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset, Collection<String> visited) {
+        Collection<TypeUsage> result = new HashSet();
+        String fqn = ModelUtils.createFQN(jsObject);
+        if(visited.contains(fqn)) {
+           return result; 
+        }
+        visited.add(fqn);
+        Collection<? extends Type> offsetAssignments = Collections.EMPTY_LIST;
+        int closeOffset = -1;
+        for(Integer position : assignments.keySet()) {
+            if (closeOffset < position && position <= offset) {
+                closeOffset = position;
+                offsetAssignments = assignments.get(position);
+            }
+        }
+        if (offsetAssignments.isEmpty() && !jsObject.getProperties().isEmpty()) {
+            result.add(new TypeUsageImpl(ModelUtils.createFQN(jsObject), jsObject.getOffset(), true));
+        } else {
+            for (Type assignment : offsetAssignments) {
+                TypeUsageImpl assign = (TypeUsageImpl)assignment;
+                if (!visited.contains(assign.getType())) {
+                    if(assign.isResolved()) {
+                        result.add(assign);
+                    } else {
+                        JsObject object = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(jsObject), assign.getType());
+                        if(object != null) {
+                            if(object.getAssignmentForOffset(offset).isEmpty()) {
+                                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assign.getOffset(), true));
+                            } else {
+                                result.addAll(resolveAssignments(object, assign.getOffset(), visited));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     public void resolveTypes() {

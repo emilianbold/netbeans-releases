@@ -60,9 +60,10 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  */
 class ModelElementFactory {
 
-    static JsFunctionImpl create(JsParserResult parserResult, FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder) {
+    static JsFunctionImpl create(JsParserResult parserResult, FunctionNode functionNode, List<Identifier> fqName, ModelBuilder modelBuilder, boolean isAnnonymous) {
         JsObjectImpl inObject = modelBuilder.getCurrentObject();
-        JsObject parentObject = inObject;
+        JsObject globalObject = modelBuilder.getGlobal();
+        JsObject parentObject = isAnnonymous ? globalObject : inObject;
         int start = Token.descPosition(functionNode.getFirstToken());
         int end = Token.descPosition(functionNode.getLastToken()) + Token.descLength(functionNode.getLastToken());
         List<Identifier> parameters = new ArrayList(functionNode.getParameters().size());
@@ -71,9 +72,8 @@ class ModelElementFactory {
         }
         JsFunctionImpl result; 
         if (fqName.size() > 1) {
-            JsObject globalObject = modelBuilder.getGlobal();
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
-            parentObject = ModelUtils.getJsObject(modelBuilder, objectName);
+            parentObject = isAnnonymous ? globalObject : ModelUtils.getJsObject(modelBuilder, objectName);
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(), 
                     parentObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
             if (!"prototype".equals(parentObject.getName())) {
@@ -95,6 +95,7 @@ class ModelElementFactory {
         }
         DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
         result.setDocumentation(docProvider.getDocumentation(functionNode));
+        result.setAnonymous(isAnnonymous);
         return result;
     }
     
@@ -147,7 +148,7 @@ class ModelElementFactory {
         String name = modelBuilder.getUnigueNameForAnonymObject();
         JsObjectImpl result = new AnonymousObject(modelBuilder.getGlobal(),
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
-        modelBuilder.getCurrentDeclarationScope().addProperty(name, result);
+        modelBuilder.getGlobal().addProperty(name, result);
         DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
         result.setDocumentation(docProvider.getDocumentation(objectNode));
         return result;

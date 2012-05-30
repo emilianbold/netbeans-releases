@@ -62,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -441,7 +442,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
-                    && token.id() != JsTokenId.BLOCK_COMMENT) {
+                    && token.id() != JsTokenId.BLOCK_COMMENT
+                    && token.id() != JsTokenId.LINE_COMMENT) {
                 
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
@@ -514,23 +516,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             } else {
                                 // just property
                                 Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
-
                                 if (lastTypeAssignment.isEmpty()) {
                                     lastResolvedObjects.add(type);
                                 } else {
-                                    for (Type typeName : lastTypeAssignment) {
-                                        boolean wasFound = false;
-                                        for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                                            if (object.getName().equals(typeName.getType())) {
-                                                lastResolvedObjects.add(object);
-                                                wasFound = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!wasFound) {
-                                            lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
-                                        }
-                                    }
+                                    resolveAssignments(type, request, lastResolvedObjects, lastResolvedTypes);
                                     break;
                                 }
                             }
@@ -678,7 +667,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             for (IndexResult indexResult : indexResults) {
                 IndexedElement indexedElement = IndexedElement.create(indexResult);
                 JsElement element = addedProperties.get(indexedElement.getName());
-                if (startsWith(indexedElement.getName(), request.prefix) 
+                if (startsWith(indexedElement.getName(), request.prefix)
+                        && !indexedElement.isAnonymous()
                         && indexedElement.getFQN().indexOf('.', fqn.length()) == -1 
                         && indexedElement.getModifiers().contains(Modifier.PUBLIC)
                         && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
@@ -692,6 +682,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 resultList.add(JsCompletionItem.Factory.create(element, request));
             }
         }
+    }
+
+    private void resolveAssignments(JsObject jsObject, CompletionRequest request, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
+        Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(request.anchor);
+        for (Type typeName : assignments) {
+            JsObject byOffset = findObjectForOffset(typeName.getType(), request.anchor, request.result.getModel());
+            if (byOffset != null) {
+                resolvedObjects.add(byOffset);
+                resolveAssignments(byOffset, request, resolvedObjects, resolvedTypes);
+            } else {
+                resolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
+            }
+        }
+    }
+    
+    private JsObject findObjectForOffset(String name, int offset, Model model) {
+        for (JsObject object : model.getVariables(offset)) {
+            if (object.getName().equals(name)) {
+                return object;
+            }
+        }
+        return null;
     }
     
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
@@ -785,7 +797,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        
     }
     
     private Collection<JsObject> getLibrariesGlobalObjects() {

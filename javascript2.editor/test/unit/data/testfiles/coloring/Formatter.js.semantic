@@ -56,7 +56,7 @@ var |>GLOBAL:formatter<| = {
 
     |>METHOD:printCode<| : function(code) {
 
-        var |>CLASS:text<| = "" + code;
+        var text = "" + code;
         text = "<pre>" + code + "</pre>";
         var textParts = text.split("\"");
         var number = 0;
