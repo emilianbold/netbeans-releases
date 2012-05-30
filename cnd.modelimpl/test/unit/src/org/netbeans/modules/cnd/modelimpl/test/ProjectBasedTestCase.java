@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -148,6 +149,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        CndUtils.clearLastAssertion();
         super.setUp();
         System.setProperty("cnd.modelimpl.persistent", needRepository() ? "true" : "false");
         //initDocumentSettings();
@@ -213,6 +215,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         sysIncludes.clear();
         usrIncludes.clear();
         projectDependencies.clear();
+        assertTrue("unexpected exception " + CndUtils.getLastAssertion(), CndUtils.getLastAssertion() == null);
     }
 
     @Override
