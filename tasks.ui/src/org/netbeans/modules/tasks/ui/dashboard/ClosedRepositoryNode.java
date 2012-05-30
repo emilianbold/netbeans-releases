@@ -74,9 +74,4 @@ public class ClosedRepositoryNode extends RepositoryNode {
     Collection<Query> getQueries() {
         return Collections.emptyList();
     }
-
-    @Override
-    ImageIcon getRepositoryIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/local_repo.png", true);
-    }
 }
