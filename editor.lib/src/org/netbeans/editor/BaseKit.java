@@ -1600,6 +1600,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 int upperCol = Utilities.getRowIndent(doc, dotPos, false);
                                                 changeRowIndent(doc, dotPos, upperCol > nextTabCol ? upperCol : nextTabCol);
                                                 // Fix of #32240
+                                                dotPos = caret.getDot();
                                                 caret.setDot(Utilities.getRowEnd(doc, dotPos));
                                             }
                                         } else { // already chars on the line
