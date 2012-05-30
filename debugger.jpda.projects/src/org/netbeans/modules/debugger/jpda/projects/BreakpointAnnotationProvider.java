@@ -147,15 +147,18 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
                 if (isAnnotatable(breakpoint)) {
                     JPDABreakpoint b = (JPDABreakpoint) breakpoint;
-                    if (!annotatedBreakpoints.contains(b)) {
-                        b.addPropertyChangeListener (this);
-                        breakpointToAnnotations.put(b, new WeakSet<Annotation>());
-                        if (b instanceof LineBreakpoint) {
-                            LineBreakpoint lb = (LineBreakpoint) b;
-                            LineTranslations.getTranslations().registerForLineUpdates(lb);
+                    int[] lines = getAnnotationLines(b, fo);
+                    if (lines != null && lines.length > 0) {
+                        if (!annotatedBreakpoints.contains(b)) {
+                            b.addPropertyChangeListener (this);
+                            breakpointToAnnotations.put(b, new WeakSet<Annotation>());
+                            if (b instanceof LineBreakpoint) {
+                                LineBreakpoint lb = (LineBreakpoint) b;
+                                LineTranslations.getTranslations().registerForLineUpdates(lb);
+                            }
                         }
+                        addAnnotationTo(b, fo, lines);
                     }
-                    addAnnotationTo(b, fo);
                 }
             }
             annotatedFiles.add(fo);

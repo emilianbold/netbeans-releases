@@ -249,6 +249,10 @@ public class BuildArtifactMapperImpl {
             IndexingManager.getDefault().refreshIndexAndWait(sourceRoot, null);
         }
 
+        if (JavaIndex.getAttribute(sourceRoot, DIRTY_ROOT, null) != null) {
+            return false;
+        }
+        
         FileObject[][] sources = new FileObject[1][];
         
         if (!protectAgainstErrors(targetFolder, sources, context)) {
