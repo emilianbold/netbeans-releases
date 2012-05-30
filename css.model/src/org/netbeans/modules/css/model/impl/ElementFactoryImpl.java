@@ -42,11 +42,8 @@
 package org.netbeans.modules.css.model.impl;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.model.api.*;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -59,26 +56,10 @@ public final class ElementFactoryImpl implements ElementFactory {
     public ElementFactoryImpl(Model model) {
         this.model = model;
     }
-    
-    private static final String IMPLEMENTATIONS_PACKAGE = StyleSheetI.class.getPackage().getName();
-    private static final char IMPLEMENTATIONS_SUFFIX = 'I'; //NOI18N
-
-    //rule: grammar element name, first char in upper case + "I" postfix
-    /* test */ static String getImplementingClassNameForNodeType(NodeType nodeType) {
-        StringBuilder sb = new StringBuilder();
-        String typeName = nodeType.name();
-        
-        sb.append(IMPLEMENTATIONS_PACKAGE);
-        sb.append('.');
-        sb.append(Character.toUpperCase(typeName.charAt(0)));
-        sb.append(typeName.substring(1));
-        sb.append(IMPLEMENTATIONS_SUFFIX);
-        return sb.toString();
-    }
 
     public Element createElement(Model model, Node node) {
         try {
-            Class<?> clazz = Class.forName(getImplementingClassNameForNodeType(node.type()));
+            Class<?> clazz = Class.forName(Utils.getImplementingClassNameForNodeType(node.type()));
             Constructor<?> constructor = clazz.getConstructor(Model.class, Node.class);
             return (Element) constructor.newInstance(model, node);
         } catch (ClassNotFoundException cnfe ) {

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +54,9 @@ import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.ui.preview.CssTCController;
@@ -209,8 +212,16 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
             @Override
             public void run(StyleSheet styleSheet) {
+                final Collection<Rule> rules = new ArrayList<Rule>();
+                styleSheet.accept(new ModelVisitor.Adapter() {
+
+                    @Override
+                    public void visitRule(Rule rule) {
+                        rules.add(rule);
+                    }
+                });
+                
                 Rule match = null;
-                List<Rule> rules = styleSheet.getBody().getRules();
                 for (Rule rule : rules) {
                     if (astOffset > rule.getStartOffset() && astOffset < rule.getEndOffset()) {
                         match = rule;

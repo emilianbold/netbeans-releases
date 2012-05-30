@@ -39,29 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.lib.api.NodeType;
+package org.netbeans.modules.css.model.api;
 
 /**
  *
  * @author marekfukala
  */
-public class ElementFactoryImplTest extends NbTestCase {
+public interface ModelVisitor {
+    
+    public void visitElement(Element element);
+    
+    public void visitRule(Rule rule);
+ 
+    public static class Adapter implements ModelVisitor {
 
-    public ElementFactoryImplTest(String name) {
-        super(name);
-    }
+        @Override
+        public void visitElement(Element element) {
+        }
 
-    public void testGetImplementingClassNameForNodeType() {
-        assertEquals("org.netbeans.modules.css.model.impl.CharSetI", 
-                ElementFactoryImpl.getImplementingClassNameForNodeType(NodeType.charSet));
-        assertEquals("org.netbeans.modules.css.model.impl.ImportItemI", 
-                ElementFactoryImpl.getImplementingClassNameForNodeType(NodeType.importItem));
-        assertEquals("org.netbeans.modules.css.model.impl.WsI", 
-                ElementFactoryImpl.getImplementingClassNameForNodeType(NodeType.ws));
-        
+        @Override
+        public void visitRule(Rule rule) {
+        }
+    
     }
     
 }
