@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.parsing.lucene/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/parsing/lucene/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.11
+OpenIDE-Module-Specification-Version: 2.12
 
