@@ -48,6 +48,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -79,6 +81,7 @@ import org.openide.util.NbBundle;
  */
 public class HtmlCompletionProvider implements CompletionProvider {
 
+    private static final Logger LOG = Logger.getLogger(HtmlCompletionProvider.class.getName());
     private final AtomicBoolean AUTO_QUERY = new AtomicBoolean();
 
     @Override
@@ -216,8 +219,27 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     //based on the explicit documentation opening request
                     //(not ivoked by selecting a completion item in the list)
                     HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset, false).query();
-                    if (result != null && result.getItems().size() > 0) {
-                        item = result.getItems().iterator().next();
+                    if (result != null && !result.getItems().isEmpty()) {
+                        try {
+                            final String documentText = doc.getText(result.getAnchor(), doc.getLength() - result.getAnchor());
+
+                            // Go through result items and select completionItem 
+                            // with same tag document cursor is on.
+                            for (CompletionItem completionItem : result.getItems()) {
+                                if (documentText.startsWith(completionItem.getInsertPrefix().toString())) {
+                                    if (item == null) {
+                                        item = completionItem;
+                                    } else {
+                                        // only warning
+                                        LOG.log(Level.WARNING, 
+                                                "More than one CompletionItem found with InsertPrefix {0}, item.insertPrefix={1}", 
+                                                new Object[]{completionItem.getInsertPrefix(), item.getInsertPrefix()});
+                                    }
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            // No action - Error on document position or size.
+                        }
                     }
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
