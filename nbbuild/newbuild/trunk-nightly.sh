@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-#Initialize basic scructure
+#Initialize basic structure
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
@@ -10,18 +10,21 @@ source init.sh
 
 rm -rf $DIST
 
-#if [ ! -z $WORKSPACE ]; then
-    #I'm under hudson and have sources here, I need to clone them
-    #Clean obsolete sources first
-#    rm -rf $NB_ALL
-#    hg clone -U $WORKSPACE $NB_ALL
-#    hg -R $NB_ALL update $NB_BRANCH
-#fi
+if [ ! -z $WORKSPACE ]; then
+#    #I'm under hudson and have sources here, I need to clone them
+#    #Clean obsolete sources first
+    run_and_measure "rm -rf $NB_ALL"
+    run_and_measure "hg clone -U $WORKSPACE $NB_ALL"
+    run_and_measure "hg -R $NB_ALL update $NB_BRANCH"
+fi
+TIP=`hg tip --template '{rev}'`
+export TIP
 
 #if [ $ML_BUILD == 1 ]; then
 #    cd $NB_ALL
 #    hg clone $ML_REPO $NB_ALL/l10n
 #fi
+
 
 ###################################################################
 #
@@ -30,7 +33,7 @@ rm -rf $DIST
 ###################################################################
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash build-all-components.sh
+run_and_measure "bash build-all-components.sh" "build-all-components.sh in total"
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -45,7 +48,7 @@ fi
 ###################################################################
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash pack-all-components.sh
+run_and_measure "bash pack-all-components.sh" "pack-all-components.sh in total"
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -61,7 +64,7 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
-    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
+    run_and_measure "cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}" "Deploy bits to the storage server"
     if [ -n "${TESTING_SCRIPT}" ]; then
         cd $NB_ALL
         TIP_REV=`hg tip --template "{node}"`
@@ -70,18 +73,23 @@ if [ -n $BUILD_ID ]; then
     fi
 fi
 
+run_and_measure
 if [ $UPLOAD_ML == 1 ]; then
     cp $DIST/zip/$BASENAME-platform-src.zip $DIST/ml/zip/
     cp $DIST/zip/$BASENAME-src.zip $DIST/ml/zip/
-    cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
+#    cp $DIST/zip/$BASENAME-javadoc.zip $DIST/ml/zip/
     cp $DIST/zip/hg-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/ide-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/stable-UC-l10n-$BUILDNUMBER.zip $DIST/ml/zip/
     cp $DIST/zip/testdist-$BUILDNUMBER.zip $DIST/ml/zip/
 fi
+run_and_measure
 
 cd $TRUNK_NIGHTLY_DIRNAME
-bash build-nbi.sh
+
+wget --no-proxy http://localhost:8080/job/Fake-Fake/buildWithParameters?TIP=$TIP > /dev/null
+
+run_and_measure "bash build-nbi-generic.sh" "build-nbi-generic in total"
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
@@ -91,23 +99,20 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
-    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
-    rm $DIST_SERVER2/latest.old
-    mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
+    run_and_measure "cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}"
+    run_and_measure "rm $DIST_SERVER2/latest.old"
+    run_and_measure "mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old"
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
-    if [ $UPLOAD_ML == 0 -a ML_BUILD != 0 ]; then
-        rm -r $DIST/ml
+    if [ $UPLOAD_ML == 0 -a $ML_BUILD != 0 ]; then
+        run_and_measure "rm -r $DIST/ml"
     fi
 fi
 
-if [ $UPLOAD_ML == 1 ]; then
-    mv $DIST/jnlp $DIST/ml/
-    mv $DIST/javadoc $DIST/ml/
-fi
+#if [ $UPLOAD_ML == 1 ]; then
+#    run_and_measure "mv $DIST/jnlp $DIST/ml/"
+#    run_and_measure "mv $DIST/javadoc $DIST/ml/"
+#fi
 
 if [ -z $DIST_SERVER ]; then
     exit 0;
 fi
-
-cd $TRUNK_NIGHTLY_DIRNAME
-bash upload-bits.sh
