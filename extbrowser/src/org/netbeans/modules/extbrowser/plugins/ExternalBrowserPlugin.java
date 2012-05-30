@@ -153,7 +153,6 @@ public final class ExternalBrowserPlugin {
     }
     
     private void removeKey( SelectionKey key ) {
-        notifyDispatchers(null, key); // Notify MessageDispatcher(s) about the closed socket
         for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
             BrowserTabDescriptor browserTab = iterator.next();
             if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
@@ -605,8 +604,12 @@ public final class ExternalBrowserPlugin {
             session = null;
             webkitDebugger.getDebugger().disable();
             transport.detach();
-        }
 
+            MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);
+            if (dispatcher != null) {
+                dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
+            }
+        }
         
     }
     
