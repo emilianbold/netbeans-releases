@@ -7,64 +7,36 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Starting a Local Debugging Session</title>
+<title>Starting a Debugging Session</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Starting a Local Debugging Session</h2>
+<h2>Starting a Debugging Session</h2>
 <p>
 <small><a href="#seealso">See Also</a></small></p>
-<p>Local debugging is the process of debugging a program that is running on the 
-  same computer as the IDE. The IDE starts the debugger, then runs the application 
+<p>The IDE starts the debugger, then runs the application 
   inside the debugger. When you start a debugging session, the IDE automatically 
   opens the debugger windows and prints debugger output to the Output window. 
 </p>
-<h3>Debugging the Main Project</h3>
-<p>Debugging commands in the Debug menu are generally run on the main project, and when debugging
-a project it is recommended that you set the project as the main project.</p>
+<p><strong>To start debugging a project:</strong></p>
+<ol>
+    <li>Locate the project's node in the Projects window.</li>
+    <li>Either right-click the project node and select Debug, or select the project node
+    and run the Debug Project command (Ctrl-F5 or <img src="images/Start.gif" alt="Start icon">).</li>
+</ol>
+<p>Alternatively, you can debug an individual PHP file:</p>
 
-<p>If no project is set as the main project the Debug Project command is run on the project that
-is selected in the Projects window and the commands begin the debugging session in the main class of the selected project. </p>
-<table border="1" cellpadding="5" cellspacing="0">
-  <tr> 
-    <th align="left" scope="col"><b>Command</b></th>
-    <th align="left" scope="col"><b>Shortcut</b></th>
-    <th align="left" scope="col" valign="top"><b>Description</b></th>
-  </tr>
-  <tr> 
-    <td valign="top">Debug  &gt; Debug Project</td>
-    <td valign="top">Ctrl-F5 or <img src="images/Start.gif" alt="Start icon"></td>
-    <td valign="top">Runs the program until it reaches a breakpoint or exception 
-      or until the program terminates normally. </td>
-  </tr>
-  <tr> 
-    <td valign="top">Debug &gt; Step Into</td>
-    <td valign="top">F7 or <img src="images/StepInto.gif" alt="Step Into icon"></td>
-    <td valign="top">Runs the program to the first line after the <tt>main</tt> 
-      routine and pauses execution before any changes have been made to the state of the program. </td>
-  </tr>
-  <tr> 
-    <td valign="top">Debug  &gt; Run to Cursor</td>
-    <td valign="top">F4 or <img src="images/RunToCursor.gif" alt="Run to Cursor icon"></td>
-    <td valign="top">Runs the program to the cursor location in the Source Editor 
-      and pauses the program. The file you have selected in the Source Editor 
-      must be called from the main class of the main project.</td>
-  </tr>
-</table>
-<h3>Debugging an Individual Project</h3>
-<ul>
-  <li>Right-click the project in the Projects window and choose Debug. 
-      <p>The IDE runs the project in the debugger until execution stops or a breakpoint is reached.</p> 
-  </li>
-</ul>
+<ol>
+    <li>Expand the project's node in the Projects window. Navigate the tree 
+        until you locate the file you want.</li>
+    <li>Either right-click the file node and select Debug, or select the file node
+    and run the Debug File command (Ctrl-Shift-F5).</li>
+</ol>
 
-<h3>Debugging an Individual File</h3>
-<ul>
-  <li>Select any runnable file in the Projects window and choose Debug &gt; Debug <tt>my_file</tt>.
-    <p>The IDE runs the file in the debugger until execution stops or a breakpoint is reached.</p> 
-  </li>
-</ul>
+<p>The process for starting a debugging session is the same for local and remote projects. However
+path mapping must be set up to debug remote projects.</p>
+
 
 
 <dl>

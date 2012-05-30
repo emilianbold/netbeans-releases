@@ -16,47 +16,52 @@
 <p> <small><a href="#seealso">See Also</a></small></p>
 <p>Once execution of your program is halted, you can step through your lines of 
   code using the following commands on the Debug menu or toolbar: </p>
-<ul>
-    <li><b>Step Over (F8).</b> Executes one source line. If the source line contains 
-        a call, executes the entire routine without stepping through the individual instructions. </li>
-    <li><b>Step Over Expression (Shift-F8).</b> Executes one method call in an expression.
-        If an expression has multiple method calls, you can use Step Over Expression to step 
-        through an expression and view the value of each method call in the expression in 
-        the Variables window. Each time you use the Step Over Expression command, the debugger
-        advances to the next method call in the expression and the completed method call is underlined. 
-        Step Over Expression behaves like Step Over when there are no additional method calls.</li>
-    <li><b>Step Into (F7).</b> Executes one method call in a source line. 
-        If the line has more than one method call you can choose which method call 
-        to step into by using the arrow keys or mouse in the source editor to select the method call.
-        The selected method call to step into is indicated by a box around the method call in the source editor.
-        The most likely method call in the line is selected by default.</li>
-    <li><b>Step Into Next Method (Shift-F7).</b> Executes one source line. If the source line contains
-  	a call, the IDE stops just before executing the first statement of the routine.
-  	You can also start a debugging session with the Step Into command. Program
-  	execution stops on the first line after the <tt>main</tt> routine before
-  	any changes have been made to the state of the program. </li>
-    <li><b>Step Out (Ctrl-F7).</b> Executes one source line. If the source 
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr> 
+    <th align="left" scope="col"><b>Command</b></th>
+    <th align="left" scope="col"><b>Shortcut</b></th>
+    <th align="left" scope="col" valign="top"><b>Description</b></th>
+  </tr>
+  <tr> 
+    <td valign="top">Debug  &gt; Continue</td>
+    <td valign="top">F5 or <img src="images/Continue.gif" alt="Continue icon"></td>
+    <td valign="top">Runs the program until it reaches the next breakpoint 
+      or until the program terminates normally. </td>
+  </tr>
+  <tr>
+      <td>Debug &gt; Step Over </td> 
+      <td>F8 or <img src="images/StepOver.gif" alt="Step Over icon"></td>
+      <td>Executes one source line. If the source line contains 
+        a call, executes the entire routine without stepping through the individual instructions.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Debug &gt; Step Into</td>
+    <td valign="top">F7 or <img src="images/StepInto.gif" alt="Step Into icon"></td>
+    <td valign="top">Runs the program to the next line and pauses execution before 
+        any changes have been made to the state of the program. </td>
+  </tr>
+  <tr>
+      <td>Debug &gt; Step Out</td> <td>Ctrl-F7 or <img src="images/StepOut.gif" alt="Step out icon"></td>
+      <td> Executes one source line. If the source 
         line is part of a routine, executes the remaining lines of the routine and 
         returns control to the caller of the routine. 
-        The completed method call is highlighted in the Source Editor.</li>
-    
-</ul>
-<!--<p><b>Notes:</b></p>
-<ul>
-  <li>By default, the IDE steps over all calls to JDK classes. To step into JDK 
-    classes when debugging, choose Window  &gt; Debugging &gt;  
-    Sources (Alt-Shift-8). The sources window lists all of the source directories 
-    on your project classpath. Check the checkbox for the JDK sources to let the 
-    debugger step into the JDK sources. </li>
-    
-</ul>-->
+        The completed method call is highlighted in the Source Editor.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Debug  &gt; Run to Cursor</td>
+    <td valign="top">F4 or <img src="images/RunToCursor.gif" alt="Run to Cursor icon"></td>
+    <td valign="top">Runs the program to the cursor location in the Source Editor 
+      and pauses the program. The file you have selected in the Source Editor 
+      must be called from the main class of the main project.</td>
+  </tr>
+</table>
 
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="debug_expressionstep.html">Stepping Through an Expression</a></dd>
     <dd><a href="breakpoint_php.html">PHP Breakpoints in NetBeans IDE</a></dd>
-    <dd><a href="debug_local.html">Starting a Local Debugging Session</a></dd>
+    <dd><a href="debug_local.html">Starting a Debugging Session</a></dd>
     <dd><a href="debug_remote.html">Remote Debugging and Path Mapping</a></dd>
 </dl>
 
