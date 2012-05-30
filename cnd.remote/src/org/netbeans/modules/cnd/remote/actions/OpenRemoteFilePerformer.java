@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.actions;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import java.awt.event.ActionListener;
+import org.netbeans.modules.cnd.remote.actions.base.RemoteActionPerformer;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-@ActionID(id = "org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction", category = "Project")
-@ActionRegistration(iconInMenu = true, displayName = "#OpenRemoteProjectAction.submenu.title")
-@ActionReferences({
-    //@ActionReference(path = "Menu/File", position = 520),
-    @ActionReference(path = "Toolbars/Remote", position = 2000)
-})
-public class OpenRemoteProjectAction extends RemoteOpenActionBase {
-
-    private ImageIcon icon;
-    
-    public OpenRemoteProjectAction() {
-        super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title"));
-        icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openProject.png", false); //NOI18N
-        putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openProject.png"); //NOI18N
-    }
+@ServiceProvider(path="CND/Toobar/Services/OpenRemoteFile", service=ActionListener.class)
+public class OpenRemoteFilePerformer extends RemoteActionPerformer {
 
     @Override
-    protected Icon getIcon() {
-        return icon;
-    }
-
-    @Override
-    protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title");
-    }
-
-    @Override
-    protected String getItemTitle(String record) {
-        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.item.title", record);
-    }        
-
-    @Override
-    protected String getPerformerID() {
-        return "CND/Toobar/Services/OpenRemoteProject";
+    protected void actionPerformedRemote(ExecutionEnvironment env) {
+        if (env.isLocal()) {
+            return;
+        }
+        RemoteOpenHelper.openFile(env);
     }
 }
