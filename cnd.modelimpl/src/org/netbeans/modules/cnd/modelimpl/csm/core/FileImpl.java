@@ -494,11 +494,9 @@ public final class FileImpl implements CsmFile,
             }
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
-            boolean tryPartialReparse = false;
-            boolean triggerParsingActivity = true;
+            boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
+            boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
-                triggerParsingActivity = false;
-                tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
                 handlers = getPreprocHandlers();
             }
             long time;
