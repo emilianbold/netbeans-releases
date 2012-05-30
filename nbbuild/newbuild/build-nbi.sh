@@ -62,7 +62,7 @@ fi
 
 cd $NB_ALL/installer/infra/build
 
-bash build.sh"
+bash build.sh
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
