@@ -126,7 +126,7 @@ public class HtmlBrowser extends JPanel {
     final Component browserComponent;
     private JPanel head;
     private RequestProcessor rp = new RequestProcessor();
-    private final JToolBar extraToolbar;
+    private final Component extraToolbar;
 
     // init ......................................................................
 
@@ -170,7 +170,7 @@ public class HtmlBrowser extends JPanel {
      * toolbar with location field and back/forward buttons.
      * @since 7.47
     */
-    public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine, JToolBar extraToolbar) {
+    public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine, Component extraToolbar) {
         Impl impl = null;
         Component comp = null;
 
