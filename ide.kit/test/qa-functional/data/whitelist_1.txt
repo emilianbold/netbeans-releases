@@ -1,3 +1,6 @@
+#213223
+org.netbeans.modules.testng.TestNGEntityResolver
+
 #213036
 org.netbeans.modules.cnd.api.remote.PathMap
 org.netbeans.modules.cnd.api.remote.ServerList
