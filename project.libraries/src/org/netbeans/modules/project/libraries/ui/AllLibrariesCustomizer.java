@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
 import static org.netbeans.modules.project.libraries.ui.Bundle.*;
@@ -59,10 +60,11 @@ import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
-class AllLibrariesCustomizer extends javax.swing.JPanel {
+class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
     
     private org.netbeans.modules.project.libraries.ui.LibrariesCustomizer librariesCustomizer;
 
@@ -75,6 +77,10 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
 
     public boolean apply() {
         return librariesCustomizer.apply();
+    }
+
+    @Override public HelpCtx getHelpCtx() {
+        return librariesCustomizer.getHelpCtx();
     }
     
     @Messages("LABEL_Global_Libraries=Global Libraries")
