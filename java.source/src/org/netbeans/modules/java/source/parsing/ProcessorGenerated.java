@@ -80,7 +80,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     private final boolean writeable;
-    private static final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
+    private final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
             new HashMap<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>>();
     private ClasspathInfo owner;
     private ClassPath userSources;
@@ -112,6 +112,9 @@ public final class ProcessorGenerated extends TransactionContext.Service {
          @NonNull final ClassPath aptSources) {
         Parameters.notNull("owner", owner);             //NOI18N
         Parameters.notNull("userSources", userSources); //NOI18N
+        if (!writeable) {
+            return;
+        }
         if (this.owner != null) {
             throw new IllegalStateException(MessageFormat.format(
                 "Previous owner: {0}({1}), New owner: {2}({3})",                //NOI18N
@@ -122,10 +125,6 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         }
         assert this.userSources == null;
         assert this.aptSources == null;
-        
-        if (!writeable) {
-            return;
-        }
         
         this.userSources = userSources;
         this.aptSources = aptSources;

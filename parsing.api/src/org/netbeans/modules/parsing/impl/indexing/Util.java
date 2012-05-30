@@ -148,11 +148,14 @@ public final class Util {
     public static URL resolveUrl(
             @NonNull final URL root,
             @NonNull final String relativePath,
-            @NullAllowed final Boolean isDirectory) throws MalformedURLException {
+            @NullAllowed Boolean isDirectory) throws MalformedURLException {
         try {
             if ("file".equals(root.getProtocol())) { //NOI18N
-                // The assertion is needed for the perf. optimization bellow, making sure the file is not a directory
-                assert isDirectory == Boolean.FALSE && !relativePath.endsWith(File.separator);
+                if (isDirectory == Boolean.FALSE && relativePath.charAt(relativePath.length()-1) == File.separatorChar) {
+                    //issue #213032: AE Happenes when I try to delete a file named "\" (without quotes)
+                    isDirectory = null;
+                }
+                final Boolean isDirectoryFin = isDirectory;
                 // Performance optimization for File.toURI() which calls this method
                 // and the original implementation calls into native method
                 return new File(new File(root.toURI()), relativePath) {
@@ -168,9 +171,9 @@ public final class Util {
                                                             
                     @Override
                     public boolean isDirectory() {
-                        return isDirectory == null ?
+                        return isDirectoryFin == null ?
                             super.isDirectory() :
-                            isDirectory;
+                            isDirectoryFin;
                     }
                 }.toURI().toURL();
             } else {
