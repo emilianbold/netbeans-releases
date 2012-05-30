@@ -44,12 +44,7 @@
 
 package org.openide.awt;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -58,27 +53,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import javax.swing.*;
+import org.openide.util.*;
 
 /**
 * Object that provides viewer for HTML pages.
@@ -115,8 +95,8 @@ public class HtmlBrowser extends JPanel {
     /** currently used implementation of browser */
     final Impl browserImpl;
 
-    /** true = do not listen on changes of URL on cbLocation */
-    private boolean everythinkIListenInCheckBoxIsUnimportant = false;
+    /** true = ignore changes in location field */
+    private boolean ignoreChangeInLocationField = false;
 
     /** toolbar visible property */
     private boolean toolbarVisible = false;
@@ -146,6 +126,7 @@ public class HtmlBrowser extends JPanel {
     final Component browserComponent;
     private JPanel head;
     private RequestProcessor rp = new RequestProcessor();
+    private final JToolBar extraToolbar;
 
     // init ......................................................................
 
@@ -169,12 +150,27 @@ public class HtmlBrowser extends JPanel {
     /**
     * Creates new html browser.
      *
-     * @param fact Factory that is used for creation. If null is passed it searches for 
+     * @param fact Factory that is used for creation. If null is passed it searches for
      *             a factory providing displayable component.
      * @param toolbar visibility of toolbar
      * @param statusLine visibility of statusLine
     */
     public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine) {
+        this( fact, toolbar, statusLine, null );
+    }
+
+    /**
+    * Creates new html browser.
+     *
+     * @param fact Factory that is used for creation. If null is passed it searches for 
+     *             a factory providing displayable component.
+     * @param toolbar visibility of toolbar
+     * @param statusLine visibility of statusLine
+     * @param extraToolbar Additional toolbar to be displayed under the default
+     * toolbar with location field and back/forward buttons.
+     * @since 7.47
+    */
+    public HtmlBrowser(Factory fact, boolean toolbar, boolean statusLine, JToolBar extraToolbar) {
         Impl impl = null;
         Component comp = null;
 
@@ -203,6 +199,7 @@ public class HtmlBrowser extends JPanel {
 
         browserImpl = impl;
         browserComponent = comp;
+        this.extraToolbar = extraToolbar;
 
         setLayout(new BorderLayout(0, 2));
 
@@ -375,8 +372,11 @@ public class HtmlBrowser extends JPanel {
         head.add(txtLocation, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,4), 0, 0));
         head.add(bReload, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,4), 0, 0));
         head.add(bStop, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+        if( null != extraToolbar ) {
+            head.add(extraToolbar, new GridBagConstraints(0, 1, 5, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,0,0,0), 0, 0));
+        }
 
-        head.setBorder( BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        head.setBorder( BorderFactory.createEmptyBorder(8, 10, null == extraToolbar ? 8 : 3, 10));
 
         if (browserImpl != null) {
             bBack.setEnabled(browserImpl.isBackward());
@@ -463,6 +463,7 @@ public class HtmlBrowser extends JPanel {
         class URLSetter implements Runnable {
             private boolean sameHosts = false;
 
+            @Override
             public void run() {
                 if (!SwingUtilities.isEventDispatchThread()) {
                     if ("nbfs".equals(url.getProtocol())) { // NOI18N
@@ -594,13 +595,13 @@ public class HtmlBrowser extends JPanel {
      */
     private void updateLocationBar() {
         if (toolbarVisible) {
-            everythinkIListenInCheckBoxIsUnimportant = true;
+            ignoreChangeInLocationField = true;
 
             String url = browserImpl.getLocation();
 
             txtLocation.setText(url);
 
-            everythinkIListenInCheckBoxIsUnimportant = false;
+            ignoreChangeInLocationField = false;
         }
     }
 
@@ -675,6 +676,7 @@ public class HtmlBrowser extends JPanel {
         /**
         * Listens on changes in HtmlBrowser.Impl.
         */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String property = evt.getPropertyName();
 
@@ -702,16 +704,19 @@ public class HtmlBrowser extends JPanel {
                 bForward.setEnabled(browserImpl.isForward());
             } else if (property.equals(Impl.PROP_BACKWARD) && (bBack != null)) {
                 bBack.setEnabled(browserImpl.isBackward());
+            } else if (property.equals(Impl.PROP_LOADING) && (bStop != null)) {
+                bStop.setEnabled(((Boolean)evt.getNewValue()).booleanValue());
             }
         }
 
         /**
         * Listens on changes in HtmlBrowser visual components.
         */
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == txtLocation) {
                 // URL manually changed
-                if (everythinkIListenInCheckBoxIsUnimportant) {
+                if (ignoreChangeInLocationField) {
                     return;
                 }
 
@@ -982,6 +987,7 @@ public class HtmlBrowser extends JPanel {
         public TrivialURLDisplayer() {
         }
 
+        @Override
         public void showURL(URL u) {
             if (Desktop.isDesktopSupported()) {
                 Desktop d = Desktop.getDesktop();
