@@ -119,19 +119,19 @@ public class RemoteHostAction extends CallableSystemAction implements ContextAwa
     private void initPerformer() {
         assert SwingUtilities.isEventDispatchThread();
         if (performer == null) {
-            performer = Lookups.forPath("CND/Toobar/Services/RemoteHost").lookup(ActionListener.class);
-            performer.actionPerformed(new ActionEvent(RemoteHostAction.this, 0, "performerActivated"));
+            performer = Lookups.forPath("CND/Toobar/Services/RemoteHost").lookup(ActionListener.class); // NOI18N
+            performer.actionPerformed(new ActionEvent(RemoteHostAction.this, 0, "performerActivated")); // NOI18N
         }
     }
     
     public @Override
     HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.cnd.remote.projectui.toolbar.RemoteHostAction");
+        return new HelpCtx("org.netbeans.modules.cnd.remote.projectui.toolbar.RemoteHostAction"); // NOI18N
     }
 
     public @Override
     String getName() {
-        return NbBundle.getMessage(RemoteHostAction.class, "RemoteHostAction.label");
+        return NbBundle.getMessage(RemoteHostAction.class, "RemoteHostAction.label"); // NOI18N
     }
 
     public @Override

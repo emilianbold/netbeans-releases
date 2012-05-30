@@ -118,7 +118,7 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
         assert SwingUtilities.isEventDispatchThread();
         if (peformer == null) {
             peformer = Lookups.forPath(getPerformerID()).lookup(ActionListener.class);
-            peformer.actionPerformed(new ActionEvent(RemoteOpenActionBase.this, 0, "performerActivated"));
+            peformer.actionPerformed(new ActionEvent(RemoteOpenActionBase.this, 0, "performerActivated")); // NOI18N
         }
     }
     

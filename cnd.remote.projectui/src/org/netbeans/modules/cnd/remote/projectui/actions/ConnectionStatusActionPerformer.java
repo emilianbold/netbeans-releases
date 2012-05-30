@@ -82,7 +82,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ("performerActivated".equals(e.getActionCommand())) {
+        if ("performerActivated".equals(e.getActionCommand())) { // NOI18N
             presenter = (ConnectionStatusAction) e.getSource();
             init();
             return;
@@ -99,7 +99,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
         if (ServerList.PROP_DEFAULT_RECORD.equals(evt.getPropertyName())) {
             ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
             boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
-            logger.log(Level.FINE, "change default host {0}, connected {1}", new Object[]{executionEnvironment, connectedTo});
+            logger.log(Level.FINE, "change default host {0}, connected {1}", new Object[]{executionEnvironment, connectedTo}); // NOI18N
             updateStatus(executionEnvironment, connectedTo);
         }
     }
@@ -107,7 +107,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     public void connected(ExecutionEnvironment env) {
         ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (env.equals(executionEnvironment)) {
-            logger.log(Level.FINE, "change state host {0}, connected {1}", new Object[]{executionEnvironment, true});
+            logger.log(Level.FINE, "change state host {0}, connected {1}", new Object[]{executionEnvironment, true}); // NOI18N
             updateStatus(executionEnvironment, true);
         }
     }
@@ -116,7 +116,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     public void disconnected(ExecutionEnvironment env) {
         ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (env.equals(executionEnvironment)) {
-            logger.log(Level.FINE, "change state host {0}, connected {1}", new Object[]{executionEnvironment, false});
+            logger.log(Level.FINE, "change state host {0}, connected {1}", new Object[]{executionEnvironment, false}); // NOI18N
             updateStatus(executionEnvironment, false);
         }
     }

@@ -100,7 +100,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if ("performerActivated".equals(e.getActionCommand())) {
+        if ("performerActivated".equals(e.getActionCommand())) { // NOI18N
             if (presenter == null) {
                 presenter = (RemoteHostAction) e.getSource();
                 hostListCombo = presenter.hostListCombo;
@@ -115,7 +115,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
         if (hostListCombo == null) {
             return;
         }
-        LOGGER.fine("initConfigListCombo");
+        LOGGER.fine("initConfigListCombo"); // NOI18N
         hostListCombo.addPopupMenuListener(new PopupMenuListener() {
 
             private Component prevFocusOwner = null;
@@ -171,7 +171,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
     }
 
     private synchronized void hostsListChanged(Collection<? extends ServerRecord> records) {
-        LOGGER.log(Level.FINE, "hostsListChanged: {0}", records);
+        LOGGER.log(Level.FINE, "hostsListChanged: {0}", records); // NOI18N
         if (records == null) {
             EventQueue.invokeLater(new Runnable() {
 
@@ -197,7 +197,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
     }
 
     private synchronized void defaultHostChanged(final ServerRecord record) {
-        LOGGER.log(Level.FINE, "defaultHostChanged: {0}", record);
+        LOGGER.log(Level.FINE, "defaultHostChanged: {0}", record); // NOI18N
         EventQueue.invokeLater(new Runnable() {
 
             public @Override
@@ -226,7 +226,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
 
             @Override
             public void run() {
-                LOGGER.log(Level.FINE, "activeHostSelected: {0}", record);
+                LOGGER.log(Level.FINE, "activeHostSelected: {0}", record); // NOI18N
                 ServerList.setDefaultRecord(record);
             }
         });
@@ -311,7 +311,7 @@ public class RemoteHostActionPerformer implements ActionListener, PropertyChange
                 setBorder(defaultBorder);
             } else if (value == CUSTOMIZE_ENTRY) {
                 label = org.openide.awt.Actions.cutAmpersand(
-                        NbBundle.getMessage(RemoteHostActionPerformer.class, "ActiveHost.customize"));
+                        NbBundle.getMessage(RemoteHostActionPerformer.class, "ActiveHost.customize")); // NOI18N
                 setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(1, 0, 0, 0,
                         UIManager.getColor("controlDkShadow")), defaultBorder)); //NOI18N

@@ -74,7 +74,7 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
     private ImageIcon icon;
     
     public OpenRemoteFileAction() {
-        super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"));
+        super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title")); //NOI18N
         icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openFile.png", false); //NOI18N
         putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openFile.png"); //NOI18N
     }
@@ -86,16 +86,16 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase {
 
     @Override
     protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title");
+        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"); //NOI18N
     }
 
     @Override
     protected String getItemTitle(String record) {
-        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.item.title", record);
+        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.item.title", record); //NOI18N
     }        
 
     @Override
     protected String getPerformerID() {
-        return "CND/Toobar/Services/OpenRemoteFile";
+        return "CND/Toobar/Services/OpenRemoteFile"; //NOI18N
     }
 }

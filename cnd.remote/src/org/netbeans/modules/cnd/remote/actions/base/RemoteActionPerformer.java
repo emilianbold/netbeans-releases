@@ -76,7 +76,7 @@ public abstract class RemoteActionPerformer implements ActionListener, PropertyC
     
     @Override
     public final void actionPerformed(ActionEvent e) {
-        if (e != null && "performerActivated".equals(e.getActionCommand())) {
+        if (e != null && "performerActivated".equals(e.getActionCommand())) { // NOI18N
             presenter = (RemoteOpenActionBase) e.getSource();
             init();
             return;
@@ -129,7 +129,7 @@ public abstract class RemoteActionPerformer implements ActionListener, PropertyC
         if (subMenu.getItemCount() > 0) {
             subMenu.add(new JSeparator());
         }
-        JMenuItem item = new JMenuItem(NbBundle.getMessage(OpenRemoteProjectAction.class, "LBL_ManagePlatforms_Name"));
+        JMenuItem item = new JMenuItem(NbBundle.getMessage(OpenRemoteProjectAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
         item.putClientProperty(RemoteOpenActionBase.ENV_KEY, null);
         item.addActionListener(this);
         subMenu.add(item);

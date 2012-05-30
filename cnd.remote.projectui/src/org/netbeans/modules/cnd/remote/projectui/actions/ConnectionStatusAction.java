@@ -70,7 +70,7 @@ public class ConnectionStatusAction  extends AbstractAction implements Presenter
     private ActionListener performer;
 
     public ConnectionStatusAction() {
-        super(NbBundle.getMessage(ConnectionStatusAction.class, "ConnectionStatusAction.submenu.title"));
+        super(NbBundle.getMessage(ConnectionStatusAction.class, "ConnectionStatusAction.submenu.title")); // NOI18N
         putValue("iconBase","org/netbeans/modules/cnd/remote/projectui/resources/disconnected.png"); //NOI18N
     }
 
@@ -102,8 +102,8 @@ public class ConnectionStatusAction  extends AbstractAction implements Presenter
     private void initPerformer() {
         assert SwingUtilities.isEventDispatchThread();
         if (performer == null) {
-            performer = Lookups.forPath("CND/Toobar/Services/ConnectionStatus").lookup(ActionListener.class);
-            performer.actionPerformed(new ActionEvent(ConnectionStatusAction.this, 0, "performerActivated"));
+            performer = Lookups.forPath("CND/Toobar/Services/ConnectionStatus").lookup(ActionListener.class); // NOI18N
+            performer.actionPerformed(new ActionEvent(ConnectionStatusAction.this, 0, "performerActivated")); // NOI18N
         }
     }
 }

@@ -76,16 +76,16 @@ public class NewRemoteProjectAction extends RemoteOpenActionBase {
 
     @Override
     protected String getSubmenuTitle() {
-        return NbBundle.getMessage(NewRemoteProjectAction.class, "NewRemoteProjectAction.submenu.title");
+        return NbBundle.getMessage(NewRemoteProjectAction.class, "NewRemoteProjectAction.submenu.title"); // NOI18N
     }
 
     @Override
     protected String getItemTitle(String record) {
-        return NbBundle.getMessage(NewRemoteProjectAction.class, "NewRemoteProjectAction.item.title", record);
+        return NbBundle.getMessage(NewRemoteProjectAction.class, "NewRemoteProjectAction.item.title", record); // NOI18N
     }        
         
     @Override
     protected String getPerformerID() {
-        return "CND/Toobar/Services/NewRemoteProject";
+        return "CND/Toobar/Services/NewRemoteProject"; // NOI18N
     }
 }

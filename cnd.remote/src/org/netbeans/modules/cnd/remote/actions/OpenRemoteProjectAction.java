@@ -67,7 +67,7 @@ public class OpenRemoteProjectAction extends RemoteOpenActionBase {
     private ImageIcon icon;
     
     public OpenRemoteProjectAction() {
-        super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title"));
+        super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title")); //NOI18N
         icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openProject.png", false); //NOI18N
         putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openProject.png"); //NOI18N
     }
@@ -79,16 +79,16 @@ public class OpenRemoteProjectAction extends RemoteOpenActionBase {
 
     @Override
     protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title");
+        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title"); //NOI18N
     }
 
     @Override
     protected String getItemTitle(String record) {
-        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.item.title", record);
+        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.item.title", record); //NOI18N
     }        
 
     @Override
     protected String getPerformerID() {
-        return "CND/Toobar/Services/OpenRemoteProject";
+        return "CND/Toobar/Services/OpenRemoteProject"; //NOI18N
     }
 }
