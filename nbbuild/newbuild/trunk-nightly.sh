@@ -85,9 +85,7 @@ fi
 
 cd $TRUNK_NIGHTLY_DIRNAME
 
-wget --no-proxy http://localhost:8080/job/Fake-Fake/buildWithParameters?TIP=$TIP > /dev/null
-
-bash build-nbi-generic.sh
+bash build-nbi.sh
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
