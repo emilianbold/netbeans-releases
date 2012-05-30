@@ -151,7 +151,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             labels.clear();
             buttons.clear();
 
-            final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true)); //NOI18N
+            final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
             panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
@@ -302,5 +302,9 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             }
         }
         return -1;
+    }
+
+    ImageIcon getIcon() {
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true);
     }
 }

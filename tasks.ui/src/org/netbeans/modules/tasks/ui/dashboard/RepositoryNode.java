@@ -128,7 +128,10 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
             if (panel == null) {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
-                final JLabel iconLabel = new JLabel(getRepositoryIcon()); //NOI18N
+                final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
+                if (!isOpened()) {
+                    iconLabel.setEnabled(false);
+                }
                 panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
                 lblName = new TreeLabel(getRepository().getDisplayName());
@@ -306,7 +309,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         return repository.getQueries();
     }
 
-    ImageIcon getRepositoryIcon() {
+    ImageIcon getIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/remote_repo.png", true);
     }
 
