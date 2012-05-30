@@ -1,3 +1,12 @@
+#213235
+org.netbeans.modules.search.ActionManager
+org.netbeans.modules.search.ActionManager$FindActionManager
+org.netbeans.modules.search.ActionManager$ReplaceActionManager
+org.netbeans.modules.search.FindInFilesAction$Selection
+org.netbeans.modules.search.ReplaceInFilesAction$Selection
+org.netbeans.api.search.SearchHistory
+org.netbeans.api.search.SearchPattern
+
 #213224
 org.netbeans.modules.parsing.impl.indexing.SPIAccessor
 org.netbeans.modules.parsing.impl.indexing.SuspendSupport
