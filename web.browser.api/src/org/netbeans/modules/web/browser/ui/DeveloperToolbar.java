@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.browser.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.*;
@@ -108,7 +109,7 @@ public class DeveloperToolbar {
         group.add( button );
         bar.add( button );
 
-        bar.addSeparator();
+        bar.addSeparator(new Dimension(10,5));
 
         //ZOOM combo box
         DefaultComboBoxModel zoomModel = new DefaultComboBoxModel();
