@@ -5,6 +5,21 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.springframework.web</code-name-base>
             <module-dependencies>
+                <dependency>
+                    <code-name-base>org.springframework.beans</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.apache.commons.httpclient</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <class-path-extension>

@@ -15,26 +15,51 @@
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                <!--dependency>
-                    <code-name-base>org.eclipse.core.jobs</code-name-base>
+                <dependency>
+                    <code-name-base>com.tasktop.c2c.server.common.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.core</code-name-base>
+                    <code-name-base>org.springframework.asm</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <code-name-base>org.springframework.beans</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
+                    <code-name-base>org.springframework.context</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency-->
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.context.support</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.expression</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.security.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.web</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
