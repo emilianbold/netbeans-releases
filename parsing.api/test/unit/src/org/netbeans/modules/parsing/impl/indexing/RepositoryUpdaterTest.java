@@ -73,6 +73,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -88,7 +89,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -105,6 +106,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
@@ -113,6 +115,8 @@ import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.DownloadedIndexPatcher;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -125,6 +129,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -2372,6 +2377,28 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertEquals(1, fooExcPactory.finishedRoots.size());
         assertEquals(this.srcRoot1.toURI(), fooExcPactory.finishedRoots.iterator().next());
     }
+    
+    public void testQuerySupportFromIndexerDoesNotSeeModifiedFiles () throws Exception {
+        final FooQueryIndexerFactory fooQueryPactory = new FooQueryIndexerFactory();
+        
+        RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+                
+        MockMimeLookup.setInstances(MimePath.get(MIME), fooQueryPactory);
+        final ClassPath cp1 = ClassPathSupport.createClassPath(srcRootWithFiles1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(1,fooQueryPactory.maxDepth.get());
+    }
 
 //    public void testVisibilityQueryPerformance() throws Exception {
 //        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
@@ -3157,6 +3184,63 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
         }
     
+    }
+    
+    private static final class FooQueryIndexerFactory extends CustomIndexerFactory {
+        
+        private final AtomicInteger maxDepth = new AtomicInteger();
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return new CustomIndexer() {
+                @Override
+                protected void index(
+                        @NonNull final Iterable<? extends Indexable> files,
+                        @NonNull final Context context) {
+                    assertTrue(RunWhenScanFinishedSupport.isScanningThread());
+                    if (maxDepth.getAndIncrement() == 0) {                        
+                        try {
+                            LayeredDocumentIndex index = LuceneIndexFactory.getDefault().createIndex(context);
+                            index.markKeyDirty(files.iterator().next().getRelativePath());
+                            final QuerySupport qs = QuerySupport.forRoots(
+                                    getIndexerName(),
+                                    getIndexVersion(),
+                                    context.getRoot());
+                            qs.query(
+                                "name", //NOI18N
+                                "",     //NOI18N
+                                QuerySupport.Kind.PREFIX);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            };
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return false;
+        }
+
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+        }
+
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "fooquery";
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+        
     }
 
     private static class EmbIndexerFactory extends EmbeddingIndexerFactory {
