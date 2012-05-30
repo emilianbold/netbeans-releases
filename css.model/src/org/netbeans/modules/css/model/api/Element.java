@@ -53,6 +53,8 @@ import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
  */
 public interface Element {
     
+    public void accept(ModelVisitor modelVisitor);
+    
     public Element getParent();
 
     public void setParent(Element e);

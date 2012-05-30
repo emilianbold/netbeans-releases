@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.*;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
@@ -50,6 +52,7 @@ import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 
@@ -64,7 +67,6 @@ public abstract class ModelElement implements Element {
     protected final Model model;
     private Node node;
     private Element parent;
-    
     //used in there's no document to get the indent from
     private static final String DEFAULT_INDENT = "    "; //NOI18N
 
@@ -75,6 +77,46 @@ public abstract class ModelElement implements Element {
     public ModelElement(Model model, Node node) {
         this(model);
         this.node = node;
+    }
+
+    @Override
+    public void accept(ModelVisitor modelVisitor) {
+        for (int i = 0; i < getElementsCount(); i++) {
+            Element child = getElementAt(i);
+            child.accept(modelVisitor);
+        }
+
+        acceptVisitorGeneric(this, modelVisitor);
+//        modelVisitor.visitElement(this);
+    }
+
+    public void acceptVisitorGeneric(Element element, ModelVisitor modelVisitor) {
+        try {
+            Class<?> elementClass = getModelClass(element);
+            String elementClassSimpleName = elementClass.getSimpleName();
+
+            Class<?> visitorClass = modelVisitor.getClass();
+            StringBuilder sb = new StringBuilder();
+            sb.append("visit"); //NOI18N
+            sb.append(elementClassSimpleName);
+
+//            System.out.println("trying to call ModelVisitor." + sb.toString() + "(" + elementClass.getSimpleName() + ")");
+            
+            Method method = visitorClass.getMethod(sb.toString(), elementClass);
+            method.setAccessible(true);
+            
+            method.invoke(modelVisitor, element);
+        } catch (NoSuchMethodException nsme) {
+            //the visitor doesn't contain such method, delegate to the generic
+            //ModelVisitor.visitElement(...)
+            //XXX ideally the ModelVisitor interface is generated so it contain
+            //all the methods
+            modelVisitor.visitElement(element);
+        } catch (/* NoSuchMethodException, SecurityException,
+                 InstantiationException, IllegalAccessException, IllegalArgumentException, 
+                 InvocationTargetException */Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
@@ -152,7 +194,7 @@ public abstract class ModelElement implements Element {
     private void fireElementRemoved(Element e) {
         //remove the parent
         e.setParent(null);
-        
+
         ModelElementListener.Support.fireElementRemoved(e, getElementListener());
         fireElementChanged();
     }
@@ -161,7 +203,7 @@ public abstract class ModelElement implements Element {
 
     protected final void initChildrenElements() {
         for (Node child : node.children()) {
-            addElement(((ElementFactoryImpl)model.getElementFactory()).createElement(model, child));
+            addElement(((ElementFactoryImpl) model.getElementFactory()).createElement(model, child));
         }
     }
 
@@ -210,12 +252,12 @@ public abstract class ModelElement implements Element {
         Class clazz = getModelClass(e);
         ClassElement ce = new ClassElement(clazz, e);
         ClassElement old = CLASSELEMENTS.set(index, ce);
-        if(old.getElement() != null) {
+        if (old.getElement() != null) {
             //the ClassElement may contain just the placeholder so no element
             fireElementRemoved(old.getElement());
         }
         fireElementAdded(e);
-        
+
         return old == null ? null : old.getElement();
     }
 
@@ -238,14 +280,14 @@ public abstract class ModelElement implements Element {
         }
         return null;
     }
-    
+
     @Override
     public boolean removeElement(Element element) {
         int index = getElementIndex(element);
         if (index == -1) {
             return false;
         }
-        return removeElement(index) != null; 
+        return removeElement(index) != null;
     }
 
     @Override
