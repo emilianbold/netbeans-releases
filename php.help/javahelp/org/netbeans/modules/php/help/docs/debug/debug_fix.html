@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Fixing and Continuing in a Debugging Session</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Fixing and Continuing in a Debugging Session</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p> If you find a problem while debugging, you can use the Apply Code Changes 
+command to fix your source and then continue debugging with the changed code without restarting your program.</p>
+
+<p>It is not possible to use the Apply Code Changes command to do the following:</p>
+<ul>
+<li>Change a modifier of a field, a method, or a class</li>
+<li>Add or remove methods or fields</li>
+<li>Change the hierarchy of classes</li>
+<li>Change classes that have not been loaded into the virtual machine</li>
+</ul>
+
+<p><b>To fix your code:</b></p>
+<ol>
+    <li>From the main menu, choose Debug &gt; Apply Code Changes
+    to recompile and begin repairing your source code.
+    <ul>
+        <li>If there are errors during compilation, nothing is changed in your program. 
+        Edit your source code as needed, then execute the Apply Code Changes command 
+        again.</li> 
+        <li>If there are no errors, the resulting object code is swapped into the currently
+            executing program. However, all calls on the call stack continue running
+            the unfixed code. To use the modified code, you must pop from the call
+            stack any calls that contain modified code. When the calls are reentered,
+            they use the modified code. 
+
+            <p><b>Note:</b> If you  modify the currently running method, the IDE displays
+                an alert box. If you click the Pop Call button, the most recent call is
+                removed from the current call stack. If you click the Leave Call button,
+                the program executes with the original version of the code. If there is only
+        one call in the stack, you cannot pop the call and continue.</p></li>
+    </ul>
+    </li>
+    <li>Continue the program to verify that the fixed version of your code works correctly.</li>
+</ol>
+
+<ul class="note">
+    <li> The Apply Code Changes command does not automatically rebuild 
+      JAR files, executable files, or similar files. You must rebuild these files 
+      if you want to debug them in a new session. 
+    </li> 
+</ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
+    <dd><a href="debug_callstack.html">Using the Call Stack </a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
