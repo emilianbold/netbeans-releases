@@ -42,26 +42,43 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
+import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.jumpto.file.FileProvider;
+import org.netbeans.spi.jumpto.file.FileProviderFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * This is an implementation of DefaultSystemSetting.
  * It provides  
  * @author Leonid Mesnik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class)
-public class DefaultSystemSettingsImpl extends DefaultSystemSettings {    
-    private static AbstractCompiler getDefaultCompiler(NativeFileItem.Language language) {
+@ServiceProviders({
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class),
+@ServiceProvider(service = NativeProjectExecutionProvider.class, path = NativeProjectExecutionProvider.PATH, position = 1000),
+@ServiceProvider(service = NativeFileSearchProvider.class, path = NativeFileSearchProvider.PATH, position = 1000)
+})
+public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements NativeProjectExecutionProvider, NativeFileSearchProvider {
+    private static AbstractCompiler getDefaultCompiler(NativeFileItem.Language language, NativeProject project) {
         PredefinedToolKind kind;
         switch (language) {
             case C:
@@ -76,7 +93,11 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
             default:
                 return null;
         }
-        CompilerSet compilerSet = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(project.getFileSystem());
+        if (env == null) {
+            env = ExecutionEnvironmentFactory.getLocal();
+        }
+        CompilerSet compilerSet = CompilerSetManager.get(env).getDefaultCompilerSet();
         Tool compiler = compilerSet.getTool(kind);
         if (compiler instanceof AbstractCompiler) {
             return (AbstractCompiler)compiler;
@@ -85,8 +106,8 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
     }
 
     @Override
-    public List<String> getSystemIncludes(NativeFileItem.Language language) {
-        AbstractCompiler compiler = getDefaultCompiler(language);
+    public List<String> getSystemIncludes(NativeFileItem.Language language, NativeProject project) {
+        AbstractCompiler compiler = getDefaultCompiler(language, project);
         if (compiler != null) {            
             return Collections.unmodifiableList(compiler.getSystemIncludeDirectories());
         } else {
@@ -95,12 +116,40 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
     }
 
     @Override
-    public List<String> getSystemMacros(NativeFileItem.Language language) {
-        AbstractCompiler compiler = getDefaultCompiler(language);
+    public List<String> getSystemMacros(NativeFileItem.Language language, NativeProject project) {
+        AbstractCompiler compiler = getDefaultCompiler(language, project);
         if (compiler != null) {            
             return Collections.unmodifiableList(compiler.getSystemPreprocessorSymbols());
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public NativeExitStatus execute(NativeProject project, String executable, String[] env, String... args) throws IOException {
+        ExecutionEnvironment ee = FileSystemProvider.getExecutionEnvironment(project.getFileSystem());
+        return NativeProjectProvider.execute(ee, executable, env, args);
+    }
+
+    @Override
+    public String getPlatformName(NativeProject project) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(project.getFileSystem());
+        if (env == null) {
+            env = ExecutionEnvironmentFactory.getLocal();
+        }
+        int platform = CompilerSetManager.get(env).getPlatform();
+        return Platforms.getPlatform(platform).getName();
+    }
+
+    @Override
+    public NativeFileSearch getNativeFileSearch(NativeProject project) {
+        NativeFileSearch search = null;
+        for (FileProviderFactory fpf : Lookup.getDefault().lookupAll(FileProviderFactory.class)) {
+            FileProvider provider = fpf.createFileProvider();
+            if (provider instanceof NativeFileSearch) {
+                search = (NativeFileSearch) provider;
+            }
+        }
+        return search;
     }
 }

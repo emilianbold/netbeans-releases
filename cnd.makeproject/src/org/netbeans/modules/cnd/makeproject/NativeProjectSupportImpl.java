@@ -1,9 +1,7 @@
-package org.netbeans.modules.cnd.api.project;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,26 +37,51 @@ package org.netbeans.modules.cnd.api.project;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject;
+
+import java.io.IOException;
+import org.netbeans.modules.cnd.api.project.NativeFileSearch;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
+import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author thp
+ * @author Vladimir Voskresensky
  */
-public final class NativeExitStatus {
+@ServiceProviders({
+@ServiceProvider(service=NativeProjectExecutionProvider.class, path=NativeProjectExecutionProvider.PATH, position=100),
+@ServiceProvider(service=NativeFileSearchProvider.class, path=NativeFileSearchProvider.PATH, position=100)
+})
+public class NativeProjectSupportImpl implements NativeProjectExecutionProvider, NativeFileSearchProvider {
 
-    public final int exitCode;
-    public final String error;
-    public final String output;
-
-    public NativeExitStatus(int exitCode, String output, String error) {
-        this.exitCode = exitCode;
-        this.error = error;
-        this.output = output;
+    @Override
+    public NativeExitStatus execute(NativeProject project, String executable, String[] env, String... args) throws IOException {
+        if (project instanceof NativeProjectProvider) {
+            return ((NativeProjectProvider)project).execute(executable, env, args);
+        }
+        return null;
     }
 
-    public boolean isOK() {
-        return exitCode == 0;
+    @Override
+    public String getPlatformName(NativeProject project) {
+        if (project instanceof NativeProjectProvider) {
+            return ((NativeProjectProvider) project).getPlatformName();
+        }
+        return null;
     }
+
+    @Override
+    public NativeFileSearch getNativeFileSearch(NativeProject project) {
+        if (project instanceof NativeProjectProvider) {
+            return ((NativeProjectProvider) project).getNativeFileSearch();
+        }
+        return null;
+    }
+
 }

@@ -66,8 +66,9 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.project.NativeExitStatus;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -132,7 +133,7 @@ public class ManDocumentation {
         if (np == null) {
             return "";
         }
-        String platformName = np.getPlatformName();
+        String platformName = NativeProjectSupport.getPlatformName(np);
         File cache = getCacheFile(name, chapter, platformName);
 
         if (cache.exists()) {
@@ -217,11 +218,12 @@ public class ManDocumentation {
     }
 
     private static String createDocumentationForName(String name, int chapter, NativeProject np) throws IOException {
-        NativeExitStatus exitStatus = null;
-        if (np.getPlatformName() == null) {
-            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
-        } else if (np.getPlatformName().contains("Solaris")) { // NOI18N
-            NativeExitStatus es = np.execute("man", new String[]{}, "-l", name); // NOI18N
+        NativeExitStatus exitStatus;
+        String platformName = NativeProjectSupport.getPlatformName(np);
+        if (platformName == null) {
+            exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH}, name); // NOI18N
+        } else if (platformName.contains("Solaris")) { // NOI18N
+            NativeExitStatus es = NativeProjectSupport.execute(np, "man", new String[]{}, "-l", name); // NOI18N
             String section = null;
             String output = es.output;
             int index1 = output.indexOf("(3"); // NOI18N
@@ -236,15 +238,15 @@ public class ManDocumentation {
                 index1 = output.indexOf("(3"); // NOI18N
             }
             if (section != null) {
-                exitStatus = np.execute("man", null, "-s" + section, name); // NOI18N
+                exitStatus = NativeProjectSupport.execute(np, "man", null, "-s" + section, name); // NOI18N
             } else {
-                exitStatus = np.execute("man", null, name); // NOI18N
+                exitStatus = NativeProjectSupport.execute(np, "man", null, name); // NOI18N
             }
         } else {
             // Current host locale is used here, because user possibly wants to see man pages 
             // in locale of his development host, not in remote's host one.
             final String DOT_UTF8 = ".UTF-8";  // NOI18N
-            exitStatus = np.execute("man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH, "LANG=" + Locale.getDefault().toString().trim().replace(DOT_UTF8, "") + DOT_UTF8}, "-S3", name); // NOI18N
+            exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH, "LANG=" + Locale.getDefault().toString().trim().replace(DOT_UTF8, "") + DOT_UTF8}, "-S3", name); // NOI18N
         }
         StringReader sr;
         if (exitStatus != null) {

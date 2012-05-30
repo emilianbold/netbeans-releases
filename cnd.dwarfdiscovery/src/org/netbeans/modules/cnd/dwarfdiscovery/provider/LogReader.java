@@ -75,6 +75,8 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 
 /**
@@ -128,6 +130,17 @@ public class LogReader {
         return null;
     }
 
+    private ExecutionEnvironment getExecutionEnvironment(MakeConfiguration conf) {
+        ExecutionEnvironment env = null;
+        if (conf != null) {
+            env = conf.getDevelopmentHost().getExecutionEnvironment();
+        }
+        if (env == null) {
+            env = ExecutionEnvironmentFactory.getLocal();
+        }
+        return env;
+    }
+    
     private MakeConfiguration getConfiguration(ProjectProxy project) {
         if (project != null && project.getProject() != null) {
             ConfigurationDescriptorProvider pdp = project.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -151,7 +164,7 @@ public class LogReader {
         if (file.exists() && file.canRead()){
             try {
                 MakeConfiguration conf = getConfiguration(this.project);
-                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(conf);
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(getExecutionEnvironment(conf));
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 long length = file.length();
                 long read = 0;
