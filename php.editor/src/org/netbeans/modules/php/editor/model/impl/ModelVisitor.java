@@ -653,7 +653,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(FieldAccess node) {
         Variable field = node.getField();
-        if (field.isDollared()) {
+        if (field.isDollared() || field instanceof ReflectionVariable) {
             scan(field);
         } else {
             occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());

@@ -110,11 +110,6 @@ public final class BookmarkInfo {
     }
 
     public void setName(String name) {
-        for (int i = 0; i < name.length(); i++) {
-            if (!Character.isJavaIdentifierPart(name.charAt(i))) {
-                throw new IllegalArgumentException("name=\"" + name + "\": char at [" + i + "] not allowed"); // NOI18N
-            }
-        }
         this.name = name;
     }
     

@@ -327,14 +327,18 @@ public class DBReadWriteHelper {
                     ps.setDouble(index, numberObj.doubleValue());
                     break;
 
-                case Types.DECIMAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
-                    ps.setDouble(index, numberObj.doubleValue());
+                case Types.BIGINT:
+                    numberObj = (valueObj instanceof Number)
+                            ? (Number) valueObj
+                            : new Long(valueObj.toString());
+                    ps.setLong(index, numberObj.longValue());
                     break;
 
-                case Types.BIGINT:
                 case Types.NUMERIC:
-                    BigDecimal bigDec = new BigDecimal(valueObj.toString());
+                case Types.DECIMAL:
+                    BigDecimal bigDec = (valueObj instanceof BigDecimal)
+                            ? (BigDecimal) valueObj
+                            : new BigDecimal(valueObj.toString());
                     ps.setBigDecimal(index, bigDec);
                     break;
 

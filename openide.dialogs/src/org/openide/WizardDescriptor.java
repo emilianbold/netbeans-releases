@@ -3118,10 +3118,15 @@ public class WizardDescriptor extends DialogDescriptor {
                 StyleSheet css2 = new StyleSheet();
                 Font f = new JList().getFont();
                 int size = f.getSize();
-                css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
-                        .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-                css2.addStyleSheet(css);
-                htmlkit.setStyleSheet(css2);
+                try {
+                    css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
+                            .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                    css2.addStyleSheet(css);
+                    htmlkit.setStyleSheet(css2);
+                } catch( RuntimeException ex ) {
+                    //#213031
+                    Logger.getLogger( WizardDescriptor.class.getName()).log( Level.INFO, "Error while setting up text pane.", ex );
+                }
             }
 
             setEditorKit(htmlkit);

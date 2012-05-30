@@ -77,7 +77,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     private static final Logger LOG = Logger.getLogger(TextSearchHighlighting.class.getName());
     
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.TextSearchHighlighting"; //NOI18N
-    private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID);
+    private static final RequestProcessor RP = new RequestProcessor(LAYER_TYPE_ID, 1, false, false);
     
     private final MimePath mimePath;
     private final JTextComponent component;

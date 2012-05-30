@@ -75,6 +75,7 @@ import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardTy
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -162,6 +163,11 @@ public class JFXProjectGenerator {
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO, type);
                 ProjectManager.getDefault().saveProject(p);
+                if(type != WizardType.SWING) {
+                    JFXGeneratedFilesHelper.generateBuildScriptFromStylesheet(h[0],
+                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        JFXProjectGenerator.class.getResource("resources/build.xsl")); //NOI18N
+                }
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -179,10 +185,9 @@ public class JFXProjectGenerator {
                 createFiles(mainClass, fxmlName, srcFolder, type);
             }
         });
-
         return h[0];
     }
-
+   
     private static ReferenceHelper getReferenceHelper(Project p) {
         try {
             return (ReferenceHelper) p.getClass().getMethod("getReferenceHelper").invoke(p); // NOI18N
@@ -281,6 +286,11 @@ public class JFXProjectGenerator {
                             }
                             createJfxExtension(p, dirFO, type);
                             ProjectManager.getDefault().saveProject(p);
+                            if(type != WizardType.SWING) {
+                                JFXGeneratedFilesHelper.generateBuildScriptFromStylesheet(h[0],
+                                    GeneratedFilesHelper.BUILD_XML_PATH,
+                                    JFXProjectGenerator.class.getResource("resources/build.xsl")); //NOI18N
+                            }
                             copyRequiredLibraries(h[0], refHelper);
                             ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             return null;
@@ -315,6 +325,9 @@ public class JFXProjectGenerator {
                 final Project p = ProjectManager.getDefault().findProject(dirFO);
                 createJfxExtension(p, dirFO, WizardType.PRELOADER);
                 ProjectManager.getDefault().saveProject(p);
+                JFXGeneratedFilesHelper.generateBuildScriptFromStylesheet(h[0],
+                    GeneratedFilesHelper.BUILD_XML_PATH,
+                    JFXProjectGenerator.class.getResource("resources/build.xsl")); //NOI18N
                 final ReferenceHelper refHelper = getReferenceHelper(p);
                 try {
                     ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {

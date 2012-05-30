@@ -204,5 +204,5 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
         //this.kind = PersistentUtils.readExpressionKind(input);
         this.operands = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(0), input);
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }      
+    }
 }
