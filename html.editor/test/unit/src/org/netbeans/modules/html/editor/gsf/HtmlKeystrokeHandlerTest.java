@@ -93,9 +93,9 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
         //                   0          1         2
 
         //test tag with attribute
-        assertLogicalRanges("<div align='c|enter'/><a>text</a></div>", new int[][]{{0,38}});
+        assertLogicalRanges("<div align='c|enter'/><a>text</a></div>", new int[][]{{0,38}, {0,21}});
         //                   0123456789012 34567890123456789012345678
-        
+        //                   0         1          2         3
         assertLogicalRanges("<div align='center'/>te|xt</div>", new int[][]{ {21, 25}, {0,31} });
         //                   01234567890123456789012 3456789012345678
 
