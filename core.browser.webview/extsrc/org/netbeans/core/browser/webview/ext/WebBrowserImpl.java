@@ -704,4 +704,22 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             }
         });
     }
+
+    void resize( final double width, final double height ) {
+        Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.resize( width, height );
+            }
+        });
+    }
+
+    void autofit() {
+        Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                browser.autosize();
+            }
+        });
+    }
 }

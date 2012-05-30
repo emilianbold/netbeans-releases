@@ -44,12 +44,10 @@ package org.netbeans.modules.web.browser.ui;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
+import javax.swing.*;
 import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Toolbar with web-developer tools.
@@ -77,6 +75,40 @@ public class DeveloperToolbar {
 
     public void intialize( Lookup context ) {
         this.context = context;
+
+        ButtonGroup group = new ButtonGroup();
+
+        AbstractButton button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_DESKTOP"),
+                1280, 1024, context );
+        group.add( button );
+        bar.add( button );
+
+        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_TABLET_LANDSCAPE"),
+                1024, 768, context );
+        group.add( button );
+        bar.add( button );
+
+        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_TABLET_PORTRAIT"),
+                768, 1024, context );
+        group.add( button );
+        bar.add( button );
+
+        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_SMARTPHONE_LANDSCAPE"),
+                480, 320, context );
+        group.add( button );
+        bar.add( button );
+
+        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_SMARTPHONE_PORTRAIT"),
+                320, 480, context );
+        group.add( button );
+        bar.add( button );
+
+        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_AUTO"),
+                -1, -1, context, true );
+        group.add( button );
+        bar.add( button );
+
+        bar.addSeparator();
 
         //ZOOM combo box
         DefaultComboBoxModel zoomModel = new DefaultComboBoxModel();
@@ -121,7 +153,7 @@ public class DeveloperToolbar {
             double zoom = Double.parseDouble( zoomFactor );
             zoom = Math.abs( zoom )/100;
             zoomable.zoom( zoom );
-            return (int)(100*zoom) + "%";
+            return (int)(100*zoom) + "%"; //NOI18N
         } catch( NumberFormatException nfe ) {
             //ignore
         }

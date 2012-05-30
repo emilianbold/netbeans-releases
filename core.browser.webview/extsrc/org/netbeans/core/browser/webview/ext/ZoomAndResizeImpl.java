@@ -64,7 +64,11 @@ class ZoomAndResizeImpl implements Zoomable, Resizable {
 
     @Override
     public void resize( int width, int height ) {
-        throw new UnsupportedOperationException( "Not supported yet." );
+        browser.resize( width, height );
     }
 
+    @Override
+    public void autofit() {
+        browser.autofit();
+    }
 }

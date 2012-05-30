@@ -39,23 +39,78 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.browser.ui;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import javax.swing.AbstractButton;
+import javax.swing.Icon;
+import javax.swing.JToggleButton;
+import org.netbeans.modules.web.browser.spi.Resizable;
+import org.openide.util.Lookup;
 
 /**
- * Resizes browser window to given dimensions.
+ * Button to resize the browser window.
  * 
  * @author S. Aubrecht
  */
-public interface Resizable {
-    /**
-     * Resize browser window to given dimensions (in pixels).
-     * @param width 
-     * @param height 
-     */
-    public void resize( int width, int height );
+class BrowserResizeButton {
 
-    /**
-     * Resize the browser to fit its top-level window.
-     */
-    public void autofit();
+    private BrowserResizeButton() {
+    }
+
+    static AbstractButton create( String label, int width, int height, Lookup context ) {
+        return create( label, width, height, context, false );
+    }
+
+    static AbstractButton create( String label, final int width, final int height, final Lookup context, boolean selected ) {
+        Icon icon = new DummyIcon();
+        JToggleButton res = new JToggleButton( icon, selected );
+        res.setToolTipText( label );
+        res.setEnabled( null != context.lookup( Resizable.class ) );
+        res.addItemListener( new ItemListener() {
+            @Override
+            public void itemStateChanged( ItemEvent e ) {
+                if( e.getStateChange() != ItemEvent.SELECTED )
+                    return;
+
+                doResize( width, height, context );
+            }
+        });
+        return res;
+    }
+
+    private static void doResize( final int width, final int height, final Lookup context ) {
+        Resizable resizable = context.lookup( Resizable.class );
+        if( null == resizable )
+            return;
+
+        if( width < 0 || height < 0 ) {
+            resizable.autofit();
+        } else {
+            resizable.resize( width, height );
+        }
+    }
+
+    private static class DummyIcon implements Icon {
+
+        @Override
+        public void paintIcon( Component c, Graphics g, int x, int y ) {
+            g.setColor( Color.red );
+            g.fillRect( x, y, getIconWidth(), getIconHeight() );
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 16;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 16;
+        }
+    }
 }
