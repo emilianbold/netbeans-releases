@@ -1,3 +1,14 @@
+#213224
+org.netbeans.modules.parsing.impl.indexing.SPIAccessor
+org.netbeans.modules.parsing.impl.indexing.SuspendSupport
+org.netbeans.modules.parsing.impl.indexing.SuspendSupport$DefaultImpl
+org.netbeans.modules.parsing.impl.indexing.SuspendSupport$NopImpl
+org.netbeans.modules.parsing.impl.indexing.SuspendSupport$SuspendStatusImpl
+org.netbeans.modules.parsing.spi.indexing.Indexable
+org.netbeans.modules.parsing.spi.indexing.Indexable$MyAccessor
+org.netbeans.modules.parsing.spi.indexing.PathRecognizer
+org.netbeans.modules.parsing.spi.indexing.SuspendStatus
+
 #213223
 org.netbeans.modules.testng.TestNGEntityResolver
 
