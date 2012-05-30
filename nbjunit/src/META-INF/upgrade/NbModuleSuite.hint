@@ -2,3 +2,8 @@ org.netbeans.junit.NbModuleSuite.create($c) :: $c instanceof org.netbeans.junit.
 =>
 $c.suite()
 ;;
+
+org.netbeans.junit.NbModuleSuite.emptyConfiguration().addTest($c) :: $c instanceof java.lang.Class< ? extends junit.framework.TestCase>
+=>
+org.netbeans.junit.NbModuleSuite.createConfiguration($c)
+;;
