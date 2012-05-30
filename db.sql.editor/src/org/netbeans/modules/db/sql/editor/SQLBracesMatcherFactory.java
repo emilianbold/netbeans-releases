@@ -39,39 +39,22 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.dashboard;
+package org.netbeans.modules.db.sql.editor;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.ImageUtilities;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
+import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
-public class ClosedRepositoryNode extends RepositoryNode {
-
-    public ClosedRepositoryNode(Repository repository, boolean loaded) {
-        super(repository, loaded, false);
-    }
+/**
+ *
+ * @author jhavlin
+ */
+public class SQLBracesMatcherFactory implements BracesMatcherFactory {
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    void updateContent() {
-    }
-
-    @Override
-    public boolean isOpened() {
-        return false;
-    }
-
-    @Override
-    Collection<Query> getQueries() {
-        return Collections.emptyList();
+    public BracesMatcher createMatcher(MatcherContext context) {
+        return BracesMatcherSupport.characterMatcher(context, -1, -1,
+                '{', '}', '(', ')', '[', ']');
     }
 }
