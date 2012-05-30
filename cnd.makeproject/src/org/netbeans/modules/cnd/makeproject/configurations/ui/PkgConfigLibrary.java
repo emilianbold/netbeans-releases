@@ -59,10 +59,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -75,10 +75,10 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
     private final List<PackageConfiguration> avaliablePkgConfigs;
 
     /** Creates new form PkgConfigLibrary */
-    public PkgConfigLibrary(MakeConfiguration makeConfiguration) {
+    public PkgConfigLibrary(ExecutionEnvironment env) {
         initComponents();
 	list.setCellRenderer(myListCellRenderer);
-        PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfiguration);
+        PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env);
         TreeMap<String, PackageConfiguration> map = new TreeMap<String, PackageConfiguration>();
         for(PackageConfiguration conf : pkgConfig.getAvaliablePkgConfigs()) {
             map.put(conf.getName(), conf);

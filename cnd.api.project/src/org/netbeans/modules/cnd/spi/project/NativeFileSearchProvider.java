@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,30 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.spi.project;
 
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
-
-import java.util.List;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
- * Detect additional include paths and macros from compiler options.
- * For example:
- * Convert `pkg-config --cflags gtk-2.0` to list of paths and macros
- * Convert -xopenmp to _OPENMP macro
- * 
- * @author Alexander Simon
+ *
+ * @author Vladimir Voskresensky
  */
-public interface UserOptionsProvider {
-    List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserUndefinedMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch(ExecutionEnvironment env);
+public interface NativeFileSearchProvider {
+    /**
+     * constant to register services
+     */
+    public static String PATH = "CND/NativeFileSearchProvider"; // NOI18N
+
+    /**
+     * *
+     * Searcher for find project file by name
+     *
+     * @return searcher, or null if can not provide any info
+     */
+    NativeFileSearch getNativeFileSearch(NativeProject project);
 }

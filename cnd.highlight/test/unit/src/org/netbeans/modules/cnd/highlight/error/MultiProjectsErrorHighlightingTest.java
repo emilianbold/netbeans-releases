@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -61,6 +62,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
     @Override
     protected void setUp() throws Exception {
         System.setProperty("cnd.csm.errors.async", "false");
+        System.setProperty("cnd.test.iz210898", "true");
         Logger logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager");
         if (logger != null) {
             logger.setLevel(Level.OFF);
@@ -152,14 +154,16 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
 
     public void testRedFilesWhenNoReparseProject210898() throws Exception {
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
-        CsmModel model = super.getModel();
-        assertNotNull("null model", model);
-        performStaticTest("first/first.cpp");
-        performStaticTest("fifth/fifth.cpp");
+        doTestRedFilesWhenReopenProject210898(false);
     }
 
-    private static final boolean ENABLED = false;
-    public void testRedFilesWhenReopenProject210898() throws Exception {
+    public void testRedFilesWhenReparseAndReopenProject210898() throws Exception {
+        // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
+        doTestRedFilesWhenReopenProject210898(true);
+    }
+
+    private void doTestRedFilesWhenReopenProject210898(boolean reparse) throws Exception {
+        int parseCount = FileImpl.getParseCount();
         assertTrue("reposiroty Must Be ON " + TraceFlags.PERSISTENT_REPOSITORY, TraceFlags.PERSISTENT_REPOSITORY);
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
         CsmModel model = super.getModel();
@@ -171,17 +175,22 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         // fifth project defines macro which defines extra classes
         CsmProject macroDefinedProject = super.getProject(PROJECT_FIFTH);
         assertNotNull("null project for first", macroDefinedProject);
+        assertEquals("reparse was detected ", parseCount, FileImpl.getParseCount());
         // close project which uses this extra classes
         super.closeProject(PROJECT_FIFTH);
 //        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
-        if (ENABLED) {
+//        assertEquals("reparse was detected ", parseCount, FileImpl.getParseCount());
+        if (reparse) {
             // reparse all projects
-            super.reparseAllProjects(4);
+            super.reparseAllProjects();
         }
 //        firstPrj = super.getProject(PROJECT_FIRST);
 //        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
         performStaticTest("first/first.cpp");
-        super.reopenProject(PROJECT_FIFTH);
+        super.reopenProject(PROJECT_FIFTH, true);
         performStaticTest("fifth/fifth.cpp");
+        if (!reparse) {
+//            assertEquals("reparse was detected ", parseCount, FileImpl.getParseCount());
+        }
     }
 }
