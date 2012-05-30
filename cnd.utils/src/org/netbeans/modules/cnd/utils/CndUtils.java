@@ -210,6 +210,10 @@ public class CndUtils {
         return lastAssertion;
     }
 
+    public static void clearLastAssertion() {
+        lastAssertion = null;
+    }
+
     public static void assertAbsolutePathInConsole(String path) {
         if (CndUtils.isDebugMode()) {
             if (! CndPathUtilitities.isPathAbsolute(path)) {
