@@ -44,6 +44,7 @@ package org.netbeans.modules.hibernate.wizards;
 import java.io.File;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.hibernate.HibernateException;
@@ -80,6 +81,7 @@ import org.openide.util.NbBundle;
 public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private Logger logger = Logger.getLogger(HibernateCodeGenWizardDescriptor.class.getName());
     private HibernateCodeGenerationPanel component;
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
@@ -174,10 +176,12 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         try {
             checkConfig(getComponent().getRevengFile());
         } catch (HibernateException e) {
+            logger.log(Level.INFO, "access to hibernate fails.", e);//NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_HibernateError", e.getMessage())); // NOI18N
             return false;
         } catch (Exception e) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_HibernateError", e.getMessage())); // NOI18N
+            logger.log(Level.INFO, "access to hibernate fails.", e);//NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_HibernateError", e.toString())); // NOI18N
             return false;
         }
         
@@ -234,8 +238,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
     }
-    private  boolean checkConfig(FileObject revengFile){
-      //  if(true)return true;
+    private  boolean checkConfig(FileObject revengFile) throws Exception{
         JDBCMetaDataConfiguration cfg = null;
         ReverseEngineeringSettings settings;
         ClassLoader oldClassLoader = null;
@@ -281,8 +284,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
             } catch(HibernateException e) {
                 throw e;
             } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-                throw new HibernateException(e);
+                throw e;
             }
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);

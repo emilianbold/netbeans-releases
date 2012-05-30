@@ -43,11 +43,12 @@ package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
@@ -56,7 +57,6 @@ import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -155,7 +155,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().addTask(getTaskNodes().toArray(new TaskNode[getTaskNodes().size()]));
+            DashboardTopComponent.findInstance().addTask(getTaskNodes());
         }
     }
 
@@ -196,7 +196,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().deleteCategory(getCategoryNodes().toArray(new CategoryNode[getCategoryNodes().size()]));
+            DashboardViewer.getInstance().deleteCategory(getCategoryNodes());
         }
     }
 
@@ -240,13 +240,13 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardTopComponent.findInstance().renameCategory(getCategoryNodes().get(0).getCategory());
+            DashboardTopComponent.findInstance().renameCategory(getCategoryNodes()[0].getCategory());
         }
 
         @Override
         public boolean isEnabled() {
             boolean parent = super.isEnabled();
-            boolean singleNode = getCategoryNodes().size() == 1;
+            boolean singleNode = getCategoryNodes().length == 1;
             return parent && singleNode;
         }
     }
@@ -274,9 +274,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                DashboardViewer.getInstance().removeRepository(repositoryNode);
-            }
+            DashboardViewer.getInstance().removeRepository(getRepositoryNodes());
         }
     }
 
@@ -303,14 +301,14 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Repository repository = getRepositoryNodes().get(0).getRepository();
+            Repository repository = getRepositoryNodes()[0].getRepository();
             RepositoryManager.getInstance().editRepository(repository);
         }
 
         @Override
         public boolean isEnabled() {
             boolean parent = super.isEnabled();
-            boolean singleNode = getRepositoryNodes().size() == 1;
+            boolean singleNode = getRepositoryNodes().length == 1;
             return parent && singleNode;
         }
     }
@@ -338,9 +336,7 @@ public class Actions {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    for (QueryNode queryNode : getQueryNodes()) {
-                        queryNode.getQuery().remove();
-                    }
+                    DashboardViewer.getInstance().deleteQuery(getQueryNodes());
                 }
             });
         }
@@ -384,16 +380,29 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
-            for (TreeListNode treeListNodes : selectedNodes) {
-                if (treeListNodes instanceof RepositoryNode) {
-                    new Actions.RemoveRepositoryAction((RepositoryNode) treeListNodes).actionPerformed(e);
-                } else if (treeListNodes instanceof CategoryNode) {
-                    new Actions.DeleteCategoryAction((CategoryNode) treeListNodes).actionPerformed(e);
-                } else if (treeListNodes instanceof QueryNode) {
-                    new Actions.DeleteQueryAction((QueryNode) treeListNodes).actionPerformed(e);
-                } else if (treeListNodes instanceof TaskNode) {
-                    new Actions.RemoveTaskAction((TaskNode) treeListNodes).actionPerformed(e);
+            Map<String, List<TreeListNode>> map = new HashMap<String, List<TreeListNode>>();
+            for (TreeListNode treeListNode : selectedNodes) {
+                List<TreeListNode> list = map.get(treeListNode.getClass().getName());
+                if (list == null) {
+                    list = new ArrayList<TreeListNode>();
                 }
+                list.add(treeListNode);
+                map.put(treeListNode.getClass().getName(), list);
+            }
+
+            for (String key : map.keySet()) {
+                List<TreeListNode> value = map.get(key);
+                Action action = null;
+                if (key.equals(RepositoryNode.class.getName())) {
+                    action = new Actions.RemoveRepositoryAction(value.toArray(new RepositoryNode[value.size()]));
+                } else if (key.equals(CategoryNode.class.getName())) {
+                    action = new Actions.DeleteCategoryAction(value.toArray(new CategoryNode[value.size()]));
+                } else if (key.equals(QueryNode.class.getName())) {
+                    action = new Actions.DeleteQueryAction(value.toArray(new QueryNode[value.size()]));
+                } else if (key.equals(TaskNode.class.getName())) {
+                    action = new Actions.RemoveTaskAction(value.toArray(new TaskNode[value.size()]));
+                }
+                action.actionPerformed(e);
             }
         }
 
