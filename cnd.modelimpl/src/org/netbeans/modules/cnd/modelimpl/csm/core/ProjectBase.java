@@ -959,9 +959,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 worker.createProjectFilesIfNeed(sources, true);
                 worker.createProjectFilesIfNeed(headers, false);
             }
-            if (Boolean.getBoolean("cnd.test.iz210898")) { // NOI18N
-                worker.checkLibraries();
-            }
+            worker.checkLibraries();
             worker.finishProjectFilesCreation();
             checkConsistency();
         } finally {
@@ -1647,6 +1645,58 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    /**
+     * Called after project is restored from repository.
+     * Checks if dependent libraries has enough content needed by this project.
+     * Returns start files that contribute extra library model needed for this project.
+     * @return
+     */
+    /*package*/Set<FileImpl> checkLibrariesAfterRestore() {
+        Set<CharSequence> filesToReparseLibs = new HashSet<CharSequence>(1024);
+        List<CsmProject> libraries = getLibraries();
+        for (CsmProject lib : libraries) {
+            ProjectBase libProject = (ProjectBase) lib;
+            Storage libStorage = getIncludedLibraryStorage(libProject);
+            Map<CharSequence, FileEntry> internalMap = libStorage.getInternalMap();
+            for (Map.Entry<CharSequence, FileEntry> entry : internalMap.entrySet()) {
+                CharSequence fileName = entry.getKey();
+                FileEntry entryFromLibrary = libProject.getFileContainer().getEntry(fileName);
+                List<PreprocessorStatePair> libCurrentPairs;
+                if (entryFromLibrary != null) {
+                    // library already knows about included file
+                    synchronized (entryFromLibrary.getLock()) {
+                        // check all included states to see if they would contribute to the lib's file model
+                        libCurrentPairs = new ArrayList<PreprocessorStatePair>(entryFromLibrary.getStatePairs());
+                    }
+                } else {
+                    // library doesn't know about file yet
+                    // assign empty states to be the weakest during comparison
+                    libCurrentPairs = Collections.emptyList();
+                }
+                FileEntry includedEntry = entry.getValue();
+                for (PreprocessorStatePair pair : includedEntry.getStatePairs()) {
+                    CndUtils.assertTrue(pair.state.isValid());
+                    CndUtils.assertTrue(pair.pcState != FilePreprocessorConditionState.PARSING);
+                    ComparisonResult comResult = fillStatesToKeepBasedOnPCState(pair.pcState, libCurrentPairs, new ArrayList<PreprocessorStatePair>());
+                    if (comResult != ComparisonResult.DISCARD) {
+                        StartEntry se = APTHandlersSupport.extractStartEntry(pair.state);
+                        filesToReparseLibs.add(se.getStartFile());
+                        includedEntry.invalidateStates();
+                    }
+                }
+            }
+        }
+        Set<FileImpl> res = new HashSet<FileImpl>(filesToReparseLibs.size());
+        for (CharSequence path : filesToReparseLibs) {
+            FileImpl file = getFile(path, true);
+            CndUtils.assertTrue(file != null, "no fileImpl for " + path);
+            if (file != null) {
+                res.add(file);
+            }
+        }
+        return res;
+    }
+
     private boolean updateFileEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, CharSequence includedFileKey, FileImpl includedFile, PreprocessorStatePair newStatePair) {
         boolean startProjectUpdateResult;
         FileContainer.FileEntry includedFileEntryFromStartProject = includedFileContainer.getOrCreateEntryForIncludedFile(entryToLockOn, includedProject, includedFile);
@@ -2010,7 +2060,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      *          SAME - new state is more or less  the same :) as old ones
      *          WORSE - new state is worse than old ones
      */
-    private ComparisonResult fillStatesToKeepBasedOnPPState(
+    private static ComparisonResult fillStatesToKeepBasedOnPPState(
             APTPreprocHandler.State newState,
             Collection<PreprocessorStatePair> oldStates,
             Collection<PreprocessorStatePair> statesToKeep,
@@ -2071,7 +2121,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @param statesToKeep
      * @return
      */
-    private ComparisonResult fillStatesToKeepBasedOnPCState(
+    private static ComparisonResult fillStatesToKeepBasedOnPCState(
             FilePreprocessorConditionState pcState,
             List<PreprocessorStatePair> oldStates,
             List<PreprocessorStatePair> statesToKeep) {

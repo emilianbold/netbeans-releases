@@ -47,13 +47,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
-import org.netbeans.modules.cnd.modelimpl.content.project.IncludedFileContainer.Storage;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -170,7 +165,9 @@ final class CreateFilesWorker {
         if (!failureDetected.get()) {
             // add to parse all needed elements
             if (!reparseOnEdit.isEmpty()) {
-                DeepReparsingUtils.reparseOnEdit(reparseOnEdit, project, true);
+                for (FileImpl file : reparseOnEdit) {
+                    DeepReparsingUtils.tryPartialReparseOnChangedFile(project, file);
+                }
             }
             if (!reparseOnPropertyChanged.isEmpty()) {
                 DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project, false);
@@ -181,29 +178,7 @@ final class CreateFilesWorker {
     /*package*/void checkLibraries() {
         if (!failureDetected.get() && validator != null) {
             // check libraries and find if our storage has extra model to contribute
-            Set<CharSequence> filesToReparseLibs = new HashSet<CharSequence>(1024);
-            List<CsmProject> libraries = project.getLibraries();
-            for (CsmProject lib : libraries) {
-                ProjectBase libProject = (ProjectBase)lib;
-                Storage libStorage = project.getIncludedLibraryStorage(libProject);
-                Map<CharSequence, FileEntry> internalMap = libStorage.getInternalMap();
-                for (Map.Entry<CharSequence, FileEntry> entry : internalMap.entrySet()) {
-//                    CharSequence fileName = entry.getKey();
-                    FileEntry fileEntry = entry.getValue();
-                    for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
-                        StartEntry se = APTHandlersSupport.extractStartEntry(pair.state);
-                        filesToReparseLibs.add(se.getStartFile());
-                    }
-                    fileEntry.invalidateStates();
-                }
-            }
-            for (CharSequence path : filesToReparseLibs) {
-                FileImpl file = project.getFile(path, true);
-                CndUtils.assertTrue(file != null, "no fileImpl for " + path);
-                if (file != null) {
-                    reparseOnEdit.add(file);
-                }
-            }
+            reparseOnEdit.addAll(project.checkLibrariesAfterRestore());
         }
     }
 
