@@ -48,6 +48,6 @@ import org.netbeans.modules.php.editor.api.elements.TraitElement;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface TraitScope extends TypeScope, TraitElement {
+public interface TraitScope extends TypeScope, TraitElement, TraitedScope {
     Collection<? extends FieldElement> getDeclaredFields();
 }
