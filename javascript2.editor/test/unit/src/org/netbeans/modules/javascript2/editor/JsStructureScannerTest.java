@@ -95,4 +95,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testFormatter() throws Exception {
         checkStructure("testfiles/coloring/Formatter.js");
     }
+    
+    public void testAssignmnets01() throws Exception {
+        checkStructure("testfiles/coloring/assignments01.js");
+    }
 }
