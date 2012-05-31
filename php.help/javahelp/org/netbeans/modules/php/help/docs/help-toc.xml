@@ -30,7 +30,7 @@
         </tocitem>
         <tocitem text="Debugging PHP Applications" expand="false">
             <tocitem text="About Debugging PHP Applications" target="php_debug_about"/>
-            <mapID target="php_debug_process" text="Working with PHP Debugging"/>
+            <tocitem target="php_debug_process" text="Working with Debugging in PHP Applications"/>
             <tocitem target="xdebug_setup" text="Setting Up XDebug In NetBeans IDE"/>
             <tocitem target="php_breakpoints" text="PHP Breakpoints in the IDE"/>
             <tocitem target="php_debug_context" text="Current Context in the Debugger"/>
