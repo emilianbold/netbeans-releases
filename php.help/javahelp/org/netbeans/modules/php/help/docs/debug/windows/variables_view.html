@@ -65,27 +65,21 @@ You can click the Value cell to edit the value directly in the Variables window.
 		<th scope="col">Description</th>
 	</tr>
 	<tr valign="top">
-		<td>Create Fixed Watch</td>
-		<td>Creates a fixed watch of the selected object. A fixed watch displays the specified object or memory location regardless of the current context.</td>
+		<td>New Watch... (Outside of rows only)</td>
+		<td>Opens a dialog where you enter the expression for a new watch</td>
 	</tr>
 	<tr valign="top">
-		<td>Display As</td>
-		<td>For objects of type integer only. Determines how the value of the selected object is shown. The choices are decimal, hexadecimal, octal, and binary.</td>
-	</tr>
-	<tr valign="top">
-		<td>Go to Source</td>
-		<td>Opens the source file containing the variable.</td>
+		<td>Filters</td>
+		<td>Opens a dialog where you select which variable types to show.</td>
 	</tr>
         <tr valign="top">
-		<td>Show References</td>
-		<td>Opens the Instance view showing list of instances and the referrers (not available if IDE is running on JDK 1.5).
-                See <a href="instances_view.html">Instances Window</a> for more information. </td>
-	</tr>
-        <tr valign="top">
-		<td>List Options</td>
-		<td>Enables you to customize the display of the Variables window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
-                See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
-	</tr>
+            <td>Show only rows where... (In Value column only)</td>
+            <td>Opens a dialog where you can set a filter on the Variables window. The
+            filter shows only the variables whose values are related to the value
+            of the selected variable according to the choice you make in the dialog 
+            (equal to, less than, more than, etc.). To remove a Show only rows where... filter,
+            open the dialog again and select No filter.</td>
+        </tr>
     </table>
 
 <h3>Properties </h3>
