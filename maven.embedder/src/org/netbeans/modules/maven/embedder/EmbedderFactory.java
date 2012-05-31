@@ -48,9 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.repository.ArtifactRepositoryFactory;
-import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
-import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.*;
 import org.codehaus.plexus.ContainerConfiguration;
@@ -350,6 +347,7 @@ public final class EmbedderFactory {
      * @return 
      * @deprecated use MavenEmbedder.createRemoteRepository
      */
+    @Deprecated
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         return embedder.createRemoteRepository(url, id);
     }
@@ -364,6 +362,7 @@ public final class EmbedderFactory {
      * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
      * @deprecated use MavenEmbedder.createModelLineage
      */
+    @Deprecated
     public static List<Model> createModelLineage(File pom, MavenEmbedder embedder) throws ModelBuildingException {
         return embedder.createModelLineage(pom);
     }

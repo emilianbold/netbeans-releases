@@ -213,12 +213,7 @@ public class BootCPNodeFactory implements NodeFactory {
                 return root.getNameExt();
             }
             @Override public String getDisplayName() {
-                File f = null;
-                try {
-                    f = FileUtil.archiveOrDirForURL(root.getURL());
-                } catch (FileStateInvalidException x) {
-                    // ignore
-                }
+                File f =  FileUtil.archiveOrDirForURL(root.toURL());
                 if (f != null) {
                     return f.getName();
                 } else {
