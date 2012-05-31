@@ -870,6 +870,8 @@ public class Css3ParserTest extends CssTestBase {
                 + "regexp(\"^https:.*\") { div { color: red; } }");
         
         assertResultOK(result);
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/vendorAtRule/moz_document"));
     }
     
     //Bug 204128 - CC stops work after # in a color attribute 
@@ -1022,7 +1024,7 @@ public class Css3ParserTest extends CssTestBase {
         TestUtil.dumpResult(result);
         
         Node node = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/generic_at_rule");
+                "styleSheet/body/bodyItem/vendorAtRule/generic_at_rule");
                 
         assertNotNull(node);
         

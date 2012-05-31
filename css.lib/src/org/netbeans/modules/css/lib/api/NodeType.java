@@ -252,6 +252,14 @@ public enum NodeType {
      */
     token,
     unaryOperator,
+    
+    /**
+     * A vendor specific @-rule.
+     * 
+     * Example: @-moz-document rule
+     */
+    vendorAtRule,
+    
     /**
      * whitespace, new line or comment tokens
      */

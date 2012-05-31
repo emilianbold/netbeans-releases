@@ -387,8 +387,7 @@ bodyItem
         | page
         | counterStyle
         | fontFace
-        | moz_document
-        | generic_at_rule
+        | vendorAtRule
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -397,6 +396,8 @@ bodyItem
 //        input.consume(); //consume the RBRACE as well
 //        }
     
+vendorAtRule
+: moz_document | generic_at_rule;
     
 generic_at_rule
     : GENERIC_AT_RULE WS* ( ( IDENT | STRING ) WS* )? 
