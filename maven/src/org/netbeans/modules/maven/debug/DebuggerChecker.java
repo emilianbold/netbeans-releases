@@ -262,7 +262,6 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
     }
     
     private String classToSourceURL (FileObject fo, OutputWriter logger) {
-        try {
             ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
             if (cp == null) {
                 return null;
@@ -278,17 +277,13 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 resourceName = resourceName.substring (0, i);
             }
             FileObject[] sRoots = SourceForBinaryQuery.findSourceRoots 
-                (root.getURL ()).getRoots ();
+                (root.toURL ()).getRoots ();
             ClassPath sourcePath = ClassPathSupport.createClassPath (sRoots);
             FileObject rfo = sourcePath.findResource (resourceName + ".java");
             if (rfo == null) {
                 return null;
             }
-            return rfo.getURL ().toExternalForm ();
-        } catch (FileStateInvalidException ex) {
-            ex.printStackTrace ();
-            return null;
-        }
+            return rfo.toURL ().toExternalForm ();
     }
 
     
