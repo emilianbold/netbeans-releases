@@ -51,14 +51,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.impl.ClassPathPackageAccessor;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -68,6 +75,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Parameters;
 
 /**
  * Helper methods for adding/removing items from project classpath.
@@ -81,11 +89,106 @@ public class ClassPathModifierSupport {
     
     private static final Logger LOG = Logger.getLogger(ClassPathModifierSupport.class.getName());
     
-    public static boolean handleRoots (final Project project, final AntProjectHelper helper, final ClassPathSupport cs, final PropertyEvaluator eval,
-            final ClassPathUiSupport.Callback cpUiSupportCallback,
-            final URI[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException {
-        assert classPathRoots != null : "The classPathRoots cannot be null";      //NOI18N        
-        assert classPathProperty != null;
+    static {
+        ClassPathPackageAccessor.setInstance(new ClassPathPackageAccessorImpl());
+    }
+    
+    /**
+     * Adds or removes jar files or folders to (from) given classpath.
+     * @deprecated use {@link ClassPathModifierSupport#handleRoots(org.netbeans.api.project.Project, org.netbeans.modules.java.api.common.ant.UpdateHelper, org.netbeans.modules.java.api.common.classpath.ClassPathSupport, org.netbeans.spi.project.support.ant.PropertyEvaluator, org.netbeans.spi.project.support.ant.ReferenceHelper, org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport.Callback, java.net.URI[], java.lang.String, java.lang.String, int) }
+     */
+    @Deprecated
+    public static boolean handleRoots (
+            @NonNull final Project project,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final PropertyEvaluator eval,
+            @NullAllowed final ClassPathUiSupport.Callback cpUiSupportCallback,
+            @NonNull final URI[] classPathRoots,
+            @NonNull final String classPathProperty,
+            @NullAllowed final String projectXMLElementName,
+            final int operation) throws IOException {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("cs", cs);           //NOI18N
+        Parameters.notNull("eval", eval);       //NOI18N
+        Parameters.notNull("classPathProperty", classPathRoots); //NOI18N
+        Parameters.notNull("classPathProperty", classPathProperty); //NOI18N
+        return handleRootsImpl(
+                project,
+                helper,
+                cs,
+                eval,
+                null,
+                null,
+                cpUiSupportCallback,
+                classPathRoots,
+                classPathProperty,
+                projectXMLElementName,
+                operation);
+    }
+    
+    
+    /**
+     * Adds or removes jar files or folders from given classpath.
+     * @param project the project to (from) which classpath the artifacts should be added (removed).
+     * @param helper the {@link UpdateHelper}
+     * @param cs the {@link ClassPathSupport}
+     * @param eval the {@link PropertyEvaluator}
+     * @param refHelper the {@link ReferenceHelper}
+     * @param cpUiSupportCallback the optional {@link ClassPathUiSupport.Callback} doing the {@link ClassPathSupport.Item} initialization.
+     * @param classPathRoots the jar files or folders to be added (removed)
+     * @param classPathProperty the classpath property into (from which) the artifacts should be added (removed).
+     * @param projectXMLElementName optional project XML element name
+     * @param operation to be performed {@link ClassPathModifierSupport#ADD}, {@link ClassPathModifierSupport#ADD_NO_HEURISTICS}, {@link ClassPathModifierSupport#REMOVE} 
+     * @return true if classpath was changed
+     * @throws IOException in case of failure
+     * @since 1.38
+     */
+    public static boolean handleRoots (
+            @NonNull final Project project,
+            @NonNull final UpdateHelper helper,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final ReferenceHelper refHelper,
+            @NullAllowed final ClassPathUiSupport.Callback cpUiSupportCallback,
+            @NonNull final URI[] classPathRoots,
+            @NonNull final String classPathProperty,
+            @NullAllowed final String projectXMLElementName,
+            final int operation) throws IOException {        
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("cs", cs);           //NOI18N
+        Parameters.notNull("eval", eval);       //NOI18N
+        Parameters.notNull("refHelper", refHelper); //NOI18N
+        Parameters.notNull("classPathProperty", classPathRoots); //NOI18N
+        Parameters.notNull("classPathProperty", classPathProperty); //NOI18N
+        return handleRootsImpl(
+                project,
+                helper.getAntProjectHelper(),
+                cs,
+                eval,
+                helper,
+                refHelper,
+                cpUiSupportCallback,
+                classPathRoots,
+                classPathProperty,
+                projectXMLElementName,
+                operation);
+    }
+    
+    private static boolean handleRootsImpl (
+            @NonNull final Project project,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final PropertyEvaluator eval,
+            @NullAllowed final UpdateHelper updateHelper,
+            @NullAllowed final ReferenceHelper rh,
+            @NullAllowed final ClassPathUiSupport.Callback cpUiSupportCallback,
+            @NonNull final URI[] classPathRoots,
+            @NonNull final String classPathProperty,
+            @NullAllowed final String projectXMLElementName,
+            final int operation) throws IOException {
         try {
             return ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction<Boolean>() {
@@ -119,17 +222,21 @@ public class ClassPathModifierSupport {
                                     resources.add (item);
                                     changed = true;
                                 } else if (operation == REMOVE) {
-                                    if (resources.remove(item)) {
-                                        changed = true;
-                                    } else {
-                                        // can be broken item
-                                        for (Iterator<ClassPathSupport.Item> it = resources.iterator(); it.hasNext();) {
-                                            ClassPathSupport.Item resource = it.next();
-                                            if (resource.isBroken() && resource.getType() == ClassPathSupport.Item.TYPE_JAR && 
-                                                    (filePath.equals(resource.getFilePath()) || filePath.equals(resource.getVariableBasedProperty()))) {
-                                                it.remove();
-                                                changed = true;
+                                    for (Iterator<ClassPathSupport.Item> it = resources.iterator(); it.hasNext();) {
+                                        ClassPathSupport.Item resource = it.next();
+                                        if (resource.equals(item) ||
+                                            (resource.isBroken() && resource.getType() == ClassPathSupport.Item.TYPE_JAR && 
+                                            (filePath.equals(resource.getFilePath()) || filePath.equals(resource.getVariableBasedProperty())))) {
+                                            it.remove();
+                                            if (rh != null) {
+                                                assert updateHelper != null;
+                                                removeUnusedReference(
+                                                    resource,
+                                                    classPathProperty,
+                                                    updateHelper,
+                                                    rh);
                                             }
+                                            changed = true;
                                         }
                                     }
                                 }
@@ -138,7 +245,12 @@ public class ClassPathModifierSupport {
                                 String itemRefs[] = cs.encodeToStrings( resources, projectXMLElementName);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.setProperty(classPathProperty, itemRefs);
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                if (updateHelper != null) {
+                                    //Prefer UpdateHelper, it notifies user about an update
+                                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                } else {
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                }
                                 ProjectManager.getDefault().saveProject(project);
                                 return true;
                             }
@@ -159,13 +271,115 @@ public class ClassPathModifierSupport {
         }
     }
 
-    public static boolean handleAntArtifacts (final Project project, final AntProjectHelper helper, final ClassPathSupport cs, final PropertyEvaluator eval,
-            final ClassPathUiSupport.Callback cpUiSupportCallback,
-            final AntArtifact[] artifacts, final URI[] artifactElements, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
-        assert artifacts != null : "Artifacts cannot be null";    //NOI18N
-        assert artifactElements != null : "ArtifactElements cannot be null";  //NOI18N
-        assert artifacts.length == artifactElements.length : "Each artifact has to have corresponding artifactElement"; //NOI18N
-        assert classPathProperty != null;
+    /**
+     * Adds or removes project's artifact to (from) given classpath.
+     * @deprecated Use {@link ClassPathModifierSupport#handleAntArtifacts(org.netbeans.api.project.Project, org.netbeans.modules.java.api.common.ant.UpdateHelper, org.netbeans.modules.java.api.common.classpath.ClassPathSupport, org.netbeans.spi.project.support.ant.PropertyEvaluator, org.netbeans.spi.project.support.ant.ReferenceHelper, org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport.Callback, org.netbeans.api.project.ant.AntArtifact[], java.net.URI[], java.lang.String, java.lang.String, int)}
+     */
+    @Deprecated
+    public static boolean handleAntArtifacts (
+            @NonNull final Project project,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final PropertyEvaluator eval,
+            @NullAllowed final ClassPathUiSupport.Callback cpUiSupportCallback,
+            @NonNull final AntArtifact[] artifacts,
+            @NonNull final URI[] artifactElements,
+            @NonNull final String classPathProperty,
+            @NullAllowed final String projectXMLElementName,
+            final int operation) throws IOException, UnsupportedOperationException {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("cs", cs);           //NOI18N
+        Parameters.notNull("eval", eval);       //NOI18N
+        Parameters.notNull("artifacts", artifacts); //NOI18N
+        Parameters.notNull("artifactElements", artifactElements);   //NOI18N
+        Parameters.notNull("classPathProperty", classPathProperty); //NOI18N
+        if (artifacts.length != artifactElements.length) {
+            throw new IllegalArgumentException("Each artifact has to have corresponding artifactElement");  //NOI18N
+        }
+        return handleAntArtifactsImpl(
+                project,
+                helper,
+                cs,
+                eval,
+                null,
+                null,
+                cpUiSupportCallback,
+                artifacts,
+                artifactElements,
+                classPathProperty,
+                projectXMLElementName,
+                operation);
+    }
+    
+    /**
+     * Adds or removes project's artifact from given classpath.
+     * @param project the project to (from) which classpath the artifacts should be added (removed).
+     * @param helper the {@link UpdateHelper}
+     * @param cs the {@link ClassPathSupport}
+     * @param eval the {@link PropertyEvaluator}
+     * @param refHelper the {@link ReferenceHelper}
+     * @param cpUiSupportCallback the optional {@link ClassPathUiSupport.Callback} doing the {@link ClassPathSupport.Item} initialization.
+     * @param artifacts the artifacts to be added
+     * @param artifactElements the corresponding artifacts elements
+     * @param classPathProperty the classpath property into (from which) the artifacts should be added (removed).
+     * @param projectXMLElementName optional project XML element name
+     * @param operation to be performed {@link ClassPathModifierSupport#ADD}, {@link ClassPathModifierSupport#ADD_NO_HEURISTICS}, {@link ClassPathModifierSupport#REMOVE} 
+     * @return true if classpath was changed
+     * @throws IOException in case of failure
+     * @since 1.38
+     */
+    public static boolean handleAntArtifacts (
+            @NonNull final Project project,
+            @NonNull final UpdateHelper helper,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final ReferenceHelper refHelper,
+            @NullAllowed final ClassPathUiSupport.Callback cpUiSupportCallback,
+            @NonNull final AntArtifact[] artifacts,
+            @NonNull final URI[] artifactElements,
+            @NonNull final String classPathProperty,
+            @NullAllowed final String projectXMLElementName,
+            final int operation) throws IOException, UnsupportedOperationException {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("helper", helper);   //NOI18N
+        Parameters.notNull("cs", cs);           //NOI18N
+        Parameters.notNull("eval", eval);       //NOI18N
+        Parameters.notNull("refHelper", refHelper); //NOI18N
+        Parameters.notNull("artifacts", artifacts); //NOI18N
+        Parameters.notNull("artifactElements", artifactElements);   //NOI18N
+        Parameters.notNull("classPathProperty", classPathProperty); //NOI18N
+        if (artifacts.length != artifactElements.length) {
+            throw new IllegalArgumentException("Each artifact has to have corresponding artifactElement");  //NOI18N
+        }
+        return handleAntArtifactsImpl(
+                project,
+                helper.getAntProjectHelper(),
+                cs,
+                eval,
+                helper,
+                refHelper,
+                cpUiSupportCallback,
+                artifacts,
+                artifactElements,
+                classPathProperty,
+                projectXMLElementName,
+                operation);
+    }
+    
+    private static boolean handleAntArtifactsImpl (
+            @NonNull final Project project,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final ClassPathSupport cs,
+            @NonNull final PropertyEvaluator eval,
+            @NullAllowed final UpdateHelper updateHelper,
+            @NullAllowed final ReferenceHelper rh,
+            @NullAllowed final ClassPathUiSupport.Callback cpUiSupportCallback,
+            @NonNull final AntArtifact[] artifacts,
+            @NonNull final URI[] artifactElements,
+            @NonNull final String classPathProperty,
+            @NullAllowed final String projectXMLElementName,
+            final int operation) throws IOException, UnsupportedOperationException {
         try {
             return ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction<Boolean>() {
@@ -184,17 +398,31 @@ public class ClassPathModifierSupport {
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
-                                }
-                                else if (operation == REMOVE && resources.contains(item)) {
-                                    resources.remove(item);
-                                    changed = true;
+                                } else if (operation == REMOVE) {
+                                    int index;
+                                    if ((index=resources.indexOf(item)) >=0) {
+                                        ClassPathSupport.Item origin = resources.remove(index);
+                                        if (rh != null) {
+                                            assert updateHelper != null;
+                                            removeUnusedReference(
+                                                    origin,
+                                                    classPathProperty,
+                                                    updateHelper,
+                                                    rh);
+                                        }
+                                        changed = true;
+                                    }
                                 }
                             }                            
                             if (changed) {
                                 String itemRefs[] = cs.encodeToStrings( resources, projectXMLElementName);
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                                 props.setProperty (classPathProperty, itemRefs);
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                if (updateHelper != null) {
+                                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                } else {
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                }
                                 ProjectManager.getDefault().saveProject(project);
                                 return true;
                             }
@@ -207,9 +435,7 @@ public class ClassPathModifierSupport {
                 throw (IOException) e;
             }
             else {
-                IOException t = new IOException();
-                t.initCause(e);
-                throw t;
+                throw new IOException(e);
             }
         }
     }
@@ -251,6 +477,47 @@ public class ClassPathModifierSupport {
             }
         }
         return lib;
+    }
+    
+    static boolean removeUnusedReference(
+        @NonNull final ClassPathSupport.Item item,
+        @NonNull final String classPathProperty,
+        @NonNull final UpdateHelper updateHelper,
+        @NonNull final ReferenceHelper rh) {
+        if (isLastReference(item, updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH), classPathProperty)) {
+            destroyReference(rh, updateHelper, item);
+            return true;
+        }
+        return false;
+    }
+    
+    private static boolean isLastReference(
+            @NonNull final ClassPathSupport.Item item,
+            @NonNull final EditableProperties props,
+            @NonNull final String ignoreProperty) {
+            final String property = CommonProjectUtils.getAntPropertyName(item.getReference());
+            for (Map.Entry<String,String> entry : props.entrySet()) {
+                if (ignoreProperty.equals(entry.getKey())) {
+                    continue;
+                }
+                if (entry.getValue().contains(property)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    private static void destroyReference(
+            @NonNull final ReferenceHelper rh,
+            @NonNull final UpdateHelper uh,
+            @NonNull final ClassPathSupport.Item item) {
+        if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
+                item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
+            rh.destroyReference(item.getReference());
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                item.removeSourceAndJavadoc(uh);
+            }
+        }
     }
     
     public static boolean handleLibraryClassPathItems (final Project project, final AntProjectHelper helper, final ClassPathSupport cs, 
@@ -347,5 +614,14 @@ public class ClassPathModifierSupport {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+    }
+    
+    private static class ClassPathPackageAccessorImpl extends ClassPathPackageAccessor {
+
+        @Override
+        public boolean removeUnusedReference(Item item, String classPathProperty, UpdateHelper updateHelper, ReferenceHelper rh) {
+            return ClassPathModifierSupport.removeUnusedReference(item, classPathProperty, updateHelper, rh);
+        }
+        
     }
 }
