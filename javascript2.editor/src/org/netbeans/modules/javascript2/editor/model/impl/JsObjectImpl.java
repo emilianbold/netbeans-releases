@@ -287,10 +287,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     } else {
                         JsObject object = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(jsObject), assign.getType());
                         if(object != null) {
-                            if(object.getAssignmentForOffset(offset).isEmpty()) {
+                            Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, closeOffset, visited);
+                            if(resolvedFromObject.isEmpty()) {
                                 result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assign.getOffset(), true));
                             } else {
-                                result.addAll(resolveAssignments(object, assign.getOffset(), visited));
+                                result.addAll(resolvedFromObject);
                             }
                         }
                     }
