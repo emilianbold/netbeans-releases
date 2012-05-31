@@ -50,7 +50,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 @ActionID(category = "Window", id = DocViewAction.ID)
-@ActionRegistration(displayName = "#CTL_ShowDocViewAction")
+@ActionRegistration(displayName = "#CTL_ShowDocViewAction", lazy=true)
 @ActionReference(path = "Menu/Window/Other", position = 570)
 @Messages("CTL_ShowDocViewAction=C/C++ Documentation")
 public final class DocViewAction implements ActionListener {
