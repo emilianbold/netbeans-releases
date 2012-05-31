@@ -378,7 +378,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private CompilationUnitTree cu;
         private SourcePositions sp;
         private boolean stopped;
-        private int initialCommentStopPos = -1;
+        private int initialCommentStopPos = Integer.MAX_VALUE;
         
         public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp) {
             this.info = info;
@@ -392,6 +392,9 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 TokenSequence<JavaTokenId>  ts = th.tokenSequence(JavaTokenId.language());
                 
                 while (ts.moveNext()) {
+                    if (ts.offset() >= initialCommentStopPos)
+                        break;
+                    
                     Token<JavaTokenId> token = ts.token();
                     
                     if (token.id() == JavaTokenId.BLOCK_COMMENT || token.id() == JavaTokenId.JAVADOC_COMMENT) {
@@ -404,10 +407,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
                         }
                         
                         folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TEMPLATE, collapsed));
-                    }
-                    
-                    if (token.id() != JavaTokenId.WHITESPACE && ts.offset() >= initialCommentStopPos)
                         break;
+                    }
                 }
             } catch (BadLocationException e) {
                 //the document probably changed, stop
@@ -424,7 +425,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (start == (-1))
                 return ;
             
-            if (initialCommentStopPos < 0 || start < initialCommentStopPos)
+            if (start < initialCommentStopPos)
                 initialCommentStopPos = start;
 
             TokenHierarchy<?> th = info.getTokenHierarchy();
@@ -441,7 +442,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     Document doc   = operation.getHierarchy().getComponent().getDocument();
                     int startOffset = ts.offset();
                     folds.add(new FoldInfo(doc, startOffset, startOffset + token.length(), JAVADOC_FOLD_TEMPLATE, foldJavadocsPreset));
-                    if (initialCommentStopPos < 0 || startOffset < initialCommentStopPos)
+                    if (startOffset < initialCommentStopPos)
                         initialCommentStopPos = startOffset;
                 }
                 if (   token.id() != JavaTokenId.WHITESPACE
@@ -542,7 +543,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             }
             
             if (importsEnd != (-1) && importsStart != (-1)) {
-                if (initialCommentStopPos < 0 || importsStart < initialCommentStopPos)
+                if (importsStart < initialCommentStopPos)
                     initialCommentStopPos = importsStart;
                 
                 try {
