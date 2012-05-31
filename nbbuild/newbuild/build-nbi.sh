@@ -41,12 +41,12 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    fi
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
 #   scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
-   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
+   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
    if [ 1 -eq $ML_BUILD ] ; then
         ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip-ml/*      
         ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml/moduleclusters
 	#scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
-        ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
+        ls $DIST/ml/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -q -v $DIST/ml/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml/moduleclusters/
    fi
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -107,14 +107,14 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     if [ $IS_NEW_MAC_FAILED -eq 0 ] && [ $IS_NEW_MAC_CONNECT -eq 0 ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
-        scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
+        scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist_en/* $DIST/bundles
         ERROR_CODE=$?
         if [ $ERROR_CODE != 0 ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi
 	if [ 1 -eq $ML_BUILD ] ; then
-		scp -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles
+		scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -r $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/newbuild/dist/* $DIST/ml/bundles
                 ERROR_CODE=$?
                 if [ $ERROR_CODE != 0 ]; then
                     echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get ml installers"
