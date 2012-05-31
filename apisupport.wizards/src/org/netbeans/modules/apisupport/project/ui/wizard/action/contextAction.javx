@@ -5,8 +5,8 @@
 
 package ${PACKAGE_NAME};
 
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 ${IMPORTS}
 <#if ANNOTATIONS??>
 import org.openide.awt.ActionRegistration;
