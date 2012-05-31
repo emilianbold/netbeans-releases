@@ -288,7 +288,7 @@ public enum NodeType {
      * </pre>
      * 
      */
-    webkitKeyFrames,
+    webkitKeyframes,
     
     /**
      * @-webkit-keyframes content block
@@ -301,7 +301,7 @@ public enum NodeType {
      *    }
      * </pre>
      */
-    keyframesBlock,
+    webkitKeyframesBlock,
     
     /**
      * @-webkit-keyframes content block selectors
@@ -311,7 +311,7 @@ public enum NodeType {
      * from, 20%
      * </pre>
      */
-    keyframeSelectors,
+    webkitKeyframeSelectors,
     
     /**
      * whitespace, new line or comment tokens

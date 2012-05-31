@@ -145,4 +145,23 @@ public interface ElementFactory {
     
     public Page createPage(CharSequence source);
     
+    public VendorAtRule createVendorAtRule();
+    
+    public AtRuleId createAtRuleId();
+    
+    public AtRuleId createAtRuleId(CharSequence text);
+    
+    public MozDocument createMozDocument();
+    
+    public MozDocumentFunction createMozDocumentFunction();
+    
+    public GenericAtRule createGenericAtRule();
+    
+    public WebkitKeyframes createWebkitKeyFrames();
+    
+    public WebkitKeyframesBlock createWebkitKeyFramesBlock();
+    
+    public WebkitKeyframeSelectors createWebkitKeyframeSelectors();
+    
+    
 }

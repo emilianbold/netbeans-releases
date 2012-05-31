@@ -41,15 +41,30 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import java.lang.reflect.Method;
 import org.netbeans.modules.css.model.api.*;
+import org.openide.util.Exceptions;
 
 /**
- * TODO: generate this class!!! It's very error prone to have to always add
- * methods here whenever a new element is introduced
- *
  * @author marekfukala
  */
 public interface ModelElementListener {
+
+    public void elementAdded(AtRuleId atRuleId);
+
+    public void elementAdded(GenericAtRule genericAtRule);
+
+    public void elementAdded(MozDocument mozDocument);
+
+    public void elementAdded(MozDocumentFunction mozDocumentFunction);
+
+    public void elementAdded(VendorAtRule vendorAtRule);
+
+    public void elementAdded(WebkitKeyframes webkitKeyFrames);
+
+    public void elementAdded(WebkitKeyframeSelectors webkitKeyframeSelectors);
+
+    public void elementAdded(WebkitKeyframesBlock webkitKeyframesBlock);
 
     public void elementAdded(StyleSheet stylesheet);
 
@@ -66,17 +81,17 @@ public interface ModelElementListener {
     public void elementAdded(ResourceIdentifier resourceIdentifier);
 
     public void elementAdded(Media media);
-    
+
     public void elementAdded(MediaQueryList mediaQueryList);
 
     public void elementAdded(MediaQuery mediaQuery);
-    
+
     public void elementAdded(MediaQueryOperator mediaQuery);
-    
+
     public void elementAdded(MediaExpression mediaQuery);
-    
+
     public void elementAdded(MediaFeature mediaQuery);
-    
+
     public void elementAdded(MediaType mediaQuery);
 
     public void elementAdded(Namespaces namespaces);
@@ -100,23 +115,23 @@ public interface ModelElementListener {
     public void elementAdded(Declaration declaration);
 
     public void elementAdded(Property property);
-    
+
     public void elementAdded(PropertyValue propertyValue);
 
     public void elementAdded(Expression expression);
 
     public void elementAdded(Prio prio);
-    
+
     public void elementAdded(PlainElement plainElement);
-    
+
     public void elementAdded(Page page);
-    
+
     public void elementRemoved(StyleSheet stylesheet);
 
     public void elementRemoved(CharSet charSet);
 
     public void elementRemoved(CharSetValue charSetValue);
-    
+
     public void elementRemoved(FontFace fontFace);
 
     public void elementRemoved(Imports imports);
@@ -126,17 +141,17 @@ public interface ModelElementListener {
     public void elementRemoved(ResourceIdentifier resourceIdentifier);
 
     public void elementRemoved(Media mediaQueryList);
-    
+
     public void elementRemoved(MediaQueryList mediaQueryList);
 
     public void elementRemoved(MediaQuery mediaQuery);
-    
+
     public void elementRemoved(MediaQueryOperator mediaQuery);
-    
+
     public void elementRemoved(MediaExpression mediaQuery);
-    
+
     public void elementRemoved(MediaFeature mediaQuery);
-    
+
     public void elementRemoved(MediaType mediaQuery);
 
     public void elementRemoved(Namespaces namespaces);
@@ -146,7 +161,7 @@ public interface ModelElementListener {
     public void elementRemoved(NamespacePrefixName namespacePrefixName);
 
     public void elementRemoved(PropertyValue propertyValue);
-    
+
     public void elementRemoved(Body body);
 
     public void elementRemoved(BodyItem bodyItem);
@@ -170,136 +185,158 @@ public interface ModelElementListener {
     public void elementRemoved(PlainElement plainElement);
 
     public void elementRemoved(Page page);
-    
-    
+
     public static class Support {
 
-        
-        public static void fireElementAdded(Element element, ModelElementListener listener) {
-            if (element instanceof StyleSheet) {
-                listener.elementAdded((StyleSheet) element);
-            } else if (element instanceof CharSet) {
-                listener.elementAdded((CharSet) element);
-            } else if (element instanceof CharSetValue) {
-                listener.elementAdded((CharSetValue) element);
-            } else if (element instanceof FontFace) {
-                listener.elementAdded((FontFace)element);
-            } else if (element instanceof Imports) {
-                listener.elementAdded((Imports) element);
-            } else if (element instanceof ImportItem) {
-                listener.elementAdded((ImportItem) element);
-            } else if (element instanceof ResourceIdentifier) {
-                listener.elementAdded((ResourceIdentifier) element);
-            } else if (element instanceof MediaQueryList) {
-                listener.elementAdded((MediaQueryList) element);
-            } else if (element instanceof Media) {
-                listener.elementAdded((Media) element);
-            } else if (element instanceof MediaQuery) {
-                listener.elementAdded((MediaQuery) element);
-            } else if (element instanceof MediaQueryOperator) {
-                listener.elementAdded((MediaQueryOperator) element);
-            } else if (element instanceof MediaFeature) {
-                listener.elementAdded((MediaFeature) element);
-            } else if (element instanceof MediaExpression) {
-                listener.elementAdded((MediaExpression) element);
-            } else if (element instanceof MediaType) {
-                listener.elementAdded((MediaType) element);
-            } else if (element instanceof Namespaces) {
-                listener.elementAdded((Namespaces) element);
-            } else if (element instanceof Namespace) {
-                listener.elementAdded((Namespace) element);
-            } else if (element instanceof NamespacePrefixName) {
-                listener.elementAdded((NamespacePrefixName) element);
-            } else if (element instanceof PropertyValue) {
-                listener.elementAdded((PropertyValue) element);
-            } else if (element instanceof Body) {
-                listener.elementAdded((Body) element);
-            } else if (element instanceof BodyItem) {
-                listener.elementAdded((BodyItem) element);
-            } else if (element instanceof Rule) {
-                listener.elementAdded((Rule) element);
-            } else if (element instanceof SelectorsGroup) {
-                listener.elementAdded((SelectorsGroup) element);
-            } else if (element instanceof Selector) {
-                listener.elementAdded((Selector) element);
-            } else if (element instanceof Declarations) {
-                listener.elementAdded((Declarations) element);
-            } else if (element instanceof Declaration) {
-                listener.elementAdded((Declaration) element);
-            } else if (element instanceof Property) {
-                listener.elementAdded((Property) element);
-            } else if (element instanceof Expression) {
-                listener.elementAdded((Expression) element);
-            } else if (element instanceof Prio) {
-                listener.elementAdded((Prio) element);
-            } else if (element instanceof Page) {
-                listener.elementAdded((Page) element);
+        private static void fireElementEvent(Element element, ModelElementListener listener, boolean add) {
+            Class clazz = element.getClass();
+            Class[] interfaces = clazz.getInterfaces();
+            for (Class in : interfaces) {
+                if (Element.class.isAssignableFrom(in)) {
+                    try {
+                        //the interface extends Element - so this is the one we are interested in
+                        String methodName = add ? "elementAdded" : "elementRemoved";
+                        Method method = listener.getClass().getMethod(methodName, in);
+                        method.invoke(listener, element);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
+        }
+
+        public static void fireElementAdded(Element element, ModelElementListener listener) {
+            fireElementEvent(element, listener, true);
         }
 
         public static void fireElementRemoved(Element element, ModelElementListener listener) {
-            if (element instanceof StyleSheet) {
-                listener.elementRemoved((StyleSheet) element);
-            } else if (element instanceof CharSet) {
-                listener.elementRemoved((CharSet) element);
-            } else if (element instanceof CharSetValue) {
-                listener.elementRemoved((CharSetValue) element);
-            } else if (element instanceof Imports) {
-                listener.elementRemoved((Imports) element);
-            }else if (element instanceof FontFace) {
-                listener.elementRemoved((FontFace)element);
-            } else if (element instanceof ImportItem) {
-                listener.elementRemoved((ImportItem) element);
-            } else if (element instanceof ResourceIdentifier) {
-                listener.elementRemoved((ResourceIdentifier) element);
-            } else if (element instanceof Media) {
-                listener.elementRemoved((Media) element);
-            } else if (element instanceof MediaQuery) {
-                listener.elementRemoved((MediaQueryList) element);
-            } else if (element instanceof MediaQuery) {
-                listener.elementRemoved((MediaQuery) element);
-            } else if (element instanceof MediaQueryOperator) {
-                listener.elementRemoved((MediaQueryOperator) element);
-            } else if (element instanceof MediaFeature) {
-                listener.elementRemoved((MediaFeature) element);
-            } else if (element instanceof MediaExpression) {
-                listener.elementRemoved((MediaExpression) element);
-            } else if (element instanceof MediaType) {
-                listener.elementRemoved((MediaType) element);                
-            } else if (element instanceof Namespaces) {
-                listener.elementRemoved((Namespaces) element);
-            } else if (element instanceof Namespace) {
-                listener.elementRemoved((Namespace) element);
-            } else if (element instanceof NamespacePrefixName) {
-                listener.elementRemoved((NamespacePrefixName) element);
-            } else if (element instanceof PropertyValue) {
-                listener.elementRemoved((PropertyValue) element);
-            } else if (element instanceof Body) {
-                listener.elementRemoved((Body) element);
-            } else if (element instanceof BodyItem) {
-                listener.elementRemoved((BodyItem) element);
-            } else if (element instanceof Rule) {
-                listener.elementRemoved((Rule) element);
-            } else if (element instanceof SelectorsGroup) {
-                listener.elementRemoved((SelectorsGroup) element);
-            } else if (element instanceof Selector) {
-                listener.elementRemoved((Selector) element);
-            } else if (element instanceof Declarations) {
-                listener.elementRemoved((Declarations) element);
-            } else if (element instanceof Declaration) {
-                listener.elementRemoved((Declaration) element);
-            } else if (element instanceof Property) {
-                listener.elementRemoved((Property) element);
-            } else if (element instanceof Expression) {
-                listener.elementRemoved((Expression) element);
-            } else if (element instanceof Prio) {
-                listener.elementRemoved((Prio) element);
-            } else if (element instanceof Page) {
-                listener.elementRemoved((Page) element);
-            }
+            fireElementEvent(element, listener, false);
         }
     }
 
+//        public static void fireElementAdded(Element element, ModelElementListener listener) {
+//            if (element instanceof StyleSheet) {
+//                listener.elementAdded((StyleSheet) element);
+//            } else if (element instanceof CharSet) {
+//                listener.elementAdded((CharSet) element);
+//            } else if (element instanceof CharSetValue) {
+//                listener.elementAdded((CharSetValue) element);
+//            } else if (element instanceof FontFace) {
+//                listener.elementAdded((FontFace) element);
+//            } else if (element instanceof Imports) {
+//                listener.elementAdded((Imports) element);
+//            } else if (element instanceof ImportItem) {
+//                listener.elementAdded((ImportItem) element);
+//            } else if (element instanceof ResourceIdentifier) {
+//                listener.elementAdded((ResourceIdentifier) element);
+//            } else if (element instanceof MediaQueryList) {
+//                listener.elementAdded((MediaQueryList) element);
+//            } else if (element instanceof Media) {
+//                listener.elementAdded((Media) element);
+//            } else if (element instanceof MediaQuery) {
+//                listener.elementAdded((MediaQuery) element);
+//            } else if (element instanceof MediaQueryOperator) {
+//                listener.elementAdded((MediaQueryOperator) element);
+//            } else if (element instanceof MediaFeature) {
+//                listener.elementAdded((MediaFeature) element);
+//            } else if (element instanceof MediaExpression) {
+//                listener.elementAdded((MediaExpression) element);
+//            } else if (element instanceof MediaType) {
+//                listener.elementAdded((MediaType) element);
+//            } else if (element instanceof Namespaces) {
+//                listener.elementAdded((Namespaces) element);
+//            } else if (element instanceof Namespace) {
+//                listener.elementAdded((Namespace) element);
+//            } else if (element instanceof NamespacePrefixName) {
+//                listener.elementAdded((NamespacePrefixName) element);
+//            } else if (element instanceof PropertyValue) {
+//                listener.elementAdded((PropertyValue) element);
+//            } else if (element instanceof Body) {
+//                listener.elementAdded((Body) element);
+//            } else if (element instanceof BodyItem) {
+//                listener.elementAdded((BodyItem) element);
+//            } else if (element instanceof Rule) {
+//                listener.elementAdded((Rule) element);
+//            } else if (element instanceof SelectorsGroup) {
+//                listener.elementAdded((SelectorsGroup) element);
+//            } else if (element instanceof Selector) {
+//                listener.elementAdded((Selector) element);
+//            } else if (element instanceof Declarations) {
+//                listener.elementAdded((Declarations) element);
+//            } else if (element instanceof Declaration) {
+//                listener.elementAdded((Declaration) element);
+//            } else if (element instanceof Property) {
+//                listener.elementAdded((Property) element);
+//            } else if (element instanceof Expression) {
+//                listener.elementAdded((Expression) element);
+//            } else if (element instanceof Prio) {
+//                listener.elementAdded((Prio) element);
+//            } else if (element instanceof Page) {
+//                listener.elementAdded((Page) element);
+//            }
+//        }
+//        public static void fireElementRemoved(Element element, ModelElementListener listener) {
+//            if (element instanceof StyleSheet) {
+//                listener.elementRemoved((StyleSheet) element);
+//            } else if (element instanceof CharSet) {
+//                listener.elementRemoved((CharSet) element);
+//            } else if (element instanceof CharSetValue) {
+//                listener.elementRemoved((CharSetValue) element);
+//            } else if (element instanceof Imports) {
+//                listener.elementRemoved((Imports) element);
+//            } else if (element instanceof FontFace) {
+//                listener.elementRemoved((FontFace) element);
+//            } else if (element instanceof ImportItem) {
+//                listener.elementRemoved((ImportItem) element);
+//            } else if (element instanceof ResourceIdentifier) {
+//                listener.elementRemoved((ResourceIdentifier) element);
+//            } else if (element instanceof Media) {
+//                listener.elementRemoved((Media) element);
+//            } else if (element instanceof MediaQuery) {
+//                listener.elementRemoved((MediaQueryList) element);
+//            } else if (element instanceof MediaQuery) {
+//                listener.elementRemoved((MediaQuery) element);
+//            } else if (element instanceof MediaQueryOperator) {
+//                listener.elementRemoved((MediaQueryOperator) element);
+//            } else if (element instanceof MediaFeature) {
+//                listener.elementRemoved((MediaFeature) element);
+//            } else if (element instanceof MediaExpression) {
+//                listener.elementRemoved((MediaExpression) element);
+//            } else if (element instanceof MediaType) {
+//                listener.elementRemoved((MediaType) element);
+//            } else if (element instanceof Namespaces) {
+//                listener.elementRemoved((Namespaces) element);
+//            } else if (element instanceof Namespace) {
+//                listener.elementRemoved((Namespace) element);
+//            } else if (element instanceof NamespacePrefixName) {
+//                listener.elementRemoved((NamespacePrefixName) element);
+//            } else if (element instanceof PropertyValue) {
+//                listener.elementRemoved((PropertyValue) element);
+//            } else if (element instanceof Body) {
+//                listener.elementRemoved((Body) element);
+//            } else if (element instanceof BodyItem) {
+//                listener.elementRemoved((BodyItem) element);
+//            } else if (element instanceof Rule) {
+//                listener.elementRemoved((Rule) element);
+//            } else if (element instanceof SelectorsGroup) {
+//                listener.elementRemoved((SelectorsGroup) element);
+//            } else if (element instanceof Selector) {
+//                listener.elementRemoved((Selector) element);
+//            } else if (element instanceof Declarations) {
+//                listener.elementRemoved((Declarations) element);
+//            } else if (element instanceof Declaration) {
+//                listener.elementRemoved((Declaration) element);
+//            } else if (element instanceof Property) {
+//                listener.elementRemoved((Property) element);
+//            } else if (element instanceof Expression) {
+//                listener.elementRemoved((Expression) element);
+//            } else if (element instanceof Prio) {
+//                listener.elementRemoved((Prio) element);
+//            } else if (element instanceof Page) {
+//                listener.elementRemoved((Page) element);
+//            }
+//        }
+//    }
     public static class Adapter implements ModelElementListener {
 
         @Override
@@ -540,6 +577,38 @@ public interface ModelElementListener {
 
         @Override
         public void elementRemoved(PropertyValue propertyValue) {
+        }
+
+        @Override
+        public void elementAdded(AtRuleId atRuleId) {
+        }
+
+        @Override
+        public void elementAdded(GenericAtRule genericAtRule) {
+        }
+
+        @Override
+        public void elementAdded(MozDocument mozDocument) {
+        }
+
+        @Override
+        public void elementAdded(MozDocumentFunction mozDocumentFunction) {
+        }
+
+        @Override
+        public void elementAdded(VendorAtRule vendorAtRule) {
+        }
+
+        @Override
+        public void elementAdded(WebkitKeyframes webkitKeyFrames) {
+        }
+
+        @Override
+        public void elementAdded(WebkitKeyframeSelectors webkitKeyframeSelectors) {
+        }
+
+        @Override
+        public void elementAdded(WebkitKeyframesBlock webkitKeyframesBlock) {
         }
     }
 }

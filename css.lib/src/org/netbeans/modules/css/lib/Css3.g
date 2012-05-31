@@ -397,7 +397,7 @@ bodyItem
 //        }
     
 vendorAtRule
-: moz_document | webkitKeyFrames | generic_at_rule;
+: moz_document | webkitKeyframes | generic_at_rule;
     
 atRuleId
 	:
@@ -414,7 +414,7 @@ moz_document
 	: 
 	MOZ_DOCUMENT_SYM ws? ( moz_document_function ws?) ( COMMA ws? moz_document_function ws? )*
 	LBRACE ws?
-	 ( ( rule | page ) ws?)*
+		body? //can be empty
 	RBRACE
 	;
 
@@ -424,23 +424,23 @@ moz_document_function
 	;
     
 //http://developer.apple.com/library/safari/#documentation/appleapplications/reference/SafariCSSRef/Articles/OtherStandardCSS3Features.html#//apple_ref/doc/uid/TP40007601-SW1
-webkitKeyFrames
+webkitKeyframes
 	:
 	WEBKIT_KEYFRAMES_SYM ws? atRuleId ws? 
 	LBRACE ws?
-		( keyframesBlock ws? )*
+		( webkitKeyframesBlock ws? )*
 	RBRACE
 	;
 	
-keyframesBlock
+webkitKeyframesBlock
 	:
-	keyframeSelectors ws?
+	webkitKeyframeSelectors ws?
 	LBRACE  ws? syncTo_IDENT_RBRACE
 		declarations
 	RBRACE 
 	;	
 	
-keyframeSelectors
+webkitKeyframeSelectors
 	:
 	( 'FROM' | 'TO' | PERCENTAGE ) ( ws? COMMA ws? ( 'FROM' | 'TO' | PERCENTAGE ) )*
 	;

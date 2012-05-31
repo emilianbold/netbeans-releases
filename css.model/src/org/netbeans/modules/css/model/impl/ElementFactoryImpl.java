@@ -366,4 +366,51 @@ public final class ElementFactoryImpl implements ElementFactory {
         }
         return media;
     }
+
+    @Override
+    public VendorAtRule createVendorAtRule() {
+        return new VendorAtRuleI(model);
+    }
+
+    @Override
+    public AtRuleId createAtRuleId() {
+        return new AtRuleIdI(model);
+    }
+
+    @Override
+    public AtRuleId createAtRuleId(CharSequence text) {
+        AtRuleId atRuleId = createAtRuleId();
+        atRuleId.setContent(text);
+        return atRuleId;
+    }
+
+    @Override
+    public MozDocument createMozDocument() {
+        return new MozDocumentI(model);
+    }
+
+    @Override
+    public MozDocumentFunction createMozDocumentFunction() {
+        return new MozDocumentFunctionI(model);
+    }
+
+    @Override
+    public GenericAtRule createGenericAtRule() {
+        return new GenericAtRuleI(model);
+    }
+
+    @Override
+    public WebkitKeyframes createWebkitKeyFrames() {
+        return new WebkitKeyframesI(model);
+    }
+
+    @Override
+    public WebkitKeyframesBlock createWebkitKeyFramesBlock() {
+        return new WebkitKeyframesBlockI(model);
+    }
+
+    @Override
+    public WebkitKeyframeSelectors createWebkitKeyframeSelectors() {
+        return new WebkitKeyframeSelectorsI(model);
+    }
 }

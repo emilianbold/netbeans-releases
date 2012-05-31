@@ -114,4 +114,50 @@ public interface Body extends Element {
      */
     public boolean removeFontFace(FontFace fontFace);
     
+    /**
+     * Unmodifiable subset of the body items - contains just body items of the GenericAtRule type
+     */
+    public List<GenericAtRule> getGenericAtRules();
+    
+    /**
+     * Adds a new GenericAtRule at the end of the Body
+     */
+    public void addGenericAtRule(GenericAtRule genericAtRule);
+    
+    /**
+     * Remove the GenericAtRule element
+     */
+    public boolean removeGenericAtRule(GenericAtRule genericAtRule);
+    
+    /**
+     * Unmodifiable subset of the body items - contains just body items of the MozDocument type
+     */
+    public List<MozDocument> getMozDocuments();
+    
+    /**
+     * Adds a new MozDocument at the end of the Body
+     */
+    public void addMozDocument(MozDocument mozDocument);
+    
+    /**
+     * Remove the MozDocument element
+     */
+    public boolean removeMozDocument(MozDocument mozDocument);
+    
+    /**
+     * Unmodifiable subset of the body items - contains just body items of the WebkitKeyFrames type
+     */
+    public List<WebkitKeyframes> getWebkitKeyFrames();
+    
+    /**
+     * Adds a new WebkitKeyFrames at the end of the Body
+     */
+    public void addWebkitKeyFrames(WebkitKeyframes webkitKeyFrames);
+    
+    /**
+     * Remove the GenericAtRule element
+     */
+    public boolean removeWebkitKeyFrames(WebkitKeyframes webkitKeyFrames);
+    
+    
 }

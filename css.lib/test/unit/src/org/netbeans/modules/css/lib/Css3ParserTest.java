@@ -102,7 +102,7 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult res = TestUtil.parse(code);
 
         assertResult(res, 1);
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
 
         //the background: red; declaration is properly parsed even if the previous declaration is broken
         assertNotNull(NodeUtil.query(res.getParseTree(),
@@ -119,7 +119,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "}";
 
         CssParserResult res = TestUtil.parse(code);
-        TestUtil.dumpResult(res);
+//        TestUtil.dumpResult(res);
 
         assertResult(res, 1);
 
@@ -188,7 +188,7 @@ public class Css3ParserTest extends CssTestBase {
 
     public void testNamespacesInSelector() throws ParseException, BadLocationException {
         CssParserResult res = assertResultOK(TestUtil.parse("myns|h1 { color: red; }"));
-        NodeUtil.dumpTree(res.getParseTree());
+//        NodeUtil.dumpTree(res.getParseTree());
 
         String typeSelectorPath = "rule/selectorsGroup/selector/simpleSelectorSequence/typeSelector/";
 
@@ -758,7 +758,7 @@ public class Css3ParserTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(content);
 //        TestUtil.dumpTokens(result);
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
 
         Node counterStyle = NodeUtil.query(result.getParseTree(),
                 TestUtil.bodysetPath
@@ -895,7 +895,7 @@ public class Css3ParserTest extends CssTestBase {
     public void testParsingOfAsterixOnly() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("*     ");
         //                                       0123456
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
@@ -908,7 +908,7 @@ public class Css3ParserTest extends CssTestBase {
     
     public void testErrorInSelector() throws BadLocationException, ParseException {
         CssParserResult result = TestUtil.parse("h1[|");
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
 //        Node node = NodeUtil.query(result.getParseTree(),
 //                "styleSheet/body/bodyset/"
@@ -944,7 +944,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "    background-image: uri();"
                 + "}");
         
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         assertResult(result, 1);
         
@@ -1065,7 +1065,7 @@ public class Css3ParserTest extends CssTestBase {
 //        TestUtil.dumpResult(result);
         
         Node wkf = NodeUtil.query(result.getParseTree(),
-                "styleSheet/body/bodyItem/vendorAtRule/webkitKeyFrames");
+                "styleSheet/body/bodyItem/vendorAtRule/webkitKeyframes");
                 
         assertNotNull(wkf);
         
@@ -1074,23 +1074,23 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals("spin", atRuleName.image().toString());
         
         //block1
-        Node block = NodeUtil.query(wkf, "keyframesBlock|0");
-        Node selectors = NodeUtil.query(block, "keyframeSelectors");
+        Node block = NodeUtil.query(wkf, "webkitKeyframesBlock|0");
+        Node selectors = NodeUtil.query(block, "webkitKeyframeSelectors");
         assertNotNull(selectors);
         assertEquals("40%", selectors.image().toString());
         
-        Node declarations = NodeUtil.query(wkf, "keyframesBlock/declarations");
+        Node declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
         assertNotNull(NodeUtil.query(declarations, "declaration/property"));
         assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
         
         //block2
-        block = NodeUtil.query(wkf, "keyframesBlock|1");
-        selectors = NodeUtil.query(block, "keyframeSelectors");
+        block = NodeUtil.query(wkf, "webkitKeyframesBlock|1");
+        selectors = NodeUtil.query(block, "webkitKeyframeSelectors");
         assertNotNull(selectors);
         assertEquals("from", selectors.image().toString());
         
-        declarations = NodeUtil.query(wkf, "keyframesBlock/declarations");
+        declarations = NodeUtil.query(wkf, "webkitKeyframesBlock/declarations");
         assertNotNull(declarations);
         assertNotNull(NodeUtil.query(declarations, "declaration/property"));
         assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));

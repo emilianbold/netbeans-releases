@@ -192,6 +192,90 @@ public class BodyI extends ModelElement implements Body {
         return Body.class;
     }
 
+    private List<VendorAtRule> getVendorAtRules() {
+        List<VendorAtRule> rules = new ArrayList<VendorAtRule>();
+        for(BodyItem bi : getBodyItems()) {
+            if(bi.getElement() instanceof VendorAtRule) {
+                rules.add((VendorAtRule)bi.getElement());
+            }
+        }
+        return Collections.unmodifiableList(rules);
+    }
+    
+    private <T extends Element> List<T> getVendorAtRuleElements(Class<T> ofType) {
+         List<T> rules = new ArrayList<T>();
+        for(VendorAtRule bi : getVendorAtRules()) {
+            Element element = bi.getElement();
+            if(ofType.isAssignableFrom(element.getClass())) {
+                T t = ofType.cast(bi);
+                rules.add(t);
+            }
+        }
+        return Collections.unmodifiableList(rules);
+    }
+
+    private void addVendorAtRuleMember(Element element) {
+        BodyItem bi = model.getElementFactory().createBodyItem();
+        addElement(bi);
+        
+        VendorAtRule vendorAtRule = model.getElementFactory().createVendorAtRule();
+        bi.setElement(vendorAtRule);
+        vendorAtRule.setElement(element);
+    }
+    
+    @Override
+    public List<GenericAtRule> getGenericAtRules() {
+        return getVendorAtRuleElements(GenericAtRule.class);
+    }
+
+    @Override
+    public void addGenericAtRule(GenericAtRule genericAtRule) {
+        addVendorAtRuleMember(genericAtRule);
+    }
+    
+    private boolean removeVendorAtRuleChild(Element element) {
+        Element vendorAtRule = element.getParent();
+        assert vendorAtRule != null;
+        assert vendorAtRule instanceof VendorAtRule;
+        
+        return removeBodyItemChild(vendorAtRule);
+    }
+
+    @Override
+    public boolean removeGenericAtRule(GenericAtRule genericAtRule) {
+        return removeVendorAtRuleChild(genericAtRule);
+    }
+
+    @Override
+    public List<MozDocument> getMozDocuments() {
+        return getVendorAtRuleElements(MozDocument.class);
+    }
+
+    @Override
+    public void addMozDocument(MozDocument mozDocument) {
+        addVendorAtRuleMember(mozDocument);
+    }
+
+    @Override
+    public boolean removeMozDocument(MozDocument mozDocument) {
+        return removeVendorAtRuleChild(mozDocument);
+    }
+
+    @Override
+    public List<WebkitKeyframes> getWebkitKeyFrames() {
+        return getVendorAtRuleElements(WebkitKeyframes.class);
+    }
+
+    @Override
+    public void addWebkitKeyFrames(WebkitKeyframes webkitKeyFrames) {
+        addVendorAtRuleMember(webkitKeyFrames);
+    }
+
+    @Override
+    public boolean removeWebkitKeyFrames(WebkitKeyframes webkitKeyFrames) {
+        return removeVendorAtRuleChild(webkitKeyFrames);
+    }
+ 
 
        
 }
