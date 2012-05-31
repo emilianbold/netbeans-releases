@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalker;
+package org.netbeans.modules.profiler.nbimpl.javac;
 
-import java.io.IOException;
-import org.netbeans.modules.profiler.heapwalk.HeapWalkerManager;
-import org.netbeans.modules.profiler.heapwalk.model.BrowserUtils;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.util.Lookup;
+import org.netbeans.api.java.source.Task;
 
 /**
- * HPROF heapdump DataObject
- *
- * @author Tomas Hurka
+ * A scan sensitive version of the java source {@linkplain Task}.
+ * Allows the subclasses to define whether they require up-to-date data or
+ * whether they would be satisfied with the last good knows one.
+ * 
+ * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
-@DataObject.Registration(
-    iconBase = "org/netbeans/modules/profiler/heapwalk/ui/icons/impl/snapshotDataObject.png", 
-    mimeType = "application/x-netbeans-profiler-hprof",
-    position=10
-)
-public class HprofDataObject extends MultiDataObject implements OpenCookie {
+abstract public class ScanSensitiveTask<P> implements Task<P> {
+    private boolean uptodate;
     
-    public HprofDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        
+    /**
+     * Creates an instance not requiring up-to-date data
+     */
+    public ScanSensitiveTask() {
+        this(false);
     }
     
-    @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+    /**
+     * 
+     * @param uptodate TRUE = requires up-to-date data (eg. needs to wait for the scanning to finish)
+     */
+    public ScanSensitiveTask(boolean uptodate) {
+        this.uptodate = uptodate;
     }
     
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+    /**
+     * Used for indication of whether the task was able to obtain required data or not.
+     * 
+     * @return <b>TRUE</b> if the task got the required data; <b>FALSE</b> otherwise
+     */
+    public boolean shouldRetry() {
+        return false;
     }
     
-    public void open() {
-        final FileObject heapDumpFo = getPrimaryFile();
-        BrowserUtils.performTask(new Runnable() {
-            public void run() {
-                if (heapDumpFo != null) {
-                    HeapWalkerManager.getDefault().openHeapWalker(FileUtil.toFile(heapDumpFo));
-                }
-            }
-        });
-    }
-
-    @Override
-    protected void handleDelete() throws IOException {
-        HeapWalkerManager.getDefault().deleteHeapDump(FileUtil.toFile(getPrimaryFile()));
+    /**
+     * Indicates the requirements regarding the up-to-dateness of the accessed data
+     * @return <b>TRUE</b> if the task needs up-to-date data (eg. needs to wait for the scanning to finish); <b>FALSE</b> otherwise
+     */
+    final public boolean requiresUpToDate() {
+        return this.uptodate;
     }
 }
