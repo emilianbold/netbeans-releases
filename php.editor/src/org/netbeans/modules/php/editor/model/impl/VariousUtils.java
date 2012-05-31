@@ -367,7 +367,7 @@ public class VariousUtils {
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes(true));
+                                newRecentTypes.addAll(filterSuperTypes(meth.getReturnTypes(true)));
                             }
                         }
                         recentTypes = newRecentTypes;
@@ -503,6 +503,37 @@ public class VariousUtils {
         }
 
         return recentTypes;
+    }
+
+    private static Collection<TypeScope> filterSuperTypes(final Collection<? extends TypeScope> typeScopes) {
+        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        if (typeScopes.size() > 1) {
+            result.addAll(filterPossibleSuperTypes(typeScopes));
+        } else {
+            result.addAll(typeScopes);
+        }
+        return result;
+    }
+
+    private static Collection<TypeScope> filterPossibleSuperTypes(final Collection<? extends TypeScope> typeScopes) {
+        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        for (TypeScope typeScope : typeScopes) {
+            if (!isSuperTypeOf(typeScope, typeScopes)) {
+                result.add(typeScope);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isSuperTypeOf(final TypeScope superType, final Collection<? extends TypeScope> typeScopes) {
+        boolean result = false;
+        for (TypeScope typeScope : typeScopes) {
+            if (superType.isSuperTypeOf(typeScope)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {

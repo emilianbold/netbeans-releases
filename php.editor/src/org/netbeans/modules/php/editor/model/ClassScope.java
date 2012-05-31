@@ -47,7 +47,7 @@ import org.netbeans.modules.php.editor.api.elements.ClassElement;
 /**
  * @author Radek Matous
  */
-public interface ClassScope extends TypeScope, VariableScope, ClassElement {
+public interface ClassScope extends TypeScope, VariableScope, ClassElement, TraitedScope {
     Collection<? extends ClassScope> getSuperClasses();
     Collection<? extends String> getSuperClassNames();
     Collection<? extends MethodScope> getDeclaredConstructors();
