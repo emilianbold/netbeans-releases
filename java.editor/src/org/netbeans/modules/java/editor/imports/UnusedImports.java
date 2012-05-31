@@ -177,7 +177,7 @@ public class UnusedImports {
             if (info.getTreeUtilities().isSynthetic(getCurrentPath()))
                 return null;
             
-            typeUsed(info.getTrees().getElement(getCurrentPath()), getCurrentPath(), getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD);
+            typeUsed(info.getTrees().getElement(getCurrentPath()), getCurrentPath(), getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION);
             
             return super.visitIdentifier(tree, null);
         }
