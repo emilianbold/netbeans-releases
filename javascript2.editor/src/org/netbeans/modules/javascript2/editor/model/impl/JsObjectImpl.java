@@ -225,6 +225,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     }
                 }
             }
+            if(resolved.isEmpty()) {
+                // keep somthink in the assignments. 
+                resolved.add(new TypeUsageImpl("Object", offset, true));
+            }
             result = resolved;
         }
         

@@ -12,7 +12,7 @@ Person:CONSTRUCTOR:[PUBLIC]:ESCAPED{Person}ESCAPED{(}PARAMETERS{ESCAPED{n}ESCAPE
   makeOlder:METHOD:[PRIVATE]:ESCAPED{makeOlder}ESCAPED{(}PARAMETERS{}ESCAPED{)}:
   maxAge:VARIABLE:[PRIVATE]:ESCAPED{maxAge}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}Number</font>:
   muchTimePasses:METHOD:[PROTECTED]:ESCAPED{muchTimePasses}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-  myName:VARIABLE:[PRIVATE]:ESCAPED{myName}:
+  myName:VARIABLE:[PRIVATE]:ESCAPED{myName}<font color="#999999">ESCAPED{ : }Object</font>:
   population:FIELD:[PUBLIC, STATIC]:ESCAPED{population}<font color="#999999">ESCAPED{ : }Number</font>:
   prototype:CLASS:[PUBLIC]:ESCAPED{prototype}:
   toString:METHOD:[PROTECTED]:ESCAPED{toString}ESCAPED{(}PARAMETERS{}ESCAPED{)}:

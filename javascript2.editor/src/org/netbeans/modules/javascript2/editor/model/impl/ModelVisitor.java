@@ -145,7 +145,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                     if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
                         CallNode cNode = (CallNode)getPath().get(pathSize - 2);
-                        property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());                        
+                        if (!cNode.getArgs().contains(accessNode)) {
+                            property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());                        
+                        } else {
+                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                        }
                     } else {
                         property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
                     }
