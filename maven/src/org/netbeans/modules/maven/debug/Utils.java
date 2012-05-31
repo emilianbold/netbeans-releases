@@ -71,7 +71,6 @@ import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -214,14 +213,10 @@ public class Utils {
                         srcfos [j] = FileUtil.getArchiveRoot(srcfos [j]);
                     }
                     try {
-                        url = srcfos[j].getURL();
+                        url = srcfos[j].toURL();
                         if  (!url.toExternalForm().endsWith("/")) {
                             url = new URL(url.toExternalForm() + "/");
                         }
-                    } catch (FileStateInvalidException ex) {
-                        ErrorManager.getDefault().notify
-                                (ErrorManager.EXCEPTION, ex);
-                        continue;
                     } catch (MalformedURLException ex) {
                         ErrorManager.getDefault().notify
                                 (ErrorManager.EXCEPTION, ex);

@@ -395,7 +395,7 @@ public class DBReadWriteHelper {
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
                 case Types.BLOB:
-                    ps.setBinaryStream(index, ((Blob) valueObj).getBinaryStream());
+                    ps.setBinaryStream(index, ((Blob) valueObj).getBinaryStream(), (int) ((Blob) valueObj).length());
                     break;
 
                 case Types.CHAR:
@@ -410,7 +410,7 @@ public class DBReadWriteHelper {
                 case -16:
                 case Types.CLOB:
                 case 2011: /*NCLOB */
-                    ps.setCharacterStream(index, ((Clob) valueObj).getCharacterStream());
+                    ps.setCharacterStream(index, ((Clob) valueObj).getCharacterStream(), (int) ((Clob) valueObj).length());
                     break;
 
                 default:

@@ -87,11 +87,6 @@ import org.openide.windows.TopComponent;
  * @author Tor Norbye
  */
 public class GotoOppositeAction extends CallableSystemAction {
-    private TestLocator cachedLocator;
-    private FileObject cachedLocatorFo;
-    private FileObject cachedFileTypeFo;
-    private FileObject cachedLocationResultsFo;
-    private FileType cachedFileType;
     private HashMap<LocationResult, String> locationResults = new HashMap<LocationResult, String>();
     private Semaphore lock;
 
@@ -172,10 +167,6 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
 
     private void populateLocationResults(FileObject fo, int caretOffset) {
-        if (cachedLocationResultsFo == fo) {
-            return;
-        }
-        cachedLocationResultsFo = fo;
         locationResults.clear();
 
         Collection<? extends TestLocator> locators = Lookup.getDefault().lookupAll(TestLocator.class);
@@ -275,38 +266,23 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     private TestLocator getLocatorFor(FileObject fo) {
-        if (fo == cachedLocatorFo) {
-            return cachedLocator;
-        }
-        cachedLocatorFo = fo;
-        cachedLocator = null;
-
         Collection<? extends TestLocator> locators = Lookup.getDefault().lookupAll(TestLocator.class);
         for (TestLocator locator : locators) {
             if (locator.appliesTo(fo)) {
-                cachedLocator = locator;
-                
-                break;
+                return locator;
             }
         }
         
-        return cachedLocator;
+        return null;
     }
     
     private FileType getFileType(FileObject fo) {
-        if (fo == cachedFileTypeFo) {
-            return cachedFileType;
-        }
-        
-        cachedFileTypeFo = fo;
-        cachedFileType = FileType.NEITHER;
-        
         TestLocator locator = getLocatorFor(fo);
         if (locator != null) {
-            cachedFileType = locator.getFileType(fo);
+            return locator.getFileType(fo);
         }
         
-        return cachedFileType;
+        return FileType.NEITHER;
     }
     
     private FileType getCurrentFileType() {
