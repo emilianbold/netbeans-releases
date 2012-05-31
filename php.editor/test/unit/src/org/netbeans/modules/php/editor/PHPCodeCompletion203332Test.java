@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.php.editor.model;
-
-import java.util.Collection;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Radek Matous
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-/*
- * TODO:
- * Namespaces must be involved in:
- * TypeScope: Collection<? extends InterfaceScope> getSuperInterfaces();
- * ClassScope, TypeScope: Collection<? extends String> getSuperInterfaceNames();
- * ClassScope: Collection<? extends ClassScope> getSuperClasses();
- */
-public interface TypeScope extends Scope, FullyQualifiedElement, TypeElement {
-    /**
-     * @return declared methods only
-     */
-    Collection<? extends MethodScope> getDeclaredMethods();
-    /**
-     * @return inherited methods only
-     */
-    Collection<? extends MethodScope> getInheritedMethods();
-    /**
-     * @return declared+inherited methods
-     */
-    Collection<? extends MethodScope> getMethods();
+public class PHPCodeCompletion203332Test extends PHPCodeCompletionTestBase {
 
-    Collection<? extends ClassConstantElement> getDeclaredConstants();
-    Collection<? extends ClassConstantElement> getInheritedConstants();
-    Collection<? extends InterfaceScope> getSuperInterfaceScopes();
-    Collection<? extends String> getSuperInterfaceNames();
-    boolean isSuperTypeOf(TypeScope subType);
-    boolean isSubTypeOf(TypeScope subType);
+    public PHPCodeCompletion203332Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests203332/test203332_01.php", "$q->open()->^open();", false);
+    }
+
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests203332/test203332_02.php", "$v->^from();", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests203332/"))
+            })
+        );
+    }
+
 }
