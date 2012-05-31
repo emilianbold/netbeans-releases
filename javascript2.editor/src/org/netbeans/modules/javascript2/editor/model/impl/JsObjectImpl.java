@@ -270,10 +270,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         visited.add(fqn);
         Collection<? extends Type> offsetAssignments = Collections.EMPTY_LIST;
         int closeOffset = -1;
-        for(Integer position : assignments.keySet()) {
+        for(Integer position : ((JsObjectImpl)jsObject).assignments.keySet()) {
             if (closeOffset < position && position <= offset) {
                 closeOffset = position;
-                offsetAssignments = assignments.get(position);
+                offsetAssignments = ((JsObjectImpl)jsObject).assignments.get(position);
             }
         }
         if (offsetAssignments.isEmpty() && !jsObject.getProperties().isEmpty()) {
