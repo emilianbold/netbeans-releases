@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.VariadicSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
@@ -554,18 +555,29 @@ public class PersistentUtils {
             output.writeInt(SPECIALIZATION_PARAMETERS_LIST);
             output.writeInt(params.size());
             for (CsmSpecializationParameter p : params) {
-                if (p instanceof TypeBasedSpecializationParameterImpl) {
-                    output.writeInt(TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL);
-                    ((TypeBasedSpecializationParameterImpl) p).write(output);
-                } else if (p instanceof ExpressionBasedSpecializationParameterImpl) {
-                    output.writeInt(EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL);
-                    ((ExpressionBasedSpecializationParameterImpl) p).write(output);
-                } else {
-                    assert false : "unexpected instance of specialization parameter ";
-                }
+                writeSpecializationParameter(p, output);
             }
         }
     }
+
+    public static void writeSpecializationParameter(CsmSpecializationParameter param, RepositoryDataOutput output) throws IOException {
+        if (param == null) {
+            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+        } else {        
+            if (param instanceof TypeBasedSpecializationParameterImpl) {
+                output.writeInt(TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL);
+                ((TypeBasedSpecializationParameterImpl) param).write(output);
+            } else if (param instanceof ExpressionBasedSpecializationParameterImpl) {
+                output.writeInt(EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL);
+                ((ExpressionBasedSpecializationParameterImpl) param).write(output);
+            } else if (param instanceof VariadicSpecializationParameterImpl) {
+                output.writeInt(VARIADIC_SPECIALIZATION_PARAMETER_IMPL);
+                ((VariadicSpecializationParameterImpl) param).write(output);
+            } else {
+                assert false : "unexpected instance of specialization parameter ";
+            }
+        }
+    }    
 
     public static List<CsmSpecializationParameter> readSpecializationParameters(RepositoryDataInput input) throws IOException {
         int handler = input.readInt();
@@ -590,16 +602,29 @@ public class PersistentUtils {
     private static void readSpecializationParametersList(List<CsmSpecializationParameter> params, RepositoryDataInput input) throws IOException {
         int size = input.readInt();
         for (int i = 0; i < size; i++) {
-            int type = input.readInt();
-            if(type == TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL) {
-                params.add(new TypeBasedSpecializationParameterImpl(input));
-            } else if (type == EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL) {
-                params.add(new ExpressionBasedSpecializationParameterImpl(input));
-            } else {
-                assert false : "unexpected instance of specialization parameter ";
-            }
+            params.add(readSpecializationParameter(input));
         }
     }
+
+    public static CsmSpecializationParameter readSpecializationParameter(RepositoryDataInput input) throws IOException {
+        int type = input.readInt();
+        if (type == AbstractObjectFactory.NULL_POINTER) {
+            return null;
+        }
+        
+        if(type == TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL) {
+            return new TypeBasedSpecializationParameterImpl(input);
+        } else if (type == EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL) {
+            return new ExpressionBasedSpecializationParameterImpl(input);
+        } else if (type == VARIADIC_SPECIALIZATION_PARAMETER_IMPL) {
+            return new VariadicSpecializationParameterImpl(input);
+        } else {
+            assert false : "unexpected instance of specialization parameter ";
+        }
+        return null;
+    }
+    
+    
     
     ////////////////////////////////////////////////////////////////////////////
     // support visibility
@@ -771,8 +796,9 @@ public class PersistentUtils {
     private static final int SPECIALIZATION_PARAMETERS_LIST = SPECIALIZATION_DESCRIPTOR_IMPL + 1;
     private static final int TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL = SPECIALIZATION_PARAMETERS_LIST + 1;
     private static final int EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL = TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL + 1;
+    private static final int VARIADIC_SPECIALIZATION_PARAMETER_IMPL = EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL + 1;
 
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL;
+    public static final int LAST_INDEX = VARIADIC_SPECIALIZATION_PARAMETER_IMPL;
 }
