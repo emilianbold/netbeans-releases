@@ -317,7 +317,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         LibraryManager.getInstance().dumpInfo(new PrintWriter(System.err), true);
     }
 
-    private void waitAllProjectsParsed() {
+    protected void waitAllProjectsParsed() {
         sleep(1000);
         Collection<CsmProject> projects;
         projects = getModel().projects();
