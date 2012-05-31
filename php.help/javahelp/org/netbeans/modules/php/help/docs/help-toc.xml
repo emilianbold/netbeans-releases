@@ -51,7 +51,7 @@
             </tocitem>
             <tocitem text="Viewing Program Information" expand="false">
                 <tocitem target="php_debug_variables" text="Viewing Variables and Expressions While Debugging"/>
-                <tocitem target="php_debug_watches" text="Creating a Watch"/>
+                <tocitem target="php_debug_watches" text="Enabling and Creating Watches"/>
                 <tocitem target="php_debug_threads" text="Debugging Threads in the IDE"/>
             </tocitem>
         </tocitem>
