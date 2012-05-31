@@ -309,7 +309,7 @@ public final class ProjectImpl extends ProjectBase {
             }
         }
         for (FileImpl file : addToParse) {
-            ParserQueue.instance().add(file, getPreprocHandlers(file), ParserQueue.Position.TAIL);
+            ParserQueue.instance().add(file, getPreprocHandlersForParse(file), ParserQueue.Position.TAIL);
         }
     //N.B. don't clear list of editedFiles here.
     }

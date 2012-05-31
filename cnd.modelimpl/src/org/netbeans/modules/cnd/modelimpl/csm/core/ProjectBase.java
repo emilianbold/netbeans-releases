@@ -1362,7 +1362,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
-    public final Collection<APTPreprocHandler> getPreprocHandlers(FileImpl fileImpl) {
+    public final Collection<APTPreprocHandler> getPreprocHandlersForParse(FileImpl fileImpl) {
         CharSequence fileKey = FileContainer.getFileKey(fileImpl.getAbsolutePath(), false);
         FileContainer.FileEntry entry = getFileContainer().getEntry(fileKey);
         if (entry == null) {
