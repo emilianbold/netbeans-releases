@@ -466,10 +466,14 @@ public class ClipboardHandler {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
                         final FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
                         final Document doc = tc.getDocument();
+                        final int len = doc.getLength();
                         final List<Position[]> inSpans = new ArrayList<Position[]>();
 
                         for (int[] span : imports.identifiers) {
-                            inSpans.add(new Position[] {doc.createPosition(caret + span[0]), doc.createPosition(caret + span[1])});
+                            int start = caret + span[0];
+                            int end = caret + span[1];
+                            if (0 <= start && start <= end && end <= len)
+                                inSpans.add(new Position[] {doc.createPosition(start), doc.createPosition(end)});
                         }
 
                         SwingUtilities.invokeLater(new Runnable() {
