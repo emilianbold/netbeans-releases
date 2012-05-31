@@ -337,15 +337,15 @@ public final class Log extends Handler {
         }
     }
 
-    static /* @CheckForNull */ String normalizedMessages() {
+    static /* @CheckForNull */ String normalizedMessages(String workDirPath) {
         if (messages.length() == initialMessages) {
             return null;
         }
-        return NbModuleLogHandler.normalize(messages);
+        return NbModuleLogHandler.normalize(messages, workDirPath);
     }
 
-    static Throwable wrapWithMessages(Throwable ex) {
-        String m = normalizedMessages();
+    static Throwable wrapWithMessages(Throwable ex, String workDirPath) {
+        String m = normalizedMessages(workDirPath);
         if (m == null) {
             // no wrapping
             return ex;

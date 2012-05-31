@@ -50,8 +50,6 @@ import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.junit.internal.NbModuleLogHandler;
 
 /** Is logging working OK?
@@ -117,15 +115,10 @@ public class LogTest extends NbTestCase {
         pw.println("g5=" + g5 + " i6=" + i6);
         pw.println("i4=" + i4 + " o1=" + o1);
         pw.flush();
-        String expect = NbModuleLogHandler.normalize(w.getBuffer()).replace('\\', '/');
-        Pattern p = Pattern.compile(".*(WORKDIR.*)/some/thing");
-        Matcher m = p.matcher(expect);
-        if (m.find()) {
-            expect = expect.substring(0, m.start(1)) + "WRKD" + expect.substring(m.end(1));
-        }
+        String expect = NbModuleLogHandler.normalize(w.getBuffer(), getWorkDirPath()).replace('\\', '/');
         assertEquals("some stuff\n"
                 + "null\n"
-                + "found WRKD/some/thing great\n"
+                + "found WORKDIR/some/thing great\n"
                 + "o0=java.lang.Object@0 o1=java.lang.Object@1\n"
                 + "o0=java.lang.Object@0\n"
                 + "g2=Group@2 i3=Item@3:2 i4=Item@4:2\n"
