@@ -880,6 +880,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             textualEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yName"));  // NOI18N
             textualEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
             textualPanel.add(new JScrollPane(textualEditorPane));
+            textualEditorPane.putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+            jEditorPane1.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+            jEditorPane2.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
         }        
         
         jSplitPane1.setLeftComponent(filePanel1);
@@ -895,9 +898,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             view.setOpaque(true);
         }   
     
-        textualEditorPane.putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
-        jEditorPane1.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
-        jEditorPane2.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
     }
 
     WeakHashMap<JEditorPane, FoldHierarchyListener> hieararchyListeners = new WeakHashMap<JEditorPane, FoldHierarchyListener>(2);

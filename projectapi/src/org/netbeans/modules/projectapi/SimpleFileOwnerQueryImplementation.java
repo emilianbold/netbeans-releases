@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
@@ -75,6 +76,7 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=100)
 public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImplementation {
     private static final Logger LOG = Logger.getLogger(SimpleFileOwnerQueryImplementation.class.getName());
+    private static final URI UNOWNED_URI = URI.create("http:unowned");
     
     /** Do nothing */
     public SimpleFileOwnerQueryImplementation() {}
@@ -145,6 +147,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 URI externalOwnersURI = externalOwners.get(f.toURI());
 
                 if (externalOwnersURI != null) {
+                    if (externalOwnersURI == UNOWNED_URI) {
+                        return FileOwnerQuery.UNOWNED;
+                    }
                     FileObject externalOwner = uri2FileObject(externalOwnersURI);
 
                     if (externalOwner != null && externalOwner.isValid()) {
@@ -223,7 +228,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
             for (URI uri : externalOwners.keySet()) {
                 URI ownerURI = externalOwners.get(uri);
+                if (ownerURI != UNOWNED_URI) {
                 p.put(uri.toString(), ownerURI.toString());
+            }
             }
             p.sync(); // #184310
         } catch (Exception ex) {
@@ -247,7 +254,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         externalRootsIncludeNonFolders |= !root.getPath().endsWith("/");
         if (owner != null) {
             FileObject fo = owner.getProjectDirectory();
-            externalOwners.put(root, fo.toURI());
+            externalOwners.put(root, owner == FileOwnerQuery.UNOWNED ? UNOWNED_URI : fo.toURI());
             deserializedExternalOwners.remove(root);
         } else {
             externalOwners.remove(root);

@@ -112,7 +112,8 @@ public class ClosedCategoryNode extends CategoryNode {
             buttons.clear();
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
-            final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category_closed.png", true)); //NOI18N
+            final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
+            iconLabel.setEnabled(false);
             panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
             labels.add(lblName);

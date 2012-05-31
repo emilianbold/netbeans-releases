@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -103,8 +104,8 @@ public class JarFileSystemHidden extends NbTestCase {
 
         CharSequence log = Log.enable(JarFileSystem.class.getName(), Level.FINE);
         JarFileSystem fs = new JarFileSystem(f);
-        final String match = "opened: WORKDIR/o.o.f.J/testLazyOpen/ok.jar".replace('/', File.separatorChar);
-        if (log.toString().contains(match)) {
+        Pattern p = Pattern.compile("opened.*WORKDIR.*ok\\.jar");
+        if (p.matcher(log).find()) {
             fail("The file " + f + " shall not be opened when fs created:\n" + log);
         }
 
@@ -113,11 +114,11 @@ public class JarFileSystemHidden extends NbTestCase {
         if (!u.toExternalForm().startsWith("jar:file") || !u.toExternalForm().endsWith("ok.jar!/")) {
             fail("Unexpected URL: " + u);
         }
-        if (log.toString().contains(match)) {
+        if (p.matcher(log).find()) {
             fail("The file " + f + " shall not be opened yet:\n" + log);
         }
         assertEquals("Three files", 3, fs.getRoot().getChildren().length);
-        if (!log.toString().contains(match)) {
+        if (!p.matcher(log).find()) {
             fail("The file " + f + " shall be opened now:\n" + log);
         }
     }

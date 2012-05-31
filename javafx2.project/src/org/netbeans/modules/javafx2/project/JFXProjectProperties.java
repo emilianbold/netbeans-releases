@@ -2517,9 +2517,13 @@ public final class JFXProjectProperties {
                     boolean storeIfEmpty = (defaultValue != null && defaultValue.length() > 0) || isBoundedToNonemptyProperty(config, name);
                     privatePropsChanged |= updateProperty(name, value, sharedCfgProps, privateCfgProps, storeIfEmpty);
                 }
-                
-                cleanPropertiesIfEmpty((String[])PRELOADER_PROPERTIES.toArray(), config, sharedCfgProps);
-                privatePropsChanged |= cleanPropertiesIfEmpty(new String[] {RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}, config, privateCfgProps);
+
+                cleanPropertiesIfEmpty(
+                        new String[] {MAIN_CLASS, RUN_JVM_ARGS, 
+                        PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+                        RUN_APP_WIDTH, RUN_APP_HEIGHT}, config, sharedCfgProps);
+                privatePropsChanged |= cleanPropertiesIfEmpty(
+                        new String[] {RUN_WORK_DIR, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}, config, privateCfgProps);
                 privatePropsChanged |= updateParamProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
                 privatePropsChanged |= storeParamsAsCommandLine(config, privateCfgProps);
 
