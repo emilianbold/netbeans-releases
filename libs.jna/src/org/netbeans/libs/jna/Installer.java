@@ -51,12 +51,5 @@ public class Installer extends ModuleInstall {
         super.validate();
         //#211655
         System.setProperty( "jna.boot.library.name", "jnidispatch-340" ); //NOI18N
-        if( Utilities.isUnix() ) {
-            //workaround for JNA issue #66 https://github.com/twall/jna/pull/66
-            //should be obsolete when upgradind to a new version of JNA
-            String tmp = System.getProperty( "java.io.tmpdir" ); //NOI18N
-            tmp = tmp + "/netbeans-" + System.getProperty( "user.name" ); //NOI18N
-            System.setProperty( "java.io.tmpdir", tmp ); //NOI18N
-        }
     }
 }
