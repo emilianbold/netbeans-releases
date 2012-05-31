@@ -380,7 +380,7 @@ public class FileUtilTest extends NbTestCase {
         String one = FileUtil.normalizePath(path);
         String msg = "FileUtil.normalizeFile for " + f;
         if (log.toString().indexOf(msg) == -1) {
-            fail("One querfy for the file shall be in logs:\n" + log);
+            fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         String two = FileUtil.normalizePath(path);
