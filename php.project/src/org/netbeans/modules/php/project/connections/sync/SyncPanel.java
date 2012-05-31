@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,7 +81,9 @@ import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -95,6 +98,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
@@ -162,7 +167,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     Point popupMenuPoint = new Point(); // XXX is there a better way?
     // @GuardedBy(AWT)
-    PopupMenuListener popupMenuListener;
+    List<? extends RowSorter.SortKey> sortKeys = Arrays.asList(new RowSorter.SortKey(1, SortOrder.ASCENDING));
 
     private final PhpProject project;
     private final String remoteConfigurationName;
@@ -172,6 +177,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     private final ItemListener viewListener = new ViewListener();
 
+    // @GuardedBy(AWT)
+    private PopupMenuListener popupMenuListener;
     // @GuardedBy(AWT)
     private DialogDescriptor descriptor = null;
     // @GuardedBy(AWT)
@@ -336,6 +343,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private void initTable() {
         assert SwingUtilities.isEventDispatchThread();
         initTableModel();
+        initTableSorter();
         initTableRenderers();
         initTableHeader();
         initTableRows();
@@ -347,6 +355,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private void reinitTable() {
         assert SwingUtilities.isEventDispatchThread();
+        initTableSorter();
         initTableHeader();
         initTableRows();
         initTableColumns();
@@ -362,6 +371,16 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
         });
         itemTable.setModel(tableModel);
+    }
+
+    private void initTableSorter() {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
+        itemTable.setRowSorter(sorter);
+        // default sort keys
+        sorter.setSortKeys(sortKeys);
+        // sorting
+        sorter.setComparator(0, new SyncItemImageIconComparator());
+        sorter.setSortable(2, false);
     }
 
     private void initTableRenderers() {
@@ -559,16 +578,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         popupMenu.addPopupMenuListener(popupMenuListener);
     }
 
-    void swapPaths() {
-        assert SwingUtilities.isEventDispatchThread();
-        remotePathFirst = !remotePathFirst;
-        List<SyncItem> selectedItems = getSelectedItems(false);
-        tableModel.fireTableHeaderChanged();
-        reinitTable();
-        reinitOperationButtons();
-        reselectItems(selectedItems);
-    }
-
     private void initOperationButtons() {
         // operations
         initOperationButton(noopButton, SyncItem.Operation.NOOP);
@@ -702,6 +711,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         assert itemTable.getSelectedRowCount() <= 1 : "Selected rows in table: " + itemTable.getSelectedRowCount();
         Integer index = itemsToIndex(displayedItems).get(syncItem);
         if (index != null) {
+            index = itemTable.convertRowIndexToView(index);
             itemTable.getSelectionModel().setSelectionInterval(index, index);
         }
     }
@@ -711,13 +721,13 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         int[] selectedRows = itemTable.getSelectedRows();
         if (selectedRows.length == 0) {
             if (includingMousePosition) {
-                return Collections.singletonList(displayedItems.get(itemTable.rowAtPoint(popupMenuPoint)));
+                return Collections.singletonList(displayedItems.get(itemTable.convertRowIndexToModel(itemTable.rowAtPoint(popupMenuPoint))));
             }
             return Collections.emptyList();
         }
         List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
         for (int index : selectedRows) {
-            SyncItem syncItem = displayedItems.get(index);
+            SyncItem syncItem = displayedItems.get(itemTable.convertRowIndexToModel(index));
             selectedItems.add(syncItem);
         }
         return selectedItems;
@@ -731,7 +741,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             for (SyncItem item : selectedItems) {
                 Integer index = itemsToIndex.get(item);
                 if (index != null) {
-                    selectedRows.add(index);
+                    selectedRows.add(itemTable.convertRowIndexToView(index));
                 }
             }
         }
@@ -1009,6 +1019,41 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
         }
         tableModel.fireSyncItemsChange();
+    }
+
+    void swapPaths() {
+        assert SwingUtilities.isEventDispatchThread();
+        // swap columns
+        remotePathFirst = !remotePathFirst;
+        // remember sorting and selected items
+        sortKeys = adjustSortKeys(itemTable.getRowSorter().getSortKeys());
+        List<SyncItem> selectedItems = getSelectedItems(false);
+        // reinit table
+        tableModel.fireTableHeaderChanged();
+        reinitTable();
+        reinitOperationButtons();
+        reselectItems(selectedItems);
+    }
+
+    /**
+     * Adjust possible sort keys to new column order.
+     */
+    private List<? extends RowSorter.SortKey> adjustSortKeys(List<? extends RowSorter.SortKey> sortKeys) {
+        List<RowSorter.SortKey> currentKeys = new ArrayList<RowSorter.SortKey>(sortKeys);
+        List<RowSorter.SortKey> newKeys = new ArrayList<RowSorter.SortKey>(currentKeys.size());
+        for (RowSorter.SortKey sortKey : currentKeys) {
+            int column = sortKey.getColumn();
+            RowSorter.SortKey newSortKey;
+            if (column == 1) {
+                newSortKey = new RowSorter.SortKey(3, sortKey.getSortOrder());
+            } else if (column == 3) {
+                newSortKey = new RowSorter.SortKey(1, sortKey.getSortOrder());
+            } else {
+                newSortKey = sortKey;
+            }
+            newKeys.add(newSortKey);
+        }
+        return newKeys;
     }
 
     private List<ViewCheckBox> getSelectedViewCheckBoxes() {
@@ -1589,6 +1634,39 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public int noop = 0;
         public int errors = 0;
         public int warnings = 0;
+
+    }
+
+    private final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
+
+        @Override
+        public int compare(ImageIcon icon1, ImageIcon icon2) {
+            ImageIcon error = ImageUtilities.loadImageIcon(ERROR_ICON_PATH, false);
+            boolean isError1 = error.equals(icon1);
+            boolean isError2 = error.equals(icon2);
+            if (isError1 && isError2) {
+                return 0;
+            }
+            if (isError1) {
+                return 1;
+            }
+            if (isError2) {
+                return -1;
+            }
+            ImageIcon warning = ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false);
+            boolean isWarning1 = warning.equals(icon1);
+            boolean isWarning2 = warning.equals(icon2);
+            if (isWarning1 && isWarning2) {
+                return 0;
+            }
+            if (isWarning1) {
+                return 1;
+            }
+            if (isWarning2) {
+                return -1;
+            }
+            return 0;
+        }
 
     }
 
