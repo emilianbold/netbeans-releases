@@ -185,6 +185,9 @@ public class FileOwnerQuery {
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
+        @Override public String toString() {
+            return "UNOWNED";
+        }
     };
     
     /**
