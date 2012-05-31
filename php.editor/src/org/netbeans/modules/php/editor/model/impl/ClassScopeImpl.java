@@ -502,9 +502,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public boolean isSuperTypeOf(final TypeScope subType) {
         boolean result = false;
-        if (subType instanceof ClassScope) {
-            ClassScope subClassScope = (ClassScope) subType;
-            for (ClassScope classScope : subClassScope.getSuperClasses()) {
+        if (subType.isClass()) {
+            for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
                 if (classScope.equals(this)) {
                     result = true;
                 } else {
@@ -514,7 +513,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                     break;
                 }
             }
-        } else if (subType instanceof TraitScope) {
+        } else if (subType.isTrait()) {
             result = false;
         } else {
             result = super.isSuperTypeOf(subType);
