@@ -69,10 +69,16 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.WindowManager;
@@ -82,6 +88,11 @@ import org.openide.windows.WindowManager;
  * 
  * @author Alexander Simon
  */
+@ActionID(id = "org.netbeans.modules.cnd.actions.CompileAction", category = "Build")
+@ActionRegistration(lazy = false, displayName = "#BTN_Compile_File")
+@ActionReferences({
+    @ActionReference(path = "Loaders/text/x-cnd+sourcefile/Actions", name = "CompileAction", position = 950),
+})
 public class CompileAction extends AbstractExecutorRunAction {
 
     public CompileAction() {
@@ -110,7 +121,15 @@ public class CompileAction extends AbstractExecutorRunAction {
 
 
     private void performAction(Node node) {
-        performAction(node, getProject(node));
+        final Project project = getProject(node);
+        if (project != null) {
+            ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+            if (ap != null) {
+                ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.singleton(node));
+                return;
+            }
+        }
+        performAction(node, project);
     }
 
     private Future<Integer> performAction(final Node node, final Project project) {
