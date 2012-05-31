@@ -1285,8 +1285,10 @@ public class Actions {
             if (action instanceof SystemAction) {
                 SystemAction sa = (SystemAction) action;
                 i = sa.getIcon(useTextIcons());
-                button.setIcon((Icon) i);
-                button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
+                if( i != null ) {
+                    button.setIcon((Icon) i);
+                    button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
+                }
             } else {
                 if (base == null) {
                     i = action.getValue(Action.SMALL_ICON);
