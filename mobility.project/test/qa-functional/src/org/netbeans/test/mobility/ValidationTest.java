@@ -46,7 +46,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
-import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -75,7 +74,7 @@ public class ValidationTest extends JellyTestCase {
     public static final String MESDK_LINUX_LOCATION = "/space/hudson/mesdk";
     public static final String MESDK_LINUX_VERSION = "2.5.2";
     
-    public static final String ITEM_VISUALMIDLET = Bundle.getStringTrimmed("org.netbeans.modules.vmd.midp.resources.Bundle", "Templates/MIDP/VisualMIDlet.java");
+//    public static final String ITEM_VISUALMIDLET = Bundle.getStringTrimmed("org.netbeans.modules.vmd.midp.resources.Bundle", "Templates/MIDP/VisualMIDlet.java");
     public static final String ITEM_MIDLET = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/Midlet.java");
     public static final String ITEM_MIDPCANVAS = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/MIDPCanvas.java");
     public static final String CATEGORY_MIDP = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP");
@@ -157,7 +156,7 @@ public class ValidationTest extends JellyTestCase {
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
         DialogOperator djmep = new DialogOperator("Detecting Java ME platforms"); //TODO I18N
-        djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 200000);
         djmep.waitClosed();
         
         ajpw.finish();
@@ -187,15 +186,15 @@ public class ValidationTest extends JellyTestCase {
         //select the project in project view
         new ProjectsTabOperator().getProjectRootNode(PROJECT_TO_BE_CREATED).select();
         //create all new files in the project
-        createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "NewVisualMidlet", "myPackage"); // NOI18N
+//        createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "NewVisualMidlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDLET, "NewMIDlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "MIDPCanvas", "myPackage"); // NOI18N
 
         new EventTool().waitNoEvent(5000);
         
         //test that files are created and opened in editor
-        new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N
-        new EventTool().waitNoEvent(2000);
+//        new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N
+//        new EventTool().waitNoEvent(2000);
         new EditorOperator("NewMIDlet.java").close(); // NOI18N
         new EventTool().waitNoEvent(2000);
         new EditorOperator("MIDPCanvas.java").close();    // NOI18N

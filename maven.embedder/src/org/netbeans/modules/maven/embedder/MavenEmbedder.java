@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -128,7 +129,7 @@ public final class MavenEmbedder {
     private final SettingsDecrypter settingsDecrypter;
     private long settingsTimestamp;
     private static final Object lastLocalRepositoryLock = new Object();
-    private static String lastLocalRepository;
+    private static URI lastLocalRepository;
     private Settings settings;
 
     MavenEmbedder(EmbedderConfiguration configuration) throws ComponentLookupException {
@@ -178,6 +179,7 @@ public final class MavenEmbedder {
     }
 
     @SuppressWarnings("NestedSynchronizedStatement")
+    @org.netbeans.api.annotations.common.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public synchronized Settings getSettings() {
         if (Boolean.getBoolean("no.local.settings")) { // for unit tests
             return new Settings(); // could instead make public void setSettings(Settings settingsOverride)
@@ -201,13 +203,14 @@ public final class MavenEmbedder {
             if (localRep == null) {
                 localRep = RepositorySystem.defaultUserLocalRepository.getAbsolutePath();
             }
+            URI localRepU = FileUtil.normalizeFile(new File(localRep)).toURI();
             synchronized (lastLocalRepositoryLock) {
-                if (lastLocalRepository == null || !lastLocalRepository.equals(localRep)) {
-                    FileOwnerQuery.markExternalOwner(FileUtil.normalizeFile(new File(localRep)).toURI(), FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                if (lastLocalRepository == null || !lastLocalRepository.equals(localRepU)) {
+                    FileOwnerQuery.markExternalOwner(localRepU, FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                     if (lastLocalRepository != null) {
-                        FileOwnerQuery.markExternalOwner(FileUtil.normalizeFile(new File(lastLocalRepository)).toURI(), null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                        FileOwnerQuery.markExternalOwner(lastLocalRepository, null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                     }
-                    lastLocalRepository = localRep;
+                    lastLocalRepository = localRepU;
                 }
             }
             
