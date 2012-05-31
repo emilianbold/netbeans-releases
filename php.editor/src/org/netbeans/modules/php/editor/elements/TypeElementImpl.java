@@ -106,4 +106,9 @@ public abstract class TypeElementImpl extends FullyQualifiedElementImpl implemen
     public final boolean isTrait() {
         return getPhpElementKind().equals(PhpElementKind.TRAIT);
     }
+
+    @Override
+    public boolean isTraited() {
+        return getPhpElementKind().equals(PhpElementKind.TRAIT) || getPhpElementKind().equals(PhpElementKind.CLASS);
+    }
 }
