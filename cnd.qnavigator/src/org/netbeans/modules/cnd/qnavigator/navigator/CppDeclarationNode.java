@@ -341,12 +341,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 
     @Override
     public String getHtmlDisplayName() {
+        CharSequence html = htmlDisplayName;
         if(needInitHTML) {
-            htmlDisplayName = createHtmlDisplayName();
+            html = createHtmlDisplayName();
+            htmlDisplayName = html;
             needInitHTML = false;
         }
-        if (htmlDisplayName != null) {
-            return htmlDisplayName.toString();
+        if (html != null) {
+            return html.toString();
         }
         return null;
     }
