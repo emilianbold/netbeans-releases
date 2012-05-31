@@ -91,7 +91,7 @@ import org.openide.windows.WindowManager;
 @ActionID(id = "org.netbeans.modules.cnd.actions.CompileAction", category = "Build")
 @ActionRegistration(lazy = false, displayName = "#BTN_Compile_File")
 @ActionReferences({
-    @ActionReference(path = "Loaders/text/x-cnd+sourcefile/Actions", name = "CompileAction", position = 950),
+    @ActionReference(path = "Loaders/text/x-cnd+sourcefile/Actions", name = "CompileAction", position = 950)
 })
 public class CompileAction extends AbstractExecutorRunAction {
 
