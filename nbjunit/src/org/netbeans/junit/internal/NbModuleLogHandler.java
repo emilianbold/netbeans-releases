@@ -124,7 +124,7 @@ public final class NbModuleLogHandler extends Handler {
         if (txt != null && record.getParameters() != null) {
             txt = MessageFormat.format(txt, record.getParameters());
         }
-        sb.append(txt != null ? normalize(txt) : txt);
+        sb.append(txt);
         Throwable t = record.getThrown();
         if (t != null) {
             sb.append('\n');
@@ -139,8 +139,8 @@ public final class NbModuleLogHandler extends Handler {
     private static final List<String> hexes = new ArrayList<String>();
     private static final String integerToHexString = "[0-9a-fA-F]{5,8}";
     private static final Pattern hex = Pattern.compile("(?<=@(?:" + integerToHexString + ":)?)" + integerToHexString);
-    private static synchronized String normalize(String txt) {
-        Matcher m = hex.matcher(txt.replace(Manager.getWorkDirPath(), "WORKDIR"));
+    public static synchronized String normalize(StringBuffer txt) {
+        Matcher m = hex.matcher(txt.toString().replace(Manager.getWorkDirPath(), "WORKDIR"));
         @SuppressWarnings("StringBufferMayBeStringBuilder")
         StringBuffer b = new StringBuffer();
         while (m.find()) {
@@ -185,11 +185,11 @@ public final class NbModuleLogHandler extends Handler {
                 return;
             }
             if (exc.intValue() <= record.getLevel().intValue()) {
-                t.append(toString(record));
+                t.append(normalize(toString(record)));
             }
         } else {
             if (msg.intValue() <= record.getLevel().intValue()) {
-                t.append(toString(record));
+                t.append(normalize(toString(record)));
             }
         }
     }
