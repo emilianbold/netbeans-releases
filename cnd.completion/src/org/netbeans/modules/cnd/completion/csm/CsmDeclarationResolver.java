@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -97,6 +98,8 @@ public class CsmDeclarationResolver {
 //            clazz = ((CsmType)obj).getClassifier();
         } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
             clazz = ((CsmClassForwardDeclaration)obj).getCsmClass();
+        } else if (CsmKindUtilities.isEnumForwardDeclaration(obj)) {
+            clazz = ((CsmEnumForwardDeclaration) obj).getCsmEnum();
         } else if (CsmKindUtilities.isClass(obj)) {
             clazz = (CsmClassifier)obj;
         } else if (CsmKindUtilities.isInheritance(obj)) {

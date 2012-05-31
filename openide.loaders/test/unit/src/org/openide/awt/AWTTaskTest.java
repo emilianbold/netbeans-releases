@@ -72,7 +72,7 @@ public class AWTTaskTest extends NbTestCase {
         R run = new R();
 
         CharSequence log = Log.enable("org.openide.awt", Level.WARNING);
-        AWTTask instance = new AWTTask(run);
+        AWTTask instance = new AWTTask(run, null);
 
         waitEQ();
         assertTrue("Finished", instance.isFinished());

@@ -115,7 +115,7 @@ public class ActiveTaskPanel extends javax.swing.JPanel {
         toolBar.add(btnRecently);
         add(toolBar, new GridBagConstraints(3, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-        btnTaskName = new LinkButton("", new OpenTaskAction(taskNode.getTask()));
+        btnTaskName = new LinkButton("", new OpenTaskAction(taskNode));
         btnTaskName.setFont(btnTaskName.getFont().deriveFont(Font.BOLD));
         btnTaskName.setOpaque(false);
         btnTaskName.setToolTipText(taskNode.getTask().getTooltip());

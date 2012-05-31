@@ -93,7 +93,7 @@ public class ChoiceType extends ChildrenType {
     /**
      */
     public String getName () {
-        return Util.THIS.getString ("NAME_CHOICE") + getMultiplicity ();
+        return"CHOICE" + getMultiplicity (); // NO18N
     }
     
     /**

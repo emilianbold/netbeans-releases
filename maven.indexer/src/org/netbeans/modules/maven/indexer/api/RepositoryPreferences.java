@@ -148,7 +148,7 @@ public final class RepositoryPreferences {
         if (local == null) {
             try {
                 //TODO do we care about changing the instance when localrepo location changes?
-                local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir(), null);
+                local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().getAbsolutePath(), null);
                 local.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
             } catch (URISyntaxException x) {
                 throw new AssertionError(x);

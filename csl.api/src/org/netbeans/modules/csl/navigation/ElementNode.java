@@ -285,7 +285,8 @@ public class ElementNode extends AbstractNode {
 
         //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
         //to ElementChildren to be able to hold the new child data
-        if(!(ch instanceof ElementChildren) && newDescription.getNestedItems().size()>0) {
+        if(!(ch instanceof ElementChildren) && newDescription.getNestedItems() != null && 
+                newDescription.getNestedItems().size()>0) {
             ch=new ElementChildren((List<StructureItem>)Collections.EMPTY_LIST, ui.getFilters(), ui, fileObject);
             setChildren(ch);
         }

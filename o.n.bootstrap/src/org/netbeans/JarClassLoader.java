@@ -946,7 +946,7 @@ public class JarClassLoader extends ProxyClassLoader {
             AGAIN: for (;;) try {
                 final URI uri = new URI(filePath);
                 if (uri.getScheme().equals("file")) {
-                    jar = new File(uri).getPath();
+                    jar = uri2File(uri).getPath();
                 } else {
                     jar = null;
                 }
@@ -980,6 +980,14 @@ public class JarClassLoader extends ProxyClassLoader {
             LOGGER.log(Level.FINER, "creating NbJarURLConnection({0},{1},{2})", new Object[]{u, _src, _name});
             return new NbJarURLConnection (u, _src, _name, loader);
         }
+        
+        static File uri2File(URI uri) { // #207060: UNC; candidate for API (#46813)
+            if (uri.getHost() == null) {
+                return new File(uri);
+            } else {
+                return new File("\\\\" + uri.getHost() + uri.getPath().replace('/', '\\'));
+            }
+        }    
 
         @Override
         protected void parseURL(URL u, String spec, int start, int limit) {

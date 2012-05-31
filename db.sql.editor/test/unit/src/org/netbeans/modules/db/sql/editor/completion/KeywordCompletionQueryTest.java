@@ -70,9 +70,9 @@ public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
         sql = "SELECT * FROM|";
         assertItems(doQuery(sql));
         sql = "SELECT * FROM t |";
-        assertItems(doQuery(sql), "WHERE");
+        assertItems(doQuery(sql), "GROUP", "ORDER", "WHERE");
         sql = "SELECT * FROM (t)|";
-        assertItems(doQuery(sql), "WHERE");
+        assertItems(doQuery(sql), "GROUP", "ORDER", "WHERE");
         sql = "SELECT * FROM t WHERE|";
         assertItems(doQuery(sql));
         sql = "SELECT * FROM t WHERE c1 > 1 |";
@@ -96,7 +96,7 @@ public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
         String sql = "SELECT * FROM t WHERE c1 > (SELECT * |";
         assertItems(doQuery(sql), "FROM");
         sql = "SELECT * FROM t WHERE c1 > (SELECT * FROM t2 |";
-        assertItems(doQuery(sql), "WHERE");
+        assertItems(doQuery(sql), "GROUP", "ORDER", "WHERE");
         sql = "SELECT * FROM t WHERE c1 > (SELECT * FROM t2 WHERE c2 = c3 |";
         assertItems(doQuery(sql), "GROUP", "ORDER");
         sql = "SELECT * FROM t WHERE c1 > (SELECT * FROM t2) |";
@@ -109,7 +109,7 @@ public class KeywordCompletionQueryTest extends CompletionQueryTestCase {
         sql = "DELETE |"; // multiple table delete supported
         assertItems(doQuery(sql), "FROM", "tab_customer", "sch_accounting", "sch_customers", "catalog_1", "catalog_2");
         sql = "DELETE FROM t |";
-        assertItems(doQuery(sql), "WHERE");
+        assertItems(doQuery(sql), "GROUP", "ORDER", "WHERE");
     }
 
     public void testDrop() {

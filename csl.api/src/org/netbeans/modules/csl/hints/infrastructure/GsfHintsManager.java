@@ -635,6 +635,10 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         if (language == null) {
             return;
         }
+        GsfHintsManager hintsManager = language.getHintsManager();
+        if (hintsManager == null) {
+            return;
+        }
 
         ParserResult parserResult = null;
         try {
@@ -650,7 +654,6 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
             return;
         }
         
-        GsfHintsManager hintsManager = language.getHintsManager();
         RuleContext context = hintsManager.createRuleContext(parserResult, language, -1, -1, -1);
         List<ErrorDescription>[] hints = new List[3];
         getHints(hintsManager, context, hints, tls);

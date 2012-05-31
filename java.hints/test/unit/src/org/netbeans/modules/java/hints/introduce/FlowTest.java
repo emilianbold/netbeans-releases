@@ -729,6 +729,97 @@ public class FlowTest extends NbTestCase {
                     "0",
                     "1");
     }
+    
+    public void test211926a() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void f(String... args) {\n" +
+                    "        boolean empty = false;\n" +
+                    "        for (String a : args) {\n" +
+                    "            if (\"\".equals(a)) {\n" +
+                    "                empty = true;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        System.err.println(emp`ty);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "false",
+                    "true");
+    }
+    
+    public void test211926b() throws Exception {
+        performTest("package test;\n" +
+                    "import java.util.Collection;\n" +
+                    "import java.util.Iterator;\n" +
+                    "public class Test {\n" +
+                    "    public void f(Collection<String> args) {\n" +
+                    "        boolean empty = false;\n" +
+                    "        for (Iterator<String> it = args.iterator(); it.hasNext(); ) {\n" +
+                    "            String a = it.next();\n" +
+                    "            if (\"\".equals(a)) {\n" +
+                    "                empty = true;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        System.err.println(emp`ty);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "false",
+                    "true");
+    }
+    
+    public void test211926c() throws Exception {
+        performTest("package test;\n" +
+                    "import java.util.Collection;\n" +
+                    "import java.util.Iterator;\n" +
+                    "public class Test {\n" +
+                    "    public void f(Collection<String> args) {\n" +
+                    "        boolean empty = false;\n" +
+                    "        Iterator<String> it = args.iterator();\n" +
+                    "        while (it.hasNext()) {\n" +
+                    "            String a = it.next();\n" +
+                    "            if (\"\".equals(a)) {\n" +
+                    "                empty = true;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        }\n" +
+                    "        \n" +
+                    "        System.err.println(emp`ty);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "false",
+                    "true");
+    }
+    
+    public void test211926d() throws Exception {
+        performTest("package test;\n" +
+                    "import java.util.Collection;\n" +
+                    "import java.util.Iterator;\n" +
+                    "public class Test {\n" +
+                    "    public void f(Collection<String> args) {\n" +
+                    "        boolean empty = false;\n" +
+                    "        Iterator<String> it = args.iterator();\n" +
+                    "        do {\n" +
+                    "            String a = it.next();\n" +
+                    "            if (\"\".equals(a)) {\n" +
+                    "                empty = true;\n" +
+                    "                continue;\n" +
+                    "            }\n" +
+                    "            return;\n" +
+                    "        } while (it.hasNext());\n" +
+                    "        \n" +
+                    "        System.err.println(emp`ty);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "false",
+                    "true");
+    }
 
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +

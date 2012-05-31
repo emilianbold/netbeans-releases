@@ -59,35 +59,31 @@ public class MvnJEE6Suite extends J2eeTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                addServerTests(Server.GLASSFISH,
+        return addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), JEE6MvnFromDBTest.class,
-                    "testFromDB",
-                    "testRun",
-                    "testUndeploy"
-                    ), JEE6MvnCRUDTest.class,
-                    "testRfE", //NOI18N
-                    "testPropAccess", //NOI18N
-                    "testRun", //NOI18N
-                    "testCreateRestClient", //NOI18N
-                    "testUndeploy"
-                    ), JEE6MvnPatternsTest.class,
-                    "testSingletonDef", //NOI18N
-                    "testContainerIDef", //NOI18N
-                    "testCcContainerIDef", //NOI18N
-                    "testSingleton1", //NOI18N
-                    "testCcContainerI1", //NOI18N
-                    "testSingleton2", //NOI18N
-                    "testContainerI1", //NOI18N
-                    "testContainerI2", //NOI18N
-                    "testSingleton3", //NOI18N
-                    "testContainerI3", //NOI18N
-                    "testCcContainerI2", //NOI18N
-                    "testCcContainerI3", //NOI18N
-                    "testNodes", //NOI18N
-                    "testRun", //NOI18N
-                    "testUndeploy"
-                    ).enableModules(".*").clusters(".*"));
+                "testFromDB",
+                "testRun",
+                "testUndeploy"), JEE6MvnCRUDTest.class,
+                "testRfE", //NOI18N
+                "testPropAccess", //NOI18N
+                "testRun", //NOI18N
+                "testCreateRestClient", //NOI18N
+                "testUndeploy"), JEE6MvnPatternsTest.class,
+                "testSingletonDef", //NOI18N
+                "testContainerIDef", //NOI18N
+                "testCcContainerIDef", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
+                "testSingleton2", //NOI18N
+                "testContainerI1", //NOI18N
+                "testContainerI2", //NOI18N
+                "testSingleton3", //NOI18N
+                "testContainerI3", //NOI18N
+                "testCcContainerI2", //NOI18N
+                "testCcContainerI3", //NOI18N
+                "testNodes", //NOI18N
+                "testRun", //NOI18N
+                "testUndeploy").enableModules(".*").clusters(".*").suite();
     }
 }

@@ -298,7 +298,7 @@ public class TreeLoader extends LazyTreeLoader {
                     List<JCTree> prev = null;
                     for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
                         scan(l.head);
-                        if (l.head.getTag() == JCTree.BLOCK && ((JCBlock)l.head).isStatic()) {
+                        if (l.head.getTag() == JCTree.BLOCK) {
                             if (prev != null)
                                 prev.tail = l.tail;
                             else

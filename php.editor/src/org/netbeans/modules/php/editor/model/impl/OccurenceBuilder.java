@@ -443,14 +443,18 @@ class OccurenceBuilder {
      */
     private boolean setElementInfo(final int offset) {
         elementInfo = null;
+        final Collection<LazyBuild> scopesToScan = new ArrayList<LazyBuild>();
         for (Entry<ASTNodeInfo<MethodDeclaration>, MethodScope> entry : methodDeclarations.entrySet()) {
             if (entry.getValue() instanceof LazyBuild) {
                 LazyBuild scope = (LazyBuild)entry.getValue();
-                if (!scope.isScanned()) {
-                    scope.scan();
-                }
+                scopesToScan.add(scope);
             }
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
+        }
+        for (LazyBuild lazyBuild : scopesToScan) {
+            if (!lazyBuild.isScanned()) {
+                lazyBuild.scan();
+            }
         }
 
         for (Entry<ASTNodeInfo<GotoStatement>, Scope> entry : gotoStatement.entrySet()) {

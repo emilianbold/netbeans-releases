@@ -67,16 +67,20 @@ import org.openide.util.NbCollections;
  * Basic impl in case no other providers can be found.
  * @author Jesse Glick
  */
-public class FallbackDefaultJavaPlatform extends JavaPlatform {
+public final class FallbackDefaultJavaPlatform extends JavaPlatform {
+    
+    private static FallbackDefaultJavaPlatform instance;
 
-    public FallbackDefaultJavaPlatform() {
+    private FallbackDefaultJavaPlatform() {
         setSystemProperties(NbCollections.checkedMapByFilter(System.getProperties(), String.class, String.class, false));
     }
 
+    @Override
     public String getDisplayName() {
         return System.getProperty("java.vm.vendor") + " " + System.getProperty("java.vm.version"); // NOI18N
     }
 
+    @Override
     public Map<String,String> getProperties() {
         return Collections.singletonMap("platform.ant.name", "default_platform");
     }
@@ -112,39 +116,54 @@ public class FallbackDefaultJavaPlatform extends JavaPlatform {
         return ClassPathSupport.createClassPath(cs != null ? new URL[] {cs.getLocation()} : new URL[0]);
     }
 
+    @Override
     public ClassPath getBootstrapLibraries() {
         // XXX ignore standard extensions etc.
         ClassPath cp = sysProp2CP("sun.boot.class.path"); // NOI18N
         return cp != null ? cp : sampleClass2CP(Object.class);
     }
 
+    @Override
     public ClassPath getStandardLibraries() {
         ClassPath cp = sysProp2CP("java.class.path"); // NOI18N
         return cp != null ? cp : sampleClass2CP(/* likely in startup CP */ Dependency.class);
     }
 
+    @Override
     public String getVendor() {
         return System.getProperty("java.vm.vendor");
     }
 
+    @Override
     public Specification getSpecification() {
         return new Specification(/*J2SEPlatformImpl.PLATFORM_J2SE*/"j2se", Dependency.JAVA_SPEC); // NOI18N
     }
 
+    @Override
     public Collection<FileObject> getInstallFolders() {
         return Collections.singleton(FileUtil.toFileObject(new File(System.getProperty("java.home")))); // NOI18N
     }
 
+    @Override
     public FileObject findTool(String toolName) {
         return null; // XXX too complicated, probably unnecessary for this purpose
     }
 
+    @Override
     public ClassPath getSourceFolders() {
         return ClassPathSupport.createClassPath(new URL[0]);
     }
 
+    @Override
     public List<URL> getJavadocFolders() {
         return Collections.emptyList();
+    }
+    
+    public static synchronized FallbackDefaultJavaPlatform getInstance() {
+        if (instance == null) {
+            instance = new FallbackDefaultJavaPlatform();
+        }
+        return instance;
     }
 
 }

@@ -1194,6 +1194,9 @@ public class ProjectHelper {
             Library jaxbApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
             assert jaxbApiLib != null : "JAXB endorsed library must be present";
             try {
+                if (jaxbApiLib == null) {
+                    throw  new UnsupportedOperationException("No JAXB endorsed library found in Libraries.");
+                }
                 ProjectClassPathModifier.addLibraries(new Library[] {jaxbApiLib}, srcRoot, CLASSPATH_ENDORSED);
             } catch (UnsupportedOperationException x) {
                 classPath = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);

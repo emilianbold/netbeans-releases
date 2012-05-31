@@ -176,6 +176,8 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 if (punit != null){
                     Util.addPersistenceUnitToProject( project, punit);
                 }
+            } else {
+                Util.addPersistenceUnitToProject( project );
             }
 
             addEntityToPersistenceUnit(result);

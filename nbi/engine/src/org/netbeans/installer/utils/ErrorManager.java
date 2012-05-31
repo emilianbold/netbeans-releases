@@ -139,6 +139,7 @@ public final class ErrorManager {
                 type = UiUtils.MessageType.WARNING;
                 break;
             case ErrorLevel.ERROR:
+                dialogText += ResourceUtils.getString(ErrorManager.class, ERROR_EXCEPTION_CONTINUE_QUESTION_KEY);
                 titleKey = ERROR_ERROR_KEY;
                 type = UiUtils.MessageType.ERROR;
                 break;
@@ -153,8 +154,10 @@ public final class ErrorManager {
         if(title == null) {
             title = type.toString();
         }
-        UiUtils.showMessageDialog(dialogText, title, type);
-        if(type.equals(UiUtils.MessageType.CRITICAL)) {
+        
+        boolean exitInstaller = UiUtils.showMessageDialog(dialogText, title, type);
+                
+        if(exitInstaller || type.equals(UiUtils.MessageType.CRITICAL)) {
             finishHandler.criticalExit();
         }
     }
@@ -208,4 +211,6 @@ public final class ErrorManager {
             "EM.exception.message";//NOI18N
     private static final String ERROR_LOGFILE_INFO_KEY =
             "EM.exception.logfile.info";//NOI18N
+    private static final String ERROR_EXCEPTION_CONTINUE_QUESTION_KEY =
+            "EM.exception.continue.question";//NOI18N
 }

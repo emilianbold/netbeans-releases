@@ -128,6 +128,7 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                         case USING_DECLARATION:
                         case VARIABLE_DEFINITION:
                         case CLASS_FORWARD_DECLARATION:
+                        case ENUM_FORWARD_DECLARATION:
                         case FUNCTION_FRIEND:
                         case FUNCTION_FRIEND_DEFINITION:
                             return new OffsetableDeclarationKey(presentation);

@@ -61,23 +61,20 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Andrei Badea
  */
 public enum SQLTokenId implements TokenId {
-
-    // XXX prefix with "sql-" for compat reasons?
-
-    WHITESPACE("whitespace"), // NOI18N
-    LINE_COMMENT("line-comment"), // NOI18N
-    BLOCK_COMMENT("block-comment"), // NOI18N
-    STRING("string-literal"), // NOI18N
-    INCOMPLETE_STRING("incomplete-string-literal"), // NOI18N
-    IDENTIFIER("identifier"), // NOI18N
-    OPERATOR("operator"), // NOI18N
-    LPAREN("operator"), // NOI18N
-    RPAREN("operator"), // NOI18N
-    DOT("dot"), // NOI18N
-    COMMA("operator"), //  // NOI18N XXX or have own category?
-    INT_LITERAL("int-literal"),  // NOI18N
-    DOUBLE_LITERAL("double-literal"), // NOI18N
-    KEYWORD("keyword"); // NOI18N
+    WHITESPACE("sql-whitespace"), // NOI18N
+    LINE_COMMENT("sql-line-comment"), // NOI18N
+    BLOCK_COMMENT("sql-block-comment"), // NOI18N
+    STRING("sql-string-literal"), // NOI18N
+    INCOMPLETE_STRING("sql-errors"), // NOI18N
+    IDENTIFIER("sql-identifier"), // NOI18N
+    OPERATOR("sql-operator"), // NOI18N
+    LPAREN("sql-operator"), // NOI18N
+    RPAREN("sql-operator"), // NOI18N
+    DOT("sql-dot"), // NOI18N
+    COMMA("sql-operator"), //  // NOI18N XXX or have own category?
+    INT_LITERAL("sql-int-literal"),  // NOI18N
+    DOUBLE_LITERAL("sql-double-literal"), // NOI18N
+    KEYWORD("sql-keyword"); // NOI18N
 
     private final String primaryCategory;
 

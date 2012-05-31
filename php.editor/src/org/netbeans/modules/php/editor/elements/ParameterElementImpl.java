@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl.SEPARATOR;
+import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 import org.openide.util.Exceptions;
 
 /**
@@ -283,6 +284,11 @@ public final class ParameterElementImpl implements ParameterElement {
 
     @Override
     public String asString(OutputType outputType) {
+        return asString(outputType, TypeNameResolver.forNull());
+    }
+
+    @Override
+    public String asString(OutputType outputType, TypeNameResolver typeNameResolver) {
         StringBuilder sb = new StringBuilder();
         Set<TypeResolver> typesResolvers = getTypes();
         boolean forDeclaration = outputType.equals(OutputType.SHORTEN_DECLARATION) || outputType.equals(OutputType.COMPLETE_DECLARATION);
@@ -292,7 +298,7 @@ public final class ParameterElementImpl implements ParameterElement {
             } else {
                 for (TypeResolver typeResolver : typesResolvers) {
                     if (typeResolver.isResolved()) {
-                        sb.append(typeResolver.getTypeName(false)).append(' '); //NOI18N
+                        sb.append(typeNameResolver.resolve(typeResolver.getTypeName(false))).append(' '); //NOI18N
                         break;
                     }
                 }

@@ -96,6 +96,7 @@ public class CopyTransformer extends RefactoringVisitor {
                         cut.getTypeDecls(),
                         cut.getSourceFile()
                 );
+                rewrite(tree, cut);
             }
             if (insertImport && !"package-info".equals(newName)) { //NOI18N
                 Tree tree2 = make.insertCompUnitImport(cut, 0, make.Import(make.Identifier(oldPackage + ".*"), false)); // NOI18N

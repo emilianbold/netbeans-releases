@@ -56,6 +56,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -154,24 +155,31 @@ public class CdiUtil {
             boolean create) 
     {
         Sources sources = project.getLookup().lookup(Sources.class);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
         Collection<FileObject> result = new ArrayList<FileObject>(2);
-        if ( fileObject != null ){
-            result.add(fileObject);
-        }
-        SourceGroup[] resourceGroups = sources.getSourceGroups(
+        SourceGroup[] sourceGroups = sources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_RESOURCES );
-        if (resourceGroups != null && resourceGroups.length > 0) {
-            fileObject = getDefaultBeansTargetFolder(resourceGroups, false);
+        if (sourceGroups != null && sourceGroups.length > 0) {
+            FileObject fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
             if (fileObject != null) {
                 result.add(fileObject);
             }
-            sourceGroups = resourceGroups;
+        }
+        else {
+            sourceGroups = sources.getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+            FileObject fileObject = getDefaultBeansTargetFolder(sourceGroups, false);
+            if ( fileObject != null ){
+                result.add(fileObject);
+            }
         }
         if ( result.size() == 0 && create ){
-            fileObject = getDefaultBeansTargetFolder(sourceGroups, true);
+            SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(
+                    project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, 
+                    JavaProjectConstants.SOURCES_HINT_MAIN);
+            if ( resourcesSourceGroup != null ){
+                sourceGroups = new SourceGroup[]{resourcesSourceGroup};
+            }
+            FileObject fileObject = getDefaultBeansTargetFolder(sourceGroups, true);
             result.add(fileObject);
         }
         return result;

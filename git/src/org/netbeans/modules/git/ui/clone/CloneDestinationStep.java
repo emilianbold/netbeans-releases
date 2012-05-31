@@ -197,7 +197,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
     }
 
     File getDestination() {
-        return new File(panel.getDirectory() + "/" + panel.getCloneName());
+        return new File(panel.getDirectory() + File.separator + panel.getCloneName());
     }
     
     String getRemoteName() {
@@ -215,7 +215,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
     void initCloneName (GitURI uri) {
         String path = uri.getPath();
         // get the last path element
-        String[] pathElements = path.split("/"); //NOI18N
+        String[] pathElements = path.split("[/\\\\]"); //NOI18N
         String lastElem = ""; //NOI18N
         for (int i = pathElements.length - 1; i >= 0; --i) {
             lastElem = pathElements[i];

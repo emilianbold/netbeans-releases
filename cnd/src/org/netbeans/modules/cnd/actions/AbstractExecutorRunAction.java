@@ -508,7 +508,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
+    public static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
         private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
         private final ExecutionListener listener;

@@ -96,11 +96,6 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
     }
 
     // implement OptionsPanelController
-    public Lookup getLookup() {
-	return null;
-    }
-
-    // implement OptionsPanelController
     public boolean isChanged() {
 	if (clonedOptions == null) {
 	    return false;

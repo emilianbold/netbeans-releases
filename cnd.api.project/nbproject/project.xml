@@ -106,6 +106,7 @@
                 <friend>org.netbeans.modules.cnd.parfait</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
+                <friend>org.netbeans.modules.cnd.remote.projectui</friend>
                 <friend>org.netbeans.modules.cnd.syntaxerr</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
