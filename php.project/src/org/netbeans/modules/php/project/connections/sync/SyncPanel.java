@@ -330,7 +330,16 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private void initTable() {
         assert SwingUtilities.isEventDispatchThread();
-        // model
+        initTableModel();
+        initTableRenderers();
+        initTableRows();
+        initTableColumns();
+        initTableSelections();
+        initTableActions();
+        initTablePopupMenu();
+    }
+
+    private void initTableModel() {
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -339,13 +348,19 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
         });
         itemTable.setModel(tableModel);
-        // renderer
+    }
+
+    private void initTableRenderers() {
         itemTable.setDefaultRenderer(Icon.class, new IconRenderer());
         itemTable.setDefaultRenderer(String.class, new StringRenderer());
         itemTable.setDefaultRenderer(SyncItem.Operation.class, new OperationRenderer());
-        // rows
+    }
+
+    private void initTableRows() {
         itemTable.setRowHeight(20);
-        // columns
+    }
+
+    private void initTableColumns() {
         itemTable.getTableHeader().setReorderingAllowed(false);
         TableColumnModel columnModel = itemTable.getColumnModel();
         columnModel.getColumn(0).setMinWidth(20);
@@ -355,7 +370,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         columnModel.getColumn(2).setMinWidth(40);
         columnModel.getColumn(2).setPreferredWidth(40);
         columnModel.getColumn(3).setPreferredWidth(1000);
-        // selections
+    }
+
+    private void initTableSelections() {
         itemTable.setColumnSelectionAllowed(false);
         itemTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -371,9 +388,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 setEnabledDiffButton();
             }
         });
-        // popup menu
-        initTablePopupMenu();
-        // actions
+    }
+
+    private void initTableActions() {
         itemTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
