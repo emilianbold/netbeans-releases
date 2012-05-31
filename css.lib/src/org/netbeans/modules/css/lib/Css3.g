@@ -397,10 +397,15 @@ bodyItem
 //        }
     
 vendorAtRule
-: moz_document | generic_at_rule;
+: moz_document | webkitKeyFrames | generic_at_rule;
+    
+atRuleId
+	:
+	IDENT | STRING
+	;
     
 generic_at_rule
-    : GENERIC_AT_RULE WS* ( ( IDENT | STRING ) WS* )? 
+    : GENERIC_AT_RULE WS* ( atRuleId WS* )? 
         LBRACE 
         	syncTo_RBRACE
         RBRACE
@@ -416,6 +421,28 @@ moz_document
 moz_document_function
 	:
 	URI | MOZ_URL_PREFIX | MOZ_DOMAIN | MOZ_REGEXP
+	;
+    
+//http://developer.apple.com/library/safari/#documentation/appleapplications/reference/SafariCSSRef/Articles/OtherStandardCSS3Features.html#//apple_ref/doc/uid/TP40007601-SW1
+webkitKeyFrames
+	:
+	WEBKIT_KEYFRAMES_SYM ws? atRuleId ws? 
+	LBRACE ws?
+		( keyframesBlock ws? )*
+	RBRACE
+	;
+	
+keyframesBlock
+	:
+	keyframeSelectors ws?
+	LBRACE  ws? syncTo_IDENT_RBRACE
+		declarations
+	RBRACE 
+	;	
+	
+keyframeSelectors
+	:
+	( 'FROM' | 'TO' | PERCENTAGE ) ( ws? COMMA ws? ( 'FROM' | 'TO' | PERCENTAGE ) )*
 	;
     
 page
@@ -1137,6 +1164,7 @@ RIGHTMIDDLE_SYM       :'@RIGHT-MIDDLE';
 RIGHTBOTTOM_SYM       :'@RIGHT-BOTTOM';
 
 MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
+WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 
 //this generic at rule must be after the last of the specific at rule tokens
 GENERIC_AT_RULE	    : '@' NMCHAR+;	

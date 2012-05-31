@@ -1016,12 +1016,12 @@ public class Css3ParserTest extends CssTestBase {
     }
     
     public void testGenericAtRule() {
-        String code = "@-webkit-keyframes spin { h2 { color: red; } }";
+        String code = "@-cool-rule spin { h2 { color: red; } }";
         CssParserResult result = TestUtil.parse(code);
         
         assertResultOK(result);
         
-        TestUtil.dumpResult(result);
+//        TestUtil.dumpResult(result);
         
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/vendorAtRule/generic_at_rule");
@@ -1052,6 +1052,51 @@ public class Css3ParserTest extends CssTestBase {
 //        
 //        
 //    }
+    
+    
+    public void testWebkitKeyFrames() {
+        String code = "@-webkit-keyframes spin { 40% {  left: 150px;  } from { left: 2px } }";
+        //             012345678901234567890123456789012345678901234567890123456789
+        //             0         1         2         3         4         5
+        CssParserResult result = TestUtil.parse(code);
+        
+        assertResultOK(result);
+        
+//        TestUtil.dumpResult(result);
+        
+        Node wkf = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/vendorAtRule/webkitKeyFrames");
+                
+        assertNotNull(wkf);
+        
+        Node atRuleName = NodeUtil.query(wkf, "atRuleId");
+        assertNotNull(atRuleName);
+        assertEquals("spin", atRuleName.image().toString());
+        
+        //block1
+        Node block = NodeUtil.query(wkf, "keyframesBlock|0");
+        Node selectors = NodeUtil.query(block, "keyframeSelectors");
+        assertNotNull(selectors);
+        assertEquals("40%", selectors.image().toString());
+        
+        Node declarations = NodeUtil.query(wkf, "keyframesBlock/declarations");
+        assertNotNull(declarations);
+        assertNotNull(NodeUtil.query(declarations, "declaration/property"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
+        
+        //block2
+        block = NodeUtil.query(wkf, "keyframesBlock|1");
+        selectors = NodeUtil.query(block, "keyframeSelectors");
+        assertNotNull(selectors);
+        assertEquals("from", selectors.image().toString());
+        
+        declarations = NodeUtil.query(wkf, "keyframesBlock/declarations");
+        assertNotNull(declarations);
+        assertNotNull(NodeUtil.query(declarations, "declaration/property"));
+        assertNotNull(NodeUtil.query(declarations, "declaration/propertyValue"));
+        
+        
+    }
     
     
 }

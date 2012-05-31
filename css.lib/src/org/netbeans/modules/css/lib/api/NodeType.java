@@ -49,6 +49,18 @@ package org.netbeans.modules.css.lib.api;
 public enum NodeType {
 
     /**
+     * Identification of an @-rule.
+     * 
+     * For example represents the 'bounce' text in following code: 
+     * <pre>
+     * @-webkit-keyframes 'bounce' { ...
+     * </pre>
+     * 
+     * IDENT | STRING 
+     */
+    atRuleId,
+    
+    /**
      * A list of bodyItem-s
      */
     body,
@@ -259,6 +271,47 @@ public enum NodeType {
      * Example: @-moz-document rule
      */
     vendorAtRule,
+    
+    /**
+     * @-webkit-keyframes vendor specific rule.
+     * 
+     * Example:
+     * <pre>
+     * @-webkit-keyframes 'bounce' {
+     * 
+     *    from, 20% {
+     *      top: 100px;
+     *      -webkit-animation-timing-function: ease-out;
+     *    }
+     * 
+     * }
+     * </pre>
+     * 
+     */
+    webkitKeyFrames,
+    
+    /**
+     * @-webkit-keyframes content block
+     * 
+     * Example:
+     * <pre>
+     *    from, 20% {
+     *      top: 100px;
+     *      -webkit-animation-timing-function: ease-out;
+     *    }
+     * </pre>
+     */
+    keyframesBlock,
+    
+    /**
+     * @-webkit-keyframes content block selectors
+     * 
+     * Example:
+     * <pre>
+     * from, 20%
+     * </pre>
+     */
+    keyframeSelectors,
     
     /**
      * whitespace, new line or comment tokens
