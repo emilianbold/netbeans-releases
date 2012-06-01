@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Model;
@@ -115,13 +116,19 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         }
         
         String key = oldkey + ":" + version;
-        String prevKey = reversePrefs().get(owner.toString(), null);
-        if (prevKey != null && !prevKey.equals(key)) {
-            prefs().remove(prevKey);
+        String ownerString = owner.toString();
+        try {
+            for (String k : prefs().keys()) {
+                if (ownerString.equals(prefs().get(k, null))) {
+                    prefs().remove(k);
+                    break;
+                }
+            }
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.FINE, "Error iterating preference to find old mapping", ex);
         }
         
-        prefs().put(key, owner.toString());
-        reversePrefs().put(owner.toString(), key);
+        prefs().put(key, ownerString);
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
         
     }
@@ -361,9 +368,5 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
 
     static Preferences prefs() {
         return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"); // NOI18N
-    }
-
-    private static Preferences reversePrefs() {
-        return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("reverseExternalOwners"); // NOI18N
     }
 }
