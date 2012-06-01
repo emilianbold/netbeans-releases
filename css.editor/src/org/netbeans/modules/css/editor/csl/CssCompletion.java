@@ -1064,6 +1064,11 @@ public class CssCompletion implements CodeCompletionHandler {
                 };
                 declarationSearch.visitAncestors(node);
                 Node declaratioNode = result[0];
+                
+                if(declaratioNode == null) {
+                    //not in property declaration, give up
+                    break;
+                }
 
                 //2.find the property node
                 result[0] = null;
