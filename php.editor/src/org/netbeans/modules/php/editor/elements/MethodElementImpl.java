@@ -41,29 +41,20 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.ParameterElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 import org.openide.util.Parameters;
 
 /**
@@ -210,7 +201,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     @Override
     public String asString(PrintAs as) {
-        return asString(as, TypeNameResolver.forNull());
+        return asString(as, TypeNameResolverImpl.forNull());
     }
 
     @Override

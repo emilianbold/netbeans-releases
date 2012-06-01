@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.api.elements;
 
-import java.util.Set;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 
 /**
- * @author Radek Matous
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface ParameterElement {
-    String getName();
-    public String asString(OutputType outputType);
-    public String asString(OutputType outputType, TypeNameResolver typeNameResolver);
-    boolean isReference();
-    Set<TypeResolver> getTypes();
-    @CheckForNull
-    String getDefaultValue();
+public interface TypeNameResolver {
+    
     /**
-     * @return false if the type information is taken from PHPDoc
+     * Tries to resolve some type name from passed qualified name. E.g.
+     * fully-qualified name from unqualified name, etc.
+     *
+     * @param qualifiedName which should be resolved
+     * @return
      */
-    boolean hasDeclaredType();
-    boolean isMandatory();
-    int  getOffset();
-    OffsetRange  getOffsetRange();
+    QualifiedName resolve(final QualifiedName qualifiedName);
 
-    enum OutputType {
-        /**
-         * Represents: <code>array &$foo = VERY_SUPER_LONG_DEFAULT_VALUE</code>
-         */
-        COMPLETE_DECLARATION,
-
-        /**
-         * Represents: <code>array &$foo = ...</code>
-         */
-        SHORTEN_DECLARATION,
-
-        /**
-         * Represents: <code>$foo</code>
-         */
-        SIMPLE_NAME
-    }
 }
