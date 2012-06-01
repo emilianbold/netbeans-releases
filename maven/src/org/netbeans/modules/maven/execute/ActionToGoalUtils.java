@@ -78,6 +78,7 @@ import org.openide.windows.InputOutput;
  *
  * @author mkleint
  */
+@SuppressWarnings("StaticNonFinalUsedInInitialization")
 public final class ActionToGoalUtils {
 
     private static final String FO_ATTR_CUSTOM_MAPP = "customActionMappings"; //NOI18N

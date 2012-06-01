@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.modelcache;
 import java.util.Collections;
 import java.util.SortedSet;
 import static org.netbeans.modules.maven.configurations.ConfigurationPersistenceUtils.*;
-import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
