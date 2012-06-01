@@ -233,6 +233,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         jSplitPane1.putClientProperty("PersistenceType", "Never"); // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
+        view.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
+        view.putClientProperty("PersistenceType", "Never"); // NOI18N
+        view.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
+        view.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
         initializeTabPane(ss1, ss2);
         
         setSourceTitle(fileLabel1, title1);
@@ -340,10 +344,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private void initializeTabPane (StreamSource ss1, StreamSource ss2) {
         if (jTabbedPane != null) {
-            jTabbedPane.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
-            jTabbedPane.putClientProperty("PersistenceType", "Never"); // NOI18N
-            jTabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
-            jTabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
             jTabbedPane.addTab(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "EditableDiffView.viewGraphical.title"), jSplitPane1); //NOI18N
             jTabbedPane.addTab(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "EditableDiffView.viewTextual.title"), textualPanel); //NOI18N
             jTabbedPane.addChangeListener(this);
