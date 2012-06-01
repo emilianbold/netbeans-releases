@@ -60,11 +60,11 @@ public final class SyncItem {
     @StaticResource
     static final String DOWNLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/download.png"; // NOI18N
     @StaticResource
-    static final String DOWNLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/download.png"; // NOI18N
+    static final String DOWNLOAD_MIRRORED_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/download_mirrored.png"; // NOI18N
     @StaticResource
     static final String UPLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/upload.png"; // NOI18N
     @StaticResource
-    static final String UPLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/upload.png"; // NOI18N
+    static final String UPLOAD_MIRRORED_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/upload_mirrored.png"; // NOI18N
     @StaticResource
     static final String DELETE_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/delete.png"; // NOI18N
     @StaticResource
@@ -93,10 +93,10 @@ public final class SyncItem {
     public static enum Operation {
 
         NOOP(Bundle.Operation_noop_titleWithMnemonic(), Bundle.Operation_noop_toolTip(), NOOP_ICON_PATH, false),
-        DOWNLOAD(Bundle.Operation_download_titleWithMnemonic(), Bundle.Operation_download_toolTip(), DOWNLOAD_ICON_PATH, true),
-        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_titleWithMnemonic(), DOWNLOAD_REVIEW_ICON_PATH, true),
-        UPLOAD(Bundle.Operation_upload_titleWithMnemonic(), Bundle.Operation_upload_toolTip(), UPLOAD_ICON_PATH, true),
-        UPLOAD_REVIEW(Bundle.Operation_uploadReview_titleWithMnemonic(), UPLOAD_REVIEW_ICON_PATH, true),
+        DOWNLOAD(Bundle.Operation_download_titleWithMnemonic(), Bundle.Operation_download_toolTip(), DOWNLOAD_ICON_PATH, DOWNLOAD_MIRRORED_ICON_PATH, true),
+        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_titleWithMnemonic(), DOWNLOAD_ICON_PATH, DOWNLOAD_MIRRORED_ICON_PATH, true),
+        UPLOAD(Bundle.Operation_upload_titleWithMnemonic(), Bundle.Operation_upload_toolTip(), UPLOAD_ICON_PATH, UPLOAD_MIRRORED_ICON_PATH, true),
+        UPLOAD_REVIEW(Bundle.Operation_uploadReview_titleWithMnemonic(), UPLOAD_ICON_PATH, UPLOAD_MIRRORED_ICON_PATH, true),
         DELETE(Bundle.Operation_delete_titleWithMnemonic(), Bundle.Operation_delete_toolTip(), DELETE_ICON_PATH, false),
         SYMLINK(Bundle.Operation_symlink_titleWithMnemonic(), SYMLINK_ICON_PATH, false),
         FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_titleWithMnemonic(), FILE_DIR_COLLISION_ICON_PATH, false),
@@ -106,17 +106,23 @@ public final class SyncItem {
         private final String titleWithMnemonic;
         private final String toolTip;
         private final String iconPath;
+        private final String mirroredIconPath;
         private final boolean progress;
 
 
         private Operation(String titleWithMnemonic, String iconPath, boolean progress) {
-            this(titleWithMnemonic, null, iconPath, progress);
+            this(titleWithMnemonic, null, iconPath, iconPath, progress);
         }
 
         private Operation(String titleWithMnemonic, String toolTip, String iconPath, boolean progress) {
+            this(titleWithMnemonic, toolTip, iconPath, iconPath, progress);
+        }
+
+        private Operation(String titleWithMnemonic, String toolTip, String iconPath, String mirroredIconPath, boolean progress) {
             this.titleWithMnemonic = titleWithMnemonic;
             this.toolTip = toolTip;
             this.iconPath = iconPath;
+            this.mirroredIconPath = mirroredIconPath;
             this.progress = progress;
         }
 
@@ -132,7 +138,10 @@ public final class SyncItem {
             return toolTip;
         }
 
-        public Icon getIcon() {
+        public Icon getIcon(boolean mirrored) {
+            if (mirrored) {
+                return ImageUtilities.loadImageIcon(mirroredIconPath, false);
+            }
             return ImageUtilities.loadImageIcon(iconPath, false);
         }
 
