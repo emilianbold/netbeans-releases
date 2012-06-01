@@ -59,8 +59,12 @@ public class JsCodeCompletionArraysTest extends JsTestBase {
         super(testName);
     }
     
-    public void testParameterTypesDocDefinition() throws Exception {
+    public void testArrays01() throws Exception {
         checkCompletion("testfiles/completion/arrays/arrays.js", "arr01.^pop();", false);
+    }
+    
+    public void testArrays02() throws Exception {
+        checkCompletion("testfiles/completion/arrays/arrays.js", "arr02.l^ength;", false);
     }
         
     @Override
