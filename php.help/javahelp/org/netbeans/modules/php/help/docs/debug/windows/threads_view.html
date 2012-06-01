@@ -29,10 +29,7 @@ When you select a different current session, the Threads window is updated to sh
 		<th scope="col">State</th>
 		<th scope="col">Description</th>
 	</tr>
-	<tr valign="top">
-		<td>Monitor</td>
-		<td>Thread is waiting on a Java monitor.</td>
-	</tr>
+	
 	<tr valign="top">
 		<td>Not Started</td>
 		<td>Thread has not yet been started.</td>
@@ -41,17 +38,14 @@ When you select a different current session, the Threads window is updated to sh
 		<td>Running</td>
 		<td>Thread is runnable.</td>
 	</tr>
-	<tr valign="top">
-		<td>Sleeping</td>
-		<td>Thread is sleeping. <tt>Thread.sleep()</tt> was called.</td>
-	</tr>
+	
 	<tr valign="top">
 		<td>Unknown</td>
 		<td>Thread status is unknown.</td>
 	</tr>
 	<tr valign="top">
-		<td>Wait</td>
-		<td>Thread is waiting. <tt>Object.wait()</tt> was called.</td>
+		<td>Suspended</td>
+		<td>Thread is waiting. </td>
 	</tr>
 	<tr valign="top">
 		<td>Zombie</td>
@@ -76,7 +70,7 @@ When you select a different current session, the Threads window is updated to sh
 	</tr>
 	<tr>
 		<td align="center"><img src="../images/CurrentThread.gif" alt="Current thread"></td>
-		<td>The current thread</td>
+		<td>The current thread, running</td>
 	</tr>
 	<tr>
 		<td align="center"><img src="../images/RunningThread.gif" alt="Running thread"></td>
@@ -84,52 +78,13 @@ When you select a different current session, the Threads window is updated to sh
 	</tr>
 	<tr>
 		<td align="center"><img src="../images/SuspendedThread.gif" alt="Suspended thread"></td>
-		<td>A thread that is suspended and is not current</td>
+		<td>A thread that is suspended</td>
 	</tr>
 </table>
 
-<h3><a name="actions">Actions</a></h3>
-<p>Right-clicking the Threads window opens the pop-up menu, where you can choose the following actions:</p>
-<table border="1" cellpadding="5" cellspacing="0">
-	<tr align="left" valign="top">
-            <th scope="col">Menu Item</th>
-            <th scope="col">Description</th>
-	</tr>
-	<tr valign="top">
-          <td>Make Current </td>
-          <td>Makes the selected thread the current thread. This command is equivalent to double-clicking the thread.</td>
-	</tr>
-	<tr valign="top">
-          <td>Resume</td>
-          <td>Resumes execution of the selected thread. </td>
-        </tr>
-        <tr valign="top">
-          <td>Suspend</td>
-          <td>Suspends execution of the selected thread. </td>
-        </tr>
-        <tr valign="top">
-          <td>Interrupt</td>
-          <td>Interrupts execution of the selected thread. </td>
-        </tr>
-        <tr valign="top">
-            <td>Go to Source</td>
-            <td>Shows the source code for the newest frame on the selected thread's stack.</td>
-	</tr>
-	<tr valign="top">
-            <td>List Options</td>
-            <td>Enables you to customize the display of the Threads window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
-            See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
-	</tr>
-</table>
 
-<h3>Properties</h3>
- <p>By default, all thread properties are displayed directly in the Threads window, except for the Suspended property.
- To display the Suspended property in the Threads window, 
- click the <img src="../images/ChangeColumn.gif" alt="Change Column">&nbsp;icon in the upper right corner of the window, 
- or right-click in the window and choose List Options &gt; Change Visible Columns and then select the Suspended checkbox in the dialog box.</p>
- <p>If a thread is suspended (for example because a breakpoint was reached during the debugging session), 
- the checkbox for that thread is selected in the Suspended column.
-Deselecting the Suspended checkbox causes the thread to resume.</p>
+
+
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>

@@ -59,6 +59,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
@@ -141,6 +144,7 @@ public class JavaEditorWarmUpTask implements Runnable {
     private JFrame frame;
     private Document emptyDoc;
     private Document longDoc;
+    private Document lexerDoc;
     private Graphics bGraphics;
     
     private BaseKit javaKit;
@@ -170,6 +174,18 @@ public class JavaEditorWarmUpTask implements Runnable {
 
                 // initialize empty doc
                 emptyDoc = javaKit.createDefaultDocument();
+                
+                lexerDoc = javaKit.createDefaultDocument();
+                try {
+                    lexerDoc.insertString(0, "'c'\"s\"/**d*/", null);
+                    TokenHierarchy<?> th = TokenHierarchy.get(lexerDoc);
+                    TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+                    while (ts.moveNext()) {
+                        ts.embedded(); // Pre-init embedded tokens
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
 
                 // Start of a code block that tries to force hotspot to compile
                 // the view hierarchy and related classes for faster performance
