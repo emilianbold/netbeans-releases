@@ -39,14 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.model.impl;
+package org.netbeans.modules.php.editor.elements;
 
 import java.util.*;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.openide.util.NbBundle;
 
@@ -54,9 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class TypeNameResolver {
-
-    public abstract QualifiedName resolve(final QualifiedName qualifiedName);
+public abstract class TypeNameResolverImpl implements TypeNameResolver {
 
     public static TypeNameResolver forNull() {
         return new TypeNameResolver() {
@@ -108,7 +108,7 @@ public abstract class TypeNameResolver {
 
 
 
-    private static abstract class BaseTypeNameResolver extends TypeNameResolver {
+    private static abstract class BaseTypeNameResolver extends TypeNameResolverImpl {
         private final Scope scope;
         private final int offset;
 

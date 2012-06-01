@@ -60,14 +60,11 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
-import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -149,9 +146,9 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
                         }
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                         List typeNameResolvers = new ArrayList<TypeNameResolver>();
-                        typeNameResolvers.add(TypeNameResolver.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
-                        typeNameResolvers.add(TypeNameResolver.forSmartName(classScope, classScope.getOffset()));
-                        TypeNameResolver typeNameResolver = TypeNameResolver.forChainOf(typeNameResolvers);
+                        typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
+                        typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
+                        TypeNameResolver typeNameResolver = TypeNameResolverImpl.forChainOf(typeNameResolvers);
                         String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver);
                         skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
                         methodSkeletons.add(skeleton);
