@@ -64,6 +64,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -290,6 +291,8 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return null;
     }
 
+    
+    //NOTE: called from NBArtifactFixer, cannot contain references to ProjectManager
     public File getOwnerPOM(String groupId, String artifactId, String version) {
         LOG.log(Level.FINER, "Checking {0} / {1} / {2} (POM only)", new Object[] {groupId, artifactId, version});
         String oldKey = groupId + ":" + artifactId;
@@ -324,10 +327,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                             LOG.log(Level.FINE, "mismatch on groupId in {0}", pom);
                         }
                         // Might actually be a match due to use of e.g. string interpolation, so double-check with live project.
-                        Project p = getOwner(groupId, artifactId, version);
-                        if (p != null) {
-                            LOG.log(Level.FINE, "live project match for {0}", pom);
-                            return p.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile();
+                        FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
+                        if (projectDir != null && projectDir.isFolder()) {
+                            MavenProject prj = MavenProjectCache.getMavenProject(projectDir, false);
+                            if (prj != null && prj.getGroupId().equals(groupId) && prj.getArtifactId().equals(artifactId) && prj.getVersion().equals(version)) {
+                                return pom;
+                            }
                         } else {
                             LOG.log(Level.FINE, "no live project match for {0}", pom);
                         }
