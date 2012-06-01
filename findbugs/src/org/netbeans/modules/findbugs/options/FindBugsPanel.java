@@ -46,6 +46,8 @@ import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
@@ -69,9 +71,10 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.TreeSelectionEvent;
@@ -82,6 +85,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.findbugs.RunFindBugs;
 import org.netbeans.modules.findbugs.RunInEditor;
@@ -89,6 +93,7 @@ import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -99,12 +104,44 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     private final boolean defaultsToDisabled;
     private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
     private final Map<String, TreePath> bug2Path =  new HashMap<String, TreePath>();
-    private final DefaultTreeModel treeModel;
+    private DefaultTreeModel treeModel;
 
-    public FindBugsPanel(OptionsFilter filter, final CustomizerContext<?, ?> cc) {
+    @Messages("LBL_Loading=Loading...")
+    public FindBugsPanel(final @NullAllowed OptionsFilter filter, final @NullAllowed CustomizerContext<?, ?> cc) {
+        defaultsToDisabled = cc != null;
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                final TreeNode root = backgroundInit();
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        FindBugsPanel.this.removeAll();
+                        FindBugsPanel.this.uiInit(filter, root, cc);
+                    }
+                });
+            }
+        });
+
+        setLayout(new GridBagLayout());
+        add(new JLabel(Bundle.LBL_Loading()), new GridBagConstraints());
+    }
+    
+    private synchronized TreeNode backgroundInit() {
+        TreeNode rootNode = createRootNode();
+        
+        for (List<BugPattern> bl : categorizedBugs.values()) {
+            for (BugPattern bp : bl) {
+                getFilterText(bp);
+            }
+        }
+        
+        return rootNode;
+    }
+    
+    private synchronized void uiInit(OptionsFilter filter, TreeNode rootNode, final CustomizerContext<?, ?> cc) {
         this.settings = new ModifiedPreferences(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
         initComponents();
-        this.treeModel = new DefaultTreeModel(createRootNode());
+        this.treeModel = new DefaultTreeModel(rootNode);
         if (filter != null) {
             filter.installFilteringModel(bugsTree, treeModel, new Acceptor() {
                 @Override public boolean accept(Object originalTreeNode, String filterText) {
@@ -184,9 +221,8 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         });
 
         runInEditor.setVisible(cc == null);
-        defaultsToDisabled = cc != null;
 
-        prepareFilterTexts();
+        load();
     }
 
     private boolean toggle( TreePath treePath ) {
@@ -314,10 +350,18 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_descriptionHyperlinkUpdate
 
     void load() {
+        if (this.runInEditor == null) {
+            //not initialized yet
+            return;
+        }
         this.runInEditor.setSelected(NbPreferences.forModule(FindBugsPanel.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT));
     }
 
     void store() {
+        if (this.runInEditor == null) {
+            //not initialized yet
+            return;
+        }
         ((ModifiedPreferences) this.settings).store(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
         NbPreferences.forModule(RunInEditor.class).putBoolean(RunInEditor.RUN_IN_EDITOR, this.runInEditor.isSelected());
     }
@@ -455,18 +499,6 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         filterText.put(bp, seq = result.toString());
 
         return seq;
-    }
-
-    private void prepareFilterTexts() {
-        WORKER.post(new Runnable() {
-            @Override public void run() {
-                for (List<BugPattern> bl : categorizedBugs.values()) {
-                    for (BugPattern bp : bl) {
-                        getFilterText(bp);
-                    }
-                }
-            }
-        });
     }
 
     private class CheckBoxRenderer implements TreeCellRenderer {
