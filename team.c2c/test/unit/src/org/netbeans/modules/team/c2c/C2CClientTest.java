@@ -42,11 +42,21 @@
 
 package org.netbeans.modules.team.c2c;
 
+import com.tasktop.c2c.server.profile.domain.project.Profile;
+import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Collections;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 
 /**
  *
@@ -57,7 +67,11 @@ public class C2CClientTest extends NbTestCase  {
     public static Test suite() {
         return NbModuleSuite.create(C2CClientTest.class, null, null);
     }
-    private TaskRepositoryLocationFactory trlf;
+    private static boolean firstRun = true;
+    private static String uname;
+    private static String passw;
+    private static String proxy;
+    private ClassPathXmlApplicationContext context;
     
     public C2CClientTest(String arg0) {
         super(arg0);
@@ -71,6 +85,38 @@ public class C2CClientTest extends NbTestCase  {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        if (firstRun) {
+            if (uname == null) {
+                uname = System.getProperty("team.user.login");
+                passw = System.getProperty("team.user.password");
+            }
+            if (uname == null) { // if it is still null, check the file in ~
+                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+                uname = br.readLine();
+                passw = br.readLine();
+                proxy = br.readLine();
+
+                br.close();
+            }
+            if (firstRun) {
+                firstRun = false;
+            }
+        }
+        if (!proxy.isEmpty()) {
+            System.setProperty("netbeans.system_http_proxy", proxy);
+        }
+    }
+    
+    public void testCreateClient () throws Exception {
+        ProfileWebServiceClient client = ClientFactory.getInstance().getClient("https://q.tasktop.com/alm/api");
+        Authentication auth = new UsernamePasswordAuthenticationToken(new User(uname, passw, true, true, true, true, 
+                Collections.EMPTY_LIST), passw);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+        Profile currentProfile = client.getCurrentProfile();
+        SecurityContextHolder.getContext().setAuthentication(null);
+        assertNotNull(currentProfile.getFirstName());
+        assertNotNull(currentProfile.getLastName());
     }
 
 }

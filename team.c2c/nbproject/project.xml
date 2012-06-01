@@ -6,12 +6,52 @@
             <code-name-base>org.netbeans.modules.team.c2c</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.client.tasks.core</code-name-base>
+                    <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>com.tasktop.c2c.server.common.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>com.tasktop.c2c.server.profile.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.core.net</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.beans</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.context</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.context.support</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.web</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
@@ -24,23 +64,9 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.netbinox</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util.lookup</code-name-base>
-                        <compile-dependency/>
-                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
