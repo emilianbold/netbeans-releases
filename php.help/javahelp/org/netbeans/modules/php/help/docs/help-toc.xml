@@ -30,7 +30,7 @@
         </tocitem>
         <tocitem text="Debugging PHP Applications" expand="false">
             <tocitem text="About Debugging PHP Applications" target="php_debug_about"/>
-            <mapID target="php_debug_process" text="Working with PHP Debugging"/>
+            <tocitem target="php_debug_process" text="Working with Debugging in PHP Applications"/>
             <tocitem target="xdebug_setup" text="Setting Up XDebug In NetBeans IDE"/>
             <tocitem target="php_breakpoints" text="PHP Breakpoints in the IDE"/>
             <tocitem target="php_debug_context" text="Current Context in the Debugger"/>
@@ -44,15 +44,13 @@
                 <tocitem target="php_debug_windows" text="Debugger Windows"/>
                 <tocitem target="php_breakpoint_window" text="Breakpoints Window"/>
                 <tocitem target="php_callstack_window" text="Callstack Window"/>
-                <tocitem target="php_sources_window" text="Sources Window"/>
                 <tocitem target="php_threads_window" text="Threads Window"/>
                 <tocitem target="php_variables_window" text="Variables Window"/>
                 <tocitem target="php_watches_window" text="Watches Window"/>
             </tocitem>
             <tocitem text="Viewing Program Information" expand="false">
-                <tocitem target="php_debug_variables" text="Viewing Variables and Expressions While Debugging"/>
-                <tocitem target="php_debug_watches" text="Creating a Watch"/>
-                <tocitem target="php_debug_threads" text="Debugging Threads in the IDE"/>
+                <tocitem target="php_debug_variables" text="Viewing Variables While Debugging"/>
+                <tocitem target="php_debug_watches" text="Enabling and Creating Watches"/>
             </tocitem>
         </tocitem>
         <tocitem text="Using a Continuous Build Server With PHP" target="php_hudson"/>

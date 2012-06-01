@@ -96,15 +96,6 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
 
     /** Name of property for the action's display icon, if textual. */
     private static final String PROP_ICON_TEXTUAL = "iconTextual"; // NOI18N
-    private static Icon BLANK_ICON = new Icon() {
-        public void paintIcon(Component c, Graphics g, int x, int y) {}
-        public int getIconWidth() {
-            return 16;
-        }
-        public int getIconHeight() {
-            return 16;
-        }
-    };
     private static final Set<String> relativeIconResourceClasses = new HashSet<String>(200);
 
     // Matches NB 3.4 w/ openide-compat.jar; see #26491
@@ -310,8 +301,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
                     img = new ComponentIcon(new JLabel(text));
                     putProperty(PROP_ICON_TEXTUAL, img);
                 } else {
-                    img = BLANK_ICON;
-                    putProperty(PROP_ICON, img);
+                    putProperty(PROP_ICON, null);
                 }
             }
 

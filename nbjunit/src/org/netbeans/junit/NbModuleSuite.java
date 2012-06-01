@@ -1474,7 +1474,7 @@ public class NbModuleSuite {
             super.runTest(test, result);
             LOG.log(Level.FINE, "Finished: {0}", test);
             if (e == result.errorCount() && f == result.failureCount()) {
-                NbModuleLogHandler.checkFailures((TestCase) test, result);
+                NbModuleLogHandler.checkFailures((TestCase) test, result, test instanceof NbTestCase ? ((NbTestCase) test).getWorkDirPath() : Manager.getWorkDirPath());
             }
         }
     }

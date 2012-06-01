@@ -37,13 +37,11 @@
     <mapID target="php_debug_windows" url="debug/windows/debug_window.html"/>
     <mapID target="php_breakpoint_window" url="debug/windows/breakpoint_view.html"/>
     <mapID target="php_callstack_window" url="debug/windows/callstack_view.html"/>
-    <mapID target="php_sources_window" url="debug/windows/sources_view.html"/>
     <mapID target="php_threads_window" url="debug/windows/threads_view.html"/>
     <mapID target="php_variables_window" url="debug/windows/variables_view.html"/>
     <mapID target="php_watches_window" url="debug/windows/watches_view.html"/>
     <mapID target="php_debug_variables" url="debug/debug_variables.html"/>
     <mapID target="php_debug_watches" url="debug/debug_new_watch.html"/>
-    <mapID target="php_debug_threads" url="debug/debug_threads.html"/>
 
     <!-- CSH -->
     <!-- Projects window F1 help-->

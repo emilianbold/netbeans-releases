@@ -58,9 +58,10 @@ while [ -h "$PRG" ]; do
 done
 
 progdir=`dirname "$PRG"`
+old=`pwd`
 cd "$progdir"/..
 basedir=`pwd`
-cd -
+cd "$old"
 
 case "`uname`" in
     Darwin*)
