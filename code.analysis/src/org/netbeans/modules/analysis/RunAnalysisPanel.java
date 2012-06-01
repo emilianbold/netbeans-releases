@@ -749,6 +749,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         public Scope getScope(AtomicBoolean cancel) {
             Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent = RunAnalysis.projects2RegisteredContent(cancel);
 
+            if (cancel.get()) return null;
+            
             return RunAnalysis.addProjectToScope(project, Scope.create(null, null, null), cancel, projects2RegisteredContent);
         }
     }
