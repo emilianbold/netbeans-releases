@@ -116,6 +116,12 @@ public final class Utils {
         xmx = ARG_PREFIX + XMX_ARG + project.getProperty("pack200.xmx");
         permSize = ARG_PREFIX + PERM_SIZE_ARG + project.getProperty("pack200.perm.size");
         maxPermSize = ARG_PREFIX + MAX_PERM_SIZE_ARG + project.getProperty("pack200.max.perm.size");
+        String output = "use.internal.packer? " + useInternalPacker;
+        if (project != null) {
+            project.log("            " + output);
+        } else {
+            System.out.println(output);
+        }
     }
     
     /**
@@ -223,13 +229,6 @@ public final class Utils {
     public static boolean pack(
             final File source,
             final File target) throws IOException {
-        String output = "use.internal.packer? " + "true".equals(project.getProperty("use.internal.packer"));
-        if (project != null) {
-            project.log("            " + output);
-        } else {
-            System.out.println(output);
-        }
-
         return useInternalPacker ? packInternally(source,target) : packExternally(source,target);        
     }
     
@@ -239,7 +238,7 @@ public final class Utils {
         boolean result;
         
         
-            String output = "Calling pack200 on " + source + " to " + target;
+            String output = "Calling pack200(" + getPackerExecutable() + ") on " + source + " to " + target;
             if (project != null) {
                 project.log("            " + output);
             } else {
