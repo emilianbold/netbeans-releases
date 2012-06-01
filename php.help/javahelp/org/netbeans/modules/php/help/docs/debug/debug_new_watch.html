@@ -7,22 +7,40 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Creating a Watch</title>
+<title>Enabling and Creating Watches</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Creating a Watch</h2>
+<h2>Enabling and Creating Watches</h2>
 <p>
 <small><a href="#seealso">See Also</a></small></p>
 <p> A watch enables you to track the changes in the value of a variable or expression
-	 during program execution. The Watches window lists all of the watches you
-	have defined for all of your IDE projects. You can open the Watches window
+    during program execution. The <a href="windows/watches_view.html">Watches window</a> 
+    lists all of the watches you defined for all IDE projects, of all programming languages. 
+    You can open the Watches window
 	by choosing Window  &gt; Debugging 
-   &gt; Watches (Alt-Shift-2).
-  You can create a watch directly from the Source Editor. </p>
+   &gt; Watches (Alt-Shift-2).</p>
+<ul class="warning">
+    <li>Watches can destabilize XDebug, especially if a watch is set on invalid code.</li>
+</ul>
+<h3>Enabling Watches for PHP</h3>
+<p>Before you can set watches in PHP code, you must enable PHP watches. To enable watches:</p>
+<ol>
+    <li>Open Tools &gt; Options (NetBeans Preferences on Mac).</li>
+    <li>Click the PHP icon.</li>
+    <li>Open the Debugging tab.</li>
+    <li>Tick Watches and Balloon Evaluation.</li>
+    <li>Optionally, change the Maximum Depth of Structures and/or the Maximum Number of Children.
+    These numbers set the visibility of nested structures and array items, respectively, during Watch
+    evaluation.</li>
+    <li>Click OK.</li>  
+</ol>
+<p>For more information about PHP Debugging Options, click Help at the bottom of the Debugging tab.</p>
+<h3>Creating Watches in PHP Code</h3>
 <p>
-<b>To create a watch from the Source Editor:</b>
+If watches and balloon evaluation is enabled in PHP Options, you can create watches
+in the Source Editor. To create a watch from the Source Editor:
 </p>
 <ol>
   <li>Select the variable or expression in the Source Editor, right-click, and 
@@ -34,22 +52,18 @@
     <p> The Watches window opens with the new watch selected. 
   </li>
 </ol>
-<p><b>Notes:</b></p>
-<ul>
-<li>
-When you specify an expression, follow the syntax rules of the 
-debugger that you are using.
-</li>
-<li>
-When you create a watch, the value of the variable or expression is immediately evaluated and displayed in the Watches window. The value of the watch is based on the current context. When you change the current context, the Watches window is updated to show the value of the watch for that context.
-</li>
-<li>When a debugging session is running, you can use code completion in the New Watch dialog box.</li>
-</ul>
+
 <dl>
  <dt><a name="seealso">See Also</a></dt>
     <dd><a href="debug_fix_watch.html">Creating a Fixed Watch</a></dd>
     <dd><a href="debug_variables.html">Variables and Expressions in the IDE</a></dd>
     <dd><a href="debug_expression.html">Evaluating an Expression</a></dd>
+    <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/php/debugging.html#usingAdditionalWatches">
+                    <param name="text" value="<html><u>Debugging PHP Source Code in NetBeans IDE</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

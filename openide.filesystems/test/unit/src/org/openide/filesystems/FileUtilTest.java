@@ -285,12 +285,13 @@ public class FileUtilTest extends NbTestCase {
         File f = new File(getWorkDir(), "text.txt");
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         File one = FileUtil.normalizeFile(f);
-        if (!log.toString().matches("(?s).*FileUtil.normalizeFile for .+text.txt.*")) {
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
             fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         File two = FileUtil.normalizeFile(f);
-        if (log2.toString().matches("(?s).*FileUtil.normalizeFile for .+text.txt.*")) {
+        if (log2.toString().contains(msg)) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);
@@ -377,12 +378,13 @@ public class FileUtilTest extends NbTestCase {
         String path = f.getPath();
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         String one = FileUtil.normalizePath(path);
-        if (!log.toString().matches("(?s).*FileUtil.normalizeFile for .+textPath.txt.*")) {
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
             fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         String two = FileUtil.normalizePath(path);
-        if (log2.toString().matches("(?s).*FileUtil.normalizeFile for .+textPath.txt.*")) {
+        if (log2.toString().contains(msg)) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);
