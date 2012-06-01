@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -83,20 +82,25 @@ public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBas
     }
 
     private void doTest213261(boolean extraReopen, boolean waitParseAfterChange) throws Exception {
-        String projectName = getName() + "_project";
         // #213261 - failing test on all platforms ModifyMultiIncludedHeaderTestCase.test174007
-        CsmProject project = super.getProject(projectName);
-        if (project == null) {
-            assertNotNull("no " + projectName + " for test " + getName() + "in " + getModel().projects(), project);
-        }
         final File testFile = getDataFile("multiIncludedFileForModification.h");
         FileImpl csmFile = (FileImpl) super.getCsmFile(testFile);
         assertNotNull(csmFile);
+        ProjectBase project = csmFile.getProjectImpl(true);
+        if (project == null) {
+            assertNotNull("no project for test " + getName() + " in " + getModel().projects(), project);
+        }
+        String projectName = project.getName().toString();
         if (extraReopen) {
             super.closeProject(projectName);
             super.reopenProject(projectName, true);
         }
-        DeepReparsingUtils.tryPartialReparseOnChangedFile(csmFile.getProjectImpl(true), csmFile);
+        csmFile = (FileImpl) super.getCsmFile(testFile);
+        project = csmFile.getProjectImpl(true);
+        if (project == null) {
+            assertNotNull("no " + projectName + " for test " + getName() + " in " + getModel().projects(), project);
+        }
+        DeepReparsingUtils.tryPartialReparseOnChangedFile(project, csmFile);
         if (waitParseAfterChange) {
             super.waitAllProjectsParsed();
         }
