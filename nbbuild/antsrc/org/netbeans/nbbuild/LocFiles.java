@@ -97,6 +97,10 @@ public final class LocFiles extends Task {
         if (locales == null || locales.isEmpty()) {
             locales = Locale.getDefault().toString();
         }
+        if (!srcDir.exists()) {
+            log("No l10n files present. Do hg clone http://hg.netbeans.org/main/l10n!", Project.MSG_VERBOSE);
+            return;
+        }
         
         List<String> includes = new ArrayList<String>();
         StringTokenizer tok = new StringTokenizer(locales, ",");
