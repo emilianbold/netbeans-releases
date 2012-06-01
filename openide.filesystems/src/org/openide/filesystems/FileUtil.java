@@ -59,6 +59,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2040,9 +2041,12 @@ public final class FileUtil extends Object {
                     }
                     return new URL(jarPath);
 
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(Exceptions.attachMessage(mue,
-                    "URL: " + url.toExternalForm() +" jarPath: " + jarPath));   //NOI18N
+                } catch (MalformedURLException mue) {                    
+                    LOG.warning(MessageFormat.format(
+                        "Invalid URL ({0}): {1}, jarPath: {2}", //NOI18N
+                        mue.getMessage(),
+                        url.toExternalForm(),
+                        jarPath));
                 }
             }
         }
