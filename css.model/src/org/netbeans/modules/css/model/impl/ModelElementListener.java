@@ -125,6 +125,22 @@ public interface ModelElementListener {
     public void elementAdded(PlainElement plainElement);
 
     public void elementAdded(Page page);
+    
+    public void elementRemoved(AtRuleId atRuleId);
+
+    public void elementRemoved(GenericAtRule genericAtRule);
+
+    public void elementRemoved(MozDocument mozDocument);
+
+    public void elementRemoved(MozDocumentFunction mozDocumentFunction);
+
+    public void elementRemoved(VendorAtRule vendorAtRule);
+
+    public void elementRemoved(WebkitKeyframes webkitKeyFrames);
+
+    public void elementRemoved(WebkitKeyframeSelectors webkitKeyframeSelectors);
+
+    public void elementRemoved(WebkitKeyframesBlock webkitKeyframesBlock);
 
     public void elementRemoved(StyleSheet stylesheet);
 
@@ -337,6 +353,7 @@ public interface ModelElementListener {
 //            }
 //        }
 //    }
+    
     public static class Adapter implements ModelElementListener {
 
         @Override
@@ -609,6 +626,38 @@ public interface ModelElementListener {
 
         @Override
         public void elementAdded(WebkitKeyframesBlock webkitKeyframesBlock) {
+        }
+
+        @Override
+        public void elementRemoved(AtRuleId atRuleId) {
+        }
+
+        @Override
+        public void elementRemoved(GenericAtRule genericAtRule) {
+        }
+
+        @Override
+        public void elementRemoved(MozDocument mozDocument) {
+        }
+
+        @Override
+        public void elementRemoved(MozDocumentFunction mozDocumentFunction) {
+        }
+
+        @Override
+        public void elementRemoved(VendorAtRule vendorAtRule) {
+        }
+
+        @Override
+        public void elementRemoved(WebkitKeyframes webkitKeyFrames) {
+        }
+
+        @Override
+        public void elementRemoved(WebkitKeyframeSelectors webkitKeyframeSelectors) {
+        }
+
+        @Override
+        public void elementRemoved(WebkitKeyframesBlock webkitKeyframesBlock) {
         }
     }
 }

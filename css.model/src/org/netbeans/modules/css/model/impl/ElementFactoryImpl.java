@@ -44,6 +44,7 @@ package org.netbeans.modules.css.model.impl;
 import java.lang.reflect.Constructor;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -58,6 +59,8 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     public Element createElement(Model model, Node node) {
+        Parameters.notNull("model", model);
+        Parameters.notNull("node", node);
         try {
             Class<?> clazz = Class.forName(Utils.getImplementingClassNameForNodeType(node.type()));
             Constructor<?> constructor = clazz.getConstructor(Model.class, Node.class);

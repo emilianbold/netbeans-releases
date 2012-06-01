@@ -80,6 +80,11 @@ public class BodyItemI extends ModelElement implements BodyItem {
         public void elementAdded(FontFace fontFace) {
             element = fontFace;
         }
+
+        @Override
+        public void elementAdded(VendorAtRule var) {
+            element = var;
+        }
         
     };
 

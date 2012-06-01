@@ -44,6 +44,8 @@ package org.netbeans.modules.css.model.api;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -93,15 +95,22 @@ public final class Model {
 
     public Model(CssParserResult parserResult) {
         Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
-        StyleSheet styleSheet = (StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode);
         
-        MODEL_LOOKUP = Lookups.fixed(
-                parserResult,
-                parserResult.getSnapshot(),
-                parserResult.getSnapshot().getText(),
-                parserResult.getSnapshot().getSource().getDocument(true),
-                styleSheetNode,
-                styleSheet);
+        Collection<Object> lookupContent = new ArrayList<Object>();
+        if(styleSheetNode == null) {
+            //empty file
+            lookupContent.add(getElementFactory().createStyleSheet());
+        } else {
+            lookupContent.add(styleSheetNode);
+            lookupContent.add((StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode));
+        }
+        
+        lookupContent.add(parserResult);
+        lookupContent.add(parserResult.getSnapshot());
+        lookupContent.add(parserResult.getSnapshot().getText());
+        lookupContent.add(parserResult.getSnapshot().getSource().getDocument(true));
+        
+        MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
     }
 
     /**

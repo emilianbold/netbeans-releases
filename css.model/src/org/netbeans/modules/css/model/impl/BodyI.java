@@ -204,10 +204,10 @@ public class BodyI extends ModelElement implements Body {
     
     private <T extends Element> List<T> getVendorAtRuleElements(Class<T> ofType) {
          List<T> rules = new ArrayList<T>();
-        for(VendorAtRule bi : getVendorAtRules()) {
-            Element element = bi.getElement();
+        for(VendorAtRule var : getVendorAtRules()) {
+            Element element = var.getElement();
             if(ofType.isAssignableFrom(element.getClass())) {
-                T t = ofType.cast(bi);
+                T t = ofType.cast(element);
                 rules.add(t);
             }
         }

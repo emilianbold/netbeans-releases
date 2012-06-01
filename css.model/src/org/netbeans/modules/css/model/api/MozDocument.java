@@ -44,6 +44,7 @@ package org.netbeans.modules.css.model.api;
 import java.util.List;
 
 /**
+ * TODO: make mutable
  *
  * @author marekfukala
  */
@@ -51,6 +52,12 @@ public interface MozDocument extends Element {
     
     public List<MozDocumentFunction> getRestrictions();
     
+//    public void addRestriction(MozDocumentFunction fn);
+    
+//    public boolean removeRestriction(MozDocumentFunction fn);
+    
     public Body getBody();
+    
+//    public void setBody(Body body);
     
 }

@@ -42,10 +42,6 @@
 package org.netbeans.modules.css.model.impl;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;

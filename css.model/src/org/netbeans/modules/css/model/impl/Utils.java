@@ -52,16 +52,42 @@ public class Utils {
     private static final String IMPLEMENTATIONS_PACKAGE = StyleSheetI.class.getPackage().getName();
     private static final char IMPLEMENTATIONS_SUFFIX = 'I'; //NOI18N
     
+    
+    
     //rule: grammar element name, first char in upper case + "I" postfix
-    public static String getImplementingClassNameForNodeType(NodeType nodeType) {
+    static String getImplementingClassNameForNodeType(NodeType nodeType) {
+        return getImplementingClassNameForNodeType(nodeType.name());
+    }
+    
+    static String getImplementingClassNameForNodeType(String typeName) {
         StringBuilder sb = new StringBuilder();
-        String typeName = nodeType.name();
         
         sb.append(IMPLEMENTATIONS_PACKAGE);
         sb.append('.');
         sb.append(Character.toUpperCase(typeName.charAt(0)));
-        sb.append(typeName.substring(1));
+        
+        //underscores in element names conversion
+        //
+        //generic_at_rule --- should generate class name --- GenericAtRuleI
+        for(int i = 1; i < typeName.length(); i++) {
+            char c = typeName.charAt(i);
+            if(c == '_') {
+                //eat and convert next char to uppercase
+                assert i < typeName.length() - 1 :
+                    String.format("NodeType name %s cannot end with underscore!", typeName);
+                i++;
+                c = typeName.charAt(i);
+                assert c != '_' : 
+                        String.format("No two underscores in row can be preset in the NodeType %s name!", typeName);
+
+                sb.append(Character.toUpperCase(c));
+            } else {
+                sb.append(c);
+            }
+            
+        }
         sb.append(IMPLEMENTATIONS_SUFFIX);
+        
         return sb.toString();
     }
     

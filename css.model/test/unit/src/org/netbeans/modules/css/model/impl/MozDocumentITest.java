@@ -41,31 +41,71 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.AtRuleId;
-import org.netbeans.modules.css.model.api.Model;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class AtRuleIdI extends PlainElementI implements AtRuleId {
+public class MozDocumentITest extends ModelTestBase {
 
-    public AtRuleIdI(Model model, CharSequence text) {
-        super(model, text);
+    public MozDocumentITest(String name) {
+        super(name);
     }
 
-    public AtRuleIdI(Model model) {
-        super(model);
+    public void testBasic() throws BadLocationException, ParseException {
+        String code = "@-moz-document domain(mozilla.org),  regexp(\"https:.*\")  { body { color: purple } }";
+
+        StyleSheet styleSheet = createStyleSheet(code);
+
+//        TestUtil.dumpResult(TestUtil.parse(code));
+
+        List<MozDocument> mozdocs = styleSheet.getBody().getMozDocuments();
+        assertNotNull(mozdocs);
+        assertEquals(1, mozdocs.size());
+
+        MozDocument mozdoc = mozdocs.get(0);
+        assertNotNull(mozdoc);
+
+        Body body = mozdoc.getBody();
+        assertNotNull(body);
+        
+        Declarations ds = body.getRules().get(0).getDeclarations();
+        assertNotNull(ds);
+        
+        List<MozDocumentFunction> restrictions = mozdoc.getRestrictions();
+        assertEquals(2, restrictions.size());
+        
+        MozDocumentFunction r1 = restrictions.get(0);
+        assertNotNull(r1);
+        
+        assertEquals("domain(mozilla.org)", r1.getContent().toString());
+        
+        MozDocumentFunction r2 = restrictions.get(1);
+        assertNotNull(r2);
+        
+        assertEquals("regexp(\"https:.*\")", r2.getContent().toString());
+
     }
 
-    public AtRuleIdI(Model model, Node node) {
-        super(model, node);
-    }
-
-    @Override
-    protected Class getModelClass() {
-        return AtRuleId.class;
-    }
+    //XXX: MozDocument is not mutable
+//    public void testAddToEmptyStyleSheet() {
+//        Model model = createModel();
+//        StyleSheet styleSheet = getStyleSheet(model);
+//        ElementFactory f = model.getElementFactory();
+//        
+//        Body body = f.createBody();
+//        styleSheet.setBody(body);
+//
+//        MozDocument mozd = f.createMozDocument();
+//        MozDocumentFunction mozdf1 = f.createMozDocumentFunction();
+//        mozdf1.setContent("domain(mozilla.org)");
+//        MozDocumentFunction mozdf2 = f.createMozDocumentFunction();
+//        mozdf2.setContent("regexp(\"https:.*\")");
+//    }
     
 }

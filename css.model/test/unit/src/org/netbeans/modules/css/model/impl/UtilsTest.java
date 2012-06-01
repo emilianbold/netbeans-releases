@@ -55,13 +55,36 @@ public class UtilsTest extends NbTestCase {
     }
 
     public void testGetImplementingClassNameForNodeType() {
-        assertEquals("org.netbeans.modules.css.model.impl.CharSetI", 
+        assertEquals("org.netbeans.modules.css.model.impl.CharSetI",
                 Utils.getImplementingClassNameForNodeType(NodeType.charSet));
-        assertEquals("org.netbeans.modules.css.model.impl.ImportItemI", 
+        assertEquals("org.netbeans.modules.css.model.impl.ImportItemI",
                 Utils.getImplementingClassNameForNodeType(NodeType.importItem));
-        assertEquals("org.netbeans.modules.css.model.impl.WsI", 
+        assertEquals("org.netbeans.modules.css.model.impl.WsI",
                 Utils.getImplementingClassNameForNodeType(NodeType.ws));
+
+        //element name with uderscores
+        assertEquals("org.netbeans.modules.css.model.impl.GenericAtRuleI",
+                Utils.getImplementingClassNameForNodeType(NodeType.generic_at_rule));
+
+        boolean failed = false;
+        try {
+            assertEquals("org.netbeans.modules.css.model.impl.RuleDI",
+                    Utils.getImplementingClassNameForNodeType("rule_"));
+        } catch (AssertionError ae) {
+            failed = true;
+        }
         
+        assertTrue(failed);
+        
+        failed = false;
+        try {
+            assertEquals("org.netbeans.modules.css.model.impl.RuleDI",
+                    Utils.getImplementingClassNameForNodeType("rule__d"));
+        } catch (AssertionError ae) {
+            failed = true;
+        }
+        
+        assertTrue(failed);
+
     }
-    
 }

@@ -92,6 +92,10 @@ public class ModelTestBase extends NbTestCase {
         return getStyleSheet(createModel(source));
     }
     
+    protected Model createModel() {
+        return new Model();
+    }
+    
     protected Model createModel(String source) {
         CssParserResult result = TestUtil.parse(source);
         return new Model(result);
