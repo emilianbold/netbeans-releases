@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.modelcache;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
@@ -105,7 +104,7 @@ public final class MavenProjectCache {
                     }
                 }
                 MavenProject mp = loadOriginalMavenProject(projectDirectory);
-                file2Project.put(projectDirectory, new WeakReference(mp)); //TODO our own referenceQueue to clean up the maps?
+                file2Project.put(projectDirectory, new WeakReference<MavenProject>(mp));
                 return mp;
             }
         });

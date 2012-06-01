@@ -94,6 +94,7 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
         manager.setRootContext(Node.EMPTY);
         tpDesc.setEditorKit(new HTMLEditorKit());
         manager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 Node[] nds = getExplorerManager().getSelectedNodes();
                 if (nds.length != 1) {
@@ -183,11 +184,13 @@ public class AddPropertyDialog extends javax.swing.JPanel implements ExplorerMan
     private javax.swing.JScrollPane tvExpressions;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
 
     private class Loader implements Runnable {
+        @Override
         public void run() {
             Children.Array rootChilds = new Children.Array();
 
