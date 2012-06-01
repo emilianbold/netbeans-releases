@@ -133,19 +133,15 @@ public class ValidationTest extends JellyTestCase {
         ajpw.stepsWaitSelectedValue("Platform Folders");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
         
-        //MESDK folder selection is automatic on Windows XP and Vista, on others it must be selected manually
-        if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows xp") == -1 &&
-                System.getProperty("os.name", "other").toLowerCase().indexOf("windows vista") == -1) {
-            //File Browser isn't invoked automatically on Windows 7 hudson nodes
-            if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows 7") == 0) {
-                new EventTool().waitNoEvent(2000);
-                (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock();
-            }
-            DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
-            new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
-            (new JButtonOperator(cdtsfp, "Open")).pushNoBlock();
-            cdtsfp.waitClosed();
+        //File Browser isn't invoked automatically on Windows 7 hudson nodes
+        if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows 7") == 0) {
+            new EventTool().waitNoEvent(2000);
+            (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock(); //TODO I18N
         }
+        DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
+        new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
+        (new JButtonOperator(cdtsfp, "Open")).pushNoBlock();
+        cdtsfp.waitClosed();
         
         DialogOperator sfjmep = new DialogOperator("Searching for Java ME platforms"); //TODO I18N
         sfjmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
