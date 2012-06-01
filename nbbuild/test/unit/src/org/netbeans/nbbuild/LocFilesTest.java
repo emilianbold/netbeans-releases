@@ -119,6 +119,28 @@ public class LocFilesTest extends NbTestCase {
         );
         assertPattern("platform", "modules/locale/org-netbeans-core-windows_cs.jar");
     }
+    
+    public void testAutoupdateServices() throws Exception {
+        final String pref = "cs/platform/autoupdate-services/autoupdate-services/org/netbeans/modules/autoupdate/";
+        createSource(
+            "cs/platform/autoupdate-services/ext/updater/org/netbeans/updater/Bundle_cs.properties",
+            pref + "services/resources/Bundle_cs.properties",
+            pref + "services/Bundle_cs.properties",
+            pref + "updateprovider/Bundle_cs.properties"
+        );
+        task.setCodeNameBase("org.netbeans.modules.autoupdate.services");
+        task.execute();
+        assertDist("platform/modules/locale/org-netbeans-modules-autoupdate-services_cs.jar", 
+            "org/netbeans/modules/autoupdate/services/resources/Bundle_cs.properties",
+            "org/netbeans/modules/autoupdate/services/Bundle_cs.properties",
+            "org/netbeans/modules/autoupdate/updateprovider/Bundle_cs.properties"
+        );
+        assertDist("platform/modules/ext/locale/updater_cs.jar", 
+            "org/netbeans/updater/Bundle_cs.properties"
+        );
+        assertPattern("platform", "modules/locale/org-netbeans-modules-autoupdate-services_cs.jar");
+        assertPattern("platform", "modules/ext/locale/updater_cs.jar");
+    }
 
     private void createSource(String... files) throws IOException {
         for (String f : files) {
@@ -130,7 +152,7 @@ public class LocFilesTest extends NbTestCase {
 
     private void assertDist(String jar, String... files) throws IOException {
         File f = new File(dist, jar.replace('/', File.separatorChar));
-        assertTrue("File is created", f.exists());
+        assertTrue("File " + f + " is created", f.exists());
         JarFile jf = new JarFile(f);
         Set<String> expected = new HashSet<String>(Arrays.asList(files));
         Enumeration<JarEntry> en = jf.entries();

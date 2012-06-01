@@ -153,23 +153,48 @@ public final class LocFiles extends Task {
             log("Can't find directory " + locBaseDir, Project.MSG_WARN);
             return;
         }
-
         File[] ch = locBaseDir.listFiles();
-        if (ch == null || ch.length != 1) {
+        if (ch == null) {
             throw new BuildException("Surprising content of " + locBaseDir);
         }
-        
-        if (ch[0].getName().equals(moduleDir)) {
-            //locBaseDir = ch[0];
+        for (File f : ch) {
+            processLocaleJar(f, locale, toAdd, moduleDir, locBaseDir, baseSrcDir);
+        }
+    }
+    
+    private void processLocaleJar(
+        File file, String locale, Collection<? super String> toAdd,
+        String moduleDir, File locBaseDir, File baseSrcDir
+    ) {
+        DirectoryScanner ds = new DirectoryScanner();
+        int segments = -1;
+        int jarIndex = -1;
+        int dirIndex = -1;
+        final File root;
+        final String prefixRoot;
+        if (file.getName().equals(moduleDir)) {
+            ds.setIncludes(new String[] { moduleDir });
+            root = new File(distDir, cluster);
+            prefixRoot = null;
         } else {
-            assert ch[0].getName().equals("netbeans");
+            if (file.getName().equals("netbeans")) {
+                ds.setIncludes(new String[] { "netbeans/*/*" });
+                segments = 3;
+                jarIndex = 2;
+                dirIndex = 1;
+                root = new File(distDir, cluster);
+                prefixRoot = "";
+            } else {
+                assert file.getName().equals("ext");
+                ds.setIncludes(new String[] { file.getName() + "/*" });
+                segments = 2;
+                jarIndex = 1;
+                dirIndex = 0;
+                root = new File(new File(distDir, cluster), "modules");
+                prefixRoot = "modules/";
+            }
         }
         
-        DirectoryScanner ds = new DirectoryScanner();
-        ds.setIncludes(new String[] {
-            moduleDir,
-            "netbeans/*/*"
-        });
         ds.setBasedir(locBaseDir);
         ds.scan();
         for (String dir : ds.getIncludedDirectories()) {
@@ -182,18 +207,18 @@ public final class LocFiles extends Task {
             File jarDir;
             String prefixDir;
             if (dir.equals(moduleDir)) {
-                jarDir = new File(new File(new File(distDir, cluster), "modules"), "locale");
+                jarDir = new File(new File(root, "modules"), "locale");
                 prefixDir = "modules/locale";
                 jar.setBasedir(new File(locBaseDir, dir));
                 jarFileName = cnbDashes + "_" + locale + ".jar";
             } else {
-                // netbeans/*/* case
+                // netbeans/*/* case or ext/* case
                 jar.setBasedir(new File(locBaseDir, dir));
                 String[] arr = dir.split("/");
-                assert arr.length == 3 : "Expected three segments: " + dir;
-                jarFileName = arr[2] + "_" + locale + ".jar";
-                jarDir = new File(new File(new File(distDir, cluster), arr[1]), "locale");
-                prefixDir = arr[1] + '/' + "locale";
+                assert arr.length == segments : "Expected segments: " + dir;
+                jarFileName = arr[jarIndex] + "_" + locale + ".jar";
+                jarDir = new File(new File(root, arr[dirIndex]), "locale");
+                prefixDir = prefixRoot + arr[dirIndex] + '/' + "locale";
             }
             
             /*
