@@ -42,13 +42,9 @@
 package org.netbeans.modules.editor.bookmarks.ui;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.editor.bookmarks.ui.BookmarkHistoryPopup;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,18 +90,6 @@ public class BookmarkHistoryPopupAction extends BaseAction {
                 ? "org/netbeans/modules/editor/bookmarks/resources/next_bookmark.png" // NOI18N
                 : "org/netbeans/modules/editor/bookmarks/resources/previous_bookmark.png" // NOI18N
         );
-        
-        updateEnabled();
-        EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateEnabled();
-            }
-        });
-    }
-
-    private void updateEnabled() {
-        setEnabled(EditorRegistry.lastFocusedComponent() != null);
     }
 
     @Override

@@ -53,7 +53,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -84,7 +83,6 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
-import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.KeyEventBlocker;
@@ -193,7 +191,7 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
             KeyBindingSettings kbs = MimeLookup.getLookup("").lookup(KeyBindingSettings.class);
             KeyStroke ks;
             if ((contentPane.getLayout() instanceof BorderLayout) &&
-                    kbs != null && (ks = findKeyStroke(kbs, ExtKit.gotoAction)) != null)
+                    (ks = BookmarkUtils.findKeyStroke(kbs, ExtKit.gotoAction)) != null)
             {
                 BorderLayout layout = (BorderLayout) contentPane.getLayout();
                 Component buttonBar = layout.getLayoutComponent(BorderLayout.SOUTH);
@@ -351,15 +349,6 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
 
     private String getValue() {
         return (String) gotoCombo.getEditor().getItem();
-    }
-
-    private KeyStroke findKeyStroke(KeyBindingSettings kbs, String actionName) {
-        for (MultiKeyBinding kb : kbs.getKeyBindings()) {
-            if (actionName.equals(kb.getActionName())) {
-                return kb.getKeyStroke(0); // Assume just a single-key shortcut used for the action
-            }
-        }
-        return null;
     }
 
     private void updateHistory() {

@@ -60,35 +60,33 @@ public class MvnJEE5Suite extends J2eeTestCase {
 
     public static Test suite() {
         // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
-        return NbModuleSuite.create(
-                addServerTests(Server.GLASSFISH,
+        return addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), MvnFromDBTest.class,
-                    "testFromDB",
-                    "testRun",
-                    "testUndeploy"
-                    ), MvnCRUDTest.class,
-                    "testRfE", //NOI18N
-                    "testPropAccess", //NOI18N
-                    "testRun", //NOI18N
-                    "testCreateRestClient", //NOI18N
-                    "testUndeploy"
-                    ), MvnPatternsTest.class,
-                    "testSingletonDef", //NOI18N
-                    "testContainerIDef", //NOI18N
-                    "testCcContainerIDef", //NOI18N
-                    "testSingleton1", //NOI18N
-                    "testCcContainerI1", //NOI18N
-                    "testSingleton2", //NOI18N
-                    "testContainerI1", //NOI18N
-                    "testContainerI2", //NOI18N
-                    "testSingleton3", //NOI18N
-                    "testContainerI3", //NOI18N
-                    "testCcContainerI2", //NOI18N
-                    "testCcContainerI3", //NOI18N
-                    "testNodes", //NOI18N
-                    "testRun",
-                    "testUndeploy"
-                    ).enableModules(".*").clusters(".*"));
+                "testFromDB",
+                "testRun",
+                "testUndeploy"), MvnCRUDTest.class,
+                "testRfE", //NOI18N
+                "testPropAccess", //NOI18N
+                "testRun", //NOI18N
+                "testCreateRestClient", //NOI18N
+                "testUndeploy"), MvnPatternsTest.class,
+                "testSingletonDef", //NOI18N
+                "testContainerIDef", //NOI18N
+                "testCcContainerIDef", //NOI18N
+                // jersey library not in Maven dependencies
+                //"testSingleton1", //NOI18N
+                //"testCcContainerI1", //NOI18N
+                "testSingleton2", //NOI18N
+                // jersey library not in Maven dependencies
+                //"testContainerI1", //NOI18N
+                "testContainerI2", //NOI18N
+                "testSingleton3", //NOI18N
+                "testContainerI3", //NOI18N
+                "testCcContainerI2", //NOI18N
+                "testCcContainerI3", //NOI18N
+                "testNodes", //NOI18N
+                "testRun",
+                "testUndeploy").enableModules(".*").clusters(".*").suite();
     }
 }

@@ -211,17 +211,6 @@ public class CreateCopyAction extends ContextAction {
                 return;
             }
 
-            if(!toRepositoryFile.isRepositoryRoot()) {
-                SVNUrl folderToCreate = toRepositoryFile.removeLastSegment().getFileUrl();
-                try{
-                    client.getInfo(folderToCreate);                                                                
-                } catch (SVNClientException ex) {                                
-                    if(!SvnClientExceptionHandler.isWrongUrl(ex.getMessage())) { 
-                        throw ex;
-                    }
-                }
-            }
-
             if(support.isCanceled()) {
                 return;
             }

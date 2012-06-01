@@ -153,8 +153,15 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
                     @Override
                     public boolean accepts(Attribute attribute) {
+                        if(attribute.unquotedValue() == null) {
+                            return false;
+                        }
                         CharSequence nsPrefix = attribute.namespacePrefix();
-                        return nsPrefix != null ? LexerUtils.equals("xmlns", nsPrefix, true, true) : false; //NOI18N
+                        if(nsPrefix == null) {
+                            return false;
+                        }
+                        
+                        return LexerUtils.equals("xmlns", nsPrefix, true, true); //NOI18N
                     }
                 });
                 

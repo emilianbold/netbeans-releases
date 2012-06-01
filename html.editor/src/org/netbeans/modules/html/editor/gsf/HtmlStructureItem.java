@@ -70,7 +70,20 @@ final class HtmlStructureItem implements StructureItem {
         this.handle = handle;
         int dfrom = snapshot.getOriginalOffset(node.from());
         int dto = snapshot.getOriginalOffset(node.semanticEnd());
-        this.documentOffsetRange = dfrom != -1 && dto != -1 ? new OffsetRange(dfrom, dto) : OffsetRange.NONE;
+        
+        if(dfrom == -1 && dto == -1) {
+            //correct - it is a virtual node
+            documentOffsetRange = OffsetRange.NONE;
+        } else if(dfrom == -1 || dto == -1) {
+            //erroneous - from or to is invalid
+            documentOffsetRange = OffsetRange.NONE;
+        } else if(dfrom > dto) {
+            //erroneous - from or to is invalid
+            documentOffsetRange = OffsetRange.NONE;
+        } else {
+            documentOffsetRange = new OffsetRange(dfrom, dto);
+        }
+        
         this.idAttributeValue = getAttributeValue(node, "id"); //NOI18N
         this.classAttributeValue = getAttributeValue(node, "class"); //NOI18N
         this.mimePath = snapshot.getMimePath();
@@ -149,6 +162,10 @@ final class HtmlStructureItem implements StructureItem {
                 //lazy load the nested items
                 //we need a parser result to be able to find Element for the ElementHandle
                 Source source = Source.create(getElementHandle().getFileObject());
+                if(source == null) {
+                    //file deleted
+                    return Collections.emptyList();
+                }
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {

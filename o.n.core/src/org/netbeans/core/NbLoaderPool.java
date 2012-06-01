@@ -123,12 +123,15 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         updatingBatch = true;
         updatingBatchUsed = false;
     }
-    public static synchronized void endUpdates() {
-        if (!updatingBatch) throw new IllegalStateException();
-        updatingBatch = false;
-        if (updatingBatchUsed) {
-            updatingBatchUsed = false;
-            resort();
+    public static void endUpdates() {
+        NbLoaderPool pool = getNbLoaderPool();
+        synchronized (NbLoaderPool.class) {
+            if (!updatingBatch) throw new IllegalStateException();
+            updatingBatch = false;
+            if (updatingBatchUsed) {
+                updatingBatchUsed = false;
+                resort(pool);
+            }
         }
     }
     
@@ -149,12 +152,12 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         // the instantiation of the loader is done outside of synchronized block,
         // because foreign code is called and can cause deadlocks
         DataLoader l = (DataLoader)s.getInstance ();
-        doAdd (l, s);
+        doAdd (l, s, getNbLoaderPool());
     }
 
     /** Really adds the loader.
      */
-    static synchronized void doAdd (DataLoader l, ManifestSection.LoaderSection s) throws Exception {
+    static synchronized void doAdd (DataLoader l, ManifestSection.LoaderSection s, NbLoaderPool pool) throws Exception {
         if (err.isLoggable(Level.FINE) && s != null) {
             List before = s.getInstallBefore() == null ? null : Arrays.asList(s.getInstallBefore());
             List after = s.getInstallAfter() == null ? null : Arrays.asList(s.getInstallAfter());
@@ -169,8 +172,8 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
             }
         }
         loaders.add (l);
-        l.removePropertyChangeListener (getNbLoaderPool ());
-        l.addPropertyChangeListener (getNbLoaderPool ());
+        l.removePropertyChangeListener (pool);
+        l.addPropertyChangeListener (pool);
         
         String cname = c.getName();
         names2Loaders.put(cname, l);
@@ -184,7 +187,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         if (updatingBatch) {
             updatingBatchUsed = true;
         } else {
-            resort ();
+            resort (pool);
         }
     }
 
@@ -198,7 +201,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     * its order is not changed.
     * In any case, a change event is fired afterwards.
     */
-    private static synchronized void resort () {
+    private static synchronized void resort (NbLoaderPool pool) {
         // A partial ordering over loaders based on their Install-* tags:
         Map<DataLoader,List<DataLoader>> deps = new HashMap<DataLoader,List<DataLoader>>();
         add2Deps(deps, installBefores, true);
@@ -216,7 +219,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
             err.log(Level.WARNING, null, ex);
             err.warning("Contradictory loader ordering: " + deps); // NOI18N
         }
-        update ();
+        update (pool);
     }
     /**
      * Add to loader ordering dependencies.
@@ -308,7 +311,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     /** Stores all the objects into stream.
     * @param oos object output stream to write to
     */
-    private static synchronized void writePool (ObjectOutputStream oos)
+    private static synchronized void writePool (ObjectOutputStream oos, NbLoaderPool pool)
     throws IOException {
         if (err.isLoggable(Level.FINE)) err.fine("writePool");
         // No longer bother storing these (#29671):
@@ -368,7 +371,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         oos.writeObject (null);
 
         // Write out system loaders now:
-        Enumeration e = getNbLoaderPool ().allLoaders ();
+        Enumeration e = pool.allLoaders ();
         while (e.hasMoreElements ()) {
             DataLoader l = (DataLoader) e.nextElement ();
             if (loaders.contains (l)) continue;
@@ -400,7 +403,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     /** Reads loader from the input stream.
     * @param ois object input stream to read from
     */
-    private static synchronized void readPool (ObjectInputStream ois)
+    private static synchronized void readPool (ObjectInputStream ois, NbLoaderPool pool)
     throws IOException, ClassNotFoundException {
         /*installBefores = (Map)*/ois.readObject ();
         /*installAfters = (Map)*/ois.readObject ();
@@ -553,7 +556,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         // Always "resort": if the existing order was in fact compatible with the
         // current install-befores/afters, then this is no op (besides firing an
         // update event). Cf. #29671.
-        resort ();
+        resort (pool);
         
     }
     
@@ -602,12 +605,11 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
 
     /** Notification that the state of pool has changed
     */
-    private static synchronized void update () {
+    private static synchronized void update (NbLoaderPool lp) {;
         if (err.isLoggable(Level.FINE)) err.fine("update");
         // clear the cache of loaders
         loadersArray = null;
 
-        NbLoaderPool lp = getNbLoaderPool();
         if (lp != null && installationFinished) {
             lp.superFireChangeEvent();
         }
@@ -634,7 +636,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     * @param dl data loader to remove
     * @return true if the loader was registered and false if not
     */
-    public static synchronized boolean remove (DataLoader dl) {
+    public static synchronized boolean remove (DataLoader dl, NbLoaderPool pool) {
         if (loaders.remove (dl)) {
             if (err.isLoggable(Level.FINE)) err.fine("remove: " + dl);
             String cname = dl.getClass().getName();
@@ -642,12 +644,12 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
             repNames2Loaders.remove(dl.getRepresentationClassName());
             installBefores.remove(cname);
             installAfters.remove(cname);
-            dl.removePropertyChangeListener (getNbLoaderPool ());
+            dl.removePropertyChangeListener (pool);
         
             if (updatingBatch) {
                 updatingBatchUsed = true;
             } else {
-                resort ();
+                resort (pool);
             }
             modifiedLoaders.remove(dl);
             return true;
@@ -661,6 +663,7 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
     * @return loader pool instance
     */
     public static NbLoaderPool getNbLoaderPool () {
+        assert !Thread.holdsLock(NbLoaderPool.class);
         return (NbLoaderPool)DataLoaderPool.getDefault ();
     }
 
@@ -794,14 +797,14 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         /** Write the object.
         */
         private void writeObject (ObjectOutputStream oos) throws IOException {
-            NbLoaderPool.writePool (oos);
+            NbLoaderPool.writePool (oos, getNbLoaderPool());
         }
 
         /** Reads the object.
         */
         private void readObject (ObjectInputStream ois)
         throws IOException, ClassNotFoundException {
-            NbLoaderPool.readPool (ois);
+            NbLoaderPool.readPool (ois, getNbLoaderPool());
         }
 
         /** Replaces the pool with default instance.

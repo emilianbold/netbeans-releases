@@ -24,7 +24,7 @@
                 <runtime-relative-path>ext/jaxb/api/jaxb-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxb/api/jsr173_api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxb/api/jsr173_1.0_api.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

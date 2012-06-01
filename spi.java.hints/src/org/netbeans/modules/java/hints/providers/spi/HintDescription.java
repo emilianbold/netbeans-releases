@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.HintContext;
 
@@ -60,17 +61,19 @@ public final class HintDescription {
     private final Worker worker;
     private final AdditionalQueryConstraints additionalConstraints;
     private final String hintText;
+    private final Set<Options> options;
 
-    private HintDescription(HintMetadata metadata, Trigger trigger, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
+    private HintDescription(HintMetadata metadata, Trigger trigger, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText, Set<Options> options) {
         this.metadata = metadata;
         this.trigger = trigger;
         this.worker = worker;
         this.additionalConstraints = additionalConstraints;
         this.hintText = hintText;
+        this.options = options;
     }
 
-    static HintDescription create(HintMetadata metadata, Trigger trigger, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText) {
-        return new HintDescription(metadata, trigger, worker, additionalConstraints, hintText);
+    static HintDescription create(HintMetadata metadata, Trigger trigger, Worker worker, AdditionalQueryConstraints additionalConstraints, String hintText, Set<Options> options) {
+        return new HintDescription(metadata, trigger, worker, additionalConstraints, hintText, options);
     }
 
     @Override
@@ -96,6 +99,10 @@ public final class HintDescription {
 
     public Worker getWorker() {
         return worker;
+    }
+
+    public Set<Options> getOptions() {
+        return options;
     }
 
     public static interface Worker {

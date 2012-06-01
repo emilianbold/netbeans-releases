@@ -69,8 +69,8 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupte
 import org.netbeans.modules.cnd.highlight.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
-import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileObject;
@@ -188,7 +188,7 @@ public final class SemanticHighlighter extends HighlighterBase {
             // and gathers collectors for the next step
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
                 SemanticEntity se = i.next();
-                if (NamedEntityOptions.instance().isEnabled(se) && 
+                if (NamedOption.getAccessor().getBoolean(se.getName()) && 
                         (!macroExpansionView || !se.getName().equals("macros"))) { // NOI18N
                     ReferenceCollector collector = se.getCollector();
                     if (collector != null) {
@@ -307,9 +307,9 @@ public final class SemanticHighlighter extends HighlighterBase {
                 addCancelListener(interrupter);
                 update(interrupter);
             } catch (AssertionError ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } finally {
                 removeCancelListener(interrupter);
             }

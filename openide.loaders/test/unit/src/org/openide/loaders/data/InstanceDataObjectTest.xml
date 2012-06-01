@@ -65,5 +65,8 @@ made subject to such option by the copyright holder.
         <file name="org-openide-loaders-InstanceDataObjectTest$TestDefinitions.instance"/>
         <!--deprecated-->
         <file name="hu[org-openide-loaders-InstanceDataObjectTest$TestDefinitions].instance"/>
+        <file name="s.instance">
+            <attr name="instanceCreate" newvalue="org.openide.loaders.InstanceDataObjectSynchronizedTest$TestSync"/>
+        </file>
     </folder>
 </filesystem>

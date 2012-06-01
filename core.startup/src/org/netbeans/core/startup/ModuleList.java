@@ -116,7 +116,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Jesse Glick
  */
 final class ModuleList implements Stamps.Updater {
-    
+    static final RequestProcessor RP = new RequestProcessor("Module List Updates"); // NOI18N
     /** The DTD for a module status. */
     public static final String PUBLIC_ID = "-//NetBeans//DTD Module Status 1.0//EN"; // NOI18N
     public static final String SYSTEM_ID = "http://www.netbeans.org/dtds/module-status-1_0.dtd"; // NOI18N
@@ -1008,7 +1008,7 @@ final class ModuleList implements Stamps.Updater {
         private final RequestProcessor.Task task;
         
         Listener() {
-            task = RequestProcessor.getDefault().create(this);
+            task = RP.create(this);
         }
         
         // Property change coming from ModuleManager or some known Module.
@@ -1565,7 +1565,7 @@ final class ModuleList implements Stamps.Updater {
                 init();
                 return;
             }
-            task = RequestProcessor.getDefault().create(this);
+            task = RP.create(this);
             task.schedule(0);
             
             Map<String, Map<String, Object>> cache = readCache();

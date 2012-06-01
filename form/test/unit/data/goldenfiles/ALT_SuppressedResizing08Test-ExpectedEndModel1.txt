@@ -5,7 +5,7 @@
           <Group type="sequential" alignment="leading" attributes="0">
               <EmptySpace min="$pref" pref="115" max="$pref" attributes="0"/>
               <Group type="parallel" groupAlignment="leading" attributes="0">
-                  <Group type="parallel" groupAlignment="leading" max="$pref" attributes="0">
+                  <Group type="parallel" alignment="leading" groupAlignment="leading" max="$pref" attributes="0">
                       <Component id="jToggleButton1" pref="152" max="Short.MAX_VALUE" attributes="1"/>
                       <Component id="jButton1" max="Short.MAX_VALUE" attributes="513"/>
                   </Group>

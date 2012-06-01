@@ -9,7 +9,7 @@
                     <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -31,6 +31,11 @@
                 <friend>org.netbeans.modules.xml.jaxb</friend>
                 <friend>org.netbeans.modules.websvc.jaxws21api</friend>
                 <friend>org.netbeans.modules.websvc.metro.model</friend>
+                <package>org.relaxng.datatype</package>
+                <package>com.sun.msv.grammar</package>
+                <package>com.sun.msv.util</package>
+                <package>com.sun.msv.verifier</package>
+                <package>com.sun.msv.verifier.regexp</package>
                 <package>com.sun.tools.xjc</package>
                 <package>com.sun.tools.xjc.addon.at_generated</package>
                 <package>com.sun.tools.xjc.addon.code_injector</package>

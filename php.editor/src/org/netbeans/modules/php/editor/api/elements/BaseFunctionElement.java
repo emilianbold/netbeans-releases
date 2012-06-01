@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.api.elements;
 
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 
 /**
  *
@@ -62,4 +63,5 @@ public interface BaseFunctionElement extends PhpElement{
     List<ParameterElement> getParameters();
     Collection<TypeResolver> getReturnTypes();
     String asString(PrintAs as);
+    String asString(PrintAs as, TypeNameResolver typeNameResolver);
 }

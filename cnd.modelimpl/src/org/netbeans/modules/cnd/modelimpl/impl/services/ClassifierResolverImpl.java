@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -126,6 +126,11 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     @Override
     public boolean isForwardClass(CsmObject cls) {
         return CsmKindUtilities.isDeclaration(cls) && ForwardClass.isForwardClass((CsmDeclaration)cls);
+    }
+
+    @Override
+    public boolean isForwardEnum(CsmObject cls) {
+        return CsmKindUtilities.isDeclaration(cls) && ForwardEnum.isForwardEnum((CsmDeclaration) cls);
     }
 
     @Override

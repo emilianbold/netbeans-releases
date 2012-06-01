@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -217,8 +218,11 @@ public class ClassPathModifierSupport {
             final ClassPathUiSupport.Callback cpUiSupportCallback, final ReferenceHelper refHelper,
             final Library[] libraries, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
         List<ClassPathSupport.Item> items = new ArrayList<ClassPathSupport.Item>(libraries.length);
-        for (int i = 0; i < libraries.length; i++) {
-            Library lib = checkLibrarySharability(project, helper, refHelper, libraries[i]);
+        for (Library in : libraries) {
+            if (in == null) {
+                throw new IllegalArgumentException("Libraries array contains a null reference: " + Arrays.toString(libraries)); //NOI18N
+            }
+            Library lib = checkLibrarySharability(project, helper, refHelper, in);
             ClassPathSupport.Item item = ClassPathSupport.Item.create(lib, null);
             if (cpUiSupportCallback != null) {
                 cpUiSupportCallback.initItem(item);

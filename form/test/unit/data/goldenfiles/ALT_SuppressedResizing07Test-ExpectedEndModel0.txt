@@ -10,7 +10,7 @@
                       <Component id="jButton3" max="Short.MAX_VALUE" attributes="1"/>
                       <Component id="jButton2" alignment="leading" max="Short.MAX_VALUE" attributes="1"/>
                   </Group>
-                  <Component id="jButton1" alignment="leading" min="$pref" pref="127" max="$pref" attributes="1025"/>
+                  <Component id="jButton1" min="$pref" pref="127" max="$pref" attributes="1025"/>
               </Group>
               <EmptySpace pref="127" max="Short.MAX_VALUE" attributes="4"/>
           </Group>

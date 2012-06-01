@@ -2151,6 +2151,16 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     }
                 }
                 wheeler.addEvent(e);
+                e.consume();
+            }
+        }
+        if (!e.isConsumed()) {
+            Container p = getParent();
+            while (p != null && !(p instanceof JScrollPane)) {
+                p = p.getParent();
+            }
+            if (p != null) {
+                p.dispatchEvent(e);
             }
         }
     }

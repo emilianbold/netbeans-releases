@@ -6,12 +6,10 @@
 package ${PACKAGENAME};
 
 import java.io.IOException;
-import org.netbeans.api.templates.TemplateRegistration;
 <#if MULTIVIEW??>
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 </#if>
-import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -126,8 +124,4 @@ public class ${PREFIX}DataObject extends MultiDataObject {
     }
     </#if>
 
-    @TemplateRegistration(folder="Other", content="${PREFIX}${TEMPLATE_NAME}")
-    public static WizardDescriptor.InstantiatingIterator templateIterator() {
-        return null;
-    }
 }

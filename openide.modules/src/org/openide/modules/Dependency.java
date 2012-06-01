@@ -201,10 +201,14 @@ public final class Dependency implements Serializable {
             throw new IllegalArgumentException("Malformed dot-separated identifier: " + base);
         }
     }
-    private static final String IDENTIFIER = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)"; // NOI18N
-    private static final Pattern FQN = Pattern.compile(IDENTIFIER + "(?:[.]" + IDENTIFIER + ")*"); // NOI18N
+    private static final Pattern FQN = Pattern.compile(
+        "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)(?:[.]\\p{javaJavaIdentifierPart}+)*" // NOI18N
+    ); 
     
-    /** Parse dependencies from tags.
+    /** Parse dependencies from tags. Since version 7.32 it can parse
+    * code names that contain numbers like 
+    * <code>org.apache.servicemix.specs.jsr303_api_1.0.0</code>.
+    * 
     * @param type like Dependency.type
     * @param body actual text of tag body; if <code>null</code>, returns nothing
     * @return a set of dependencies

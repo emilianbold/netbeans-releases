@@ -693,6 +693,25 @@ public class ActionProcessorTest extends NbTestCase {
         boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
         assertFalse("Compilation has to fail:\n" + os, r);
     }
+
+    public void testArray() throws Exception {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A",
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import java.awt.event.ActionEvent;\n" +
+            "import java.awt.event.ActionListener;\n" +
+            "@ActionID(category=\"Tools\",id=\"my.action\")" +
+            "@ActionRegistration(displayName=\"AAA\", key=\"K\") " +
+            "public class A implements ActionListener {\n" +
+            "    public A(Integer[] params) {}\n" +
+            "    public void actionPerformed(ActionEvent e) {}" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os));
+        assertTrue("correct message:\n" + os, os.toString().contains("Integer[]"));
+    }
     
     public void testNoActionIDInReferences() throws IOException {
         clearWorkDir();
@@ -889,6 +908,33 @@ public class ActionProcessorTest extends NbTestCase {
         assertFalse("Compilation has to fail:\n" + os, r);
         if (!os.toString().contains("does/not/exist.png")) {
             fail("Shall contain warning about does/not/exist.png resource:\n" + os);
+        }
+    }
+
+    public void testErrorOnNonStaticInnerclasses() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.openide.awt.ActionRegistration;\n" +
+            "import org.openide.awt.ActionReference;\n" +
+            "import org.openide.awt.ActionID;\n" +
+            "import org.openide.util.actions.Presenter;\n" +
+            "import java.awt.event.*;\n" +
+            "import java.util.List;\n" +
+            "import javax.swing.*;\n" +
+            "public class A {\n" +
+            "    @ActionID(category=\"Tools\",id=\"my.action\")" +
+            "    @ActionRegistration(displayName=\"AAA\", key=\"K\", iconBase=\"does/not/exist.png\") " +
+            "    @ActionReference(path=\"manka\", position=11)" +
+            "    public class B implements ActionListener {\n" +
+            "      public void actionPerformed(ActionEvent e) {}\n" +
+            "    }\n" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        if (!os.toString().contains("has to be static")) {
+            fail("B has to be static:\n" + os);
         }
     }
     

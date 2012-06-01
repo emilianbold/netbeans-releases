@@ -117,9 +117,8 @@ public class WebProjectRestSupport extends WebRestSupport {
         Profile profile = webModule.getJ2eeProfile();
         boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
             Profile.JAVA_EE_6_FULL.equals(profile); 
-        if ( !isJee6 ) {
-            extendBuildScripts();
-        }
+        
+        extendBuildScripts();
 
         String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
         
@@ -319,13 +318,7 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     @Override
-    public String getApplicationPath() throws IOException {
-        String pathFromDD = getApplicationPathFromDD();
-        String applPath = getApplicationPathFromAnnotations(pathFromDD);
-        return (applPath == null ? super.getApplicationPath() : applPath);
-    }
-
-    private String getApplicationPathFromAnnotations(final String applPathFromDD) {
+    protected String getApplicationPathFromAnnotations(final String applPathFromDD) {
         List<RestApplication> restApplications = getRestApplications();
         if (applPathFromDD == null) {
             if (restApplications.size() == 0) {

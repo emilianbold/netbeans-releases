@@ -96,6 +96,18 @@ public class FilterPanel extends javax.swing.JPanel {
 
 
         textFilter = new JTextField();
+        textFilter.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (textFilter.equals(e.getSource())) {
+                    if (e.getKeyCode() == Event.ESCAPE) {
+                        textFilter.setText("");
+                    }
+                }
+            }
+
+        });
         textFilter.setMinimumSize(new java.awt.Dimension(150, 20));
         textFilter.setPreferredSize(new java.awt.Dimension(150, 20));
         add(textFilter, new GridBagConstraints(3, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 5, 2, 5), 0, 0));
@@ -236,6 +248,7 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
         rbAllDue.setSelected(true);
+        rbAllDue.setEnabled(false);
         groupDue.add(rbAllDue);
         popup.add(rbAllDue);
 
@@ -246,6 +259,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
+        rbTodayDue.setEnabled(false);
         groupDue.add(rbTodayDue);
         popup.add(rbTodayDue);
 
@@ -256,6 +270,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
+        rbWeekDue.setEnabled(false);
         groupDue.add(rbWeekDue);
         popup.add(rbWeekDue);
 
@@ -266,6 +281,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
+        rbMonthDue.setEnabled(false);
         groupDue.add(rbMonthDue);
         popup.add(rbMonthDue);
         //</editor-fold>

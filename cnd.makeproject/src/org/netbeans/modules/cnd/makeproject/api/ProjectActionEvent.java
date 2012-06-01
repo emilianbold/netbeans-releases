@@ -202,7 +202,12 @@ public final class ProjectActionEvent {
     }
 
     public String getRunCommandAsString() {
-        String command = getProfile().getRunCommand().getValue();
+        PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
+        return getRunCommandAsString(getProfile().getRunCommand().getValue(), configuration, mapper);
+        
+    }
+    
+    public static String getRunCommandAsString(String command, MakeConfiguration configuration, PathMap mapper) {
         String outputValue = ""; // NOI18N
 
         if (!configuration.isLibraryConfiguration()) {
@@ -215,14 +220,13 @@ public final class ProjectActionEvent {
             command = CndPathUtilitities.expandAllMacroses(command, "${OUTPUT_PATH}", outputValue); // NOI18N
         } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
             if (!outputValue.isEmpty()) {
-                PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
                 if (mapper != null) {
                     String aValue = mapper.getRemotePath(outputValue, true);
                     if (aValue != null) {
                         outputValue = aValue;
                     }
                 } else {
-                    LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), outputValue}); //NOI18N
+                    LOGGER.log(Level.SEVERE, "Path Mapper not found for the project - using local path {0}", new Object[]{outputValue}); //NOI18N
                 }
             }
 

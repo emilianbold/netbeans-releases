@@ -210,6 +210,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
                             if (mainProvider != null) {
                                 ProjectConfiguration actualConfig = actualProvider.getActiveConfiguration(); // XXX PM.mutex?
                                 ProjectConfiguration mainConfig = mainProvider.getActiveConfiguration(); // ditto
+                                if (actualConfig != null && mainConfig != null) {
                                 String labelActual = actualConfig.getDisplayName();
                                 if (!labelActual.equals(mainConfig.getDisplayName())) {
                                     try {
@@ -220,6 +221,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
                                     } catch (CharConversionException x) {
                                         // ignore
                                     }
+                                }
                                 }
                             }
                         }
