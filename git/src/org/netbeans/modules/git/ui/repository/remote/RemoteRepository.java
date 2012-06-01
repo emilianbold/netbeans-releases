@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.repository.remote;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -62,6 +63,8 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -140,6 +143,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             new DefaultConnectionSettingsType()
         };
         this.activeSettingsType = settingTypes[0];
+        initHeight();
         attachListeners();
         initUrlComboValues(forPath);
         updateCurrentSettingsType();
@@ -414,6 +418,31 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         });
     }
 
+    private void initHeight () {
+        int maxHeight = 0;
+        for (ConnectionSettingsType t : settingTypes) {
+            maxHeight = Math.max(maxHeight, t.getPreferedPanelHeight());
+        }
+        panel.connectionSettings.setPreferredSize(new Dimension(0, maxHeight));
+        panel.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded (AncestorEvent event) {
+                panel.connectionSettings.setPreferredSize(null);
+                panel.invalidate();
+                panel.repaint();
+                panel.removeAncestorListener(this);
+            }
+
+            @Override
+            public void ancestorRemoved (AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved (AncestorEvent event) {
+            }
+        });
+    }
+
     private void onBrowse() {
         JTextComponent comboEditor = ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent());
         String txt = comboEditor.getText();
@@ -454,6 +483,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         protected abstract void store ();
         protected abstract boolean acceptUri (GitURI uri);
+        protected int getPreferedPanelHeight () {
+            return 0;
+        }
     }
     
     //<editor-fold defaultstate="collapsed" desc="Connection Setting Types">
@@ -548,6 +580,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 panel.connectionSettings.add(settingsPanel, BorderLayout.NORTH);
             }
             return accepts;
+        }
+
+        @Override
+        protected int getPreferedPanelHeight () {
+            return settingsPanel.getPreferredSize().height;
         }
     }
     
@@ -728,6 +765,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             for (JComponent c : authPasswordFields) {
                 c.setEnabled(authViaPassword);
             }
+        }
+
+        @Override
+        protected int getPreferedPanelHeight () {
+            return settingsPanel.getPreferredSize().height;
         }
     }
     
