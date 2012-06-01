@@ -617,7 +617,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lastSelected = comMavenHome.getSelectedIndex();
         comMavenHome.addActionListener(listItemChangedListener);
         
-        comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
+        comIndex.setSelectedIndex(RepositoryPreferences.getIndexUpdateFrequency());
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
@@ -651,7 +651,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else {
             EmbedderFactory.setMavenHome(null);
         }
-        RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
+        RepositoryPreferences.setIndexUpdateFrequency(comIndex.getSelectedIndex());
         MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());
@@ -669,6 +669,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     
     private class ActionListenerImpl implements ActionListener {
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             changed = true;
         }
