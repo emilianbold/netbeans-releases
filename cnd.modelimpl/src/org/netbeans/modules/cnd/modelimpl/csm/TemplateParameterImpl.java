@@ -219,27 +219,27 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     private static CsmSpecializationParameter VARIADIC = new CsmSpecializationParameter() {
         @Override
         public CsmFile getContainingFile() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
         @Override
         public int getStartOffset() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
         @Override
         public int getEndOffset() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
         @Override
         public Position getStartPosition() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
         @Override
         public Position getEndPosition() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
         @Override
         public CharSequence getText() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
     };
     
