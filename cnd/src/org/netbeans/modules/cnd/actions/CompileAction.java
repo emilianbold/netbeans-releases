@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -63,11 +64,16 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
@@ -78,6 +84,8 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -207,13 +215,12 @@ public class CompileAction extends AbstractExecutorRunAction {
             trace("Not found compiler"); //NOI18N
             return null;
         }
-        
-        final String compilerPath = tool.getPath();
+        final String compilerPath = convertPath(tool.getPath(), execEnv);
         final StringBuilder argsFlat = new StringBuilder();
         argsFlat.append(ces.getCompileFlags()).append(' ');// NOI18N
         argsFlat.append("-c").append(' ');// NOI18N
         argsFlat.append(fileObject.getNameExt()).append(' ');// NOI18N
-        argsFlat.append("-o /dev/null");// NOI18N
+        argsFlat.append("-o ").append(getDevNull(execEnv, compilerSet));// NOI18N
         Map<String, String> envMap = getEnv(execEnv, node, project, null);
         // Tab Name
         String tabName = execEnv.isLocal() ? getString("COMPILE_LABEL", node.getName()) : getString("COMPILE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
@@ -278,5 +285,15 @@ public class CompileAction extends AbstractExecutorRunAction {
 
         // Execute the shellfile
         return NativeExecutionService.newService(npb, descr, "Compile"); // NOI18N
+    }
+
+    // find out right /dev/null
+    private String getDevNull(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        if (execEnv.isLocal() && Utilities.isWindows()){
+            if (!compilerSet.getCompilerFlavor().isCygwinCompiler()) {
+                return "NUL"; // NOI18N
+            }
+        }
+        return "/dev/null"; // NOI18N
     }
 }

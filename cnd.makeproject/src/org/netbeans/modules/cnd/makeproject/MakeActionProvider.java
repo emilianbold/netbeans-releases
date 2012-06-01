@@ -121,6 +121,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
@@ -141,6 +142,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -971,7 +973,8 @@ public final class MakeActionProvider implements ActionProvider {
                         }
                     }
                     profile.setArgs(command);
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
+                    String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, compilerPath, conf, profile, true, context);
                     actionEvents.add(projectActionEvent);
                     return true;
                 }
@@ -988,15 +991,32 @@ public final class MakeActionProvider implements ActionProvider {
                         command = command.replace("\"", "\\\"");// NOI18N
                     }
                 }
-                command = command+" -o /dev/null"; // NOI18N
+                command = command+" -o "+getDevNull(conf.getDevelopmentHost().getExecutionEnvironment(), compilerSet); // NOI18N
                 command = command+" -c "+item.getAbsolutePath(); // NOI18N
                 profile.setArgs(command);
-                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
+                String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, compilerPath, conf, profile, true, context);
                 actionEvents.add(projectActionEvent);
                 return true;
             }
         }
         return false;
+    }
+    
+    private String getDevNull(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        if (execEnv.isLocal() && Utilities.isWindows()){
+            if (!compilerSet.getCompilerFlavor().isCygwinCompiler()) {
+                return "NUL"; // NOI18N
+            }
+        }
+        return "/dev/null"; // NOI18N
+    }
+    
+    private String convertPath(String path, ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal()) {
+            return LinkSupport.resolveWindowsLink(path);
+        }
+        return path;
     }
 
     private void compileSingleManage(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, MakeArtifact makeArtifact, Lookup context, Type actionEvent, MakeConfigurationDescriptor pd, String outputFile) {
