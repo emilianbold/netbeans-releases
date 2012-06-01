@@ -66,6 +66,10 @@ public class JsCodeCompletionArraysTest extends JsTestBase {
     public void testArrays02() throws Exception {
         checkCompletion("testfiles/completion/arrays/arrays.js", "arr02.l^ength;", false);
     }
+    
+    public void testArrays03() throws Exception {
+        checkCompletion("testfiles/completion/arrays/arrays.js", "arr03.l^ength;", false);
+    }
         
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

@@ -9,4 +9,6 @@ arr01.pop();
 var arr02 = new Array("Saab", "Volvo", "BMW"); // condensed array
 arr02.length;
 
+var arr03=["Saab","Volvo","BMW"]; // literal array
+arr03.length;
 

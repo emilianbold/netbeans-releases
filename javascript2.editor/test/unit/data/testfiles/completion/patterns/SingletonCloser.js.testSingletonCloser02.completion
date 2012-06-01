@@ -4,7 +4,7 @@ SingletonClousure.|getArr(); // FAIL: IDE doesn't return type
 ------------------------------------
 CLASS      myObj                           [PUBLIC]   SingletonCloser.js
 METHOD     _innerWork(): undefined         [PUBLIC]   SingletonCloser.js
-METHOD     createArr(): unresolved         [PUBLIC]   SingletonCloser.js
+METHOD     createArr(): Array              [PUBLIC]   SingletonCloser.js
 METHOD     doSome(): undefined             [PUBLIC]   SingletonCloser.js
 METHOD     getArr()                        [PUBLIC]   SingletonCloser.js
 FIELD      myArr                           [PUBLIC]   SingletonCloser.js

@@ -417,6 +417,8 @@ public class ModelUtils {
                         || value instanceof Float
                         || value instanceof Double) {
                     result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
+                } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
+                    result.add(new TypeUsageImpl("Array", lNode.getStart(), true));
                 }
                 return null;
             }
