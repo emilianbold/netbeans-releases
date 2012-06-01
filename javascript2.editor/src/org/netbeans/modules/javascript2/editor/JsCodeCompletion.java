@@ -629,6 +629,17 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     isFunction = true;
                 }
                 addObjectPropertiesToCC(resolved, request, addedProperties);
+                if (!resolved.isDeclared()) {
+                    // if the object is not defined here, look to the index as well
+                    Collection<IndexedElement> properties = jsIndex.getProperties(ModelUtils.createFQN(resolved));
+                    for (IndexedElement indexedElement : properties) {
+                        JsElement element = addedProperties.get(indexedElement.getName());
+                        if (startsWith(indexedElement.getName(), request.prefix) 
+                                && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                            indexedElements.add(indexedElement);
+                        }
+                    }
+                }
             }
             
             // add as last type Object
