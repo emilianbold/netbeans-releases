@@ -86,7 +86,9 @@ public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBas
         String projectName = getName() + "_project";
         // #213261 - failing test on all platforms ModifyMultiIncludedHeaderTestCase.test174007
         CsmProject project = super.getProject(projectName);
-        assertNotNull(project);
+        if (project == null) {
+            assertNotNull("no " + projectName + " for test " + getName() + "in " + getModel().projects(), project);
+        }
         final File testFile = getDataFile("multiIncludedFileForModification.h");
         FileImpl csmFile = (FileImpl) super.getCsmFile(testFile);
         assertNotNull(csmFile);
