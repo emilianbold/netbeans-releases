@@ -271,6 +271,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             Object lock = entry.getLock();
             synchronized (lock) {
                 List<PreprocessorStatePair> fcPairs = new ArrayList<PreprocessorStatePair>(entry.getStatePairs());
+                boolean hasParsing = false;
+                for (PreprocessorStatePair fcPair : fcPairs) {
+                    if (fcPair.pcState != FilePreprocessorConditionState.PARSING) {
+                        hasParsing = true;
+                    }
+                }
                 CsmUID<CsmFile> testFileUID = entry.getTestFileUID();
                 FileImpl fileImpl = (FileImpl) UIDCsmConverter.UIDtoFile(testFileUID);
                 if (fcPairs.isEmpty() && fileImpl.getState() != FileImpl.State.INITIAL) {
@@ -297,21 +303,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             AtomicBoolean newStateFound = new AtomicBoolean();
                             ComparisonResult resultPP = fillStatesToKeepBasedOnPPState(pair.state, fcPairs, statesToKeep, newStateFound);
                             if (resultPP != ComparisonResult.KEEP_WITH_OTHERS) {
-                                CndUtils.assertTrueInConsole(false, "Should not constribute pair into File Container (state based) " + pair, fcPairs);
+                                if (restoring || hasParsing) {
+                                    CndUtils.assertTrueInConsole(false, "Should not constribute pair into File Container (state based) " + pair, fcPairs);
+                                }
                             }
                             ComparisonResult resultPC = fillStatesToKeepBasedOnPCState(pair.pcState, fcPairs, statesToKeep);
                             if (resultPC != ComparisonResult.DISCARD) {
-                                boolean error = false;
-                                if (restoring) {
-                                    error = true;
-                                } else {
-                                    for (PreprocessorStatePair fcPair : fcPairs) {
-                                        if (fcPair.pcState != FilePreprocessorConditionState.PARSING) {
-                                            error = true;
-                                        }
-                                    }
+                                if (restoring || hasParsing) {
+                                    CndUtils.assertTrueInConsole(false, "Should not constribute pair into File Container (PCState based) " + pair, fcPairs);
                                 }
-                                CndUtils.assertTrueInConsole(!error, "Should not constribute pair into File Container (PCState based) " + pair, fcPairs);
                             }
                         }
                     }
