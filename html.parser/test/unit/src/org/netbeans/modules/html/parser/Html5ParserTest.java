@@ -1051,7 +1051,9 @@ public class Html5ParserTest extends NbTestCase {
         parse(getTestFile("testfiles/wikipedia_org.html"));
     }
     
-    public void testIssue() throws ParseException {
+    //Bug 213332 - IllegalStateException: A bug #212445 just happended for source text " scrollbar-arrow-color:"black"; } </STYLE> <TITLE>Cyprus :: Larnaca</TITLE></HEAD> <BOD". Please report a new bug or r 
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=213332
+    public void testIssue213332() throws ParseException {
         ParseTreeBuilder.setLoggerLevel(Level.ALL);
         
         String code = "<html><head><style type=text/css></style></head></html>";
