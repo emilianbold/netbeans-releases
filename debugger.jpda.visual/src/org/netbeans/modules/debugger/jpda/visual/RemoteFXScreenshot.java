@@ -105,7 +105,7 @@ public class RemoteFXScreenshot {
     
     private static final Logger logger = Logger.getLogger(RemoteFXScreenshot.class.getName());
     
-    private static final String FXThreadName = "FX Access Thread";  // NOI18N
+    private static final String FXAppThreadName = "JavaFX Application Thread"; // NOI18N
     
     private static final RemoteScreenshot[] NO_SCREENSHOTS = new RemoteScreenshot[] {};
 
@@ -122,6 +122,7 @@ public class RemoteFXScreenshot {
         final Method fromPlatformImage = imageClass.concreteMethodByName("impl_fromPlatformImage", "(Ljava/lang/Object;)Ljavafx/scene/image/Image;"); 
         final Method convertImage = imageClass.concreteMethodByName("impl_toExternalImage", "(Ljava/lang/Object;)Ljava/lang/Object;");
         final Method renderImage = sceneClass.concreteMethodByName("renderToImage", "(Ljava/lang/Object;FZ)Ljava/lang/Object;");
+        final Method snapshot = sceneClass.concreteMethodByName("snapshot", "(Ljavafx/scene/image/WritableImage;)Ljavafx/scene/image/WritableImage;");
         final Method getScene = windowClass.concreteMethodByName("getScene", "()Ljavafx/scene/Scene;");
 
         ObjectReference scene = (ObjectReference) window.invokeMethod(tr, getScene, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -129,8 +130,15 @@ public class RemoteFXScreenshot {
         FloatValue factor = vm.mirrorOf(1.0f);
         BooleanValue syncNeeded = vm.mirrorOf(false);
 
-        ObjectReference pImage = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
-        ObjectReference image = (ObjectReference)imageClass.invokeMethod(tr, fromPlatformImage, Arrays.asList(pImage), ObjectReference.INVOKE_SINGLE_THREADED); 
+        ObjectReference image = null;
+        if (renderImage != null) {
+            ObjectReference pImage = (ObjectReference)scene.invokeMethod(tr, renderImage, Arrays.asList(null, factor, syncNeeded), ObjectReference.INVOKE_SINGLE_THREADED);
+            image = (ObjectReference)imageClass.invokeMethod(tr, fromPlatformImage, Arrays.asList(pImage), ObjectReference.INVOKE_SINGLE_THREADED);             
+        } else if (snapshot != null) {
+            image = (ObjectReference)scene.invokeMethod(tr, snapshot, Arrays.asList(new Value[]{null}), ObjectReference.INVOKE_SINGLE_THREADED);
+        }
+
+        // if an internal API method is removed from the JavaFX RT again an NPE will be thrown somewhere; nothing really to do here, just deal with it        
         ObjectReference bufImage = (ObjectReference)image.invokeMethod(tr, convertImage, Arrays.asList(bufImageClass.classObject()), ObjectReference.INVOKE_SINGLE_THREADED);
 
         Method getData = ((ClassType)bufImage.referenceType()).concreteMethodByName("getData", "()Ljava/awt/image/Raster;");
@@ -180,7 +188,7 @@ public class RemoteFXScreenshot {
                 logger.log(Level.FINE, "Threads = {0}", allThreads);
             }
             for (JPDAThread t : allThreads) {
-                if (t.getName().startsWith(FXThreadName)) {
+                if (t.getName().startsWith(FXAppThreadName)) {
                     return take(t, engine, (JPDADebuggerImpl)debugger);
                 }
             }
@@ -588,7 +596,7 @@ public class RemoteFXScreenshot {
                 actions.add(GoToFieldDeclarationAction.get(GoToFieldDeclarationAction.class));
             }
             actions.add(GoToSourceAction.get(GoToSourceAction.class));
-            if (fieldInfo != null) {
+            if (getAddCallStack() != null) {
                 actions.add(GoToAddIntoHierarchyAction.get(GoToAddIntoHierarchyAction.class));
             }
 //            actions.add(null);
