@@ -1032,7 +1032,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                 } else {
                     p.setProperty("run.class", clazz); // NOI18N
                     String[] targets = targetsFromConfig.get(command);
-                    targetNames = (targets != null) ? targets : (isTest ? new String[] {"profile-test-with-main"} : getCommands().get(COMMAND_DEBUG_SINGLE));      //NOI18N
+                    targetNames = (targets != null) ? targets : (isTest ? new String[] {"profile-test-with-main"} : getCommands().get(COMMAND_PROFILE_SINGLE));      //NOI18N
                 }
             }
         } else {

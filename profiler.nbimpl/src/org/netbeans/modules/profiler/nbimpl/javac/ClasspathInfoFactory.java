@@ -89,9 +89,6 @@ public class ClasspathInfoFactory {
     public static ClasspathInfo infoFor(Project prj, final boolean includeSubprojects,
                                         final boolean includeSources, final boolean includeLibraries) {
         FileObject[] sourceRoots = ProjectUtilities.getSourceRoots(prj, includeSubprojects);
-        Set<FileObject> srcRootSet = new HashSet<FileObject>(sourceRoots.length);
-
-        srcRootSet.addAll(Arrays.asList(sourceRoots));
 
         if (((sourceRoots == null) || (sourceRoots.length == 0)) && !includeSubprojects) {
             sourceRoots = ProjectUtilities.getSourceRoots(prj, true);
@@ -112,6 +109,7 @@ public class ClasspathInfoFactory {
         if (includeLibraries) {
             java.util.List<URL> urlList = new ArrayList<URL>();
             cpCompile = ClassPath.getClassPath(sourceRoots[0], ClassPath.COMPILE);
+            cpCompile = cpCompile != null ? cpCompile : cpEmpty;
             
             // cleaning up compile classpatth; we need to get rid off all project's class file references in the classpath
             for (ClassPath.Entry entry : cpCompile.entries()) {
@@ -125,7 +123,9 @@ public class ClasspathInfoFactory {
             }
         }
 
-        return ClasspathInfo.create(includeLibraries ? ClassPath.getClassPath(sourceRoots[0], ClassPath.BOOT) : cpEmpty,
-               cpCompile, cpSource);
+        ClassPath cpBoot = includeLibraries ? ClassPath.getClassPath(sourceRoots[0], ClassPath.BOOT) : cpEmpty;
+        cpBoot = cpBoot != null ? cpBoot : cpEmpty;
+        
+        return ClasspathInfo.create(cpBoot, cpCompile, cpSource);
     }
 }

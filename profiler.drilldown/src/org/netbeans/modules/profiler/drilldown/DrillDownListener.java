@@ -44,6 +44,7 @@
 package org.netbeans.modules.profiler.drilldown;
 
 import java.util.List;
+import org.netbeans.modules.profiler.categorization.api.Category;
 
 
 /**
@@ -55,5 +56,5 @@ public interface DrillDownListener {
 
     void dataChanged();
 
-    void drillDownPathChanged(List newDrillDownPath);
+    void drillDownPathChanged(List<Category> newDrillDownPath);
 }
