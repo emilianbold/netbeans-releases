@@ -60,8 +60,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -77,7 +83,10 @@ import org.netbeans.modules.websvc.jaxwsmodel.project.TransformerUtils;
 import org.netbeans.modules.websvc.jaxwsmodel.project.WsdlNamespaceHandler;
 import org.netbeans.modules.xml.retriever.RetrieveEntry;
 import org.netbeans.modules.xml.retriever.Retriever;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -93,6 +102,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
+
 
 /**
  *
@@ -630,6 +640,83 @@ public class WSUtils {
             }
         }
         return found;
+    }
+    
+    public static Properties identifyWsimport( AntProjectHelper helper ){
+        if ( helper == null ){
+            return null;
+        }
+        EditableProperties props = helper.getProperties(
+                AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String wsImportCp = props.getProperty("j2ee.platform.wsimport.classpath");  // NOI18N
+        if ( wsImportCp ==null && wsImportCp.length() == 0 ){
+            return null;
+        }
+        PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
+        String[] roots = wsImportCp.split(":");
+        List<FileObject> cpItems = new ArrayList<FileObject>(roots.length);
+        for (String root : roots) {
+            String wsImportCpItem = evaluator.evaluate(root);
+            FileObject fileObject = FileUtil.toFileObject( 
+                    FileUtil.normalizeFile( new File(wsImportCpItem)));
+            if ( fileObject == null ){
+                continue;
+            }
+            if ( fileObject.isFolder() ){
+                cpItems.add( fileObject);
+            }
+            else if ( FileUtil.isArchiveFile(fileObject)){
+                cpItems.add( FileUtil.getArchiveRoot(fileObject));
+            }
+        }
+        
+        ClassPath classPath = ClassPathSupport.createClassPath(cpItems.toArray(
+                new FileObject[cpItems.size()]));
+        FileObject wsImport = classPath.findResource(
+                    "com/sun/tools/ws/ant/WsImport.class");                         // NOI18N
+        if ( wsImport == null ){
+            return null;
+        }
+        FileObject wsImportRoot = classPath.findOwnerRoot(wsImport);
+        FileObject manifest = wsImportRoot.getFileObject("META-INF/MANIFEST.MF");   // NOI18N
+        try {
+            Manifest mnfst = new Manifest( manifest.getInputStream());
+            String version = mnfst.getMainAttributes().getValue(
+                    "Implementation-Version");                                      // NOI18N
+            if ( version == null ){
+                return null;
+            }
+            if ( version.startsWith("2.2.")){                                       // NOI18N
+                /*
+                 *  version is 2.2 but it has minor release numbers so it is 
+                 *  newer 2.2 version with fixed wsimport issue 
+                 */
+                return null;
+            }
+            else if ( version.startsWith("2.2")){                                   // NOI18N
+                // buggy 2.2 version
+                FileObject badRoot = FileUtil.getArchiveFile(wsImport);
+                if ( badRoot== null){
+                    badRoot = classPath.findOwnerRoot(wsImport);
+                }
+                NotifyDescriptor notifyDescriptor =
+                    new NotifyDescriptor.Message(NbBundle.getMessage(WSUtils.class, 
+                            "ERR_WsimportBadVersion", version, badRoot.getPath()),  // NOI18N
+                            NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(notifyDescriptor);
+                Properties properties = new Properties();
+                properties.put("wsimport.bad.version", Boolean.TRUE.toString());    // NOI18N
+                return properties;
+            }
+            else {
+                // version is not 2.2 ( older or newer )
+                return null;
+            }
+        }
+        catch( IOException e ){
+            Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, null , e);
+            return null;
+        }
     }
 
 }
