@@ -68,6 +68,10 @@ public class PHPCodeCompletion203332Test extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/tests203332/test203332_02.php", "$v->^from();", false);
     }
 
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests203332/test203332_03.php", "FrontendBookTable::getInstance()->^getName();", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

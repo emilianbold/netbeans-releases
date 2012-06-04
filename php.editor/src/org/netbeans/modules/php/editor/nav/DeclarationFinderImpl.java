@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -103,8 +104,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         try {
             ReferenceSpanCrate crate = crateFuture.get(RESOLVING_TIMEOUT, TimeUnit.MILLISECONDS);
             if (crate != null) {
-                TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(crate.getTokenHierarchy(), caretOffset);
-                offsetRange = getReferenceSpan(ts, caretOffset, crate.getModel());
+                Model model = crate.getModel();
+                TokenHierarchy<?> tokenHierarchy = crate.getTokenHierarchy();
+                if (model != null && tokenHierarchy != null) {
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(tokenHierarchy, caretOffset);
+                    offsetRange = getReferenceSpan(ts, caretOffset, model);
+                }
             }
         } catch (InterruptedException ex) {
             LOGGER.log(Level.FINE, "Resolving of reference span offset range has been interrupted.");
@@ -211,9 +216,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
-                    crate.setModel(parserResult.getModel());
-                    crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
+                    Result parserResult = resultIterator.getParserResult();
+                    if (parserResult instanceof PHPParseResult) {
+                        PHPParseResult phpParserResult = (PHPParseResult) parserResult;
+                        crate.setModel(phpParserResult.getModel());
+                        crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
+                    }
                 }
             });
             return crate;
