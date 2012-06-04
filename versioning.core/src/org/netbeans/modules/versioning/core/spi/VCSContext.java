@@ -470,8 +470,13 @@ public final class VCSContext {
     private static void addSiblings(Set<VCSFileProxy> files, VCSFileProxy exclusion, FileFilter filter) {
         if (exclusion.getParentFile() == null) return;  // roots have no siblings
         VCSFileProxy [] siblings = exclusion.getParentFile().listFiles();
-        for (VCSFileProxy sibling : siblings) {
-            if (filter.accept(sibling)) files.add(sibling);
+        if(siblings != null) {
+            for (VCSFileProxy sibling : siblings) {
+                if (filter.accept(sibling)) files.add(sibling);
+            }
+        } else {
+            // see issue #213289, but how is this possible?
+            LOG.log(Level.WARNING, "no children found for {0}", exclusion.getParentFile()); // NOI18N
         }
         files.remove(exclusion);
     }
