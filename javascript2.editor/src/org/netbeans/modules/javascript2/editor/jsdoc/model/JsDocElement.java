@@ -98,6 +98,7 @@ public interface JsDocElement {
         SEE("@see", Category.DESCRIPTION), //NOI18N
         SINCE("@since", Category.DESCRIPTION), //NOI18N
         STATIC("@static", Category.SIMPLE), //NOI18N
+        SYNTAX("@syntax", Category.DESCRIPTION), //NOI18N
         THROWS("@throws", Category.UNNAMED_PARAMETER), //NOI18N
         TYPE("@type", Category.DECLARATION), //NOI18N
         VERSION("@version", Category.DESCRIPTION); //NOI18N

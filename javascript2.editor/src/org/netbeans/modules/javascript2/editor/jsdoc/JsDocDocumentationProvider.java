@@ -157,32 +157,7 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
     }
 
     private String buildDocumentation(JsDocBlock docBlock) {
-        // Summary
-        StringBuilder doc = new StringBuilder("<b>Summary:</b><br>");
-        // documentation element should be only one DescriptionElement
-        List<? extends JsDocElement> description = docBlock.getTagsForTypes(
-                new JsDocElement.Type[]{JsDocElement.Type.DESCRIPTION, JsDocElement.Type.CONTEXT_SENSITIVE});
-        if (!description.isEmpty()) {
-            doc.append("<p>").append(((DescriptionElement) description.get(0)).getDescription()).append("</p>");
-        }
-
-        // Examples
-        List<? extends JsDocElement> examples = docBlock.getTagsForType(JsDocElement.Type.EXAMPLE);
-        if (!examples.isEmpty()) {
-            doc.append("<b>Examples:</b><br>");
-            for (JsDocElement example : examples) {
-                doc.append("<p>").append(((DescriptionElement) example).getDescription()).append("</p>");
-            }
-        }
-
-        // Returns
-        List<Type> returnType = getReturnType(docBlock);
-        if (!returnType.isEmpty()) {
-            doc.append("<b>Returns:</b><br>");
-            doc.append("<p>").append(getStringFromTypes(returnType)).append("</p>");
-        }
-
-        return doc.toString();
+        return JsDocPrinter.printDocumentation(docBlock);
     }
 
     private int getEndOffsetOfAssociatedComment(int offset) {
@@ -215,13 +190,4 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
                 || token.id() == JsTokenId.LINE_COMMENT;
     }
 
-    private String getStringFromTypes(List<Type> types) {
-        StringBuilder sb = new StringBuilder();
-        String delimiter = ""; //NOI18N
-        for (Type type : types) {
-            sb.append(delimiter).append(type.getType());
-            delimiter = "|"; //NOI18N
-        }
-        return sb.toString();
-    }
 }
