@@ -3014,22 +3014,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
-            String msg = null;
-
-            URL tmp = FileUtil.getArchiveFile(currentlyScannedRoot);
-            if (tmp == null) {
-                tmp = currentlyScannedRoot;
-            }
-            try {
-                if ("file".equals(tmp.getProtocol())) { //NOI18N
-                    final File file = new File(new URI(tmp.toString()));
-                    msg = file.getAbsolutePath();
-                }
-            } catch (URISyntaxException ex) {
-                // ignore
-            }
-
-            return msg == null ? tmp.toString() : msg;
+            final File file = FileUtil.archiveOrDirForURL(currentlyScannedRoot);            
+            final String msg = file != null?
+                file.getAbsolutePath():
+                currentlyScannedRoot.toExternalForm();
+            return msg;
         }
 
         public @Override String toString() {
