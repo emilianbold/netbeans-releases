@@ -91,7 +91,7 @@ public final class LocFiles extends Task {
     public void setNBMs(File f) {
         nbmsLocation = f;
     }
-
+    
     @Override
     public void execute() throws BuildException {
         if (locales == null || locales.isEmpty()) {
@@ -140,7 +140,7 @@ public final class LocFiles extends Task {
     }
     
     private void processLocale(String locale, Collection<? super String> toAdd) {
-        File baseSrcDir = new File(srcDir, locale);
+        File baseSrcDir = fileFrom(srcDir, locale);
         if (!baseSrcDir.exists()) {
             log("No files for locale: " + locale);
             return;
@@ -148,7 +148,7 @@ public final class LocFiles extends Task {
         log("Found L10N dir " + baseSrcDir, Project.MSG_VERBOSE);
         
         final String moduleDir = findModuleDir(cnbDashes);
-        File locBaseDir = new File(new File(baseSrcDir, cluster), moduleDir);
+        File locBaseDir = fileFrom(baseSrcDir, cluster, moduleDir);
         if (!locBaseDir.exists()) {
             log("Can't find directory " + locBaseDir, Project.MSG_WARN);
             return;
@@ -174,7 +174,7 @@ public final class LocFiles extends Task {
         final String prefixRoot;
         if (file.getName().equals(moduleDir)) {
             ds.setIncludes(new String[] { moduleDir });
-            root = new File(distDir, cluster);
+            root = fileFrom(distDir, cluster);
             prefixRoot = null;
         } else {
             if (file.getName().equals("netbeans")) {
@@ -182,7 +182,7 @@ public final class LocFiles extends Task {
                 segments = 3;
                 jarIndex = 2;
                 dirIndex = 1;
-                root = new File(distDir, cluster);
+                root = fileFrom(distDir, cluster);
                 prefixRoot = "";
             } else {
                 assert file.getName().equals("ext");
@@ -190,7 +190,7 @@ public final class LocFiles extends Task {
                 segments = 2;
                 jarIndex = 1;
                 dirIndex = 0;
-                root = new File(new File(distDir, cluster), "modules");
+                root = fileFrom(distDir, cluster, "modules");
                 prefixRoot = "modules/";
             }
         }
@@ -207,19 +207,21 @@ public final class LocFiles extends Task {
             File jarDir;
             String prefixDir;
             if (dir.equals(moduleDir)) {
-                jarDir = new File(new File(root, "modules"), "locale");
+                jarDir = fileFrom(root, "modules", "locale");
                 prefixDir = "modules/locale";
-                jar.setBasedir(new File(locBaseDir, dir));
+                jar.setBasedir(fileFrom(locBaseDir, dir));
                 jarFileName = cnbDashes + "_" + locale + ".jar";
             } else {
                 // netbeans/*/* case or ext/* case
-                jar.setBasedir(new File(locBaseDir, dir));
+                jar.setBasedir(fileFrom(locBaseDir, dir));
                 String[] arr = dir.split("/");
                 assert arr.length == segments : "Expected segments: " + dir;
                 jarFileName = arr[jarIndex] + "_" + locale + ".jar";
-                jarDir = new File(new File(root, arr[dirIndex]), "locale");
+                jarDir = fileFrom(root, arr[dirIndex], "locale");
                 prefixDir = prefixRoot + arr[dirIndex] + '/' + "locale";
             }
+            String fullName = prefixDir + '/' + jarFileName;
+            toAdd.add(fullName);
             
             /*
             String subPath = dir.substring((cluster + File.separator + nbm + File.separator).length() - 1, dir.lastIndexOf(File.separator));
@@ -248,14 +250,14 @@ public final class LocFiles extends Task {
             */
             
             if (subPath.matches(".*/docs$")) {
-                ds.setBasedir(new File(baseSrcDir, dir));
+                ds.setBasedir(fileFrom(baseSrcDir, dir));
                 ds.setIncludes(new String[]{"**/*.hs"});
                 ds.setExcludes(new String[]{""});
                 ds.scan();
                 if (ds.getIncludedFilesCount() != 1) {
                     throw new BuildException("Can't find .hs file for " + cnbDashes + " module.");
                 }
-                File hsFile = new File(new File(baseSrcDir, dir), ds.getIncludedFiles()[0]);
+                File hsFile = fileFrom(baseSrcDir, dir, ds.getIncludedFiles()[0]);
                 File baseJHDir = hsFile.getParentFile();
 
                 try {
@@ -272,11 +274,19 @@ public final class LocFiles extends Task {
             }
             mkdir.setDir(jarDir);
             mkdir.execute();
-            jar.setDestFile(new File(jarDir, jarFileName));
+            jar.setDestFile(fileFrom(jarDir, jarFileName));
             jar.execute();
-            
-            String fullName = prefixDir + '/' + jarFileName;
-            toAdd.add(fullName);
         }
+    }
+    
+    private static File fileFrom(File base, String... paths) {
+        if (base == null) {
+            return null;
+        }
+        File f = base;
+        for (String p : paths) {
+            f = new File(f, p);
+        }
+        return f;
     }
 }
