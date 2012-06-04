@@ -390,7 +390,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     @NbBundle.Messages({
-        "SyncPanel.table.header.info.toolTip=Information",
+        "SyncPanel.table.header.info.toolTip=Click to Sort by Info",
         "SyncPanel.table.header.operation.toolTip=Click to Swap Paths"
     })
     private void initTableHeader() {
