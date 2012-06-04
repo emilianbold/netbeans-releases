@@ -373,7 +373,8 @@ public class JiraIssueFinder extends IssueFinder {
         }
 
         private static boolean isPrjKeyChar(int c) {
-            return (c > 0x20) && (c <= 0xff) && (c != ',');
+            return (c > 0x20) && (c <= 0xff) && 
+                   (isPunctuationAllowed() ? (c != ',') : !isPunct(c)); 
         }
 
         private static boolean isDigit(int c) {
@@ -426,6 +427,11 @@ public class JiraIssueFinder extends IssueFinder {
 
             return true;
         }
+
+        private static boolean isPunctuationAllowed() {
+            return !"true".equals(System.getProperty("org.netbeans.modules.jira.noPunctuationInIssueKey", "false"));
+        }
+
 
     }
 
