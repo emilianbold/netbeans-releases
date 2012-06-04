@@ -1015,58 +1015,62 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     private void updateProject(final Lookup.Provider project) {
+        projectCleanup();
+
+        SelectProfilingTask.this.project = project;
+
+        if (project != null) {
+            predefinedInstrFilterKeys = getProjectDefaultInstrFilters(project);
+            predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
+        } else {
+            predefinedInstrFilters = null;
+            predefinedInstrFilterKeys = null;
+        }
+                        
+        final boolean hasContext = !projectsChooserPanel.isVisible() ||
+                (projectsChooserCombo.getSelectedItem() !=
+                Bundle.SelectProfilingTask_SelectProjectToAttachString());
+        
+        if (!hasContext) {
+            // Attach, no project selected
+            taskChooser.setEnabled(false);
+
+            // TODO: cleanup
+            contentsPanel.removeAll();
+            contentsPanel.add(getWelcomePanel(), BorderLayout.CENTER);
+            contentsPanel.doLayout();
+            contentsPanel.repaint();
+        } else {
+            configurator = Utils.getSettingsConfigurator(project);
+            configurator.setContext(project, profiledFile, isAttach, isModify, enableOverride);
+
+            SettingsCustomizer customizer = ProfilingSettingsSupport.get(project).getSettingsCustomizer();
+            JPanel customSettings = customizer == null ? null : customizer.getCustomSettingsPanel(isAttach, isModify);
+
+            if (customSettings != null) {
+                customSettingsPanelContainer.removeAll();
+                customSettingsPanelContainer.add(customSettings, BorderLayout.NORTH);
+                customSettingsPanelContainer.add(customSettingsPanelSeparator, BorderLayout.SOUTH);
+                customSettingsPanelContainer.setVisible(true);
+            } else {
+                customSettingsPanelContainer.removeAll();
+                customSettingsPanelContainer.setVisible(false);
+            }
+
+            // Project selected
+            taskChooser.setEnabled(true);
+        }
+        
         ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
             @Override
             public void run() {
-                final ProfilingSettingsManager.ProfilingSettingsDescriptor profilingSettingsDescriptor = ProfilingSettingsManager.getProfilingSettings(project);
-                    Runnable projectUpdater = new Runnable() {
+                final ProfilingSettingsManager.ProfilingSettingsDescriptor profilingSettingsDescriptor =
+                        ProfilingSettingsManager.getProfilingSettings(project);
+                Runnable projectUpdater = new Runnable() {
                     public void run() {
-                        projectCleanup();
-
-                        SelectProfilingTask.this.project = project;
-
-                        if (project != null) {
-                            predefinedInstrFilterKeys = getProjectDefaultInstrFilters(project);
-                            predefinedInstrFilters = new SimpleFilter[predefinedInstrFilterKeys.size()];
-                        } else {
-                            predefinedInstrFilters = null;
-                            predefinedInstrFilterKeys = null;
-                        }
-
-                        if (projectsChooserPanel.isVisible() && (projectsChooserCombo.getSelectedItem() == Bundle.SelectProfilingTask_SelectProjectToAttachString())) {
-                            // Attach, no project selected
-                            taskChooser.setEnabled(false);
-
-                            // TODO: cleanup
-                            contentsPanel.removeAll();
-                            contentsPanel.add(getWelcomePanel(), BorderLayout.CENTER);
-                            contentsPanel.doLayout();
-                            contentsPanel.repaint();
-                        } else {
-                            configurator = Utils.getSettingsConfigurator(project);
-                            configurator.setContext(project, profiledFile, isAttach, isModify, enableOverride);
-
-                            SettingsCustomizer customizer = ProfilingSettingsSupport.get(project).getSettingsCustomizer();
-                            JPanel customSettings = customizer == null ? null : customizer.getCustomSettingsPanel(isAttach, isModify);
-
-                            if (customSettings != null) {
-                                customSettingsPanelContainer.removeAll();
-                                customSettingsPanelContainer.add(customSettings, BorderLayout.NORTH);
-                                customSettingsPanelContainer.add(customSettingsPanelSeparator, BorderLayout.SOUTH);
-                                customSettingsPanelContainer.setVisible(true);
-                            } else {
-                                customSettingsPanelContainer.removeAll();
-                                customSettingsPanelContainer.setVisible(false);
-                            }
-
-                            // Project selected
-                            taskChooser.setEnabled(true);
-
-                            ProfilingSettings[] profilingSettings = new ProfilingSettings[0];
-                            ProfilingSettings lastSelectedSettings = null;
-
-                            profilingSettings = profilingSettingsDescriptor.getProfilingSettings();
-                            lastSelectedSettings = profilingSettingsDescriptor.getLastSelectedProfilingSettings();
+                        if (hasContext) {
+                            ProfilingSettings[] profilingSettings = profilingSettingsDescriptor.getProfilingSettings();
+                            ProfilingSettings lastSelectedSettings = profilingSettingsDescriptor.getLastSelectedProfilingSettings();
 
                             ArrayList<ProfilingSettings> monitorSettings = new ArrayList();
 

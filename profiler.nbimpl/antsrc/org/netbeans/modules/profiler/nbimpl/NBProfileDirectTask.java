@@ -44,39 +44,15 @@
 package org.netbeans.modules.profiler.nbimpl;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Path;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.lib.profiler.client.ClientUtils;
-import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.lib.profiler.common.SessionSettings;
-import org.netbeans.lib.profiler.global.CalibrationDataFileIO;
-import org.netbeans.modules.profiler.NetBeansProfiler;
-import org.netbeans.modules.profiler.api.ProfilerIDESettings;
-import org.netbeans.modules.profiler.ProfilerModule;
-import org.netbeans.modules.profiler.actions.JavaPlatformSelector;
-import org.netbeans.modules.profiler.actions.ProfilingSupport;
-import org.netbeans.modules.profiler.utils.IDEUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import org.apache.tools.ant.Location;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.profiler.api.JavaPlatform;
-import org.netbeans.modules.profiler.api.ProfilerDialogs;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.tools.ant.types.LogLevel;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
-import org.netbeans.modules.profiler.nbimpl.project.ProjectUtilities;
 
 
 /**
@@ -104,18 +80,11 @@ public final class NBProfileDirectTask extends Task {
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    // -----
-    // I18N String constants
-    private static final String CALIBRATION_FAILED_MESSAGE = NbBundle.getMessage(ProfilerModule.class,
-                                                                                 "ProfilerModule_CalibrationFailedMessage"); //NOI18N
-                                                                                                                             // -----
     private static final int INTERACTIVE_AUTO = 0;
     private static final int INTERACTIVE_YES = 1;
     private static final int INTERACTIVE_NO = 2;
     private static final String DEFAULT_AGENT_JVMARGS_PROPERTY = "profiler.info.jvmargs.agent"; // NOI18N
     private static final String DEFAULT_JVM_PROPERTY = "profiler.info.jvm"; // NOI18N
-    private static final String EXTRA_JVM_ARGS = "profiler.info.jvmargs"; // NOI18N
-    private static final String EXTRA_RUN_ARGS = "run.args.extra"; // NOI18N
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -129,6 +98,8 @@ public final class NBProfileDirectTask extends Task {
     private String jvmProperty = DEFAULT_JVM_PROPERTY;
     private String mainClass = null;
     private int interactive = INTERACTIVE_AUTO;
+    
+    private AtomicBoolean connectionCancel = new AtomicBoolean();
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
     public void setInteractive(NBProfileDirectTask.YesNoAuto arg) {
@@ -195,10 +166,13 @@ public final class NBProfileDirectTask extends Task {
                 for(Map.Entry<String, String> e : props.entrySet()) {
                     getProject().setProperty(e.getKey(), e.getValue());
                 }
-                if (!org.netbeans.modules.profiler.nbimpl.NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
+                getProject().setProperty("profiler.jvmargs", "-J-Dprofiler.pre72=true"); // NOI18N
+                
+                getProject().addBuildListener(new BuildEndListener(connectionCancel));
+                
+                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings(), connectionCancel)) {
                     throw new BuildException("User abort"); // NOI18N
                 }
-                getProject().setProperty("profiler.jvmargs", "-J-Dprofiler.pre72=true"); // NOI18N
             }
         } else {
             throw new BuildException("User abort");// NOI18N

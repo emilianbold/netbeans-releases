@@ -44,6 +44,18 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="{0} (profile-test)" default="profile-test" basedir=".">
+    <target name="-init">
+        <condition property="testng.available" value="true" else="false">
+            <available classname="org.testng.annotations.Test" classpath="${classpath}"/>
+        </condition>
+        <condition property="testng.mode" value="-mixed" else="">
+            <and>
+                <istrue value="${testng.available}"/>
+                <available classname="org.junit.Test" classpath="${classpath}"/>
+            </and>
+        </condition>
+    </target>
+    
     <target name="-profile-check" if="netbeans.home">
         <condition property="profiler.configured">
             <or>
@@ -54,11 +66,15 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="-check-run-test-single-method-supported" if="methodname">
-        <available property="run.test.single.method.supported"
-                   resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
+        <condition property="run.test.single.method.supported">
+            <or>
+                <available resource="org/apache/tools/ant/taskdefs/optional/junit/JUnit4TestMethodAdapter.class"/>
+                <istrue value="${testng.available}"/>
+            </or>
+        </condition>
         <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
     </target>
-    <target name="-prepare-execution">
+    <target name="-prepare-junit-execution" unless="testng.available">
         <property name="test.result.dir" location="${java.io.tmpdir}"/>
         <property name="test.result.file"
                   location="${test.result.dir}/TEST-${classname}.xml"/>
@@ -86,20 +102,67 @@ made subject to such option by the copyright holder.
                 </junit>
             </sequential>
         </macrodef>
+        <macrodef name="testng-template">
+            <attribute name="test"/>
+            <attribute name="method" default=""/>
+            <sequential/>
+        </macrodef>
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
     </target>
+    <target name="-prepare-testng-execution" if="testng.available">
+        <macrodef name="junit-template">
+            <element name="test-spec" implicit="yes"/>
+            <sequential/>
+        </macrodef>
+        <macrodef name="testng-template">
+            <attribute name="test"/>
+            <attribute name="method" default=""/>
+            <sequential>
+                <property name="test.results.dir" location="${java.io.tmpdir}/${classname}"/>
+                <property  name="tmp.dir" value="${basedir}"/>
+                <property name="run.jvmargs" value="" />
+                <property name="work.dir" value="${basedir}"/>
+                
+                <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+                <startprofiler/>
+                <condition else="-testclass @{test}" property="testng.cmd.args" value="-methods @{test}.@{method}">
+                    <length string="@{method}" when="gt" length="0" trim="true"/>
+                </condition>
+                <property name="work.dir" value="${basedir}"/>
+                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
+                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+                    <jvmarg line="${run.jvmargs}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
+                    <classpath path="${classpath-translated}" />
+                    <syspropertyset>
+                        <propertyref prefix="run-sys-prop."/>
+                        <mapper from="run-sys-prop.*" to="*" type="glob"/>
+                    </syspropertyset>
+                    <arg line="${testng.mode}"/>
+                    <arg line="-d ${test.results.dir}"/>
+                    <arg line="-listener org.testng.reporters.VerboseReporter"/>
+                    <arg line="${testng.cmd.args}"/>
+                </java>
+                <delete dir="${test.results.dir}" quiet="true"/>
+            </sequential>
+        </macrodef>
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
+    </target>
+    <target name="-prepare-execution" depends="-prepare-junit-execution,-prepare-testng-execution"/>
     <target name="-test-class" depends="-prepare-execution" unless="methodname">
         <junit-template>
             <test name="${classname}" todir="${test.result.dir}"/>
         </junit-template>
+        <testng-template test="${classname}" />
     </target>
     <target name="-test-method" depends="-check-run-test-single-method-supported,-prepare-execution" if="methodname">
         <junit-template>
             <test name="${classname}" methods="${methodname}"
                   todir="${test.result.dir}"/>
         </junit-template>
+        <testng-template test="${classname}" method="${methodname}" />
     </target>
-    <target name="profile-test" depends="-profile-check" if="profiler.configured">
+    <target name="profile-test" depends="-profile-check,-init" if="profiler.configured">
         <antcall target="-test-class"/>
         <antcall target="-test-method"/>
         <!-- This target is intended to be used in conjunction with the
