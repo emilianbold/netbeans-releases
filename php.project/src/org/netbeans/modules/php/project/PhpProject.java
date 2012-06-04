@@ -351,10 +351,16 @@ public final class PhpProject implements Project {
                 buffer.append("\nnbproject exists: "); // NOI18N
                 buffer.append(nbprojectFound);
                 if (nbprojectFound) {
+                    buffer.append("\nnbproject valid: "); // NOI18N
+                    buffer.append(nbproject.isValid());
                     buffer.append("\nnbproject children: "); // NOI18N
                     buffer.append(Arrays.asList(nbproject.getChildren()));
                 }
             }
+            buffer.append("\nsource roots: "); // NOI18N
+            buffer.append(getSourceRoots().getRoots());
+            buffer.append("\nsource roots - fired changes: "); // NOI18N
+            buffer.append(getSourceRoots().getFiredChanges());
             buffer.append("\nproperties (helper): "); // NOI18N
             buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
             buffer.append("\nproperties (evaluator): "); // NOI18N
