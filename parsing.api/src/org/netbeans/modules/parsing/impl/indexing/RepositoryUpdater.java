@@ -434,6 +434,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             final boolean logStatistics,
             @NullAllowed final LogContext logCtx,
             @NullAllowed final Object... filesOrFileObjects) {
+        
+        boolean ae = false;
+        assert ae = true;
+        if (ae) {
+            for (final Object fileOrFileObject : filesOrFileObjects) {
+                if (fileOrFileObject instanceof File) {
+                    final File file = (File) fileOrFileObject;
+                    assert file.equals(FileUtil.normalizeFile(file)) : String.format("File: %s is not normalized.", file.toString());   //NOI18N
+                }
+            }
+        }
+        
         FSRefreshInterceptor fsRefreshInterceptor = null;
         for(IndexingActivityInterceptor iai : indexingActivityInterceptors.allInstances()) {
             if (iai instanceof FSRefreshInterceptor) {
@@ -3002,22 +3014,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
-            String msg = null;
-
-            URL tmp = FileUtil.getArchiveFile(currentlyScannedRoot);
-            if (tmp == null) {
-                tmp = currentlyScannedRoot;
-            }
-            try {
-                if ("file".equals(tmp.getProtocol())) { //NOI18N
-                    final File file = new File(new URI(tmp.toString()));
-                    msg = file.getAbsolutePath();
-                }
-            } catch (URISyntaxException ex) {
-                // ignore
-            }
-
-            return msg == null ? tmp.toString() : msg;
+            final File file = FileUtil.archiveOrDirForURL(currentlyScannedRoot);            
+            final String msg = file != null?
+                file.getAbsolutePath():
+                currentlyScannedRoot.toExternalForm();
+            return msg;
         }
 
         public @Override String toString() {
