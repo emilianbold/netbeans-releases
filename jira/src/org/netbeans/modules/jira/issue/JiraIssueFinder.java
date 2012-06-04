@@ -44,8 +44,6 @@ package org.netbeans.modules.jira.issue;
 
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.openide.ErrorManager;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
