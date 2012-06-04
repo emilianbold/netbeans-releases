@@ -115,7 +115,7 @@ public class LogTest extends NbTestCase {
         pw.println("g5=" + g5 + " i6=" + i6);
         pw.println("i4=" + i4 + " o1=" + o1);
         pw.flush();
-        String expect = NbModuleLogHandler.normalize(w.getBuffer(), getWorkDirPath()).replace('\\', '/');
+        String expect = NbModuleLogHandler.normalize(w.getBuffer(), getWorkDirPath()).replace('\\', '/').replace("\r\n", "\n");
         assertEquals("some stuff\n"
                 + "null\n"
                 + "found WORKDIR/some/thing great\n"
