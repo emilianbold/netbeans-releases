@@ -91,7 +91,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "public java.lang.Object method1() { return null;}\n" +
                 "public java.lang.Object getClosure1() { return null;}\n" +
                 "public void setClosure1(java.lang.Object value) { }\n" +
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
     }
 
     public void testGeneratorWithScript() throws IOException {
@@ -122,7 +122,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "public static void main(java.lang.String[] args) { }\n" +
                 "public java.lang.Object run() { return null;}\n" +
                 "public java.lang.Object method1() { return null;}\n" +
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
     }
 
     public void testGenerics() throws IOException {
@@ -150,7 +150,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "    groovy.lang.GroovyObject {\n" +
                 "public Foo() {}\n" +
                 "public static java.util.List<java.lang.String> get() { return (java.util.List<java.lang.String>)null;}\n" +
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
     }
 
     public void testImports() throws IOException {
@@ -181,7 +181,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "    groovy.lang.GroovyObject {\n" +
                 "public MyTest() {}\n" +
                 "public javax.swing.JPanel getPanel() { return (javax.swing.JPanel)null;}\n" +
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
     }
 
     public void testMultipleClasses() throws IOException {
@@ -219,7 +219,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "public boolean getTransactional() { return (boolean)false;}\n" +
                 "public void setTransactional(boolean value) { }\n" +
                 "public boolean isTransactional() { return (boolean)false;}\n"+
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
 
         charSequence = generator.generateClass(classNodes.get(1));
         assertEquals(
@@ -236,7 +236,7 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "public PostException() {\n" +
                 "super ();\n" +
                 "}\n" +
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
     }
 
     public void testThrowsClause() throws IOException {
@@ -273,6 +273,6 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "public void test1() throws java.lang.RuntimeException { }\n" +
                 "public void test2() throws java.lang.Exception { }\n" +
                 "public java.lang.Object test3() throws java.lang.RuntimeException { return null;}\n" +
-                "}\n", charSequence);
+                "}\n".trim(), charSequence.toString().trim());
     }
 }
