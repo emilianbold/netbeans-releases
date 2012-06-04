@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.modelcache;
 
-package org.netbeans.modules.maven.dependencies;
+import java.util.Collections;
+import java.util.SortedSet;
+import static org.netbeans.modules.maven.configurations.ConfigurationPersistenceUtils.*;
+import org.netbeans.modules.maven.configurations.M2Configuration;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.filesystems.FileObject;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 
 /**
  *
  * @author mkleint
  */
-public class DependencyExcludeNodeVisitor implements DependencyNodeVisitor {
-    private DependencyNode root;
-    private Set<DependencyNode> directs;
-    private Stack<DependencyNode> path;
-    private Set<Stack<DependencyNode>> allPaths;
-    private String key;
+public class ActiveConfigurationProvider {
+    private final AuxiliaryConfiguration aux;
+    private final FileObject projectDirectory;
 
-    public DependencyExcludeNodeVisitor(String groupId, String artifactId, String type) {
-        assert groupId != null;
-        assert artifactId != null;
-        key = groupId + ":" + artifactId + ":" + type;
+    public ActiveConfigurationProvider(FileObject projectDirectory, AuxiliaryConfiguration aux) {
+        this.aux = aux;
+        this.projectDirectory = projectDirectory;
     }
-
-    public Set<DependencyNode> getDirectDependencies() {
-        return directs;
-    }
-
-    public Set<Stack<DependencyNode>> getAllPaths() {
-        return allPaths;
-    }
-
-    @Override
-    public boolean visit(DependencyNode node) {
-        if (root == null) {
-            root = node;
-            directs = new HashSet<DependencyNode>();
-            path = new Stack<DependencyNode>();
-            allPaths = new HashSet<Stack<DependencyNode>>();
-            return true;
-        }
-        path.push(node);
-        Artifact artifact = node.getArtifact();
-        if (key.equals(artifact.getDependencyConflictId())) {
-            if (!path.isEmpty()) {
-                directs.add(path.firstElement());
-                Stack<DependencyNode> copy = new Stack<DependencyNode>();
-                copy.addAll(path);
-                allPaths.add(copy);
+    
+    public M2Configuration getActiveConfiguration() {
+        String active = readActiveConfigurationName(aux);
+        if (active == null) {
+            return M2Configuration.createDefault(projectDirectory);
+        } else {
+            SortedSet<M2Configuration> configs = readConfigurations(aux, projectDirectory, true);
+            for (M2Configuration c : configs) {
+                if (c.getId().equals(active)) {
+                    return c;
+                }
             }
-            return false;
+            configs = readConfigurations(aux, projectDirectory, false);
+            for (M2Configuration c : configs) {
+                if (c.getId().equals(active)) {
+                    return c;
+                }
+            }
+            // attempt to find the stored configuration, if not found it's a profile
+            M2Configuration toRet = new M2Configuration(active, projectDirectory);
+            toRet.setActivatedProfiles(Collections.singletonList(active));
+            return toRet;
         }
-        return true;
-    }
-
-    @Override
-    public boolean endVisit(DependencyNode node) {
-        if (root == node) {
-            root = null;
-            path = null;
-            return true;
-        }
-        path.pop();
-        return true;
     }
 
 }

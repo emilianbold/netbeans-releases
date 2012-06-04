@@ -48,12 +48,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -66,6 +66,8 @@ import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.operations.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Implementation of IDE's idea how to move/delete/copy a project.
@@ -112,6 +114,7 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
     }
     
     @Override
+    @Messages("NotifyDeleting.execute=Delete Project")
     public void notifyDeleting() throws IOException {
         // cannot run ActionProvider.CLEAN because that one doesn't stop thi thread.
         //TODO shall I get hold of the actual mapping for the clean action?
@@ -121,9 +124,9 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         config.setGoals(Collections.singletonList("clean")); //NOI18N
         config.setRecursive(false);
         config.setProject(project);
-        config.setExecutionName(NbBundle.getMessage(OperationsImpl.class, "NotifyDeleting.execute"));
+        config.setExecutionName(NotifyDeleting_execute());
         config.setUpdateSnapshots(false);
-        config.setTaskDisplayName(NbBundle.getMessage(OperationsImpl.class, "NotifyDeleting.execute"));
+        config.setTaskDisplayName(NotifyDeleting_execute());
         ExecutorTask task = RunUtils.executeMaven(config);
         task.result();
         checkParentProject(project.getProjectDirectory(), true, null, null);
@@ -145,12 +148,12 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         if (original == null) {
             //old project call..
             project.getLookup().lookup(ProjectState.class).notifyDeleted();
-            return;
         } else {
             if (original.getProjectDirectory().equals(project.getProjectDirectory())) {
                 // oh well, just change the name in the pom when rename is invoked.
                 FileObject pomFO = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         model.getProject().setName(newName);
                     }

@@ -46,9 +46,12 @@ package org.netbeans.updater;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -128,6 +131,19 @@ public final class XMLUtil extends Object {
         // XXX note that this may fail to write out namespaces correctly if the document
         // is created with namespaces and no explicit prefixes; however no code in
         // this package is likely to be doing so
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() { // #208369
+            @Override public ClassLoader run() {
+                return new ClassLoader(ClassLoader.getSystemClassLoader().getParent()) {
+                    @Override public InputStream getResourceAsStream(String name) {
+                        if (name.startsWith("META-INF/services/")) { // NOI18N
+                            return new ByteArrayInputStream(new byte[0]); // JAXP #6723276
+                        }
+                        return super.getResourceAsStream(name);
+                    }
+                };
+            }
+        }));
         Transformer t = null;
         try {
             t = TransformerFactory.newInstance().newTransformer();
@@ -150,6 +166,8 @@ public final class XMLUtil extends Object {
             throw new IOException("XML Transformer: " + t, e); // NOI18N
         } catch (TransformerFactoryConfigurationError e) {
             throw new IOException("XML Transformer: " + t, e); // NOI18N
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
 

@@ -57,10 +57,12 @@ import org.openide.util.Lookup;
 @LookupMerger.Registration(projectType="org-netbeans-modules-maven")
 public class PrereqCheckerMerger implements LookupMerger<PrerequisitesChecker> {
 
+    @Override
     public Class<PrerequisitesChecker> getMergeableClass() {
         return PrerequisitesChecker.class;
     }
 
+    @Override
     public PrerequisitesChecker merge(Lookup lookup) {
         Lookup.Result<PrerequisitesChecker> res = lookup.lookupResult(PrerequisitesChecker.class);
         return new Impl(res);
@@ -73,6 +75,7 @@ public class PrereqCheckerMerger implements LookupMerger<PrerequisitesChecker> {
             checkers = res;
         }
 
+        @Override
         public boolean checkRunConfig(RunConfig config) {
             Collection<? extends PrerequisitesChecker> all = checkers.allInstances();
             PrerequisitesChecker cos = null;

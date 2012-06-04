@@ -69,6 +69,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
     }
 
 
+    @Override
     public URL[] findUnitTests(FileObject fileObject) {
         try {
             String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getTestSourceDirectory();
@@ -91,6 +92,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
         return null;
     }
 
+    @Override
     public URL[] findSources(FileObject fileObject) {
         try {
             String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory();
