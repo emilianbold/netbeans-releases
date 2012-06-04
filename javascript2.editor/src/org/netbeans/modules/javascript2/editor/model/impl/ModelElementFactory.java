@@ -76,7 +76,7 @@ class ModelElementFactory {
             parentObject = isAnnonymous ? globalObject : ModelUtils.getJsObject(modelBuilder, objectName);
             result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(), 
                     parentObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
-            if (!"prototype".equals(parentObject.getName())) {
+            if (parentObject instanceof JsFunction && !"prototype".equals(parentObject.getName())) {
                 result.addModifier(Modifier.STATIC);
             } 
         } else {
