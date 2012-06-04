@@ -47,7 +47,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileBasedConfig;
+import org.eclipse.jgit.util.FS;
+import org.eclipse.jgit.util.SystemReader;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientCallback;
 import org.netbeans.libs.git.GitException;
@@ -282,6 +286,44 @@ public class ConnectionTest extends AbstractGitTestCase {
         client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
     }
     
+    public void testSshConnectionGITSSH_Issue213394 () throws Exception {
+        SystemReader sr = SystemReader.getInstance();
+        SystemReader.setInstance(new DelegatingSystemReader(sr) {
+
+            @Override
+            public String getenv (String string) {
+                if ("GIT_SSH".equals(string)) {
+                     return "/usr/bin/externalsshtool";
+                }
+                return super.getenv(string);
+            }
+            
+        });
+        try {
+            GitClient client = getClient(workDir);
+            client.setCallback(new DefaultCallback() {
+                @Override
+                public String getUsername (String uri, String prompt) {
+                    return "gittester";
+                }
+
+                @Override
+                public String getIdentityFile (String uri, String prompt) {
+                    return new File(getDataDir(), "private_key").getAbsolutePath();
+                }
+
+                @Override
+                public char[] getPassphrase (String uri, String prompt) {
+                    assertTrue("Expected passphrase prompt for private_key, was " + prompt, prompt.contains(new File(getDataDir(), "private_key").getAbsolutePath()));
+                    return "qwerty".toCharArray();
+                }
+            });
+            client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
+        } finally {
+            SystemReader.setInstance(sr);
+        }
+    }
+    
     /**
      * When starts failing then consider rewriting callbacks to return passwords only in getPassword
      */
@@ -353,5 +395,48 @@ public class ConnectionTest extends AbstractGitTestCase {
             return "".toCharArray();
         }
         
+    }
+
+    private static class DelegatingSystemReader extends SystemReader {
+        private final SystemReader instance;
+
+        public DelegatingSystemReader (SystemReader sr) {
+            this.instance = sr;
+        }
+
+        @Override
+        public String getHostname () {
+            return instance.getHostname();
+        }
+
+        @Override
+        public String getenv (String string) {
+            return instance.getenv(string);
+        }
+
+        @Override
+        public String getProperty (String string) {
+            return instance.getProperty(string);
+        }
+
+        @Override
+        public FileBasedConfig openUserConfig (Config config, FS fs) {
+            return instance.openUserConfig(config, fs);
+        }
+
+        @Override
+        public FileBasedConfig openSystemConfig (Config config, FS fs) {
+            return instance.openSystemConfig(config, fs);
+        }
+
+        @Override
+        public long getCurrentTime () {
+            return instance.getCurrentTime();
+        }
+
+        @Override
+        public int getTimezone (long l) {
+            return instance.getTimezone(l);
+        }
     }
 }
