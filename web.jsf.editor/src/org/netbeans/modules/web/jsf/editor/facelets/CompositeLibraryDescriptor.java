@@ -74,6 +74,11 @@ public class CompositeLibraryDescriptor implements LibraryDescriptor {
     public String getNamespace() {
         return first.getNamespace() != null ? first.getNamespace() : second.getNamespace();
     }
+    
+    @Override
+    public String getPrefix() {
+        return first.getPrefix() != null ? first.getPrefix() : second.getPrefix();
+    }
 
      @Override
     public Map<String, Tag> getTags() {

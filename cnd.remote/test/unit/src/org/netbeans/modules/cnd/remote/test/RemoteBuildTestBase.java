@@ -61,10 +61,11 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
@@ -80,11 +81,13 @@ import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -139,7 +142,9 @@ public class RemoteBuildTestBase extends RemoteTestBase {
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
                 wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
-                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
+                ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, 
+                    new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(destdir.getAbsolutePath(), ee)));
                 try {
                     projectCreator.instantiate();
                 } catch (IOException ex) {
@@ -150,7 +155,6 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         if (exRef.get() != null) {
             throw exRef.get();
         }
-        return;
     }
 
     @Override
@@ -226,7 +230,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertTrue("DataObjectNotFoundException", dObj != null);
         Node node = dObj.getNodeDelegate();
         assertTrue("node == null", node != null);
-        MakeExecSupport ses = node.getCookie(MakeExecSupport.class);
+        MakeExecSupport ses = node.getLookup().lookup(MakeExecSupport.class);
         assertTrue("ses == null", ses != null);
         return projectDirFO;
     }

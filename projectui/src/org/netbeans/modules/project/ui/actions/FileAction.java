@@ -55,7 +55,6 @@ import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
@@ -68,10 +67,6 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
     
     public FileAction(String command, String namePattern, Icon icon, Lookup lookup) {
         this( command, null, namePattern, icon, lookup );
-    }
-    
-    public FileAction( String command, String namePattern, String iconResource, Lookup lookup ) {
-        this( command, namePattern, ImageUtilities.loadImageIcon(iconResource, false), lookup );
     }
     
     public FileAction( FileActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {

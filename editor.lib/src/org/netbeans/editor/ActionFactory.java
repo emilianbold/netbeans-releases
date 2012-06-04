@@ -91,6 +91,7 @@ import javax.swing.text.View;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -1239,6 +1240,8 @@ public class ActionFactory {
                         props.put(EditorFindSupport.REVERT_MAP, revertMap);
                     }
 
+                    EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                    findSupport.setFocusedTextComponent(eui.getComponent());
                     findSupport.putFindProperties(props);
                     findSupport.find(null, false);
                 }

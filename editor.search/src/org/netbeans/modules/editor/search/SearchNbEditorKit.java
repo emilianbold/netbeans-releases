@@ -66,6 +66,7 @@ public class SearchNbEditorKit extends NbEditorKit {
     public static final ExtKit.FindAction DIALOG_FIND_ACTION = new FindAction();
     public static final ExtKit.ReplaceAction DIALOG_REPLACE_ACTION = new ReplaceAction();
     public static final String SEARCHBAR_MIMETYPE = "text/x-editor-search";
+    public static final String PROP_SEARCH_CONTAINER = "diff.search.container";
 
     public static <T> T findComponent(Container container, Class<T> componentClass, int depth) {
         if (depth > 0) {
@@ -110,28 +111,41 @@ public class SearchNbEditorKit extends NbEditorKit {
                     if (evt.getPropertyName().equals(EditorRegistry.FOCUS_GAINED_PROPERTY)
                             && SearchBar.getInstance().getActualTextComponent() != EditorRegistry.lastFocusedComponent()
                             && SearchBar.getInstance().isVisible()) {
-                        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(EditorRegistry.lastFocusedComponent());
+                        JTextComponent target = EditorRegistry.lastFocusedComponent();
+                        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                         if (eui != null) {
-                            JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
-                            if (comp != null) {
-                                JPanel jp = SearchNbEditorKit.findComponent(comp, SearchNbEditorKit.SearchJPanel.class, 5);
-                                if (jp != null) {
-                                    SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
-                                    ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
-                                    jp.add(searchBarInstance);
-                                    if (replaceBarInstance.isVisible()) {
-                                        jp.add(replaceBarInstance);
-                                        if (searchBarInstance.hadFocusOnTextField())
-                                            replaceBarInstance.gainFocus();
-                                    }
-                                    jp.revalidate();
-
+                            JPanel jp = null;
+                            Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
+                            if (clientProperty instanceof JPanel) {
+                                jp = (JPanel) clientProperty;
+                            } else {
+                                JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
+                                if (comp != null) {
+                                    jp = SearchNbEditorKit.findComponent(comp, SearchNbEditorKit.SearchJPanel.class, 5);
+                                }
+                            }
+                            if (jp != null) {
+                                SearchBar searchBarInstance = SearchBar.getInstance(eui.getComponent());
+                                ReplaceBar replaceBarInstance = ReplaceBar.getInstance(searchBarInstance);
+                                jp.add(searchBarInstance);
+                                if (replaceBarInstance.isVisible()) {
+                                    jp.add(replaceBarInstance);
                                     if (searchBarInstance.hadFocusOnTextField()) {
-                                        searchBarInstance.gainFocus();
+                                        replaceBarInstance.gainFocus();
                                     }
+                                    if (!target.isEditable())
+                                        replaceBarInstance.looseFocus();
+                                }
+                                
+                                
+                                jp.revalidate();
+
+                                if (searchBarInstance.hadFocusOnTextField()) {
+                                    searchBarInstance.gainFocus();
                                 }
                             }
                         }
+
                     }
                 }
             };

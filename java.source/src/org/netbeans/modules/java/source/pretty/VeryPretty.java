@@ -1911,7 +1911,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public void printFlags(long flags, boolean addSpace) {
-	print(TreeInfo.flagNames(flags));
+	print(TreeInfo.flagNames(flags & ~INTERFACE & ~ANNOTATION & ~ENUM));
         if ((flags & StandardFlags) != 0) {
             if (cs.placeNewLineAfterModifiers())
                 toColExactly(out.leftMargin);

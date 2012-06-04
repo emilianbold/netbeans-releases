@@ -4,22 +4,25 @@ if test ! -e /space/hudsonserver/master
 then
 
 cd $performance/j2se
-# ant -Dnetbeans.dest.dir=$netbeans_dest
-# rm -rf "$WORKSPACE"/j2se
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureJ2SEStartupTest* -Dnetbeans.dest.dir=$netbeans_dest -Dperformance.testutilities.dist.jar=$perfjar -Dnetbeans.keyring.no.master=true -Drepeat=1 -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.performance.exec.dir=$execdir -Dnbplatform.default.harness.dir=$platdefharness
-
-cp -R build/test/unit/work/ "$WORKSPACE"/startup/work
-cp -R build/test/unit/results/ "$WORKSPACE"/startup/results
-rm -rf "$WORKSPACE"/j2se/userdir0
-rm -rf "$WORKSPACE"/j2se/tmpdir
-
-cd "$performance"
 buildnum=`cat "$reposdir"/build.number`
 str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
 str2="<property name=\"env.BUILD_NUMBER\" value=\"`echo $BUILD_NUMBER`\" />"
 str3="<property name=\"env.JOB_NAME\" value=\"`echo $JOB_NAME`\" />"
 export str="$str1 $str2 $str3"
+
+
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureJ2SEStartupTest* -Dnetbeans.dest.dir=$netbeans_dest -Dperformance.testutilities.dist.jar=$perfjar -Dnetbeans.keyring.no.master=true -Drepeat=1 -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.performance.exec.dir=$execdir -Dnbplatform.default.harness.dir=$platdefharness
+
+awk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/j2se/build/test/unit/results/TEST-org.netbeans.performance.j2se.MeasureJ2SEStartupTest.xml > tmp.xml && mv tmp.xml "$performance"/j2se/build/test/unit/results/TEST-org.netbeans.performance.j2se.MeasureJ2SEStartupTest.xml
+sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/j2se/build/test/unit/results/TEST-org.netbeans.performance.j2se.MeasureJ2SEStartupTest.xml
+
+cp -R build/test/unit/work/ "$WORKSPACE"/startup/
+cp -R build/test/unit/results/ "$WORKSPACE"/startup/
+rm -rf "$WORKSPACE"/startup/userdir0
+rm -rf "$WORKSPACE"/startup/tmpdir
+
+cd "$performance"
 
 # ergonomics root
 cd "$project_root"
@@ -34,10 +37,6 @@ ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$net
 ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 
 buildnum=`cat "$reposdir"/build.number`
-str1="<property name=\"perftestrun.buildnumber\" value=\"$buildnum\"/>"
-str2="<property name=\"env.BUILD_NUMBER\" value=\"`echo $BUILD_NUMBER`\" />"
-str3="<property name=\"env.JOB_NAME\" value=\"`echo $JOB_NAME`\" />"
-export str="$str1 $str2 $str3"
 
 awk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnablementSpeedBase.xml > tmp.xml && mv tmp.xml "$performance"/build/test/unit/results/TEST-org.netbeans.performance.fod.EnablementSpeedBase.xml
 sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.fod.EnablementSpeedBase.xml

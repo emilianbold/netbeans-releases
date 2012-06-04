@@ -52,12 +52,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.modelutil.NamedEntity;
-import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -72,18 +73,38 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
     public OverrideTaskFactory() {
     }
 
+    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1300)
+    public static final class OverrideOptions extends NamedOption {
+        private static final String NAME = "overrides-annotations"; //NOI18N
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public OptionKind getKind() {
+            return OptionKind.Boolean;
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return true;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(OverrideTaskFactory.class, "Show-overrides-annotations");
+        }
+
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(OverrideTaskFactory.class, "Show-overrides-annotations-AD");
+        }
+    }
+    
     private static boolean isEnabled() {
-        NamedEntity namedEntity = new NamedEntity() {
-            @Override
-            public String getName() {
-                return "overrides-annotations"; //NOI18N
-            }
-            @Override
-            public boolean isEnabledByDefault() {
-                return true;
-            }
-        };
-        return NamedEntityOptions.instance().isEnabled(namedEntity);
+        return NamedOption.getAccessor().getBoolean(OverrideOptions.NAME);
     }
 
     @Override
@@ -92,7 +113,7 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         if (isEnabled()) {
             try {
                 final DataObject dobj = DataObject.find(fo);
-                    EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                    EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
                     final CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
                     final StyledDocument doc = ec.getDocument();
                     if (doc != null && file != null) {

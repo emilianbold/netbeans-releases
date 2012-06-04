@@ -424,6 +424,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 return newClass;
             } else if (member instanceof CsmClassForwardDeclaration) {
                 return new ClassForward((CsmClassForwardDeclaration)member, getMapping());
+            } else if (member instanceof CsmEnumForwardDeclaration) {
+                return new EnumForward((CsmEnumForwardDeclaration)member, getMapping());
             } else if (member instanceof CsmEnum) {
                 // no need to instantiate enums?
                 return member;
@@ -817,6 +819,48 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         @Override
         public String toString() {
             return "INSTANTIATION OF CLASS FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+        }
+    }
+
+    private static class EnumForward extends Instantiation<CsmEnumForwardDeclaration> implements CsmEnumForwardDeclaration, CsmMember {
+
+        private CsmEnum csmEnum = null;
+
+        public EnumForward(CsmEnumForwardDeclaration forward, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(forward, mapping);
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return ((CsmMember) declaration).getContainingClass();
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return ((CsmMember) declaration).getVisibility();
+        }
+
+        @Override
+        public boolean isStatic() {
+            return ((CsmMember) declaration).isStatic();
+        }
+
+        @Override
+        public CsmEnum getCsmEnum() {
+            if (csmEnum == null) {
+                CsmEnum declClassifier = declaration.getCsmEnum();
+                if (CsmKindUtilities.isTemplate(declClassifier)) {
+                    csmEnum = (CsmEnum) Instantiation.create((CsmTemplate) declClassifier, getMapping());
+                } else {
+                    csmEnum = declClassifier;
+                }
+            }
+            return csmEnum;
+        }
+
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF ENUM FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
 

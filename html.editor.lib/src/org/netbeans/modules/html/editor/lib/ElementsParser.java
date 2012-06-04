@@ -201,13 +201,12 @@ public class ElementsParser implements Iterator<Element> {
                     TokenInfo ti = values.get(0);
 
                     assert key.token.length() < Byte.MAX_VALUE;
-                    assert ti.token.length() < Short.MAX_VALUE;
                     Attribute ta = new AttributeElement(
                             sourceCode,
                             key.offset,
                             ti.offset,
                             (short) key.token.length(),
-                            (short) ti.token.length());
+                            ti.token.length());
 
                     attributes.add(ta);
 

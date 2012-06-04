@@ -97,8 +97,13 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         Expression superId = nodeInfo.getSuperClass();
         String superName = null;
         if (superId != null) {
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
             QualifiedName superClassName = QualifiedName.create(superId);
-            this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), (NamespaceScope)inScope);
+            if (namespaceScope == null) {
+                this.possibleFQSuperClassNames = Collections.emptyList();
+            } else {
+                this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), namespaceScope);
+            }
             this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
         } else {
             this.possibleFQSuperClassNames = Collections.emptyList();
@@ -484,4 +489,81 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     public Collection<QualifiedName> getUsedTraits() {
         return usedTraits;
     }
+
+    @Override
+    public Collection<? extends TraitScope> getTraits(){
+        Collection<TraitScope> result = new ArrayList<TraitScope>();
+        for (QualifiedName qualifiedName : getUsedTraits()) {
+            result.addAll(IndexScopeImpl.getTraits(qualifiedName, this));
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isSuperTypeOf(final TypeScope subType) {
+        boolean result = false;
+        if (subType.isClass()) {
+            for (ClassScope classScope : ((ClassScope) subType).getSuperClasses()) {
+                if (classScope.equals(this)) {
+                    result = true;
+                } else {
+                    result = isSuperTypeOf(classScope);
+                }
+                if (result == true) {
+                    break;
+                }
+            }
+        } else if (subType.isTrait()) {
+            result = false;
+        } else {
+            result = super.isSuperTypeOf(subType);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isSubTypeOf(final TypeScope superType) {
+        boolean result = false;
+        if (superType.isClass()) {
+            for (ClassScope classScope : getSuperClasses()) {
+                if (classScope.equals(superType)) {
+                    result = true;
+                } else {
+                    result = classScope.isSubTypeOf(superType);
+                }
+                if (result == true) {
+                    break;
+                }
+            }
+        } else if (superType.isTrait()) {
+            for (ClassScope classScope : getSuperClasses()) {
+                result = classScope.isSubTypeOf(superType);
+                if (result == true) {
+                    break;
+                }
+            }
+            for (TraitScope traitScope : getTraits()) {
+                if (traitScope.equals(superType)) {
+                    result = true;
+                } else {
+                    result = traitScope.isSubTypeOf(superType);
+                }
+                if (result == true) {
+                    break;
+                }
+            }
+        } else {
+            result = super.isSubTypeOf(superType);
+            if (result == false) {
+                for (ClassScope classScope : getSuperClasses()) {
+                    result = classScope.isSubTypeOf(superType);
+                    if (result == true) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
 }

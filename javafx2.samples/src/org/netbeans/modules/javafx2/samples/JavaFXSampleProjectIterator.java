@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,7 +90,8 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public org.openide.WizardDescriptor.Panel current() {
+    @SuppressWarnings("unchecked")
+    public org.openide.WizardDescriptor.Panel<WizardDescriptor> current() {
         return basicPanel;
     }
 
@@ -125,18 +127,26 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public java.util.Set instantiate(org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
+    public java.util.Set<DataObject> instantiate(org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
-        FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
-        String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
-        if(projectLocation == null || !projectLocation.exists() || name == null || name.isEmpty() || templateFO == null || platformName == null || platformName.isEmpty()) {
-            warnIssue204880();
-            throw new IOException();
+        if(projectLocation == null) {
+            warnIssue204880("Wizard property " + WizardProperties.PROJECT_DIR + " is null."); // NOI18N
+            throw new IOException(); // return to wizard
         }
+        String name = (String) wiz.getProperty(WizardProperties.NAME);
+        if(name == null) {
+            warnIssue204880("Wizard property " + WizardProperties.NAME + " is null."); // NOI18N
+            throw new IOException(); // return to wizard
+        }
+        String platformName = (String) wiz.getProperty(JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME);
+        if(platformName == null) {
+            warnIssue204880("Wizard property " + JavaFXProjectUtils.PROP_JAVA_PLATFORM_NAME + " is null."); // NOI18N
+            throw new IOException(); // return to wizard
+        }
+        FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
         FileObject prjLoc = JavaFXSampleProjectGenerator.createProjectFromTemplate(
                 templateFO, projectLocation, name, platformName);
-        java.util.Set set = new java.util.HashSet();
+        java.util.Set<DataObject> set = new java.util.HashSet<DataObject>();
         set.add(DataObject.find(prjLoc));
 
         // open file from the project specified in the "defaultFileToOpen" attribute
@@ -185,8 +195,10 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
         component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(currentIndex)); // NOI18N
     }
     
-    private void warnIssue204880() {
-        LOG.log(Level.WARNING, "Detected issue 204880 occurence. Properties:" + wiz.getProperties()); // NOI18N
+    private void warnIssue204880(final String msg) {
+        LOG.log(Level.SEVERE, msg + " (issue 204880)."); // NOI18N
+        Exception npe = new NullPointerException(msg + " (issue 204880)."); // NOI18N
+        npe.printStackTrace();
         NotifyDescriptor d = new NotifyDescriptor.Message(
                 NbBundle.getMessage(JavaFXSampleProjectIterator.class,"WARN_Issue204880"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
         DialogDisplayer.getDefault().notify(d);

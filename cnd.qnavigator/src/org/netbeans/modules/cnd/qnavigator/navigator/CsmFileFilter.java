@@ -54,7 +54,9 @@ public class CsmFileFilter {
             if (def != null && !def.equals(object) && !CsmKindUtilities.isMethod(def)) {
                 return !object.getContainingFile().equals(def.getContainingFile());
             }
-       } else if (!isShowForwardClassDeclarations() && CsmKindUtilities.isClassForwardDeclaration(object)) {
+       } else if (!isShowForwardClassDeclarations() && 
+               (CsmKindUtilities.isClassForwardDeclaration(object) ||
+                CsmKindUtilities.isEnumForwardDeclaration(object))) {
            return false;
        } else if (!isShowTypedef() && CsmKindUtilities.isTypedef(object)) {
            return false;

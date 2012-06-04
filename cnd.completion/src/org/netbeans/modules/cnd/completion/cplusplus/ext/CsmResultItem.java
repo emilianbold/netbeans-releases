@@ -81,6 +81,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -368,7 +369,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 Object ob = getAssociatedObject();
                 if (CsmKindUtilities.isCsmObject(ob)) {
                     // Bug 186954 - Included files are chaotically inserted
-                    if (!CsmClassifierResolver.getDefault().isForwardClass((CsmObject) ob)) {
+                    if (!CsmClassifierResolver.getDefault().isForwardClassifier((CsmObject) ob)) {
                         CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
                         if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                             String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
@@ -1620,6 +1621,57 @@ public abstract class CsmResultItem implements CompletionItem {
                 clsComponent.setFormatClassName(getName());
                 return clsComponent;
             }
+        }
+    }
+
+    public static class ForwardEnumResultItem extends CsmResultItem {
+
+        private CsmEnumForwardDeclaration enm;
+        private int classDisplayOffset;
+        private boolean displayFQN;
+        private static CsmPaintComponent.EnumPaintComponent enumComponent = null;
+
+        public ForwardEnumResultItem(CsmEnumForwardDeclaration cls, boolean displayFQN, int priotity) {
+            this(cls, 0, displayFQN, priotity);
+        }
+
+        public ForwardEnumResultItem(CsmEnumForwardDeclaration enm, int classDisplayOffset, boolean displayFQN, int priotity) {
+            super(enm, priotity);
+            this.enm = enm;
+            this.classDisplayOffset = classDisplayOffset;
+            this.displayFQN = displayFQN;
+        }
+
+        protected String getName() {
+            return enm.getName().toString();
+        }
+
+        @Override
+        protected String getReplaceText() {
+            String text = getItemText();
+            if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
+                text = text.substring(classDisplayOffset);
+            }
+            return text;
+        }
+
+        @Override
+        public String getItemText() {
+            return displayFQN ? enm.getQualifiedName().toString() : getName();
+        }
+
+        protected CsmPaintComponent.EnumPaintComponent createEnumPaintComponent() {
+            return new CsmPaintComponent.EnumPaintComponent();
+        }
+
+        @Override
+        public Component getPaintComponent(boolean isSelected) {
+            if (enumComponent == null) {
+                enumComponent = createEnumPaintComponent();
+            }
+            enumComponent.setSelected(isSelected);
+            enumComponent.setFormatEnumName(getName());
+            return enumComponent;
         }
     }
 

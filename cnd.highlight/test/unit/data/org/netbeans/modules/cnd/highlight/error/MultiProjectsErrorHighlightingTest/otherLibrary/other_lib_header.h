@@ -15,7 +15,7 @@ namespace ns210384 {
 }
 
 #ifdef MY_PLUS_PLUS
-class MyClass202433_Other {
+struct MyClass202433_Other {
     void foo2();
 };
 #else

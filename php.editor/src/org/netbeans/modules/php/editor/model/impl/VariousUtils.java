@@ -367,7 +367,7 @@ public class VariousUtils {
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes(true));
+                                newRecentTypes.addAll(filterSuperTypes(meth.getReturnTypes(true)));
                             }
                         }
                         recentTypes = newRecentTypes;
@@ -503,6 +503,37 @@ public class VariousUtils {
         }
 
         return recentTypes;
+    }
+
+    private static Collection<TypeScope> filterSuperTypes(final Collection<? extends TypeScope> typeScopes) {
+        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        if (typeScopes.size() > 1) {
+            result.addAll(filterPossibleSuperTypes(typeScopes));
+        } else {
+            result.addAll(typeScopes);
+        }
+        return result;
+    }
+
+    private static Collection<TypeScope> filterPossibleSuperTypes(final Collection<? extends TypeScope> typeScopes) {
+        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        for (TypeScope typeScope : typeScopes) {
+            if (!isSuperTypeOf(typeScope, typeScopes)) {
+                result.add(typeScope);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isSuperTypeOf(final TypeScope superType, final Collection<? extends TypeScope> typeScopes) {
+        boolean result = false;
+        for (TypeScope typeScope : typeScopes) {
+            if (superType.isSuperTypeOf(typeScope)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
@@ -1377,64 +1408,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName()) && !isPrimitiveType(qualifiedName.toString())) {
-            while (inScope != null && !(inScope instanceof NamespaceScope)) {
-                inScope = inScope.getInScope();
-            }
-            if (inScope != null) {
-                NamespaceScope namespace = (NamespaceScope) inScope;
-                // needs to count
-                String firstSegmentName = qualifiedName.getSegments().getFirst();
-                UseScope matchedUseElement = null;
-                int lastOffset = -1; // remember offset of the last use declaration, that fits
-                for (UseScope useElement : namespace.getDeclaredUses()) {
-                    // trying to make a FQ from exact use element, they are FQ by default
-                    if (useElement.getNameRange().containsInclusive(offset)) {
-                        qualifiedName = QualifiedName.create(true, qualifiedName.getSegments());
-                        break;
-                    } else if (useElement.getOffset() < offset) {
-                        AliasedName aliasName = useElement.getAliasedName();
-                        if (aliasName != null) {
-                            //if it's allisased name
-                            if (firstSegmentName.equals(aliasName.getAliasName())) {
-                                matchedUseElement = useElement;
-                                continue;
-                            }
-                        } else {
-                            // no alias
-                            if (lastOffset < useElement.getOffset() && useElement.getName().endsWith(firstSegmentName)) {
-                                matchedUseElement = useElement;
-                                // we need to check all use elements that can fit the name
-                                lastOffset = useElement.getOffset();
-                            }
-                        }
-                    }
-                }
-                if (matchedUseElement != null) {
-                    ArrayList<String> segments = new ArrayList();
-                    // create segmens from the usage
-                    for (StringTokenizer st = new StringTokenizer(matchedUseElement.getName(), "\\"); st.hasMoreTokens();) { //NOI18N
-                        String token = st.nextToken();
-                        segments.add(token);
-                    }
-                    // and add all segments from the name except the first one.
-                    // the first one mathces the name of the usage or alias.
-                    List<String> origName = qualifiedName.getSegments();
-                    for (int i = 1; i < origName.size(); i++) {
-                        segments.add(origName.get(i));
-                    }
-                    qualifiedName = QualifiedName.create(true, segments);
-                } else if (qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED) {
-                    String fullNamespaceName = inScope.getNamespaceName().toString();
-                    if (qualifiedName.getKind() == QualifiedNameKind.QUALIFIED) {
-                        fullNamespaceName += fullNamespaceName.trim().isEmpty() ? "" : "\\";  //NOI18N
-                        fullNamespaceName += qualifiedName.getNamespaceName();
-                    }
-                    qualifiedName = QualifiedName.createFullyQualified(qualifiedName.getName(), fullNamespaceName);
-                }
-            }
-        }
-        return qualifiedName;
+        return TypeNameResolver.forFullyQualifiedName(inScope, offset).resolve(qualifiedName);
     }
 
     public static boolean isPrimitiveType(String typeName) {

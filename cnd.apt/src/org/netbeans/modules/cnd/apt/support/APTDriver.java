@@ -105,18 +105,18 @@ public final class APTDriver {
             out = ((APTFileCache)buffer).getCachedAPTLight();
         }
         if (out == null) {
-            out = getInstance(buffer).findAPT(buffer, false, APTLanguageSupport.UNKNOWN);
+            out = getInstance(buffer).findAPT(buffer, false, APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
         }
         return out;
     }
     
-    public static APTFile findAPT(APTFileBuffer buffer, String lang) throws IOException {
+    public static APTFile findAPT(APTFileBuffer buffer, String lang, String flavor) throws IOException {
         APTFile out = null;
         if (buffer instanceof APTFileCache) {
             out = ((APTFileCache) buffer).getCachedAPT();
         }
         if (out == null) {
-            out = getInstance(buffer).findAPT(buffer, true, lang);
+            out = getInstance(buffer).findAPT(buffer, true, lang, flavor);
         }
         return out;
     }

@@ -64,5 +64,8 @@ public class FaceletsLibraryDescriptorTest extends TestBaseForTestProject {
         assertNotNull(fld);
 
         assertEquals("http://ezcomp.com/jsflib", fld.getNamespace());
+        
+        assertEquals("ez", fld.getPrefix());
+        
     }
 }

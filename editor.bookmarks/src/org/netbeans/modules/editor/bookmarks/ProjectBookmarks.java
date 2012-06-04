@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.project.Project;
 
 /**
  * Bookmarks for a project consist of bookmarks for all URLs (where the bookmarks exist)
@@ -57,7 +57,7 @@ import org.netbeans.api.project.Project;
  */
 public final class ProjectBookmarks {
     
-    private final Project project;
+    private final URI projectURI;
 
     private volatile int lastBookmarkId;
 
@@ -65,18 +65,18 @@ public final class ProjectBookmarks {
     
     private boolean removed;
     
-    public ProjectBookmarks(Project project) {
-        this(project, 0);
+    public ProjectBookmarks(URI projectURI) {
+        this(projectURI, 0);
     }
     
-    public ProjectBookmarks(Project project, int lastBookmarkId) {
-        this.project = project;
+    public ProjectBookmarks(URI projectURI, int lastBookmarkId) {
+        this.projectURI = projectURI;
         this.lastBookmarkId = lastBookmarkId;
         url2FileBookmarks = new HashMap<URL, FileBookmarks>();
     }
 
-    public Project getProject() {
-        return project;
+    public URI getProjectURI() {
+        return projectURI;
     }
     
     public int getLastBookmarkId() {
@@ -138,7 +138,7 @@ public final class ProjectBookmarks {
 
     @Override
     public String toString() {
-        return "project=" + project + ", lastBId=" + lastBookmarkId + ", removed=" + removed; // NOI18N
+        return "project=" + projectURI + ", lastBId=" + lastBookmarkId + ", removed=" + removed; // NOI18N
     }
 
 }

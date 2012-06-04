@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.dbschema.util;
 
-import java.util.ResourceBundle;
 import java.sql.Types;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,68 +70,68 @@ public class SQLTypeUtil extends Object {
 	static public String getSqlTypeString (int sqlType) {
 		switch(sqlType) {
 			case Types.BIGINT:
-				return getString("SQL_BIGINT"); //NOI18N
+				return "BIGINT"; //NOI18N
 			case Types.BINARY:
-				return getString("SQL_BINARY"); //NOI18N
+				return "BINARY"; //NOI18N
 			case Types.BIT:
-				return getString("SQL_BIT"); //NOI18N
+				return "BIT"; //NOI18N
                         case TypesJDBC4.NCHAR:
 			case Types.CHAR:
-				return getString("SQL_CHAR"); //NOI18N
+				return "CHAR"; //NOI18N
 			case Types.DATE:
-				return getString("SQL_DATE"); //NOI18N
+				return "DATE"; //NOI18N
 			case Types.DECIMAL:
-				return getString("SQL_DECIMAL"); //NOI18N
+				return "DECIMAL"; //NOI18N
 			case Types.DOUBLE:
-				return getString("SQL_DOUBLE"); //NOI18N
+				return "DOUBLE"; //NOI18N
 			case Types.FLOAT:
-				return getString("SQL_FLOAT"); //NOI18N
+				return "FLOAT"; //NOI18N
 			case Types.INTEGER:
-				return getString("SQL_INTEGER"); //NOI18N
+				return "INTEGER"; //NOI18N
 			case Types.LONGVARBINARY:
-				return getString("SQL_LONGVARBINARY"); //NOI18N
+				return "LONGVARBINARY"; //NOI18N
                         case TypesJDBC4.LONGNVARCHAR:
 			case Types.LONGVARCHAR:
-				return getString("SQL_LONGVARCHAR"); //NOI18N
+				return "LONGVARCHAR"; //NOI18N
 			case Types.NULL:
-				return getString("SQL_NULL"); //NOI18N
+				return "NULL"; //NOI18N
 			case Types.NUMERIC:
-				return getString("SQL_NUMERIC"); //NOI18N
+				return "NUMERIC"; //NOI18N
 			case Types.OTHER:
-				return getString("SQL_OTHER"); //NOI18N
+				return "OTHER"; //NOI18N
 			case Types.REAL:
-				return getString("SQL_REAL"); //NOI18N
+				return "REAL"; //NOI18N
 			case Types.SMALLINT:
-				return getString("SQL_SMALLINT"); //NOI18N
+				return "SMALLINT"; //NOI18N
 			case Types.TIME:
-				return getString("SQL_TIME"); //NOI18N
+				return "TIME"; //NOI18N
 			case Types.TIMESTAMP:
-				return getString("SQL_TIMESTAMP"); //NOI18N
+				return "TIMESTAMP"; //NOI18N
 			case Types.TINYINT:
-				return getString("SQL_TINYINT"); //NOI18N
+				return "TINYINT"; //NOI18N
 			case Types.VARBINARY:
-				return getString("SQL_VARBINARY"); //NOI18N
+				return "VARBINARY"; //NOI18N
                         case TypesJDBC4.NVARCHAR:
 			case Types.VARCHAR:
-				return getString("SQL_VARCHAR"); //NOI18N
+				return "VARCHAR"; //NOI18N
 			case Types.JAVA_OBJECT:
-				return getString("SQL_JAVA_OBJECT"); //NOI18N
+				return "JAVA_OBJECT"; //NOI18N
 			case Types.DISTINCT:
-				return getString("SQL_DISTINCT"); //NOI18N
+				return "DISTINCT"; //NOI18N
 			case Types.STRUCT:
-				return getString("SQL_STRUCT"); //NOI18N
+				return "STRUCT"; //NOI18N
 			case Types.ARRAY:
-				return getString("SQL_ARRAY"); //NOI18N
+				return "ARRAY"; //NOI18N
 			case Types.BLOB:
-				return getString("SQL_BLOB"); //NOI18N
+				return "BLOB"; //NOI18N
                         case TypesJDBC4.NCLOB:
 			case Types.CLOB:
-				return getString("SQL_CLOB"); //NOI18N
+				return "CLOB"; //NOI18N
 			case Types.REF:
-				return getString("SQL_REF"); //NOI18N
+				return "REF"; //NOI18N
 			default:
-                                Logger.getLogger(SQLTypeUtil.class.getName()).log(Level.WARNING, "Unknown JDBC column type: " + sqlType + ". Returns null.");
-				return getString("SQL_UNKNOWN"); //NOI18N
+                                Logger.getLogger(SQLTypeUtil.class.getName()).log(Level.WARNING, "Unknown JDBC column type: {0}. Returns null.", sqlType);
+				return "UNKNOWN"; //NOI18N
 		}
 	}
 

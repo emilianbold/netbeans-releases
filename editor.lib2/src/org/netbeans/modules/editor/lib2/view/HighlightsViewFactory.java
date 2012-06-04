@@ -359,8 +359,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                                 EditorViewFactoryChange.Type.CHARACTER_CHANGE));
                     }
 
-                } else { // Paint highlights change
-                    assert (evt.getSource() == paintHighlightsContainer);
+                } else if (evt.getSource() == paintHighlightsContainer) { // Paint highlights change
                     if (ViewHierarchyImpl.CHANGE_LOG.isLoggable(Level.FINE)) {
                         HighlightsChangeEvent layerEvent = (paintHighlightsContainer instanceof DirectMergeContainer)
                                 ? ((DirectMergeContainer) paintHighlightsContainer).layerEvent()
@@ -373,7 +372,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
                     }
 
                     offsetRepaint(startOffset, endOffset);
-                }
+                } // else: can happen when updateHighlightsContainer() being called => ignore
             }
         });
     }

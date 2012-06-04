@@ -115,6 +115,16 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
             if (classNode != null) {
                 return classNode;
             }
+            
+            classNode = super.getClass(name);
+            if (classNode != null) {
+                return classNode;
+            }
+            
+            if (cache.isNonExistent(name)) {
+                return null;
+            }
+
             try {
                 // if it is a groovy file it is useless to load it with java
                 // at least until VirtualSourceProvider will do te job ;)
@@ -131,25 +141,21 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
                             final ClassNode node = createClassNode(name, typeElement);
                             if (node != null) {
                                 cache.put(name, node);
-                                holder[0] = node;
-                            }
+                            } 
+                            //else type exists but groovy support cannot create it from javac
+                            //delegate to slow class loading, workaround of fix of issue # 206811
+                            holder[0] = node;
+                        } else {
+                            cache.put(name, null);
                         }
                     }
                 };
                 javaSource.runUserActionTask(task, true);
-                if (holder[0] != null) {
-                    return holder[0];
-                }
+                return holder[0];
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            
-            // if null or not present in cache
-            classNode = super.getClass(name);
-            if (classNode != null) {
-                cache.put(name, classNode);
-            }
-            return classNode;
+            return null;
         }
 
         private ClassNode createClassNode(String name, TypeElement typeElement) {

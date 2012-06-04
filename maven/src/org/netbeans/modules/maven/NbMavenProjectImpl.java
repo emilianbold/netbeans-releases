@@ -179,7 +179,7 @@ public final class NbMavenProjectImpl implements Project {
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
         userFolderUpdater = new Updater("settings.xml");//NOI18N
         problemReporter = new ProblemReporterImpl(this);
-        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(this);
+        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, problemReporter);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
@@ -343,6 +343,8 @@ public final class NbMavenProjectImpl implements Project {
              newproject = res.getProject();
             if (res.hasExceptions()) {
                 problemReporter.reportExceptions(res);
+            } else {
+                problemReporter.doArtifactChecks(newproject);
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -408,12 +410,11 @@ public final class NbMavenProjectImpl implements Project {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
-        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
+        problemReporter.doIDEConfigChecks();
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
-        String basedir = project.getEmbedder().getLocalRepository().getBasedir();
-        File file = FileUtil.normalizeFile(new File(basedir));
+        File file = project.getEmbedder().getLocalRepositoryFile();
         FileUtil.refreshFor(file);
     }
 

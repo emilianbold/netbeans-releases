@@ -325,6 +325,17 @@ public class FileOwnerQueryTest extends NbTestCase {
         assertEquals("still correct for the first external root", p, FileOwnerQuery.getOwner(ext1));
     }
     
+    public void testUnowned() throws Exception {
+        FileObject subdir = projdir.createFolder("subUnowned");
+        FileObject subfile = subdir.createData("subfile");
+        assertEquals(p, FileOwnerQuery.getOwner(subfile));
+        FileOwnerQuery.markExternalOwner(subdir, FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals(null, FileOwnerQuery.getOwner(subfile));
+        FileOwnerQuery.markExternalOwner(subdir, null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals(p, FileOwnerQuery.getOwner(subfile));
+        
+    }
+    
     // XXX test URI usage of external owner
     // XXX test GC of roots and projects used in external ownership:
     // - the owning Project is not held strongly (just PM's soft cache)

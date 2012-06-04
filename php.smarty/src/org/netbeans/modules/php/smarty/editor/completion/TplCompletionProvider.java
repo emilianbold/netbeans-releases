@@ -43,6 +43,7 @@ package org.netbeans.modules.php.smarty.editor.completion;
 import java.lang.String;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
@@ -101,28 +102,40 @@ public class TplCompletionProvider implements CompletionProvider {
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc, caretOffset).query();
-                ArrayList<String> commands; boolean inSmarty = false;
-                if (CodeCompletionUtils.insideSmartyCode(doc, caretOffset)) {
-                    if (CodeCompletionUtils.inVariableModifiers(doc, caretOffset)) {
-                        items.addAll(result.getVariableModifiers());
-                        inSmarty = true;
-                    }
-                    commands = CodeCompletionUtils.afterSmartyCommand(doc, caretOffset);
-                    if (!commands.isEmpty()) {
-                        items.addAll(result.getParamsForCommand(commands));
-                        inSmarty = true;
-                    }
-                    if (!inSmarty) {
-                        if (result != null) {
-                            items.addAll(result.getFunctions());
-                        }
-                    }
+                if (result != null) {
+                    items = getItems(result, doc, caretOffset);
+                } else {
+                    items = Collections.<TplCompletionItem>emptySet();
                 }
                 resultSet.addAllItems(items);
 
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        private Set<TplCompletionItem> getItems(TplCompletionQuery.CompletionResult result, Document doc, int offset) {
+            Set<TplCompletionItem> entries = new HashSet<TplCompletionItem>();
+            ArrayList<String> commands; boolean inSmarty = false;
+
+            if (CodeCompletionUtils.insideSmartyCode(doc, offset)) {
+                if (CodeCompletionUtils.inVariableModifiers(doc, offset)) {
+                    entries.addAll(result.getVariableModifiers());
+                    inSmarty = true;
+                }
+                commands = CodeCompletionUtils.afterSmartyCommand(doc, offset);
+                if (!commands.isEmpty()) {
+                    entries.addAll(result.getParamsForCommand(commands));
+                    inSmarty = true;
+                }
+                if (!inSmarty) {
+                    if (result != null) {
+                        entries.addAll(result.getFunctions());
+                    }
+                }
+            }
+
+            return entries;
         }
 
         @Override
