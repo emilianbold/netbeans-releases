@@ -374,6 +374,7 @@ non terminal VariableBase dynamic_class_name_variable_property;
 non terminal StaticConstantAccess static_class_constant;
 non terminal VariableBase base_variable_with_function_calls;
 
+non terminal List class_name_list;
 
 precedence left T_INCLUDE, T_INCLUDE_ONCE, T_EVAL, T_REQUIRE, T_REQUIRE_ONCE;
 precedence left T_COMMA;
@@ -1690,11 +1691,25 @@ trait_conflict_resolution_declaration:statement
 :}
 ;
 
+class_name_list ::=
+class_name_list:classNameList T_COMMA class_name:className
+{:
+	classNameList.add(className);
+	RESULT = classNameList;
+:}
+| class_name:className
+{:
+	List classNameList = new LinkedList();
+	classNameList.add(className);
+	RESULT = classNameList;
+:}
+;
+
 trait_conflict_resolution_declaration ::=
-class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM string_st:methodName T_INSTEADOF class_name:suppressedTraitName T_SEMICOLON:end
+class_name:preferredTraitName T_PAAMAYIM_NEKUDOTAYIM string_st:methodName T_INSTEADOF class_name_list:suppressedTraitNames T_SEMICOLON:end
 {:
     Identifier methodId = new Identifier(methodNameleft, methodNameright, methodName);
-    RESULT = new TraitConflictResolutionDeclaration(preferredTraitNameleft, endright, preferredTraitName, methodId, suppressedTraitName);
+    RESULT = new TraitConflictResolutionDeclaration(preferredTraitNameleft, endright, preferredTraitName, methodId, suppressedTraitNames);
 :}
 ;
 
