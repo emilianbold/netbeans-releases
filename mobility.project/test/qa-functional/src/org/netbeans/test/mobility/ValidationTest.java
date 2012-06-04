@@ -74,7 +74,6 @@ public class ValidationTest extends JellyTestCase {
     public static final String MESDK_LINUX_LOCATION = "/space/hudson/mesdk";
     public static final String MESDK_LINUX_VERSION = "2.5.2";
     
-//    public static final String ITEM_VISUALMIDLET = Bundle.getStringTrimmed("org.netbeans.modules.vmd.midp.resources.Bundle", "Templates/MIDP/VisualMIDlet.java");
     public static final String ITEM_MIDLET = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/Midlet.java");
     public static final String ITEM_MIDPCANVAS = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/MIDPCanvas.java");
     public static final String CATEGORY_MIDP = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP");
@@ -133,11 +132,9 @@ public class ValidationTest extends JellyTestCase {
         ajpw.stepsWaitSelectedValue("Platform Folders");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
         
-        //File Browser isn't invoked automatically on Windows 7 hudson nodes
-        if (System.getProperty("os.name", "other").toLowerCase().indexOf("windows 7") == 0) {
-            new EventTool().waitNoEvent(2000);
-            (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock(); //TODO I18N
-        }
+        new EventTool().waitNoEvent(2000);
+        (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock(); //TODO I18N
+        
         DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
         new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
         (new JButtonOperator(cdtsfp, "Open")).pushNoBlock();
@@ -182,20 +179,18 @@ public class ValidationTest extends JellyTestCase {
         //select the project in project view
         new ProjectsTabOperator().getProjectRootNode(PROJECT_TO_BE_CREATED).select();
         //create all new files in the project
-//        createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "NewVisualMidlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDLET, "NewMIDlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "MIDPCanvas", "myPackage"); // NOI18N
 
         new EventTool().waitNoEvent(5000);
         
+        /* unstable
         //test that files are created and opened in editor
-//        new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N
-//        new EventTool().waitNoEvent(2000);
         new EditorOperator("NewMIDlet.java").close(); // NOI18N
         new EventTool().waitNoEvent(2000);
         new EditorOperator("MIDPCanvas.java").close();    // NOI18N
         new EventTool().waitNoEvent(5000);
-
+        */
     }
 
     public void testCreateMIDPApplication() {
