@@ -959,4 +959,17 @@ public class VisualState implements LayoutConstants {
     static String getDefaultGapDisplayName(PaddingType pt) {
         return pt != null ? PADDING_DISPLAY_NAMES[pt.ordinal()] : "default"; // TODO internationalize
     }
+
+    static List<LayoutComponent> getComponentsInRegion(LayoutComponent container, LayoutRegion space) {
+        List<LayoutComponent> list = null;
+        for (LayoutComponent comp : container.getSubcomponents()) {
+            if (LayoutRegion.overlap(space, comp.getCurrentSpace())) {
+                if (list == null) {
+                    list = new LinkedList<LayoutComponent>();
+                }
+                list.add(comp);
+            }
+        }
+        return list != null ? list : Collections.EMPTY_LIST;
+    }
 }

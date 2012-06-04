@@ -141,6 +141,54 @@ public class LayoutPosition implements LayoutConstants {
                     && inSequence != null && inSequence[alignment] != null
                     && inSequence[alignment].fixedRelativePosition;
         }
+
+        /**
+         * Checks if given interval was in sequence with the original interval
+         * (on either side).
+         * @param fully If true then all components of 'ínterval' must be in
+         *              sequence, if false then at least one.
+         * @return true if components of 'interval' where in sequence with
+         *              original interval
+         */
+        boolean wasInSequence(LayoutInterval interval, int dimension, boolean fully) {
+            if (inSequence == null) {
+                return false;
+            }
+            boolean somethingInSeq = false;
+            Iterator<LayoutInterval> it = LayoutUtils.getComponentIterator(interval);
+            while (it.hasNext()) {
+                LayoutInterval comp = it.next();
+                boolean inSeq = false;
+                for (int i=LEADING; i <= TRAILING; i++) {
+                    InSequence seq = inSequence[i];
+                    if (seq == null || seq.componentNeighbors == null) {
+                        continue;
+                    }
+                    for (LayoutInterval li : seq.componentNeighbors) {
+                        if (comp == li) {
+                            inSeq = true;
+                        } else if (LayoutRegion.distance(comp.getCurrentSpace(), li.getCurrentSpace(), dimension, i^1, i)
+                                   * (i==LEADING ? 1:-1) >= 0) {
+                            LayoutInterval commonParent = LayoutInterval.getCommonParent(comp, li);
+                            if (commonParent != null && commonParent.isSequential()) {
+                                inSeq = true;
+                            }
+                        }
+                        if (inSeq) {
+                            somethingInSeq = true;
+                            break;
+                        }
+                    }
+                    if (inSeq) {
+                        break;
+                    }
+                }
+                if ((!inSeq && fully) || (inSeq && !fully)) {
+                    break;
+                }
+            }
+            return somethingInSeq;
+        }
     }
 
     /**
@@ -699,7 +747,8 @@ public class LayoutPosition implements LayoutConstants {
             if (seq.isSequential() && LayoutInterval.getCount(seq, -1, true) == 1) {
                 LayoutInterval indentGap = LayoutInterval.getDirectNeighbor(one, alignment, false);
                 if (indentGap != null && indentGap.isEmptySpace() && !LayoutInterval.canResize(indentGap)
-                        && !LayoutInterval.isAlignedAtBorder(seq, LayoutInterval.getRoot(parParent), alignment)) {
+                        && !LayoutInterval.isAlignedAtBorder(seq, LayoutInterval.getRoot(parParent), alignment)
+                        && indentGap.getPreferredSize() < parallelComp.getCurrentSpace().size(dimension)) {
                     par.indent = true;
                 }
             }
