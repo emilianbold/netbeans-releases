@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.sync;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -159,6 +160,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     final FileTableModel tableModel;
     // @GuardedBy(AWT)
+    final JPopupMenu headerPopupMenu = new JPopupMenu();
+    // @GuardedBy(AWT)
     final JPopupMenu popupMenu = new JPopupMenu();
 
     // @GuardedBy(AWT)
@@ -168,7 +171,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     Point popupMenuPoint = new Point(); // XXX is there a better way?
     // @GuardedBy(AWT)
-    List<? extends RowSorter.SortKey> sortKeys = Arrays.asList(new RowSorter.SortKey(1, SortOrder.ASCENDING));
+    List<? extends RowSorter.SortKey> sortKeys = Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING));
 
     private final PhpProject project;
     private final String remoteConfigurationName;
@@ -351,6 +354,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         initTableColumns();
         initTableSelections();
         initTableActions();
+        initTableHeaderPopupMenu();
         initTablePopupMenu();
     }
 
@@ -360,6 +364,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         initTableHeader();
         initTableRows();
         initTableColumns();
+        initTableHeaderPopupMenu();
         initTablePopupMenu();
     }
 
@@ -398,7 +403,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     })
     private void initTableHeader() {
         JTableHeader header = itemTable.getTableHeader();
+        header.setPreferredSize(new Dimension(itemTable.getColumnModel().getTotalColumnWidth(), Math.max(20, itemTable.getFont().getSize() + 5)));
         header.setReorderingAllowed(false);
+        // columns
         TableColumn infoColumn = header.getColumnModel().getColumn(0);
         infoColumn.setHeaderRenderer(new HeaderRenderer(Bundle.SyncPanel_table_header_info_toolTip()));
         infoColumn.setHeaderValue(ImageUtilities.loadImageIcon(HEADER_INFO_ICON_PATH, false));
@@ -421,7 +428,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private void initTableRows() {
-        itemTable.setRowHeight(20);
+        itemTable.setRowHeight(Math.max(20, itemTable.getFont().getSize() + 5));
     }
 
     private void initTableColumns() {
@@ -454,6 +461,21 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private void initTableActions() {
+        itemTable.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showPopup(e);
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showPopup(e);
+            }
+            private void showPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    headerPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
         itemTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -483,6 +505,45 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 }
             }
         });
+    }
+
+    @NbBundle.Messages({
+        "SyncPanel.popupMenu.swapPaths=Swap Local and Remote Columns",
+        "SyncPanel.popupMenu.sort.local.asc=Sort Ascending By Local Path",
+        "SyncPanel.popupMenu.sort.remote.asc=Sort Ascending By Remote Path",
+        "SyncPanel.popupMenu.sort.local.desc=Sort Descending By Local Path",
+        "SyncPanel.popupMenu.sort.remote.desc=Sort Descending By Remote Path",
+        "SyncPanel.popupMenu.sort.info=Sort By Info"
+    })
+    private void initTableHeaderPopupMenu() {
+        assert SwingUtilities.isEventDispatchThread();
+        // cleanup
+        headerPopupMenu.removeAll();
+        // swap
+        JMenuItem swapMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_swapPaths());
+        swapMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                swapPaths();
+            }
+        });
+        headerPopupMenu.add(swapMenuItem);
+        // sort
+        JMenuItem sortLocalAscMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_local_asc());
+        sortLocalAscMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 3 : 1, SortOrder.ASCENDING));
+        headerPopupMenu.add(sortLocalAscMenuItem);
+        JMenuItem sortRemoteAscMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_remote_asc());
+        sortRemoteAscMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 1 : 3, SortOrder.ASCENDING));
+        headerPopupMenu.add(sortRemoteAscMenuItem);
+        JMenuItem sortLocalDescMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_local_desc());
+        sortLocalDescMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 3 : 1, SortOrder.DESCENDING));
+        headerPopupMenu.add(sortLocalDescMenuItem);
+        JMenuItem sortRemoteDescMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_remote_desc());
+        sortRemoteDescMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 1 : 3, SortOrder.DESCENDING));
+        headerPopupMenu.add(sortRemoteDescMenuItem);
+        JMenuItem sortInfoMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_info());
+        sortInfoMenuItem.addActionListener(new SortPopupMenuItemListener(0, SortOrder.DESCENDING));
+        headerPopupMenu.add(sortInfoMenuItem);
     }
 
     @NbBundle.Messages({
@@ -1588,6 +1649,25 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         @Override
         public void itemStateChanged(ItemEvent e) {
             updateDisplayedItems();
+        }
+
+    }
+
+    private class SortPopupMenuItemListener implements ActionListener {
+
+        private final int column;
+        private final SortOrder sortOrder;
+
+
+        public SortPopupMenuItemListener(int column, SortOrder sortOrder) {
+            this.column = column;
+            this.sortOrder = sortOrder;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RowSorter<? extends TableModel> rowSorter = itemTable.getRowSorter();
+            rowSorter.setSortKeys(Collections.singletonList(new RowSorter.SortKey(column, sortOrder)));
         }
 
     }
