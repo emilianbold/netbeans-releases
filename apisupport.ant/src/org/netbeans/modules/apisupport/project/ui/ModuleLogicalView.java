@@ -49,11 +49,13 @@ import java.beans.PropertyChangeListener;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import javax.swing.Action;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
+import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -63,7 +65,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -72,9 +74,9 @@ import org.openide.util.lookup.Lookups;
  */
 public final class ModuleLogicalView implements LogicalViewProvider {
     
-    private final NbModuleProject project;
+    private final @NonNull NbModuleProject project;
     
-    public ModuleLogicalView(NbModuleProject project) {
+    public ModuleLogicalView(@NonNull NbModuleProject project) {
         this.project = project;
     }
     
@@ -126,16 +128,16 @@ public final class ModuleLogicalView implements LogicalViewProvider {
     
     private static final class RootNode extends AbstractNode {
         
-        private final NbModuleProject project;
+        private final @NonNull NbModuleProject project;
         
-        public RootNode(NbModuleProject project) {
+        @Messages({"# {0} - folder", "HINT_project_root_node=Module project in {0}"})
+        RootNode(@NonNull NbModuleProject project) {
             
             // XXX add a NodePathResolver impl to lookup
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
-                  Lookups.fixed(new Object[] {project}));
+                  Lookups.fixed(project));
             this.project = project;
             boolean osgi = false;
-            if (project != null) {
                 Manifest man = project.getManifest();
                 if (man != null) {
                     Attributes attrs = man.getMainAttributes();
@@ -143,14 +145,13 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                         osgi = attrs.getValue(ManifestManager.BUNDLE_SYMBOLIC_NAME) != null;
                     }
                 }
-            }
             setIconBaseWithExtension(
                 osgi ? NbModuleProject.NB_PROJECT_OSGI_ICON_PATH :
                 NbModuleProject.NB_PROJECT_ICON_PATH
             );
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setDisplayName(pi.getDisplayName());
-            setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
+            setShortDescription(HINT_project_root_node(FileUtil.getFileDisplayName(project.getProjectDirectory())));
             pi.addPropertyChangeListener(new PropertyChangeListener() {
                 public @Override void propertyChange(final PropertyChangeEvent evt) {
                     ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
