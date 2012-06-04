@@ -44,6 +44,7 @@
 
 package org.openide.util;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 
@@ -52,6 +53,10 @@ public class TaskTest extends NbTestCase {
 
     public TaskTest(String testName) {
         super(testName);
+    }
+    
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     @Override
@@ -96,8 +101,8 @@ public class TaskTest extends NbTestCase {
         long time = -1;
         
         for (int i = 1; i < 100; i++) {
-            time = System.currentTimeMillis ();
             Task t = new Task (new R ());
+            time = System.currentTimeMillis ();
             t.waitFinished (1000);
             time = System.currentTimeMillis () - time;
 

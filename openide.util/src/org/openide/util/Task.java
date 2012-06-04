@@ -46,6 +46,7 @@ package org.openide.util;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** A task that may be executed in a separate thread and permits examination of its status.
@@ -70,6 +71,7 @@ import java.util.logging.Level;
 public class Task extends Object implements Runnable {
     /** Dummy task which is already finished. */
     public static final Task EMPTY = new Task();
+    private static final Logger LOG = Logger.getLogger(Task.class.getName());
 
     static {
         EMPTY.finished = true;
@@ -158,6 +160,7 @@ public class Task extends Object implements Runnable {
                 long expectedEnd = System.currentTimeMillis() + milliseconds;
 
                 for (;;) {
+                    LOG.log(Level.FINE, "About to wait {0} ms", milliseconds);
                     wait(milliseconds);
 
                     if (finished) {
