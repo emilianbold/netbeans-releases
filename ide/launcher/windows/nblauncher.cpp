@@ -502,7 +502,7 @@ void NbLauncher::adjustHeapAndPermGenSize() {
     if (nbOptions.find("-J-Xmx") == string::npos) {
         int maxheap;
         if (areWeOn32bits())
-            maxheap = 384;
+            maxheap = 512;
         else
             maxheap = 768;
         // find how much memory we have and add -Xmx as 1/5 of the memory
