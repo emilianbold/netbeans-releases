@@ -528,6 +528,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
         });
         headerPopupMenu.add(swapMenuItem);
+        headerPopupMenu.addSeparator();
         // sort
         JMenuItem sortLocalAscMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_local_asc());
         sortLocalAscMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 3 : 1, SortOrder.ASCENDING));
