@@ -53,6 +53,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -139,7 +140,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 if (man != null) {
                     Attributes attrs = man.getMainAttributes();
                     if (attrs != null) {
-                        osgi = attrs.getValue("Bundle-SymbolicName") != null; // NOI18N
+                        osgi = attrs.getValue(ManifestManager.BUNDLE_SYMBOLIC_NAME) != null;
                     }
                 }
             }
