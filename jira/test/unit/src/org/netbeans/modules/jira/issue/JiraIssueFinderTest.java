@@ -226,6 +226,24 @@ public class JiraIssueFinderTest {
         checkIssueSpans("bug\n ** \nABC-123", "ABC-123");
 
         checkIssueSpans("bug #ABC-123\n", "bug #ABC-123");
+        
+        checkIssueSpans("[ABC]-123", "[ABC]-123");
+        checkIssueSpans("A[B]C-123", "A[B]C-123");
+        
+        System.setProperty("org.netbeans.modules.jira.noPunctuationInIssueKey", "true");
+        try{
+            checkIssueSpans("[ABC-123]", "ABC-123");
+            checkIssueSpans("ABC-123:", "ABC-123");
+            checkIssueSpans("[ABC-123] abc", "ABC-123");
+            checkIssueSpans("ABC-123: abc", "ABC-123");
+            checkIssueSpans("abc [ABC-123]", "ABC-123");
+            checkIssueSpans("abc ABC-123:", "ABC-123");
+            checkIssueSpans("abc [ABC-123] abc", "ABC-123");
+            checkIssueSpans("abc ABC-123: abc", "ABC-123");
+        } finally {
+            System.setProperty("org.netbeans.modules.jira.noPunctuationInIssueKey", "false");
+        }
+        
     }
 
     @Test
