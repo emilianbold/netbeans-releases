@@ -504,6 +504,7 @@ public final class DocumentViewOp
         JTextComponent textComponent = docView.getTextComponent();
         updateStatusBits(ACCURATE_SPAN, Boolean.TRUE.equals(textComponent.getClientProperty(DocumentView.ACCURATE_SPAN_PROPERTY)));
         viewUpdates = new ViewUpdates(docView);
+        viewUpdates.initFactories();
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
