@@ -96,6 +96,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
@@ -1372,7 +1373,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class HeaderIconRenderer extends DefaultTableCellRenderer {
+    private final class HeaderIconRenderer implements TableCellRenderer {
 
         private static final long serialVersionUID = -6517698451435465L;
 
@@ -1387,17 +1388,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             assert SwingUtilities.isEventDispatchThread();
             Icon icon = (Icon) value;
-            JLabel rendererComponent = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel rendererComponent = (JLabel) table.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
             rendererComponent.setText(null);
             rendererComponent.setIcon(icon);
             rendererComponent.setToolTipText(toolTip);
-            // adjust ui
-            JTableHeader tableHeader = table.getTableHeader();
-            rendererComponent.setForeground(tableHeader.getForeground());
-            rendererComponent.setBackground(tableHeader.getBackground());
-            rendererComponent.setFont(tableHeader.getFont());
-            rendererComponent.setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
             return rendererComponent;
         }
 
