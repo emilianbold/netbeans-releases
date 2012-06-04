@@ -296,6 +296,13 @@ public class TreeList extends JList {
             TreeListNode node = (TreeListNode) value;
             int rowHeight = list.getFixedCellHeight();
             int rowWidth = list.getVisibleRect().width;
+            int dropIndex = -1;
+            DropLocation dropLocation = list.getDropLocation();
+            if (dropLocation != null && !dropLocation.isInsert()) {
+                dropIndex = dropLocation.getIndex();
+            }
+            boolean isDropTarget = dropIndex == index;
+            isSelected = isSelected || isDropTarget;
             Color background = isSelected ? list.getSelectionBackground() : list.getBackground();
             Color foreground = isSelected ? list.getSelectionForeground() : list.getForeground();
 
