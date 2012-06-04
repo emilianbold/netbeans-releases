@@ -59,6 +59,15 @@ made subject to such option by the copyright holder.
     <target name="common-init" depends="default.init,-build-dir-init"/>
     <target name="init" depends="basic-init,files-init,build-init,-javac-init,-init-proxy"/>
     
+    <target name="files-init" depends="projectized-common.files-init">
+        <property name="locales" value=""/>
+        <locfiles 
+            cluster="${cluster.dir}" locales="${locales}" src="${nb_all}/l10n/src"
+            codenamebase="${code.name.base}"
+            patternset="module.l10n.files"
+        />
+    </target>
+    
     <condition property="proxy.host+port">
         <and>
             <isset property="proxy.host"/>
@@ -315,6 +324,11 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         </macrodef>
         <test-clean test.type="unit"/>
         <test-clean test.type="qa-functional"/>
+        <delete includeemptydirs="true" failonerror="false" >
+            <fileset dir="${cluster}">
+                <patternset refid="module.l10n.files"/>
+            </fileset>
+        </delete>
     </target>
 
     <target name="javadoc" depends="build-init,-javadoc-init">
@@ -436,7 +450,6 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
     </target>
 
     <target name="jar-ml" depends="jar">
-        <property name="locales" value=""/>
         <locfiles 
             cluster="${cluster.dir}" locales="${locales}" src="${nb_all}/l10n/src"
             codenamebase="${code.name.base}" destdir="${netbeans.dest.dir}"

@@ -115,8 +115,12 @@ public final class LocFiles extends Task {
         if (patternset != null) {
             PatternSet ps = new PatternSet();
             ps.setProject(getProject());
-            for (String s : includes) {
-                ps.createInclude().setName(s);
+            if (includes.isEmpty()) {
+                ps.createExclude().setName("**/*");
+            } else {
+                for (String s : includes) {
+                    ps.createInclude().setName(s);
+                }
             }
             getProject().addReference(patternset, ps);
         }
@@ -222,6 +226,10 @@ public final class LocFiles extends Task {
             }
             String fullName = prefixDir + '/' + jarFileName;
             toAdd.add(fullName);
+            if (jarDir == null) {
+                // in patternSet only mode
+                continue;
+            }
             
             /*
             String subPath = dir.substring((cluster + File.separator + nbm + File.separator).length() - 1, dir.lastIndexOf(File.separator));

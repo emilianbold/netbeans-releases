@@ -96,6 +96,14 @@ public class LocFilesTest extends NbTestCase {
         assertDist("platform/modules/locale/org-netbeans-modules-settings_cs.jar", "org/netbeans/modules/settings/resources/Bundle_cs.properties");
         assertPattern("platform", "modules/locale/org-netbeans-modules-settings_cs.jar");
     }
+
+    public void testSettingsPatternsOnly() throws Exception {
+        createSource("cs/platform/settings/settings/org/netbeans/modules/settings/resources/Bundle_cs.properties");
+        task.setCodeNameBase("org.netbeans.modules.settings");
+        task.setDestDir(null);
+        task.execute();
+        assertPattern("platform", "modules/locale/org-netbeans-modules-settings_cs.jar");
+    }
     
     public void testCoreWindows() throws Exception {
         final String pref = "cs/platform/org-netbeans-core-windows/org-netbeans-core-windows/org/netbeans/core/windows/";
