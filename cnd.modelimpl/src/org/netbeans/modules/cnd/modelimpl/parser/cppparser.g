@@ -3835,7 +3835,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             )
         )+
 
-        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false, false])?)?
+        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false])?)?
     ;
 
 protected
