@@ -230,6 +230,12 @@ public class SourcePathProviderImpl extends SourcePathProvider {
              */
             String listeningCP = (String) properties.get("listeningCP");
             if (listeningCP != null) {
+                boolean isSourcepath = false;
+                if ("sourcepath".equalsIgnoreCase(listeningCP)) {
+                    listeningCP = ((ClassPath) properties.get ("sourcepath")).toString(ClassPath.PathConversionMode.SKIP);
+                    isSourcepath = true;
+                }
+                srcRootsToListenForArtifactsUpdates = new HashSet<FileObject>();
                 for (String cp : listeningCP.split(File.pathSeparator)) {
                     logger.log(Level.FINE, "Listening cp = '" + cp + "'");
                     File f = new File(cp);
@@ -237,11 +243,19 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     URL entry = FileUtil.urlForArchiveOrDir(f);
 
                     if (entry != null) {
-                        srcRootsToListenForArtifactsUpdates = new HashSet<FileObject>();
+                        if (isSourcepath) {
+                            FileObject src = URLMapper.findFileObject(entry);
+                            if (src != null) {
+                                srcRootsToListenForArtifactsUpdates.add(src);
+                            }
+                        }
                         for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
                             srcRootsToListenForArtifactsUpdates.add(src);
                         }
                     }
+                }
+                if (srcRootsToListenForArtifactsUpdates.isEmpty()) {
+                    srcRootsToListenForArtifactsUpdates = null;
                 }
             }
         } else {
