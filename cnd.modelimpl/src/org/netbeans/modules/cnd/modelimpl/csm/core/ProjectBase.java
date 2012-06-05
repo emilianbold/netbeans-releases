@@ -3625,8 +3625,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CsmFile csmFile = file.getTestFileUID().getObject();
             printStream.println("\t\tModel File "+csmFile.getAbsolutePath()); // NOI18N
             printStream.println("\t\tNumber of states "+file.getPrerocStates().size()); // NOI18N
-            for (PreprocessorStatePair statePair : file.getStatePairs()) {
-                StringTokenizer st = new StringTokenizer(FilePreprocessorConditionState.toStringBrief(statePair.pcState),"\n"); // NOI18N
+            Collection<PreprocessorStatePair> statePairs = file.getStatePairs();
+            List<String> states = new ArrayList<String>();
+            for (PreprocessorStatePair preprocessorStatePair : statePairs) {
+                states.add(FilePreprocessorConditionState.toStringBrief(preprocessorStatePair.pcState));
+            }
+            Collections.sort(states);
+            for (String state : states) {
+                StringTokenizer st = new StringTokenizer(state,"\n"); // NOI18N
                 boolean first = true;
                 while (st.hasMoreTokens()) {
                     if (first) {
