@@ -165,10 +165,10 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
                                         }
                                         if (blockCommentStart) {
                                             int delta = offset - offsetToken;
-                                            String[] split = text.toString().split("\n");
+                                            String[] split = text.toString().split("\n"); // NOI18N
                                             if (split.length > 0) {
                                                 String s = split[0];
-                                                if (!s.trim().equals("/*")) {
+                                                if (!s.trim().equals("/*")) { // NOI18N
                                                     blockCommentStart = false;
                                                 }
                                                 if (delta >= s.length()) {
