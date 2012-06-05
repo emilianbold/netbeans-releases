@@ -97,20 +97,26 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     @Override
     protected List<TreeListNode> createChildren() {
         if (isRefresh()) {
-            removeTaskListeners();
             query.refresh();
             updateNodes();
             setRefresh(false);
         }
-        List<TaskNode> children = getFilteredTaskNodes();
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
-    }
-
-    @Override
-    void updateContent() {
-        updateNodes();
-        refreshChildren();
+        List<TaskNode> filteredNodes = getFilteredTaskNodes();
+        Collections.sort(filteredNodes);
+        int taskCountToShow = getTaskCountToShow();
+        List<TaskNode> taskNodesToShow;
+        boolean addShowNext = false;
+        if (filteredNodes.size() <= taskCountToShow) {
+            taskNodesToShow = filteredNodes;
+        } else {
+            taskNodesToShow = new ArrayList<TaskNode>(filteredNodes.subList(0, taskCountToShow));
+            addShowNext = true;
+        }
+        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>(taskNodesToShow);
+        if (addShowNext) {
+            children.add(new ShowNextNode(this, Math.min(filteredNodes.size() - taskCountToShow, DEFAULT_TASKS_LIMIT)));
+        }
+        return children;
     }
 
     @Override
@@ -199,7 +205,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof QueryNode) {
-                queryNodes[i] = (QueryNode)treeListNode;
+                queryNodes[i] = (QueryNode) treeListNode;
             } else {
                 return null;
             }

@@ -113,6 +113,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 }
             });
         }
+        loaded = true;
         List<QueryNode> children = getFilteredQueryNodes();
         boolean expand = DashboardViewer.getInstance().expandNodes();
         for (QueryNode queryNode : children) {
@@ -169,7 +170,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 filteredQueryNodes.add(queryNode);
             }
         }
-        loaded = true;
     }
 
     public final Repository getRepository() {

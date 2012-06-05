@@ -399,7 +399,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             Category category = categoryNode.getCategory();
             final CategoryNode newNode;
             if (opened) {
-                newNode = new CategoryNode(category, false);
+                newNode = new CategoryNode(category, true);
             } else {
                 newNode = new ClosedCategoryNode(category);
             }
@@ -410,14 +410,14 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
 
             storeClosedCategories();
-            if (newNode.isOpened()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        newNode.setExpanded(true);
-                    }
-                });
-            }
+//            if (newNode.isOpened()) {
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        newNode.setExpanded(true);
+//                    }
+//                });
+//            }
         }
     }
 
@@ -846,11 +846,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
         for (Repository repository : allRepositories) {
-            RepositoryNode repositoryNode;
             boolean open = !closedIds.contains(repository.getId());
             if (open) {
-                //TODO uncommit when the query refresh bug is fixed
-                //refreshQueries(repository.getQueries());
                 repoNodes.add(new RepositoryNode(repository, false));
             } else {
                 repoNodes.add(new ClosedRepositoryNode(repository, false));

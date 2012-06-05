@@ -41,35 +41,59 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.tasks.ui.treelist.LeafNode;
+import org.openide.util.NbBundle;
 
-public class ClosedRepositoryNode extends RepositoryNode {
+/**
+ *
+ * @author jpeska
+ */
+public class ShowNextNode extends LeafNode {
 
-    public ClosedRepositoryNode(Repository repository, boolean loaded) {
-        super(repository, loaded, false);
+    private final int count;
+    private JPanel panel;
+    private LinkButton btnName;
+    private Action showNextAction;
+
+    public ShowNextNode(TaskContainerNode parent, int count) {
+        super(parent);
+        this.count = count;
+        this.showNextAction = new ShowNextAction();
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        return Collections.emptyList();
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        if (panel == null) {
+            panel = new JPanel(new GridBagLayout());
+            panel.setOpaque(false);
+            btnName = new LinkButton(getCountString(), showNextAction);
+            panel.add(btnName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        }
+        btnName.setForeground(foreground, isSelected);
+        return panel;
     }
 
-    @Override
-    void updateContent() {
+    private String getCountString() {
+        return NbBundle.getMessage(ShowNextNode.class, "LBL_ShowNext", count);
     }
 
-    @Override
-    public boolean isOpened() {
-        return false;
-    }
+    private class ShowNextAction extends AbstractAction {
 
-    @Override
-    Collection<Query> getQueries() {
-        return Collections.emptyList();
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ((TaskContainerNode) getParent()).showNextTasks(count);
+        }
     }
 }

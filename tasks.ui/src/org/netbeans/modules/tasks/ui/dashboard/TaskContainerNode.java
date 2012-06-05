@@ -42,8 +42,6 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -75,6 +73,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     private Collection<Issue> toSelect;
     protected List<TreeLabel> labels;
     protected List<LinkButton> buttons;
+    protected static final int DEFAULT_TASKS_LIMIT = 50;
+    private int taskCountToShow = DEFAULT_TASKS_LIMIT;
 
     public TaskContainerNode(boolean expandable, TreeListNode parent, String title) {
         this(false, expandable, parent, title);
@@ -183,6 +183,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         }
     }
 
+    public int getTaskCountToShow() {
+        return taskCountToShow;
+    }
+    
     final void updateNodes() {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
@@ -235,6 +239,11 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
                 taskNode.getTask().addPropertyChangeListener(taskListener);
             }
         }
+    }
+
+    final void showNextTasks(int count){
+        taskCountToShow += count;
+        updateContent();
     }
 
     private class TaskListener implements PropertyChangeListener {

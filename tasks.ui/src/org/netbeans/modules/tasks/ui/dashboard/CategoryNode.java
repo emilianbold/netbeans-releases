@@ -96,9 +96,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (!category.isLoaded()) {
-            DashboardViewer.getInstance().loadCategory(category);
-        } else if (isRefresh()) {
+        if (isRefresh()) {
             category.refresh();
             setRefresh(false);
         }
