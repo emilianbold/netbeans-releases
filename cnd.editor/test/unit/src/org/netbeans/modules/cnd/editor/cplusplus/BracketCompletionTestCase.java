@@ -208,23 +208,23 @@ public class BracketCompletionTestCase extends EditorBase  {
                 + "}\n");
     }
     
-//    public void testAddRightBraceIfLeftBraceLineComment() {
-//        setDefaultsOptions();
-//        typeCharactersInText("if (true) { // line-comment|\n",
-//                "\n",
-//                "if (true) { // line-comment\n"
-//                + "    |\n"
-//                + "}\n");
-//    }
-//
-//    public void testAddRightBraceIfLeftBraceBlockComment() {
-//        setDefaultsOptions();
-//        typeCharactersInText("if (true) { /* block-comment */|\n",
-//                "\n",
-//                "if (true) { /* block-comment */\n"
-//                + "    |\n"
-//                + "}\n");
-//    }
+    public void testAddRightBraceIfLeftBraceLineComment() {
+        setDefaultsOptions();
+        typeCharactersInText("if (true) { // line-comment|\n",
+                "\n",
+                "if (true) { // line-comment\n"
+                + "    |\n"
+                + "}\n");
+    }
+
+    public void testAddRightBraceIfLeftBraceBlockComment() {
+        setDefaultsOptions();
+        typeCharactersInText("if (true) { /* block-comment */|\n",
+                "\n",
+                "if (true) { /* block-comment */\n"
+                + "    |\n"
+                + "}\n");
+    }
 
     public void testAddRightBraceIfLeftBraceAlreadyPresent() {
         setDefaultsOptions();
