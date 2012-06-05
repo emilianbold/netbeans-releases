@@ -322,13 +322,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             return;
         }
         DefaultComboBoxModel model = (DefaultComboBoxModel)panel.urlComboBox.getModel();
-        boolean found = false;
         for (int i = 0; i < model.getSize(); i++) {
             final String item = (String) model.getElementAt(i);
             if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
                 final int start = selectAll ? 0 : uriString.length();
                 final int end = item.length();
-                found = true;
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -353,9 +351,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 });
                 break;
             }
-        }
-        if (!found && uri != null) {
-            activeSettingsType.populateFields(new ConnectionSettings(uri));
         }
     }
 
