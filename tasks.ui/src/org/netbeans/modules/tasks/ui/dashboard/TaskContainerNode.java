@@ -146,7 +146,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     public final void refreshContent() {
         refresh = true;
         refresh();
-        refreshChildren();
     }
 
     public final List<TaskNode> getFilteredTaskNodes() {

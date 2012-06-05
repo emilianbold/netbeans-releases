@@ -83,6 +83,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected List<Issue> load() {
         if (isRefresh()) {
             query.refresh();
+            updateNodes();
             setRefresh(false);
         }
         return new ArrayList<Issue>(query.getIssues());
@@ -96,11 +97,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (isRefresh()) {
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
         List<TaskNode> filteredNodes = getFilteredTaskNodes();
         Collections.sort(filteredNodes);
         int taskCountToShow = getTaskCountToShow();
@@ -153,7 +149,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
