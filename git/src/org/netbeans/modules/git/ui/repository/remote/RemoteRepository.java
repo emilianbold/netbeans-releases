@@ -208,29 +208,31 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     @Override
     public void insertUpdate(DocumentEvent de) {
-        uriTextChanged();
+        uriTextChanged(true);
     }
 
     @Override
     public void removeUpdate(DocumentEvent de) {
-        uriTextChanged();
+        uriTextChanged(false);
     }
 
     @Override
     public void changedUpdate(DocumentEvent de) {
-        uriTextChanged();
+        uriTextChanged(true);
     }
 
-    private void uriTextChanged () {
+    private void uriTextChanged (boolean findExisting) {
         if(ignoreComboEvents) return;
         validateFields();
         updateCurrentSettingsType();
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run () {
-                findComboItem(false);
-            }
-        });
+        if (findExisting) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    findComboItem(false);
+                }
+            });
+        }
     }
 
     @Override
@@ -317,9 +319,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private boolean ignoreComboEvents = false;
     private void findComboItem(boolean selectAll) {
         final GitURI uri = getURI();
-        final String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
+        String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
         if(uriString == null || uriString.isEmpty()) {
             return;
+        }
+        if (uriString.endsWith("/") && !getURIString().endsWith("/")) { //NOI18N
+            // GitURI adds a '/' at the end of its uri string
+            uriString = uriString.substring(0, uriString.length() - 1);
         }
         DefaultComboBoxModel model = (DefaultComboBoxModel)panel.urlComboBox.getModel();
         for (int i = 0; i < model.getSize(); i++) {
