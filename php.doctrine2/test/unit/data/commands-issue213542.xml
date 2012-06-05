@@ -153,44 +153,80 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
       </options>
     </command>
     <command id="orm:clear-cache:metadata" name="orm:clear-cache:metadata">
-      <usage>orm:clear-cache:metadata</usage>
+      <usage>orm:clear-cache:metadata [--flush]</usage>
       <description>Clear all metadata cache of the various cache drivers.</description>
-      <help>Clear all metadata cache of the various cache drivers.</help>
-      <aliases/>
-      <arguments/>
-      <options/>
-    </command>
-    <command id="orm:clear-cache:query" name="orm:clear-cache:query">
-      <usage>orm:clear-cache:query</usage>
-      <description>Clear all query cache of the various cache drivers.</description>
-      <help>Clear all query cache of the various cache drivers.</help>
-      <aliases/>
-      <arguments/>
-      <options/>
-    </command>
-    <command id="orm:clear-cache:result" name="orm:clear-cache:result">
-      <usage>orm:clear-cache:result [--id="..."] [--regex="..."] [--prefix="..."] [--suffix="..."]</usage>
-      <description>Clear result cache of the various cache drivers.</description>
-      <help>Clear result cache of the various cache drivers.
- If none of the options are defined, all cache entries will be removed.</help>
+      <help>The &lt;info&gt;orm:clear-cache:metadata&lt;/info&gt; command is meant to clear the metadata cache of associated Entity Manager.
+ It is possible to invalidate all cache entries at once - called delete -, or flushes the cache provider
+ instance completely.
+
+ The execution type differ on how you execute the command.
+ If you want to invalidate the entries (and not delete from cache instance), this command would do the work:
+
+ &lt;info&gt;orm:clear-cache:metadata&lt;/info&gt;
+
+ Alternatively, if you want to flush the cache provider using this command:
+
+ &lt;info&gt;orm:clear-cache:metadata --flush&lt;/info&gt;
+
+ Finally, be aware that if &lt;info&gt;--flush&lt;/info&gt; option is passed, not all cache providers are able to flush entries,
+ because of a limitation of its execution nature.</help>
       <aliases/>
       <arguments/>
       <options>
-        <option name="--id" shortcut="" accept_value="1" is_value_required="1" is_multiple="1">
-          <description>ID(s) of the cache entry to delete (accepts * wildcards).</description>
-          <defaults/>
+        <option name="--flush" shortcut="" accept_value="0" is_value_required="0" is_multiple="0">
+          <description>If defined, cache entries will be flushed instead of deleted/invalidated.</description>
         </option>
-        <option name="--regex" shortcut="" accept_value="1" is_value_required="1" is_multiple="1">
-          <description>Delete cache entries that match the given regular expression(s).</description>
-          <defaults/>
+      </options>
+    </command>
+    <command id="orm:clear-cache:query" name="orm:clear-cache:query">
+      <usage>orm:clear-cache:query [--flush]</usage>
+      <description>Clear all query cache of the various cache drivers.</description>
+      <help>The &lt;info&gt;orm:clear-cache:query&lt;/info&gt; command is meant to clear the query cache of associated Entity Manager.
+ It is possible to invalidate all cache entries at once - called delete -, or flushes the cache provider
+ instance completely.
+
+ The execution type differ on how you execute the command.
+ If you want to invalidate the entries (and not delete from cache instance), this command would do the work:
+
+ &lt;info&gt;orm:clear-cache:query&lt;/info&gt;
+
+ Alternatively, if you want to flush the cache provider using this command:
+
+ &lt;info&gt;orm:clear-cache:query --flush&lt;/info&gt;
+
+ Finally, be aware that if &lt;info&gt;--flush&lt;/info&gt; option is passed, not all cache providers are able to flush entries,
+ because of a limitation of its execution nature.</help>
+      <aliases/>
+      <arguments/>
+      <options>
+        <option name="--flush" shortcut="" accept_value="0" is_value_required="0" is_multiple="0">
+          <description>If defined, cache entries will be flushed instead of deleted/invalidated.</description>
         </option>
-        <option name="--prefix" shortcut="" accept_value="1" is_value_required="1" is_multiple="1">
-          <description>Delete cache entries that have the given prefix(es).</description>
-          <defaults/>
-        </option>
-        <option name="--suffix" shortcut="" accept_value="1" is_value_required="1" is_multiple="1">
-          <description>Delete cache entries that have the given suffix(es).</description>
-          <defaults/>
+      </options>
+    </command>
+    <command id="orm:clear-cache:result" name="orm:clear-cache:result">
+      <usage>orm:clear-cache:result [--flush]</usage>
+      <description>Clear all result cache of the various cache drivers.</description>
+      <help>The &lt;info&gt;orm:clear-cache:result&lt;/info&gt; command is meant to clear the result cache of associated Entity Manager.
+ It is possible to invalidate all cache entries at once - called delete -, or flushes the cache provider
+ instance completely.
+
+ The execution type differ on how you execute the command.
+ If you want to invalidate the entries (and not delete from cache instance), this command would do the work:
+
+ &lt;info&gt;orm:clear-cache:result&lt;/info&gt;
+
+ Alternatively, if you want to flush the cache provider using this command:
+
+ &lt;info&gt;orm:clear-cache:result --flush&lt;/info&gt;
+
+ Finally, be aware that if &lt;info&gt;--flush&lt;/info&gt; option is passed, not all cache providers are able to flush entries,
+ because of a limitation of its execution nature.</help>
+      <aliases/>
+      <arguments/>
+      <options>
+        <option name="--flush" shortcut="" accept_value="0" is_value_required="0" is_multiple="0">
+          <description>If defined, cache entries will be flushed instead of deleted/invalidated.</description>
         </option>
       </options>
     </command>
@@ -511,7 +547,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     </command>
     <command id="orm:validate-schema" name="orm:validate-schema">
       <usage>orm:validate-schema</usage>
-      <description>Validate that the mapping files.</description>
+      <description>Validate the mapping files.</description>
       <help>'Validate that the mapping files are correct and in sync with the database.'</help>
       <aliases/>
       <arguments/>
