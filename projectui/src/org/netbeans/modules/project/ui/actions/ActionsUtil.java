@@ -67,14 +67,12 @@ import org.openide.util.WeakSet;
  * @author Pet Hrebejk 
  */
 class ActionsUtil {
-    
-    /*
-    public static LookupResultsCache lookupResultsCache;
-     */
+
+    private ActionsUtil() {}
     
     public static final ShortcutsManager SHORCUTS_MANAGER = new ShortcutsManager();
     
-    public static HashMap<String,MessageFormat> pattern2format = new HashMap<String,MessageFormat>(); 
+    private static final HashMap<String,MessageFormat> pattern2format = new HashMap<String,MessageFormat>();
     
     /** Finds all projects in given lookup. If the command is not null it will check 
      * whther given command is enabled on all projects. If and only if all projects
@@ -82,14 +80,6 @@ class ActionsUtil {
      * is one project with the command disabled it will return empty array.
      */
     public static Project[] getProjectsFromLookup( Lookup lookup, String command ) {    
-        /*
-        if ( lookupResultsCache == null ) {
-            lookupResultsCache = new LookupResultsCache( new Class[] { Project.class, DataObject.class } );
-        }
-        
-        Project[] projectsArray = lookupResultsCache.getProjects( lookup );
-         */
-        // #74161: do not cache
         // First find out whether there is a project directly in the Lookup
         Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
         for (Project p : lookup.lookupAll(Project.class)) {
@@ -149,7 +139,7 @@ class ActionsUtil {
         //We have to look whether the command is supported by the project
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if ( ap != null ) {
-            List commands = Arrays.asList( ap.getSupportedActions() );
+            List<String> commands = Arrays.asList(ap.getSupportedActions());
             if ( commands.contains( command ) ) {
                 if (context == null || ap.isActionEnabled(command, context)) {
                     //System.err.println("cS: true project=" + project + " command=" + command + " context=" + context);
@@ -222,12 +212,9 @@ class ActionsUtil {
     }
       
     
-    // Innerclasses ------------------------------------------------------------
-    
     /** Manages shortcuts based on the action's command. Usefull for File and
      * projects actions.
      */
-    
     public static class ShortcutsManager {
         
         // command -> shortcut
@@ -300,117 +287,4 @@ class ActionsUtil {
                 
     }
     
-    /** Caches the projects and files included in the last quried lookup.
-     *
-     * Using weak references to fix issue #67846. Please note that holding the
-     * lookup results weak may cause that the cache will miss much more often
-     * than strictly necessary, but it is the best solution found so far.
-     * Holding the results weak should not break the correctness, it may only
-     * cause the cache will not work very well (or not at all).
-     *
-     * Please see also the tests.
-     */
-    /* XXX #74161: does not actually work
-    private static class LookupResultsCache implements LookupListener {
-        
-        private Class<?> watch[];
-        
-        private Reference<Lookup> lruLookup;
-        private List<Reference<Lookup.Result>> lruResults;
-        private Project[] projects;
-                
-        LookupResultsCache( Class[] watch ) {
-            this.watch = watch;
-        }
-        
-        public synchronized Project[] getProjects( Lookup lookup ) {
-            Lookup lruLookupLocal = lruLookup != null ? lruLookup.get() : null;
-            
-            if ( lookup != lruLookupLocal ) { // Lookup changed
-                if ( lruResults != null ) {
-                    for (Reference<Lookup.Result> r : lruResults) {
-                        Lookup.Result result = r.get();
-                        if (result != null) {
-                            result.removeLookupListener( this ); // Deregister
-                        }
-                    }        
-                    lruResults = null;
-                }
-                makeDirty();
-                lruLookupLocal = null;
-            }
-            
-            if ( lruLookupLocal == null ) { // Needs to attach to lookup
-                lruLookup = new CleanableWeakReference<Lookup>(lruLookupLocal = lookup);
-                lruResults = new ArrayList<Reference<Lookup.Result>>();
-                for (Class<?> c : watch) {
-                    Lookup.Result result = lookup.lookupResult(c);
-                    
-                    result.allItems();
-                    result.addLookupListener( this );
-                    
-                    lruResults.add(new CleanableWeakReference<Lookup.Result>(result));
-                }                
-            }
-            
-            if ( isDirty() ) { // Needs to recompute the result
-                
-                Set<Project> result = new HashSet<Project>();
-
-                // First find out whether there is a project directly in the Lookup
-                for (Project p : lruLookupLocal.lookupAll(Project.class)) {
-                    result.add(p);
-                }
-
-                // Now try to guess the project from dataobjects
-                for (DataObject dObj : lruLookupLocal.lookupAll(DataObject.class)) {
-                    FileObject fObj = dObj.getPrimaryFile();
-                    Project p = FileOwnerQuery.getOwner(fObj);
-                    if ( p != null ) {
-                        result.add( p );                                        
-                    }
-
-                }
-
-                projects = new Project[ result.size() ];
-                result.toArray( projects );        
-
-            }
-                        
-            return projects;
-        }
-                        
-                
-        private boolean isDirty() {
-            return projects == null;
-        }
-        
-        private synchronized void makeDirty() {
-            projects = null;
-        }
-                
-        // Lookup listener implementation --------------------------------------
-        
-        public void resultChanged( LookupEvent e ) {
-            makeDirty();
-        }
-        
-        private class CleanableWeakReference<T> extends WeakReference<T> implements Runnable {
-            
-            public CleanableWeakReference(T o) {
-                super(o, Utilities.activeReferenceQueue());
-            }
-
-            public void run() {
-                synchronized (LookupResultsCache.this) {
-                    lruLookup  = null;
-                    lruResults = null;
-                    projects   = null;
-                }
-            }
-        }
-        
-    }
-     */
-
 }
