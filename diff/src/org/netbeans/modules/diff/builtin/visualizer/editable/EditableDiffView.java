@@ -512,6 +512,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         } else {
             setDifferenceIndex(location);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     ignoredUpdateEvents = true;
                     showCurrentDifference();
@@ -525,6 +526,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
+    @Override
     public JComponent getJComponent() {
         return view;
     }
@@ -552,6 +554,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (modifiedDocument != null) modifiedDocument.removeDocumentListener(this);
     }
     
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         expandFolds();
@@ -582,6 +585,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         editableDocument.addDocumentListener(this);
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         removeDocumentListeners();
@@ -590,27 +594,33 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         initColors();
         diffChanged();  // trigger re-calculation of hightlights in case diff stays the same
         refreshDiff(20);
     }
     
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         refreshDiff(50);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         refreshDiff(50);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         refreshDiff(50);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (jTabbedPane == e.getSource()) {
             setDifferenceIndex(-1);
@@ -624,7 +634,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
     
     JComponent getMyDivider() {
-        return spui.divider.getDivider();
+        return spui.splitPaneDivider.getDivider();
     }
 
     DiffContentPanel getEditorPane1() {
@@ -635,7 +645,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return jEditorPane2;
     }
 
-    public DiffViewManager getManager() {
+    DiffViewManager getManager() {
         return manager;
     }
 
@@ -645,6 +655,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private void replace(final StyledDocument doc, final int start, final int length, final String text) {
         NbDocument.runAtomic(doc, new Runnable() {
+            @Override    
             public void run() {
                 try {
                     doc.remove(start, length);
@@ -725,15 +736,16 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     class DiffSplitPaneUI extends BasicSplitPaneUI {
 
-        final DiffSplitPaneDivider divider;
+        final DiffSplitPaneDivider splitPaneDivider;
 
         public DiffSplitPaneUI(JSplitPane splitPane) {
             this.splitPane = splitPane;
-            divider = new DiffSplitPaneDivider(this, EditableDiffView.this);
+            splitPaneDivider = new DiffSplitPaneDivider(this, EditableDiffView.this);
         }
 
+        @Override
         public BasicSplitPaneDivider createDefaultDivider() {
-            return divider;
+            return splitPaneDivider;
         }
     }
     
@@ -741,10 +753,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return jEditorPane1.requestFocusInWindow();
     }
 
+    @Override
     public JComponent getComponent() {
         return view;
     }
 
+    @Override
     public int getDifferenceCount() {
         int retval = diffs.length;
         if (jTabbedPane != null && jTabbedPane.getSelectedComponent() == textualPanel) {
@@ -753,14 +767,17 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return retval;
     }
 
+    @Override
     public boolean canSetCurrentDifference() {
         return jTabbedPane == null || jTabbedPane.getSelectedComponent() != textualPanel;
     }
 
+    @Override
     public void setCurrentDifference(int diffNo) throws UnsupportedOperationException {
         setLocation(null, DiffController.LocationType.DifferenceIndex, diffNo);
     }
 
+    @Override
     public int getCurrentDifference() {
         int retval = getDifferenceIndex();
         if (!canSetCurrentDifference()) {
@@ -799,6 +816,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         setDifferenceIndex(cd);
     }
     
+    @Override
     public JToolBar getToolBar() {
         return null;
     }
@@ -906,6 +924,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         final FoldHierarchy fh = FoldHierarchy.get(pane);
         FoldUtilities.expandAll(fh);
         FoldHierarchyListener list = new FoldHierarchyListener() {
+            @Override
             public void foldHierarchyChanged(FoldHierarchyEvent evt) {
                 FoldUtilities.expandAll(fh);
             }
@@ -937,6 +956,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         final JScrollBar scrollBarH2 = jEditorPane2.getScrollPane().getHorizontalScrollBar();
 
         scrollBarH1.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
+            @Override
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarH1.getValue();
                 if (value == horizontalScroll1ChangedValue) return;
@@ -951,6 +971,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         });
         scrollBarH2.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
+            @Override
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarH2.getValue();
                 if (value == horizontalScroll2ChangedValue) return;
@@ -986,8 +1007,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private void addChangeListeners() {
         // using rather weak listeners, repeated ancestorRemoved/ancestorAdded creates and attaches number of new listeners and consumes memory
         PropertyChangeListener list = new java.beans.PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         diffChanged();
                         initGlobalSizes();
@@ -1001,8 +1024,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         propertyChangeListeners.put(jEditorPane1.getEditorPane(), list);
         jEditorPane1.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, jEditorPane1.getEditorPane())); //NOI18N
         list = new java.beans.PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         diffChanged();
                         initGlobalSizes();
@@ -1334,9 +1359,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return null;
     }
 
+    @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     refreshEditableDocument();
                 }
@@ -1369,6 +1396,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     public class RefreshDiffTask implements Runnable {
 
+        @Override
         public void run() {
             synchronized (RefreshDiffTask.this) {
                 final Difference[] differences = computeDiff();
@@ -1376,6 +1404,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     textualRefreshTask.refresh();
                 }
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         diffs = differences;
                         if (diffs != NO_DIFFERENCES) {
@@ -1430,6 +1459,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private Reader getReader (final Document doc) {
         final Reader[] reader = new Reader[1];
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 try {
                     reader[0] = new StringReader(doc.getText(0, doc.getLength()));
@@ -1499,6 +1529,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             marks = getMarksForDifferences();
         }
 
+        @Override
         public List<Mark> getMarks() {
             return marks;
         }
@@ -1511,12 +1542,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         private List<Mark> getMarksForDifferences() {
             if (diffs == null) return Collections.emptyList();
-            List<Mark> marks = new ArrayList<Mark>(diffs.length);
+            List<Mark> retMarks = new ArrayList<Mark>(diffs.length);
             for (int i = 0; i < diffs.length; i++) {
                 Difference difference = diffs[i];
-                marks.add(new DiffMark(difference, getColor(difference)));
+                retMarks.add(new DiffMark(difference, getColor(difference)));
             }
-            return marks;
+            return retMarks;
         }
     }
 }
