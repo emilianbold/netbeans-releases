@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl.SEPARATOR;
-import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 import org.openide.util.Exceptions;
 
 /**
@@ -284,7 +284,7 @@ public final class ParameterElementImpl implements ParameterElement {
 
     @Override
     public String asString(OutputType outputType) {
-        return asString(outputType, TypeNameResolver.forNull());
+        return asString(outputType, TypeNameResolverImpl.forNull());
     }
 
     @Override

@@ -4512,8 +4512,13 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     totalRecursiveListenersTime += recursiveListenersTime[0];
                     reportRootScan(source, time);
                     if (LOGGER.isLoggable(Level.INFO)) {
-                        File f = FileUtil.archiveOrDirForURL(source);
-                        Object shown = f != null ? f : source;
+                        Object shown;
+                        try {
+                            final File f = FileUtil.archiveOrDirForURL(source);
+                            shown = f != null ? f : source;
+                        } catch (IllegalArgumentException e) {
+                            shown = source;
+                        }
                         LOGGER.log(
                             Level.INFO,
                             "Indexing of: {0} took: {1} ms (New or modified files: {2}, Deleted files: {3}) [Adding listeners took: {4} ms]", //NOI18N
