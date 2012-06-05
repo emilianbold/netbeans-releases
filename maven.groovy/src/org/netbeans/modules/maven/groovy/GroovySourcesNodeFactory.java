@@ -164,13 +164,16 @@ public class GroovySourcesNodeFactory implements NodeFactory {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propertyName = evt.getPropertyName();
+            final Object newValue = evt.getNewValue();
             if (PROP_PROJECT.equals(propertyName) || PROP_RESOURCE.equals(propertyName)) {
-                fireChange();
-            }
-            if (PROP_PROJECT.equals(propertyName) || PROP_RESOURCE.equals(propertyName)) {
-                if (MAIN_GROOVY.equals(evt.getNewValue()) || TEST_GROOVY.equals(evt.getNewValue())) {
-                    fireChange();
-                    checkFileObject((String)evt.getNewValue());
+                if (newValue != null) {
+                    if (newValue.toString().contains(MAIN_GROOVY)) {
+                        fireChange();
+                        checkFileObject(MAIN_GROOVY);
+                    } else if (newValue.toString().contains(TEST_GROOVY)) {
+                        fireChange();
+                        checkFileObject(TEST_GROOVY);
+                    }
                 }
             }
         }
