@@ -61,6 +61,8 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.groovy.support.wizard.ant.AntProjectTypeStrategy;
+import org.netbeans.modules.groovy.support.wizard.maven.MavenProjectTypeStrategy;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -102,8 +104,10 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient GroovyProjectExtender extender;
     protected transient WizardDescriptor wiz;
+    protected transient GroovyProjectExtender extender;
+    protected transient Project project;
+    protected transient ProjectTypeStrategy strategy;
 
 
     protected GroovyFileWizardIterator() {
@@ -119,19 +123,16 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
      * @return reordered source groups
      */
     protected List<SourceGroup> getOrderedSourcesGroups(WizardDescriptor wizardDescriptor, List<SourceGroup> groups) {
-        return groups;
-    }
+        if (!strategy.existsGroovySourceFolder(groups)) {
+            strategy.createGroovySourceFolder();
 
-    /**
-     * Enables to hook before the initialize method is called.
-     *
-     * @param wizardDescriptor wizardDescriptor
-     */
-    protected void preInitialize(WizardDescriptor wizardDescriptor) {
+            // Retrieve the source groups again, but now with a newly created /test/groovy folder
+            groups = GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project));
+        }
+        return strategy.moveSourceFolderAsFirst(groups);
     }
 
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
-        Project project = Templates.getProject(wizardDescriptor);
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> sourceGroups = GroovySources.getGroovySourceGroups(sources);
 
@@ -236,6 +237,23 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
             }
         }
     }
+
+    /**
+     * Enables to hook before the initialize method is called.
+     *
+     * @param wizardDescriptor wizardDescriptor
+     */
+    protected void preInitialize(WizardDescriptor wizardDescriptor) {
+        project = Templates.getProject(wizardDescriptor);
+        FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); // NOI18N
+        if (pom != null && pom.isValid()) {
+            // Looks like Maven based project
+            strategy = new MavenProjectTypeStrategy(project);
+        } else {
+            strategy = new AntProjectTypeStrategy(project);
+        }
+    }
+
     @Override
     public void uninitialize (WizardDescriptor wiz) {
         this.wiz = null;
@@ -285,17 +303,14 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         changeSupport.fireChange();
     }
 
-    private GroovyProjectExtender initExtender() {
-        if (extender == null && wiz != null) {
-            Project project = Templates.getProject(wiz);
-            if (project != null) {
-                this.extender = project.getLookup().lookup(GroovyProjectExtender.class);
-            }
+    protected GroovyProjectExtender initExtender() {
+        if (extender == null && project != null) {
+            this.extender = project.getLookup().lookup(GroovyProjectExtender.class);
         }
         return extender;
     }
 
-    private static String getPackageName(FileObject targetFolder) {
+    protected static String getPackageName(FileObject targetFolder) {
         Project project = FileOwnerQuery.getOwner(targetFolder);
         Sources sources = ProjectUtils.getSources(project);
         List<SourceGroup> groups = GroovySources.getGroovySourceGroups(sources);
