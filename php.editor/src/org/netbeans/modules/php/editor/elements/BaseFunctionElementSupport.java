@@ -50,8 +50,8 @@ import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 
 /**
  * @author Radek Matous

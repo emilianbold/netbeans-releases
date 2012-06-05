@@ -364,16 +364,31 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(UseTraitStatementPart node) {
-        super.addToPath(node);
+        occurencesBuilder.prepare(Kind.TRAIT, node.getName(), modelBuilder.getCurrentScope());
+        super.visit(node);
     }
 
     @Override
     public void visit(TraitMethodAliasDeclaration node) {
+        Expression traitName = node.getTraitName();
+        if (traitName instanceof NamespaceName) {
+            occurencesBuilder.prepare(Kind.TRAIT, traitName, modelBuilder.getCurrentScope());
+        }
         super.visit(node);
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration node) {
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        Expression preferredTraitName = node.getPreferredTraitName();
+        if (preferredTraitName instanceof NamespaceName) {
+            occurencesBuilder.prepare(Kind.TRAIT, preferredTraitName, currentScope);
+        }
+        for (Expression suppressedTraitName : node.getSuppressedTraitNames()) {
+            if (suppressedTraitName instanceof NamespaceName) {
+                occurencesBuilder.prepare(Kind.TRAIT, suppressedTraitName, currentScope);
+            }
+        }
         super.visit(node);
     }
 

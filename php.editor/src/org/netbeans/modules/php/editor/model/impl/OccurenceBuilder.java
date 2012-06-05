@@ -120,6 +120,7 @@ class OccurenceBuilder {
     private Map<ASTNodeInfo<ClassInstanceCreation>, Scope> clasInstanceCreations;
     private Map<ASTNodeInfo<Expression>, Scope> clasIDs;
     private Map<ASTNodeInfo<Expression>, Scope> ifaceIDs;
+    private Map<ASTNodeInfo<Expression>, Scope> traitIDs;
     private Map<ASTNodeInfo<Variable>, Scope> variables;
     private HashMap<IncludeInfo, IncludeElement> includes;
     private HashMap<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
@@ -157,6 +158,7 @@ class OccurenceBuilder {
         this.clasInstanceCreations = new HashMap<ASTNodeInfo<ClassInstanceCreation>, Scope>();
         this.clasIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
         this.ifaceIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
+        this.traitIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
         this.classConstantDeclarations = new HashMap<ASTNodeInfo<Identifier>, ClassConstantElement>();
         this.variables = new HashMap<ASTNodeInfo<Variable>, Scope>();
         this.fldDeclarations = new HashMap<SingleFieldDeclarationInfo, FieldElementImpl>();
@@ -315,6 +317,9 @@ class OccurenceBuilder {
                     break;
                 case IFACE:
                     ifaceIDs.put(nodeInfo, scope);
+                    break;
+                case TRAIT:
+                    traitIDs.put(nodeInfo, scope);
                     break;
                 case CONSTANT:
                     if (node instanceof NamespaceName) {
@@ -521,6 +526,10 @@ class OccurenceBuilder {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
 
+        for (Entry<ASTNodeInfo<Expression>, Scope> entry : traitIDs.entrySet()) {
+            setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
+        }
+
         for (Entry<ASTNodeInfo<Scalar>, Scope> entry : constInvocations.entrySet()) {
             setOffsetElementInfo(new ElementInfo(entry.getKey(), entry.getValue()), offset);
         }
@@ -649,6 +658,7 @@ class OccurenceBuilder {
                     final Set<TypeElement> traitTypes = index.getTypes(NameKind.exact(traitQualifiedName));
                     if (elementInfo.setDeclarations(traitTypes)) {
                         buildTraitDeclarations(elementInfo, fileScope, cachedOccurences);
+                        buildTraitIDs(elementInfo, fileScope, cachedOccurences);
                     }
                     break;
                 case METHOD:
@@ -1511,6 +1521,43 @@ class OccurenceBuilder {
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             for (Entry<ASTNodeInfo<Expression>, Scope> entry : ifaceIDs.entrySet()) {
+                ASTNodeInfo<Expression> nodeInfo = entry.getKey();
+                Set<? extends PhpElement> contextTypes = elements;
+                final QualifiedName qualifiedName = nodeInfo.getQualifiedName();
+                if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
+                    if (qualifiedName.getKind().isUnqualified()) {
+                        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, nodeInfo.getRange().getStart());
+                        if (namespaceScope != null) {
+                            Set<QualifiedName> allNames = new HashSet<QualifiedName>();
+                            for (QualifiedName qn : VariousUtils.getComposedNames(qualifiedName, namespaceScope)) {
+                                if (!qn.getKind().isUnqualified() && !qn.isDefaultNamespace()) {
+                                    allNames.add(qn.toNamespaceName());
+                                }
+                            }
+                            ElementFilter forTypesFromNamespace = ElementFilter.forTypesFromNamespaces(allNames);
+                            contextTypes = forTypesFromNamespace.filter(elements);
+                            if (contextTypes.isEmpty()) {
+                                contextTypes = elements;
+                            } else if (!contextTypes.contains(phpElement)) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (qualifiedName.getKind().isUnqualified()) {
+                        occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(contextTypes), nodeInfo.getRange()));
+                    } else {
+                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                    }
+                }
+            }
+        }
+    }
+
+    private void buildTraitIDs(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
+        Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
+        for (PhpElement phpElement : elements) {
+            for (Entry<ASTNodeInfo<Expression>, Scope> entry : traitIDs.entrySet()) {
                 ASTNodeInfo<Expression> nodeInfo = entry.getKey();
                 Set<? extends PhpElement> contextTypes = elements;
                 final QualifiedName qualifiedName = nodeInfo.getQualifiedName();

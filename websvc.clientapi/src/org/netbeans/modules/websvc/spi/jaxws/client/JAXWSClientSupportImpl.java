@@ -47,6 +47,7 @@ package org.netbeans.modules.websvc.spi.jaxws.client;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -131,5 +132,10 @@ public interface JAXWSClientSupportImpl {
      *  (currently not used in projects)
      */
     public String getServiceRefName(Node clientNode);
+    
+    /**
+     * Get the AntProjectHelper from the project
+     */
+    public AntProjectHelper getAntProjectHelper();
 
 }
