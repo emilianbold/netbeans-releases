@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
@@ -66,7 +68,7 @@ import org.openide.util.Lookup;
 class ActionsUtil {
 
     private ActionsUtil() {}
-    
+
     private static final HashMap<String,MessageFormat> pattern2format = new HashMap<String,MessageFormat>();
     
     /** Finds all projects in given lookup. If the command is not null it will check 
@@ -136,9 +138,13 @@ class ActionsUtil {
         if ( ap != null ) {
             List<String> commands = Arrays.asList(ap.getSupportedActions());
             if ( commands.contains( command ) ) {
+                try {
                 if (context == null || ap.isActionEnabled(command, context)) {
                     //System.err.println("cS: true project=" + project + " command=" + command + " context=" + context);
                     return true;
+                }
+                } catch (IllegalArgumentException x) {
+                    Logger.getLogger(ActionsUtil.class.getName()).log(Level.INFO, "#213589: possible race condition in MergedActionProvider", x);
                 }
             }
         }            
