@@ -631,22 +631,24 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             Set<ElementHandle<TypeElement>> subTypes = RefactoringUtils.getImplementorsAsHandles(javac.getClasspathInfo().getClassIndex(), javac.getClasspathInfo(), enclosingTypeElement, cancel);
             for (ElementHandle<TypeElement> elementHandle : subTypes) {
                 TypeElement subtype = elementHandle.resolve(javac);
-                List<ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers(subtype));
-                for (ExecutableElement exMethod : methods) {
-                    if (!exMethod.equals(method)) {
-                        if (exMethod.getSimpleName().equals(method.getSimpleName())
-                                && exMethod.getParameters().size() == paramTable.length) {
-                            boolean sameParameters = true;
-                            for (int j = 0; j < exMethod.getParameters().size(); j++) {
-                                TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
-                                String type = paramTable[j].getType();
-                                TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
-                                if (!javac.getTypes().isSameType(exType, paramType)) {
-                                    sameParameters = false;
+                if(subtype != null) {
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers(subtype));
+                    for (ExecutableElement exMethod : methods) {
+                        if (!exMethod.equals(method)) {
+                            if (exMethod.getSimpleName().equals(method.getSimpleName())
+                                    && exMethod.getParameters().size() == paramTable.length) {
+                                boolean sameParameters = true;
+                                for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                                    TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
+                                    String type = paramTable[j].getType();
+                                    TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                                    if (!javac.getTypes().isSameType(exType, paramType)) {
+                                        sameParameters = false;
+                                    }
                                 }
-                            }
-                            if (sameParameters) {
-                                returnmethods.add(exMethod);
+                                if (sameParameters) {
+                                    returnmethods.add(exMethod);
+                                }
                             }
                         }
                     }
