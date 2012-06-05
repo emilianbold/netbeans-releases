@@ -76,7 +76,6 @@ class LayoutFeeder implements LayoutConstants {
     private LayoutRegion originalSpace;
     private LayoutDragger.PositionDef[] newPositions = new LayoutDragger.PositionDef[DIM_COUNT];
     private LayoutInterval[][] selectedComponentIntervals = new LayoutInterval[DIM_COUNT][]; // horizontal, vertical // [get rid of]
-    private boolean stayInContainer;
     private Boolean[] becomeResizing = new Boolean[DIM_COUNT];
     private Collection<LayoutInterval>[] unresizedOnRemove;
 
@@ -105,7 +104,7 @@ class LayoutFeeder implements LayoutConstants {
         this.operations = operations;
         this.dragger = dragger;
 
-        stayInContainer = true;
+        boolean stayInContainer = true;
         for (LayoutComponent c : selectedComponents) {
             if (c.getParent() == null || c.getParent() != targetContainer) {
                 stayInContainer = false;
@@ -120,7 +119,7 @@ class LayoutFeeder implements LayoutConstants {
             }
             selectedComponentIntervals[dim] = compIntervals;
             List<LayoutInterval> selCompList = Arrays.asList(compIntervals);
-            List<LayoutInterval> inCommonParent = getIntervalsInCommonParent(compIntervals);
+            List<LayoutInterval> inCommonParent = stayInContainer ? getIntervalsInCommonParent(compIntervals) : null;
             OriginalPosition originalPos;
             if (inCommonParent != null && !inCommonParent.isEmpty()) {
                 originalPos = LayoutPosition.getOriginalPosition(selCompList, inCommonParent, dim);
@@ -190,7 +189,7 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc originalPos2 = null;
             LayoutDragger.PositionDef newPos = newPositions[dim];
 
-            if (originalPosition != null && stayInContainer) {
+            if (originalPosition != null) {
                 int alignment;
                 if (dragger.isResizing(dim)) {
                     alignment = dragger.getResizingEdge(dim)^1;
