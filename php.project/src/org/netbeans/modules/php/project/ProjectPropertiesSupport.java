@@ -170,17 +170,19 @@ public final class ProjectPropertiesSupport {
         return project.getWebRootDirectory();
     }
 
-    public static FileObject getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
+    public static File getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
         FileObject sources = project.getSourcesDirectory();
-        if (subdirectoryPath != null && subdirectoryPath.trim().length() > 0) {
-            // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
-            File resolved = PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
-            if (resolved.exists()) {
-                return FileUtil.toFileObject(resolved);
-            }
-            return sources.getFileObject(subdirectoryPath);
+        File sourcesDir = FileUtil.toFile(sources);
+        if (!StringUtils.hasText(subdirectoryPath)) {
+            return sourcesDir;
         }
-        return sources;
+        // first try to resolve fileobject
+        FileObject fo = sources.getFileObject(subdirectoryPath);
+        if (fo != null) {
+            return FileUtil.toFile(fo);
+        }
+        // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
+        return PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
     }
 
     public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
@@ -373,9 +375,9 @@ public final class ProjectPropertiesSupport {
                         localPath = local.getAbsolutePath();
                     }
                 } else {
-                    FileObject subDir = getSourceSubdirectory(project, l);
-                    if (subDir != null && subDir.isValid()) {
-                        localPath = FileUtil.toFile(subDir).getAbsolutePath();
+                    File subDir = getSourceSubdirectory(project, l);
+                    if (subDir.exists()) {
+                        localPath = subDir.getAbsolutePath();
                     }
                 }
 

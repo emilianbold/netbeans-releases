@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -289,7 +291,12 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void routerBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routerBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), getSources(), routerTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), getSources(), routerTextField);
+        } catch (FileNotFoundException ex) {
+            // cannot happen for sources
+            Exceptions.printStackTrace(ex);
+        }
     }//GEN-LAST:event_routerBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

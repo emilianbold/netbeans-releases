@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -83,8 +85,6 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -264,7 +264,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     RunConfigRemote createRunConfig() {
         return RunConfigRemote.create()
                 .setUrl(urlTextField.getText())
-                .setIndexParentDir(FileUtil.toFile(getWebRoot()))
+                .setIndexParentDir(getWebRoot())
                 .setIndexRelativePath(indexFileTextField.getText())
                 .setArguments(argsTextField.getText())
                 .setRemoteConfiguration((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())
@@ -274,7 +274,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .setUploadDirectly(uploadDirectlyCheckBox.isSelected());
     }
 
-    private FileObject getWebRoot() {
+    private File getWebRoot() {
         return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
@@ -594,8 +594,14 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
+    @NbBundle.Messages("RunAsRemoteWeb.webRoot.notFound=Web Root directory does not exist (see Sources).")
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
+        } catch (FileNotFoundException ex) {
+            category.setErrorMessage(Bundle.RunAsRemoteWeb_webRoot_notFound());
+            category.setValid(true);
+        }
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed
