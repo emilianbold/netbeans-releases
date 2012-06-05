@@ -227,6 +227,10 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     //based on the explicit documentation opening request
                     //(not ivoked by selecting a completion item in the list)
                     HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset, false).query();
+                    if (result == null) {
+                        // Query method returned no CompletionResult.
+                        return;
+                    }
                         try {
                             int rowEnd = Utilities.getRowEnd((BaseDocument)doc, caretOffset);
                             final String documentText = doc.getText(result.getAnchor(), rowEnd - result.getAnchor());
