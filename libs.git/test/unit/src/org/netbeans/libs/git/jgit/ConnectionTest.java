@@ -326,6 +326,7 @@ public class ConnectionTest extends AbstractGitTestCase {
     
     /**
      * When starts failing then consider rewriting callbacks to return passwords only in getPassword
+     * For this test to pass, keyboard-interactive ssh authentication must be enabled on localhost
      */
     public void testSshLocalhostConnection () throws Exception {
         GitClient client = getClient(workDir);
