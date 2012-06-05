@@ -110,7 +110,7 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.netbeans.api.java.queries" name="SourceJavadocAttacher" />
             <class package="org.netbeans.spi.java.queries" name="SourceJavadocAttacherImplementation" />
-            <issue number="47498"/>
+            <issue number="200698"/>
         </change>
         <change id="source-level-changes">
             <api name="queries"/>
