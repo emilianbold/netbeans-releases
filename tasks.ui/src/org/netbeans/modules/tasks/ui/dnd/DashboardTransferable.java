@@ -39,37 +39,43 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.dashboard;
+package org.netbeans.modules.tasks.ui.dnd;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
+import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 
-public class ClosedRepositoryNode extends RepositoryNode {
+/**
+ *
+ * @author jpeska
+ */
+public class DashboardTransferable implements Transferable {
 
-    public ClosedRepositoryNode(Repository repository, boolean loaded) {
-        super(repository, loaded, false);
+    private static final String FLAVOR_NAME = "TaskNode";
+    private TaskNode[] taskNodes;
+    protected static final DataFlavor taskFlavor = new DataFlavor(TaskNode.class, FLAVOR_NAME);
+
+    public DashboardTransferable(TaskNode... taskNodes) {
+        this.taskNodes = taskNodes;
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        return Collections.emptyList();
+    public DataFlavor[] getTransferDataFlavors() {
+        return new DataFlavor[]{taskFlavor};
     }
 
     @Override
-    void updateContent() {
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return flavor.getHumanPresentableName().equals(FLAVOR_NAME);
     }
 
     @Override
-    public boolean isOpened() {
-        return false;
-    }
-
-    @Override
-    Collection<Query> getQueries() {
-        return Collections.emptyList();
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        if (flavor.getHumanPresentableName().equals(FLAVOR_NAME)) {
+            return taskNodes;
+        }
+        return null;
     }
 }

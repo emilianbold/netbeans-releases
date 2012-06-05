@@ -89,6 +89,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     protected List<Issue> load() {
         if (isRefresh()) {
             category.refresh();
+            updateNodes();
             setRefresh(false);
         }
         return new ArrayList<Issue>(category.getTasks());
@@ -96,13 +97,6 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (!category.isLoaded()) {
-            DashboardViewer.getInstance().loadCategory(category);
-        } else if (isRefresh()) {
-            category.refresh();
-            setRefresh(false);
-        }
-        updateNodes();
         List<TaskNode> children = getFilteredTaskNodes();
         Collections.sort(children);
         return new ArrayList<TreeListNode>(children);
@@ -144,7 +138,6 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
