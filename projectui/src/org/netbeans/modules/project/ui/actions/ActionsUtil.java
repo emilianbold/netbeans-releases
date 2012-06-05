@@ -50,9 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
@@ -60,7 +58,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.WeakSet;
 
 /** Nice utility methods to be used in ProjectBased Actions
  * 
@@ -69,8 +66,6 @@ import org.openide.util.WeakSet;
 class ActionsUtil {
 
     private ActionsUtil() {}
-    
-    public static final ShortcutsManager SHORCUTS_MANAGER = new ShortcutsManager();
     
     private static final HashMap<String,MessageFormat> pattern2format = new HashMap<String,MessageFormat>();
     
@@ -209,82 +204,6 @@ class ActionsUtil {
             null );            
             
         return result.toString();
-    }
-      
-    
-    /** Manages shortcuts based on the action's command. Usefull for File and
-     * projects actions.
-     */
-    public static class ShortcutsManager {
-        
-        // command -> shortcut
-        Map<String,Object> shorcuts = new HashMap<String, Object>(); 
-        
-        // command -> WeakSet of actions
-        HashMap<String, Set<Action>> actions = new HashMap<String, Set<Action>>();
-        
-        
-        public void registerAction( String command, Action action ) {
-            
-            synchronized ( this ) {
-                Set<Action> commandActions = actions.get( command );
-
-                if ( commandActions == null ) {
-                    commandActions = new WeakSet<Action>();
-                    actions.put( command, commandActions );                
-                }
-                
-                commandActions.add( action );
-                                
-            }
-            
-            Object shorcut = getShortcut( command );
-            
-            if ( shorcut != null ) {
-                action.putValue( Action.ACCELERATOR_KEY, shorcut );                
-            }
-            
-        }
-        
-        
-        public void registerShortcut( String command, Object shortcut ) {
-            
-            Set<Action> actionsToChange = null;
-            
-            synchronized ( this ) {
-                
-                Object exShorcut = getShortcut( command );
-                
-                if ( ( exShorcut != null && exShorcut.equals( shortcut ) ) ||  // Shorcuts are equal
-                     ( exShorcut == null && shortcut == null ) ) {             // or both are null  
-                    return; // No action needed
-                }
-                                
-                shorcuts.put( command, shortcut );
-                
-                Set<Action> commandActions = actions.get( command );
-                if ( commandActions != null && !commandActions.isEmpty() ) {
-                    actionsToChange = new HashSet<Action>();
-                    actionsToChange.addAll( commandActions );
-                }
-                
-            }
-                        
-            if ( actionsToChange != null ) {
-                // Need to change actions in existing actions
-                for (Action a : actionsToChange) {
-                    if ( a != null ) {
-                        a.putValue( Action.ACCELERATOR_KEY, shortcut );
-                    }                    
-                }
-            }
-            
-        }
-        
-        public synchronized Object getShortcut( String command ) {            
-            return shorcuts.get( command );
-        }
-                
     }
     
 }
