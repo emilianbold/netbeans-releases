@@ -157,14 +157,13 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         ItemListener defaultCheckBoxItemListener = new DefaultCheckBoxItemListener();
         shortTagsCheckBox.addItemListener(defaultCheckBoxItemListener);
         aspTagsCheckBox.addItemListener(defaultCheckBoxItemListener);
-
-        // check init values
-        validateFields();
     }
 
     @Override
     public void addNotify() {
         visible = true;
+        // validate data on focus
+        validateFields();
         super.addNotify();
     }
 
