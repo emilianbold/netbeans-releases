@@ -422,6 +422,7 @@ made subject to such option by the copyright holder.
                 <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.nbheaven.sqe.core.maven3</friend>
                 <friend>org.netbeans.modules.apisupport.installer.maven</friend>
+                <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
