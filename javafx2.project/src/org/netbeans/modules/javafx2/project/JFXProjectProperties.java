@@ -84,6 +84,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -654,14 +655,28 @@ public final class JFXProjectProperties {
         }
     }
     
-    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(@NonNull JFXConfigs configs) throws IOException {       
-        Set<PreloaderArtifact> preloaderArtifacts = new HashSet<PreloaderArtifact>();
-        // check records on all preloaders from all configurations
-        for(String config : configs.getConfigNames()) {
+    public boolean hasPreloaderInAnyConfig() {
+        return hasPreloaderInAnyConfig(CONFIGS);
+    }
+    
+    private boolean hasPreloaderInAnyConfig(@NonNull JFXConfigs configs) {
+        if(configs != null) {
+            for(String config : configs.getConfigNames()) {
+                if(isTrue( configs.getProperty(config, PRELOADER_ENABLED))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private PreloaderArtifact getPreloaderArtifactFromConfig(@NonNull JFXConfigs configs, @NonNull String config) throws IOException {       
+        // check records on any type of preloader from config
+        if(configs.hasConfig(config)) {
             
             PreloaderArtifact preloader = null;
             if(!isTrue( configs.getProperty(config, PRELOADER_ENABLED))) {
-                continue;
+                return null;
             }
             String prelTypeString = configs.getProperty(config, PRELOADER_TYPE);
             
@@ -707,6 +722,16 @@ public final class JFXProjectProperties {
                     }
                 }
             }
+            return preloader;
+        }
+        return null;
+    }
+    
+    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(@NonNull JFXConfigs configs) throws IOException {       
+        Set<PreloaderArtifact> preloaderArtifacts = new HashSet<PreloaderArtifact>();
+        // check records on all preloaders from all configurations
+        for(String config : configs.getConfigNames()) {
+            PreloaderArtifact preloader = getPreloaderArtifactFromConfig(configs, config);
             if(preloader != null) {
                 preloaderArtifacts.add(preloader);
             }
@@ -714,35 +739,68 @@ public final class JFXProjectProperties {
         return preloaderArtifacts;
     }
 
+    public void updatePreloaderDependencies() {
+        try {
+            updatePreloaderDependencies(CONFIGS);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     @Deprecated
-    private void updatePreloaderDependencies(@NonNull JFXConfigs configs) throws IOException {
+    private void updatePreloaderDependencies(@NonNull final JFXConfigs configs) throws IOException {
         // depeding on the currently (de)selected preloaders update project dependencies,
         // i.e., remove disabled/deleted preloader project dependencies and add enabled/added preloader project dependencies
         Set<PreloaderArtifact> preloaderArtifacts = getPreloaderArtifacts(getProject());
         for(PreloaderArtifact artifact : preloaderArtifacts) {
             artifact.setValid(false);
         }
-        Set<PreloaderArtifact> currentArtifacts = getPreloaderArtifactsFromConfigs(configs);
-        for(PreloaderArtifact preloader : currentArtifacts) {
-            if(preloader != null) {
-                preloader.addDependency();
-                boolean updated = false;
-                for(PreloaderArtifact a : preloaderArtifacts) {
-                    if(a.equals(preloader)) {
-                        a.setValid(true);
-                        updated = true;
+        for(final String config : configs.getConfigNames()) {
+            final PreloaderArtifact preloader = getPreloaderArtifactFromConfig(configs, config);
+            //if(isEqual(config, configs.getActive())) {
+                if(preloader != null) {
+                    ProjectManager.mutex().postWriteRequest(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if(isEqual(config, configs.getActive())) {
+                                    preloader.addDependency();
+                                } else {
+                                    preloader.removeDependency();
+                                }
+                            } catch(IOException e) {
+                                LOG.log(Level.SEVERE, "Preloader dependency update failed."); // NOI18N
+                            }
+                        }
+                    });
+                    boolean updated = false;
+                    for(PreloaderArtifact a : preloaderArtifacts) {
+                        if(a.equals(preloader)) {
+                            a.setValid(true);
+                            updated = true;
+                        }
+                    }
+                    if(!updated) {
+                        preloader.setValid(true);
+                        preloaderArtifacts.add(preloader);
                     }
                 }
-                if(!updated) {
-                    preloader.setValid(true);
-                    preloaderArtifacts.add(preloader);
-                }
-            }
+            //}
         }
         // remove all previous dependencies that are no more specified in any configuration
         Set<PreloaderArtifact> toRemove = new HashSet<PreloaderArtifact>();
-        for(PreloaderArtifact artifact : preloaderArtifacts) {
+        for(final PreloaderArtifact artifact : preloaderArtifacts) {
             if(!artifact.isValid()) {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            artifact.removeDependency();
+                        } catch(IOException e) {
+                            LOG.log(Level.SEVERE, "Preloader dependency removal failed."); // NOI18N
+                        }
+                    }
+                });
                 artifact.removeDependency();
                 toRemove.add(artifact);
             }
@@ -2447,6 +2505,14 @@ public final class JFXProjectProperties {
         }
 
         //----------------------------------------------------------
+
+        public void readActive() {
+            try {
+                setActive(readFromFile(project, CONFIG_PROPERTIES_FILE).getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
+            } catch(IOException e) {
+                LOG.log(Level.WARNING, "Failed to read active configuration from {0}.", CONFIG_PROPERTIES_FILE); // NOI18N
+            }
+        }
 
         public void storeActive() throws IOException {
             String configPath = CONFIG_PROPERTIES_FILE;
