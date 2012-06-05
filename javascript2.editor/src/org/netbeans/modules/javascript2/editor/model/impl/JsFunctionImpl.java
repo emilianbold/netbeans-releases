@@ -117,13 +117,15 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (getName().startsWith("set ")) { //NOI18N
             return JsElement.Kind.PROPERTY_SETTER;
         }
-        for (JsObject property : getProperties().values()) {
-            if (property.isDeclared() 
-                    && (property.getModifiers().contains(Modifier.PROTECTED)
-                    || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
-                    && !isAnonymous()) {
-                if(!getParent().getName().equals("prototype")) {
-                    return JsElement.Kind.CONSTRUCTOR;
+        if (getParent() != null && getParent() instanceof JsFunction) {
+            for (JsObject property : getProperties().values()) {
+                if (property.isDeclared() 
+                        && (property.getModifiers().contains(Modifier.PROTECTED)
+                        || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
+                        && !isAnonymous()) {
+                    if(!getParent().getName().equals("prototype")) {
+                        return JsElement.Kind.CONSTRUCTOR;
+                    }
                 }
             }
         }
