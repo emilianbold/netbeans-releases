@@ -847,4 +847,19 @@ public class BracketCompletionTestCase extends EditorBase  {
                 "    |\n" +
                 "};");
     }
+
+    public void testBlockCommentAutoCompletion() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("#define A\n/|\nvoid foo() {\n}\n", "*", "#define A\n/*|*/\nvoid foo() {\n}\n");
+        typeCharactersInText("#define A\n/|    \nvoid foo() {\n}\n", "*", "#define A\n/*|*/    \nvoid foo() {\n}\n");
+        typeCharactersInText("#define A\n   /|    \nvoid foo() {\n}\n", "*", "#define A\n   /*|*/    \nvoid foo() {\n}\n");
+        
+        typeCharactersInText("int a;\n   /|    \nvoid foo() {\n}\n", "*", "int a;\n   /*|*/    \nvoid foo() {\n}\n");
+        
+        typeCharactersInText("int a; /|\nvoid foo() {\n}\n", "*", "int a; /*|\nvoid foo() {\n}\n");
+        typeCharactersInText("int a; /|    \nvoid foo() {\n}\n", "*", "int a; /*|    \nvoid foo() {\n}\n");
+
+        typeCharactersInText("int a;\n/*void| foo() {\n}\n", "*", "int a;\n/*void*| foo() {\n}\n");
+        typeCharactersInText("int a;\n/*|void foo() {\n}\n", "*", "int a;\n/**|void foo() {\n}\n");
+    }
 }
