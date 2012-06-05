@@ -828,21 +828,33 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
         Difference diff = diffs[index];
         
-        int off1, off2;
+        int offFirstStart, offSecondStart, offCurrent, offSecondEnd;
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
-            int diffSecondStart = diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0;
-            int offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
-            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
-            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diffSecondStart);
-            int off2nextLine = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondEnd() > diffSecondStart ? diffSecondStart + 1 : diffSecondStart);
+            StyledDocument doc1 = (StyledDocument) jEditorPane1.getEditorPane().getDocument();
+            StyledDocument doc2 = (StyledDocument) jEditorPane2.getEditorPane().getDocument();
             
-            jEditorPane1.getEditorPane().setCaretPosition(off1);
-            if(offCurrent >= off2nextLine || offCurrent < off2) {
+            offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
+            offFirstStart = org.openide.text.NbDocument.findLineOffset(doc1, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
+            offSecondStart = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
+           
+            if(diff.getSecondEnd() > diff.getSecondStart()) {
+                offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondEnd() > 0 ? diff.getSecondEnd() - 1 : 0);
+            } else {
+                int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
+                if(diff.getSecondStart() < lastLine) {
+                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() + 1);
+                } else {
+                    offSecondEnd = doc2.getLength();
+                }
+            }
+            
+            jEditorPane1.getEditorPane().setCaretPosition(offFirstStart);
+            if(offCurrent < offSecondStart || offCurrent > offSecondEnd) {
                 // it could be somebody is editing right now,
                 // so set the caret on the diferences first lines first column only in case
                 // it isn't already somrwhere in the line 
-                jEditorPane2.getEditorPane().setCaretPosition(off2);
+                jEditorPane2.getEditorPane().setCaretPosition(offSecondStart);
             }
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
