@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.javahelp;
+package org.netbeans.modules.apisupport.hints;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
- * Registers a help set.
- * A help set reference according to {@code -//NetBeans//DTD JavaHelp Help Set Reference 1.0//EN} is created.
- * If the help set specifies a search view, the search indexer will also be run;
- * all {@code *.html} and {@code *.htm} in the package containing the help set, and its subpackages, will be indexed.
- * @since org.netbeans.modules.javahelp/1 2.20
- * @see <a href="@TOP@/apichanges.html#HelpSetRegistration">how to convert to this annotation</a>
- */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.PACKAGE)
-public @interface HelpSetRegistration {
+@ServiceProvider(service=Hinter.class)
+public class HelpSetHinter implements Hinter {
 
-    /**
-     * Relative location of a help set file.
-     * Typically matches: {@code -//Sun Microsystems Inc.//DTD JavaHelp HelpSet Version 2.0//EN}
-     */
-    String helpSet();
-
-    /**
-     * Whether the help set should be merged into the master help set.
-     */
-    boolean merge() default true;
-
-    /**
-     * Position of help set reference.
-     */
-    int position() default Integer.MAX_VALUE;
-
-    /**
-     * Helpset-relative HTML filenames to exclude from indexing.
-     */
-    String[] excludes() default {"credits.html"};
+    @Override public void process(Context ctx) throws Exception {
+        if (ctx.file().getPath().matches("Services/JavaHelp/.+[.](xml|hs)")) {
+            ctx.addHint(Severity.WARNING, ctx.standardAnnotationDescription());
+        }
+    }
 
 }
