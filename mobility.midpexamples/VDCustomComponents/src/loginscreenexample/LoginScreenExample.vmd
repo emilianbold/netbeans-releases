@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<VisualDesign projectType="vmd-midp" version="1">
 <!--
     If you are reading this you don't have the Visual Mobility Designer modules
     installed. Please go to Tools -> Plugins -> Avaialbe Plugins and install
     the missing modules.
 -->
-<VisualDesign projectType="vmd-midp" version="1">
     <Document version="2">
         <Component componentID="0" typeID="C#Root">
             <Property name="version" typeID="Pjava.lang.String" value="VMIDP-2.0"/>

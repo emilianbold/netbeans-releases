@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<VisualDesign projectType="vmd-midp-game" version="1">
 <!--
     If you are reading this you don't have the Visual Mobility Designer modules
     installed. Please go to Tools -> Plugins -> Avaialbe Plugins and install
     the missing modules.
 -->
-<VisualDesign projectType="vmd-midp-game" version="1">
     <Document version="1">
         <Component componentID="0" typeID="C#Root">
             <Component componentID="51" typeID="Corg.netbeans.modules.vmd.game.model.Sprite">
