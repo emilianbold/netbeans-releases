@@ -81,6 +81,11 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="mavenLicenseURL" stringvalue="http://www.gnu.org/licenses/lgpl-3.0.html"/>
             </file>
+            <file name="license-epl10.txt" url="licenses/epl10-license.txt">
+                <attr name="displayName" stringvalue="Eclipse Public License"/>
+                <attr name="mavenLicenseURL" stringvalue="http://www.eclipse.org/legal/epl-v10.html"/>
+                <attr name="template" boolvalue="true"/>
+            </file>            
         </folder>
         
     </folder>
