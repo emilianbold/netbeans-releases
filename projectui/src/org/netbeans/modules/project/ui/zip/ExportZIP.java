@@ -129,7 +129,9 @@ public class ExportZIP extends JPanel {
                     @Override public void run() {
                         try {
                             if (!build(root, zip)) {
-                                zip.delete();
+                                if (!zip.delete()) {
+                                    throw new IOException("Cannot delete " + zip);
+                                }
                                 return;
                             }
                         } catch (IOException x) {
@@ -208,11 +210,11 @@ public class ExportZIP extends JPanel {
             }
             boolean kidMixed;
             if (mixedSharability) {
-                switch (SharabilityQuery.getSharability(kid)) {
-                case SharabilityQuery.SHARABLE:
+                switch (SharabilityQuery.getSharability(kid.toURI())) {
+                case SHARABLE:
                     kidMixed = false;
                     break;
-                case SharabilityQuery.NOT_SHARABLE:
+                case NOT_SHARABLE:
                     continue;
                 default:
                     kidMixed = true;
