@@ -138,6 +138,7 @@ public final class InternalWebServer implements PropertyChangeListener {
         assert !EventQueue.isDispatchThread();
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.InternalWebServer_stopping(instance.project.getName()));
         try {
+            progressHandle.start();
             // stop server
             instance.stop();
             // wait for shutdown
