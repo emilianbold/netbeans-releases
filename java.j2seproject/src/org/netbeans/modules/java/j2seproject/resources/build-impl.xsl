@@ -1418,6 +1418,9 @@ is divided into following sections:
                             <path path="${{run.classpath.without.build.classes.dir}}"/>
                             <chainedmapper>
                                 <flattenmapper/>
+                                <filtermapper>
+                                    <replacestring from=" " to="%20"/>
+                                </filtermapper>
                                 <globmapper from="*" to="lib/*"/>
                             </chainedmapper>
                         </pathconvert>
