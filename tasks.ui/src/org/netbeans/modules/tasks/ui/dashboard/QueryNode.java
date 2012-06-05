@@ -83,6 +83,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected List<Issue> load() {
         if (isRefresh()) {
             query.refresh();
+            updateNodes();
             setRefresh(false);
         }
         return new ArrayList<Issue>(query.getIssues());
@@ -96,21 +97,22 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (isRefresh()) {
-            removeTaskListeners();
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
+        List<TaskNode> filteredNodes = getFilteredTaskNodes();
+        Collections.sort(filteredNodes);
+        int taskCountToShow = getTaskCountToShow();
+        List<TaskNode> taskNodesToShow;
+        boolean addShowNext = false;
+        if (filteredNodes.size() <= taskCountToShow) {
+            taskNodesToShow = filteredNodes;
+        } else {
+            taskNodesToShow = new ArrayList<TaskNode>(filteredNodes.subList(0, taskCountToShow));
+            addShowNext = true;
         }
-        List<TaskNode> children = getFilteredTaskNodes();
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
-    }
-
-    @Override
-    void updateContent() {
-        updateNodes();
-        refreshChildren();
+        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>(taskNodesToShow);
+        if (addShowNext) {
+            children.add(new ShowNextNode(this, Math.min(filteredNodes.size() - taskCountToShow, DEFAULT_TASKS_LIMIT)));
+        }
+        return children;
     }
 
     @Override
@@ -147,7 +149,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
@@ -199,7 +200,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof QueryNode) {
-                queryNodes[i] = (QueryNode)treeListNode;
+                queryNodes[i] = (QueryNode) treeListNode;
             } else {
                 return null;
             }
