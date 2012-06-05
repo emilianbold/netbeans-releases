@@ -1303,14 +1303,14 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
                 }
 
                 left = value.getOffset();
-                assert ENABLE_ASSERTS || left != -1 : "o1=" + o1 + ", value=" + value; //NOI18N
+                assert !ENABLE_ASSERTS || left != -1 : "o1=" + o1 + ", value=" + value; //NOI18N
 
             } else if (o1 instanceof Integer) {
                 left = ((Integer) o1);
-                assert ENABLE_ASSERTS || left != -1 : "o1=" + o1;
+                assert !ENABLE_ASSERTS || left != -1 : "o1=" + o1;
 
             } else {
-                assert ENABLE_ASSERTS || false : "Unexpected type: o1=" + o1; //NOI18N
+                assert !ENABLE_ASSERTS || false : "Unexpected type: o1=" + o1; //NOI18N
             }
 
             int right = -1;
@@ -1324,14 +1324,14 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
                 }
 
                 right = value.getOffset();
-                assert ENABLE_ASSERTS || right != -1 : "o2=" + o2 + ", value=" + value; //NOI18N
+                assert !ENABLE_ASSERTS || right != -1 : "o2=" + o2 + ", value=" + value; //NOI18N
 
             } else if (o2 instanceof Integer) {
                 right = ((Integer) o2);
-                assert ENABLE_ASSERTS || right != -1 : "o2=" + o2;
+                assert !ENABLE_ASSERTS || right != -1 : "o2=" + o2;
 
             } else {
-                assert ENABLE_ASSERTS || false : "Unexpected type: o2=" + o2; //NOI18N
+                assert !ENABLE_ASSERTS || false : "Unexpected type: o2=" + o2; //NOI18N
             }
 
             return left - right;
