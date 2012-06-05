@@ -746,7 +746,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 EncapsulateDesc desc = fields.get(el);
                 if (desc != null) {
                     resolveFieldDeclaration(node, desc);
-                    return null;
+                    return node;
                 }
             }
             return scan(node.getInitializer(), field);
