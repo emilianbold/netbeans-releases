@@ -52,7 +52,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 
