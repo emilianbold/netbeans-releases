@@ -180,7 +180,7 @@ public final class InternalWebServer implements PropertyChangeListener {
 
     public synchronized boolean start() {
         if (isRunning()) {
-            LOGGER.log(Level.INFO, "Internal web server already running for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "Internal web server already running for project {0}", project.getName());
             return true;
         }
         process = createProcess();
