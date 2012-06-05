@@ -123,7 +123,8 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "doDelete {0}", file);
         if (file == null) return;
         File root = hg.getRepositoryRoot(file);
-        if (!file.delete()) {
+        Utils.deleteRecursively(file);
+        if (file.exists()) {
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(MercurialInterceptor.class, "MSG_DeleteFailed", new Object[] { file })); //NOI18N
             throw ex;
