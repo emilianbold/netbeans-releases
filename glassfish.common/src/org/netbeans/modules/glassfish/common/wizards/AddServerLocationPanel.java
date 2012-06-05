@@ -61,6 +61,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.filesystems.FileUtil;
@@ -228,9 +229,14 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                                 wizard.putProperty(PROP_ERROR_MESSAGE, statusText);
                                 return false;
                             } else {
-                                wizard.putProperty(PROP_ERROR_MESSAGE, null);
-                                wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
+                                if (candidate == ServerDetails.GLASSFISH_SERVER_3_1_2) {
+                                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                                        AddServerLocationPanel.class, "ERR_BrokenGF3_1_2", candidate)); // NOI18N
+                                } else {
+                                    wizard.putProperty(PROP_ERROR_MESSAGE, null);
+                                    wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
                                         AddServerLocationPanel.class, "MSG_NextForSpecial", candidate)); // NOI18N
+                                }
                             }
                         }
                     }
