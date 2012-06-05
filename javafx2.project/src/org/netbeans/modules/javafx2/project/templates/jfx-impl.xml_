@@ -772,6 +772,7 @@
         </condition>
         <condition property="app-with-external-preloader-jar">
             <and>
+                <isset property="app-with-preloader"/>
                 <isset property="javafx.preloader.type"/>
                 <equals arg1="${javafx.preloader.type}" arg2="jar" trim="true"/>
             </and>

@@ -841,25 +841,10 @@ public final class JFXProjectProperties {
     public static void deleteFile(final @NonNull FileObject propsFO) throws IOException {
         if(propsFO != null) {
             try {
-                final Mutex.ExceptionAction<Void> action = new Mutex.ExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        FileLock lock = null;
-                        try {
-                            lock = propsFO.lock();
-                            propsFO.delete(lock);
-                        } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
-                            }
-                        }
-                        return null;
-                    }
-                };
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
-                        ProjectManager.mutex().readAccess(action);
+                        propsFO.delete();
                         return null;
                     }
                 });
@@ -918,16 +903,16 @@ public final class JFXProjectProperties {
     }
 
     public void store() throws IOException {
-        
+        updatePreloaderDependencies(CONFIGS);
+        CONFIGS.storeActive();
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final EditableProperties pep = new EditableProperties(true);
-        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        
+        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);        
         try {
             final InputStream is = projPropsFO.getInputStream();
             final InputStream pis = privPropsFO.getInputStream();
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
                     try {
@@ -944,10 +929,21 @@ public final class JFXProjectProperties {
                             pis.close();
                         }
                     }
-                    fxPropGroup.store(ep);
-                    storeRest(ep, pep);
-                    CONFIGS.store(ep, pep);
-                    updatePreloaderComment(ep);
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+        fxPropGroup.store(ep);
+        storeRest(ep, pep);
+        CONFIGS.store(ep, pep);
+        updatePreloaderComment(ep);
+        logProps(ep);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -977,9 +973,6 @@ public final class JFXProjectProperties {
                     return null;
                 }
             });
-            updatePreloaderDependencies(CONFIGS);
-            CONFIGS.storeActive();
-
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
@@ -2927,4 +2920,12 @@ public final class JFXProjectProperties {
 
     }
     
+    static void logProps(EditableProperties ep) {
+        LOG.log(Level.INFO, PRELOADER_ENABLED + " = " + (ep.get(PRELOADER_ENABLED)==null ? "null" : ep.get(PRELOADER_ENABLED)));
+        LOG.log(Level.INFO, PRELOADER_TYPE + " = " + (ep.get(PRELOADER_TYPE)==null ? "null" : ep.get(PRELOADER_TYPE)));
+        LOG.log(Level.INFO, PRELOADER_PROJECT + " = " + (ep.get(PRELOADER_PROJECT)==null ? "null" : ep.get(PRELOADER_PROJECT)));
+        LOG.log(Level.INFO, PRELOADER_CLASS + " = " + (ep.get(PRELOADER_CLASS)==null ? "null" : ep.get(PRELOADER_CLASS)));
+        LOG.log(Level.INFO, PRELOADER_JAR_FILENAME + " = " + (ep.get(PRELOADER_JAR_FILENAME)==null ? "null" : ep.get(PRELOADER_JAR_FILENAME)));
+        LOG.log(Level.INFO, PRELOADER_JAR_PATH + " = " + (ep.get(PRELOADER_JAR_PATH)==null ? "null" : ep.get(PRELOADER_JAR_PATH)));
+    }
 }
