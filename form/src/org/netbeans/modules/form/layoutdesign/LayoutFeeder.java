@@ -1355,11 +1355,11 @@ class LayoutFeeder implements LayoutConstants {
                     // adding over group edge that is not apparent to the user (doesn't expect it to move)
                     if (seq.getParent() == null) {
                         layoutModel.addInterval(seq, parent, -1); // temporary
-                        parent = separateSequence(seq, i);
+                        parent = separateSequence(seq, i, iDesc1, iDesc2);
                         layoutModel.removeInterval(seq);
                         expanded[i] = true;
                     } else {
-                        parent = separateSequence(seq, i);
+                        parent = separateSequence(seq, i, iDesc1, iDesc2);
                         expanded[i] = true;
                     }
                 } else if (subseq && iDesc1.parent.getParent().getParent() != null
@@ -1367,7 +1367,7 @@ class LayoutFeeder implements LayoutConstants {
                         && shouldExpandOverGroupEdge(iDesc1.parent.getParent(), outBounds[i], i)) {
                     // adding over group edge that is not apparent to the user (doesn't expect it to move)
                     boolean parentAligned = LayoutInterval.getEffectiveAlignmentInParent(parent, null, i) == i;
-                    LayoutInterval p = separateSequence(iDesc1.parent, i);
+                    LayoutInterval p = separateSequence(iDesc1.parent, i, iDesc1, iDesc2);
                     if (parent.getSubIntervalCount() == 0 && parent.getParent() == null) {
                         parent = p; // optimized out during the operation
                     } else {
@@ -1644,7 +1644,7 @@ class LayoutFeeder implements LayoutConstants {
                             && outBounds[i^1] != parent
                             && !parent.isParentOf(outBounds[i^1])) {
                         // should not close open group by making a resizing sequence
-                        parent = separateSequence(seq, i^1);
+                        parent = separateSequence(seq, i^1, iDesc1, iDesc2);
                         if (i == TRAILING) {
                             edges++; // we need to revisit the LEADING gap
                         }
@@ -1657,7 +1657,7 @@ class LayoutFeeder implements LayoutConstants {
                             && outBounds[i^1] != iDesc1.parent.getParent()
                             && !iDesc1.parent.getParent().isParentOf(outBounds[i^1])) {
                         // should not close open group by making a resizing sequence
-                        LayoutInterval p = separateSequence(iDesc1.parent, i^1);
+                        LayoutInterval p = separateSequence(iDesc1.parent, i^1, iDesc1, iDesc2);
                         if (parent.getSubIntervalCount() == 0 && parent.getParent() == null) {
                             parent = p; // optimized out during the operation
                         } else {
@@ -2091,7 +2091,15 @@ class LayoutFeeder implements LayoutConstants {
         return !someAligned;
     }
 
-    private LayoutInterval separateSequence(LayoutInterval seq, int alignment) {
+    private LayoutInterval separateSequence(LayoutInterval seq, int alignment, IncludeDesc iDesc1, IncludeDesc iDesc2) {
+        // if IncludeDesc.snappedParallel is a valid group, check if it does not get eliminated by the parallelization
+        if (iDesc1 == null || iDesc1.snappedParallel == null || iDesc1.snappedParallel.getSubIntervalCount() == 0) {
+            iDesc1 = null;
+        }
+        if (iDesc2 == null || iDesc2.snappedParallel == null || iDesc2.snappedParallel.getSubIntervalCount() == 0) {
+            iDesc2 = null;
+        }
+
         // [TODO repeatedly up to given parent]
         LayoutInterval parentPar = seq.getParent();
         assert parentPar.isParallel();
@@ -2120,6 +2128,12 @@ class LayoutFeeder implements LayoutConstants {
         operations.parallelizeWithParentSequence(seq, end, dimension);
         parentPar = seq.getParent();
         parentPar.getCurrentSpace().positions[dimension][alignment] = endPos;
+        if (iDesc1 != null && iDesc1.snappedParallel.getSubIntervalCount() == 0) {
+            iDesc1.snappedParallel = parentPar;
+        }
+        if (iDesc2 != null && iDesc2.snappedParallel.getSubIntervalCount() == 0) {
+            iDesc2.snappedParallel = parentPar;
+        }
         return parentPar;
     }
 
@@ -4852,10 +4866,14 @@ class LayoutFeeder implements LayoutConstants {
             return true; // can align to group border from inside
 
         LayoutInterval parent = interval.getParent();
-        if (parent == null)
+        if (parent == null) {
+            if (!interval.isParentOf(group)) {
+                return false; // something's wrong, either 'interval' or 'group' got out of the hierarchy
+            }
             parent = interval;
-        else if (parent.isSequential())
+        } else if (parent.isSequential()) {
             parent = parent.getParent();
+        }
 
         while (parent != null && parent != group && !parent.isParentOf(group)) {
             if (canSubstAlignWithParent(interval, dimension, alignment, dragger.isResizing(dimension))) {
