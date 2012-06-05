@@ -68,6 +68,7 @@ import org.netbeans.modules.css.visual.api.CssRuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -145,8 +146,13 @@ public final class CssPreviewTopComponent extends TopComponent {
     private PropertyChangeListener FACTORY_LISTENER = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            refreshCssPreviewComponent();
-            CssTCController.refreshOpenedWindowGroups();
+            Mutex.EVENT.readAccess( new Runnable() {
+                @Override
+                public void run() {
+                    refreshCssPreviewComponent();
+                    CssTCController.refreshOpenedWindowGroups();
+                }
+            });
         }
     };
     

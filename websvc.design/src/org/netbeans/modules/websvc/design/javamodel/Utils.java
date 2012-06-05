@@ -181,7 +181,8 @@ public class Utils {
             List<JaxWsService> services = support.getServices();
             for (JaxWsService service : services) {
                 String implementationClass = service.getImplementationClass();
-                if ( getImplClass(fileObject).equals( implementationClass )){
+                String implClass = getImplClass(fileObject);
+                if ( implClass!= null && implClass.equals( implementationClass )){
                     return service.isServiceProvider();
                 }
             }

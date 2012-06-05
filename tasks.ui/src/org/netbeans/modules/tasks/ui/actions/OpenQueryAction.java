@@ -42,34 +42,32 @@
 package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Query.QueryMode;
+import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author jpeska
  */
-public class OpenQueryAction extends AbstractAction {
+public class OpenQueryAction extends QueryAction {
 
-    private Query query;
     private QueryMode mode;
 
-    public OpenQueryAction(Query query) {
-        this(query, Query.QueryMode.SHOW_ALL);
+    public OpenQueryAction(QueryNode... queryNodes) {
+        this(Query.QueryMode.SHOW_ALL, queryNodes);
     }
 
-    public OpenQueryAction(Query query, QueryMode mode) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open")); //NOI18N
-        this.query = query;
+    public OpenQueryAction(QueryMode mode, QueryNode... queryNodes) {
+        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open"), queryNodes); //NOI18N
         this.mode = mode;
     }
 
-
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        query.open(mode);
+        for (QueryNode queryNode : getQueryNodes()) {
+            queryNode.getQuery().open(mode);
+        }
     }
 }

@@ -231,9 +231,13 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     public void testCaseSensitiveFolderRename() throws Exception {
         FileObject parent = root.getFileObject("testdir/mountdir10");
         List<FileObject> arr = Arrays.asList(parent.getChildren());
-        FileLock lock = parent.lock();
         final String up = parent.getName().toUpperCase();
-        parent.rename(lock, up, null);
+        FileLock lock = parent.lock();
+        try {
+            parent.rename(lock, up, null);
+        } finally {
+            lock.releaseLock();
+        }
         assertEquals("Capital name", up, parent.getNameExt());
         File real = FileUtil.toFile(parent);
         assertNotNull("Real file exists", real);
@@ -279,7 +283,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
 
         accessMonitor = new StatFiles();
         FileLock lock = fo.lock();
-        FileObject newFolder = fo.move(lock, where, fo.getNameExt(), null);
+        FileObject newFolder;
+        try {
+            newFolder = fo.move(lock, where, fo.getNameExt(), null);
+        } finally {
+            lock.releaseLock();
+        }
         assertEquals("Subfolder", where, newFolder.getParent());
 
         assertNotNull("Folder found", newFolder.getFileObject("kid"));

@@ -46,13 +46,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.LinkButton;
+import org.netbeans.modules.tasks.ui.actions.Actions;
 import org.netbeans.modules.tasks.ui.actions.CreateCategoryAction;
 import org.netbeans.modules.tasks.ui.actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
@@ -65,6 +69,8 @@ import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -98,8 +104,10 @@ public final class DashboardViewer implements PropertyChangeListener {
     private boolean opened = false;
     private final TitleNode titleCategoryNode;
     private final TitleNode titleRepositoryNode;
-    private final Object LOCK = new Object();
+    private final Object LOCK_CATEGORIES = new Object();
+    private final Object LOCK_REPOSITORIES = new Object();
     private Map<Category, CategoryNode> mapCategoryToNode;
+    private Map<Issue, TaskNode> mapTaskToNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
     private AppliedFilters<Issue> appliedTaskFilters;
@@ -109,6 +117,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private Set<TreeListNode> expandedNodes;
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
+    static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -134,6 +143,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         mapCategoryToNode = new HashMap<Category, CategoryNode>();
+        mapTaskToNode = new HashMap<Issue, TaskNode>();
         categoryNodes = new ArrayList<CategoryNode>();
         repositoryNodes = new ArrayList<RepositoryNode>();
 
@@ -155,6 +165,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         taskHits = 0;
         treeList.setModel(model);
+        attachActions();
         dashboardComponent.setViewportView(treeList);
         dashboardComponent.invalidate();
         dashboardComponent.revalidate();
@@ -171,18 +182,33 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(RepositoryManager.EVENT_REPOSITORIES_CHANGED)) {
             requestProcessor.post(new Runnable() {
                 @Override
                 public void run() {
                     //TODO needs to be optimalized
                     titleRepositoryNode.setProgressVisible(true);
-                    loadRepositories();
+                    updateRepositories((List<Repository>) evt.getNewValue());
                     titleRepositoryNode.setProgressVisible(false);
                 }
             });
         }
+    }
+
+    void setSelection(Collection<Issue> toSelect) {
+        for (Issue issue : toSelect) {
+            TaskNode taskNode = mapTaskToNode.get(issue);
+            TreeListNode parent = taskNode.getParent();
+            if (!parent.isExpanded()) {
+                parent.setExpanded(true);
+            }
+            treeList.setSelectedValue(taskNode, true);
+        }
+    }
+
+    void addTaskMapEntry(Issue issue, TaskNode taskNode) {
+        mapTaskToNode.put(issue, taskNode);
     }
 
     private static class Holder {
@@ -217,7 +243,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void close() {
-        synchronized (LOCK) {
+        synchronized (LOCK_CATEGORIES) {
             treeList.setModel(EMPTY_MODEL);
             model.clear();
             opened = false;
@@ -229,36 +255,39 @@ public final class DashboardViewer implements PropertyChangeListener {
         return dashboardComponent;
     }
 
-    public void addTaskToCategory(TaskNode taskNode, Category category) {
-        TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
-        //task is already categorized (task exists within categories)
-        if (categorizedTaskNode != null) {
-            //task is already in this category, do nothing
-            if (category.equals(categorizedTaskNode.getCategory())) {
-                return;
+    public void addTaskToCategory(Category category, TaskNode... taskNodes) {
+        for (TaskNode taskNode : taskNodes) {
+            TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
+            //task is already categorized (task exists within categories)
+            if (categorizedTaskNode != null) {
+                //task is already in this category, do nothing
+                if (category.equals(categorizedTaskNode.getCategory())) {
+                    return;
+                }
+                //task is already in another category, dont add new taskNode but move existing one
+                taskNode = categorizedTaskNode;
             }
-            //task is already in another category, dont add new taskNode but move existing one
-            taskNode = categorizedTaskNode;
-        }
-        CategoryNode destCategoryNode = mapCategoryToNode.get(category);
-        final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
-        final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
-        TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
-        if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
-            //remove from old category
-            if (taskNode.isCategorized()) {
-                removeTask(taskNode);
+            CategoryNode destCategoryNode = mapCategoryToNode.get(category);
+            final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
+            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
+            TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
+            if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
+                //remove from old category
+                if (taskNode.isCategorized()) {
+                    removeTask(taskNode);
+                }
+                //set new category
+                toAdd.setCategory(category);
+                if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
+                    DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+                }
+                ArrayList<Issue> toSelect = new ArrayList<Issue>();
+                toSelect.add(taskNode.getTask());
+                destCategoryNode.updateContentAndSelect(toSelect);
             }
-            //set new category
-            toAdd.setCategory(category);
-            if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
-                DashboardViewer.getInstance().setActiveTaskNode(toAdd);
+            if (isTaskInFilter && !isCatInFilter) {
+                addCategoryToModel(destCategoryNode);
             }
-            model.contentChanged(destCategoryNode);
-            destCategoryNode.updateContent();
-        }
-        if (isTaskInFilter && !isCatInFilter) {
-            addCategoryToModel(destCategoryNode);
         }
         storeCategory(category);
     }
@@ -278,21 +307,27 @@ public final class DashboardViewer implements PropertyChangeListener {
         storeCategory(categoryNode.getCategory());
     }
 
-    public List<Category> getCategories() {
-        List<Category> list = new ArrayList<Category>(categoryNodes.size());
-        for (CategoryNode CategoryNode : categoryNodes) {
-            list.add(CategoryNode.getCategory());
+    public List<Category> getCategories(boolean openedOnly) {
+        synchronized (LOCK_CATEGORIES) {
+            List<Category> list = new ArrayList<Category>(categoryNodes.size());
+            for (CategoryNode categoryNode : categoryNodes) {
+                if (!(openedOnly && !categoryNode.isOpened())) {
+                    list.add(categoryNode.getCategory());
+                }
+            }
+            return list;
         }
-        return list;
     }
 
     public boolean isCategoryNameUnique(String categoryName) {
-        for (CategoryNode node : categoryNodes) {
-            if (node.getCategory().getName().equalsIgnoreCase(categoryName)) {
-                return false;
+        synchronized (LOCK_CATEGORIES) {
+            for (CategoryNode node : categoryNodes) {
+                if (node.getCategory().getName().equalsIgnoreCase(categoryName)) {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
     }
 
     public void renameCategory(Category category, final String newName) {
@@ -309,52 +344,75 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void addCategory(Category category) {
-        //add category to the model - sorted
-        CategoryNode newCategoryNode = new CategoryNode(category, true);
-        categoryNodes.add(newCategoryNode);
-        mapCategoryToNode.put(category, newCategoryNode);
-        addCategoryToModel(newCategoryNode);
-        storeCategory(category);
+        synchronized (LOCK_CATEGORIES) {
+            //add category to the model - sorted
+            CategoryNode newCategoryNode = new CategoryNode(category, false);
+            categoryNodes.add(newCategoryNode);
+            mapCategoryToNode.put(category, newCategoryNode);
+            addCategoryToModel(newCategoryNode);
+            storeCategory(category);
+        }
     }
 
-    public void deleteCategory(final Category category) {
-        //TODO lock categNodes
-        CategoryNode categoryNode = mapCategoryToNode.remove(category);
-        model.removeRoot(categoryNode);
-        categoryNodes.remove(categoryNode);
-        requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                DashboardStorage.getInstance().deleteCategory(category.getName());
+    public void deleteCategory(final CategoryNode... toDelete) {
+        String names = "";
+        for (int i = 0; i < toDelete.length; i++) {
+            CategoryNode categoryNode = toDelete[i];
+            names += categoryNode.getCategory().getName();
+            if (i != toDelete.length - 1) {
+                names += ", ";
             }
-        });
+        }
+        String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        if (confirmDelete(title, message)) {
+            synchronized (LOCK_CATEGORIES) {
+                for (CategoryNode categoryNode : toDelete) {
+                    model.removeRoot(categoryNode);
+                    categoryNodes.remove(categoryNode);
+                }
+            }
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    String[] names = new String[toDelete.length];
+                    for (int i = 0; i < names.length; i++) {
+                        names[i] = toDelete[i].getCategory().getName();
+                    }
+                    DashboardStorage.getInstance().deleteCategories(names);
+                }
+            });
+        }
     }
 
     public void setCategoryOpened(CategoryNode categoryNode, boolean opened) {
-        categoryNodes.remove(categoryNode);
-        if (isCategoryInFilter(categoryNode)) {
-            model.removeRoot(categoryNode);
-        }
-        Category category = categoryNode.getCategory();
-        final CategoryNode newNode;
-        if (opened) {
-            newNode = new CategoryNode(category);
-        } else {
-            newNode = new ClosedCategoryNode(category);
-        }
-        categoryNodes.add(newNode);
-        mapCategoryToNode.put(category, newNode);
-        if (isCategoryInFilter(newNode)) {
-            addCategoryToModel(newNode);
-        }
-        storeClosedCategories();
-        if (newNode.isOpened()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    newNode.setExpanded(true);
-                }
-            });
+        synchronized (LOCK_CATEGORIES) {
+            categoryNodes.remove(categoryNode);
+            if (isCategoryInFilter(categoryNode)) {
+                model.removeRoot(categoryNode);
+            }
+            Category category = categoryNode.getCategory();
+            final CategoryNode newNode;
+            if (opened) {
+                newNode = new CategoryNode(category, false);
+            } else {
+                newNode = new ClosedCategoryNode(category);
+            }
+            categoryNodes.add(newNode);
+            mapCategoryToNode.put(category, newNode);
+            if (isCategoryInFilter(newNode)) {
+                addCategoryToModel(newNode);
+            }
+
+            storeClosedCategories();
+            if (newNode.isOpened()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        newNode.setExpanded(true);
+                    }
+                });
+            }
         }
     }
 
@@ -412,65 +470,104 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private List<CategoryNode> getClosedCategoryNodes() {
-        //TODO lock categNodes
-        List<CategoryNode> closed = new ArrayList<CategoryNode>(categoryNodes.size());
-        for (CategoryNode categoryNode : categoryNodes) {
-            if (!categoryNode.isOpened()) {
-                closed.add(categoryNode);
+        synchronized (LOCK_CATEGORIES) {
+            List<CategoryNode> closed = new ArrayList<CategoryNode>(categoryNodes.size());
+            for (CategoryNode categoryNode : categoryNodes) {
+                if (!categoryNode.isOpened()) {
+                    closed.add(categoryNode);
+                }
             }
+            return closed;
         }
-        return closed;
     }
 
     public void addRepository(Repository repository) {
-        //add repository to the model - sorted
-        RepositoryNode repositoryNode = new RepositoryNode(repository, false);
-        repositoryNodes.add(repositoryNode);
-        int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
-        addRepositoryToModel(index, repositoryNode);
+        synchronized (LOCK_REPOSITORIES) {
+            //add repository to the model - sorted
+            RepositoryNode repositoryNode = new RepositoryNode(repository, false);
+            repositoryNodes.add(repositoryNode);
+            addRepositoryToModel(repositoryNode);
+        }
     }
 
-    public void removeRepository(final RepositoryNode repositoryNode) {
-        repositoryNodes.remove((RepositoryNode) repositoryNode);
-        model.removeRoot(repositoryNode);
-
-        requestProcessor.post(new Runnable() {
-            @Override
-            public void run() {
-                repositoryNode.getRepository().remove();
+    public void removeRepository(final RepositoryNode... toRemove) {
+        String names = "";
+        for (int i = 0; i < toRemove.length; i++) {
+            RepositoryNode repositoryNode = toRemove[i];
+            names += repositoryNode.getRepository().getDisplayName();
+            if (i != toRemove.length - 1) {
+                names += ", ";
             }
-        });
-    }
-
-    public void setRepositoryOpened(RepositoryNode repositoryNode, boolean opened) {
-        repositoryNodes.remove(repositoryNode);
-        if (isRepositoryInFilter(repositoryNode)) {
-            model.removeRoot(repositoryNode);
         }
-        Repository repository = repositoryNode.getRepository();
-        final RepositoryNode newNode;
-        if (opened) {
-            newNode = new RepositoryNode(repository, repositoryNode.isLoaded());
-        } else {
-            newNode = new ClosedRepositoryNode(repository, repositoryNode.isLoaded());
-        }
-        repositoryNodes.add(newNode);
-        if (isRepositoryInFilter(newNode)) {
-            int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
-            addRepositoryToModel(index, newNode);
-        }
-        storeClosedRepositories();
-        if (newNode.isOpened()) {
-            SwingUtilities.invokeLater(new Runnable() {
+        String title = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveRepoTitle");
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveQuestion", names);
+        if (confirmDelete(title, message)) {
+            for (RepositoryNode repositoryNode : toRemove) {
+                synchronized (LOCK_REPOSITORIES) {
+                    repositoryNodes.remove((RepositoryNode) repositoryNode);
+                }
+                model.removeRoot(repositoryNode);
+            }
+            requestProcessor.post(new Runnable() {
                 @Override
                 public void run() {
-                    newNode.setExpanded(true);
+                    for (RepositoryNode repositoryNode : toRemove) {
+                        repositoryNode.getRepository().remove();
+                    }
                 }
             });
         }
     }
 
-    private void addRepositoryToModel(int index, RepositoryNode repositoryNode) {
+    public void setRepositoryOpened(RepositoryNode repositoryNode, boolean opened) {
+        synchronized (LOCK_REPOSITORIES) {
+            repositoryNodes.remove(repositoryNode);
+            if (isRepositoryInFilter(repositoryNode)) {
+                model.removeRoot(repositoryNode);
+            }
+            Repository repository = repositoryNode.getRepository();
+            final RepositoryNode newNode;
+            if (opened) {
+                newNode = new RepositoryNode(repository, repositoryNode.isLoaded());
+            } else {
+                newNode = new ClosedRepositoryNode(repository, repositoryNode.isLoaded());
+            }
+            repositoryNodes.add(newNode);
+            if (isRepositoryInFilter(newNode)) {
+                addRepositoryToModel(newNode);
+            }
+            storeClosedRepositories();
+            if (newNode.isOpened()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        newNode.setExpanded(true);
+                    }
+                });
+            }
+        }
+    }
+
+    public void deleteQuery(QueryNode... toDelete) {
+        String names = "";
+        for (int i = 0; i < toDelete.length; i++) {
+            QueryNode queryNode = toDelete[i];
+            names += queryNode.getQuery().getDisplayName();
+            if (i != toDelete.length - 1) {
+                names += ", ";
+            }
+        }
+        String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        if (confirmDelete(title, message)) {
+            for (QueryNode queryNode : toDelete) {
+                queryNode.getQuery().remove();
+            }
+        }
+    }
+
+    private void addRepositoryToModel(RepositoryNode repositoryNode) {
+        int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
         for (; index < size; index++) {
@@ -511,13 +608,15 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private List<RepositoryNode> getClosedRepositoryNodes() {
-        List<RepositoryNode> closed = new ArrayList<RepositoryNode>(repositoryNodes.size());
-        for (RepositoryNode repositoryNode : repositoryNodes) {
-            if (!repositoryNode.isOpened()) {
-                closed.add(repositoryNode);
+        synchronized (LOCK_REPOSITORIES) {
+            List<RepositoryNode> closed = new ArrayList<RepositoryNode>(repositoryNodes.size());
+            for (RepositoryNode repositoryNode : repositoryNodes) {
+                if (!repositoryNode.isOpened()) {
+                    closed.add(repositoryNode);
+                }
             }
+            return closed;
         }
-        return closed;
     }
 
     public AppliedFilters getAppliedTaskFilters() {
@@ -598,10 +697,25 @@ public final class DashboardViewer implements PropertyChangeListener {
         return expandedNodes.contains(node);
     }
 
+    public List<TreeListNode> getSelectedNodes() {
+        List<TreeListNode> nodes = new ArrayList<TreeListNode>();
+        Object[] selectedValues = treeList.getSelectedValues();
+        for (Object object : selectedValues) {
+            nodes.add((TreeListNode) object);
+        }
+        return nodes;
+    }
+
     public void loadData() {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
+                // w8 with loading to preject ot be opened
+                try {
+                    OpenProjects.getDefault().openProjects().get();
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                }
                 titleRepositoryNode.setProgressVisible(true);
                 titleCategoryNode.setProgressVisible(true);
                 loadRepositories();
@@ -612,7 +726,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         });
     }
 
-    void loadCategory(Category category) {
+    public void loadCategory(Category category) {
         DashboardStorage storage = DashboardStorage.getInstance();
         List<TaskEntry> taskEntries = storage.readCategory(category.getName());
         category.setTasks(loadTasks(taskEntries));
@@ -628,8 +742,8 @@ public final class DashboardViewer implements PropertyChangeListener {
             // was category opened
             boolean open = !names.contains(categoryEntry.getCategoryName());
             if (open) {
-                List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
-                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName(), tasks)));
+                //List<Issue> tasks = loadTasks(categoryEntry.getTaskEntries());
+                catNodes.add(new CategoryNode(new Category(categoryEntry.getCategoryName()), true));
             } else {
                 catNodes.add(new ClosedCategoryNode(new Category(categoryEntry.getCategoryName())));
             }
@@ -678,6 +792,49 @@ public final class DashboardViewer implements PropertyChangeListener {
         return null;
     }
 
+    private void updateRepositories(List<Repository> newValue) {
+        synchronized (LOCK_REPOSITORIES) {
+            List<Repository> toAdd = new ArrayList<Repository>();
+            List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
+
+            for (RepositoryNode oldRepository : repositoryNodes) {
+                if (!newValue.contains(oldRepository.getRepository())) {
+                    toRemove.add(oldRepository);
+                }
+            }
+
+            List<Repository> oldValue = getRepositories();
+            for (Repository newRepository : newValue) {
+                if (!oldValue.contains(newRepository)) {
+                    toAdd.add(newRepository);
+                }
+            }
+            //remove unavailable repositories from model
+            repositoryNodes.removeAll(toRemove);
+            for (RepositoryNode repositoryNode : toRemove) {
+                model.removeRoot(repositoryNode);
+            }
+            //add new repositories to model
+            for (Repository newRepository : toAdd) {
+                RepositoryNode repositoryNode = new RepositoryNode(newRepository, false);
+                repositoryNodes.add(repositoryNode);
+                if (isRepositoryInFilter(repositoryNode)) {
+                    addRepositoryToModel(repositoryNode);
+                }
+            }
+        }
+    }
+
+    private List<Repository> getRepositories() {
+        synchronized (LOCK_REPOSITORIES) {
+            List<Repository> repositories = new ArrayList<Repository>();
+            for (RepositoryNode repositoryNode : repositoryNodes) {
+                repositories.add(repositoryNode.getRepository());
+            }
+            return repositories;
+        }
+    }
+
     private void loadRepositories() {
         List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
         List<String> closedIds = DashboardStorage.getInstance().readClosedRepositories();
@@ -711,14 +868,15 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private TaskNode getCategorizedTask(TaskNode taskNode) {
-        //TODO lock categNodes
-        for (CategoryNode categoryNode : categoryNodes) {
-            int index = categoryNode.indexOf(taskNode.getTask());
-            if (index != -1) {
-                return categoryNode.getTaskNodes().get(index);
+        synchronized (LOCK_CATEGORIES) {
+            for (CategoryNode categoryNode : categoryNodes) {
+                int index = categoryNode.indexOf(taskNode.getTask());
+                if (index != -1) {
+                    return categoryNode.getTaskNodes().get(index);
+                }
             }
+            return null;
         }
-        return null;
     }
 
     private void addRootToModel(int index, TreeListNode node) {
@@ -739,21 +897,23 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void refreshContent() {
-        //TODO update only filtered (opened if the filter is on)
-        //update filtered nodes
-        for (CategoryNode categoryNode : categoryNodes) {
-            categoryNode.updateContent();
+        synchronized (LOCK_CATEGORIES) {
+            for (CategoryNode categoryNode : categoryNodes) {
+                categoryNode.updateContent();
+            }
         }
-        for (RepositoryNode repositoryNode : repositoryNodes) {
-            repositoryNode.updateContent();
+        synchronized (LOCK_REPOSITORIES) {
+            for (RepositoryNode repositoryNode : repositoryNodes) {
+                repositoryNode.updateContent();
+            }
         }
-
+        mapTaskToNode.clear();
         setRepositories(repositoryNodes);
         setCategories(categoryNodes);
     }
 
     private void setCategories(List<CategoryNode> catNodes) {
-        synchronized (LOCK) {
+        synchronized (LOCK_CATEGORIES) {
             removeNodesFromModel(CategoryNode.class);
             categoryNodes = catNodes;
             mapCategoryToNode.clear();
@@ -770,7 +930,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void setRepositories(List<RepositoryNode> repoNodes) {
-        synchronized (LOCK) {
+        synchronized (LOCK_REPOSITORIES) {
             removeNodesFromModel(RepositoryNode.class);
             repositoryNodes = repoNodes;
             Collections.sort(this.repositoryNodes);
@@ -782,6 +942,16 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                for (RepositoryNode repositoryNode : repositoryNodes) {
+                    if (repositoryNode.isOpened()) {
+                        repositoryNode.setExpanded(true);
+                    }
+                }
+            }
+        });
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
@@ -802,5 +972,31 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (TreeListNode node : nodesToRemove) {
             removeRootFromModel(node);
         }
+    }
+
+    private void attachActions() {
+        treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.REFRESH_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalRefreshAction"); //NOI18N
+        treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalRefreshAction", new Actions.UniversalRefreshAction());//NOI18N
+
+        treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.DELETE_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction"); //NOI18N
+        treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
+    }
+
+    private boolean confirmDelete(String title, String message) {
+        String names = "";
+        for (CategoryNode categoryNode : categoryNodes) {
+            names += categoryNode.getCategory().getName() + " ";
+        }
+        NotifyDescriptor nd = new NotifyDescriptor(
+                message, //NOI18N
+                title, //NOI18N
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.YES_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            return true;
+        }
+        return false;
     }
 }

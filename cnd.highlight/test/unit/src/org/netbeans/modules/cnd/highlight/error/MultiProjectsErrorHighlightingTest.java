@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
@@ -66,7 +67,12 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         }
         super.setUp();
     }
-        
+
+    @Override
+    protected boolean needRepository() {
+        return true;
+    }
+
     @Override
     protected File[] changeDefProjectDirBeforeParsingProjectIfNeeded(File projectDir) {
         // we have following structure for this test
@@ -128,7 +134,7 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("third/third.cpp");
         performStaticTest("forth/forth.cpp");
     }
-    
+
     public void testRedFilesWhenProjectClose202433() throws Exception {
         // #202433 - parser errors in studio system includes
         CsmModel model = super.getModel();
@@ -144,11 +150,22 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         performStaticTest("second/second.cpp");
     }
 
-    public void DISABLED_testRedFilesWhenReopenProject210898() throws Exception {
+    public void testRedFilesWhenNoReparseProject210898() throws Exception {
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
         CsmModel model = super.getModel();
         assertNotNull("null model", model);
         performStaticTest("first/first.cpp");
+        performStaticTest("fifth/fifth.cpp");
+    }
+
+    private static final boolean ENABLED = false;
+    public void testRedFilesWhenReopenProject210898() throws Exception {
+        assertTrue("reposiroty Must Be ON " + TraceFlags.PERSISTENT_REPOSITORY, TraceFlags.PERSISTENT_REPOSITORY);
+        // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
+        CsmModel model = super.getModel();
+        assertNotNull("null model", model);
+        performStaticTest("first/first.cpp");
+        performStaticTest("fifth/fifth.cpp");
         CsmProject firstPrj = super.getProject(PROJECT_FIRST);
         assertNotNull("null project for first", firstPrj);
         // fifth project defines macro which defines extra classes
@@ -156,8 +173,13 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         assertNotNull("null project for first", macroDefinedProject);
         // close project which uses this extra classes
         super.closeProject(PROJECT_FIFTH);
-        // reparse the first project
-        super.reparseProject(firstPrj);
+//        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
+        if (ENABLED) {
+            // reparse all projects
+            super.reparseAllProjects(4);
+        }
+//        firstPrj = super.getProject(PROJECT_FIRST);
+//        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
         performStaticTest("first/first.cpp");
         super.reopenProject(PROJECT_FIFTH);
         performStaticTest("fifth/fifth.cpp");

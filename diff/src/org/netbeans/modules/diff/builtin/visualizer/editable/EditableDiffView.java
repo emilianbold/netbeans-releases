@@ -187,6 +187,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     private static final String CONTENT_TYPE_DIFF = "text/x-diff"; //NOI18N
+    private final JPanel searchContainer;
+    private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -208,11 +210,15 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         actionsEnabled = ss2.isEditable();
         diffMarkprovider = new EditableDiffMarkProvider();        
 
+        view = new JPanel(new BorderLayout(0, 0));
+        searchContainer = new JPanel();
+        searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
+        view.add(searchContainer, BorderLayout.PAGE_END);
         if (enhancedView) {
-            view = jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+            view.add(jTabbedPane = new JTabbedPane(JTabbedPane.TOP), BorderLayout.CENTER);
         } else {
             jTabbedPane = null;
-            view = jSplitPane1;
+            view.add(jSplitPane1, BorderLayout.CENTER);
         }
         initComponents ();
 
@@ -807,11 +813,19 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         int off1, off2;
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
+            int diffSecondStart = diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0;
+            int offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
             off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
-            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
-
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diffSecondStart);
+            int off2nextLine = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondEnd() > diffSecondStart ? diffSecondStart + 1 : diffSecondStart);
+            
             jEditorPane1.getEditorPane().setCaretPosition(off1);
-            jEditorPane2.getEditorPane().setCaretPosition(off2);
+            if(offCurrent >= off2nextLine || offCurrent < off2) {
+                // it could be somebody is editing right now,
+                // so set the caret on the diferences first lines first column only in case
+                // it isn't already somrwhere in the line 
+                jEditorPane2.getEditorPane().setCaretPosition(off2);
+            }
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
@@ -866,6 +880,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             textualEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yName"));  // NOI18N
             textualEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
             textualPanel.add(new JScrollPane(textualEditorPane));
+            textualEditorPane.putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+            jEditorPane1.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+            jEditorPane2.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
         }        
         
         jSplitPane1.setLeftComponent(filePanel1);

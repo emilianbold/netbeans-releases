@@ -71,18 +71,18 @@ public class MavenSharabilityQueryImplTest extends NbTestCase {
         /* Considered owned by NBM project, so skip this:
         assertSharability(SharabilityQuery.UNKNOWN, "");
          */
-        assertSharability(SharabilityQuery.MIXED, "prj");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/src");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/pom.xml");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "prj/target");
-        assertSharability(SharabilityQuery.UNKNOWN, "prj/stuff.xml");
-        assertSharability(SharabilityQuery.MIXED, "prj/modules");
-        assertSharability(SharabilityQuery.MIXED, "prj/modules/mod");
-        assertSharability(SharabilityQuery.SHARABLE, "prj/modules/mod/pom.xml");
-        assertSharability(SharabilityQuery.NOT_SHARABLE, "prj/modules/mod/target");
+        assertSharability(SharabilityQuery.Sharability.MIXED, "prj");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/src");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/pom.xml");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/target");
+        assertSharability(SharabilityQuery.Sharability.UNKNOWN, "prj/stuff.xml");
+        assertSharability(SharabilityQuery.Sharability.MIXED, "prj/modules");
+        assertSharability(SharabilityQuery.Sharability.MIXED, "prj/modules/mod");
+        assertSharability(SharabilityQuery.Sharability.SHARABLE, "prj/modules/mod/pom.xml");
+        assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/modules/mod/target");
     }
-    private void assertSharability(int expected, String path) throws Exception {
-        assertEquals(path, expected, SharabilityQuery.getSharability(new File(getWorkDir(), path)));
+    private void assertSharability(SharabilityQuery.Sharability expected, String path) throws Exception {
+        assertEquals(path, expected, SharabilityQuery.getSharability(new File(getWorkDir(), path).toURI()));
     }
 
 }

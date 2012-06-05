@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.java.source.ant;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.TreeMap;
 import java.io.File;
 import java.io.IOException;
@@ -101,6 +103,7 @@ import org.w3c.dom.UserDataHandler;
 
 import static org.netbeans.api.java.project.runner.JavaRunner.*;
 import org.netbeans.api.project.ProjectManager;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -126,8 +129,8 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         String[] projectName = new String[1];
         Map<String,String> antProps = computeProperties(command, properties, projectName);
         
-        FileObject script = buildScript(command);
-        AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), projectName[0]);
+        FileObject script = buildScript(command, false);
+        AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), command, projectName[0]);
         AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
         Properties props = execenv.getProperties();
         props.putAll(antProps);
@@ -413,7 +416,7 @@ out:                for (FileObject root : exec.getRoots()) {
         return ProjectRunnerImpl.class.getResource("/org/netbeans/modules/java/source/ant/resources/" + actionName + "-snippet.xml");
     }
 
-    private static FileObject buildScript(String actionName) throws IOException {
+    private static FileObject buildScript(String actionName, boolean forceCopy) throws IOException {
         URL script = locateScript(actionName);
 
         if (script == null) {
@@ -424,10 +427,8 @@ out:                for (FileObject root : exec.getRoots()) {
         File jarFile = FileUtil.archiveOrDirForURL(thisClassSource);
         File scriptFile = Places.getCacheSubfile("executor-snippets/" + actionName + ".xml");
         
-        if (!scriptFile.canRead() || (jarFile != null && jarFile.lastModified() > scriptFile.lastModified())) {
+        if (forceCopy || !scriptFile.canRead() || (jarFile != null && jarFile.lastModified() > scriptFile.lastModified())) {
             try {
-                scriptFile.delete();
-
                 URLConnection connection = script.openConnection();
                 FileObject target = FileUtil.createData(scriptFile);
 
@@ -492,12 +493,14 @@ out:                for (FileObject root : exec.getRoots()) {
     private static final class FakeAntProjectCookie implements AntProjectCookie, ChangeListener {
 
         private final AntProjectCookie apc;
+        private final String command;
         private final String projectName;
         private final ChangeSupport cs = new ChangeSupport(this);
 
-        public FakeAntProjectCookie(AntProjectCookie apc, String projectName) {
+        public FakeAntProjectCookie(AntProjectCookie apc, String command, String projectName) {
             this.apc = apc;
             this.apc.addChangeListener(WeakListeners.change(this, this.apc));
+            this.command = command;
             this.projectName = projectName;
         }
 
@@ -514,13 +517,26 @@ out:                for (FileObject root : exec.getRoots()) {
         }
 
         public Element getProjectElement() {
-            final Element element = apc.getProjectElement();
-            if (element == null) {
+            Element element = apc.getProjectElement();
+            if (element == null || this.apc.getParseException() != null) {
                 final File fo = this.apc.getFile();
-                throw new NullPointerException(String.format("Cannot parse: %s exists: %b readable: %b",
+                LOG.log(Level.FINE, String.format("Cannot parse: %s exists: %b readable: %b",
                         fo == null ? null  : fo.getAbsolutePath(),
                         fo == null ? false : fo.exists(),
                         fo == null ? false : fo.canRead()));
+                try {
+                    DataObject od = DataObject.find(buildScript(command, true));
+                    //the APC does not refresh itself automatically, need to push it to the refresh:
+                    if (od instanceof PropertyChangeListener) {
+                        ((PropertyChangeListener) od).propertyChange(new PropertyChangeEvent(od, null, null, null));
+                    }
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                
+                element = apc.getProjectElement();
+                
+                if (element == null) return null;
             }
             return new FakeElement(element, projectName);
         }

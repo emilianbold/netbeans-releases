@@ -202,17 +202,17 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel = new JTextPane();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(null);
-
         runAsLabel.setLabelFor(runAsCombo);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
         urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
+        urlTextField.setColumns(20);
+
         indexFileLabel.setLabelFor(indexFileTextField);
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile"));
-        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse"));
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
@@ -220,14 +220,15 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         });
 
         argsLabel.setLabelFor(argsTextField);
+        Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
 
-        Mnemonics.setLocalizedText(argsLabel,NbBundle.getMessage(RunAsLocalWeb.class,"LBL_Arguments"));
+        argsTextField.setColumns(20);
 
+        hintLabel.setEditable(false);
         hintLabel.setBackground(UIManager.getDefaults().getColor("Label.background"));
         hintLabel.setBorder(null);
-        hintLabel.setEditable(false);
         hintLabel.setFocusable(false);
-        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text"));
+        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 advancedButtonActionPerformed(evt);
@@ -249,14 +250,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                     .addComponent(runAsLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(hintLabel, GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                    .addComponent(argsTextField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                    .addComponent(hintLabel)
+                    .addComponent(argsTextField, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(indexFileTextField)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(indexFileBrowseButton))
-                    .addComponent(runAsCombo, Alignment.TRAILING, 0, 112, Short.MAX_VALUE)
-                    .addComponent(urlTextField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)))
+                    .addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(urlTextField, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)

@@ -99,6 +99,7 @@ CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
+CLASS      Base                            [PUBLIC]   issue208193.php
 CLASS      BaseClass                       [PUBLIC]   FrontSpace
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      BaseFrontClass                  [PUBLIC]   FrontSpace
@@ -108,7 +109,9 @@ CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue153707.php
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
+CLASS      Book                            [PUBLIC]   test203332_01.php
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
@@ -128,9 +131,14 @@ CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
+CLASS      CultureTable                    [PUBLIC]   test203332_02.php
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
 CLASS      Delme1                          [PUBLIC]   delme
 CLASS      Delme2                          [PUBLIC]   Delme2.php
+CLASS      Deriv                           [PUBLIC]   issue208193.php
+CLASS      Doctrine_Query                  [PUBLIC]   test203332_02.php
+CLASS      Doctrine_Query_Abstract         [PUBLIC,   test203332_02.php
+CLASS      Doctrine_Table                  [PUBLIC]   test203332_02.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
 CLASS      EmptyClass                      [PUBLIC]   issue201310.php
 CLASS      EmptyClassFromNs                [PUBLIC]   Extra
@@ -164,6 +172,7 @@ CLASS      I146187Parent1                  [PUBLIC]   issue146187.php
 CLASS      I146187Parent2                  [PUBLIC]   issue146187.php
 CLASS      Image                           [PUBLIC]   Bar
 CLASS      Image                           [PUBLIC]   Foo
+CLASS      Index                           [PUBLIC]   issue208193.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php

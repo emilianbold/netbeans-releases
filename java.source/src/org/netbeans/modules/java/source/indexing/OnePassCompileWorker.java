@@ -125,7 +125,7 @@ final class OnePassCompileWorker extends CompileWorker {
                             jt = null;
                             units = null;
                             dc.cleanDiagnostics();
-                            System.gc();
+                            mem.free();
                         }
                         if (jt == null) {
                             jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
@@ -168,7 +168,7 @@ final class OnePassCompileWorker extends CompileWorker {
                             jt = null;
                             units = null;
                             dc.cleanDiagnostics();
-                            System.gc();
+                            mem.free();
                         }
                     }
                 }
@@ -178,11 +178,11 @@ final class OnePassCompileWorker extends CompileWorker {
         }
 
         if (nop) {
-            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
         if (units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
-            return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
 
         CompileTuple active = null;
@@ -200,8 +200,8 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 if (mem.isLowMemory()) {
                     units = null;
-                    System.gc();
-                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                    mem.free();
+                    return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 Iterable<? extends TypeElement> types;
                 types = jt.enterTrees(Collections.singletonList(unit.first));
@@ -239,8 +239,8 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 if (mem.isLowMemory()) {
                     units = null;
-                    System.gc();
-                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                    mem.free();
+                    return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 jt.analyze(types);
                 if (aptEnabled) {
@@ -248,8 +248,8 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 if (mem.isLowMemory()) {
                     units = null;
-                    System.gc();
-                    return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                    mem.free();
+                    return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
                 javaContext.getFQNs().set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
@@ -273,7 +273,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 Log.instance(jt.getContext()).nerrors = 0;
                 finished.add(active.indexable);
             }
-            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
             TreeLoader.dumpCouplingAbort(ca, null);
@@ -332,6 +332,6 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
             }
         }
-        return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+        return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
     }
 }

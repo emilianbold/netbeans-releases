@@ -63,6 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.tasks.ui.dashboard.ClosedCategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.ClosedRepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TitleNode;
@@ -133,7 +134,7 @@ final class RendererPanel extends JPanel {
         } else if (node instanceof TitleNode) {
             background = isSelected ? expandableRootSelectedBackground : ColorManager.getDefault().getDisabledColor();
         }
-        int maxWidth = rowWidth - depth * EMPTY_ICON.getIconWidth();
+        int maxWidth = rowWidth - depth * EMPTY_ICON.getIconWidth() - (TreeList.INSETS_LEFT + nestingDepth * rowHeight / 2) - TreeList.INSETS_RIGHT;
         JComponent inner = node.getComponent(foreground, background, isSelected, hasFocus, maxWidth > 0 ? maxWidth : 0);
         if (node.isExpandable() || !isRoot || node instanceof ClosedCategoryNode || node instanceof ClosedRepositoryNode) {
             inner.setBorder(INNER_BORDER);

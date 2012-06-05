@@ -19,6 +19,26 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jCheckAccess" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jInlineMethods" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" max="-2" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLblAccessVis" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLblFieldVis" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLblInsertPoint" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLblSort" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="jComboInsertPoint" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboSort" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboJavadoc" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboField" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboAccess" linkSize="2" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
+                  </Group>
                   <Group type="102" alignment="1" attributes="1">
                       <Component id="jScrollField" pref="575" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -30,32 +50,7 @@
                       </Group>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="jCheckAccess" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="jInlineMethods" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="jAddInlineKeyword" max="32767" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jLblAccessVis" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLblFieldVis" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLblInsertPoint" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLblSort" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="jComboInsertPoint" linkSize="2" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jComboSort" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <Component id="jComboJavadoc" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <Component id="jComboField" linkSize="2" min="-2" max="-2" attributes="0"/>
-                              <Component id="jComboAccess" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Component id="jLblTitle" alignment="0" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jLblTitle" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -104,10 +99,7 @@
                   <Component id="jComboAccess" linkSize="3" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jInlineMethods" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jAddInlineKeyword" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="jInlineMethods" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jCheckAccess" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -362,19 +354,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/refactoring/ui/Bundle.properties" key="ACSD_inlineMethods" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jInlineMethodsActionPerformed"/>
-      </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="jAddInlineKeyword">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/refactoring/ui/Bundle.properties" key="EncapsulateFieldPanel.jAddInlineKeyword.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

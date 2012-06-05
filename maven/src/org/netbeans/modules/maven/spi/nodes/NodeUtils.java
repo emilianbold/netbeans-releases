@@ -111,7 +111,7 @@ public class NodeUtils {
             fs = new LocalFileSystem();
             fs.setReadOnly(true);
             try {
-                fs.setRootDirectory(new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()));
+                fs.setRootDirectory(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
             } catch (Exception x) {
                 throw new AssertionError(x);
             }

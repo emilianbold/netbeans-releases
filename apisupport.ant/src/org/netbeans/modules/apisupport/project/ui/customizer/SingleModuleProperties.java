@@ -1151,7 +1151,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 universeDependencies = Collections.unmodifiableSet(allDependencies);
                 return true;
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                LOG.log(Level.INFO, "#213110: broken module/suite metadata?", ioe);
             }
         }
         return false;

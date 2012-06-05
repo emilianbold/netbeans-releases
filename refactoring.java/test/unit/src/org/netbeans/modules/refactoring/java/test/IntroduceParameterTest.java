@@ -104,6 +104,37 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
+    
+    public void test213063() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                + "public class A {\n"
+                + "    public A() {\n"
+                + "         System.out.println(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A();\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('2') + 1, Javadoc.NONE, true, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public A() {\n"
+                + "         this(2);\n"
+                + "    }\n"
+                + "\n"
+                + "    public A(int introduced) {\n"
+                + "         System.out.println(introduced);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        A a = new A();\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void testIntroduceParameter() throws Exception {
         String source;

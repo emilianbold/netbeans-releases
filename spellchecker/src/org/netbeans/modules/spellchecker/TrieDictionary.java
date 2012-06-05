@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -148,12 +148,14 @@ public class TrieDictionary implements Dictionary {
     }
 
     public List<String> findProposals(CharSequence pattern) {
-        List<String> result = new ArrayList<String>();
+        ListProposalAcceptor result = new ListProposalAcceptor();
         
-        return findProposals(pattern, 2, 4, new StringBuffer(), result);
+        findProposals(pattern, 2, 4, new StringBuffer(), result);
+        
+        return result;
     }
     
-    private List<String> findProposals(CharSequence pattern, int maxDistance, int node, StringBuffer word, List<String> result) {
+    private void findProposals(CharSequence pattern, int maxDistance, int node, StringBuffer word, ProposalAcceptor result) {
         int entries = readInt(node + 1);
         
         for (int currentEntry = 0; currentEntry < entries; currentEntry++) {
@@ -176,8 +178,10 @@ public class TrieDictionary implements Dictionary {
             
             word.deleteCharAt(word.length() - 1);
         }
-        
-        return result;
+    }
+    
+    private void verifyDictionary() {
+        findProposals("", Integer.MAX_VALUE, 4, new StringBuffer(), NULL_ACCEPTOR);    
     }
 
     private List<String> findValidWordsForPrefix(StringBuffer foundSoFar, int node, List<String> result) {
@@ -406,11 +410,7 @@ public class TrieDictionary implements Dictionary {
         public FutureDictionary(File trie, List<URL> sources) throws IOException {
             this.trie = trie;
             this.sources = sources;
-            if (!trie.exists()) {
-                workingTask.set(WORKER.post(this));
-            } else {
-                delegate.set(new TrieDictionary(trie));
-            }
+            workingTask.set(WORKER.post(this));
         }
         
         public ValidityType validateWord(CharSequence word) {
@@ -483,6 +483,21 @@ public class TrieDictionary implements Dictionary {
 
         public void run() {
             trie.getParentFile().mkdirs();
+            
+            if (trie.canRead()) {
+                //validate the dictionary:
+                try {
+                    TrieDictionary d = new TrieDictionary(trie);
+                    d.verifyDictionary();
+                    delegate.set(d);
+                    return ;//valid
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Dictionary file failed validation, attempting to rebuild", ex);
+                } catch (IndexOutOfBoundsException ex) {
+                    LOG.log(Level.INFO, "Dictionary file failed validation, attempting to rebuild", ex);
+                }
+            }
+
             trie.delete();
             
             File temp = new File(trie.getParentFile(), "dict.temp");
@@ -494,9 +509,19 @@ public class TrieDictionary implements Dictionary {
 
                 constructTrie(array, sources);
                 array.close();
+                LOG.log(Level.FINE, "trie file length: {0}", temp.length());
                 temp.renameTo(trie);
                 if (trie.canRead()) {
-                    delegate.set(new TrieDictionary(trie));
+                    TrieDictionary d = new TrieDictionary(trie);
+                    
+                    delegate.set(d);
+
+                    try {
+                        d.verifyDictionary();
+                    } catch (IndexOutOfBoundsException ex) {
+                        LOG.log(Level.INFO, "Cannot read the dictionary file", ex);
+                        wasBroken.set(true);
+                    }
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -509,6 +534,20 @@ public class TrieDictionary implements Dictionary {
             }
         }
     }
+    
+    private static interface ProposalAcceptor {
+        public boolean add(String proposal);
+    }
+    
+    private static class ListProposalAcceptor extends ArrayList<String> implements ProposalAcceptor {}
+    
+    private static class NullProposalAcceptor implements ProposalAcceptor {
+        @Override public boolean add(String proposal) {
+            return true;
+        }
+    }
+    
+    private static final NullProposalAcceptor NULL_ACCEPTOR = new NullProposalAcceptor();
 
     private static class ByteArray {
 

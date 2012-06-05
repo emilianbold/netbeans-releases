@@ -874,7 +874,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private boolean firstDifference = true;
     void refreshNavigationButtons(int currentDifference, int diffCount) {
         firstDifference = currentDifference <= 0;
-        lastDifference = currentDifference == diffCount - 1;
+        lastDifference = currentDifference >= diffCount - 1; // >= because diffCount might be == 0 in case of textual diff
         
         if(masterView.isSingleSelection()) {
             getToolbar().prevButton.setEnabled(!(firstDifference && masterView.isFirstRow()));

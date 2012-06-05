@@ -485,6 +485,34 @@ public abstract class WebRestSupport extends RestSupport {
             throw new IllegalArgumentException(ex);
         }
     }
+    
+    public String getApplicationPath() throws IOException {
+        String pathFromDD = getApplicationPathFromDD();
+        String applPath = getApplicationPathFromAnnotations(pathFromDD);
+        return (applPath == null ? super.getApplicationPath() : applPath);
+    }
+    
+    protected String getApplicationPathFromAnnotations(final String applPathFromDD) {
+        List<RestApplication> restApplications = getRestApplications();
+        if (applPathFromDD == null) {
+            if (restApplications.size() == 0) {
+                return null;
+            } else {
+                return restApplications.get(0).getApplicationPath();
+            }
+        } else {
+            if (restApplications.size() == 0) {
+                return applPathFromDD;
+            } else {
+                for (RestApplication appl: restApplications) {
+                    if (applPathFromDD.equals(appl.getApplicationPath())) {
+                        return applPathFromDD;
+                    }
+                }
+                return restApplications.get(0).getApplicationPath();
+            }
+        }
+    }
 
     protected void removeResourceConfigFromWebApp() throws IOException {
         FileObject ddFO = getWebXml();

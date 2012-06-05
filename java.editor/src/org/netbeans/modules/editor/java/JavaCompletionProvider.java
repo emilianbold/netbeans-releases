@@ -964,7 +964,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree init = unwrapErrTree(var.getInitializer());
             if (init == null) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, type), offset);
-                if (last == null) {
+                if (last == null || last.token().id() == JavaTokenId.COMMA) {
                     insideExpression(env, new TreePath(path, type));
                 } else if (last.token().id() == JavaTokenId.EQ) {
                     localResult(env);
@@ -2411,7 +2411,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int endPos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), et);
             if (endPos != Diagnostic.NOPOS && endPos < offset) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, endPos, offset);
-                if (last != null)
+                if (last != null && last.token().id() != JavaTokenId.COMMA)
                     return;
             }
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -2424,11 +2424,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                 final ExecutableElement method = scope.getEnclosingMethod();
                 ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                     public boolean accept(Element e, TypeMirror t) {
-                        return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                        return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
                                 !illegalForwardRefs.contains(e);
                     }
                 };
-                for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
+                for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
                     results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
@@ -2455,11 +2455,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                             final ExecutableElement method = scope.getEnclosingMethod();
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
-                                    return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                                    return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
+                            for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
                                 results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
@@ -2483,11 +2483,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                             final ExecutableElement method = scope.getEnclosingMethod();
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
-                                    return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                                    return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
+                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
                                 results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         break;
@@ -2587,11 +2587,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                     final ExecutableElement method = scope.getEnclosingMethod();
                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                        public boolean accept(Element e, TypeMirror t) {
-                            return (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
+                            return (method == null || method == e.getEnclosingElement() || e.getModifiers().contains(FINAL)) &&
                                     !illegalForwardRefs.contains(e);
                         }
                     };
-                    for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
+                    for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst))
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                     if (et.getKind() == Tree.Kind.MEMBER_SELECT && tm != null && tm.getKind() == TypeKind.ERROR) {
                         addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
