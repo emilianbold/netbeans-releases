@@ -42,11 +42,11 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.io.File;
+import java.io.StringReader;
 import java.util.Enumeration;
 import java.util.List;
 import java_cup.runtime.Symbol;
-import java.io.File;
-import java.io.StringReader;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
