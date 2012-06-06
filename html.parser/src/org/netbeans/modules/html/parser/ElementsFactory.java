@@ -59,6 +59,10 @@ public class ElementsFactory {
         this.source = source;
     }
 
+    Text createText(int startOffset, int endOffset) {
+        return new Text(startOffset, endOffset, source);
+    }
+    
     ModifiableCloseTag createCloseTag(int startOffset, int endOffset, byte nameLen) {
         return new CommonCloseTag(source, startOffset, endOffset, nameLen);
     }
@@ -121,6 +125,98 @@ public class ElementsFactory {
         public void setAttribute(Attribute attribute);
     }
 
+    static class Text implements ModifiableElement {
+
+        private int from, to;
+        private CharSequence source;
+        private Node parent;
+
+        public Text(int from, int to, CharSequence source) {
+            this.from = from;
+            this.to = to;
+            this.source = source;
+        }
+        
+        @Override
+        public int from() {
+            return from;
+        }
+
+        @Override
+        public int to() {
+            return to;
+        }
+
+        @Override
+        public ElementType type() {
+            return ElementType.TEXT;
+        }
+
+        @Override
+        public CharSequence image() {
+            return source.subSequence(from, to);
+        }
+
+        @Override
+        public CharSequence id() {
+            return null;
+        }
+
+        @Override
+        public Collection<ProblemDescription> problems() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Node parent() {
+            return parent;
+        }
+
+        @Override
+        public void detachFromParent() {
+        }
+
+        @Override
+        public void setEndOffset(int endOffset) {
+            to = endOffset;
+        }
+
+        @Override
+        public void setParent(Node parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder()
+                    .append(type().name())
+                    .append(';')
+                    .append(' ')
+                    .append(from())
+                    .append("-")
+                    .append(to())
+                    .append(' ')
+                    .append('"')
+                    .append(escapeEOLs(image()))
+                    .append('"')
+                    .toString();
+        }
+        
+        private String escapeEOLs(CharSequence text) {
+            StringBuilder sb = new StringBuilder();
+            for(int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if(c == '\n') {
+                    sb.append("\\n");
+                } else {
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
+        }
+        
+    }
+    
     static abstract class TagElement implements Named, ModifiableElement {
 
         //32-64
