@@ -564,7 +564,8 @@ public final class DocumentViewOp
     
     private boolean checkFontRenderContext() { // check various things related to rendering
         if (fontRenderContext == null) {
-            Graphics graphics = docView.getTextComponent().getGraphics();
+            JTextComponent textComponent = docView.getTextComponent();
+            Graphics graphics = (textComponent != null) ? textComponent.getGraphics() : null;
             if (graphics != null) {
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
                 // Use rendering hints (antialiasing etc.)
