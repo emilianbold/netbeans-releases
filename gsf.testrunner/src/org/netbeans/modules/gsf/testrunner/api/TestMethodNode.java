@@ -46,7 +46,6 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.Image;
 import java.io.CharConversionException;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
@@ -73,7 +72,7 @@ public class TestMethodNode extends AbstractNode {
 
     /** */
     protected final Testcase testcase;
-    protected final WeakReference<Project> project;
+    protected final Project project;
 
     /**
      * Creates a new instance of TestcaseNode
@@ -88,7 +87,7 @@ public class TestMethodNode extends AbstractNode {
               : Children.LEAF, lookup);
 
         this.testcase = testcase;
-        this.project = new WeakReference<Project>(project);
+        this.project = project;
 
         setDisplayName();
 
