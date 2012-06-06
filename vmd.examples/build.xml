@@ -43,31 +43,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project basedir="." default="netbeans" name="mobility.midpexamples">
+<project basedir="." default="netbeans" name="vmd.examples">
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="init" depends="projectized.init,zip-examples"/>
-    
     <target name="zip-examples" depends="basic-init,files-init,build-init">
-        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/mobility/midpexamples"/>
+        <property name="examples" location="${build.classes.dir}/org/netbeans/modules/vmd/examples"/>
         <mkdir dir="${examples}"/>
-        <zip basedir="AdvancedMultimediaSupplements" destfile="${examples}/AdvancedMultimediaSupplements.zip"/>
-        <zip basedir="AudioSamples" destfile="${examples}/AudioSamples.zip"/>
-        <zip basedir="BluetoothDemo" destfile="${examples}/BluetoothDemo.zip"/>
-        <zip basedir="CityGuide" destfile="${examples}/CityGuide.zip"/>
-        <zip basedir="converter" destfile="${examples}/converter.zip"/>
-        <zip basedir="I18nDemo" destfile="${examples}/I18nDemo.zip"/>
-        <zip basedir="JSR172Demo" destfile="${examples}/JSR172Demo.zip"/>
-        <zip basedir="MMAPIDemos" destfile="${examples}/MMAPIDemos.zip"/>
-        <zip basedir="NetworkDemo" destfile="${examples}/NetworkDemo.zip"/>
-        <zip basedir="ObexDemo" destfile="${examples}/ObexDemo.zip"/>
-        <zip basedir="OpenGLESDemo" destfile="${examples}/OpenGLESDemo.zip"/>
-        <zip basedir="PDAPDemo" destfile="${examples}/PDAPDemo.zip"/>
-        <zip basedir="PhotoAlbum" destfile="${examples}/PhotoAlbum.zip"/>
-        <zip basedir="SIPDemo" destfile="${examples}/SIPDemo.zip"/>
-        <zip basedir="SunSamples-Demos" destfile="${examples}/SunSamples-Demos.zip"/>
-        <zip basedir="SVGContactList" destfile="${examples}/SVGContactList.zip"/>
-        <zip basedir="SVGDemo" destfile="${examples}/SVGDemo.zip"/>
-        <zip basedir="UIDemo" destfile="${examples}/UIDemo.zip"/>
-        <zip basedir="WMADemo" destfile="${examples}/WMADemo.zip"/>
+        <zip basedir="GameBuilderDemo" destfile="${examples}/GameBuilderDemo.zip"/>
+        <zip basedir="LocalizationDemo" destfile="${examples}/LocalizationDemo.zip"/>
+        <zip basedir="VDCustomComponents" destfile="${examples}/VDCustomComponents.zip"/>
     </target>
 </project>
