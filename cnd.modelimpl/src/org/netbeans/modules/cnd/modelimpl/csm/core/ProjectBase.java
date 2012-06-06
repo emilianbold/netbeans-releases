@@ -3643,7 +3643,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
             }
+            printStream.flush();
         }
+        printStream.flush();
     }
 
 }
