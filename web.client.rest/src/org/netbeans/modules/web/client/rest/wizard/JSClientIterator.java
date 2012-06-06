@@ -47,10 +47,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
-
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
@@ -137,7 +137,7 @@ public class JSClientIterator implements InstantiatingIterator{
      */
     @Override
     public void initialize( WizardDescriptor descriptor ) {
-        myWadlPanel = new RestPanel();
+        myWadlPanel = new RestPanel( descriptor );
         Project project = Templates.getProject( descriptor );
         Sources sources = ProjectUtils.getSources(project);
         myPanels = new WizardDescriptor.Panel[]{

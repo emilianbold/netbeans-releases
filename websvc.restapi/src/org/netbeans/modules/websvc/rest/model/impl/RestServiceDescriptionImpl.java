@@ -51,11 +51,14 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -208,6 +211,9 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         return Status.UNMODIFIED;
     }
     
+    public FileObject getFile(){
+        return SourceUtils.getFile(getTypeElementHandle(), getHelper().getClasspathInfo());
+    }
     
     private boolean addMethod(Element element) {
         RestMethodDescriptionImpl method = RestMethodDescriptionFactory.create(element);

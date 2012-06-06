@@ -50,7 +50,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
@@ -59,13 +58,16 @@ import org.openide.util.HelpCtx;
  * @author ads
  *
  */
-public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, 
-    WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> 
+public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> 
 {
     
-    public static String REST_SOURCE = "rest-source";       // NOI18N
-    public static String WADL_PATH = "wadl-path";           // NOI18N
+    public static String FILE_NAME = "js-file-name";        // NOI18N
     public static String BACKBONE = "backbone";             // NOI18N
+    
+    
+    RestPanel(WizardDescriptor descriptor) {
+        myWizard = descriptor;
+    }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
@@ -135,21 +137,6 @@ public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescrip
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.AsynchronousValidatingPanel#prepareValidation()
-     */
-    @Override
-    public void prepareValidation() {
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.AsynchronousValidatingPanel#validate()
-     */
-    @Override
-    public void validate() throws WizardValidationException {
-        myComponent.validatePanel(myWizard);
-    }
-    
     void fireChangeEvent(){
         ChangeEvent event = new ChangeEvent(this);
         for( ChangeListener listener : myListeners ){
@@ -161,7 +148,9 @@ public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescrip
         return myComponent.getRestNode();
     }
     
-    
+    WizardDescriptor getDescriptor(){
+        return myWizard;
+    }
     
     private RestPanelVisual myComponent;
     private List<ChangeListener> myListeners = new CopyOnWriteArrayList<ChangeListener>();
