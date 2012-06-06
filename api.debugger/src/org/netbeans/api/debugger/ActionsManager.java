@@ -530,27 +530,38 @@ public final class ActionsManager {
         }
     }
     
-    private synchronized void destroyIn () {
-        if (lazyListeners == null) return ;
-        int i, k = lazyListeners.size ();
-        for (i = 0; i < k; i++) {
-            LazyActionsManagerListener l = (LazyActionsManagerListener)
-                lazyListeners.get (i);
-            if (l == null) {
-                // instance could not be created.
-                continue;
+    private void destroyIn () {
+        synchronized (this) {
+            if (lazyListeners != null) {
+                int i, k = lazyListeners.size ();
+                for (i = 0; i < k; i++) {
+                    LazyActionsManagerListener l = (LazyActionsManagerListener)
+                        lazyListeners.get (i);
+                    if (l == null) {
+                        // instance could not be created.
+                        continue;
+                    }
+                    String[] props = l.getProperties ();
+                    if (props == null) {
+                        removeActionsManagerListener (l);
+                        continue;
+                    }
+                    int j, jj = props.length;
+                    for (j = 0; j < jj; j++)
+                        removeActionsManagerListener (props [j], l);
+                    l.destroy ();
+                }
+                lazyListeners = new ArrayList ();
             }
-            String[] props = l.getProperties ();
-            if (props == null) {
-                removeActionsManagerListener (l);
-                continue;
-            }
-            int j, jj = props.length;
-            for (j = 0; j < jj; j++)
-                removeActionsManagerListener (props [j], l);
-            l.destroy ();
         }
-        lazyListeners = new ArrayList ();
+        synchronized (actionProvidersLock) {
+            Collection<ArrayList<ActionsProvider>> apsc = actionProviders.values();
+            for (ArrayList<ActionsProvider> aps : apsc) {
+                for (ActionsProvider ap : aps) {
+                    ap.removeActionsProviderListener(actionListener);
+                }
+            }
+        }
     }
 
     
