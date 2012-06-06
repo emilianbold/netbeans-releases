@@ -172,19 +172,22 @@ public final class LocFiles extends Task {
     ) {
         DirectoryScanner ds = new DirectoryScanner();
         int segments = -1;
-        int jarIndex = -1;
         int dirIndex = -1;
         final File root;
         final String prefixRoot;
+        final int remove;
         if (file.getName().equals(moduleDir)) {
             ds.setIncludes(new String[] { moduleDir });
             root = fileFrom(distDir, cluster);
             prefixRoot = null;
+            remove = 0;
         } else {
             if (file.getName().equals("netbeans")) {
-                ds.setIncludes(new String[] { "netbeans/*/*" });
+                ds.setIncludes(new String[] { 
+                    "netbeans/**/org", "netbeans/**/com" 
+                });
+                remove = 4;
                 segments = 3;
-                jarIndex = 2;
                 dirIndex = 1;
                 root = fileFrom(distDir, cluster);
                 prefixRoot = "";
@@ -192,16 +195,20 @@ public final class LocFiles extends Task {
                 assert file.getName().equals("ext");
                 ds.setIncludes(new String[] { file.getName() + "/*" });
                 segments = 2;
-                jarIndex = 1;
                 dirIndex = 0;
                 root = fileFrom(distDir, cluster, "modules");
                 prefixRoot = "modules/";
+                remove = 0;
             }
         }
         
         ds.setBasedir(locBaseDir);
         ds.scan();
         for (String dir : ds.getIncludedDirectories()) {
+            if (remove > 0) {
+                dir = dir.substring(0, dir.length() - remove);
+            }
+            
             Jar jar = (Jar) getProject().createTask("jar");
             Mkdir mkdir = (Mkdir) getProject().createTask("mkdir");
             Task locJH = getProject().createTask("locjhindexer");
@@ -212,19 +219,26 @@ public final class LocFiles extends Task {
             String prefixDir;
             if (dir.equals(moduleDir)) {
                 jarDir = fileFrom(root, "modules", "locale");
-                prefixDir = "modules/locale";
+                prefixDir = "modules/locale/";
                 jar.setBasedir(fileFrom(locBaseDir, dir));
                 jarFileName = cnbDashes + "_" + locale + ".jar";
             } else {
                 // netbeans/*/* case or ext/* case
                 jar.setBasedir(fileFrom(locBaseDir, dir));
                 String[] arr = dir.split("/");
-                assert arr.length == segments : "Expected segments: " + dir;
+                assert arr.length >= segments : "Expected segments: " + dir;
+                final int jarIndex = arr.length - 1;
                 jarFileName = arr[jarIndex] + "_" + locale + ".jar";
-                jarDir = fileFrom(root, arr[dirIndex], "locale");
-                prefixDir = prefixRoot + arr[dirIndex] + '/' + "locale";
+                jarDir = fileFrom(
+                    fileFrom(root, arr, dirIndex, jarIndex),
+                    "locale"
+                );
+                prefixDir = nameFrom(
+                    nameFrom(prefixRoot, arr, dirIndex, jarIndex),
+                    "locale"
+                );
             }
-            String fullName = prefixDir + '/' + jarFileName;
+            String fullName = prefixDir + jarFileName;
             toAdd.add(fullName);
             if (jarDir == null) {
                 // in patternSet only mode
@@ -288,12 +302,31 @@ public final class LocFiles extends Task {
     }
     
     private static File fileFrom(File base, String... paths) {
+        return fileFrom(base, paths, 0, paths.length);
+    }
+    private static File fileFrom(File base, String[] paths, int from, int upTo) {
         if (base == null) {
             return null;
         }
         File f = base;
-        for (String p : paths) {
-            f = new File(f, p);
+        while (from < upTo) {
+            f = new File(f, paths[from]);
+            from++;
+        }
+        return f;
+    }
+    private static String nameFrom(String base, String... paths) {
+        return nameFrom(base, paths, 0, paths.length);
+    }
+    private static String nameFrom(String base, String[] paths, int from, int upTo) {
+        if (base == null) {
+            return null;
+        }
+        String f = base;
+        while (from < upTo) {
+            f += paths[from];
+            f += '/';
+            from++;
         }
         return f;
     }
