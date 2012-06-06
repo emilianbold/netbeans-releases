@@ -318,9 +318,13 @@ class LayoutFeeder implements LayoutConstants {
                     addAligningInclusion(inclusions);
                 }
             } else {
+                if (inclusions.size() > 1) {
+                    // Original position can't express multiple inclusions in parallel, can be misleading.
+                    // If some of them should not be counted, they would be treated already in considerSequentialPosition.
+                    preserveOriginal = false;
+                }
                 IncludeDesc preferred = addAligningInclusion(inclusions); // make sure it is there...
-                if (inclusions.size() > 1 // need to be mereged
-                        && (!preserveOriginal || newPos.snapped)) { // but not if resizing in this dimension only
+                if (inclusions.size() > 1) {
                     if ((preferred == null || (preserveOriginal && originalPos1.alignment == aEdge))
                             && dragger.isResizing()) {
                         preferred = originalPos1;
@@ -333,9 +337,6 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc found = inclusions.get(0);
             inclusions.clear();
 
-            if (preserveOriginal && found.parent == originalPos1.parent && found.newSubGroup != originalPos1.newSubGroup) {
-                preserveOriginal = false;
-            }
             if (preserveOriginal) { // i.e. resizing in this dimension
                 inclusion1 = originalPos1;
                 if (found != originalPos1) {
@@ -344,10 +345,27 @@ class LayoutFeeder implements LayoutConstants {
                     }
                     LayoutInterval foundP = found.parent;
                     LayoutInterval origP = originalPos1.parent;
-                    if ((foundP == origP && found.newSubGroup)
-                          || (origP.isSequential() && foundP.isParallel() && foundP.isParentOf(origP)
-                              && LayoutUtils.contentOverlap(addingInterval, origP, dim))) {
-                        inclusion1.newSubGroup = true;
+                    // here we try to keep the original inclusion, but it may need adjustment
+                    if (foundP.isSequential() && origP.isSequential()) {
+                        if (found.newSubGroup && (foundP == origP || foundP.isParentOf(origP)) && LayoutUtils.contentOverlap(addingInterval, origP, dim)) {
+                            inclusion1.newSubGroup = true; // resizing along something in the existing sequence (expanding in parallel)
+                        } else if (!found.newSubGroup && (origP == foundP || origP.isParentOf(foundP))) {
+                            inclusion1.newSubGroup = false; // shrinking so not in parallel with the sequence anymore (reducing to sequence)
+                        }
+                    } else if (foundP.isParallel() && origP.isSequential()) {
+                        if (found.neighbor == null && foundP.isParentOf(origP) && LayoutUtils.contentOverlap(addingInterval, origP, dim)) {
+                            inclusion1.newSubGroup = true; // expanding in parallel
+                        } // opposite case (from parallel to sequential combination) is strange here
+                    } else if (origP.isParallel() && foundP.isSequential()) {
+                        if (originalPos1.neighbor != null && foundP.isParentOf(origP) && LayoutUtils.contentOverlap(addingInterval, originalPos1.neighbor, dim)) {
+                            inclusion1.neighbor = null; // expanding in parallel
+                        } else if (originalPos1.neighbor == null && origP.isParentOf(foundP) && !found.newSubGroup) {
+                            inclusion1.parent = foundP; // reducing to sequence
+                            inclusion1.index = found.index;
+                        }
+                    } else if (foundP == origP) { // i.e. both parallel
+                        inclusion1.neighbor = found.neighbor;
+                        inclusion1.index = found.index;
                     }
                 }
             } else {
@@ -1267,8 +1285,7 @@ class LayoutFeeder implements LayoutConstants {
             if (iDesc2 != null && iDesc2.alignment == dragger.getResizingEdge(dimension)) {
                 alignWithResizingInSubgroup(seq, parent, iDesc2);
             }
-        }
-        else { // parallel parent
+        } else { // parallel parent
             LayoutInterval neighbor = iDesc1.neighbor;
             if (neighbor != null) {
                 assert neighbor.getParent() == parent;
@@ -1277,9 +1294,12 @@ class LayoutFeeder implements LayoutConstants {
                 seq.setAlignment(neighbor.getAlignment());
                 layoutModel.setIntervalAlignment(neighbor, DEFAULT);
                 layoutModel.addInterval(neighbor, seq, 0);
-                index = iDesc1.index;
-            }
-            else {
+                if (iDesc1.index > -1) {
+                    index = iDesc1.index;
+                } else if (getAddDirection(addingSpace, neighbor.getCurrentSpace(), dimension, iDesc1.alignment) == TRAILING) {
+                    index = 1;
+                } // otherwise 0
+            } else {
                 seq = new LayoutInterval(SEQUENTIAL);
                 if (iDesc1.snapped()) {
                     seq.setAlignment(iDesc1.alignment);
