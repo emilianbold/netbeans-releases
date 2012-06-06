@@ -213,6 +213,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (contentWindow != null) {
             contentWindow.getOwner().removeWindowFocusListener(this);
+            contentWindow.getOwner().removeKeyListener(this);
             contentWindow.removeWindowFocusListener(this);
             contentWindow.removeKeyListener(this);
             contentWindow.dispose();
