@@ -109,7 +109,7 @@ public class PHPFormatterTemplateTest extends PHPCodeCompletionTestBase {
             DataObject dobj = DataObject.find(fo);
             assertNotNull(dobj);
 
-            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = (EditorCookie) dobj.getLookup().lookup(EditorCookie.class);
             assertNotNull(ec);
 
             return (BaseDocument) ec.openDocument();
