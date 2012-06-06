@@ -134,6 +134,7 @@ public class ValidationTest extends JellyTestCase {
         
         new EventTool().waitNoEvent(2000);
         (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock(); //TODO I18N
+        new EventTool().waitNoEvent(2000);
         
         DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
         new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
