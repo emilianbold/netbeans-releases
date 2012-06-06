@@ -63,6 +63,9 @@ import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.*;
 import javafx.util.Callback;
@@ -100,7 +103,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private final List<WebBrowserListener> browserListners = new ArrayList<WebBrowserListener>();
     private final Object LOCK = new Object();
     private WebView browser;
-    private ScrollPane scrollPane;
     private String status;
     private boolean initialized;
     /** Lookup of this web-browser tab. */
@@ -449,14 +451,16 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             browser = view;
         }
 
-//        scrollPane = new ScrollPane();
-////        Group grp = new Group();
-////        grp.getChildren().add( browser );
-////        grp.setAutoSizeChildren( false );
-//        scrollPane.setContent( browser );
-//        scrollPane.setFitToHeight( true );
-//        scrollPane.setFitToWidth( true );
-        container.setScene( new Scene( browser ) );
+//        resizePanel = new ResizePanel( browser );
+        HBox.setHgrow( browser, Priority.ALWAYS );
+        HBox hbox = new HBox();
+        hbox.getChildren().add( browser );
+        VBox.setVgrow( hbox, Priority.ALWAYS );
+        VBox root = new VBox();
+        root.getChildren().add( hbox );
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent( root );
+        container.setScene( new Scene( scrollPane ) );
 
         if( null != urlToLoad ) {
             _setURL( urlToLoad );
@@ -709,7 +713,10 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.resize( width, height );
+                browser.setMinHeight( height );
+                browser.setMaxHeight( height );
+                browser.setMinWidth( width );
+                browser.setMaxWidth( width );
             }
         });
     }
@@ -718,6 +725,10 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
+                browser.setMinWidth( 10 );
+                browser.setMaxWidth( Integer.MAX_VALUE );
+                browser.setMinHeight( 10 );
+                browser.setMaxHeight( Integer.MAX_VALUE );
                 browser.autosize();
             }
         });
