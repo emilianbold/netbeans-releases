@@ -45,6 +45,6 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface CharSetValue extends TokenElement {
+public interface CharSetValue extends PlainElement {
         
 }

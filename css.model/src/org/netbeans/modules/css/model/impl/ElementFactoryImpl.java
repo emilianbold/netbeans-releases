@@ -79,7 +79,7 @@ public final class ElementFactoryImpl implements ElementFactory {
     public StyleSheet createStyleSheet() {
         return new StyleSheetI(model);
     }
-
+ 
     @Override
     public CharSet createCharSet() {
         return new CharSetI(model);

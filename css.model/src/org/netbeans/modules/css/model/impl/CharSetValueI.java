@@ -49,7 +49,7 @@ import org.netbeans.modules.css.model.api.Model;
  *
  * @author marekfukala
  */
-public class CharSetValueI extends TokenElementI implements CharSetValue {
+public class CharSetValueI extends PlainElementI implements CharSetValue {
 
     public CharSetValueI(Model model, CharSequence text) {
         super(model, text);

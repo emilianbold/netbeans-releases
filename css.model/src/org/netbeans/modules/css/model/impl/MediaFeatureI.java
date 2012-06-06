@@ -49,7 +49,7 @@ import org.netbeans.modules.css.model.api.Model;
  *
  * @author marekfukala
  */
-class MediaFeatureI extends TokenElementI implements MediaFeature {
+class MediaFeatureI extends PlainElementI implements MediaFeature {
 
     public MediaFeatureI(Model model, CharSequence text) {
         super(model, text);

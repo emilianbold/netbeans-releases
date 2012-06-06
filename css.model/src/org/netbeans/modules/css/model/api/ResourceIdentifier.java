@@ -45,6 +45,6 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface ResourceIdentifier extends TokenElement {
+public interface ResourceIdentifier extends PlainElement {
     
 }

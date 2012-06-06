@@ -45,6 +45,6 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface Prio extends TokenElement {
+public interface Prio extends PlainElement {
     
 }

@@ -49,7 +49,7 @@ import org.netbeans.modules.css.model.api.Model;
  *
  * @author marekfukala
  */
-class MediaTypeI extends TokenElementI implements MediaType {
+class MediaTypeI extends PlainElementI implements MediaType {
 
     public MediaTypeI(Model model, CharSequence text) {
         super(model, text);

@@ -50,7 +50,7 @@ import org.netbeans.modules.css.model.api.NamespacePrefixName;
  *
  * @author marekfukala
  */
-public class NamespacePrefixNameI extends TokenElementI implements NamespacePrefixName {
+public class NamespacePrefixNameI extends PlainElementI implements NamespacePrefixName {
 
     public NamespacePrefixNameI(Model model, CharSequence text) {
         super(model, text);
