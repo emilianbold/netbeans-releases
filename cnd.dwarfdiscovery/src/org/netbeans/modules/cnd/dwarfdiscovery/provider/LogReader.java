@@ -487,12 +487,16 @@ public class LogReader {
     private static final String LABEL_CD        = "cd "; //NOI18N
     private static final String INVOKE_GNU_C    = "gcc "; //NOI18N
     private static final String INVOKE_GNU_C2   = "gcc.exe "; //NOI18N
+    private static final String INVOKE_CLANG_C  = "clang "; //NOI18N
+    private static final String INVOKE_CLANG_C2 = "clang.exe "; //NOI18N
     private static final String INVOKE_SUN_C    = "cc "; //NOI18N
     //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
     private static final String INVOKE_GNU_Cpp  = "g++ "; //NOI18N
     private static final String INVOKE_GNU_Cpp2 = "g++.exe "; //NOI18N
     private static final String INVOKE_GNU_Cpp3 = "c++ "; //NOI18N
     private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
+    private static final String INVOKE_CLANG_Cpp  = "clang++ "; //NOI18N
+    private static final String INVOKE_CLANG_Cpp2 = "clang++.exe "; //NOI18N
     private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
     private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
     private static final String INVOKE_MSVC_Cpp2= "cl.exe "; //NOI18N
@@ -546,12 +550,31 @@ public class LogReader {
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
+            //TODO: can fail on gcc calls with -shared-libgcc
+            int[] res = foundCompiler(line, INVOKE_CLANG_C, INVOKE_CLANG_C2);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.C;
+                li.compiler = "clang"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
             int[] res = foundCompiler(line, INVOKE_GNU_Cpp,INVOKE_GNU_Cpp2,INVOKE_GNU_Cpp3,INVOKE_GNU_Cpp4);
             if (res != null) {
                 start = res[0];
                 end = res[1];
                 li.compilerType = CompilerType.CPP;
                 li.compiler = "g++"; // NOI18N
+            }
+        }
+        if (li.compilerType == CompilerType.UNKNOWN) {
+            int[] res = foundCompiler(line, INVOKE_CLANG_Cpp, INVOKE_CLANG_Cpp2);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
+                li.compilerType = CompilerType.CPP;
+                li.compiler = "clang++"; // NOI18N
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
