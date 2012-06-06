@@ -367,11 +367,15 @@ public abstract class ModuleProperties {
     }
 
     public @CheckForNull JavaPlatform getJavaPlatform() {
-        String activeJdk = getEvaluator().getProperty(JAVA_PLATFORM_PROPERTY);
+        return getJavaPlatform(getEvaluator());
+    }
+
+    public static JavaPlatform getJavaPlatform(PropertyEvaluator eval) {
+        String activeJdk = eval.getProperty(JAVA_PLATFORM_PROPERTY);
         if (activeJdk != null) {
             return findJavaPlatformByID(activeJdk); // NOI18N
         } else {
-            String activeJdkHome = getEvaluator().getProperty("nbjdk.home"); // NOI18N
+            String activeJdkHome = eval.getProperty("nbjdk.home"); // NOI18N
             return findJavaPlatformByLocation(activeJdkHome);
         }
     }
