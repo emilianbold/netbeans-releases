@@ -160,6 +160,16 @@ public class LocFilesTest extends NbTestCase {
         assertDist("java/ant/nblib/locale/bridge_ja.jar", "org/apache/tools/ant/module/bridge/impl/Bundle_ja.properties");
         assertPattern("java", "ant/nblib/locale/bridge_ja.jar");
     }
+    public void testIdeBranding() throws Exception {
+        task.setLocales("ja");
+        task.setCluster("nb");
+        task.setCodeNameBase("org.netbeans.modules.ide.branding");
+        createSource("ja/nb/ide-branding/locale/options-api_nb/org/netbeans/modules/options/export/Bundle_nb_ja.properties");
+        task.execute();
+
+        assertDist("nb/modules/locale/org-netbeans-modules-options-api_nb_ja.jar", "org/netbeans/modules/options/export/Bundle_nb_ja.properties");
+        assertPattern("nb", "modules/locale/org-netbeans-modules-options-api_nb_ja.jar");
+    }
 
     private void createSource(String... files) throws IOException {
         for (String f : files) {

@@ -192,7 +192,9 @@ public final class LocFiles extends Task {
                 root = fileFrom(distDir, cluster);
                 prefixRoot = "";
             } else {
-                assert file.getName().equals("ext");
+                assert file.getName().equals("ext") ||
+                    file.getName().equals("locale");
+                    
                 ds.setIncludes(new String[] { file.getName() + "/*" });
                 segments = 2;
                 dirIndex = 0;
@@ -228,13 +230,13 @@ public final class LocFiles extends Task {
                 String[] arr = dir.split("/");
                 assert arr.length >= segments : "Expected segments: " + dir;
                 final int jarIndex = arr.length - 1;
-                jarFileName = arr[jarIndex] + "_" + locale + ".jar";
-                jarDir = fileFrom(
-                    fileFrom(root, arr, dirIndex, jarIndex),
+                jarFileName = fixJarName(arr[jarIndex]) + "_" + locale + ".jar";
+                jarDir = fileFromIf(
+                    fileFrom(root, arr, dirIndex, jarIndex, true),
                     "locale"
                 );
-                prefixDir = nameFrom(
-                    nameFrom(prefixRoot, arr, dirIndex, jarIndex),
+                prefixDir = nameFromIf(
+                    nameFrom(prefixRoot, arr, dirIndex, jarIndex, true),
                     "locale"
                 );
             }
@@ -302,32 +304,53 @@ public final class LocFiles extends Task {
     }
     
     private static File fileFrom(File base, String... paths) {
-        return fileFrom(base, paths, 0, paths.length);
+        return fileFrom(base, paths, 0, paths.length, true);
     }
-    private static File fileFrom(File base, String[] paths, int from, int upTo) {
+    private static File fileFrom(File base, String[] paths, int from, int upTo, boolean addIfPresent) {
         if (base == null) {
             return null;
         }
         File f = base;
         while (from < upTo) {
-            f = new File(f, paths[from]);
+            if (addIfPresent || !f.getName().equals(paths[from])) {
+                f = new File(f, paths[from]);
+            }
             from++;
         }
         return f;
     }
     private static String nameFrom(String base, String... paths) {
-        return nameFrom(base, paths, 0, paths.length);
+        return nameFrom(base, paths, 0, paths.length, true);
     }
-    private static String nameFrom(String base, String[] paths, int from, int upTo) {
+    private static String nameFrom(String base, String[] paths, int from, int upTo, boolean addIfPresent) {
         if (base == null) {
             return null;
         }
         String f = base;
         while (from < upTo) {
-            f += paths[from];
-            f += '/';
+            if (addIfPresent || !f.endsWith(paths[from] + "/")) {
+                f += paths[from];
+                f += '/';
+            }
             from++;
         }
         return f;
+    }
+
+    private static File fileFromIf(File fileFrom, String... add) {
+        return fileFrom(fileFrom, add, 0, add.length, false);
+    }
+    private static String nameFromIf(String fileFrom, String... add) {
+        return nameFrom(fileFrom, add, 0, add.length, false);
+    }
+
+    private static String fixJarName(String name) {
+        if (name.equals("autoupdate-ui_nb")) {
+            return "org-netbeans-modules-autoupdate-ui_nb";
+        }
+        if (name.equals("options-api_nb")) {
+            return "org-netbeans-modules-options-api_nb";
+        }
+        return name;
     }
 }
