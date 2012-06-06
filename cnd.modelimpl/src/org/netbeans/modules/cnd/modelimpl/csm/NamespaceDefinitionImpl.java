@@ -108,6 +108,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CharSequence name = NameCache.getManager().getString(AstUtil.getText(ast)); // otherwise equals returns false
         // #147376 Strange navigator behavior in header
         CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, name, CsmDeclaration.Kind.NAMESPACE_DEFINITION);
+        
+        if(TraceFlags.DYNAMIC_TESTS_TRACE) {
+            if(containerfile.getName().toString().equals("FieldInfos.cpp")) { // NOI18N
+                System.out.println("FieldInfos.cpp ns candidate " + candidate + " for name " + name); // NOI18N
+            }
+        }
+        
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
             return (NamespaceDefinitionImpl) candidate;
         } else {
