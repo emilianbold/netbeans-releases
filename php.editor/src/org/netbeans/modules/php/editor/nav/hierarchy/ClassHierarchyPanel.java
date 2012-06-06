@@ -79,12 +79,14 @@ import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Radek Matous
  */
 public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
+    private static final int MAX_STACK_DEPTH = 250;
     private final JTree tree;
     private final DefaultTreeModel treeModel;
     private final MouseAdapter mouseListener = new MouseAdapter() {
@@ -386,7 +388,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
                         ? index.getInheritedByTypesAsTree(type, types)
                         : index.getInheritedTypesAsTree(type, types);
                 recursionDetection.add(type);
-                childernNodes[i] = createTypeNode(retval, treeType, recursionDetection);
+                childernNodes[i] = createTypeNode(retval, treeType, recursionDetection, Integer.valueOf(0));
             }
         }
         retval.setChildern(sortTypes(childernNodes));
@@ -394,15 +396,21 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private static TypeNode createTypeNode(
-            final TreeNode parent, final TreeElement<TypeElement> classElement, Set<TypeElement> recursionDetection) {
+            final TreeNode parent, final TreeElement<TypeElement> classElement, Set<TypeElement> recursionDetection, Integer stackDepth) {
+        stackDepth++;
         final TypeNode retval = new TypeNode(parent, classElement);
         final Set<TreeElement<TypeElement>> children = classElement.children();
         ArrayList<TypeNode> childernList = new ArrayList<TypeNode>();
-        for (TreeElement<TypeElement> child : children) {
-            if (recursionDetection.add(child.getElement())) {
-                childernList.add(createTypeNode(retval, child, recursionDetection));
+        if (stackDepth <= MAX_STACK_DEPTH) {
+            for (TreeElement<TypeElement> child : children) {
+                if (recursionDetection.add(child.getElement())) {
+                    childernList.add(createTypeNode(retval, child, recursionDetection, stackDepth));
+                }
             }
+        } else {
+            childernList.add(new ErrTypeNode(parent, classElement));
         }
+        stackDepth--;
         retval.setChildern(sortTypes(childernList.toArray(new TypeNode[childernList.size()])));
         return retval;
     }
@@ -437,7 +445,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         }
     }
 
-    private static final class TypeNode extends AbstractTypeNode {
+    private static class TypeNode extends AbstractTypeNode {
         private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
         private static final String CLOSE_FONT = "</font>";//NOI18N
 
@@ -516,6 +524,33 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         public int getOffset() {
             return offset;
         }
+    }
+
+    @Messages({
+        "# {0} - max number of childs",
+        "TooManyChilds=Too many childs detected (max {0})."
+    })
+    private static class ErrTypeNode extends TypeNode {
+
+        public ErrTypeNode(TreeNode parent, TreeElement<TypeElement> classElement) {
+            super(parent, classElement);
+        }
+
+        @Override
+        public String toString() {
+            return Bundle.TooManyChilds(MAX_STACK_DEPTH);
+        }
+
+        @Override
+        public String toStringAsHtml() {
+            return "<html><span style='color: red; font-size: 0.9em;'>" + Bundle.TooManyChilds(MAX_STACK_DEPTH) + "</html>"; //NOI18N
+        }
+
+        @Override
+        public Image getIcon() {
+            return ImageUtilities.loadImage(ICON_BASE + "error-glyph.gif"); //NOI18N
+        }
+
     }
 
     public static class TreeRenderer extends JPanel implements TreeCellRenderer {
