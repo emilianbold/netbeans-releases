@@ -92,7 +92,7 @@ public final class ImportUtils {
                     if (rest.startsWith("'") && rest.endsWith("'") || // NOI18N
                         rest.startsWith("\"") && rest.endsWith("\"")){ // NOI18N
                         rest = rest.substring(1,rest.length()-1);
-                        s = var+"="+rest; // NOI18N
+                        s = var+rest;
                     }
                 }
             }
