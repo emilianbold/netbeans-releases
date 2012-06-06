@@ -66,23 +66,54 @@ class Utils {
         return new String (sb);
     }
 
+    // Important: keep in sync with Editor Settings Storage StorageSupport
+    // until Keymap Options provides a proper API
+
+    private static final String EMACS_CTRL = "Ctrl+"; //NOI18N
+    private static final String EMACS_ALT = "Alt+"; //NOI18N
+    private static final String EMACS_SHIFT = "Shift+"; //NOI18N
+    private static final String EMACS_META = "Meta+"; //NOI18N
+    
+    /**
+     * Platform - dependent value for Alt or Meta presentation
+     */
+    private static final String STRING_META; // NOI18N
+    private static final String STRING_ALT; // NOI18N
+    
+    static {
+        if (Utilities.isMac()) {
+            STRING_META = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
+            STRING_ALT = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
+        } else {
+            STRING_META = EMACS_META;
+            STRING_ALT = EMACS_ALT;
+        }
+    }
+    
     static KeyStroke getKeyStroke (String keyStroke) {
         int modifiers = 0;
-        if (keyStroke.startsWith ("Ctrl+")) {
-            modifiers |= InputEvent.CTRL_DOWN_MASK;
-            keyStroke = keyStroke.substring (5);
-        }
-        if (keyStroke.startsWith ("Alt+")) {
-            modifiers |= InputEvent.ALT_DOWN_MASK;
-            keyStroke = keyStroke.substring (4);
-        }
-        if (keyStroke.startsWith ("Shift+")) {
-            modifiers |= InputEvent.SHIFT_DOWN_MASK;
-            keyStroke = keyStroke.substring (6);
-        }
-        if (keyStroke.startsWith ("Meta+")) {
-            modifiers |= InputEvent.META_DOWN_MASK;
-            keyStroke = keyStroke.substring (5);
+        while (true) {
+            if (keyStroke.startsWith(EMACS_CTRL)) {
+                modifiers |= InputEvent.CTRL_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_CTRL.length());
+            } else if (keyStroke.startsWith(EMACS_ALT)) {
+                modifiers |= InputEvent.ALT_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_ALT.length());
+            } else if (keyStroke.startsWith(EMACS_SHIFT)) {
+                modifiers |= InputEvent.SHIFT_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_SHIFT.length());
+            } else if (keyStroke.startsWith(EMACS_META)) {
+                modifiers |= InputEvent.META_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_META.length());
+            } else if (keyStroke.startsWith(STRING_ALT)) {
+                modifiers |= InputEvent.ALT_DOWN_MASK;
+                keyStroke = keyStroke.substring(STRING_ALT.length());
+            } else if (keyStroke.startsWith(STRING_META)) {
+                modifiers |= InputEvent.META_DOWN_MASK;
+                keyStroke = keyStroke.substring(STRING_META.length());
+            } else {
+                break;
+            }
         }
         KeyStroke ks = Utilities.stringToKey (keyStroke);
         if (ks == null) { // Return null to indicate an invalid keystroke
@@ -96,31 +127,27 @@ class Utils {
     static String getKeyStrokeAsText (KeyStroke keyStroke) {
         int modifiers = keyStroke.getModifiers ();
         StringBuilder sb = new StringBuilder ();
-        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
-            sb.append ("Ctrl+");
-        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0)
-            if(Utilities.isMac()) {
-                sb.append(KeyEvent.getKeyText(KeyEvent.VK_ALT)).append ("+");
-            } else {
-                sb.append ("Alt+");
-            }
-        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
-            sb.append ("Shift+");
-        if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
-            if(Utilities.isMac()) {
-                sb.append(KeyEvent.getKeyText(KeyEvent.VK_META)).append ("+");
-            } else {
-                sb.append ("Meta+");
-            }
+        if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0) {
+            sb.append(EMACS_CTRL);
+        }
+        if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0) {
+            sb.append(STRING_ALT);
+        }
+        if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0) {
+            sb.append (EMACS_SHIFT);
+        }
+        if ((modifiers & InputEvent.META_DOWN_MASK) > 0) {
+            sb.append(STRING_META);
+        }
         if (keyStroke.getKeyCode () != KeyEvent.VK_SHIFT &&
             keyStroke.getKeyCode () != KeyEvent.VK_CONTROL &&
             keyStroke.getKeyCode () != KeyEvent.VK_META &&
             keyStroke.getKeyCode () != KeyEvent.VK_ALT &&
-            keyStroke.getKeyCode () != KeyEvent.VK_ALT_GRAPH
-        )
+            keyStroke.getKeyCode () != KeyEvent.VK_ALT_GRAPH) {
             sb.append (Utilities.keyToString (
                 KeyStroke.getKeyStroke (keyStroke.getKeyCode (), 0)
             ));
+        }
         return sb.toString ();
     }
 }
