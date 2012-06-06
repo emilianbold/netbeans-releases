@@ -50,7 +50,7 @@ import org.netbeans.modules.css.model.api.Prio;
  *
  * @author marekfukala
  */
-public class PrioI extends TokenElementI implements Prio {
+public class PrioI extends PlainElementI implements Prio {
 
     public PrioI(Model model) {
         super(model);

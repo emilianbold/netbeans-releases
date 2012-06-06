@@ -45,6 +45,6 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface MediaQueryOperator extends TokenElement {
+public interface MediaQueryOperator extends PlainElement {
     
 }

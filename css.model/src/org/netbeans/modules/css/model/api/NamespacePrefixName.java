@@ -45,6 +45,6 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface NamespacePrefixName extends TokenElement {
+public interface NamespacePrefixName extends PlainElement {
     
 }

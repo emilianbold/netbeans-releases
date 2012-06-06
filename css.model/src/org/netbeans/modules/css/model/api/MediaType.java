@@ -45,6 +45,6 @@ package org.netbeans.modules.css.model.api;
  *
  * @author marekfukala
  */
-public interface MediaType extends TokenElement {
+public interface MediaType extends PlainElement {
     
 }

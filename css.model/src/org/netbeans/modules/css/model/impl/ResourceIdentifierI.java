@@ -49,7 +49,7 @@ import org.netbeans.modules.css.model.api.ResourceIdentifier;
  *
  * @author marekfukala
  */
-public class ResourceIdentifierI extends TokenElementI implements ResourceIdentifier {
+public class ResourceIdentifierI extends PlainElementI implements ResourceIdentifier {
 
     public ResourceIdentifierI(Model model, CharSequence text) {
         super(model, text);

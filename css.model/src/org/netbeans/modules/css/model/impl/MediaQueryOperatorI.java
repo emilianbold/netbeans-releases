@@ -49,7 +49,7 @@ import org.netbeans.modules.css.model.api.Model;
  *
  * @author marekfukala
  */
-class MediaQueryOperatorI extends TokenElementI implements MediaQueryOperator {
+class MediaQueryOperatorI extends PlainElementI implements MediaQueryOperator {
 
     public MediaQueryOperatorI(Model model, CharSequence text) {
         super(model, text);
