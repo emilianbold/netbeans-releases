@@ -103,10 +103,6 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        ExternalProcessBuilder processBuilder = super.getProcessBuilder(warnUser);
-        if (processBuilder == null) {
-            return null;
-        }
         Doctrine2Script script;
         try {
             script = Doctrine2Script.getDefault();
@@ -118,9 +114,8 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
         }
         assert script.isValid();
 
-        processBuilder = processBuilder
-                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .addArgument(script.getProgram());
+        ExternalProcessBuilder processBuilder = script.getProcessBuilder()
+                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()));
         for (String param : script.getParameters()) {
             processBuilder = processBuilder.addArgument(param);
         }

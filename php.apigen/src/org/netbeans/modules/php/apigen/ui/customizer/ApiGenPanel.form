@@ -20,17 +20,38 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+              <Component id="excludesTextField" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+              <Component id="charsetsTextField" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+              <Component id="titleTextField" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+              <Component id="targetTextField" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="targetButton" min="-2" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
+              <Component id="configLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="configTextField" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="configButton" min="-2" max="-2" attributes="0"/>
+          </Group>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="noConfigRadioButton" min="-2" max="-2" attributes="0"/>
                   <Component id="configRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="targetLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="titleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -40,59 +61,34 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="targetTextField" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="targetButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="titleTextField" max="32767" attributes="0"/>
-                          <Component id="charsetsTextField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="excludesTextField" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="excludesInfoLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="charsetsInfoLabel" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="accessLevelPublicCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="accessLevelProtectedCheckBox" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                                      <Component id="accessLevelPrivateCheckBox" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="configLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="configTextField" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="configButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="accessLevelPublicCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="internalCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="phpCheckBox" min="-2" max="-2" attributes="0"/>
+                          <Component id="phpCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="treeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="accessLevelProtectedCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="deprecatedCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="todoCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="downloadCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="deprecatedCheckBox" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="sourceCodeCheckBox" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="todoCheckBox" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="accessLevelPrivateCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="sourceCodeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Component id="treeCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+                      <Component id="charsetsInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="145" pref="145" max="-2" attributes="0"/>
+                      <Component id="excludesInfoLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -132,7 +128,7 @@
                   <Component id="accessLevelPrivateCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="accessLevelLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="internalCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="deprecatedCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -148,7 +144,7 @@
                   <Component id="treeCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="downloadCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="configRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -156,6 +152,7 @@
                   <Component id="configTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="configButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace pref="16" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
