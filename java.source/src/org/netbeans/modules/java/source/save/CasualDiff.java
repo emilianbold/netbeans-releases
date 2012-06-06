@@ -72,8 +72,12 @@ import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import static java.util.logging.Level.*;
+
+import javax.swing.text.BadLocationException;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
+
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 public class CasualDiff {
@@ -136,7 +140,14 @@ public class CasualDiff {
 
         for (Tree t : oldTreePath) {
             if (t != oldTree && (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) || t.getKind() == Kind.BLOCK)) {
-                td.printer.indent();
+                int indent = getOldIndent(diffContext, t);
+                if (indent < 0) {
+                    td.printer.indent();
+                } else {
+                    td.printer.setIndent(indent);
+                    td.printer.indent();
+                    break;
+                }
             }
         }
 
@@ -276,6 +287,17 @@ public class CasualDiff {
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), diffContext);
         localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
         printer.print(origText.substring(localPointer));
+    }
+    
+    private static int getOldIndent(DiffContext diffContext, Tree t) {
+        if (diffContext.doc != null) {
+            try {
+                int offset = (int) diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, t);
+                int lineStartOffset = IndentUtils.lineStartOffset(diffContext.doc, offset);
+                return IndentUtils.lineIndent(diffContext.doc, lineStartOffset);
+            } catch (BadLocationException ex) {}
+        }
+        return -1;
     }
 
     private static enum ChangeKind {
