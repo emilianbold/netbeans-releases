@@ -353,7 +353,10 @@ public class TokenFormatter {
 
                 TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
 
-                FormatVisitor fv = new FormatVisitor(doc);
+                final int caretOffset = EditorRegistry.lastFocusedComponent() != null
+                            ? EditorRegistry.lastFocusedComponent().getCaretPosition()
+                            : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
+                FormatVisitor fv = new FormatVisitor(doc, caretOffset, formatContext.startOffset(), formatContext.endOffset());
                 phpParseResult.getProgram().accept(fv);
                 final List<FormatToken> formatTokens = fv.getFormatTokens();
 
@@ -385,9 +388,6 @@ public class TokenFormatter {
                     // finding position of open php tag in a html code.
                     int lastPHPIndent = 0;
                     final boolean templateEdit = doc.getProperty(TEMPLATE_HANDLER_PROPERTY) != null; //NOI18N
-                    final int caretOffset = EditorRegistry.lastFocusedComponent() != null
-                            ? EditorRegistry.lastFocusedComponent().getCaretPosition()
-                            : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
                     boolean caretInTemplateSolved = false;
                     int htmlIndent = -1;
                     int index = 0;

@@ -129,7 +129,7 @@ public class FormatVisitorTest extends PHPCodeCompletionTestBase {
                     TokenSequence<?> ts = PHPLexerUtils.seqForText(content, PHPTokenId.language());
                     System.out.println(child.getPath());
                     System.out.print("TS: " + ts.tokenCount());
-                    FormatVisitor formatVisitor = new FormatVisitor(doc);
+                    FormatVisitor formatVisitor = new FormatVisitor(doc, 0, 0, doc.getLength());
                     ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(content));
                     ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
                     Symbol root = parser.parse();
@@ -167,7 +167,7 @@ public class FormatVisitorTest extends PHPCodeCompletionTestBase {
 
         String content = PHPLexerUtils.getFileContent(new File(getDataDir(), fileName));
         TokenSequence<?> ts = PHPLexerUtils.seqForText(content, PHPTokenId.language());
-        FormatVisitor formatVisitor = new FormatVisitor(doc);
+        FormatVisitor formatVisitor = new FormatVisitor(doc, 0, 0, doc.getLength());
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(content));
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
         Symbol root = parser.parse();

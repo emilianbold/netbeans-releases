@@ -431,6 +431,11 @@ public class PHPFormatterTemplateTest extends PHPCodeCompletionTestBase {
         reformatFileContents("testfiles/formatting/templates/issue198616.php", options, true);
     }
 
+    public void testIssue187757() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue187757.php", options, true);
+    }
+
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
