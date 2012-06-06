@@ -51,11 +51,11 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.indent.TokenFormatter.DocumentOptions;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.Exceptions;
 
@@ -80,8 +80,11 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
     private FormatToken.AssignmentAnchorToken previousGroupToken = null; //used for assignment alignment
+    private final int caretOffset;
+    private final int startOffset;
+    private final int endOffset;
 
-    public FormatVisitor(BaseDocument document) {
+    public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
         ts = LexUtilities.getPHPTokenSequence(document, 0);
         path = new LinkedList<ASTNode>();
@@ -91,6 +94,9 @@ public class FormatVisitor extends DefaultVisitor {
         tsTokenCount = ts == null ? 1 : ts.tokenCount();
         formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
         maxFormattingRules = tsTokenCount * 3;
+        this.caretOffset = caretOffset;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
     }
@@ -1286,14 +1292,7 @@ public class FormatVisitor extends DefaultVisitor {
         lastIndex = ts.index();
         switch (ts.token().id()) {
             case WHITESPACE:
-                int countNewLines = countOfNewLines(ts.token().text());
-                if (countNewLines > 1) {
-                    // reset group alignment, if there is an empty line
-                    previousGroupToken = null;
-                }
-                tokens.add(countNewLines > 0
-                        ? new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, ts.offset(), ts.token().text().toString())
-                        : new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset(), ts.token().text().toString()));
+                tokens.addAll(resolveWhitespaceTokens());
                 break;
             case PHP_LINE_COMMENT:
                 String text = ts.token().text().toString();
@@ -1305,8 +1304,7 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                     if (ts.moveNext()) {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                            countNewLines = countOfNewLines(ts.token().text());
-                            if (countNewLines > 0) {
+                            if (countOfNewLines(ts.token().text()) > 0) {
                                 // reset group alignment, if there is an empty line
                                 previousGroupToken = null;
                             }
@@ -1567,7 +1565,7 @@ public class FormatVisitor extends DefaultVisitor {
                 if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
                     token.setHasHTML(true);
                 }
-                int startOffset = ts.offset();
+                int tokenStartOffset = ts.offset();
                 StringBuilder sb = new StringBuilder(ts.token().text());
                 // merge all html following tokens to one format token;
                 while (ts.moveNext() && ts.token().id() == PHPTokenId.T_INLINE_HTML) {
@@ -1577,7 +1575,7 @@ public class FormatVisitor extends DefaultVisitor {
                 if (ts.moveNext()) {
                     ts.movePrevious();
                     ts.movePrevious();
-                    tokens.add(new FormatToken(FormatToken.Kind.HTML, startOffset, sb.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.HTML, tokenStartOffset, sb.toString()));
                 } else {
                     // this is the last token in the document
                     lastIndex--;
@@ -1586,6 +1584,35 @@ public class FormatVisitor extends DefaultVisitor {
             default:
                 tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
         }
+    }
+
+    private List<FormatToken> resolveWhitespaceTokens() {
+        final List<FormatToken> result = new LinkedList<FormatToken>();
+        int countNewLines = countOfNewLines(ts.token().text());
+        if (countNewLines > 1) {
+            // reset group alignment, if there is an empty line
+            previousGroupToken = null;
+        }
+        String tokenText = ts.token().text().toString();
+        int tokenStartOffset = ts.offset();
+        if (countNewLines > 0) {
+            result.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, tokenStartOffset, tokenText));
+        } else {
+            int tokenEndOffset = tokenStartOffset + ts.token().length();
+            if (GsfUtilities.isCodeTemplateEditing(document) && caretOffset > tokenStartOffset && caretOffset < tokenEndOffset && tokenStartOffset > startOffset && tokenEndOffset < endOffset) {
+                int devideIndex = caretOffset - tokenStartOffset;
+                if (tokenText == null) {
+                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
+                } else {
+                    String firstTextPart = tokenText.substring(0, devideIndex);
+                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
+                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
+                }
+            } else {
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
+            }
+        }
+        return result;
     }
 
     private void addAllUntilOffset(int offset) {
