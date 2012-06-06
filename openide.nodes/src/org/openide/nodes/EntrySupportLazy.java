@@ -83,10 +83,10 @@ class EntrySupportLazy extends EntrySupport {
     
     private void setState(EntrySupportLazyState old, EntrySupportLazyState s) {
         assert Thread.holdsLock(LOCK);
-        if (!internal.compareAndSet(old, s)) {
-            IllegalStateException ex = new IllegalStateException("Somebody changed internal state meanwhile!\nExpected: " + old + "\ncurrent : " + internal.get()); // NOI18N
-            throw ex;
-        }
+        boolean success = internal.compareAndSet(old, s);
+        assert success : "Somebody changed internal state meanwhile!\n"
+            + "Expected: " + old + "\n"
+            + "Current : " + internal.get(); // NOI18N
     }
 
     public boolean checkInit() {
