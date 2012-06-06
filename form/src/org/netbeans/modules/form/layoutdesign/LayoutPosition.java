@@ -390,16 +390,20 @@ public class LayoutPosition implements LayoutConstants {
             LayoutInterval oneNeighbor = leadingNeighbor != null ? leadingNeighbor : trailingNeighbor;
             parent = oneNeighbor.getParent();
             LayoutInterval seqParent = null;
-            do {
+            while (parent != null) {
                 if (parent.isSequential()) {
                     seqParent = parent;
                 }
                 parent = parent.getParent();
-            } while (parent != null);
+            }
             if (seqParent != null) {
                 parent = seqParent;
             } else {
                 parent = oneNeighbor.getParent();
+                if (parent == null) {
+                    assert oneNeighbor == orig.root;
+                    parent = oneNeighbor;
+                }
             }
         } else {
             parent = orig.root;
