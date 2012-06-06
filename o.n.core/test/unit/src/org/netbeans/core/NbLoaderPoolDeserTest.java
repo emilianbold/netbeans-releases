@@ -69,13 +69,13 @@ public class NbLoaderPoolDeserTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         oldL = DataLoader.getLoader(OldStyleLoader.class);
-        NbLoaderPool.doAdd(oldL, null);
+        NbLoaderPool.doAdd(oldL, null, NbLoaderPool.getNbLoaderPool());
         
         fo = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "x.prop");
     }
 
     protected @Override void tearDown() throws Exception {
-        NbLoaderPool.remove(oldL);
+        NbLoaderPool.remove(oldL, NbLoaderPool.getNbLoaderPool());
     }
 
     public void testOldLoaderThatChangesActionsBecomesModified () throws Exception {

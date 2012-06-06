@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -49,8 +49,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-@ServiceProvider(service=MakeProjectOptions.MakeOptionNamedEntity.class, position=800)
-public class FixUnresolvedInclude extends MakeProjectOptions.MakeOptionNamedEntity {
+@ServiceProvider(path=NamedOption.OTHER_CATEGORY, service=NamedOption.class, position=800)
+public class FixUnresolvedInclude extends NamedOption {
     public static final String FIX_UNRESOLVED_INCLUDE = "fixUnresolvedInclude"; // NOI18N
 
     @Override
@@ -69,7 +69,12 @@ public class FixUnresolvedInclude extends MakeProjectOptions.MakeOptionNamedEnti
     }
 
     @Override
-    public boolean isEnabledByDefault() {
+    public OptionKind getKind() {
+        return OptionKind.Boolean;
+    }
+
+    @Override
+    public Object getDefaultValue() {
         return true;
     }
 }

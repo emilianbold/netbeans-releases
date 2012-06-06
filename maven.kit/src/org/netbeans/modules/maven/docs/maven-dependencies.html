@@ -15,7 +15,8 @@
         <p>To make libraries and projects available to your project
         during compilation, testing and execution you need to declare the
         projects or libraries as dependencies.
-        All dependencies need to be available as artifacts in your local repository.</p>
+        All dependencies need to be available as artifacts in your local repository
+        when you build the project.</p>
         
         <p>You declare a dependency by modifying the POM to add the coordinates of the artifact
         you want to declare as a dependency.
@@ -27,18 +28,20 @@
         <p>You can add a dependency to a Maven project in the following ways:</p>
         <ul>
             <li><strong>Edit the POM in the editor.</strong> Open <tt>pom.xml</tt> in the XML editor and use
-            code completion to help add the dependency elements and artifact coordinates.</li>
-            <li><strong>Use the Add Dependency dialog.</strong>
+            code completion to help you write the dependency elements and artifact coordinates.</li>
+            <li><strong>Use the Add Library dialog.</strong>
             Type or search for the artifact in the Add Library dialog and click OK.
             When you click OK, the IDE adds the dependency elements and artifact coordinates to <tt>pom.xml</tt>.
-            <p>To open the Add Dependency dialog, right-click the
-            Dependencies node in the Projects window and choose Add Dependency.
-            Alternatively, you can open the dialog by opening the Insert Code popup in <tt>pom.xml</tt>
-            (Ctrl-I) and choosing Add Dependency.
-            </p>
             </li>
         </ul>
-
+        <p><b>To open the Add Library dialog, perform any of the following steps.</b></p>
+        <ul>        
+            <li>Right-click the Dependencies node in the Projects window and choose Add Dependency.</li>
+            <li>Right-click in <tt>pom.xml</tt> in the editor and choose Insert Code (Ctrl-I) and choose Dependency.</li>
+            <li>Right-click an artifact under the Maven Repositories node in the Services window
+            and choose Add as Dependency and select a project in the Add Dependency dialog box.</li>
+        </ul>
+        
         <p>After you add a dependency to <tt>pom.xml</tt>,
         a node for the artifact (&nbsp;<img src="img/DependencyIcon.png">&nbsp;)
         appears under the project's Dependencies node.

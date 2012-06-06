@@ -262,8 +262,8 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertEquals(Arrays.toString(sourceCPs), 2, sourceCPs.length); // src/main/* + src/test/*
         List<ClassPath.Entry> entries = sourceCPs[0].entries();
         assertEquals(entries.toString(), 2, entries.size());
-        assertEquals(entries.toString(), new URL(d.getURL(), "src/main/java/"), entries.get(0).getURL());
-        assertEquals(entries.toString(), new URL(d.getURL(), "src/main/resources/"), entries.get(1).getURL());
+        assertEquals(entries.toString(), new URL(d.toURL(), "src/main/java/"), entries.get(0).getURL());
+        assertEquals(entries.toString(), new URL(d.toURL(), "src/main/resources/"), entries.get(1).getURL());
         assertTrue(entries.get(1).includes("META-INF/"));
         assertTrue(entries.get(1).includes("META-INF/maven/"));
         assertTrue(entries.get(1).includes("META-INF/maven/archetype-metadata.xml"));

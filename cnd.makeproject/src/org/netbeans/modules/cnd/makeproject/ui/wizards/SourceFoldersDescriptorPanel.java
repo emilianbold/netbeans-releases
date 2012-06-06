@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
+final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NamedPanel, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private SourceFoldersPanel component;

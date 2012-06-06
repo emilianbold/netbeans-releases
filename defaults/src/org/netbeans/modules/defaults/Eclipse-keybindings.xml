@@ -66,8 +66,8 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-previous-word" key="D-LEFT"/>
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="caret-up" key="KP_UP"/>
-    <bind actionName="collapse-all-folds" key="DS-SUBTRACT"/>
-    <bind actionName="collapse-all-folds" key="DS-MINUS"/>
+    <bind actionName="collapse-all-folds" key="DS-SLASH"/>
+    <bind actionName="collapse-all-folds" key="DS-DIVIDE"/>
     <bind actionName="collapse-fold" key="D-MINUS"/>
     <bind actionName="collapse-fold" key="D-SUBTRACT"/>
     <bind actionName="completion-show" key="D-SPACE"/>
@@ -97,7 +97,7 @@ made subject to such option by the copyright holder.
     <bind actionName="find-next" key="D-K"/>
     <bind actionName="find-previous" key="DS-K"/>
     <bind actionName="fix-imports" key="DS-O"/>
-    <bind actionName="format" key="DS-F"/>
+    <bind actionName="format" key="D-I"/>
     <bind actionName="generate-code" key="OS-S"/>
     <bind actionName="goto" key="D-L"/>
     <bind actionName="goto-declaration" key="F3"/>
@@ -130,9 +130,9 @@ made subject to such option by the copyright holder.
     <bind actionName="scroll-down" key="D-UP"/>
     <bind actionName="scroll-up" key="D-DOWN"/>
     <bind actionName="select-all" key="D-A"/>
-    <bind actionName="select-element-next" key="OS-PERIOD"/>
-    <bind actionName="select-element-previous" key="OS-COMMA"/>
-    <bind actionName="select-identifier" key="OS-J"/>
+    <bind actionName="select-element-next" key="OS-RIGHT"/>
+    <bind actionName="select-element-previous" key="OS-LEFT"/>
+    <bind actionName="select-identifier" key="OS-J" remove="true"/>
     <bind actionName="selection-backward" key="S-LEFT"/>
     <bind actionName="selection-begin" key="DS-HOME"/>
     <bind actionName="selection-begin-line" key="S-HOME"/>
@@ -140,14 +140,12 @@ made subject to such option by the copyright holder.
     <bind actionName="selection-end" key="DS-END"/>
     <bind actionName="selection-end-line" key="S-END"/>
     <bind actionName="selection-forward" key="S-RIGHT"/>
-    <bind actionName="selection-match-brace" key="DS-OPEN_BRACKET"/>
+    <bind actionName="selection-match-brace" key="OS-UP"/>
     <bind actionName="selection-next-word" key="DS-RIGHT"/>
     <bind actionName="selection-page-down" key="S-PAGE_DOWN"/>
     <bind actionName="selection-page-up" key="S-PAGE_UP"/>
     <bind actionName="selection-previous-word" key="DS-LEFT"/>
     <bind actionName="selection-up" key="S-UP"/>
-    <bind actionName="shift-line-left" key="OS-LEFT"/>
-    <bind actionName="shift-line-right" key="OS-RIGHT"/>
     <bind actionName="show-popup-menu" key="S-F10"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
@@ -162,4 +160,6 @@ made subject to such option by the copyright holder.
     <bind actionName="undo" key="D-Z"/>
     <bind actionName="undo" key="UNDO"/>
     <bind actionName="word-match-next" key="O-SLASH"/>
+    <bind actionName="word-match-next" key="O-DIVIDE"/>
+    <bind remove="true" key="OS-J"/>
 </bindings>

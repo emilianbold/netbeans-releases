@@ -520,6 +520,18 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="x-cnd+sourcefile">
+                <folder name="Actions">
+                    <file name="CompileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-CompileAction.instance"/>
+                        <attr name="position" intvalue="950"/>
+                    </file>
+                    <file name="CompileRunAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-CompileRunAction.instance"/>
+                        <attr name="position" intvalue="960"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="bat">
                 <folder name="Actions">
                     <file name="ShellRunAction.shadow">
@@ -899,6 +911,8 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-netbeans-modules-cnd-actions-CMakeAction.instance"/>
             <file name="org-netbeans-modules-cnd-actions-QMakeAction.instance"/>
+            <file name="org-netbeans-modules-cnd-actions-CompileAction.instance"/>
+            <file name="org-netbeans-modules-cnd-actions-CompileRunAction.instance"/>
         </folder>    
     </folder> <!-- Actions -->
     

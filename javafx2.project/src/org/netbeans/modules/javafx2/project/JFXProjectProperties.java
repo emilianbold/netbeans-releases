@@ -50,6 +50,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JToggleButton;
 import javax.swing.event.ChangeEvent;
@@ -63,7 +65,11 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.project.*;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -78,10 +84,17 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.*;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 public final class JFXProjectProperties {
 
+    private static final Logger LOG = Logger.getLogger(JFXProjectProperties.class.getName());
+    
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     public static final String JAVAFX_PRELOADER = "javafx.preloader"; // NOI18N
     public static final String JAVAFX_SWING = "javafx.swing"; // NOI18N
@@ -175,11 +188,11 @@ public final class JFXProjectProperties {
     public static final String PROJECT_PRIVATE_CONFIGS_DIR = "nbproject/private/configs"; // NOI18N
     public static final String PROPERTIES_FILE_EXT = "properties"; // NOI18N
     // the following should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
-    public static final String CONFIG_PROPERTIES_FILE = "nbproject/private/config.properties"; // NOI18N
-    public static final String DEFAULT_CONFIG = "<default config>"; //NOI18N
-    public static final String DEFAULT_CONFIG_STANDALONE = "Run Standalone"; //NOI18N
-    public static final String DEFAULT_CONFIG_WEBSTART = "Run as WebStart"; //NOI18N
-    public static final String DEFAULT_CONFIG_BROWSER = "Run in Browser"; //NOI18N
+    public static final String CONFIG_PROPERTIES_FILE = "nbproject/private/config.properties"; // NOI18N    
+    public static final String DEFAULT_CONFIG = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.default.label"); // NOI18N
+    public static final String DEFAULT_CONFIG_STANDALONE = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.standalone.label"); // NOI18N
+    public static final String DEFAULT_CONFIG_WEBSTART = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.webstart.label"); // NOI18N
+    public static final String DEFAULT_CONFIG_BROWSER = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.browser.label"); // NOI18N
 
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -1377,6 +1390,7 @@ public final class JFXProjectProperties {
     public class JFXConfigs {
         
         private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
+        private Set<String> ERASED_CONFIGS;
         private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
         private BoundedPropertyGroups groups = new BoundedPropertyGroups();
         private String active;
@@ -1430,6 +1444,7 @@ public final class JFXProjectProperties {
         
         private void reset() {
             RUN_CONFIGS = new TreeMap<String,Map<String,String>>(getComparator());
+            ERASED_CONFIGS = null;
             APP_PARAMS = new TreeMap<String,List<Map<String,String>>>(getComparator());
         }
         
@@ -1585,6 +1600,10 @@ public final class JFXProjectProperties {
             assert !configNameWrong(config);
             assert config != null; // erasing default config not allowed
             RUN_CONFIGS.remove(config);
+            if(ERASED_CONFIGS == null) {
+                ERASED_CONFIGS = new HashSet<String>();
+            }
+            ERASED_CONFIGS.add(config);
         }
 
         //==========================================================
@@ -2478,12 +2497,12 @@ public final class JFXProjectProperties {
                     try {
                         deleteFile(project, sharedPath);
                     } catch (IOException ex) {
-                        // TO DO
+                        LOG.log(Level.WARNING, "Failed to delete file: {0}", sharedPath); // NOI18N
                     }
                     try {
                         deleteFile(project, privatePath);
                     } catch (IOException ex) {
-                        // TO DO
+                        LOG.log(Level.WARNING, "Failed to delete file: {0}", privatePath); // NOI18N
                     }
                     continue;
                 }
@@ -2498,15 +2517,38 @@ public final class JFXProjectProperties {
                     boolean storeIfEmpty = (defaultValue != null && defaultValue.length() > 0) || isBoundedToNonemptyProperty(config, name);
                     privatePropsChanged |= updateProperty(name, value, sharedCfgProps, privateCfgProps, storeIfEmpty);
                 }
-                
-                cleanPropertiesIfEmpty((String[])PRELOADER_PROPERTIES.toArray(), config, sharedCfgProps);
-                privatePropsChanged |= cleanPropertiesIfEmpty(new String[] {RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}, config, privateCfgProps);
+
+                cleanPropertiesIfEmpty(
+                        new String[] {MAIN_CLASS, RUN_JVM_ARGS, 
+                        PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+                        RUN_APP_WIDTH, RUN_APP_HEIGHT}, config, sharedCfgProps);
+                privatePropsChanged |= cleanPropertiesIfEmpty(
+                        new String[] {RUN_WORK_DIR, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}, config, privateCfgProps);
                 privatePropsChanged |= updateParamProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
                 privatePropsChanged |= storeParamsAsCommandLine(config, privateCfgProps);
 
                 saveToFile(project, sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
                 if (privatePropsChanged) {                              //Definition file is written, only when changed
                     saveToFile(project, privatePath, privateCfgProps);
+                }
+            }
+            if(ERASED_CONFIGS != null) {
+                for (String entry : ERASED_CONFIGS) {
+                    if(!RUN_CONFIGS.containsKey(entry)) {
+                        // config has been erased, and has not been recreated
+                        String sharedPath = getSharedConfigFilePath(entry);
+                        String privatePath = getPrivateConfigFilePath(entry);
+                        try {
+                            deleteFile(project, sharedPath);
+                        } catch (IOException ex) {
+                            LOG.log(Level.WARNING, "Failed to delete file: {0}", sharedPath); // NOI18N
+                        }
+                        try {
+                            deleteFile(project, privatePath);
+                        } catch (IOException ex) {
+                            LOG.log(Level.WARNING, "Failed to delete file: {0}", privatePath); // NOI18N
+                        }
+                    }
                 }
             }
         }

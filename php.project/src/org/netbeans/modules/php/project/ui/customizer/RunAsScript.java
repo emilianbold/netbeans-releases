@@ -229,7 +229,8 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     void composeHint() {
-        hintLabel.setText(createRunConfig().getHint());
+        String hint = createRunConfig().getHint();
+        hintLabel.setText(hint != null ? "<html><body>" + hint : " "); // NOI18N
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -291,6 +292,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(interpreterLabel, NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
 
         interpreterTextField.setEditable(false);
+        interpreterTextField.setColumns(20);
         Mnemonics.setLocalizedText(interpreterBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseInterpreter")); // NOI18N
         interpreterBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -310,10 +312,13 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         argsLabel.setLabelFor(argsTextField);
         Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_Arguments")); // NOI18N
 
+        argsTextField.setColumns(20);
+
         runAsLabel.setLabelFor(runAsCombo);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
+
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -322,6 +327,9 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
             }
         });
         Mnemonics.setLocalizedText(workDirLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.workDirLabel.text")); // NOI18N
+
+        workDirTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(workDirBrowseButton, NbBundle.getMessage(RunAsScript.class, "RunAsScript.workDirBrowseButton.text")); // NOI18N
         workDirBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -329,38 +337,88 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
             }
         });
         Mnemonics.setLocalizedText(phpOptionsLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.phpOptionsLabel.text")); // NOI18N
+
+        phpOptionsTextField.setColumns(5);
         Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addComponent(runAsLabel)
-                .addContainerGap()).addGroup(layout.createSequentialGroup()
-
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(interpreterLabel).addComponent(indexFileLabel).addComponent(argsLabel).addComponent(workDirLabel).addComponent(phpOptionsLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(interpreterLabel)
+                    .addComponent(indexFileLabel)
+                    .addComponent(argsLabel)
+                    .addComponent(workDirLabel)
+                    .addComponent(phpOptionsLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(hintLabel)
-                        .addContainerGap()).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(argsTextField, Alignment.TRAILING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap())
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(argsTextField, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                        .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                             .addComponent(indexFileTextField)
-
-                            .addPreferredGap(ComponentPlacement.RELATED).addComponent(indexFileBrowseButton)).addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(interpreterTextField)
-
-                            .addPreferredGap(ComponentPlacement.RELATED).addComponent(interpreterBrowseButton)).addGroup(layout.createSequentialGroup()
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(indexFileBrowseButton))
+                        .addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(interpreterTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(interpreterBrowseButton))
+                        .addGroup(layout.createSequentialGroup()
                             .addComponent(defaultInterpreterCheckBox)
-
-                            .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(configureButton)).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(workDirTextField)
-
-                            .addPreferredGap(ComponentPlacement.RELATED).addComponent(workDirBrowseButton)).addComponent(phpOptionsTextField))))
+                            .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(configureButton))
+                        .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(workDirTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(workDirBrowseButton))
+                        .addComponent(phpOptionsTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configureButton, indexFileBrowseButton, interpreterBrowseButton, workDirBrowseButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(runAsLabel).addComponent(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(interpreterLabel).addComponent(interpreterBrowseButton).addComponent(interpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(defaultInterpreterCheckBox).addComponent(configureButton)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(indexFileLabel).addComponent(indexFileBrowseButton)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(argsLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(workDirLabel).addComponent(workDirTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(workDirBrowseButton)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(phpOptionsLabel).addComponent(phpOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addComponent(hintLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(runAsLabel)
+                    .addComponent(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(interpreterLabel)
+                    .addComponent(interpreterBrowseButton)
+                    .addComponent(interpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultInterpreterCheckBox)
+                    .addComponent(configureButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(indexFileLabel)
+                    .addComponent(indexFileBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(argsLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(workDirLabel)
+                    .addComponent(workDirTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(workDirBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(phpOptionsLabel)
+                    .addComponent(phpOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(hintLabel))
         );
 
         interpreterLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterLabel.AccessibleContext.accessibleName")); // NOI18N

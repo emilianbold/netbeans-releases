@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.db.explorer.action;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.MissingResourceException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.netbeans.lib.ddl.DDLException;
@@ -49,6 +53,8 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.node.CatalogNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -96,11 +102,36 @@ public class MakeDefaultCatalogAction extends BaseAction {
                     } catch (CommandNotSupportedException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (DDLException e) {
-                        Exceptions.printStackTrace(e);
+                        try {
+                            handleDLLException(connection, e);
+                        } catch (SQLException ex) {
+                            Exceptions.printStackTrace(e);
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }
         );
+    }
+
+    /**
+     * If DDL exception was caused by a closed connection, log info and display
+     * a simple error dialog. Otherwise let users report the exception.
+     */
+    private void handleDLLException(DatabaseConnection dbConn,
+            DDLException e) throws SQLException, MissingResourceException {
+        Connection conn = dbConn == null ? null : dbConn.getConnection();
+        if (conn != null && !conn.isValid(1000)) {
+            LOGGER.log(Level.INFO, e.getMessage(), e);
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(
+                    MakeDefaultCatalogAction.class,
+                    "ERR_ConnectionToServerClosed"), //NOI18N
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+        } else {
+            Exceptions.printStackTrace(e);
+        }
     }
 
     @Override

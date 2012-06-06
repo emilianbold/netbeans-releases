@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
@@ -259,10 +260,16 @@ public final class QuerySupport {
                     for (Pair<URL, LayeredDocumentIndex> pair : indices) {
                         final LayeredDocumentIndex index = pair.second;
                         final Collection<? extends String> staleFiles = index.getDirtyKeys();
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Index: " + index + ", staleFiles: " + staleFiles); //NOI18N
-                        }
-                        if (staleFiles != null && staleFiles.size() > 0) {
+                        final boolean scanningThread = RunWhenScanFinishedSupport.isScanningThread();
+                        LOG.log(
+                            Level.FINE,
+                            "Index: {0}, staleFiles: {1}, scanning thread: {2}",  //NOI18N
+                            new Object[]{
+                                index,
+                                staleFiles,
+                                scanningThread
+                            });
+                        if (!staleFiles.isEmpty() && !scanningThread) {
                             final URL root = pair.first;
                             LinkedList<URL> list = new LinkedList<URL>();
                             for (String staleFile : staleFiles) {
@@ -305,6 +312,8 @@ public final class QuerySupport {
             });
         } catch (IOException ioe) {
             throw ioe;
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Exception ex) {
             throw new IOException(ex);
         }

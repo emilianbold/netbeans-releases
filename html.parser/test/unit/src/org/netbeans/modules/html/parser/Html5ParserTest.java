@@ -71,6 +71,7 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.*;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.openide.filesystems.FileObject;
@@ -508,7 +509,7 @@ public class Html5ParserTest extends NbTestCase {
                 + "     </body>\n" //from some reason the tree builder pushes <a> open tag node here?!?!?
                 + "</html>  \n";
 
-        HtmlParseResult result = parse(code);
+        HtmlParseResult result = parse(code, false);
         Node root = result.root();
 
         assertNotNull(root);
@@ -641,7 +642,6 @@ public class Html5ParserTest extends NbTestCase {
         HtmlParseResult result = parse(code);
         Node root = result.root();
         
-        ElementUtils.dumpTree(root);
     }
 
     
@@ -1024,6 +1024,33 @@ public class Html5ParserTest extends NbTestCase {
 
     }
     
+    public void testSelfCloseTagEndOffset() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        
+        String code = "<div/>text";
+        //             0123456
+        HtmlParseResult result = parse(code);
+        Node root = result.root();
+        
+        OpenTag div = ElementUtils.query(root, "html/body/div");
+        assertNotNull(div);
+        
+        assertEquals(0, div.from());
+        assertEquals(6, div.to());
+    }
+    
+    public void testParseNetbeans_org() throws ParseException {
+        parse(getTestFile("testfiles/netbeans_org.html"));
+    }
+    
+    public void testParseW3c_org() throws ParseException {
+        parse(getTestFile("testfiles/w3c_org.html"));
+    }
+    
+    public void testParseWikipedia_org() throws ParseException {
+        parse(getTestFile("testfiles/wikipedia_org.html"));
+    }
+    
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
@@ -1084,21 +1111,66 @@ public class Html5ParserTest extends NbTestCase {
 //        
 //        return null;
 //    }
+    
+    private void assertNodeOffsets(final Node root) {
+        //assert semantic ends are set
+        ElementVisitor check = new ElementVisitor() {
+
+            @Override
+            public void visit(Element node) {
+                OpenTag openTag = (OpenTag)node;
+
+                if(openTag.from() == -1 && openTag.to() == -1) {
+                    return ; //virtual 
+                }
+                try {
+                assertTrue(String.format("Incorrect start offset %s of element %s", openTag.from(), openTag.name()), 
+                        openTag.from() >= 0);
+                
+                assertTrue(String.format("Incorrect end offset %s ( < start %s ) of element %s", 
+                        openTag.to(), openTag.from(), openTag.name()), 
+                        openTag.to() > openTag.from());
+                
+                assertTrue(String.format("Incorrect semantic end %s, from=%s, to=%s of element %s", 
+                        openTag.semanticEnd(), openTag.from(), openTag.to(), openTag.name()),
+                        openTag.semanticEnd() > openTag.from());
+                
+                } catch (AssertionError ae) {
+                    ElementUtils.dumpTree(root);
+                    throw ae;
+                }
+            }
+        };
+
+        ElementUtils.visitChildren(root, check, ElementType.OPEN_TAG);
+        
+    }
+    
     private HtmlParseResult parse(FileObject file) throws ParseException {
         HtmlSource source = new HtmlSource(file);
         HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
 
         assertNotNull(result);
 
+        assertNodeOffsets(result.root());
+        
         return result;
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {
+        return parse(code, true);
+    }
+    
+    private HtmlParseResult parse(CharSequence code, boolean validateNodes) throws ParseException {
         HtmlSource source = new HtmlSource(code);
-        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
+        final HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
 
         assertNotNull(result);
-
+        
+        if(validateNodes) {
+            assertNodeOffsets(result.root());
+        }
+        
         return result;
     }
 

@@ -95,9 +95,9 @@ public class J2EESetup extends PerformanceTestCase2 {
         }
 
     }
-    
+    /* not needed for 7.2
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
-    }      
+    } */     
    
 }

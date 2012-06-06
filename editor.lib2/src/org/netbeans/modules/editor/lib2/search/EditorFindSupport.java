@@ -276,7 +276,7 @@ public final class EditorFindSupport {
         focusedTextComponent = new WeakReference<JTextComponent>(component);
     }
     
-    private JTextComponent getFocusedTextComponent() {
+    public JTextComponent getFocusedTextComponent() {
         JTextComponent jc = focusedTextComponent != null ? focusedTextComponent.get() : null;
         return (jc != null) ? jc : EditorRegistry.lastFocusedComponent();
     }

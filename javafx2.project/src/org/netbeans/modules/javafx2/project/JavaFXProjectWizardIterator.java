@@ -171,8 +171,8 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject mainClassFo = null;
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
         if (dirF == null) {
-            warnIssue204880();
-            throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); // NOI18N
+            warnIssue204880("Wizard property projdir is null."); // NOI18N
+            throw new IOException(); // return to wizard
         }
         dirF = FileUtil.normalizeFile(dirF);
         
@@ -512,8 +512,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         return  sb.toString();
     }
 
-    private void warnIssue204880() {
-        LOG.log(Level.WARNING, "Detected issue 204880 occurence. Properties:" + wiz.getProperties()); // NOI18N
+    private void warnIssue204880(final String msg) {
+        LOG.log(Level.SEVERE, msg + " (issue 204880)."); // NOI18N
+        Exception npe = new NullPointerException(msg + " (issue 204880)."); // NOI18N
+        npe.printStackTrace();
         NotifyDescriptor d = new NotifyDescriptor.Message(
                 NbBundle.getMessage(JavaFXProjectWizardIterator.class,"WARN_Issue204880"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
         DialogDisplayer.getDefault().notify(d);

@@ -207,7 +207,7 @@ public class CsmOffsetResolver {
                     }
                 }
             }
-        } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj)) {
+        } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj) || CsmKindUtilities.isEnumForwardDeclaration(lastObj)) {
             // check template parameters
             if (CsmKindUtilities.isTemplate(lastObj)) {
                 Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)lastObj).getTemplateParameters();

@@ -74,17 +74,8 @@
               <Group type="parallel" groupAlignment="trailing" attributes="0">
                   <Group type="sequential" attributes="0">
                       <Group type="parallel" groupAlignment="trailing" attributes="0">
+                          <Component id="label1" min="$pref" max="$pref" attributes="0"/>
                           <Component id="button1" min="$pref" max="$pref" attributes="0"/>
-                          <Group type="parallel" alignment="trailing" groupAlignment="leading" attributes="0">
-                              <Group type="sequential" attributes="0">
-                                  <Component id="checkbox1" min="$pref" max="$pref" attributes="0"/>
-                                  <EmptySpace max="$pref" attributes="0"/>
-                                  <Component id="checkbox2" min="$pref" max="$pref" attributes="0"/>
-                                  <EmptySpace max="$pref" attributes="0"/>
-                                  <Component id="checkbox3" min="$pref" max="$pref" attributes="0"/>
-                              </Group>
-                              <Component id="label1" min="$pref" max="$pref" attributes="0"/>
-                          </Group>
                       </Group>
                       <EmptySpace min="$pref" pref="14" max="$pref" attributes="0"/>
                       <Group type="parallel" groupAlignment="trailing" attributes="0">
@@ -95,6 +86,14 @@
                       <Component id="button3" min="$pref" max="$pref" attributes="0"/>
                   </Group>
                   <Component id="label3" min="$pref" max="$pref" attributes="0"/>
+                  <Group type="sequential" alignment="leading" attributes="0">
+                      <EmptySpace min="$pref" pref="4" max="$pref" attributes="1024"/>
+                      <Component id="checkbox1" min="$pref" max="$pref" attributes="0"/>
+                      <EmptySpace max="$pref" attributes="0"/>
+                      <Component id="checkbox2" min="$pref" max="$pref" attributes="0"/>
+                      <EmptySpace max="$pref" attributes="0"/>
+                      <Component id="checkbox3" min="$pref" max="$pref" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace pref="115" max="Short.MAX_VALUE" attributes="1028"/>
           </Group>

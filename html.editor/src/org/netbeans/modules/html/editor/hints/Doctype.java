@@ -93,7 +93,7 @@ public class Doctype extends PatternRule {
 
     @Override
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.ERROR;
+        return HintSeverity.WARNING;
     }
     
     
