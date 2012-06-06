@@ -595,10 +595,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         String bundled = null;
         for (String runtime : predefinedRuntimes) {
             boolean bundledRuntime = runtime.isEmpty();
-            Object[] params = new Object[]{runtime,
-                    bundledRuntime ? BUNDLED_RUNTIME_VERSION : MavenSettings.getCommandLineMavenVersion(new File(runtime))};
             String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled() :
-                    MAVEN_RUNTIME_External(params);
+                    MAVEN_RUNTIME_External(runtime);
             mavenHomeDataModel.addElement(desc);
         }
         
