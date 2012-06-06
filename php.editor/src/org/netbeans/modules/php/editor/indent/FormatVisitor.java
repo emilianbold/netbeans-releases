@@ -1565,7 +1565,7 @@ public class FormatVisitor extends DefaultVisitor {
                 if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
                     token.setHasHTML(true);
                 }
-                int startOffset = ts.offset();
+                int tokenStartOffset = ts.offset();
                 StringBuilder sb = new StringBuilder(ts.token().text());
                 // merge all html following tokens to one format token;
                 while (ts.moveNext() && ts.token().id() == PHPTokenId.T_INLINE_HTML) {
@@ -1575,7 +1575,7 @@ public class FormatVisitor extends DefaultVisitor {
                 if (ts.moveNext()) {
                     ts.movePrevious();
                     ts.movePrevious();
-                    tokens.add(new FormatToken(FormatToken.Kind.HTML, startOffset, sb.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.HTML, tokenStartOffset, sb.toString()));
                 } else {
                     // this is the last token in the document
                     lastIndex--;
