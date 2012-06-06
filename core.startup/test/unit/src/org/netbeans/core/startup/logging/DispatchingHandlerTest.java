@@ -41,11 +41,15 @@
  */
 package org.netbeans.core.startup.logging;
 
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.StreamHandler;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -90,5 +94,27 @@ public class DispatchingHandlerTest extends NbTestCase {
         dh.flush();
         
         assertEquals("One hundered records now", 100, mh.records.size());
+    }
+    
+    public void testOwnFormatter() throws UnsupportedEncodingException {
+        class MyFrmtr extends Formatter {
+            private int cnt;
+            @Override
+            public String format(LogRecord record) {
+                cnt++;
+                return record.getMessage();
+            }
+        }
+        MyFrmtr my = new MyFrmtr();
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        StreamHandler sh = new StreamHandler(os, NbFormatter.FORMATTER);
+        DispatchingHandler dh = new DispatchingHandler(sh, 10);
+        dh.setFormatter(my);
+        dh.publish(new LogRecord(Level.WARNING, "Ahoj"));
+        dh.flush();
+        String res = new String(os.toByteArray(), "UTF-8");
+        assertEquals("Only the message is written", "Ahoj", res);
+        assertEquals("Called once", 1, my.cnt);
     }
 }
