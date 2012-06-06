@@ -242,6 +242,7 @@ public class RemoteServices {
                 ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 synchronized (remoteServiceClasses) {
                     remoteServiceClasses.put(t.getDebugger(), basicClass);
+                    t.getDebugger().addPropertyChangeListener(new RemoteServiceDebuggerListener());
                 }
                 fireServiceClass(t.getDebugger());
             }
@@ -1026,6 +1027,23 @@ public class RemoteServices {
         }
         ArrayReferenceWrapper.setValues(array, values);
         return array;
+    }
+    
+    private static class RemoteServiceDebuggerListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
+                JPDADebugger d = (JPDADebugger) evt.getSource();
+                if (JPDADebugger.STATE_DISCONNECTED == d.getState()) {
+                    d.removePropertyChangeListener(this);
+                    synchronized (remoteServiceClasses) {
+                        remoteServiceClasses.remove(d);
+                    }
+                }
+            }
+        }
+        
     }
     
     private static class RemoteClass {
