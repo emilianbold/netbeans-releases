@@ -63,14 +63,14 @@ public class TitleNode extends LeafNode {
     private JPanel panel;
     private JLabel lblName;
     private String titleName;
-    private LinkButton button;
+    private LinkButton[] buttons;
     private final Object LOCK = new Object();
     private ProgressLabel lblProgress;
 
-    public TitleNode(String titleName, LinkButton button) {
+    public TitleNode(String titleName, LinkButton... buttons) {
         super(null);
         this.titleName = titleName;
-        this.button = button;
+        this.buttons = buttons;
         lblProgress = createProgressLabel(NbBundle.getMessage(TitleNode.class, "LBL_LoadingInProgress"));
         lblProgress.setForeground(ColorManager.getDefault().getDefaultBackground());
     }
@@ -92,8 +92,12 @@ public class TitleNode extends LeafNode {
 
                 panel.add(new JLabel(), new GridBagConstraints(4, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
 
-                if (button != null) {
-                    panel.add(button, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+                if (buttons != null) {
+                    for (int i = 0; i < buttons.length; i++) {
+                        LinkButton linkButton = buttons[i];
+                        panel.add(linkButton, new GridBagConstraints(5 + i, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                    }
                 }
             }
         }

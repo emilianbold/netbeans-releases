@@ -346,6 +346,14 @@ public class Actions {
             return true;
         }
     }
+
+    public static class ClearCategoriesAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DashboardViewer.getInstance().clearCategories();
+        }
+    }
     //</editor-fold>
 
     public static List<Action> getRepositoryPopupActions(RepositoryNode... repositoryNodes) {
@@ -463,7 +471,6 @@ public class Actions {
                 Util.createNewQuery(repositoryNode.getRepository());
             }
         }
-
     }
     //</editor-fold>
 
