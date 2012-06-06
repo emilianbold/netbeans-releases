@@ -48,6 +48,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -403,7 +405,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return this.getSourcepath(type);
     }
     
-    private synchronized ClassPath getSourcepath(int type) {
+    @CheckForNull
+    private synchronized ClassPath getSourcepath(final int type) {
         if (type < 0 || type > 1) {
             return null;
         }
@@ -416,9 +419,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 case 1:
                     cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.testSourceRoots, helper, evaluator));
                     break;
+                default:
+                    throw new IllegalStateException("Invalid classpath type: " + type); //NOI18N
             }
+            cache[type] = cp;
         }
-        cache[type] = cp;
         return cp;
     }
     
