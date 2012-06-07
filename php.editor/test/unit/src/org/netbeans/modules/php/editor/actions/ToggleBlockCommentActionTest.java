@@ -98,6 +98,18 @@ public class ToggleBlockCommentActionTest extends PHPCodeCompletionTestBase {
         testInFile("testfiles/actions/issue207153.php");
     }
 
+    public void testIssue213706_01()throws Exception {
+        testInFile("testfiles/actions/issue213706_01.php");
+    }
+
+    public void testIssue213706_02()throws Exception {
+        testInFile("testfiles/actions/issue213706_02.php");
+    }
+
+    public void testIssue213706_03()throws Exception {
+        testInFile("testfiles/actions/issue213706_03.php");
+    }
+
     protected void testInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
