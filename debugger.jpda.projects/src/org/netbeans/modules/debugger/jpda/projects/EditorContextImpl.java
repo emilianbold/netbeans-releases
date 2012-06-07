@@ -99,6 +99,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
@@ -521,43 +522,35 @@ public class EditorContextImpl extends EditorContext {
      * @return signature of method currently selected in editor or null
      */
     public String getCurrentMethodSignature () {
-        final Element[] elementPtr = new Element[] { null };
+        final String[] elementSignaturePtr = new String[] { null };
         try {
-            getCurrentElement(ElementKind.METHOD, elementPtr);
+            getCurrentElement(ElementKind.METHOD, elementSignaturePtr);
         } catch (final java.awt.IllegalComponentStateException icse) {
             throw new java.awt.IllegalComponentStateException() {
                 @Override
                 public String getMessage() {
                     icse.getMessage();
-                    return createSignature((ExecutableElement) elementPtr[0]);
+                    return elementSignaturePtr[0];
                 }
             };
         }
-        if (elementPtr[0] != null) {
-            return createSignature((ExecutableElement) elementPtr[0]);
-        } else {
-            return null;
-        }
+        return elementSignaturePtr[0];
     }
 
     public String getMostRecentMethodSignature () {
-        final Element[] elementPtr = new Element[] { null };
+        final String[] elementSignaturePtr = new String[] { null };
         try {
-            getMostRecentElement(ElementKind.METHOD, elementPtr);
+            getMostRecentElement(ElementKind.METHOD, elementSignaturePtr);
         } catch (final java.awt.IllegalComponentStateException icse) {
             throw new java.awt.IllegalComponentStateException() {
                 @Override
                 public String getMessage() {
                     icse.getMessage();
-                    return createSignature((ExecutableElement) elementPtr[0]);
+                    return elementSignaturePtr[0];
                 }
             };
         }
-        if (elementPtr[0] != null) {
-            return createSignature((ExecutableElement) elementPtr[0]);
-        } else {
-            return null;
-        }
+        return elementSignaturePtr[0];
     }
 
     /**
@@ -916,7 +909,7 @@ public class EditorContextImpl extends EditorContext {
                                 name = elm.getSimpleName().toString();
                             }
                             if (name.equals(methodName)) {
-                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
+                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm, ci.getTypes()))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                                     Tree tree = ci.getTrees().getTree(elm);
                                     if (tree == null) {
@@ -1304,7 +1297,7 @@ public class EditorContextImpl extends EditorContext {
                                 // The constructor name is the class name:
                                 currentMethodPtr[0] = el.getEnclosingElement().getSimpleName().toString();
                             }
-                            currentMethodPtr[1] = createSignature((ExecutableElement) el);
+                            currentMethodPtr[1] = createSignature((ExecutableElement) el, ci.getTypes());
                             Element enclosingClassElement = el;
                             TypeElement te = null; // SourceUtils.getEnclosingTypeElement(el);
                             while (enclosingClassElement != null) {
@@ -1374,20 +1367,21 @@ public class EditorContextImpl extends EditorContext {
     }
 
 
-    private static String createSignature(ExecutableElement elm) {
+    private static String createSignature(ExecutableElement elm, Types types) {
         StringBuilder signature = new StringBuilder("(");
         for (VariableElement param : elm.getParameters()) {
             TypeMirror pt = param.asType();
+            pt = types.erasure(pt);
             String paramType;
             if (pt instanceof DeclaredType) {
                 paramType = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) pt).asElement());
             } else {
-                paramType = param.asType().toString();
+                paramType = pt.toString();
             }
             signature.append(getSignature(paramType));
         }
         signature.append(')');
-        String returnType = elm.getReturnType().toString();
+        String returnType = types.erasure(elm.getReturnType()).toString();
         signature.append(getSignature(returnType));
         return signature.toString();
     }
@@ -1412,11 +1406,6 @@ public class EditorContextImpl extends EditorContext {
         } else if (javaType.endsWith("[]")) {
             return "["+getSignature(javaType.substring(0, javaType.length() - 2));
         } else {
-            int gp1 = javaType.indexOf('<');
-            int gp2 = javaType.lastIndexOf('>');
-            if (gp1 > 0 && gp2 > gp1) {
-                javaType = javaType.substring(0, gp1) + javaType.substring(gp2 + 1);
-            }
             return "L"+javaType.replace('.', '/')+";";
         }
     }
@@ -2130,24 +2119,24 @@ public class EditorContextImpl extends EditorContext {
     }
 
     /** throws IllegalComponentStateException when can not return the data in AWT. */
-    private String getCurrentElement(final ElementKind kind, final Element[] elementPtr)
+    private String getCurrentElement(final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
         return getCurrentElement(contextDispatcher.getCurrentFile(),
                                  contextDispatcher.getCurrentEditor(),
-                                 kind, elementPtr);
+                                 kind, elementSignaturePtr);
     }
 
     /** throws IllegalComponentStateException when can not return the data in AWT. */
-    private String getMostRecentElement(final ElementKind kind, final Element[] elementPtr)
+    private String getMostRecentElement(final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
         return getCurrentElement(contextDispatcher.getMostRecentFile(),
                                  contextDispatcher.getMostRecentEditor(),
-                                 kind, elementPtr);
+                                 kind, elementSignaturePtr);
     }
 
     /** throws IllegalComponentStateException when can not return the data in AWT. */
     private String getCurrentElement(FileObject fo, JEditorPane ep,
-                                     final ElementKind kind, final Element[] elementPtr)
+                                     final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
 
         if (fo == null) return null;
@@ -2295,8 +2284,8 @@ public class EditorContextImpl extends EditorContext {
                             }
                         }
                     }
-                    if (elementPtr != null) {
-                        elementPtr[0] = el;
+                    if (elementSignaturePtr != null && el instanceof ExecutableElement) {
+                        elementSignaturePtr[0] = createSignature((ExecutableElement) el, ci.getTypes());
                     }
                 }
             }, true);
