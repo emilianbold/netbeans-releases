@@ -125,7 +125,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     JsObject current = modelBuilder.getCurrentDeclarationScope();
                     JsObject property = current.getProperty(accessNode.getProperty().getName());
                     if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
-                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL)) {
                         Node previous = getPreviousFromPath(2);
                         // check whether is not a part of method in constructor
                         if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
@@ -508,10 +509,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 //create anonymous object
                 JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
                 modelBuilder.setCurrentObject(object);
+                object.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                 return super.visit(objectNode, onset);
             } else if (previousVisited instanceof ReturnNode) {
                 JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
                 modelBuilder.setCurrentObject(objectScope);
+                objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
             } else {
                 List<Identifier> fqName = null;
                 int pathSize = getPath().size();
@@ -540,6 +543,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsObjectImpl scope = modelBuilder.getCurrentObject();
 
                 JsObjectImpl objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                 modelBuilder.setCurrentObject(objectScope);
             }
         } else {
@@ -685,7 +689,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 // or from a code structure like for cycle
                 Identifier name = new IdentifierImpl(varNode.getName().getName(),
                         ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
-                variable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+//                if (varNode.getInit() != null && varNode.getInit() instanceof IdentNode) {
+//                    JsObjectImpl init = (JsObjectImpl)parent.getProperty(((IdentNode)varNode.getInit()).getName());
+//                    if (init != null && init.getJSKind() == JsElement.Kind.OBJECT) {
+//                        variable = new JsObjectReference(parent, name, init, true);
+//                    }
+//                }
+//                if (variable == null) {
+                    variable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+//                }
                 if (parent.getJSKind() != JsElement.Kind.FILE) {
                     variable.getModifiers().remove(Modifier.PUBLIC);
                     variable.getModifiers().add(Modifier.PRIVATE);

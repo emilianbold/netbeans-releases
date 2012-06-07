@@ -109,4 +109,10 @@ public class JsObjectReference extends JsObjectImpl {
         return original;
     }
 
+    @Override
+    public void resolveTypes() {
+        // do nothing
+    }
+
+    
 }

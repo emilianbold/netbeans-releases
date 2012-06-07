@@ -91,6 +91,7 @@ public abstract class JsElementImpl implements JsElement {
                 break;
             case OBJECT:
             case ANONYMOUS_OBJECT:
+            case OBJECT_LITERAL:
                 result = ElementKind.CLASS;
                 break;
             case PROPERTY:
