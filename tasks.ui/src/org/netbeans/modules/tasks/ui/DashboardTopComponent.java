@@ -74,7 +74,7 @@ autostore = false)
 @TopComponent.Description(preferredID = "DashboardTopComponent",
 iconBase = "org/netbeans/modules/tasks/ui/resources/dashboard.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@TopComponent.Registration(mode = "explorer", openAtStartup = true, position=350)
 @ActionID(category = "Window", id = "org.netbeans.modules.tasks.ui.DashboardTopComponent")
 @ActionReference(path = "Menu/Window", position = 501)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",

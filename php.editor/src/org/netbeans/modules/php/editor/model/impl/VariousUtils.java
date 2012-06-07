@@ -50,7 +50,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -1408,7 +1408,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        return TypeNameResolver.forFullyQualifiedName(inScope, offset).resolve(qualifiedName);
+        return TypeNameResolverImpl.forFullyQualifiedName(inScope, offset).resolve(qualifiedName);
     }
 
     public static boolean isPrimitiveType(String typeName) {

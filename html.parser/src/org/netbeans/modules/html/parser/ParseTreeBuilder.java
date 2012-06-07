@@ -305,6 +305,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                 //strange transition happening at the closing > char at the tag end:
                 //<style type=\"text/css\"> 
                 switch(from) {
+                    case ATTRIBUTE_VALUE_UNQUOTED:
                     case AFTER_ATTRIBUTE_VALUE_QUOTED:
                     case BEFORE_ATTRIBUTE_NAME:
                     case TAG_NAME:

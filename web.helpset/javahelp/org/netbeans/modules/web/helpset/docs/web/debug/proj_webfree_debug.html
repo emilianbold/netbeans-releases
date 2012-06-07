@@ -12,27 +12,16 @@
 <body>
 <h2>Creating A Debug Target for a Free-Form Web Project</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>In a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-    <param name="content" value="./csh/glossary_freeform.html">
-    <param name="viewerActivator" value="javax.help.LinkLabel">
-    <param name="viewerStyle" value="javax.help.Popup">
-    <param name="viewerSize" value="400,160">
-    <param name="text" value="free-form project">
-    <param name="textFontSize" value="medium">
-    <param name="textFontFamily" value="SansSerif">
-    <param name="textFontStyle" value="italic">
-    <param name="textFontWeight" value="bold">
-    <param name="textColor" value="blue">
-  </object>, you must set up your own Ant target to run a project 
+<p>In a free-form project, you must set up your own Ant target to run a project 
   in the debugger. However, you can use the IDE to generate a debug target for you.
    When you do so, the IDE maps the debug target to the Debug Project command.
    Alternatively, if you have your own debug target, you must map it to the 
    Debug Project command yourself.
   <p><b>To generate a debug target: </b>
   <ol>
-      <li>Set the project as the <a href="proj_main.html">main project</a> and
-            choose Debug &gt; <a href="../debug/debug_local.html">Debug Main Project</a> (Ctrl-F5) from the main menu 
-          or right-click the project in the Projects window and choose Debug Project.
+      <li>Set the project as the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">main project</a> and
+            choose Debug &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html">Debug Main Project</a> (Ctrl-F5) from the main menu 
+          or right-click the project in the Projects window and choose Debug.
           <p>If no target is mapped to the Debug Project command,
      you are prompted to let the IDE generate an IDE-specific debug target
   in <tt>nbproject/ide-targets.xml</tt>.</p></li>
@@ -74,8 +63,8 @@ the target is automatically mapped to the Debug Project command. However, if you
   </li>
 </ol>
   <ul class="note"> 
-    <li>  If you want to map the debug action to a target in a separate Ant script,
-    	open the project's project.xml file and add the following to <tt>&lt;ide-actions&gt;</tt>: 
+    <li>If you want to map the debug action to a target in a separate Ant script,
+        open the project's <tt>project.xml</tt> file and add the following to <tt>&lt;ide-actions&gt;</tt>: 
           <pre>  &lt;action name=&quot;debug&quot;&gt;
     &lt;script&gt;<i>path_to_Ant_script</i>&lt;/script&gt;
     &lt;target&gt;<i>name_of_target</i>&lt;/target&gt;
@@ -88,7 +77,7 @@ the target is automatically mapped to the Debug Project command. However, if you
 
 <p><b>To use a debug target in a free-form web project: </b>
 <ol>
-	<li>Set <a href="../debug/breakpoint_setting.html">breakpoints</a> in your source files.</li>
+	<li>Set <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/breakpoint_setting.html">breakpoints</a> in your source files.</li>
 	<li>Right-click the project node in the Projects window,
 	 choose Properties, click Java Sources in the Project Properties dialog box,
 	  and make sure that all the source files you want to debug are listed in
@@ -102,7 +91,7 @@ the target is automatically mapped to the Debug Project command. However, if you
 
 </li>
 <li>Make sure that you have a debug target and that it is mapped to
- the Debug Project command, as described in the previous sections.</li>
+ the Debug command, as described in the previous sections.</li>
  <li>Choose Debug &gt; Debug Main Project (Ctrl-F5).</li>
 </ol>
 
@@ -115,10 +104,15 @@ the target is automatically mapped to the Debug Project command. However, if you
   </object></p>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="proj_free_about.html">About Free-Form Projects</a></dd>
-    <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/debug/about_debug.html">About Debugging and Testing Web Applications</a></dd>
-    <dd><a href="proj_free_debug.html">Writing A Debug Target for a Free-Form Java 
-      Project</a></dd>
+    <dd><a href="about_debug.html">About Debugging and Testing Web Applications</a></dd>
+    <dd><a href="debug_webapp.html">Debugging a Web Application</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_about.html">About Debugging Applications</a> </dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_remote.html">Starting a Remote Debugging Session</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/debug/debug_local.html">Starting a Local Debugging Session</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_debug.html">Writing A Debug Target for a Free-Form Java Project</a></dd>
+
+    
 </dl>
   
 

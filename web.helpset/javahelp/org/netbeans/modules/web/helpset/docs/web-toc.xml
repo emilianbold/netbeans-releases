@@ -112,6 +112,7 @@
             <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
             <tocitem text="Debugging a Web Application" target="debug_webapp" />
             <tocitem text="Profiling a Web Application" target="about_profilewebapp" />
+            <tocitem text="Creating a Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
         </tocitem>
         <tocitem text="Web Application Frameworks">
             <tocitem text="About Web Application Frameworks" target="about_framework" />

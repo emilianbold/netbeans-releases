@@ -464,7 +464,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             synchronized (indexingMutexes) {
                 indexingMutexes.remove(mutex);
             }
-            RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
+            RepositoryPreferences.setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
             
         }

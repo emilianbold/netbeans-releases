@@ -65,8 +65,8 @@ made subject to such option by the copyright holder.
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/1/javax.faces/poms/jsf-api-1.2_04-p01.pom</resource>
-        <resource>http://download.java.net/maven/1/javax.faces/poms/jsf-impl-1.2_04-p01.pom</resource>
+        <resource>http://repo1.maven.org/maven2/javax/faces/jsf-api/1.2_04-p01/jsf-api-1.2_04-p01.pom</resource>
+        <resource>http://repo1.maven.org/maven2/javax/faces/jsf-impl/1.2_04-p01/jsf-impl-1.2_04-p01.pom</resource>
         <resource>http://repo1.maven.org/maven2/commons-digester/commons-digester/1.5/commons-digester-1.5.pom</resource>
     </volume>
 </library>

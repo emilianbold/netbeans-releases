@@ -53,12 +53,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.MavenProject;
+import static org.netbeans.modules.maven.actions.scm.ui.Bundle.*;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -73,6 +75,7 @@ public class CheckoutUI extends javax.swing.JPanel {
     private MavenProject project;
 
     /** Creates new form CheckoutUI */
+    @Messages({"LBL_Description=<html>Check out {0} sources from repository</html>", "BTN_Checkout=Check Out"})
     public CheckoutUI(MavenProject proj) {
         this.project = proj;
         this.scm = proj.getScm();
@@ -90,19 +93,22 @@ public class CheckoutUI extends javax.swing.JPanel {
         buffer.append("</b>");//NOI18N
 
         initComponents();
-        lblDescription.setText(org.openide.util.NbBundle.getMessage(CheckoutUI.class, "LBL_Description", buffer.toString())); // NOI18N
+        lblDescription.setText(LBL_Description(buffer.toString())); // NOI18N
 
-        checkoutButton = new JButton(NbBundle.getMessage(CheckoutUI.class, "BTN_Checkout"));//NOI18N
+        checkoutButton = new JButton(BTN_Checkout());//NOI18N
         //checkoutButton.setEnabled(false);//TODO validate 
 
         load();
         txtFolder.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validateFolder();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validateFolder();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validateFolder();
             }
@@ -110,15 +116,16 @@ public class CheckoutUI extends javax.swing.JPanel {
         txtFolder.setText(ProjectChooser.getProjectsFolder().getAbsolutePath() + File.separator + project.getArtifactId());
     }
 
+    @Messages({"LBL_Folder_Error=Folder not empty. The folder must be empty to continue.", "LBL_Folder=Local working copy path"})
     private void validateFolder() {
 
         File file = new File(txtFolder.getText().trim());
         if (file.exists() && file.list() != null && file.list().length > 0) {
             checkoutButton.setEnabled(false);
             lblFolderError.setForeground(Color.red);
-            lblFolderError.setText(NbBundle.getMessage(CheckoutUI.class, "LBL_Folder_Error"));
+            lblFolderError.setText(LBL_Folder_Error());
         } else {
-            lblFolderError.setText(NbBundle.getMessage(CheckoutUI.class, "LBL_Folder"));
+            lblFolderError.setText(LBL_Folder());
             checkoutButton.setEnabled(true);
             lblFolderError.setForeground(Color.BLACK);
         }
@@ -317,10 +324,11 @@ public class CheckoutUI extends javax.swing.JPanel {
                 .addGap(18, 18, 18))
         );
     }// </editor-fold>//GEN-END:initComponents
+    @Messages({"TIT_Choose=Choose Directory To Check Out", "LBL_Select=Select"})
     private void btnFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFileActionPerformed
         JFileChooser chooser = new JFileChooser(lastFolder);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(CheckoutUI.class, "TIT_Choose"));
+        chooser.setDialogTitle(TIT_Choose());
 
         chooser.setMultiSelectionEnabled(false);
         if (txtFolder.getText().trim().length() > 0) {
@@ -329,7 +337,7 @@ public class CheckoutUI extends javax.swing.JPanel {
                 chooser.setSelectedFile(fil);
             }
         }
-        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), NbBundle.getMessage(CheckoutUI.class, "LBL_Select"));
+        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), LBL_Select());
         if (ret == JFileChooser.APPROVE_OPTION) {
             txtFolder.setText(chooser.getSelectedFile().getAbsolutePath());
             txtFolder.requestFocusInWindow();

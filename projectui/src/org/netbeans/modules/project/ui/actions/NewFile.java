@@ -96,6 +96,7 @@ import org.openide.util.actions.Presenter.Popup;
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
     private static final RequestProcessor RP = new RequestProcessor(NewFile.class);
+    private static final RequestProcessor INSTANTIATE_RP = new RequestProcessor(NewFile.class.getName() + ".INSTANTIATE_RP", 5);
     private static final Logger LOG = Logger.getLogger(NewFile.class.getName());
 
     private JMenu subMenu;
@@ -163,7 +164,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             wd.setTargetFolder( preselectedFolder );
         }
 
-        RP.post(new Runnable() {
+        INSTANTIATE_RP.post(new Runnable() {
             @Override public void run() {
         try {
             Set resultSet = template == null ? wd.instantiate () : wd.instantiate( template );

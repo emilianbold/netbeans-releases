@@ -86,7 +86,6 @@
 <mapID target="proj_free_debug_about" url="project/proj_free_debug_about.html" />
 <mapID target="proj_free_debug" url="project/proj_free_debug.html" />
 <mapID target="proj_free_projectxml" url="project/proj_free_projectxml.html" />
-<mapID target="proj_webfree_debug" url="project/proj_webfree_debug.html" />
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
 <mapID target="proj_import" url="project/proj_import.html" />
 <mapID target="proj_deleting" url="project/proj_deleting.html" />

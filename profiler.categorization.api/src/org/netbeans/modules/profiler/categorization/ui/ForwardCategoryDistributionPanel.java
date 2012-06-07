@@ -55,13 +55,19 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -74,6 +80,7 @@ import org.netbeans.modules.profiler.categorization.api.ProjectAwareStatisticalM
 import org.netbeans.modules.profiler.utilities.Visitable;
 import org.netbeans.modules.profiler.utilities.Visitor;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 
 
 /**
@@ -146,8 +153,8 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         }
 
         @Override
-        public void onBackout(MarkedCPUCCTNode node) {
-            if (time0 > 0L) {
+        public void onBackout(MarkedCPUCCTNode node) {                        
+            if (time0 > 0L && isMarkEligible(usedMark)) {
                 // fill the timing data structures
                 Long markTime = markMap.get(usedMark);
 
@@ -157,8 +164,8 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
 
                 long cleansedTime = (long) TimingAdjusterOld.getDefault().adjustTime(time0, inCalls, outCalls - lastCalls, false);
 
-                if (cleansedTime > 0L) {
-                    markMap.put(usedMark, markTime + cleansedTime);
+                if (cleansedTime > 0L || inCalls > 0) {
+                    markMap.put(usedMark, markTime + (cleansedTime > 0L ? cleansedTime : inCalls));
                 }
             }
 
@@ -173,8 +180,8 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         }
 
         @Override
-        protected void onNode(MarkedCPUCCTNode node) {
-            if (time0 > 0L) {
+        protected void onNode(MarkedCPUCCTNode node) {                        
+            if (time0 > 0L && isMarkEligible(usedMark)) {
                 // fill the timing data structures
                 Long markTime = markMap.get(usedMark);
 
@@ -184,8 +191,8 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
 
                 long cleansedTime = (long) TimingAdjusterOld.getDefault().adjustTime(time0, inCalls - lastCalls, outCalls, false);
 
-                if (cleansedTime > 0L) {
-                    markMap.put(usedMark, markTime + cleansedTime);
+                if (cleansedTime > 0L || inCalls > 0) {
+                    markMap.put(usedMark, markTime + (cleansedTime > 0L ? cleansedTime : inCalls));
                 }
             }
 
@@ -227,13 +234,24 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
         public void onStop() {
             refreshData();
         }
+        
+        private boolean isMarkEligible(Mark mark) {
+            return forwardMarks.contains(mark != null ? mark : Mark.DEFAULT);
+        }
     }
 
+    private static final Logger LOG = Logger.getLogger(ForwardCategoryDistributionPanel.class.getName());
+    
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
     private JLabel noData = new JLabel(Bundle.ForwardCategoryDistributionPanel_NoDataLabelText());
     private JLabel noMethods = new JLabel(Bundle.ForwardCategoryDistributionPanel_NoMethodLabelText());
     private Model model;
     private RuntimeCPUCCTNode lastAppNode;
+    
+    private ProjectCategorization categorization;
+    private List<MarkTime> slots = Collections.EMPTY_LIST;
+    private Map<Mark, Integer> slotMap = Collections.EMPTY_MAP;
+    private Set<Mark> forwardMarks = Collections.EMPTY_SET;
     
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -244,28 +262,85 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
     }
 
     @Override
+    protected void onProjectChange(Provider oldValue, Provider newValue) {
+        if (oldValue != null && newValue == null) {
+            categorization = null;
+            return;
+        }
+        if (newValue != null) {
+            categorization = new ProjectCategorization(newValue);
+            setupSlots(categorization.getRoot().getAssignedMark());
+        }
+    }
+    
+    @Override
     public boolean supportsProject(Lookup.Provider project) {
-        return ProjectCategorization.isAvailable(getProject());
+        return ProjectCategorization.isAvailable(project);
     }
     
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void setSelectedMethodId(int methodId) {
-        int lastSelectedId = getSelectedMethodId();
-        super.setSelectedMethodId(methodId);
+    protected void onMethodSelectionChange(int oldMethodId, int newMethodId) {
+        refresh(lastAppNode);
+    }
 
-        if (lastSelectedId != methodId) {
-            lastSelectedId = methodId;
-            refresh(lastAppNode);
+    @Override
+    protected void onMarkSelectionChange(Mark oldMark, Mark newMark) {
+        refresh(lastAppNode);
+    }
+    
+    private void setupSlots(Mark catMark) {
+        if (categorization == null) return;
+        
+        Category cat = categorization.getCategoryForMark(catMark);
+        
+        Set<Category> subs = cat.getSubcategories();
+        List<Category> subsList = new ArrayList<Category>(subs);
+        
+        slots = new ArrayList(subsList.size());
+        slotMap = new HashMap<Mark, Integer>();
+        forwardMarks = new HashSet<Mark>();
+        
+        for(int i=0;i<subsList.size();i++) {
+            Category thisCat = subsList.get(i);
+            Set<Mark> marks = getMarks(thisCat);
+            for(Mark m : marks) {
+                slotMap.put(m, i);
+            }
+            Mark assignedMark = thisCat.getAssignedMark();
+            slots.add(new MarkTime(assignedMark, 0));
+            forwardMarks.addAll(marks);
         }
+        forwardMarks.add(catMark);
+    }
+    
+    private Set<Mark> getMarks(Category cat) {
+        Set<Mark> marks = new HashSet<Mark>();
+        
+        Deque<Category> stack = new ArrayDeque<Category>();
+        stack.push(cat);
+        while (!stack.isEmpty()) {
+            cat = stack.pop();
+            marks.add(cat.getAssignedMark());
+            for(Category sub : cat.getSubcategories()) {
+                stack.push(sub);
+            }
+        }
+        
+        return marks;
     }
 
     synchronized public void refresh(RuntimeCPUCCTNode appNode) {
         if (appNode != null) {
-            RuntimeCCTNodeProcessor.process(appNode, model);
-
-            lastAppNode = appNode;
+            try {
+                setupSlots(getSelectedMark());
+                RuntimeCCTNodeProcessor.process(appNode, model);
+            } catch (Exception e) {
+                LOG.log(Level.SEVERE, null, e);
+            } finally {
+                lastAppNode = appNode;
+            }
         }
     }
 
@@ -316,31 +391,40 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
                         }
                     };
             } else {
-                long parentTime = 0;
-                long shownTime = 0;
-
-                final List<MarkTime> shownCats = new ArrayList<MarkTime>();
-
+                final long[] shownTime = new long[1];
+                
                 for (Map.Entry<Mark, Long> entry : catTimes.entrySet()) {
-                    if (catTimes.keySet().contains(entry.getKey())) {
-                        long time = entry.getValue();
-                        shownTime += time;
-                        shownCats.add(new MarkTime(entry.getKey(), time));
+                    long time = entry.getValue();
+                    Integer index = slotMap.get(entry.getKey());
+                    if (index != null) {
+                        MarkTime mt = slots.get(index);
+                        assert mt != null;
+                        
+                        mt.time += time;                        
                     }
                 }
 
-                final long fullTime = (parentTime > shownTime) ? parentTime : shownTime;
-
-                Collections.sort(shownCats, MarkTime.COMPARATOR);
+                final List<MarkTime> shownCats = new ArrayList<MarkTime>();
+                for(MarkTime mt : slots) {
+                    if (mt.time > 0L) {
+                        shownCats.add(mt);
+                        shownTime[0] += mt.time;
+                    }
+                }
+                
+                if (shownCats.isEmpty()) {
+                    shownCats.add(new MarkTime(getSelectedMark(), 1));
+                    shownTime[0] = 1;
+                } else {
+                    Collections.sort(shownCats, MarkTime.COMPARATOR);
+                }
 
                 uiUpdater = new Runnable() {
-                        public void run() {
-                            final ProjectCategorization categorization = new ProjectCategorization(getProject());
-                            
+                        public void run() {                            
                             removeAll();
 
                             for (final MarkTime cat : shownCats) {
-                                float ratio = (float) cat.time / (float) fullTime;
+                                float ratio = (float) cat.time / (float) shownTime[0];
                                 float percent = 100f * ratio;
 
                                 JPanel panel = new JPanel(new BorderLayout());
@@ -349,18 +433,7 @@ public class ForwardCategoryDistributionPanel extends ProjectAwareStatisticalMod
                                 Category displayedCat = categorization.getCategoryForMark(cat.mark);
                                 StringBuilder labelBuilder = new StringBuilder();
                                 if (displayedCat != null) {
-                                    categorization.getRoot().accept(new Visitor<Visitable<Category>, Void, StringBuilder>() {
-
-                                        public Void visit(Visitable<Category> visitable, StringBuilder parameter) {
-                                            if (categorization.getAllMarks(visitable.getValue()).contains(cat.mark)) {
-                                                if (parameter.length() > 0) {
-                                                    parameter.append("/");
-                                                }
-                                                parameter.append(visitable.getValue().getLabel());
-                                            }
-                                            return null;
-                                        }
-                                    }, labelBuilder);
+                                    labelBuilder.append(displayedCat.getLabel());
                                 } else {
                                     labelBuilder.append("Not categorized");
                                 }
