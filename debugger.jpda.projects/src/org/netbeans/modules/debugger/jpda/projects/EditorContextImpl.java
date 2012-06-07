@@ -2248,24 +2248,20 @@ public class EditorContextImpl extends EditorContext {
                             String text = ci.getText();
                             int l = text.length();
                             char c = 0; // Search for the end of the field declaration
-                            while (offset < l && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
-                            if (offset < l && c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
-                                int endOffset = --offset;
-                                int setOffset = -1;
-                                while(offset >= 0 && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
-                                    if (c == '=') setOffset = offset;
-                                    offset--;
-                                }
-                                if (setOffset > -1) {
-                                    offset = setOffset;
-                                } else {
-                                    offset = endOffset;
-                                }
-                                while (offset >= 0 && Character.isWhitespace(text.charAt(offset))) offset--;
+                            while (offset < l && (c = text.charAt(offset)) != '\n' && c != '\r' && Character.isWhitespace(c)) {
+                                offset++;
                             }
-                            if (offset < 0) offset = 0;
+                            if (!Character.isWhitespace(c)) offset++;
                         }
-                        Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
+                        TreePath tp = ci.getTreeUtilities().pathFor(offset);
+                        Tree tree = tp.getLeaf();
+                        if (selectedIdentifier == null) {
+                            while (tree.getKind() != Tree.Kind.VARIABLE) {
+                                tp = tp.getParentPath();
+                                if (tp == null) break;
+                                tree = tp.getLeaf();
+                            }
+                        }
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
                             el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
                             if (el != null && (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT)) {
