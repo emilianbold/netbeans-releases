@@ -47,11 +47,14 @@ import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.mylyn.commons.net.AbstractWebLocation;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.commons.net.IProxyProvider;
+import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NetworkSettings;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.client.RestTemplate;
 
@@ -75,15 +78,15 @@ public class ClientFactory {
         return instance;
     }
     
-    public ProfileWebServiceClient getClient (String url) {
+    public CloudClient getClient (AbstractWebLocation location) {
+        // TODO eliminate:
+        // com.tasktop.c2c.client.commons.client.EclipseCommonsClientHttpRequestFactorySource
+        // CredentialsInjector
         ClassPathXmlApplicationContext profileContext = getContext();
         ProfileWebServiceClient client = profileContext.getBean(ProfileWebServiceClient.class);
         RestTemplate template = (RestTemplate)getContext().getBean(RestTemplate.class);
-        AbstractWebLocation location = new WebLocation(url);
         CredentialsInjector.configureRestTemplate(location, template);
-        // this is wrong, client is a singleton
-        client.setBaseUrl(location.getUrl());
-        return client;
+        return new CloudClient(client, location);
     }
     
     private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
@@ -103,11 +106,7 @@ public class ClientFactory {
         return context;
     }
     
-    public static class WebLocation extends AbstractWebLocation {
-
-	public WebLocation (String url) {
-            super(url);
-	}
+    public static class ProxyProvider implements IProxyProvider {
 
 	@Override
 	public Proxy getProxyForHost(String host, String proxyType) {
@@ -122,19 +121,26 @@ public class ClientFactory {
                     URI uri = new URI(scheme + host);
                     List<Proxy> select = ProxySelector.getDefault().select(uri);
                     if (select.size() > 0) {
-                        return select.get(0);
+                        Proxy p = select.get(0);
+                        String uname = NetworkSettings.getAuthenticationUsername(uri);
+                        if (uname != null && !uname.trim().isEmpty()) {
+                            String pwdkey = NetworkSettings.getKeyForAuthenticationPassword(uri);
+                            char[] pwd = null;
+                            if (pwdkey != null && !pwdkey.trim().isEmpty()) {
+                                pwd = Keyring.read(pwdkey);
+                            }
+                            if (pwd != null) {
+                                p = new AuthenticatedProxy(p.type(), p.address(), uname, new String(pwd));
+                                Arrays.fill(pwd, (char) 0);
+                            }
+                        }
+                        return p;
                     }
                 }
             } catch (URISyntaxException ex) {
             }
             return Proxy.NO_PROXY;
 	}
-
-	@Override
-	public AuthenticationCredentials getCredentials(AuthenticationType type) {
-            return null;
-	}
-
     }
     
 }

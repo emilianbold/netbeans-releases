@@ -43,20 +43,16 @@
 package org.netbeans.modules.team.c2c;
 
 import com.tasktop.c2c.server.profile.domain.project.Profile;
-import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.Collections;
 import java.util.logging.Level;
 import junit.framework.Test;
+import org.eclipse.mylyn.commons.net.WebLocation;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+
 
 /**
  *
@@ -88,15 +84,10 @@ public class C2CClientTest extends NbTestCase  {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         if (firstRun) {
             if (uname == null) {
-                uname = System.getProperty("team.user.login");
-                passw = System.getProperty("team.user.password");
-            }
-            if (uname == null) { // if it is still null, check the file in ~
                 BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
                 uname = br.readLine();
                 passw = br.readLine();
                 proxy = br.readLine();
-
                 br.close();
             }
             if (firstRun) {
@@ -109,14 +100,17 @@ public class C2CClientTest extends NbTestCase  {
     }
     
     public void testCreateClient () throws Exception {
-        ProfileWebServiceClient client = ClientFactory.getInstance().getClient("https://q.tasktop.com/alm/api");
-        Authentication auth = new UsernamePasswordAuthenticationToken(new User(uname, passw, true, true, true, true, 
-                Collections.EMPTY_LIST), passw);
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        CloudClient client = getClient();
         Profile currentProfile = client.getCurrentProfile();
-        SecurityContextHolder.getContext().setAuthentication(null);
         assertNotNull(currentProfile.getFirstName());
         assertNotNull(currentProfile.getLastName());
+    }
+
+    private CloudClient getClient () {
+        return ClientFactory.getInstance().getClient(new WebLocation("https://q.tasktop.com/", 
+                uname, 
+                passw, 
+                new ClientFactory.ProxyProvider()));
     }
 
 }

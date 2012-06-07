@@ -31,6 +31,22 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.24</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.springframework.beans</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -47,6 +63,11 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.springframework.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.springframework.security.core</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
