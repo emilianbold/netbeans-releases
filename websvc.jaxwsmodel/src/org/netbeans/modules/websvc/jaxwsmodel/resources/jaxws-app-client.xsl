@@ -70,6 +70,7 @@ made subject to such option by the copyright holder.
             
             <xsl:if test="/jaxws:jax-ws/jaxws:clients/jaxws:client">
                 <target name="wsimport-init" depends="init">
+		    <fail if="${{wsimport.bad.version}}" message="WsImport ant task defined in the classpath ${{j2ee.platform.wsimport.classpath}} has a serious bug. See http://wiki.netbeans.org/MetroIssue for details."/>
                     <mkdir dir="${{build.generated.sources.dir}}/jax-ws"/>
                     <property name="j2ee.platform.wsimport.classpath" value="${{libs.jaxws21.classpath}}"/>
                     <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">

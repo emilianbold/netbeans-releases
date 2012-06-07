@@ -51,6 +51,7 @@ import org.openide.modules.PatchedPublic;
  *
  * @author Martin Roskanin
  */
+// When introduce new name add also to org.netbeans.modules.editor.lib.ColoringMap.FONT_COLOR_NAMES_COLORINGS;
 public final class FontColorNames {
 
     /** Default coloring for the drawing. */

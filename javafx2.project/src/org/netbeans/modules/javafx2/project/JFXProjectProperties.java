@@ -84,6 +84,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -100,6 +101,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_SWING = "javafx.swing"; // NOI18N
     public static final String JAVAFX_DISABLE_AUTOUPDATE = "javafx.disable.autoupdate"; // NOI18N
     public static final String JAVAFX_DISABLE_AUTOUPDATE_NOTIFICATION = "javafx.disable.autoupdate.notification"; // NOI18N
+    public static final String JAVAFX_ENDORSED_ANT_CLASSPATH = "endorsed.javafx.ant.classpath"; // NOI18N
     
     /** The standard extension for FXML source files. */
     public static final String FXML_EXTENSION = "fxml"; // NOI18N    
@@ -653,14 +655,28 @@ public final class JFXProjectProperties {
         }
     }
     
-    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(@NonNull JFXConfigs configs) throws IOException {       
-        Set<PreloaderArtifact> preloaderArtifacts = new HashSet<PreloaderArtifact>();
-        // check records on all preloaders from all configurations
-        for(String config : configs.getConfigNames()) {
+    public boolean hasPreloaderInAnyConfig() {
+        return hasPreloaderInAnyConfig(CONFIGS);
+    }
+    
+    private boolean hasPreloaderInAnyConfig(@NonNull JFXConfigs configs) {
+        if(configs != null) {
+            for(String config : configs.getConfigNames()) {
+                if(isTrue( configs.getProperty(config, PRELOADER_ENABLED))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private PreloaderArtifact getPreloaderArtifactFromConfig(@NonNull JFXConfigs configs, @NonNull String config) throws IOException {       
+        // check records on any type of preloader from config
+        if(configs.hasConfig(config)) {
             
             PreloaderArtifact preloader = null;
             if(!isTrue( configs.getProperty(config, PRELOADER_ENABLED))) {
-                continue;
+                return null;
             }
             String prelTypeString = configs.getProperty(config, PRELOADER_TYPE);
             
@@ -706,6 +722,16 @@ public final class JFXProjectProperties {
                     }
                 }
             }
+            return preloader;
+        }
+        return null;
+    }
+    
+    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(@NonNull JFXConfigs configs) throws IOException {       
+        Set<PreloaderArtifact> preloaderArtifacts = new HashSet<PreloaderArtifact>();
+        // check records on all preloaders from all configurations
+        for(String config : configs.getConfigNames()) {
+            PreloaderArtifact preloader = getPreloaderArtifactFromConfig(configs, config);
             if(preloader != null) {
                 preloaderArtifacts.add(preloader);
             }
@@ -713,35 +739,68 @@ public final class JFXProjectProperties {
         return preloaderArtifacts;
     }
 
+    public void updatePreloaderDependencies() {
+        try {
+            updatePreloaderDependencies(CONFIGS);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     @Deprecated
-    private void updatePreloaderDependencies(@NonNull JFXConfigs configs) throws IOException {
+    private void updatePreloaderDependencies(@NonNull final JFXConfigs configs) throws IOException {
         // depeding on the currently (de)selected preloaders update project dependencies,
         // i.e., remove disabled/deleted preloader project dependencies and add enabled/added preloader project dependencies
         Set<PreloaderArtifact> preloaderArtifacts = getPreloaderArtifacts(getProject());
         for(PreloaderArtifact artifact : preloaderArtifacts) {
             artifact.setValid(false);
         }
-        Set<PreloaderArtifact> currentArtifacts = getPreloaderArtifactsFromConfigs(configs);
-        for(PreloaderArtifact preloader : currentArtifacts) {
-            if(preloader != null) {
-                preloader.addDependency();
-                boolean updated = false;
-                for(PreloaderArtifact a : preloaderArtifacts) {
-                    if(a.equals(preloader)) {
-                        a.setValid(true);
-                        updated = true;
+        for(final String config : configs.getConfigNames()) {
+            final PreloaderArtifact preloader = getPreloaderArtifactFromConfig(configs, config);
+            //if(isEqual(config, configs.getActive())) {
+                if(preloader != null) {
+                    ProjectManager.mutex().postWriteRequest(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                if(isEqual(config, configs.getActive())) {
+                                    preloader.addDependency();
+                                } else {
+                                    preloader.removeDependency();
+                                }
+                            } catch(IOException e) {
+                                LOG.log(Level.SEVERE, "Preloader dependency update failed."); // NOI18N
+                            }
+                        }
+                    });
+                    boolean updated = false;
+                    for(PreloaderArtifact a : preloaderArtifacts) {
+                        if(a.equals(preloader)) {
+                            a.setValid(true);
+                            updated = true;
+                        }
+                    }
+                    if(!updated) {
+                        preloader.setValid(true);
+                        preloaderArtifacts.add(preloader);
                     }
                 }
-                if(!updated) {
-                    preloader.setValid(true);
-                    preloaderArtifacts.add(preloader);
-                }
-            }
+            //}
         }
         // remove all previous dependencies that are no more specified in any configuration
         Set<PreloaderArtifact> toRemove = new HashSet<PreloaderArtifact>();
-        for(PreloaderArtifact artifact : preloaderArtifacts) {
+        for(final PreloaderArtifact artifact : preloaderArtifacts) {
             if(!artifact.isValid()) {
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            artifact.removeDependency();
+                        } catch(IOException e) {
+                            LOG.log(Level.SEVERE, "Preloader dependency removal failed."); // NOI18N
+                        }
+                    }
+                });
                 artifact.removeDependency();
                 toRemove.add(artifact);
             }
@@ -840,25 +899,10 @@ public final class JFXProjectProperties {
     public static void deleteFile(final @NonNull FileObject propsFO) throws IOException {
         if(propsFO != null) {
             try {
-                final Mutex.ExceptionAction<Void> action = new Mutex.ExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        FileLock lock = null;
-                        try {
-                            lock = propsFO.lock();
-                            propsFO.delete(lock);
-                        } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
-                            }
-                        }
-                        return null;
-                    }
-                };
                 ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
-                        ProjectManager.mutex().readAccess(action);
+                        propsFO.delete();
                         return null;
                     }
                 });
@@ -917,16 +961,16 @@ public final class JFXProjectProperties {
     }
 
     public void store() throws IOException {
-        
+        updatePreloaderDependencies(CONFIGS);
+        CONFIGS.storeActive();
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         final EditableProperties pep = new EditableProperties(true);
-        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        
+        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);        
         try {
             final InputStream is = projPropsFO.getInputStream();
             final InputStream pis = privPropsFO.getInputStream();
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
                     try {
@@ -943,10 +987,21 @@ public final class JFXProjectProperties {
                             pis.close();
                         }
                     }
-                    fxPropGroup.store(ep);
-                    storeRest(ep, pep);
-                    CONFIGS.store(ep, pep);
-                    updatePreloaderComment(ep);
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+        fxPropGroup.store(ep);
+        storeRest(ep, pep);
+        CONFIGS.store(ep, pep);
+        updatePreloaderComment(ep);
+        logProps(ep);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -976,9 +1031,6 @@ public final class JFXProjectProperties {
                     return null;
                 }
             });
-            updatePreloaderDependencies(CONFIGS);
-            CONFIGS.storeActive();
-
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
@@ -2454,6 +2506,14 @@ public final class JFXProjectProperties {
 
         //----------------------------------------------------------
 
+        public void readActive() {
+            try {
+                setActive(readFromFile(project, CONFIG_PROPERTIES_FILE).getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
+            } catch(IOException e) {
+                LOG.log(Level.WARNING, "Failed to read active configuration from {0}.", CONFIG_PROPERTIES_FILE); // NOI18N
+            }
+        }
+
         public void storeActive() throws IOException {
             String configPath = CONFIG_PROPERTIES_FILE;
             if (active == null) {
@@ -2926,4 +2986,12 @@ public final class JFXProjectProperties {
 
     }
     
+    static void logProps(EditableProperties ep) {
+        LOG.log(Level.INFO, PRELOADER_ENABLED + " = " + (ep.get(PRELOADER_ENABLED)==null ? "null" : ep.get(PRELOADER_ENABLED)));
+        LOG.log(Level.INFO, PRELOADER_TYPE + " = " + (ep.get(PRELOADER_TYPE)==null ? "null" : ep.get(PRELOADER_TYPE)));
+        LOG.log(Level.INFO, PRELOADER_PROJECT + " = " + (ep.get(PRELOADER_PROJECT)==null ? "null" : ep.get(PRELOADER_PROJECT)));
+        LOG.log(Level.INFO, PRELOADER_CLASS + " = " + (ep.get(PRELOADER_CLASS)==null ? "null" : ep.get(PRELOADER_CLASS)));
+        LOG.log(Level.INFO, PRELOADER_JAR_FILENAME + " = " + (ep.get(PRELOADER_JAR_FILENAME)==null ? "null" : ep.get(PRELOADER_JAR_FILENAME)));
+        LOG.log(Level.INFO, PRELOADER_JAR_PATH + " = " + (ep.get(PRELOADER_JAR_PATH)==null ? "null" : ep.get(PRELOADER_JAR_PATH)));
+    }
 }

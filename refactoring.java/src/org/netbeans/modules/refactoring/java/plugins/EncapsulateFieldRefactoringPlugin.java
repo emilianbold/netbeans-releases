@@ -209,7 +209,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         if (setter != null) {
             if (TypeKind.VOID != setter.getReturnType().getKind()) {
                 p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongSetter", setname, setter.getReturnType()));
-            } else if(RefactoringUtils.isWeakerAccess(refactoring.getMethodModifiers(), getter.getModifiers())) {
+            } else if(RefactoringUtils.isWeakerAccess(refactoring.getMethodModifiers(), setter.getModifiers())) {
                 String msg = NbBundle.getMessage(
                         EncapsulateFieldRefactoringPlugin.class,
                         "ERR_EncapsulateAccessSetter",
@@ -746,7 +746,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 EncapsulateDesc desc = fields.get(el);
                 if (desc != null) {
                     resolveFieldDeclaration(node, desc);
-                    return null;
+                    return node;
                 }
             }
             return scan(node.getInitializer(), field);

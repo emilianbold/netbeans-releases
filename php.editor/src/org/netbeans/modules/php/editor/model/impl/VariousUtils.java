@@ -367,10 +367,10 @@ public class VariousUtils {
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(filterSuperTypes(meth.getReturnTypes(true)));
+                                newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
                         }
-                        recentTypes = newRecentTypes;
+                        recentTypes = filterSuperTypes(newRecentTypes);
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();

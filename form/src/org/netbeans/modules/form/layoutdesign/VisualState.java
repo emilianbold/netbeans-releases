@@ -847,7 +847,11 @@ public class VisualState implements LayoutConstants {
         int[] ortPos = { Integer.MAX_VALUE, Integer.MIN_VALUE };
         for (int e=LEADING; e <= TRAILING; e++) {
             if (neighbors[e] != null) {
-                for (LayoutInterval comp : LayoutUtils.getSideComponents(neighbors[e], e^1, true, false)) {
+                List<LayoutInterval> relatedComps = LayoutUtils.getSideComponents(neighbors[e], e^1, true, false);
+                if (relatedComps.isEmpty()) {
+                    relatedComps = LayoutUtils.getSideComponents(neighbors[e], e^1, false, false);
+                }
+                for (LayoutInterval comp : relatedComps) {
                     int[][] pos = comp.getCurrentSpace().positions;
                     if (component == null || comp.getComponent() == component
                             || Math.abs((pos[dimension][e^1] - gapPos[e])) < PROXIMITY) {
@@ -958,5 +962,18 @@ public class VisualState implements LayoutConstants {
 
     static String getDefaultGapDisplayName(PaddingType pt) {
         return pt != null ? PADDING_DISPLAY_NAMES[pt.ordinal()] : "default"; // TODO internationalize
+    }
+
+    static List<LayoutComponent> getComponentsInRegion(LayoutComponent container, LayoutRegion space) {
+        List<LayoutComponent> list = null;
+        for (LayoutComponent comp : container.getSubcomponents()) {
+            if (LayoutRegion.overlap(space, comp.getCurrentSpace())) {
+                if (list == null) {
+                    list = new LinkedList<LayoutComponent>();
+                }
+                list.add(comp);
+            }
+        }
+        return list != null ? list : Collections.EMPTY_LIST;
     }
 }

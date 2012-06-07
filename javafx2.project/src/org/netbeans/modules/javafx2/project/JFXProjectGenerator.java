@@ -601,15 +601,17 @@ public class JFXProjectGenerator {
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         Map<String,String> browserInfo = JFXProjectUtils.getDefaultBrowserInfo();
+        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.setProperty(JFXProjectProperties.JAVAFX_ENDORSED_ANT_CLASSPATH, "."); // NOI18N
+        ep.setComment(JFXProjectProperties.JAVAFX_ENDORSED_ANT_CLASSPATH, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_endorsed_ant_classpath")}, false); // NOI18N
         if(browserInfo != null && !browserInfo.isEmpty()) {
-            ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             for(Map.Entry<String,String> entry : browserInfo.entrySet()) {
                 ep.setProperty(JFXProjectProperties.RUN_IN_BROWSER, entry.getKey());
                 ep.setProperty(JFXProjectProperties.RUN_IN_BROWSER_PATH, entry.getValue());
                 break;
             }
-            h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         }
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.ASWEBSTART, false);
         JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.INBROWSER, false);
         logUsage(Action.CREATE);

@@ -57,6 +57,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
@@ -121,10 +122,19 @@ public final class JavaReference {
         TypeElement declaredElement = null;
         if (fqn != null && fqn.length() > 0) {
             TypeMirror type = javac.getTreeUtilities().parseType(fqn.toString(), scope);
-            if (type != null && type.getKind() == TypeKind.DECLARED) {
-                DeclaredType declaredType = (DeclaredType) type;
-                declaredElement = (TypeElement) declaredType.asElement();
-                result = declaredElement;
+            if (type != null) {
+                switch(type.getKind()) {
+                    case DECLARED:
+                    case UNION:
+                        declaredElement = (TypeElement) ((DeclaredType) type).asElement();
+                        result = declaredElement;
+                        break;
+                    case TYPEVAR:
+                        result = ((TypeVariable) type).asElement();
+                        break;
+                    default:
+                        return null;
+                }
             } else {
                 return null;
             }
