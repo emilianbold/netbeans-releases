@@ -2427,6 +2427,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         MITList results = miRecord.results();
         
         parent.setNumChild(results.getConstValue(MI_NUMCHILD));
+        parent.setHasMore(!results.getConstValue("has_more").equals("0"));
         
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
 
@@ -2745,11 +2746,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /*
      * this MI call would create MI Vars for each child automatically by gdb
      */
-    void getMIChildren(final GdbVariable parent,
+    void getMoreMIChildren(final GdbVariable parent,
 			      String expr,
 			      final int level) {
 
-        String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append("-var-list-children --all-values \"").append(expr).append("\" ").append(parent.getChildrenRequestedCount()).append(" "); // NOI18N
+        parent.stepChildrenRequestedCount();
+        sb.append(parent.getChildrenRequestedCount());
+        String cmdString = sb.toString();
         MiCommandImpl cmd = new MiCommandImpl(cmdString) {
             @Override
             protected void onDone(MIRecord record) {
@@ -2759,6 +2764,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         cmd.dontReportError();
         gdb.sendCommand(cmd);
+    }
+    
+    void getMIChildren(final GdbVariable parent,
+			      String expr,
+			      final int level) {
+        parent.resetChildrenRequestedCount();
+        getMoreMIChildren(parent, expr, level);
     }
 
     private void createMIVar(final GdbVariable v, boolean expandMacros) {
