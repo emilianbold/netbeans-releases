@@ -295,11 +295,11 @@ public final class NbMavenProjectImpl implements Project {
         MavenProject newproject;
         try {
             newproject = MavenProjectCache.getMavenProject(this.folderFileObject, reload);
-            if (newproject == null) {
+            if (newproject == null) { //null when no pom.xml in project folder..
                 newproject = MavenProjectCache.getFallbackProject(projectFile);
             }
             MavenExecutionResult res = MavenProjectCache.getExecutionResult(newproject);
-            if (res.hasExceptions()) {
+            if (res != null && res.hasExceptions()) { //res is null when there is no pom in the project folder.
                 problemReporter.reportExceptions(res);
             } else {
                 problemReporter.doArtifactChecks(newproject);

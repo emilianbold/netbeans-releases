@@ -234,21 +234,21 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 FileObject fo = FileUtilities.convertURItoFileObject(u);
                 if (fo == null) {
                     virtuals.add(u);
-                } else {
+                } else if (fo.isFolder()) {
                     existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
                         SG_Project_Resources(), null, null));
                 }
             }
             if (create && existing.isEmpty()) {
                 File root = new File(virtuals.get(0));
-                FileObject fo=null;
                 try {
-                    fo = FileUtil.createFolder(root);
+                    FileObject fo = FileUtil.createFolder(root);
+                    existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
+                            SG_Project_Resources(), null, null));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
-                    SG_Project_Resources(), null, null));
+                
             }
             //TODO we should probably add includes/excludes to source groups.
             return existing.toArray(new SourceGroup[0]);
@@ -271,11 +271,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
             root = null;
         }
         SourceGroup group = groups.get(name);
-        if (root == null && group != null) {
+        if ((root == null || root.isData()) && group != null) {
             groups.remove(name);
             return true;
         }
-        if (root == null) {
+        if (root == null || root.isData()) {
             return false;
         }
         boolean changed = false;
@@ -325,11 +325,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     })
     private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix, boolean test) {
         SourceGroup group = genSrcGroup.get(rootFile);
-        if (root == null && group != null) {
+        if ((root == null || root.isData()) && group != null) {
             genSrcGroup.remove(rootFile);
             return true;
         }
-        if (root == null) {
+        if (root == null || root.isData()) {
             return false;
         }
         boolean changed = false;
