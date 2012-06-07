@@ -328,7 +328,10 @@ public final class WhereUsedSupport {
 
         private void addEntry(PhpElement decl) {
             Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
-            elements.add(WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()), icon));
+            WhereUsedElement whereUsedElement = WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()), icon);
+            if (whereUsedElement != null) {
+                elements.add(whereUsedElement);
+            }
         }
 
         private void addEntry(FileObject fo, Occurence occurence) {
