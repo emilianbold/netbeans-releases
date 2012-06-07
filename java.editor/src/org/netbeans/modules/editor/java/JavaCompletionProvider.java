@@ -3770,7 +3770,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, false, env.getWhiteList()));
                 }
             }
-            if (prefix == null || startsWith(env, "get") || startsWith(env, "set") || startsWith(env, "is")) {
+            if (prefix == null || startsWith(env, "get") || startsWith(env, "set") || startsWith(env, "is")
+                    || startsWith(env, prefix, "get") || startsWith(env, prefix, "set") || startsWith(env, prefix, "is")) {
                 List<? extends Element> members = controller.getElements().getAllMembers(te);
                 Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
                 for (ExecutableElement method : ElementFilter.methodsIn(members)) {
@@ -4996,6 +4997,10 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private boolean startsWith(Env env, String theString) {
             String prefix = env.getPrefix();
+            return startsWith(env, theString, prefix);
+        }
+        
+        private boolean startsWith(Env env, String theString, String prefix) {
             return env.isCamelCasePrefix() ? Utilities.isCaseSensitive() ? 
                 Utilities.startsWithCamelCase(theString, prefix) : 
                 Utilities.startsWithCamelCase(theString, prefix) || Utilities.startsWith(theString, prefix) :
