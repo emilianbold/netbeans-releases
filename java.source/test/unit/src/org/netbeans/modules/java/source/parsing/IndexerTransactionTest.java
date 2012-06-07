@@ -248,7 +248,7 @@ public class IndexerTransactionTest extends NbTestCase {
             if (v.endsWith(dirName + "/")) {
                 String dir = o.toString();
                 return new File(cache, dir + "/java/" + 
-                        JavaIndex.VERSION + "/classes".replaceAll("/", File.separator));
+                        JavaIndex.VERSION + "/classes".replace("/", File.separator));
             }
         }
         throw new IOException("Could not found segment for: " + dirName);
