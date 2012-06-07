@@ -70,7 +70,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
 
     public static final String DEFAULT = "%%DEFAULT%%"; //NOI18N
     
-    static M2Configuration createDefault(FileObject projectDirectory) {
+    public static M2Configuration createDefault(FileObject projectDirectory) {
         return new M2Configuration(DEFAULT, projectDirectory);
     }
     

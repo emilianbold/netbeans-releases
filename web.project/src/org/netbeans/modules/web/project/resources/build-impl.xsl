@@ -2062,7 +2062,12 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="connect-debugger" if="do.debug.server" unless="is.debugged">
-                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
+                <condition>
+                    <xsl:attribute name="property">listeningcp</xsl:attribute>
+                    <xsl:attribute name="value">sourcepath</xsl:attribute>
+                    <istrue value="${{j2ee.compile.on.save}}"/>
+                </condition>
+                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}" listeningcp="${{listeningcp}}">
                     <xsl:choose>
                         <xsl:when test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service|/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
                             <classpath>

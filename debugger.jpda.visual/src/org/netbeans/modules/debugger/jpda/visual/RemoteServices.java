@@ -242,6 +242,7 @@ public class RemoteServices {
                 ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                 synchronized (remoteServiceClasses) {
                     remoteServiceClasses.put(t.getDebugger(), basicClass);
+                    t.getDebugger().addPropertyChangeListener(new RemoteServiceDebuggerListener());
                 }
                 fireServiceClass(t.getDebugger());
             }
@@ -371,6 +372,20 @@ public class RemoteServices {
                             run,
                             latch
                         );
+                        VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
+                        ClassObjectReference serviceClassObject;
+                        synchronized (remoteServiceClasses) {
+                            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
+                        }
+                        try {
+                            ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+                            Field fxAccess = ReferenceTypeWrapper.fieldByName(serviceClass, "fxAccess"); // NOI18N
+                            ClassTypeWrapper.setValue(serviceClass, fxAccess, VirtualMachineWrapper.mirrorOf(vm, true));
+                        } catch (InternalExceptionWrapper iex) {
+                        } catch (VMDisconnectedExceptionWrapper vmdex) {
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                         break;
                     }
                 }
@@ -1026,6 +1041,23 @@ public class RemoteServices {
         }
         ArrayReferenceWrapper.setValues(array, values);
         return array;
+    }
+    
+    private static class RemoteServiceDebuggerListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
+                JPDADebugger d = (JPDADebugger) evt.getSource();
+                if (JPDADebugger.STATE_DISCONNECTED == d.getState()) {
+                    d.removePropertyChangeListener(this);
+                    synchronized (remoteServiceClasses) {
+                        remoteServiceClasses.remove(d);
+                    }
+                }
+            }
+        }
+        
     }
     
     private static class RemoteClass {

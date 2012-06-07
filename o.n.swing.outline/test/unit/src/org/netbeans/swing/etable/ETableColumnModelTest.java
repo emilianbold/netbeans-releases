@@ -95,8 +95,9 @@ public class ETableColumnModelTest extends NbTestCase {
         ETableColumnModel etcm = new ETableColumnModel();
         assertTrue(etcm.getComparator() instanceof ETable.OriginalRowComparator);
         TableModel tm = new DefaultTableModel(new Object[][] {{"b"},{"a"}}, new Object[] {"a", "b"}); 
-        ETable.RowMapping rm1 = new ETable.RowMapping(0, tm);
-        ETable.RowMapping rm2 = new ETable.RowMapping(1, tm);
+        ETable table = new ETable(tm);
+        ETable.RowMapping rm1 = new ETable.RowMapping(0, tm, table);
+        ETable.RowMapping rm2 = new ETable.RowMapping(1, tm, table);
         assertTrue("Without sort use index of rows, ", etcm.getComparator().compare(rm1, rm2) < 0);
         
         ETableColumn etc = new ETableColumn(0, new ETable());

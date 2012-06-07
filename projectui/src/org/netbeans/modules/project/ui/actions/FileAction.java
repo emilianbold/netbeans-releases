@@ -81,7 +81,7 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
         
         this.command = command;
         if ( command != null ) {
-            ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
+            ShortcutManager.INSTANCE.registerAction(command, this);
         }
         this.performer = performer;
         this.namePattern = namePattern;
@@ -95,7 +95,7 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
         super.putValue( key, value );
         
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
+            ShortcutManager.INSTANCE.registerShortcut(command, value);
         }   
     }
     

@@ -412,7 +412,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
         }
         if (!alwaysEnabled) {
-            cmf.add(cmf.addModuleDependency("org.openide.nodes")); // NOI18N
+            if (!actionContext) {
+                cmf.add(cmf.addModuleDependency("org.openide.nodes")); // NOI18N
+            }
             for (String fqn : addedFQNCs) {
                 cmf.add(cmf.addModuleDependency(CLASS_TO_CNB.get(fqn)));
             }

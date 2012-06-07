@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,7 +39,6 @@
 
 package org.netbeans.installer.infra.build.ant.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,12 +86,14 @@ public final class Utils {
     /**
      * The current ant project. Some of its methods will get called in process of
      * the executions of some of the utility procedures. Thus the ant tasks using the
-     * class are streongly encouraged to call the {@link #setProject(Project)}
+     * class are strongly encouraged to call the {@link #setProject(Project)}
      * method prior to suing any other functionality.
      */
     private static byte[] buffer = new byte[102400];
     
     private static Project project = null;
+    private static boolean useInternalPacker = false;
+    private static boolean useInternalUnpacker = false;
 
     private static boolean tarInitialized = false;
 
@@ -100,6 +101,9 @@ public final class Utils {
 
     private static boolean lsInitialized = false;
     private static String lsExecutable = null;
+    private static String xmx;
+    private static String permSize;
+    private static String maxPermSize;
     /**
      * Setter for the 'project' property.
      *
@@ -107,6 +111,17 @@ public final class Utils {
      */
     public static void setProject(final Project project) {
         Utils.project = project;
+        useInternalPacker = "true".equals(project.getProperty("use.internal.packer"));
+        useInternalUnpacker = "true".equals(project.getProperty("use.internal.unpacker"));
+        xmx = ARG_PREFIX + XMX_ARG + project.getProperty("pack200.xmx");
+        permSize = ARG_PREFIX + PERM_SIZE_ARG + project.getProperty("pack200.perm.size");
+        maxPermSize = ARG_PREFIX + MAX_PERM_SIZE_ARG + project.getProperty("pack200.max.perm.size");
+        String output = "use.internal.packer? " + useInternalPacker;
+        if (project != null) {
+            project.log("            " + output);
+        } else {
+            System.out.println(output);
+        }
     }
     
     /**
@@ -142,6 +157,7 @@ public final class Utils {
      * @return <code>true</code> if the file is a jar archive, <code>false</code>
      *      otherwise.
      */
+    @SuppressWarnings("CallToThreadDumpStack")
     public static boolean isJarFile(final File file) {
         if (file.getName().endsWith(JAR_EXTENSION)) {
             JarFile jar = null;
@@ -169,7 +185,7 @@ public final class Utils {
      * Checks whether the given file is a signed jar archive.
      *
      * @param file File to check for being a signed jar archive.
-     * @return <code>true</code> if the file is a signedjar archive,
+     * @return <code>true</code> if the file is a signed jar archive,
      *      <code>false</code> otherwise.
      * @throws java.io.IOException if an I/O error occurs.
      */
@@ -202,7 +218,6 @@ public final class Utils {
         }
     }
 
-    
     /**
      * Packs the given jar archive using the pack200 utility.
      *
@@ -214,23 +229,22 @@ public final class Utils {
     public static boolean pack(
             final File source,
             final File target) throws IOException {
-        return ("true".equals(project.getProperty("use.internal.packer"))) ?
-            packInternally(source,target) :
-            packExternally(source,target);        
+        return useInternalPacker ? packInternally(source,target) : packExternally(source,target);        
     }
     
     private static boolean packExternally(
             final File source,
             final File target) throws IOException {
-        boolean result = false;
+        boolean result;
         
-        final String xmx = ARG_PREFIX + XMX_ARG +
-                project.getProperty("pack200.xmx");
-        final String permSize = ARG_PREFIX + PERM_SIZE_ARG +
-                project.getProperty("pack200.perm.size");
-        final String maxPermSize = ARG_PREFIX + MAX_PERM_SIZE_ARG +
-                project.getProperty("pack200.max.perm.size");
         
+            String output = "Calling pack200(" + getPackerExecutable() + ") on " + source + " to " + target;
+            if (project != null) {
+                project.log("            " + output);
+            } else {
+                System.out.println(output);
+            }
+
         Results results = run(
                 getPackerExecutable(),
                 xmx,
@@ -254,11 +268,20 @@ public final class Utils {
         
         return result;
     }
+    @SuppressWarnings("CallToThreadDumpStack")
     public static boolean packInternally(final File source,
             final File target) throws IOException {
         try {
             JarFile jarFile = new JarFile(source);
             FileOutputStream outputStream = new FileOutputStream(target);
+
+            
+            String output = "Packing jarFile: " + jarFile + " to " + target;
+            if (project != null) {
+                project.log("            " + output);
+            } else {
+                System.out.println(output);
+            }
 
             packer.pack(jarFile, outputStream);
 
@@ -274,7 +297,7 @@ public final class Utils {
     /**
      * Unpacks the given packed jar archive using the unpack200 utility.
      *
-     * @param source Packe jar archive to unpack.
+     * @param source Jar archive to unpack.
      * @param target File to which the unpacked archive should be saved.
      * @return The target file, i.e. the unpacked jar archive.
      * @throws java.io.IOException if an I/O errors occurs.
@@ -283,22 +306,20 @@ public final class Utils {
      public static boolean unpack(
             final File source,
             final File target) throws IOException {
-        return ("true".equals(project.getProperty("use.internal.unpacker"))) ?
-            unpackInternally(source,target) :
-            unpackExternally(source,target);        
+        return useInternalUnpacker ? unpackInternally(source,target) : unpackExternally(source,target);        
     }
      
     private static boolean unpackExternally(
             final File source,
             final File target) throws IOException {
-        boolean result = false;
+        boolean result;
         
         
         Results results = run(
                 getUnPackerExecutable(),
-                ARG_PREFIX + XMX_ARG + project.getProperty("pack200.xmx"),
-                ARG_PREFIX + PERM_SIZE_ARG + project.getProperty("pack200.perm.size"),
-                ARG_PREFIX + MAX_PERM_SIZE_ARG + project.getProperty("pack200.max.perm.size"),
+                xmx,
+                permSize,
+                maxPermSize,
                 source.getAbsolutePath(),
                 target.getAbsolutePath());
         
@@ -317,6 +338,7 @@ public final class Utils {
         
         return result;
     }
+    @SuppressWarnings("CallToThreadDumpStack")
     public static boolean unpackInternally(final File source,
             final File target) throws IOException {
         try {
@@ -399,11 +421,11 @@ public final class Utils {
      */
     public static CharSequence read(final InputStream in) throws IOException {
         StringBuilder builder = new StringBuilder();
-        byte[] buffer = new byte[1024];
+        byte[] buf = new byte[1024];
         while (in.available() > 0) {
-            int read = in.read(buffer);
+            int read = in.read(buf);
             
-            String readString = new String(buffer, 0, read);
+            String readString = new String(buf, 0, read);
             for(String string : readString.split(NEWLINE_REGEXP)) {
                 builder.append(string).append(LINE_SEPARATOR);
             }
@@ -421,7 +443,7 @@ public final class Utils {
     public static void copy(
             final InputStream in,
             final OutputStream out) throws IOException {
-        int read = 0;
+        int read;
         while (in.available() > 0) {
             read = in.read(buffer);
             if (read > 0) {
@@ -499,7 +521,7 @@ public final class Utils {
         }
     }
 
-    private static final String findTarExecutable() {
+    private static String findTarExecutable() {
         if (!tarInitialized) {
             for (String s : new String[]{NATIVE_GNUTAR_EXECUTABLE, NATIVE_GTAR_EXECUTABLE, NATIVE_TAR_EXECUTABLE}) {
                 try {                    
@@ -513,7 +535,8 @@ public final class Utils {
         tarInitialized = true;
         return tarExecutable;
     }
-    private static final String findLsExecutable() {
+    
+    private static String findLsExecutable() {
         if (!lsInitialized) {
             try {
                 run(LS_EXECUTABLE);
@@ -644,6 +667,7 @@ public final class Utils {
      * @param string String to escape.
      * @return The escaped string.
      */
+    @SuppressWarnings("CallToThreadDumpStack")
     public static String toAscii(final String string) {
         Properties properties = new Properties();
         
@@ -718,7 +742,7 @@ public final class Utils {
      * passed as part of the request body according to
      * {@link http://www.faqs.org/rfcs/rfc1945.html}.
      *
-     * @param url URL to shich the POST request should be sent.
+     * @param url URL to which the POST request should be sent.
      * @param args Request parameters.
      * @return The first line of the server response, e.g. "HTTP/1.x 200 OK".
      * @throws java.io.IOException if an I/O error occurs.
@@ -826,7 +850,7 @@ public final class Utils {
                 getIntegerValue(DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE_PROP, DEFAULT_NOT_EXECUTABLE_PERMISSION_FILE);
         }
     }
-    private static final int getIntegerValue(String prop, int defaultValue) {
+    private static int getIntegerValue(String prop, int defaultValue) {
         int result = defaultValue;
         String value = project.getProperty(prop);
         if (value != null && !value.equals("")) {
@@ -843,7 +867,7 @@ public final class Utils {
         return result;
     }
 
-    private static final boolean isExecutableAnalized(File file) {
+    private static boolean isExecutableAnalized(File file) {
         int index = file.getName().lastIndexOf(".");
         String ext = (index != -1) ? file.getName().substring(index + 1) : "";
     
@@ -1024,6 +1048,7 @@ public final class Utils {
         return run(command.toArray(new String[command.size()]));
     }
     
+    @SuppressWarnings("SleepWhileInLoop")
     private static Results handleProcess(Process process) throws IOException {
         StringBuilder processStdOut = new StringBuilder();
         StringBuilder processStdErr = new StringBuilder();
@@ -1053,7 +1078,7 @@ public final class Utils {
                 errorCode = process.exitValue();
                 doRun = false;
             } catch (IllegalThreadStateException e) {
-                ; // do nothing - the process is still running
+                // do nothing - the process is still running
             }
             
             CharSequence string = read(process.getInputStream());
@@ -1124,7 +1149,7 @@ public final class Utils {
      * @param string Property to resolve
      * @return Results of resolving the property
      */
-    public static final String resolveProperty(String string) {        
+    public static String resolveProperty(String string) {        
         return resolveProperty(string,project);
     }
     
@@ -1135,13 +1160,13 @@ public final class Utils {
      * @param prj Project to resolve the property for
      * @return Results of resolving the property
      */    
-    public static final String resolveProperty(String string, Project prj) {        
+    public static String resolveProperty(String string, Project prj) {        
         final List <String> resolving = new ArrayList <String> ();
         return resolveProperty(string, prj, resolving);
     }
     
-    private static final String resolveProperty(String string, Project prj, List <String> resolving) {
-        if(string==null || string.equals("")) {
+    private static String resolveProperty(String string, Project prj, List <String> resolving) {
+        if(string==null || string.isEmpty()) {
             return string;
         }        
         StringBuilder result = new StringBuilder(string.length());
@@ -1299,18 +1324,18 @@ public final class Utils {
             "process.max.execution.time"; // NOI18N
     
     /**
-     * Max deplay (in milliseconds) which to wait between cheking the process state.
+     * Max delay (in milliseconds) which to wait between checking the process state.
      */
     public static final int MAX_DELAY =
             50; // NOMAGI
     
     /**
-     * Delta deplay (in milliseconds) which to increase the delay between cheking the process state.
+     * Delta delay (in milliseconds) which to increase the delay between checking the process state.
      */
     public static final int DELTA_DELAY =
             1; // NOMAGI
     /**
-     * Initial deplay (in milliseconds) between cheking the process state.
+     * Initial delay (in milliseconds) between checking the process state.
      */
     public static final int INITIAL_DELAY =
             1; // NOMAGI
@@ -1402,7 +1427,7 @@ public final class Utils {
             "uberkey"; // NOI18N
     
     /**
-     * An artificial regular expresion used in converting a string to ASCII.
+     * An artificial regular expression used in converting a string to ASCII.
      */
     public static final String UBERKEY_REGEXP =
             "uberkey=(.*)$"; // NOI18N
@@ -1421,13 +1446,13 @@ public final class Utils {
             "os.name"; // NOI18N
     
     /**
-     * Name of the windows operationg system.
+     * Name of the windows operating system.
      */
     public static final String WINDOWS =
             "Windows"; // NOI18N
     
     /**
-     * Name of the windows operationg system.
+     * Name of the windows operating system.
      */
     public static final boolean IS_WINDOWS =
             System.getProperty(OS_NAME).contains(WINDOWS); // NOI18N

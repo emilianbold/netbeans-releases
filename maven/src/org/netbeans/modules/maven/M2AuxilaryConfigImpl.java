@@ -47,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,11 +95,16 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document cachedDoc;
     private final Object configIOLock = new Object();
     private final FileObject projectDirectory;
-    private final ProblemReporterImpl reporter;
+    private ProblemReporterImpl reporter;
 
-    public M2AuxilaryConfigImpl(FileObject dir, ProblemReporterImpl problemReporter) {
+    /** intentionally left without reference to project instance
+        when using this constructor can only get values, never put or remove */
+    public M2AuxilaryConfigImpl(FileObject dir) {
         this.projectDirectory = dir;
-        this.reporter = problemReporter;
+    }
+    
+    public M2AuxilaryConfigImpl(FileObject dir, ProblemReporterImpl impl) {
+        this(dir);
         savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
@@ -190,6 +196,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         cachedDoc = doc;
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
+                        if (reporter != null) {
                         if (!reporter.hasReportWithId(BROKEN_NBCONFIG)) {
                             ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                                     TXT_Problem_Broken_Config(),
@@ -197,6 +204,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                     new OpenConfigAction(config));
                             rep.setId(BROKEN_NBCONFIG);
                             reporter.addReport(rep);
+                        }
                         }
                         LOG.log(Level.INFO, ex.getMessage(), ex);
                         cachedDoc = null;

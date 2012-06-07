@@ -26,35 +26,36 @@ a project it is recommended that you set the project as the main project.</p>
 
 <p>If no project is set as the main project the Debug Project command is run on the project that
 is selected in the Projects window and the commands begin the debugging session in the main class of the selected project. </p>
+
+<p>The following table displays the commands in the Debug menu and the corresponding toolbar icons
+for starting and stopping the debugger.</p>
 <table border="1" cellpadding="5" cellspacing="0">
   <tr> 
     <th align="left" scope="col"><b>Command</b></th>
-    <th align="left" scope="col"><b>Shortcut</b></th>
+    <th align="left" scope="col"><b>Icon</b></th>
     <th align="left" scope="col" valign="top"><b>Description</b></th>
   </tr>
   <tr> 
-    <td valign="top">Debug  &gt; Debug Project</td>
-    <td valign="top">Ctrl-F5 or <img src="images/Start.gif" alt="Start icon"></td>
-    <td valign="top">Runs the program until it reaches a breakpoint or exception 
+      <td valign="top"><b>Debug Project (Ctrl-F5)</b></td>
+    <td valign="top"><img src="images/Start.png" alt="Start Debugger icon"></td>
+    <td valign="top">Starts the debugger and runs the program until it reaches a breakpoint or exception 
       or until the program terminates normally. </td>
   </tr>
   <tr> 
-    <td valign="top">Debug &gt; Step Into</td>
-    <td valign="top">F7 or <img src="images/StepInto.gif" alt="Step Into icon"></td>
-    <td valign="top">Runs the program to the first line after the <tt>main</tt> 
-      routine and pauses execution before any changes have been made to the state of the program. </td>
+    <td valign="top"><b>Finish Debugger Session (Shift-F5)</b></td>
+    <td valign="top"><img src="images/Kill24.gif" alt="Stop Debugger icon"></td>
+    <td valign="top">Stops the debugger. </td>
   </tr>
   <tr> 
-    <td valign="top">Debug  &gt; Run to Cursor</td>
-    <td valign="top">F4 or <img src="images/RunToCursor.gif" alt="Run to Cursor icon"></td>
-    <td valign="top">Runs the program to the cursor location in the Source Editor 
-      and pauses the program. The file you have selected in the Source Editor 
-      must be called from the main class of the main project.</td>
+    <td valign="top"><b>Continue (F5)</b></td>
+    <td valign="top"><img src="images/Continue24.gif" alt="Continue Debugger icon"></td>
+    <td valign="top">Runs the program until it reaches the next breakpoint or until the program terminates normally.</td>
   </tr>
 </table>
 <h3>Debugging an Individual Project</h3>
 <ul>
-  <li>Right-click the project in the Projects window and choose Debug. 
+  <li>Right-click the project in the Projects window and choose Debug.
+      <p>Alternatively, select the project in the projects window and choose Debug &gt; Debug Project in the main menu. </p>
       <p>The IDE runs the project in the debugger until execution stops or a breakpoint is reached.</p> 
   </li>
 </ul>
@@ -70,6 +71,7 @@ is selected in the Projects window and the commands begin the debugging session 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+    <dd><a href="debug_step.html">Stepping Through Your Program in the Java Debugger</a></dd>
     <dd><a href="debug_remote.html">Starting a Remote Debugging Session</a> </dd>
     <dd><a href="debug_source.html">Attaching Source Code to a JAR File</a> </dd>
     <dd><a href="../project/proj_main.html">Setting the Main Project</a></dd>

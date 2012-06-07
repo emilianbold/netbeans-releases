@@ -84,7 +84,8 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author  Stanislav Aubrecht
  */
 public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnable {
-    
+
+    private static final Logger LOG = Logger.getLogger(ConfigureToolbarPanel.class.getName());
     private static WeakReference<Dialog> dialogRef; // is weak reference necessary?
     
     private Node root;
@@ -391,7 +392,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                             }
                         }
                         catch (IOException e) {
-                            Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
+                            LOG.log(Level.WARNING, null, e);
                         }
                     }
                 });
@@ -487,6 +488,11 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
         private InstanceCookie instanceCookie;
         
         public boolean acceptDataObject( DataObject obj ) {
+             boolean a = doAcceptDataObject(obj);
+             LOG.log(Level.FINE, "{0} {1}", new Object[] {a ? '+' : '-', obj.getPrimaryFile().getPath().replace("Actions/", "")});
+             return a;
+        }
+        private boolean doAcceptDataObject(DataObject obj) {
             instanceCookie = obj.getCookie( InstanceCookie.class );
             if( null != instanceCookie ) {
                 try {
@@ -500,6 +506,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                             } catch( AssertionError aE ) {
                                 //hack: some action do not allow access outside
                                 //event queue - so let's ignore their assertions
+                                LOG.log(Level.FINE, null, aE);
                             }
                             boolean smallIcon = false;
                             if (noIconBase) {
@@ -509,6 +516,7 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                                 } catch (AssertionError aE) {
                                     //hack: some action do not allow access outside
                                     //event queue - so let's ignore their assertions
+                                    LOG.log(Level.FINE, null, aE);
                                 }
                             }
                             if (noIconBase && !smallIcon) {
@@ -521,9 +529,10 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                 } catch( AssertionError aE ) {
                     //hack: some action do not allow access outside
                     //event queue - so let's ignore their assertions
+                    LOG.log(Level.FINE, null, aE);
                     return false;
                 } catch( Throwable e ) {
-                    Logger.getLogger(ConfigureToolbarPanel.class.getName()).log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                 }
                 return true;
             } else {

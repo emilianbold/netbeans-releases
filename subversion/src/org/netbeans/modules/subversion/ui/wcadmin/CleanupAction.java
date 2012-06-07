@@ -97,16 +97,16 @@ public class CleanupAction extends ContextAction {
 
         File root = roots[0];
 
-        SVNUrl repositoryUrl;
+        final SVNUrl repositoryUrl;
+        SVNUrl repository = null;
         try {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+            repository = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
+            SvnClientExceptionHandler.notifyException(ex, false, false);
         }
+        repositoryUrl = repository;
         if(repositoryUrl == null) {
             Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ root }); //NOI18N
-            return;
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         SvnProgressSupport support = new SvnProgressSupport() {
@@ -114,13 +114,15 @@ public class CleanupAction extends ContextAction {
             protected void perform() {
                 for (File root : roots) {
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(root);
+                        SvnClient client = repositoryUrl == null ? Subversion.getInstance().getClient(false) : Subversion.getInstance().getClient(root);
                         setCancellableDelegate(client);
                         client.cleanup(root);
                     } catch (SVNClientException ex) {
                         annotate(ex);
                     } finally {
-                        getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")); //NOI18N
+                        if (repositoryUrl != null) {
+                            getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")); //NOI18N
+                        }
                     }
                 }
             }

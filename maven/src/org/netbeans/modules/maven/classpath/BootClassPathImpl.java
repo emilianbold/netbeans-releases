@@ -82,6 +82,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     
 
+    @SuppressWarnings("LeakingThisInConstructor")
     BootClassPathImpl(@NonNull NbMavenProjectImpl project, EndorsedClassPathImpl ecpImpl) {
         this.project = project;
         this.ecpImpl = ecpImpl;
