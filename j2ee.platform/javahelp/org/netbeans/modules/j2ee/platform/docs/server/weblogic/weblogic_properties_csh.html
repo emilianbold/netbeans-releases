@@ -16,7 +16,7 @@
 <p>You see this page of the Add Server Instance wizard when you are
 registering an Oracle WebLogic Server instance.</p>
 
-<p>Use this page to specify the properties of the instance you are registering.</p>
+<p>Use this page to specify the properties of the instance that you are registering.</p>
 
 <ul>
 	<li><b>Domain.</b> Select the location of the domain that you want to associate with the server instance.
@@ -26,27 +26,30 @@ registering an Oracle WebLogic Server instance.</p>
 	<li><b>Username.</b> Type the username.</li>
 	<li><b>Password.</b> Type the password.</li>
 	<li><b>JPA 2 Support.</b> Click to enable or disable JPA 2 support on the server.
-            <ul class="note">
-                <li>The files for supporting JPA 2 are included with the WebLogic Server installation but are disabled by default. 
-                When you enable JPA 2 in the wizard, the IDE modifies the WebLogic Server classpath
-                to add the required files to the start of the classpath.</li>
-            </ul>
-            <p>You can enable or disable support for JPA 2 on the WebLogic Server at any time 
-            in the WebLogic Server panel of the Servers dialog box.
-            You can open the Servers dialog box by choosing Tools &gt; Servers from the main
-            menu or by right-clicking a server instance node in the Services window and choosing Properties.</p>
+            <p>This option is not available for Oracle WebLogic Server 12c and newer
+            because JPA 2 support is enabled by default.</p>
         </li>
 </ul>
 
+<p><b>Notes.</b></p>
 
-<ul class="note">
-    <li>The default username/password for the Oracle WebLogic Server is weblogic/weblogic.</li>
-</ul>
+    <ul class="note">
+        <li>The default username/password for the Oracle WebLogic Server is weblogic/weblogic.</li>
+        <li>On some older versions of Oracle WebLogic Server you need to explicitly enable support for JPA 2.
+            The files for supporting JPA 2 are included with the WebLogic Server installation but are disabled by default. 
+            When you enable JPA 2 in the wizard, the IDE modifies the WebLogic Server classpath
+            to add the required files to the start of the classpath.
+            <p>You can enable or disable support for JPA 2 on the WebLogic Server at any time 
+            in the WebLogic Server panel of the Servers manager.
+            You can open the Servers manager by choosing Tools &gt; Servers from the main
+            menu or by right-clicking a server instance node in the Services window and choosing Properties.</p>
+        </li>
+    </ul>
 
 <dl> 
 	<dt><a name="seealso">See Also</a></dt>
 	<dd><a href="registering_app_server_weblogic.html">Registering an Oracle WebLogic Server</a></dd>
-	<dd><a href="../csh_server_manager.html">Servers Dialog Box</a></dd>
+	<dd><a href="../csh_server_manager.html">Servers Manager</a></dd>
   
 </dl>
 <hr>
