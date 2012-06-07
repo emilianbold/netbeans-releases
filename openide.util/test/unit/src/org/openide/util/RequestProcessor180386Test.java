@@ -862,7 +862,6 @@ public class RequestProcessor180386Test extends NbTestCase {
         assertEquals (r.runCount, 2);
     }
 
-    @RandomlyFails // NB-Core-Build #7085 expected:<5> but was:<6>
     public void testScheduleRepeatingSanityFixedRate() throws Exception {
         final CountDownLatch latch = new CountDownLatch(5);
         class C implements Runnable {
@@ -871,16 +870,25 @@ public class RequestProcessor180386Test extends NbTestCase {
             public void run() {
                 runCount++;
                 latch.countDown();
+                if (latch.getCount() <= 0) {
+                    waitABitToGiveMainThreadChanceToRun();
+                }
+            }
+            private void waitABitToGiveMainThreadChanceToRun() {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         C c = new C();
-        RequestProcessor.getDefault().scheduleWithFixedDelay(c, 0, 20, TimeUnit.MILLISECONDS);
+        RequestProcessor.getDefault().scheduleWithFixedDelay(c, 0, 200, TimeUnit.MILLISECONDS);
 //        latch.await(5000, TimeUnit.MILLISECONDS);
         latch.await();
         assertEquals (5, c.runCount);
     }
 
-    @RandomlyFails // http://hudson4qe.czech.sun.com/job/platform-util/165/jdk=JDK%201.6,label=Solaris11-slave1/ expected:<5> but was:<6>
     public void testScheduleRepeatingSanityFixedDelay() throws Exception {
         final CountDownLatch latch = new CountDownLatch(5);
         class C implements Runnable {
@@ -889,10 +897,19 @@ public class RequestProcessor180386Test extends NbTestCase {
             public void run() {
                 runCount++;
                 latch.countDown();
+                waitABitToGiveMainThreadChanceToRun();
+            }
+
+            private void waitABitToGiveMainThreadChanceToRun() {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         C c = new C();
-        RequestProcessor.getDefault().scheduleAtFixedRate(c, 0, 20, TimeUnit.MILLISECONDS);
+        RequestProcessor.getDefault().scheduleAtFixedRate(c, 0, 200, TimeUnit.MILLISECONDS);
         latch.await(2000, TimeUnit.MILLISECONDS);
 
         assertEquals (5, c.runCount);

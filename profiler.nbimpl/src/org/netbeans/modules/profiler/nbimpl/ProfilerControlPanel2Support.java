@@ -73,7 +73,7 @@ class ProfilerControlPanel2Support implements FileChangeListener {
     }    
 
     boolean isActionAvailable() {
-        return (this.target!=null)&&(this.script.isValid());
+        return this.target!=null && this.script != null && this.script.isValid();
     }
 
     void setAll(FileObject script, String target, Properties properties) {

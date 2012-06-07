@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor.api.elements;
 
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 
 /**
  *

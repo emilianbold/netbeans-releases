@@ -801,7 +801,7 @@ public final class EditorContextDispatcher {
         
         private enum AddRemove { ADD, REMOVE }
         private static final Queue<Work> work = new LinkedList<Work>();
-        private static final RequestProcessor rp = new RequestProcessor(AddRemoveFileListenerInEQThread.class.getName());
+        private static final RequestProcessor rp = new RequestProcessor(AddRemoveFileListenerInEQThread.class.getName(), 1, false, false);
         private static Task t;
         private static final int TIMEOUT = 250; // Can spend 250ms in EQ at most
         

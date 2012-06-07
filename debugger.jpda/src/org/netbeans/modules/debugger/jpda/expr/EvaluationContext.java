@@ -317,9 +317,10 @@ public class EvaluationContext {
                                 // Enable collection of all objects on thread resume to prevent from memory leaks in target VM.
                                 //System.err.println("Enabling collection of ALL objects: "+disabledCollectionObjects);
                                 enableCollectionOfObjects(null);
+                                threadPropertyChangeListener = null;
                             }
-                            thread.removePropertyChangeListener(threadPropertyChangeListener);
-                            thread.getDebugger().removePropertyChangeListener(threadPropertyChangeListener);
+                            thread.removePropertyChangeListener(this);
+                            thread.getDebugger().removePropertyChangeListener(this);
                         }
                     }
                 };
@@ -359,6 +360,16 @@ public class EvaluationContext {
                     disabledCollectionObjects.remove(or);
                     //System.err.println("\nENABLED COLLECTION of "+or+"\n");
                 }
+            }
+        }
+    }
+
+    public void destroy() {
+        synchronized (disabledCollectionObjects) {
+            if (threadPropertyChangeListener != null) {
+                thread.removePropertyChangeListener(threadPropertyChangeListener);
+                thread.getDebugger().removePropertyChangeListener(threadPropertyChangeListener);
+                threadPropertyChangeListener = null;
             }
         }
     }
