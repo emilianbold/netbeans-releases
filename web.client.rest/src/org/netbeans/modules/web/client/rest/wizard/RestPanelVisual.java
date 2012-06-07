@@ -174,12 +174,14 @@ public final class RestPanelVisual extends JPanel  {
     // End of variables declaration//GEN-END:variables
     
     void store(WizardDescriptor descriptor) {
+        descriptor.putProperty(RestPanel.ADD_BACKBONE, backboneCheckBox.isSelected());
+        descriptor.putProperty(RestPanel.EXISTS_BACKBONE, !backboneCheckBox.isVisible());
     }
     
     void read(WizardDescriptor wizardDescriptor) {
         Project project = Templates.getProject(wizardDescriptor);
         FileObject projectDirectory = project.getProjectDirectory();
-        FileObject libs = projectDirectory.getFileObject("js/libs");
+        FileObject libs = projectDirectory.getFileObject("js/libs");        // NOI18N
         boolean backboneExists = false; 
         if ( libs != null ){
             FileObject[] children = libs.getChildren();
@@ -222,7 +224,7 @@ public final class RestPanelVisual extends JPanel  {
         while( true ){
             restClient = js.getFileObject(suggestName+JS);
             if ( restClient == null){
-                result = suggestName+JS;
+                result = suggestName;
                 break;
             }
             else {
