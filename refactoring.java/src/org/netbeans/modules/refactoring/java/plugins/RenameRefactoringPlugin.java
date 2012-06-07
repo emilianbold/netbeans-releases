@@ -54,6 +54,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -468,7 +469,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         }
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         TransformTask transform = new TransformTask(new RenameTransformer(refactoring.getNewName(), allMethods, refactoring.isSearchInComments()), treePathHandle);
         Problem problem = createAndAddElements(a, transform, elements, refactoring);
         fireProgressListenerStop();

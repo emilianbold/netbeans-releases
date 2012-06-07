@@ -57,8 +57,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -218,7 +218,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, (a.size() * 2) + 1);
         Problem problem = null;
         if (!a.isEmpty()) {
             initDelegates();
