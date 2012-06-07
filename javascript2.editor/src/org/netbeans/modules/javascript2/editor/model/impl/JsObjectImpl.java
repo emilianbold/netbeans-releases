@@ -59,6 +59,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private Map<Integer, Collection<TypeUsage>> assignments;
     final private boolean hasName;
     private String documentation;
+    private JsElement.Kind kind;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -68,6 +69,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
+        this.kind = null;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
@@ -78,6 +80,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
+        this.kind = null;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
@@ -101,6 +104,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public Kind getJSKind() {
+        if (kind != null) {
+            return kind;
+        }
         if (parent == null) {
             // global object
             return Kind.FILE;
@@ -256,6 +262,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return hasName;
     }
     
+    protected void setJsKind(JsElement.Kind kind) {
+        this.kind = kind;
+    }
+        
     protected Collection<TypeUsage> resolveAssignments(JsObject jsObject, int offset) {
         Collection<String> visited = new HashSet();  // for preventing infinited loops
         return resolveAssignments(jsObject, offset, visited);
@@ -317,6 +327,21 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             unresolved.addAll(resolved);
         }
         
+        
+        if(!assignments.isEmpty()) {
+            int start = -1;
+            int end = -1;
+            for(Integer offset : assignments.keySet()) {
+                
+                end = offset.intValue();
+            }
+            for(JsObject property: getProperties().values()) {
+                if (!property.isDeclared()) {
+                    
+                }
+            }
+            
+        }
         if (parent != null && !isAnonymous() && assignments.isEmpty()) {
             // try to recount occurrences
             JsObject global = ModelUtils.getGlobalObject(parent);

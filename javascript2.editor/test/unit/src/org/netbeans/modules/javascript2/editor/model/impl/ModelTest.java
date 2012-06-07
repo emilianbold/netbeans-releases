@@ -203,7 +203,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(true, variable.getModifiers().contains(Modifier.PROTECTED));
 
         JsObject myApp = global.getProperty("MyApp");
-        assertEquals(JsElement.Kind.OBJECT, myApp.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, myApp.getJSKind());
         assertEquals(true, myApp.isDeclared());
         assertEquals(1, myApp.getProperties().size());
         
@@ -224,7 +224,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(4, global.getProperties().size());
         
         JsObject object = global.getProperty("MyContext");
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         assertEquals(true, object.isDeclared());
         assertEquals(3, object.getProperties().size());
         assertEquals(134, object.getOffset());
@@ -238,7 +238,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         object = object.getProperty("User");
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         assertEquals(true, object.isDeclared());
         assertEquals(4, object.getProperties().size());
         assertEquals(180, object.getOffset());
@@ -256,7 +256,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         object = object.getProperty("Address");
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         assertEquals(true, object.isDeclared());
         assertEquals(2, object.getProperties().size());
         assertEquals(278, object.getOffset());
@@ -297,7 +297,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(1, global.getProperties().size());
         
         JsObject object = global.getProperty("fruit");
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         assertEquals(true, object.isDeclared());
         assertEquals(3, object.getProperties().size());
         assertEquals(4, object.getOffset());
@@ -327,7 +327,7 @@ public class ModelTest extends JsTestBase {
         
         object = object.getProperty("data");
         assertEquals(3, object.getProperties().size());
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         assertEquals(true, object.isDeclared());
     }
     
@@ -341,17 +341,17 @@ public class ModelTest extends JsTestBase {
         object = object.getProperty("$function").getProperty("jQuery");
         assertEquals(true, object.isDeclared());
         assertEquals(1, object.getProperties().size());
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         
         object = object.getProperty("event");
         assertEquals(true, object.isDeclared());
         assertEquals(2, object.getProperties().size());
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         
         object = object.getProperty("customEvent");
         assertEquals(true, object.isDeclared());
         assertEquals(8, object.getProperties().size());
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         
         JsObject virtualProperty = object.getProperty("name");
         assertEquals(false, virtualProperty.isDeclared());
@@ -422,7 +422,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(object.getProperty("called"));
         assertNotNull(object.getProperty("color"));
         assertNotNull(object.getProperty("getColor"));
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         
         JsObject property = object.getProperty("called");
         assertEquals(true, property.isDeclared());
@@ -560,7 +560,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(4, global.getProperties().size());
         
         JsObject object = global.getProperty("furniture");
-        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
         assertEquals(true, object.isDeclared());
         assertEquals(1, object.getProperties().size());
         
