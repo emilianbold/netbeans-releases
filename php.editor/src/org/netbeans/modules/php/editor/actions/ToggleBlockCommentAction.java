@@ -172,7 +172,7 @@ public class ToggleBlockCommentAction extends BaseAction{
         return result;
     }
 
-    private boolean isNewLineBeforeCaretOffset(final TokenSequence<PHPTokenId> ts, final int caretOffset) {
+    private static boolean isNewLineBeforeCaretOffset(final TokenSequence<PHPTokenId> ts, final int caretOffset) {
         boolean result = false;
         int indexOfNewLine = ts.token().text().toString().indexOf("\n"); //NOI18N
         if (indexOfNewLine != -1) {
