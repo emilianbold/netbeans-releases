@@ -46,9 +46,12 @@ package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.Image;
 import java.io.CharConversionException;
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -72,7 +75,8 @@ public class TestMethodNode extends AbstractNode {
 
     /** */
     protected final Testcase testcase;
-    protected final Project project;
+    private WeakReference<Project> project;
+    private final URI projectURI;
 
     /**
      * Creates a new instance of TestcaseNode
@@ -87,7 +91,8 @@ public class TestMethodNode extends AbstractNode {
               : Children.LEAF, lookup);
 
         this.testcase = testcase;
-        this.project = project;
+        this.project = new WeakReference<Project>(project);
+        this.projectURI = project.getProjectDirectory().toURI();
 
         setDisplayName();
 
@@ -124,6 +129,15 @@ public class TestMethodNode extends AbstractNode {
                 : NbBundle.getMessage(TestMethodNode.class,
                                       timeKeys[status],testcase.getName(),
                                       new Float(testcase.getTimeMillis()/1000f)));
+    }
+
+    protected Project getProject() {
+        Project prj = project.get();
+        if (prj == null) {
+            prj = FileOwnerQuery.getOwner(projectURI);
+            project = new WeakReference<Project>(prj);
+        }
+        return prj;
     }
 
     Testcase getTestCase(){
