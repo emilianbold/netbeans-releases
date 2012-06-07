@@ -68,6 +68,7 @@ public class ExecutionChecker implements ExecutionResultChecker {
         project = prj;
     }
 
+    @Override
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
 
         if (NbmActionGoalProvider.NBMRELOAD.equals(config.getActionName()) && resultCode == 0) {
