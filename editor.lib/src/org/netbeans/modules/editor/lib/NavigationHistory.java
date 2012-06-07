@@ -103,7 +103,9 @@ public final class NavigationHistory {
      */
     public Waypoint markWaypoint(JTextComponent comp, int offset, boolean currentPosition, boolean append) throws BadLocationException {
         assert comp != null : "The comp parameter must not be null"; //NOI18N
-        
+        if (comp.getClientProperty("AsTextField") != null) {
+            return null;
+        }
         Waypoint newWpt = null;
                 
         synchronized (LOCK) {

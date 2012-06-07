@@ -55,46 +55,41 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
 import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AddOverrideAnnotation extends AbstractHint {
+@Hint(displayName="#DN_AddOverrideAnnotation", description="#DESC_AddOverrideAnnotation", category="rules15")
+public class AddOverrideAnnotation {
 
-    public AddOverrideAnnotation() {
-        super( true, true, AbstractHint.HintSeverity.WARNING );
-    }
-    
     public Set<Kind> getTreeKinds() {
         return EnumSet.of(Kind.METHOD);
     }
 
-    public List<ErrorDescription> run(CompilationInfo compilationInfo,
-                                      TreePath treePath) {
+    @TriggerTreeKind(Kind.METHOD)
+    public static ErrorDescription run(HintContext ctx) {
+        CompilationInfo compilationInfo = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         TypeElement el = compilationInfo.getElements().getTypeElement("java.lang.Override"); //NOI18N
 
         if (el == null || !GeneratorUtils.supportsOverride(compilationInfo))
@@ -132,54 +127,18 @@ public class AddOverrideAnnotation extends AbstractHint {
             }
 
             if (addHint) {
-                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject()).toEditorFix());
-
-                int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf());
-
-                if (span != null) {
-                    String desc = NbBundle.getMessage(AddOverrideAnnotation.class, "HINT_AddOverrideAnnotation");
-                    ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), desc, fixes, compilationInfo.getFileObject(), span[0], span[1]);
-
-                    return Collections.singletonList(ed);
-                }
+                String desc = NbBundle.getMessage(AddOverrideAnnotation.class, "HINT_AddOverrideAnnotation");
+                return ErrorDescriptionFactory.forName(ctx, treePath, desc, new FixImpl(compilationInfo, treePath).toEditorFix());
             }
         }
         
         return null;
     }
 
-    public String getId() {
-        return AddOverrideAnnotation.class.getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(AddOverrideAnnotation.class, "DN_AddOverrideAnnotation");
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(AddOverrideAnnotation.class, "DESC_AddOverrideAnnotation");
-    }
-
-    public void cancel() {
-        // XXX implement me 
-    }
-    
-    public Preferences getPreferences() {
-        return null;
-    }
-    
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }    
-          
     private static final class FixImpl extends JavaFix {
         
-        private FileObject file;
-        
-        public FixImpl(TreePathHandle handle, FileObject file) {
-            super(handle);
-            this.file = file;
+        public FixImpl(CompilationInfo info, TreePath treePath) {
+            super(info, treePath);
         }
         
         public String getText() {

@@ -39,6 +39,7 @@ PACKAGE    Test204925_07_C                 [PUBLIC]   null
 PACKAGE    Test204925_07_P                 [PUBLIC]   null
 PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
+PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
@@ -112,6 +113,7 @@ CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
 CLASS      Book                            [PUBLIC]   test203332_01.php
+CLASS      BookTable                       [PUBLIC]   Test_03
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
@@ -144,6 +146,7 @@ CLASS      Delme2                          [PUBLIC]   Delme2.php
 CLASS      Deriv                           [PUBLIC]   issue208193.php
 CLASS      Doctrine_Query                  [PUBLIC]   test203332_02.php
 CLASS      Doctrine_Query_Abstract         [PUBLIC,   test203332_02.php
+CLASS      Doctrine_Table                  [PUBLIC]   Test_03
 CLASS      Doctrine_Table                  [PUBLIC]   test203332_02.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
 CLASS      EmptyClass                      [PUBLIC]   issue201310.php
@@ -169,6 +172,7 @@ CLASS      Foooo                           [PUBLIC]   test204104.php
 CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
+CLASS      FrontendBookTable               [PUBLIC]   Test_03
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php

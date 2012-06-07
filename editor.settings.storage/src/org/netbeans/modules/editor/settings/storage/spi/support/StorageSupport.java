@@ -157,29 +157,55 @@ public final class StorageSupport {
 
         return result.toArray(new KeyStroke[result.size()]);
     }
+    
+    // Important: keep in sync with Keymap Options Utils class until Keymap
+    // defines API for this translation
 
     private static final String EMACS_CTRL = "Ctrl+"; //NOI18N
     private static final String EMACS_ALT = "Alt+"; //NOI18N
     private static final String EMACS_SHIFT = "Shift+"; //NOI18N
     private static final String EMACS_META = "Meta+"; //NOI18N
     
+    /**
+     * Platform - dependent value for Alt or Meta presentation
+     */
+    private static final String STRING_META; // NOI18N
+    private static final String STRING_ALT; // NOI18N
+    
+    static {
+        if (Utilities.isMac()) {
+            STRING_META = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
+            STRING_ALT = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
+        } else {
+            STRING_META = EMACS_META;
+            STRING_ALT = EMACS_ALT;
+        }
+    }
+    
     private static KeyStroke humanReadableStringToKeyStroke(String keyStroke) {
         int modifiers = 0;
-        if (keyStroke.startsWith(EMACS_CTRL)) {
-            modifiers |= InputEvent.CTRL_DOWN_MASK;
-            keyStroke = keyStroke.substring(EMACS_CTRL.length());
-        }
-        if (keyStroke.startsWith(EMACS_ALT)) {
-            modifiers |= InputEvent.ALT_DOWN_MASK;
-            keyStroke = keyStroke.substring(EMACS_ALT.length());
-        }
-        if (keyStroke.startsWith(EMACS_SHIFT)) {
-            modifiers |= InputEvent.SHIFT_DOWN_MASK;
-            keyStroke = keyStroke.substring(EMACS_SHIFT.length());
-        }
-        if (keyStroke.startsWith(EMACS_META)) {
-            modifiers |= InputEvent.META_DOWN_MASK;
-            keyStroke = keyStroke.substring(EMACS_META.length());
+        while (true) {
+            if (keyStroke.startsWith(EMACS_CTRL)) {
+                modifiers |= InputEvent.CTRL_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_CTRL.length());
+            } else if (keyStroke.startsWith(EMACS_ALT)) {
+                modifiers |= InputEvent.ALT_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_ALT.length());
+            } else if (keyStroke.startsWith(EMACS_SHIFT)) {
+                modifiers |= InputEvent.SHIFT_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_SHIFT.length());
+            } else if (keyStroke.startsWith(EMACS_META)) {
+                modifiers |= InputEvent.META_DOWN_MASK;
+                keyStroke = keyStroke.substring(EMACS_META.length());
+            } else if (keyStroke.startsWith(STRING_ALT)) {
+                modifiers |= InputEvent.ALT_DOWN_MASK;
+                keyStroke = keyStroke.substring(STRING_ALT.length());
+            } else if (keyStroke.startsWith(STRING_META)) {
+                modifiers |= InputEvent.META_DOWN_MASK;
+                keyStroke = keyStroke.substring(STRING_META.length());
+            } else {
+                break;
+            }
         }
         KeyStroke ks = Utilities.stringToKey(keyStroke);
         if (ks != null) {
@@ -218,13 +244,13 @@ public final class StorageSupport {
             sb.append(EMACS_CTRL);
         }
         if ((modifiers & InputEvent.ALT_DOWN_MASK) > 0) {
-            sb.append(EMACS_ALT);
+            sb.append(STRING_ALT);
         }
         if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0) {
             sb.append(EMACS_SHIFT);
         }
         if ((modifiers & InputEvent.META_DOWN_MASK) > 0) {
-            sb.append(EMACS_META);
+            sb.append(STRING_META);
         }
         if (keyStroke.getKeyCode() != KeyEvent.VK_SHIFT &&
                 keyStroke.getKeyCode() != KeyEvent.VK_CONTROL &&

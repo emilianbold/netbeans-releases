@@ -92,7 +92,9 @@ public final class I18nUtil {
     /** Help ID for javaI18nString. It is a universal one for all subclasses. */
     public static final String PE_I18N_STRING_HELP_ID = "i18n.pe.i18nString";   // NOI18N
 
-    
+    private static final String DEFAULT_STANDARD_REPLACE_FORMAT = "java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")"; // NOI18N
+    private static final String DEFAULT_NETBEANS_REPLACE_FORMAT = "org.openide.util.NbBundle.getMessage({sourceFileName}.class, \"{key}\")"; // NOI18N
+   
     /** Items for init format customizer. */
     private static List<String> initFormatItems;
 
@@ -144,10 +146,10 @@ public final class I18nUtil {
             replaceFormatItems = new ArrayList<String>(7);
             replaceFormatItems.add("{identifier}.getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("Utilities.getString(\"{key}\")"); // NOI18N
-            replaceFormatItems.add("java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")"); // NOI18N
+            replaceFormatItems.add(DEFAULT_STANDARD_REPLACE_FORMAT);
             replaceFormatItems.add("org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("java.text.MessageFormat.format(java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\"), {arguments})"); // NOI18N
-            replaceFormatItems.add("org.openide.util.NbBundle.getMessage({sourceFileName}.class, \"{key}\")"); // NOI18N
+            replaceFormatItems.add(DEFAULT_NETBEANS_REPLACE_FORMAT);
             replaceFormatItems.add("org.openide.util.NbBundle.getMessage({sourceFileName}.class, \"{key}\", {arguments})"); // NOI18N
         }
             
@@ -158,7 +160,7 @@ public final class I18nUtil {
      * a NB module project or not. (Module projects use NbBundle preferentially.)
      */
     public static String getDefaultReplaceFormat(boolean nbProject) {
-        return getReplaceFormatItems().get(nbProject ? 5 : 2);
+        return nbProject ? DEFAULT_NETBEANS_REPLACE_FORMAT : DEFAULT_STANDARD_REPLACE_FORMAT;
     }
 
     /** Gets <code>replaceHeplItems</code>.*/

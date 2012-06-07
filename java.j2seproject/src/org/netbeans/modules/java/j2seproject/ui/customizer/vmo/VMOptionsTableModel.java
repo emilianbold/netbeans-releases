@@ -10,6 +10,7 @@ import java.util.*;
 
 /**
  * @author Rastislav Komara
+ * xxx: Wrong usage of generic types -> heap pollution.
  */
 public class VMOptionsTableModel extends AbstractTableModel {
     private List<JavaVMOption<?>> rows = new ArrayList<JavaVMOption<?>>();

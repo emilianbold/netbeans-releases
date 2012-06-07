@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -168,7 +170,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     }
 
     private File getWebRoot() {
-        return FileUtil.toFile(ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot()));
+        return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
     /**
@@ -270,7 +272,12 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void routerBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routerBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getSources(), routerTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getSources(), routerTextField);
+        } catch (FileNotFoundException ex) {
+            // cannot happen for sources
+            Exceptions.printStackTrace(ex);
+        }
     }//GEN-LAST:event_routerBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

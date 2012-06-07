@@ -57,6 +57,7 @@ import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportImpl;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportFactory;
 import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
@@ -206,5 +207,9 @@ public class CustomWebServicesClientSupportProvider implements WebServicesClient
         public String getServiceRefName(Node clientNode) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+	public AntProjectHelper getAntProjectHelper() {
+            throw new UnsupportedOperationException("Not supported yet.");
+	}
     }
 }

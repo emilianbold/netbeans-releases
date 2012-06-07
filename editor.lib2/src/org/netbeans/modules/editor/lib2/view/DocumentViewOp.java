@@ -504,6 +504,7 @@ public final class DocumentViewOp
         JTextComponent textComponent = docView.getTextComponent();
         updateStatusBits(ACCURATE_SPAN, Boolean.TRUE.equals(textComponent.getClientProperty(DocumentView.ACCURATE_SPAN_PROPERTY)));
         viewUpdates = new ViewUpdates(docView);
+        viewUpdates.initFactories();
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
@@ -563,7 +564,8 @@ public final class DocumentViewOp
     
     private boolean checkFontRenderContext() { // check various things related to rendering
         if (fontRenderContext == null) {
-            Graphics graphics = docView.getTextComponent().getGraphics();
+            JTextComponent textComponent = docView.getTextComponent();
+            Graphics graphics = (textComponent != null) ? textComponent.getGraphics() : null;
             if (graphics != null) {
                 assert (graphics instanceof Graphics2D) : "Not Graphics2D";
                 // Use rendering hints (antialiasing etc.)

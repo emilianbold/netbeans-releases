@@ -139,6 +139,7 @@ made subject to such option by the copyright holder.
             <!-- wsimport task initialization -->
             <xsl:if test="/*/*/*/jaxws:wsdl-url">
                 <target name="wsimport-init" depends="init">
+   		    <fail if="${{wsimport.bad.version}}" message="WsImport ant task defined in the classpath ${{j2ee.platform.wsimport.classpath}} has a serious bug. See http://wiki.netbeans.org/MetroIssue for details."/>
                     <xsl:if test="/jaxws:jax-ws/jaxws:clients/jaxws:client">
                         <mkdir dir="${{build.generated.sources.dir}}/jax-ws"/>
                     </xsl:if>
