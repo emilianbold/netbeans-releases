@@ -147,13 +147,17 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 search(type, toAdd);
             }
         }
+        HashSet<R> listeners = null;
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 arr.addAll(toAdd);
-                setPairs(arr, getRP());
+                listeners = setPairsAndCollectListeners(arr);
             }
+        }
+        if (listeners != null) {
+            notifyIn(getRP(), listeners);
         }
     }
     
