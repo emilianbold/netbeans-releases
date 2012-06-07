@@ -80,7 +80,9 @@ class LayoutRegion implements LayoutConstants {
 
     LayoutRegion(LayoutRegion reg) {
         this();
-        set(reg);
+        if (reg != null) {
+            set(reg);
+        }
     }
 
     LayoutRegion(Rectangle bounds, int baselinePos) {

@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
@@ -179,7 +180,17 @@ public class PackageView {
         
         if (progress != null) {
             String path = FileUtil.getRelativePath(children.getRoot(), fo);
-            assert path != null : fo + " in " + children.getRoot();
+            if (path == null) {
+                if (!fo.isValid() || !children.getRoot().isValid()) {
+                    return;
+                } else {
+                    throw new IllegalArgumentException(
+                        MessageFormat.format(
+                            "{0} in {1}", //NOI18N
+                            FileUtil.getFileDisplayName(fo),
+                            FileUtil.getFileDisplayName(children.getRoot())));
+                }
+            }
             progress.progress(path.replace('/', '.'), start);
         }
         if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
