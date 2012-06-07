@@ -39,22 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.model.impl;
+package org.netbeans.modules.php.editor.elements;
 
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.impl.ModelTestBase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TypeNameResolverTest extends ModelTestBase {
+public class TypeNameResolverImplTest extends ModelTestBase {
 
     private static final int TEST_TIMEOUT = Integer.getInteger("nb.php.test.timeout", 100000); //NOI18N
 
-    public TypeNameResolverTest(String testName) {
+    public TypeNameResolverImplTest(String testName) {
         super(testName);
     }
 
@@ -72,293 +73,293 @@ public class TypeNameResolverTest extends ModelTestBase {
     public void testNull_01() throws Exception {
         QualifiedName toResolve = QualifiedName.create("\\Test\\Omg");
         QualifiedName expected = QualifiedName.create("\\Test\\Omg");
-        QualifiedName actual = TypeNameResolver.forNull().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forNull().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testNull_02() throws Exception {
         QualifiedName toResolve = QualifiedName.create("Test\\Omg");
         QualifiedName expected = QualifiedName.create("Test\\Omg");
-        QualifiedName actual = TypeNameResolver.forNull().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forNull().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testNull_03() throws Exception {
         QualifiedName toResolve = QualifiedName.create("Omg");
         QualifiedName expected = QualifiedName.create("Omg");
-        QualifiedName actual = TypeNameResolver.forNull().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forNull().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testUnqualifiedName_01() throws Exception {
         QualifiedName toResolve = QualifiedName.create("Omg");
         QualifiedName expected = QualifiedName.create("Omg");
-        QualifiedName actual = TypeNameResolver.forUnqualifiedName().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forUnqualifiedName().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testUnqualifiedName_02() throws Exception {
         QualifiedName toResolve = QualifiedName.create("Foo\\Omg");
         QualifiedName expected = QualifiedName.create("Omg");
-        QualifiedName actual = TypeNameResolver.forUnqualifiedName().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forUnqualifiedName().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testUnqualifiedName_03() throws Exception {
         QualifiedName toResolve = QualifiedName.create("Foo\\Bar\\Omg");
         QualifiedName expected = QualifiedName.create("Omg");
-        QualifiedName actual = TypeNameResolver.forUnqualifiedName().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forUnqualifiedName().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testUnqualifiedName_04() throws Exception {
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Omg");
         QualifiedName expected = QualifiedName.create("Omg");
-        QualifiedName actual = TypeNameResolver.forUnqualifiedName().resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forUnqualifiedName().resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testFullyQualifiedName_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testFullyQualifiedName_01.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testFullyQualifiedName_01.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Omg");
         QualifiedName expected = QualifiedName.create("\\Test\\Omg");
-        QualifiedName actual = TypeNameResolver.forFullyQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_01.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_01.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Test\\Foo");
         QualifiedName expected = QualifiedName.create("Foo");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_02() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_02.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_02.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_03() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_03.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_03.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Test2\\Omg");
         QualifiedName expected = QualifiedName.create("Omg");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_04() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_04.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_04.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_05() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_05.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_05.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_06() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_06.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_06.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Foo\\Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_07() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_07.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_07.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Foo\\Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_08() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_08.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_08.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Test\\Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_09() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_09.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_09.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Bat");
         QualifiedName expected = QualifiedName.create("Test\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_10() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_10.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_10.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Alias\\Bat");
         QualifiedName expected = QualifiedName.create("Alias\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_11() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_11.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_11.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testQualifiedName_12() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testQualifiedName_12.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_12.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Test\\Foo\\Bar\\Baz");
         QualifiedName expected = QualifiedName.create("Bar\\Baz");
-        QualifiedName actual = TypeNameResolver.forQualifiedName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forQualifiedName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testSmartName_fail_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_fail.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_fail.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Bat");
         try {
-            TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+            TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
             fail();
         } catch (IllegalArgumentException ex) {
         }
     }
 
     public void testSmartName_fail_02() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_fail.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_fail.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("Baz\\Bat");
         try {
-            TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+            TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
             fail();
         } catch (IllegalArgumentException ex) {
         }
     }
 
     public void testSmartName_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_01.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_01.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Bar\\Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testSmartName_02() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_02.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_02.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Omg\\Fq\\Name");
         QualifiedName expected = QualifiedName.create("\\Omg\\Fq\\Name");
-        QualifiedName actual = TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testSmartName_03() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_03.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_03.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Baz\\Bat");
-        QualifiedName actual = TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testSmartName_04() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_04.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_04.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Foo\\Bar\\Baz\\Bat");
         QualifiedName expected = QualifiedName.create("Bat");
-        QualifiedName actual = TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 
     public void testSmartName_05() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/typenameresolver/testSmartName_05.php");
+        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_05.php");
         Model model = getModel(preparedTestFile);
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
         QualifiedName toResolve = QualifiedName.create("\\Test\\Foo\\Bar\\Baz");
         QualifiedName expected = QualifiedName.create("Bar\\Baz");
-        QualifiedName actual = TypeNameResolver.forSmartName(namespaceScope, offset).resolve(toResolve);
+        QualifiedName actual = TypeNameResolverImpl.forSmartName(namespaceScope, offset).resolve(toResolve);
         assertEquals(expected, actual);
     }
 

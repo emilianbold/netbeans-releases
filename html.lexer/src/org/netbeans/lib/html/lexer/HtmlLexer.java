@@ -805,6 +805,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                         case '/':
                         case '>':
+                        case '<':
                             input.backup(1);
                             lexerState = ISP_TAG_X;
                             break;

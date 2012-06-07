@@ -74,6 +74,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     private Loader loader;
     private final Object LOCK = new Object();
     private JLabel lblFill;
+    private boolean expandAfterRefresh;;
 
     /**
      * C'tor
@@ -159,6 +160,10 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 synchronized (LOCK) {
+                    expandAfterRefresh = isExpandable() && isExpanded();
+                    if (expandAfterRefresh) {
+                        setExpanded(false);
+                    }
                     loaded = false;
                     if (null != inner) {
                         panel.remove(inner);
@@ -225,6 +230,9 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                     panel.revalidate();
                     panel.repaint();
                     loader = null;
+                    if (expandAfterRefresh) {
+                        setExpanded(true);
+                    }
                 }
                 fireContentChanged();
             }

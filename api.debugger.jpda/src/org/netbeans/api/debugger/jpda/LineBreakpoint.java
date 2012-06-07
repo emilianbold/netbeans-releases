@@ -413,9 +413,7 @@ public class LineBreakpoint extends JPDABreakpoint {
             if (fo != null) {
                 fileName = fo.getNameExt();
             }
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
-        }
+        } catch (MalformedURLException ex) {}
         if (fileName == null) fileName = url;
         return "LineBreakpoint " + fileName + " : " + lineNumber;
     }

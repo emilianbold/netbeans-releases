@@ -1211,4 +1211,19 @@ public final class SingleModuleProperties extends ModuleProperties {
         return pkgs.size() - origC;
     }
 
+    boolean isOSGi() {
+        FileObject manifestFO = FileUtil.toFileObject(getManifestFile());
+        if (manifestFO == null) {
+            return false;
+        }
+        EditableManifest em;
+        try {
+            em = Util.loadManifest(manifestFO);
+        } catch (IOException x) {
+            LOG.log(Level.INFO, null, x);
+            return false;
+        }
+        return em.getAttribute(ManifestManager.BUNDLE_SYMBOLIC_NAME, null) != null;
+    }
+
 }

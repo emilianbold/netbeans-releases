@@ -1,41 +1,42 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.All rights reserved.
+*     Copyright © 1997, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Telemetry Overview Window</title>
+<title>VM Telemetry Overview Window</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Telemetry Overview Window</h2>
+<h2>VM Telemetry Overview Window</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>The Telemetry Overview window displays smaller versions of the graphs that are presented in the
+<p>The VM Telemetry Overview window displays smaller versions of the graphs that are presented in the
 VM Telemetry window. The window displays high-level data on thread activity and 
 memory heap and garbage collection in the VM. 
-The VM Telemetry window is typically located below the editing area and sharing the space with the
+The VM Telemetry Overview window is typically located below the editing area and sharing the space with the
 Output window</p>
         
-<p>You open the Telemetry Overview window by choosing Window &gt; Profiling &gt; Telemetry Overview from the main menu.</p>
+<p>You open the VM Telemetry Overview window by choosing Window &gt; Profiling &gt; VM Telemetry Overview from the main menu.</p>
 
-<p>The VM Telemetry tab contains three graphs displaying data on the following processes:</p>
+<p>The VM Telemetry Overview window contains three graphs displaying data on the following processes:</p>
         <ul>
-            <li><b>Threads (Statistics).</b> The Threads graph displays the total 
-            number of threads in the profiled application JVM. You can place your cursor over the 
-            graph to display a tooltip with the current and maximum number of threads.</li>                    
             <li><b>Memory (Heap).</b> The Memory (Heap) graph displays the total and used size. 
             These are the figures that a Java application can obtain using the <tt>java.lang.Runtime.totalMemory()</tt> and 
             <tt>java.lang.Runtime.freeMemory()</tt> calls.</li>
             <li><b>Memory (GC).</b> The Memory (GC) graph displays the relative time spent in 
             garbage collection and the number of surviving generations.</li>
+            <li><b>Threads (Statistics).</b> The Threads graph displays the total 
+            number of threads in the profiled application JVM. You can place your cursor over the 
+            graph to display a tooltip with the current and maximum number of threads.</li>                    
         </ul>
         
-<!--        <ul>
+        <p><b>Notes.</b></p>
+        <ul class="note">
             <li><b>Relative time.</b> Relative time is measured as a percentage of the total execution time that 
             the target JVM spends running garbage collection with all application threads 
             suspended.</li>
@@ -45,7 +46,7 @@ Output window</p>
             <li><b>Age of object.</b> The age of the object is measured as the number of 
             garbage collections survived.</li>
         </ul>
--->
+
 
 
 <dl>

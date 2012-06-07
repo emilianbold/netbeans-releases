@@ -201,7 +201,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
         //only check for the updates of index, if the indexing was already used.
         if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
-            final int freq = RepositoryPreferences.getInstance().getIndexUpdateFrequency();
+            final int freq = RepositoryPreferences.getIndexUpdateFrequency();
             new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() { // #138102
                 public @Override void run() {
                     List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
@@ -255,7 +255,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         return cacheDir.exists() && cacheDir.isDirectory();
     }
     private boolean checkDiff(String repoid, long amount) {
-        Date date = RepositoryPreferences.getInstance().getLastIndexUpdate(repoid);
+        Date date = RepositoryPreferences.getLastIndexUpdate(repoid);
         Date now = new Date();
         LOGGER.log(Level.FINER, "Check Date Diff :{0}", repoid);//NOI18N
         LOGGER.log(Level.FINER, "Last Indexed Date :{0}", SimpleDateFormat.getInstance().format(date));//NOI18N

@@ -48,11 +48,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 
 /**
@@ -66,13 +68,14 @@ public class InstallDocSourcePanel extends javax.swing.JPanel {
     private boolean docs;
     
     /** Creates new form InstallPanel */
+    @Messages({"TXT_Javadoc_Loc=Javadoc JAR/ZIP Location:", "TXT_Sources_Loc=Sources JAR/ZIP Location"})
     private InstallDocSourcePanel(boolean javadoc) {
         initComponents();
         docs = javadoc;
         if (javadoc) {
-            lblFile.setText(org.openide.util.NbBundle.getMessage(InstallDocSourcePanel.class, "TXT_Javadoc_Loc"));
+            lblFile.setText(TXT_Javadoc_Loc());
         } else {
-            lblFile.setText(org.openide.util.NbBundle.getMessage(InstallDocSourcePanel.class, "TXT_Sources_Loc"));
+            lblFile.setText(TXT_Sources_Loc());
         }
     }
     
@@ -132,9 +135,11 @@ public class InstallDocSourcePanel extends javax.swing.JPanel {
                                            : NbBundle.getMessage(InstallDocSourcePanel.class, "TIT_Select_source_zip"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return (f.isDirectory() || f.getName().toLowerCase().endsWith(".jar") || f.getName().toLowerCase().endsWith(".zip")); //NOI18N
             }
+            @Override
             public String getDescription() {
                 
                 return isJavadoc() ? NbBundle.getMessage(InstallDocSourcePanel.class, "LBL_Select_javadoc_zip")
@@ -148,7 +153,7 @@ public class InstallDocSourcePanel extends javax.swing.JPanel {
                 chooser.setSelectedFile(fil);
             }
         }
-        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), org.openide.util.NbBundle.getMessage(InstallDocSourcePanel.class, "BTN_Select"));
+        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), BTN_Select());
         if (ret == JFileChooser.APPROVE_OPTION) {
             txtFile.setText(chooser.getSelectedFile().getAbsolutePath());
             txtFile.requestFocusInWindow();
@@ -161,17 +166,21 @@ public class InstallDocSourcePanel extends javax.swing.JPanel {
         return fil != null && fil.exists() ? fil : null;
     }
     
+    @Messages({"BTN_Select=Select", "TIT_Use_local_docs=Use local Javadoc", "TIT_Use_local_source=Use local sources"})
     public static File showInstallDialog(boolean javadoc) {
         final InstallDocSourcePanel panel = new InstallDocSourcePanel(javadoc);
-        final JButton btnSelect  = new JButton(org.openide.util.NbBundle.getMessage(InstallDocSourcePanel.class, "BTN_Select"));
+        final JButton btnSelect  = new JButton(BTN_Select());
         btnSelect.setEnabled(panel.getFile() != null);
         panel.addDocListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 btnSelect.setEnabled(panel.getFile() != null);
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 btnSelect.setEnabled(panel.getFile() != null);
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 btnSelect.setEnabled(panel.getFile() != null);
             }
@@ -180,8 +189,8 @@ public class InstallDocSourcePanel extends javax.swing.JPanel {
             btnSelect,
             NotifyDescriptor.CANCEL_OPTION
         };
-        String tit = panel.isJavadoc() ? NbBundle.getMessage(InstallDocSourcePanel.class, "TIT_Use_local_docs")
-                                 : NbBundle.getMessage(InstallDocSourcePanel.class, "TIT_Use_local_source");
+        String tit = panel.isJavadoc() ? TIT_Use_local_docs()
+                                 : TIT_Use_local_source();
         DialogDescriptor dd = new DialogDescriptor(panel, tit,
                 true,
                 options,

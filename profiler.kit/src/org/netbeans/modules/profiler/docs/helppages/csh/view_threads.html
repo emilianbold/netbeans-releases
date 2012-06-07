@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.All rights reserved.
-*     Use is subject to license terms.
+* Copyright © 1997, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
+* Use is subject to license terms.
 *
 -->
 <html>
@@ -19,26 +19,28 @@
 detailed information about application thread activity during a profiling session.
 You open the Threads window by choosing Window &gt; Profiling &gt; Threads from the main menu.</p>
 
-<p>The toolbar of the Threads window contains the following items:</p>
+<p>The toolbar of the Threads window contains the following items.</p>
 <table border="1" cellpadding="0" cellspacing="0">
     <tr align="left" valign="top">
         <th scope="col">Button</th>
         <th scope="col">Function</th>
     </tr>
-    <tr valign="top"><td><img src="../img/saveView.png"></td><td><b>Save Current View.</b>Click this to save an image of the current results as a <tt>.png</tt> file.</td></tr>                        
-    <tr valign="top"><td><img src="../img/zoomIn.png"></td><td><b>Zoom In.</b>Click this to increase the detail of the graph.</td></tr>                        
-    <tr valign="top"><td><img src="../img/zoomOut.png"></td><td><b>Zoom Out.</b> Click this to decreases the detail of the graph.</td></tr>
-    <tr valign="top"><td><img src="../img/scaleToFit.png"></td><td><b>Scale-to-Fit.</b> Click this to modify the display of data so that the entire graph fits in the window.</td></tr>
+    <tr valign="top"><td><img src="../img/saveView.png" alt="Save View icon"></td><td><b>Save Current View.</b> Click to save an image of the current results as a <tt>.png</tt> file.</td></tr>                        
+    <tr valign="top"><td><img src="../img/zoomIn.png" alt="Zoom In icon"></td><td><b>Zoom In.</b> Click to increase the detail of the graph.</td></tr>                        
+    <tr valign="top"><td><img src="../img/zoomOut.png" alt="Zoom Out icon"></td><td><b>Zoom Out.</b> Click to decreases the detail of the graph.</td></tr>
+    <tr valign="top"><td><img src="../img/scaleToFit.png" alt="Scale to Fit icon"></td><td><b>Scale To Fit.</b> Click to toggle between a scalable view and a fixed-scale view.</td></tr>
 </table>
-<p>The toolbar also contains a dropdown list that enables you to filter the display according to the state of the thread.</p>
+<p>The toolbar contains a dropdown list that enables you to filter the display according to the state of the thread.</p>
 
-<p>The Threads window contains the following two tabs:</p>
+<p>The Threads window contains the following tabs.</p>
         <ul>
             <li><b>Threads (Timeline).</b> This tab displays thread states over time. 
             You can zoom in/out on the current view, or switch to the Scale to Fit mode. States can be displayed
-            for all threads, all live threads or all finished threads according to the combobox selection. You can also
+            for all threads, all live threads or all finished threads according to the dropdown list selection. You can also
             define a subset of threads to be displayed using a (multi)selection. Double-clicking a thread
             displays the details of that thread in the Threads (Details) tab.</li>
+            <li><b>Table.</b> This tab displays a table view of the thread states and statistics
+            about the threads.</li>
             <li><b>Threads (Details).</b> This tab displays more detailed information about 
             individual threads. Use the dropdown list in the Threads tab toolbar to select which threads 
             to display. The name, classname and current status (alive/finished) of each thread is 

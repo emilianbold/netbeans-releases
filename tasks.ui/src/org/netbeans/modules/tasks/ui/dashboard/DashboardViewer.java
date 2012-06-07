@@ -62,6 +62,7 @@ import org.netbeans.modules.tasks.ui.actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
 import org.netbeans.modules.tasks.ui.cache.DashboardStorage;
 import org.netbeans.modules.tasks.ui.cache.TaskEntry;
+import org.netbeans.modules.tasks.ui.dnd.DashboardTransferHandler;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.filter.DashboardFilter;
 import org.netbeans.modules.tasks.ui.model.Category;
@@ -164,7 +165,11 @@ public final class DashboardViewer implements PropertyChangeListener {
         appliedCategoryFilters = new AppliedFilters<CategoryNode>();
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         taskHits = 0;
+        treeList.setTransferHandler(new DashboardTransferHandler());
+        treeList.setDragEnabled(true);
+        treeList.setDropMode(DropMode.ON_OR_INSERT);
         treeList.setModel(model);
+        treeList.addPropertyChangeListener("dropLocation", new DropLocationListener());
         attachActions();
         dashboardComponent.setViewportView(treeList);
         dashboardComponent.invalidate();
@@ -394,7 +399,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             Category category = categoryNode.getCategory();
             final CategoryNode newNode;
             if (opened) {
-                newNode = new CategoryNode(category, false);
+                newNode = new CategoryNode(category, true);
             } else {
                 newNode = new ClosedCategoryNode(category);
             }
@@ -405,14 +410,14 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
 
             storeClosedCategories();
-            if (newNode.isOpened()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        newNode.setExpanded(true);
-                    }
-                });
-            }
+//            if (newNode.isOpened()) {
+//                SwingUtilities.invokeLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        newNode.setExpanded(true);
+//                    }
+//                });
+//            }
         }
     }
 
@@ -841,11 +846,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
         for (Repository repository : allRepositories) {
-            RepositoryNode repositoryNode;
             boolean open = !closedIds.contains(repository.getId());
             if (open) {
-                //TODO uncommit when the query refresh bug is fixed
-                //refreshQueries(repository.getQueries());
                 repoNodes.add(new RepositoryNode(repository, false));
             } else {
                 repoNodes.add(new ClosedRepositoryNode(repository, false));
@@ -998,5 +1000,13 @@ public final class DashboardViewer implements PropertyChangeListener {
             return true;
         }
         return false;
+    }
+
+    private static class DropLocationListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            
+        }
     }
 }

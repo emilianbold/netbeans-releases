@@ -322,6 +322,12 @@ public class HtmlLexerTest extends NbTestCase {
                 "<|TAG_OPEN_SYMBOL", "style|TAG_OPEN", " |WS", "type|ARGUMENT", "=|OPERATOR", "text/css|VALUE", ">|TAG_CLOSE_SYMBOL");
     }
     
+    public void testIssue213332_2() {
+        checkTokens("<div align= </div>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "align|ARGUMENT", "=|OPERATOR", " |WS", 
+                "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+    }
+    
     //--------------------------------------------------------------------------
     
     private void checkTokens(String text, String... descriptions) {

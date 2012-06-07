@@ -45,7 +45,6 @@ package org.netbeans.modules.php.editor.api.elements;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.impl.TypeNameResolver;
 
 /**
  * @author Radek Matous

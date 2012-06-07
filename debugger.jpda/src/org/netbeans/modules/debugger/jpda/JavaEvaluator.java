@@ -147,6 +147,7 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                     debugger.methodCallsUnsupportedExc =
                             new InvalidExpressionException(new UnsupportedOperationException());
                 }
+                context.destroy();
             }
         } catch (InternalExceptionWrapper e) {
             throw new InvalidExpressionException(e.getLocalizedMessage());

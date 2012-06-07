@@ -17,27 +17,26 @@
 # Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 # Microsystems, Inc. All Rights Reserved.
 
-default_jdk="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
+if [ -z "$jdkhome" ] ; then
+    # try to find JDK
 
-java_bin=`which java 2>&1`
+    # read Java Preferences
+    if [ -x "/usr/libexec/java_home" ]; then
+        jdkhome=`/usr/libexec/java_home`
 
-if [ $? -ne 0 ] || [ -n "`echo \"$java_bin\" | grep \"no java in\"`" ] ; then
-    # no java in path... strange
-    java_bin=/usr/bin/java
-fi
+    # JDK1.7
+    elif [ -f "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/java" ] ; then
+        jdkhome="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home"
 
-if [ -f "$java_bin" ] ; then
-    java_version=`"$java_bin" -fullversion 2>&1`
-    if [ $? -eq 0 ] && [ -n "`echo \"$java_version\" | grep 1.6.0`" ] ; then 
-        # don`t use Developer Preview versions
-        if [ -z "`echo \"$java_version\" | grep \"1.6.0_b\|1.6.0-b\|1.6.0_01\|1.6.0_04\|-dp\"`" ] ; then
-            if [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
-		default_jdk="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
-            elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then
-                default_jdk="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"
-            fi
-        fi	
+    # JDK1.6
+    elif [ -f "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/java" ] ; then
+        jdkhome="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home"
+    elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
+        jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
+    elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then
+        jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"
     fi
+
 fi
 
-echo "$default_jdk"
+echo $jdkhome
