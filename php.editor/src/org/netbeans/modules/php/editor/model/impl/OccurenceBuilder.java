@@ -891,7 +891,7 @@ class OccurenceBuilder {
             String idName = nodeCtxInfo.getName();
             if (idName.equalsIgnoreCase(nodeInfo.getReturnType())) {
                 QualifiedName queryQN = nodeCtxInfo.getQualifiedName();
-                QualifiedName nodeQN = QualifiedName.create(nodeInfo.getReturnType()).toName();;
+                QualifiedName nodeQN = QualifiedName.create(nodeInfo.getReturnType()).toName();
                 if (queryQN.equals(nodeQN)) {
                     isTheRightType = true;
                 } else {
