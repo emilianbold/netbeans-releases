@@ -1510,7 +1510,7 @@
             </folder>
 <!-- CLang_solaris -->
             <folder name="CLang_solaris">
-                <attr name="position" intvalue="4050"/>
+                <attr name="position" intvalue="4060"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
                 <file name="flavor.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/CLang_solaris_flavor"/>
