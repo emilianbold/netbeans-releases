@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
-
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
