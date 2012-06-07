@@ -349,7 +349,7 @@ public final class WhereUsedSupport {
         }
 
         public Collection<WhereUsedElement> getResultElements() {
-            return elements;
+            return Collections.unmodifiableCollection(elements);
         }
 
         public Collection<WarningFileElement> getWarningElements() {
