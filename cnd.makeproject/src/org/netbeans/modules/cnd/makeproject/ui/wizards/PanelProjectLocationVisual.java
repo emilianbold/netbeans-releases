@@ -60,25 +60,31 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -95,6 +101,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private int type;
     private volatile boolean initialized = false;
     private static final Object FAKE_ITEM = new Object();
+    private ExecutionEnvironment env;
+    private FileSystem fileSystem;
+
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel, String name, boolean showMakefileTextField, int type) {
         initComponents();
@@ -428,7 +437,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
         String path = this.projectLocationTextField.getText();
-        FileChooser chooser = new FileChooser(
+        JFileChooser chooser = RemoteFileUtil.createFileChooser(FileSystemProvider.getFileSystem(env),
                 NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation"),
                 null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
@@ -538,7 +547,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                text.contains("|");  // NOI18N
     }
 
-    @Override
+   @Override
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (!initialized) {
             return false;
@@ -560,40 +569,58 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return false;
         }
 
-        final File destFolder = getCanonicalFile(CndFileUtils.createLocalFile(createdFolderTextField.getText()).getAbsoluteFile()); // project folder always local
-        File projLoc = destFolder;
-        while (projLoc != null && !projLoc.exists()) {
-            projLoc = projLoc.getParentFile();
-        }
-        if (projLoc == null || !projLoc.canWrite()) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly")); // NOI18N
-            return false;
-        }
-        if (destFolder.exists()) {
-            if (destFolder.isFile()) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_NotAFolder", destFolder.getPath()));  // NOI18N
+        FileObject projectDirFO = fileSystem.findResource(createdFolderTextField.getText()); // can be null
+        if (projectDirFO != null && projectDirFO.isValid()) {
+            if (projectDirFO.isData()) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", makefileTextField.getText()));  // NOI18N
                 return false;
             }
-            if (CndFileUtils.isValidLocalFile(destFolder.getPath(), makefileTextField.getText())) {
+            FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+            if (nbProjFO != null && nbProjFO.isValid()) {
+                // Folder exists and is not empty
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
+                return false;
+            }
+            FileObject makeFO = fileSystem.findResource(projectDirFO.getPath()+"/"+makefileTextField.getText());
+            if (makeFO != null && makeFO.isValid()) {
                 // Folder exists and is not empty
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", makefileTextField.getText()));  // NOI18N
                 return false;
             }
-            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER)) {
+            FileObject nbFO = fileSystem.findResource(projectDirFO.getPath()+"/"+MakeConfiguration.NBPROJECT_FOLDER);
+            if (nbFO != null && nbFO.isValid()) {
                 // Folder exists and is not empty
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
                 return false;
             }
             if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
-                if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.BUILD_FOLDER) ||
-                        CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.DIST_FOLDER)) {
+                FileObject destFO = fileSystem.findResource(projectDirFO.getPath()+"/"+MakeConfiguration.DIST_FOLDER);
+                if (destFO != null && destFO.isValid()) {
+                    // Folder exists and is not empty
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
+                    return false;
+                }
+                FileObject buildFO = fileSystem.findResource(projectDirFO.getPath()+"/"+MakeConfiguration.BUILD_FOLDER);
+                if (buildFO != null && buildFO.isValid()) {
                     // Folder exists and is not empty
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
                     return false;
                 }
             }
+        } else {
+            FileObject existingParent = getExistingParent(createdFolderTextField.getText());
+            if (existingParent == null) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly")); // NOI18N
+                return false;
+            }
+            if (!existingParent.canWrite()) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly")); // NOI18N
+                return false;
+            }
         }
+        
         ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
         if (sr == null || !sr.isOnline()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
@@ -616,6 +643,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         return true;
     }
+    
+    private FileObject getExistingParent(String path) {
+        path = PathUtilities.getDirName(path);
+        FileObject fo = fileSystem.findResource(path);
+        while (fo == null) {
+            path = PathUtilities.getDirName(path);
+            if (path == null || path.length() == 0) {
+                return null;
+            } else {
+                fo = fileSystem.findResource(path);
+            }
+        }
+        return fo;
+    }
 
     @Override
     void store(WizardDescriptor d) {
@@ -625,16 +666,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String folder = createdFolderTextField.getText().trim();
 
         if (CndPathUtilitities.isPathAbsolute(folder)) {
-            File file = CndFileUtils.createLocalFile(folder);
-            file = FileUtil.normalizeFile(file);
-            d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, file);
+            String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folder, env);
+            FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
+            d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
         }
         d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
         d.putProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME, makefileTextField.getText());
         if (CndPathUtilitities.isPathAbsolute(projectLocationTextField.getText())) {
-            File projectsDir = CndFileUtils.createLocalFile(projectLocationTextField.getText());
-            if (projectsDir.isDirectory()) {
-                ProjectChooser.setProjectsFolder(projectsDir);
+            if (env.isLocal()) {
+                File projectsDir = CndFileUtils.createLocalFile(projectLocationTextField.getText());
+                if (projectsDir.isDirectory()) {
+                    ProjectChooser.setProjectsFolder(projectsDir);
+                }
+            } else {
+                RemoteFileUtil.setProjectsFolder(projectLocationTextField.getText(), env);
             }
         }
 
@@ -687,15 +732,35 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     @Override
     void read(WizardDescriptor settings) {
         initialized = false;
-        File projectLocation = (File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // File - SIC! for projects always local
-        String projectName = null;
-        if (projectLocation == null) {
-            projectLocation = ProjectChooser.getProjectsFolder();
+        
+        env = (ExecutionEnvironment) settings.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+        final boolean enabledHost;
+        if (env != null) {
+            settings.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(env));
+            enabledHost = false;
         } else {
-            projectName = projectLocation.getName();
-            projectLocation = projectLocation.getParentFile();
+            env = ExecutionEnvironmentFactory.getLocal();
+            enabledHost = true;
         }
-        this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
+        fileSystem = FileSystemProvider.getFileSystem(env);
+        
+        FSPath projectLocationFSPath = (FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // File - SIC! for projects always local
+        String projectName = null;
+        String projectLocation;
+        if (projectLocationFSPath == null) {
+            projectLocation = RemoteFileUtil.getProjectsFolder(env);
+            if (projectLocation == null) {
+                projectLocation = getDefaultRemoteProjectDir(env);
+            }
+        } else {
+            projectLocation = projectLocationFSPath.getPath();
+            int i = projectLocation.lastIndexOf('/');
+            if (i > 0) {
+                projectName = projectLocation.substring(i+1);
+                projectLocation = projectLocation.substring(0,i);
+            }
+        }
+        this.projectLocationTextField.setText(projectLocation);
         String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean isDefaultCompilerSet = Boolean.TRUE.equals(settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
@@ -704,13 +769,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 readOnlyToolchain, (ToolsCacheManager) settings.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean isDefaultCompilerSet, boolean enabled) {
-                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabled, enabled);
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, isDefaultCompilerSet, enabledHost, enabled);
                 initialized = true;
                 controller.fireChangeEvent(); // Notify that the panel changed
             }
         });
         String prefferedName = (String) settings.getProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME); //NOI18N
-        if (prefferedName != null) {
+        if (prefferedName != null && prefferedName.length() > 0) {
             name = prefferedName;
         }
 
@@ -738,6 +803,27 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
     }
+    
+    private String getDefaultRemoteProjectDir(ExecutionEnvironment env) {
+        String res;
+        try {
+            if (env.isRemote()) {
+                if (HostInfoUtils.isHostInfoAvailable(env)) {
+                    res = HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+                } else {
+                    res = "/"; //NOI18N    
+                }
+            } else {
+                res = HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            }
+        } catch (IOException ex) {
+            res = "/"; //NOI18N
+        } catch (ConnectionManager.CancellationException ex) {
+            res = "/"; //NOI18N
+        }
+        return res;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JCheckBox createMainCheckBox;
@@ -757,10 +843,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JLabel toolchainLabel;
     // End of variables declaration//GEN-END:variables
 
-    private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
+    private String validFreeProjectName(String parentFolder, final String formater, final int index) {
         String projectName = MessageFormat.format(formater, new Object[]{Integer.valueOf(index)});
-        File file = CndFileUtils.createLocalFile(parentFolder, projectName);
-        return file.exists() ? null : projectName;
+        if (RemoteFileUtil.fileExists(parentFolder+"/"+projectName, env)) { //NOI18N
+            return null;
+        }
+        return projectName;
     }
 
     // Implementation of DocumentListener --------------------------------------
@@ -789,7 +877,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
-    static boolean isValidLocalProjectNameAndLocation(WizardDescriptor wizardDescriptor, String projectNameTextField, String projectLocationTextField, String createdFolderTextField) {
+    private static boolean isValidLocalProjectNameAndLocation(WizardDescriptor wizardDescriptor, String projectNameTextField, String projectLocationTextField, String createdFolderTextField) {
         if (!isValidProjectName(projectNameTextField)) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
@@ -855,12 +943,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             while (projectFolder.endsWith("/")) { // NOI18N
                 projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
             }
-            createdFolderTextField.setText(projectFolder + File.separatorChar + projectName);
+            createdFolderTextField.setText(projectFolder + "/" + projectName); // NOI18N
 
             if (!makefileNameChanged) {
                 // re-evaluate name of master project file.
                 String makefileName;
-                if (!templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) // NOI18N
+                if (!templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME))
                 {
                     makefileName = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
                 } else {
@@ -868,10 +956,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 }
 
                 for (int count = 0;;) {
-                    String proposedMakefile = createdFolderTextField.getText() + File.separatorChar + makefileName;
-                    if (!CndFileUtils.isValidLocalFile(proposedMakefile)
-                            && !CndFileUtils.isValidLocalFile(proposedMakefile.toLowerCase())
-                            && !CndFileUtils.isValidLocalFile(proposedMakefile.toUpperCase())) {
+                    String proposedMakefile = createdFolderTextField.getText() + "/" + makefileName; // NOI18N
+                    CndFileUtils.isExistingFile(fileSystem, makefileName);
+                    if (!CndFileUtils.isExistingFile(fileSystem, proposedMakefile)
+                            && !CndFileUtils.isExistingFile(fileSystem, proposedMakefile.toLowerCase())
+                            && !CndFileUtils.isExistingFile(fileSystem, proposedMakefile.toUpperCase())) {
                         break;
                     }
                     makefileName = contructProjectMakefileName(count++);
@@ -887,7 +976,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         try {
             return file.getCanonicalFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
             return null;
         }
     }

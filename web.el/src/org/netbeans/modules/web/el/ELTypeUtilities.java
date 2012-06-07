@@ -45,6 +45,7 @@ import com.sun.el.parser.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -214,6 +215,27 @@ public final class ELTypeUtilities {
         return method.getReturnType();
     }
 
+    
+    private static List<Node> getMethodParameters(Node methodNode) {
+        assert NodeUtil.isMethodCall(methodNode);
+        
+        if (methodNode.jjtGetNumChildren() == 0) {
+            return Collections.emptyList();
+        }
+
+        Node firstChild = methodNode.jjtGetChild(0);
+        if (!(firstChild instanceof AstMethodArguments)) {
+            return Collections.emptyList();
+        }
+        
+        List<Node> parameters = new ArrayList<Node>();
+        for (int i = 0; i < firstChild.jjtGetNumChildren(); i++) {
+            parameters.add(firstChild.jjtGetChild(i));
+        }
+        return parameters;
+    }
+
+    
     /**
      * @return true if {@code methodNode} and {@code method} have matching parameters;
      * false otherwise.
@@ -227,7 +249,11 @@ public final class ELTypeUtilities {
         int methodParams = method.getParameters().size();
         if (NodeUtil.isMethodCall(methodNode)
                 && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
-            int methodNodeParams = ((Node) methodNode).jjtGetNumChildren();
+            //now we are in AstDotSuffix or AstBracketSuffix
+            
+            //lets check if the parameters are equal
+            List<Node> parameters = getMethodParameters(methodNode);
+            int methodNodeParams = parameters.size();
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
             }
@@ -367,8 +393,9 @@ public final class ELTypeUtilities {
     }
 
     private static boolean haveSameParameters(CompilationContext info, Node methodNode, ExecutableElement method) {
-        for (int i = 0; i < methodNode.jjtGetNumChildren(); i++) {
-            Node paramNode = methodNode.jjtGetChild(i);
+        List<Node> methodNodeParameters = getMethodParameters(methodNode);
+        for (int i = 0; i < methodNodeParameters.size(); i++) {
+            Node paramNode = methodNodeParameters.get(i);
             if (!isSameType(info, paramNode, method.getParameters().get(i))) {
                 return false;
             }

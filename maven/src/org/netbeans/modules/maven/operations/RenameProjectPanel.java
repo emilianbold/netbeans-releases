@@ -57,11 +57,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.validation.adapters.DialogDescriptorAdapter;
 import org.netbeans.api.validation.adapters.NotificationLineSupportAdapter;
-import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import static org.netbeans.modules.maven.operations.Bundle.*;
 import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Severity;
@@ -77,7 +78,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,10 +90,11 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     private ValidationGroup vg;
     private NotificationLineSupport nls;
 
+    @Messages({"NAME_Folder=Folder Name", "NAME_Artifact=ArtifactId", "RenameProjectPanel.lblRename.text2=Rename Project \"{0}\""})
     RenameProjectPanel(NbMavenProjectImpl prj) {
         initComponents();
-        SwingValidationGroup.setComponentName(txtFolder, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Folder"));
-        SwingValidationGroup.setComponentName(txtArtifactId, NbBundle.getMessage(RenameProjectPanel.class, "NAME_Artifact"));
+        SwingValidationGroup.setComponentName(txtFolder, NAME_Folder());
+        SwingValidationGroup.setComponentName(txtArtifactId, NAME_Artifact());
         this.project = prj;
         final String folder = project.getProjectDirectory().getNameExt();
         txtFolder.setText(folder);
@@ -108,7 +110,7 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                     public void run() {
                         txtArtifactId.setText(artId);
                         txtDisplayName.setText(dn);
-                        lblRename.setText(NbBundle.getMessage(RenameProjectPanel.class, "RenameProjectPanel.lblRename.text2", dn));
+                        lblRename.setText(RenameProjectPanel_lblRename_text2(dn));
                     }
                 });
             }

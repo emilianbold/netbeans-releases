@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
@@ -62,11 +63,13 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -143,7 +146,8 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
                     } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
                         return CndFileUtils.toFileObject(path);
                     } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
-                        return FileUtil.normalizeFile(new File(path));
+                        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+                        return new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(path, ee));
                     } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
                         return CompilerSetManager.get(getEE()).getDefaultCompilerSet();
                     } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {

@@ -403,7 +403,7 @@ public final class Startup {
         buf.append("Nb."); //NOI18N
         buf.append(UIManager.getLookAndFeel().getID());
         if (UIUtils.isXPLF()) {
-            if (isWindowsVista() || isWindows7()) {
+            if (isWindowsVista() || isWindows7() || isWindows8()) {
                 buf.append("VistaLFCustoms"); //NOI18N
             } else {
                 buf.append("XPLFCustoms"); //NOI18N
@@ -426,7 +426,7 @@ public final class Startup {
             switch (Arrays.asList(knownLFs).indexOf(UIManager.getLookAndFeel().getID())) {
                 case 1 :
                     if (UIUtils.isXPLF()) {
-                        if (isWindowsVista() || isWindows7()) {
+                        if (isWindowsVista() || isWindows7() || isWindows8()) {
                             result = new VistaLFCustoms();
                         } else {
                             result = new XPLFCustoms();
@@ -450,7 +450,7 @@ public final class Startup {
                 default :
                     // #79401 check if it's XP style LnF, for example jGoodies
                     if (UIUtils.isXPLF()) {
-                        if (isWindowsVista() || isWindows7()) {
+                        if (isWindowsVista() || isWindows7() || isWindows8()) {
                             result = new VistaLFCustoms();
                         } else {
                             result = new XPLFCustoms();
@@ -523,6 +523,12 @@ public final class Startup {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Windows 7") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.1".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows8() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 8") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.2".equals( System.getProperty("os.version") ));
     }
 
     private static boolean isMac() {

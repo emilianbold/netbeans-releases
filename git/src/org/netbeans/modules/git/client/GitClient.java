@@ -75,6 +75,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NetworkSettings;
 
 /**
@@ -725,6 +726,7 @@ public final class GitClient {
         
         private <T> T runMethodIntern (final Callable<T> toRun, final String methodName, final File[] roots) throws Throwable {
             try {
+                Utils.logVCSClientEvent("GIT", "JAVALIB"); //NOI18N
                 Callable<T> callable = new Callable<T>() {
                     @Override
                     public T call() throws Exception {

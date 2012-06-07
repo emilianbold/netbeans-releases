@@ -537,9 +537,65 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         performAction(mark, false);
     }
     
+    private void performActionAt(Mark mark, int mouseY) throws BadLocationException {
+        if (mark != null) {
+            return;
+        }
+        BaseDocument bdoc = Utilities.getDocument(component);
+        BaseTextUI textUI = (BaseTextUI)component.getUI();
+
+        View rootView = Utilities.getDocumentView(component);
+        if (rootView == null) return;
+        
+        int yOffset = textUI.getPosFromY(mouseY);
+        bdoc.readLock();
+        try {
+            FoldHierarchy hierarchy = FoldHierarchy.get(component);
+            hierarchy.lock();
+            try {
+                Fold f = FoldUtilities.findOffsetFold(hierarchy, yOffset);
+                if (f == null) {
+                    return;
+                }
+                if (f.isCollapsed()) {
+                    LOG.log(Level.WARNING, "Clicked on a collapsed fold {0} at {1}", new Object[] { f, mouseY });
+                    return;
+                }
+                int startOffset = f.getStartOffset();
+                int endOffset = f.getEndOffset();
+                
+                int startY = textUI.getYFromPos(startOffset);
+                int nextLineOffset = Utilities.getRowStart(bdoc, startOffset, 1);
+                int nextY = textUI.getYFromPos(nextLineOffset);
+
+                if (mouseY >= startY && mouseY <= nextY) {
+                    LOG.log(Level.FINEST, "Starting line clicked, ignoring. MouseY={0}, startY={1}, nextY={2}",
+                            new Object[] { mouseY, startY, nextY });
+                    return;
+                }
+
+                startY = textUI.getYFromPos(endOffset);
+                nextLineOffset = Utilities.getRowStart(bdoc, endOffset, 1);
+                nextY = textUI.getYFromPos(nextLineOffset);
+
+                if (mouseY >= startY && mouseY <= nextY) {
+                    LOG.log(Level.FINEST, "End line clicked, ignoring. MouseY={0}, startY={1}, nextY={2}",
+                            new Object[] { mouseY, startY, nextY });
+                    return;
+                }
+                
+                LOG.log(Level.FINEST, "Collapsing fold: {0}", f);
+                hierarchy.collapse(f);
+            } finally {
+                hierarchy.unlock();
+            }
+        } finally {
+            bdoc.readUnlock();
+        }        
+    }
+    
     private void performAction(Mark mark, boolean shiftFold) {
         BaseTextUI textUI = (BaseTextUI)component.getUI();
-        javax.swing.text.Element rootElem = textUI.getRootView(component).getElement();
 
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) return;
@@ -994,7 +1050,17 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         public void mouseClicked(MouseEvent e) {
             // #102288 - missing event consuming caused quick doubleclicks to break
             // fold expanding/collapsing and move caret to the particular line
-            e.consume();
+            if (e.getClickCount() > 1) {
+                LOG.log(Level.FINEST, "Mouse {0}click at {1}", new Object[] { e.getClickCount(), e.getY()});
+                Mark mark = getClickedMark(e);
+                try {
+                    performActionAt(mark, e.getY());
+                } catch (BadLocationException ex) {
+                    LOG.log(Level.WARNING, "Error during fold expansion using sideline", ex);
+                }
+            } else {
+                e.consume();
+            }
         }
 
         // --------------------------------------------------------------------

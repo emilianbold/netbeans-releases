@@ -45,7 +45,6 @@ package org.netbeans.spi.java.queries;
 
 import java.net.URL;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.openide.filesystems.FileObject;
 
 // XXX add a listener to changes in result
 
@@ -92,7 +91,7 @@ public interface SourceForBinaryQueryImplementation {
      * The returned SourceForBinaryQuery.Result must be a singleton. It means that for
      * repeated calling of this method with the same recognized root the method has to
      * return the same instance of SourceForBinaryQuery.Result.<br>
-     * The typical implemantation of the findSourceRoots contains 3 steps:
+     * The typical implementation of the findSourceRoots contains 3 steps:
      * <ol>
      * <li>Look into the cache if there is already a result for the root, if so return it</li>
      * <li>Check if the binaryRoot is recognized, if not return null</li>

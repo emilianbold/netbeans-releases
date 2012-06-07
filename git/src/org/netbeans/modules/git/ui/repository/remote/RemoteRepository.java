@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.repository.remote;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,6 +53,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +64,8 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -93,6 +97,8 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private final ConnectionSettingsType[] settingTypes;
     private ConnectionSettingsType activeSettingsType;
     private boolean enabled = true;
+    private String[] sortedModelUrls;
+    private String[] schemeUris;
 
     private enum Scheme {
         FILE("file", NbBundle.getMessage(RemoteRepository.class, "Scheme.FILE")), //NOI18N
@@ -140,6 +146,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             new DefaultConnectionSettingsType()
         };
         this.activeSettingsType = settingTypes[0];
+        initHeight();
         attachListeners();
         initUrlComboValues(forPath);
         updateCurrentSettingsType();
@@ -197,34 +204,33 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private void attachListeners () {
         panel.proxySettingsButton.addActionListener(this);
         panel.directoryBrowseButton.addActionListener(this);
-        panel.urlComboBox.addActionListener(this);
         ((JTextComponent) panel.urlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);        
         panel.urlComboBox.addItemListener(this);
     }
 
     @Override
     public void insertUpdate(DocumentEvent de) {
-        uriTextChanged();
+        uriTextChanged(true);
     }
 
     @Override
     public void removeUpdate(DocumentEvent de) {
-        uriTextChanged();
+        uriTextChanged(false);
     }
 
     @Override
     public void changedUpdate(DocumentEvent de) {
-        uriTextChanged();
+        uriTextChanged(true);
     }
 
-    private void uriTextChanged () {
+    private void uriTextChanged (final boolean findExisting) {
         if(ignoreComboEvents) return;
         validateFields();
         updateCurrentSettingsType();
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                findComboItem(false);
+                findComboItem(false, findExisting);
             }
         });
     }
@@ -311,47 +317,54 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
 
     private boolean ignoreComboEvents = false;
-    private void findComboItem(boolean selectAll) {
+    private void findComboItem(boolean selectAll, boolean resetFields) {
         final GitURI uri = getURI();
-        final String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
+        String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
         if(uriString == null || uriString.isEmpty()) {
             return;
         }
-        DefaultComboBoxModel model = (DefaultComboBoxModel)panel.urlComboBox.getModel();
-        boolean found = false;
-        for (int i = 0; i < model.getSize(); i++) {
-            final String item = (String) model.getElementAt(i);
-            if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
-                final int start = selectAll ? 0 : uriString.length();
-                final int end = item.length();
-                found = true;
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        ignoreComboEvents = true;
-                        try {
-                            setComboText(item, start, end);
-                            updateCurrentSettingsType();
-                            ConnectionSettings setts = recentConnectionSettings.get(item);
-                            if (setts != null && uri != null) {
-                                String username = uri.getUser();
-                                username = username == null ? "" : username.trim(); //NOI18N
-                                if (!username.isEmpty() && !username.equals(setts.getUser())) {
-                                    setts = setts.copy();
-                                    setts.setUser(username);
-                                }
-                            }
-                            activeSettingsType.populateFields(setts);
-                        } finally {
-                            ignoreComboEvents = false;
-                        }
-                    }
-                });
-                break;
-            }
+        boolean preferSchemeUris = false;
+        if (uri != null && uri.getScheme() != null && !Scheme.FILE.name.equals(uri.getScheme()) && uri.getHost() == null) {
+            uriString = getURIString();
+            preferSchemeUris = !resetFields;
+            resetFields = true;
+        } else if (uriString.endsWith("/") && !getURIString().endsWith("/")) { //NOI18N
+            // GitURI adds a '/' at the end of its uri string
+            uriString = uriString.substring(0, uriString.length() - 1);
         }
-        if (!found && uri != null) {
-            activeSettingsType.populateFields(new ConnectionSettings(uri));
+        if (!resetFields) {
+            return;
+        }
+        for (String[] uris : preferSchemeUris ? new String[][] { schemeUris, sortedModelUrls } : new String[][] { sortedModelUrls }) {
+            for (final String item : uris) {
+                if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
+                    final int start = selectAll ? 0 : uriString.length();
+                    final int end = item.length();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            ignoreComboEvents = true;
+                            try {
+                                setComboText(item, start, end);
+                                updateCurrentSettingsType();
+                                ConnectionSettings setts = recentConnectionSettings.get(item);
+                                if (setts != null && uri != null) {
+                                    String username = uri.getUser();
+                                    username = username == null ? "" : username.trim(); //NOI18N
+                                    if (!username.isEmpty() && !username.equals(setts.getUser())) {
+                                        setts = setts.copy();
+                                        setts.setUser(username);
+                                    }
+                                }
+                                activeSettingsType.populateFields(setts);
+                            } finally {
+                                ignoreComboEvents = false;
+                            }
+                        }
+                    });
+                    return;
+                }
+            }
         }
     }
 
@@ -383,19 +396,28 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         Git.LOG.log(Level.WARNING, null, t);
                     }
                     
+                    final List<String> schemeUris = new ArrayList<String>(Scheme.values().length);
                     for (Scheme s : Scheme.values()) {
-                        model.addElement(s.toString() + (s == Scheme.FILE ? ":///" : "://"));   // NOI18N
+                        String uri = s.toString() + (s == Scheme.FILE ? ":///" : "://");
+                        model.addElement(uri);
+                        schemeUris.add(uri);
+                    }
+                    final String[] uris = new String[model.getSize()];
+                    for (int i = 0; i < model.getSize(); i++) {
+                        uris[i] = (String) model.getElementAt(i);
                     }
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             ignoreComboEvents = true;
+                            sortedModelUrls = uris;
+                            RemoteRepository.this.schemeUris = schemeUris.toArray(new String[schemeUris.size()]);
                             panel.urlComboBox.setModel(model);
                             if (forPath != null) {
                                 setComboText(forPath, 0, forPath.length());
                             }
                             ignoreComboEvents = false;
-                            findComboItem(true);
+                            findComboItem(true, true);
                             updateCurrentSettingsType();
                             validateFields();
                         }
@@ -410,6 +432,31 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         });
                     }
                 }
+            }
+        });
+    }
+
+    private void initHeight () {
+        int maxHeight = 0;
+        for (ConnectionSettingsType t : settingTypes) {
+            maxHeight = Math.max(maxHeight, t.getPreferedPanelHeight());
+        }
+        panel.connectionSettings.setPreferredSize(new Dimension(0, maxHeight));
+        panel.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded (AncestorEvent event) {
+                panel.connectionSettings.setPreferredSize(null);
+                panel.invalidate();
+                panel.repaint();
+                panel.removeAncestorListener(this);
+            }
+
+            @Override
+            public void ancestorRemoved (AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved (AncestorEvent event) {
             }
         });
     }
@@ -454,6 +501,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         protected abstract void store ();
         protected abstract boolean acceptUri (GitURI uri);
+        protected int getPreferedPanelHeight () {
+            return 0;
+        }
     }
     
     //<editor-fold defaultstate="collapsed" desc="Connection Setting Types">
@@ -489,7 +539,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         
         @Override
         protected void populateFields (ConnectionSettings settings) {
-            if (settings == null) return;
+            if (settings == null) {
+                // reset to defaults
+                settingsPanel.userTextField.setText(""); //NOI18N
+                settingsPanel.userPasswordField.setText(""); //NOI18N
+                settingsPanel.savePasswordCheckBox.setSelected(false);
+                return;
+            }
             settingsPanel.userTextField.setText(settings.getUser());
             char[] pass = settings.getPassword();
             if (pass != null) {
@@ -548,6 +604,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 panel.connectionSettings.add(settingsPanel, BorderLayout.NORTH);
             }
             return accepts;
+        }
+
+        @Override
+        protected int getPreferedPanelHeight () {
+            return settingsPanel.getPreferredSize().height;
         }
     }
     
@@ -614,7 +675,18 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         
         @Override
         protected void populateFields (ConnectionSettings settings) {
-            if(settings == null) return;
+            if(settings == null) {
+                // reset to defaults
+                settingsPanel.userTextField.setText(""); //NOI18N
+                settingsPanel.userPasswordField.setText(""); //NOI18N
+                settingsPanel.txtPassphrase.setText(""); //NOI18N
+                settingsPanel.savePasswordCheckBox.setSelected(false);
+                settingsPanel.savePassphrase.setSelected(false);
+                settingsPanel.rbPrivateKey.setSelected(false);
+                settingsPanel.rbUsernamePassword.setSelected(!settings.isPrivateKeyAuth());
+                settingsPanel.txtIdentityFile.setText(""); //NOI18N
+                return;
+            }
             settingsPanel.userTextField.setText(settings.getUser());
             char[] pass = settings.getPassword();
             if (pass != null) {
@@ -728,6 +800,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
             for (JComponent c : authPasswordFields) {
                 c.setEnabled(authViaPassword);
             }
+        }
+
+        @Override
+        protected int getPreferedPanelHeight () {
+            return settingsPanel.getPreferredSize().height;
         }
     }
     

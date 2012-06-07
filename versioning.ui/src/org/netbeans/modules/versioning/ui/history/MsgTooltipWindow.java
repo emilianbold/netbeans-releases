@@ -72,12 +72,10 @@ import javax.swing.text.Element;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
-import org.openide.filesystems.FileObject;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
@@ -113,7 +111,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
     private final String author;
     private final Date date;
 
-    public MsgTooltipWindow(JComponent parent, File file, String message, String revision, String author, Date date) {
+    MsgTooltipWindow(JComponent parent, File file, String message, String revision, String author, Date date) {
         this.parent = parent;
         this.file = file;
         this.message = message;
@@ -122,7 +120,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         this.date = date;
     }
 
-    public void show(Point location) {
+    void show(Point location) {
         Rectangle screenBounds = null;
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gds = ge.getScreenDevices();
@@ -164,7 +162,6 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         
         contentWindow.setVisible(true);
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 cp.scrollRectToVisible(new Rectangle(1, 1));
@@ -177,6 +174,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         w.addKeyListener(this);
     }
 
+    @Override
     public void eventDispatched(AWTEvent event) {
         if (event.getID() == MouseEvent.MOUSE_PRESSED || event.getID() == KeyEvent.KEY_PRESSED) {
             onClick(event);
@@ -211,10 +209,11 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
     /**
      * Closes the window
      */
-    void shutdown() {
+    private void shutdown() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
         if (contentWindow != null) {
             contentWindow.getOwner().removeWindowFocusListener(this);
+            contentWindow.getOwner().removeKeyListener(this);
             contentWindow.removeWindowFocusListener(this);
             contentWindow.removeKeyListener(this);
             contentWindow.dispose();
@@ -222,10 +221,12 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         contentWindow = null;
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
             textPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -235,6 +236,7 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         textPane.setToolTipText("");  // NOI18N
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
             linkerSupport.computeBounds(textPane, 0);
@@ -244,26 +246,32 @@ class MsgTooltipWindow implements AWTEventListener, MouseMotionListener, MouseLi
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void windowGainedFocus(WindowEvent e) {
         //
     }
 
+    @Override
     public void windowLostFocus(WindowEvent e) {
         if (contentWindow != null && e.getOppositeWindow() == null) {
             shutdown();

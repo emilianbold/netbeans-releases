@@ -42,7 +42,6 @@
 package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 
@@ -50,17 +49,17 @@ import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
  *
  * @author jpeska
  */
-public class CloseCategoryNodeAction extends AbstractAction {
+public class CloseCategoryNodeAction extends CategoryAction {
 
-    private final CategoryNode categoryNode;
 
-    public CloseCategoryNodeAction(CategoryNode categoryNode) {
-        super(org.openide.util.NbBundle.getMessage(CloseCategoryNodeAction.class, "CTL_CloseNode")); //NOI18N
-        this.categoryNode = categoryNode;
+    public CloseCategoryNodeAction(CategoryNode... categoryNodes) {
+        super(org.openide.util.NbBundle.getMessage(CloseCategoryNodeAction.class, "CTL_CloseNode"), categoryNodes); //NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        DashboardViewer.getInstance().setCategoryOpened(categoryNode, false);
+        for (CategoryNode categoryNode : getCategoryNodes()) {
+            DashboardViewer.getInstance().setCategoryOpened(categoryNode, false);
+        }
     }
 }

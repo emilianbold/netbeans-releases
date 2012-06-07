@@ -113,6 +113,14 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
 
     @Override
+    public void enum_strongly_typed(Token token) {
+        //System.out.println("enum_strongly_typed " + ((APTToken)token).getOffset());
+
+        EnumBuilder enumBuilder = builderContext.getEnumBuilder();
+        enumBuilder.setStronglyTyped();
+    }
+
+    @Override
     public void enum_name(Token token) {
         EnumBuilder enumBuilder = builderContext.getEnumBuilder();
         

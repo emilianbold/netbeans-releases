@@ -56,15 +56,29 @@ public class HibernateRefactoringElement extends SimpleRefactoringElementImpleme
     private FileObject mappingFileObject;
     private PositionBounds position;
     private String text;
-    protected String origName;
+    String origName;
+    String matching;
 
     public HibernateRefactoringElement(FileObject fo, String oldName, PositionBounds position, String text) {
+        this(fo, oldName, oldName, position, text);
+    }
+    
+    /**
+     * 
+     * @param fo
+     * @param oldName
+     * @param matching - in some cases refactoring text do not match class name as it may be splitted for package part and for class part (in mapping.xml)
+     * @param position
+     * @param text 
+     */
+    public HibernateRefactoringElement(FileObject fo, String oldName, String matching, PositionBounds position, String text) {
         this.mappingFileObject = fo;
         this.origName = oldName;
         this.position = position;
         this.text = text;
+        this.matching = matching !=null && matching.length()>0 ? matching : oldName;
     }
-
+    
     public String getText() {
         return this.text;
     }
@@ -94,7 +108,7 @@ public class HibernateRefactoringElement extends SimpleRefactoringElementImpleme
         finalText.replaceAll(">", "&gt;");
         // TODO: will not split properly for cases, such as,
         // <property column="name" name="name"/>. Will fix it later
-        String[] subStrings = finalText.split(origName);
-        return subStrings[0] + "<b>" + origName + "</b>" + subStrings[1];
+        String[] subStrings = finalText.split(matching);
+        return subStrings[0] + "<b>" + matching + "</b>" + subStrings[1];
     }
 }

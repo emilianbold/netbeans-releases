@@ -42,26 +42,24 @@
 package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author jpeska
  */
-public class OpenTaskAction extends AbstractAction {
+public class OpenTaskAction extends TaskAction {
 
-    private Issue task;
-
-    public OpenTaskAction(Issue task) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open")); //NOI18N
-        this.task = task;
+    public OpenTaskAction(TaskNode... taskNodes) {
+        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open"), taskNodes); //NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Util.openIssue(task.getRepository(), task.getID());
+        for (TaskNode taskNode : getTaskNodes()) {
+            Util.openIssue(taskNode.getTask().getRepository(), taskNode.getTask().getID());
+        }
     }
 }

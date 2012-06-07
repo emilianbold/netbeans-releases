@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Common ancestor for ClassImpl and EnumImpl
@@ -129,6 +130,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     @Override
     public final CharSequence getName() {
+//        if (name != null && CharSequences.indexOf(name, "::") > 0) { // NOI18N
+//            String n = name.toString();
+//            String suffix = n.substring(n.lastIndexOf("::") + 2); // NOI18N
+//            return NameCache.getManager().getString(suffix);
+//        }
         return name;
     }
 
@@ -144,8 +150,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
      * See BZ #131625
      * @return  For "struct A::B" above, the method returns its forward declaration "struct B;"
      */
-    protected final ClassImpl.ClassMemberForwardDeclaration findClassDefinition(CsmScope scope) {
-        if (name != null && name.toString().indexOf("::") > 0) { // NOI18N
+    protected final ClassImpl.MemberForwardDeclaration findMemberForwardDeclaration(CsmScope scope) {
+        if (name != null && CharSequences.indexOf(name, "::") > 0) { // NOI18N
             String n = name.toString();
             String prefix = n.substring(0, n.lastIndexOf("::")); // NOI18N
             String suffix = n.substring(n.lastIndexOf("::") + 2); // NOI18N
@@ -158,7 +164,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                     qn = ns.getQualifiedName().toString() + "::" + prefix; // NOI18N
                 }
                 Collection<CsmClassifier> defs = ns.getProject().findClassifiers(qn);
-                ClassImpl.ClassMemberForwardDeclaration out = null;
+                ClassImpl.MemberForwardDeclaration out = null;
                 for(CsmClassifier cls : defs) {
                     if (CsmKindUtilities.isClass(cls)) {
                         CsmClass container = (CsmClass) cls;
@@ -166,12 +172,12 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
                                 CsmSelect.getFilterBuilder().createNameFilter(suffix, true, true, false));
                         if (it.hasNext()) {
                             CsmMember m = it.next();
-                            if (m instanceof ClassImpl.ClassMemberForwardDeclaration) {
+                            if (m instanceof ClassImpl.MemberForwardDeclaration) {
                                 if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), m)){
-                                    out = (ClassImpl.ClassMemberForwardDeclaration) m;
+                                    out = (ClassImpl.MemberForwardDeclaration) m;
                                 }
                                 if (out == null) {
-                                    out = (ClassImpl.ClassMemberForwardDeclaration) m;
+                                    out = (ClassImpl.MemberForwardDeclaration) m;
                                 }
                             }
                         }

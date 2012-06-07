@@ -115,7 +115,6 @@ public class ProxyAutoConfig {
             LOGGER.log(Level.INFO, "InputStream for " + pacURL + " throws " + ex, ex);
             return;
         }
-        assert pacIS != null : "No InputStream for " + pacURL;
         if (pacIS == null) {
             return ;
         }

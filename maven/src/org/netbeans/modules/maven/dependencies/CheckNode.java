@@ -103,11 +103,11 @@ public class CheckNode extends DefaultMutableTreeNode {
         return disabled;
     }
 
-    public void setSelectionMode(int mode) {
+    public final void setSelectionMode(int mode) {
         selectionMode = mode;
     }
 
-    public int getSelectionMode() {
+    public final int getSelectionMode() {
         return selectionMode;
     }
 

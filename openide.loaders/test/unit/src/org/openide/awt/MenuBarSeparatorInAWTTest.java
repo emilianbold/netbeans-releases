@@ -44,21 +44,14 @@
 
 package org.openide.awt;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.EventQueue;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyEvent;
 import java.util.logging.Level;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JSeparator;
-import javax.swing.LookAndFeel;
 import javax.swing.UIDefaults;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

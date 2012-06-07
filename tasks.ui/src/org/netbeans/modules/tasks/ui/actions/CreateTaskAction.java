@@ -42,26 +42,24 @@
 package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author jpeska
  */
-public class CreateTaskAction extends AbstractAction {
+public class CreateTaskAction extends RepositoryAction {
 
-    private final Repository repository;
-
-    public CreateTaskAction(Repository repository) {
-        super(NbBundle.getMessage(Actions.class, "CTL_CreateTask")); //NOI18N
-        this.repository = repository;
+    public CreateTaskAction(RepositoryNode... repositoryNodes) {
+        super(NbBundle.getMessage(Actions.class, "CTL_CreateTask"), repositoryNodes); //NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Util.createNewIssue(repository);
+        for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+            Util.createNewIssue(repositoryNode.getRepository());
+        }
     }
 }

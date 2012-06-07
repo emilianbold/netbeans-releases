@@ -96,6 +96,7 @@ public class MavenProjectNode extends AbstractNode {
                     fireDisplayNameChange(null, getDisplayName());
                 } else if (ProjectInformation.PROP_ICON.equals(prop)) {
                     fireIconChange();
+                    fireOpenedIconChange();
                 }
             }
         });

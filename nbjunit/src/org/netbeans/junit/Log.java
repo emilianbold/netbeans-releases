@@ -337,12 +337,20 @@ public final class Log extends Handler {
         }
     }
 
-    static Throwable wrapWithMessages(Throwable ex) {
+    static /* @CheckForNull */ String normalizedMessages(String workDirPath) {
         if (messages.length() == initialMessages) {
+            return null;
+        }
+        return NbModuleLogHandler.normalize(messages, workDirPath);
+    }
+
+    static Throwable wrapWithMessages(Throwable ex, String workDirPath) {
+        String m = normalizedMessages(workDirPath);
+        if (m == null) {
             // no wrapping
             return ex;
         }
-        return wrapWithAddendum(ex, "Log:\n" + messages, true);
+        return wrapWithAddendum(ex, "Log:\n" + m, true);
     }
 
     static Throwable wrapWithAddendum(Throwable ex, String addendum, boolean after) {

@@ -71,7 +71,6 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
     private CsmFile classDefFile = null;
     private boolean alwaysUseAccessors;
     private boolean methodInline;
-    private boolean keywordInline;
 
     /** Creates a new instance of EcapsulateFields.
      * @param selectedObject field to encapsulate, whatever tree of class
@@ -137,24 +136,6 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
      */
     public void setMethodInline(boolean methodInline) {
         this.methodInline = methodInline;
-    }
-    
-    /**
-     * Gtter for property keywordInline
-     *
-     * @return Value of methodInline
-     */
-    public boolean isMethodMarkedAsInlined() {
-        return keywordInline;
-    }
-
-    /**
-     * Setter for property keywordInline
-     *
-     * @param keywordInline New value of property keywordInline
-     */
-    public void setMethodMarkedAsInlined(boolean marked) {
-        this.keywordInline = marked;
     }
     
     /**

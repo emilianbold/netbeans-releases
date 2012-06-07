@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
@@ -52,8 +49,6 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo;
 import org.netbeans.modules.profiler.api.java.SourcePackageInfo.Scope;
@@ -61,6 +56,7 @@ import org.netbeans.modules.profiler.nbimpl.javac.ElementUtilitiesEx;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacClassInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.JavacPackageInfo;
 import org.netbeans.modules.profiler.nbimpl.javac.ParsingUtils;
+import org.netbeans.modules.profiler.nbimpl.javac.ScanSensitiveTask;
 import org.netbeans.modules.profiler.spi.java.ProfilerTypeUtilsProvider;
 
 /**
@@ -79,7 +75,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
         // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
         // ignore such a project
         if (cpInfo != null) {
-            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>(true) {
                 @Override
                 public void run(CompilationController cc) {
                     for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, toSearchScope(Collections.singleton(scope)))) { // NOI18N
@@ -93,18 +89,12 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
 
     @Override
     final public SourceClassInfo resolveClass(final String className) {
-        final JavacClassInfo[] cRef = new JavacClassInfo[1];
         final ClasspathInfo cpInfo = getClasspathInfo();
         if (cpInfo != null) {
-            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
-                @Override
-                public void run(CompilationController cc) {
-                    ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
-                    cRef[0] = eh != null ? new JavacClassInfo(eh, cpInfo) : null;
-                }
-            });
+            ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(className, cpInfo, false);
+            return eh != null ? new JavacClassInfo(eh, cpInfo) : null;
         }
-        return cRef[0];
+        return null;
     }
 
     @Override
@@ -112,7 +102,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
         final Collection<SourceClassInfo> clzs = new ArrayList<SourceClassInfo>();
         final ClasspathInfo cpInfo = getClasspathInfo();
         if (cpInfo != null) {
-            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>(true) {
                 @Override
                 public void run(CompilationController cc) {
                     for(ElementHandle<TypeElement> eh : cpInfo.getClassIndex().getDeclaredTypes(pattern, NameKind.CASE_INSENSITIVE_REGEXP, toSearchScope(scope))) {
@@ -129,7 +119,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
     abstract protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps);
     
     private Set<ClassIndex.SearchScope> toSearchScope(Set<Scope> scope) {
-        Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
+        Set<ClassIndex.SearchScope> sScope = EnumSet.noneOf(ClassIndex.SearchScope.class);
         for(Scope s : scope) {
             switch (s) {
                 case DEPENDENCIES: {

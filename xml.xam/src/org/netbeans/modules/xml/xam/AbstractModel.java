@@ -343,8 +343,17 @@ public abstract class AbstractModel<T extends Component<T>>
         return transaction != null;
     }
 
+    /**
+     * Ends the transaction and commits changes to the document.
+     * The operation may throw {@link IllegalStateException} if it is not possible to 
+     * flush changes, because e.g. file is read-only, deleted or the document is changed
+     * in an incompatible way during the transaction.
+     * 
+     * @throws IllegalStateException when the backing file/document is read-only or the document
+     * changed in a way that prevent application of changes.
+     */
     @Override
-    public synchronized void endTransaction() {
+    public synchronized void endTransaction() throws IllegalStateException {
         endTransaction(false);
     }
     

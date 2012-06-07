@@ -61,6 +61,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.text.Line;
 
@@ -118,6 +120,8 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
@@ -335,9 +339,31 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         profileBridge.setup(gdi);
 	if (!connectExisting) {
 	    int flags = 0;
-	    if (Log.Startup.nopty)
+	    if (Log.Startup.nopty) {
 		flags |= Executor.NOPTY;
-	    executor = Executor.getDefault(Catalog.get("Gdb"), getHost(), flags); // NOI18N
+            }
+	    executor = Executor.getDefault(
+                    Catalog.get("Gdb"),  // NOI18N
+                    getHost(), 
+                    flags, 
+                    new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            if (e instanceof NativeProcessChangeEvent) {
+                                if (((NativeProcessChangeEvent) e).state == NativeProcess.State.FINISHED) {
+                                    if (!executor.isAlive()) {
+                                        NativeDebuggerManager.warning(// In order to avoid catching the exception from exitValue()
+                                                Catalog.format(
+                                                    "MSG_GdbUnexpectedlyStopped",   // NOI18N
+                                                    executor.getExitValue()
+                                                )
+                                        );
+                                    }
+                                    kill();
+                                }
+                            }
+                    }
+            });
 	}
 
 	final String additionalArgv[] = null; // gdi.getAdditionalArgv();

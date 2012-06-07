@@ -193,6 +193,6 @@ made subject to such option by the copyright holder.
     <bind actionName="undo" key="D-Z"/>
     <bind actionName="word-match-next" key="DS-K"/>
     <bind actionName="word-match-prev" key="D-K"/>
-    <bind actionName="zoom-text-in" key="D-MOUSE_WHEEL_UP"/>
-    <bind actionName="zoom-text-out" key="D-MOUSE_WHEEL_DOWN"/>
+    <bind actionName="zoom-text-in" key="A-MOUSE_WHEEL_UP"/>
+    <bind actionName="zoom-text-out" key="A-MOUSE_WHEEL_DOWN"/>
 </bindings>

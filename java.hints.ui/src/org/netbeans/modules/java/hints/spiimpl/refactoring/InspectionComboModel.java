@@ -116,6 +116,7 @@ public final class InspectionComboModel extends AbstractListModel implements Com
 
         for (HintMetadata m : metadata) {
             if (m.options.contains(Options.NON_GUI)) continue;
+            if (m.options.contains(Options.QUERY)) continue;
 
             HintCategory cat = cat2CatDesc.get(m.category);
 

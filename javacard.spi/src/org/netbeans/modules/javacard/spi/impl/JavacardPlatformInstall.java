@@ -45,19 +45,16 @@ package org.netbeans.modules.javacard.spi.impl;
 
 import org.netbeans.modules.javacard.spi.JavacardPlatformLocator;
 import org.netbeans.modules.javacard.spi.ProjectKind;
+import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
-
+@ServiceProvider(service=GeneralPlatformInstall.class, path="org-netbeans-api-java/platform/installers")
 public class JavacardPlatformInstall extends PlatformInstall {
-
-    public static PlatformInstall create() {
-        return new JavacardPlatformInstall();
-    }
-
     @Override
     public InstantiatingIterator<WizardDescriptor> createIterator(FileObject dir) {
         return JavacardPlatformLocator.find(dir);

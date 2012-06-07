@@ -111,6 +111,7 @@ class DownloadPlugin implements ActionListener {
     void startDownload() {
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(DownloadPlugin.class, "MSG_LookingForJira"));
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 ph.start();
                 try {
@@ -176,6 +177,7 @@ class DownloadPlugin implements ActionListener {
                     return;
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         install();
                     }
@@ -233,9 +235,9 @@ class DownloadPlugin implements ActionListener {
                     if (oc.canBeAdded(module.updateElement.getUpdateUnit(), module.updateElement)) {
                         oc.add(module.updateElement);
                     } else {
-                        BugtrackingManager.LOG.warning("MissingClient: cannot install " + module.updateElement.toString());            // NOI18N
+                        BugtrackingManager.LOG.log(Level.WARNING, "MissingClient: cannot install {0}", module.updateElement.toString());            // NOI18N
                         if (module.updateElement.getUpdateUnit().getInstalled() != null) {
-                            BugtrackingManager.LOG.warning("MissingClient: already installed " + module.updateElement.getUpdateUnit().getInstalled().toString()); // NOI18N
+                            BugtrackingManager.LOG.log(Level.WARNING, "MissingClient: already installed {0}", module.updateElement.getUpdateUnit().getInstalled().toString()); // NOI18N
                         }
                         notifyInDialog(NbBundle.getMessage(MissingJiraSupportPanel.class, "MSG_MissingClient_InvalidOperation"), //NOI18N
                                 NbBundle.getMessage(MissingJiraSupportPanel.class, "LBL_MissingClient_InvalidOperation"),        //NOI18N
@@ -316,12 +318,14 @@ class DownloadPlugin implements ActionListener {
 
     private class InstallCancellable implements Cancellable {
         private boolean cancelled;
+        @Override
         public boolean cancel() {
             cancelled = true;
             return true;
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.acceptCheckBox) {
             install.setEnabled(panel.acceptCheckBox.isSelected());

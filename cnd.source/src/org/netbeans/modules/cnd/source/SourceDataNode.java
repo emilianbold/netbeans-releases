@@ -47,12 +47,13 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.source.spi.CndPropertiesProvider;
 import org.netbeans.modules.cnd.source.spi.RenameHandler;
 import org.openide.actions.OpenAction;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
@@ -61,11 +62,22 @@ import org.openide.util.actions.SystemAction;
  *  A base class for C/C++/Fortran (C-C-F) nodes.
  */
 public class SourceDataNode extends DataNode {
-
+    
     /** Constructor for this class */
     public SourceDataNode(DataObject obj, Lookup lookup, String icon) {
         super(obj, Children.LEAF, lookup);
         setIconBaseWithExtension(icon);
+    }
+
+    /**
+     * Create the properties sheet for the node
+     */
+    @Override
+    protected Sheet createSheet() {
+        // Just add properties to default property tab (they used to be in a special 'Building Tab')
+        Sheet defaultSheet = super.createSheet();
+        CndPropertiesProvider.getDefault().addExtraProperties(this, defaultSheet);
+        return defaultSheet;
     }
 
     /**

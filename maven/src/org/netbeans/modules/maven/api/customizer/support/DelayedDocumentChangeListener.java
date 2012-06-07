@@ -65,11 +65,13 @@ public final class DelayedDocumentChangeListener implements DocumentListener {
     private Timer changeTimer;
     private ChangeEvent chEvt;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private DelayedDocumentChangeListener (Document doc, final ChangeListener l, int delay) {
         this.doc = doc;
         this.doc.addDocumentListener(this);
         this.chEvt = new ChangeEvent(doc);
         changeTimer = new Timer(delay, new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 l.stateChanged(chEvt);
             }
@@ -77,14 +79,17 @@ public final class DelayedDocumentChangeListener implements DocumentListener {
         changeTimer.setRepeats(false);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         maybeChange(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         maybeChange(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         maybeChange(e);
     }

@@ -43,11 +43,14 @@ package org.netbeans.modules.profiler.nbimpl;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.LogLevel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.profiler.api.JavaPlatform;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.openide.filesystems.FileUtil;
 
@@ -58,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 public class StartProfilerTask extends Task {
     private String freeformStr = "";
     private boolean isFreeForm = false;
+    private AtomicBoolean connectionCancel = new AtomicBoolean();
     
     @Override
     public void execute() throws BuildException {
@@ -78,11 +82,14 @@ public class StartProfilerTask extends Task {
                 for(Map.Entry<String, String> e : props.entrySet()) {
                     getProject().setProperty(e.getKey(), e.getValue());
                 }
-                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings())) {
-                    throw new BuildException("User abort"); // NOI18N
-                }
                 if (isFreeForm) {
                     getProject().setProperty("profiler.configured", "true"); // NOI18N
+                }
+                
+                getProject().addBuildListener(new BuildEndListener(connectionCancel));
+                
+                if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings(), connectionCancel)) {
+                    throw new BuildException("User abort"); // NOI18N
                 }
             }
         }

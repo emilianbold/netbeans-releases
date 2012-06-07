@@ -107,7 +107,7 @@ public class Nodes {
 
                 for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> typeEntry : byId.entrySet()) {
                     AnalyzerFactory analyzer = typeEntry.getValue().keySet().iterator().next();
-                    final Image icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(analyzer));
+                    final Image icon = SPIAccessor.ACCESSOR.getAnalyzerIcon(analyzer);
 
                     String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(findWarningDescription(analyzer, typeEntry.getKey())) : null;
                     long typeWarnings = 0;
@@ -140,7 +140,7 @@ public class Nodes {
                 });
 
                 AnalyzerFactory analyzer = categoryEntry.getValue().keySet().iterator().next();//TODO: multiple Analyzers for this category
-                final Image icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(analyzer));
+                final Image icon = SPIAccessor.ACCESSOR.getAnalyzerIcon(analyzer);
                 final String categoryHtmlDisplayName = translate(categoryEntry.getKey()) + " <b>(" + categoryWarnings + ")</b>";
                 AbstractNode categoryNode = new AbstractNode(new DirectChildren(warningTypNodes)) {
                     @Override public Image getIcon(int type) {
@@ -559,7 +559,7 @@ public class Nodes {
                 Exceptions.printStackTrace(ex);
             }
             setDisplayName((line != (-1) ? (line + 1 + ":") : "") + ed.getDescription());
-            icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(provider));
+            icon = SPIAccessor.ACCESSOR.getAnalyzerIcon(provider);
         }
 
         @Override
@@ -572,6 +572,10 @@ public class Nodes {
             return icon;
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
     }
 
     private static final class OpenErrorDescription implements OpenCookie {

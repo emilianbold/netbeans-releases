@@ -45,18 +45,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -64,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author phrebejk
  */
-public class Braces extends AbstractHint {
+public class Braces {
 
     static final EnumSet<JavaTokenId> nonRelevant = EnumSet.<JavaTokenId>of(
             JavaTokenId.LINE_COMMENT, 
@@ -73,151 +71,63 @@ public class Braces extends AbstractHint {
             JavaTokenId.WHITESPACE
     );
     
-    private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
+    private static final String BRACES_ID = "Braces_"; // NOI18N
     
-    private String BRACES_ID = "Braces_"; // NOI18N
-    
-    private Tree.Kind treeKind;
-    private Set<Tree.Kind> treeKinds;
-    
-    private Braces( Tree.Kind treeKind ) {
-        super( false, true, HintSeverity.WARNING );
-        this.treeKind = treeKind;
-        if ( treeKind == Tree.Kind.FOR_LOOP ) {
-            this.treeKinds = EnumSet.<Tree.Kind>of(treeKind, Tree.Kind.ENHANCED_FOR_LOOP);
-        } 
-        else {
-            this.treeKinds = Collections.<Tree.Kind>singleton(treeKind);
-        }
-    }
-
-    public static Braces createFor() {
-        return new Braces( Tree.Kind.FOR_LOOP );
-    }
-    
-    public static Braces createWhile() {
-        return new Braces( Tree.Kind.WHILE_LOOP );
-    }
-    
-    public static Braces createDoWhile() {
-        return new Braces( Tree.Kind.DO_WHILE_LOOP );
-    }
-    
-    public static Braces createIf() {
-        return new Braces( Tree.Kind.IF );
-    }
-    
-    public Set<Kind> getTreeKinds() {
-        return treeKinds;
-    }
-
-    public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
+    @Hint(displayName="#LBL_Braces_For", description="#DSC_Braces_For", category="braces", id=BRACES_ID + "FOR_LOOP")
+    @TriggerTreeKind({Tree.Kind.FOR_LOOP, Tree.Kind.ENHANCED_FOR_LOOP})
+    public static ErrorDescription checkFor(HintContext ctx) {
+        StatementTree st;
         
-        Tree tree = treePath.getLeaf();
-        
-        ErrorDescription ed = null;
-                
-        switch( tree.getKind() ) {
-            case FOR_LOOP:
-                ForLoopTree flt = (ForLoopTree) tree;
-                ed = checkStatement(flt.getStatement(), treePath, compilationInfo);
-                if ( ed != null ) {                    
-                    return Collections.singletonList(ed);
-                }
-                break;
-            case ENHANCED_FOR_LOOP:
-                EnhancedForLoopTree eflt = (EnhancedForLoopTree) tree;
-                ed = checkStatement( eflt.getStatement(), treePath, compilationInfo );
-                if ( ed != null ) {                    
-                    return Collections.singletonList(ed);
-                }
-                break;
-            case WHILE_LOOP:
-                WhileLoopTree wlt = (WhileLoopTree) tree;
-                ed = checkStatement( wlt.getStatement(), treePath, compilationInfo);
-                if ( ed != null ) {                    
-                    return Collections.singletonList(ed);
-                }
-                break;
-            case DO_WHILE_LOOP:
-                DoWhileLoopTree dwlt = (DoWhileLoopTree) tree;
-                ed = checkStatement( dwlt.getStatement(), treePath, compilationInfo);
-                if ( ed != null ) {                    
-                    return Collections.singletonList(ed);  
-                }
-                break;
-            case IF:
-                IfTree it = (IfTree)tree;
-                List<ErrorDescription> eds = checkifStatements(it.getThenStatement(), it.getElseStatement(), treePath, compilationInfo );
-                return eds;
-        }
-        
-        return Collections.<ErrorDescription>emptyList();
-    }
-        
-    public void cancel() {
-        
-    }
-
-    public String getId() {
-        return BRACES_ID + treeKind;
-    }
-    
-    public String getDisplayName() {
-        switch( treeKind ) {
-            case FOR_LOOP:
-                return NbBundle.getMessage(Braces.class, "LBL_Braces_For"); // NOI18N
-            case WHILE_LOOP:
-                return NbBundle.getMessage(Braces.class, "LBL_Braces_While"); // NOI18N
-            case DO_WHILE_LOOP:
-                return NbBundle.getMessage(Braces.class, "LBL_Braces_DoWhile"); // NOI18N
-            case IF:
-                return NbBundle.getMessage(Braces.class, "LBL_Braces_If"); // NOI18N
+        switch (ctx.getPath().getLeaf().getKind()){
+            case FOR_LOOP: st = ((ForLoopTree) ctx.getPath().getLeaf()).getStatement(); break;
+            case ENHANCED_FOR_LOOP: st = ((EnhancedForLoopTree) ctx.getPath().getLeaf()).getStatement(); break;
             default:
-                return "No Name"; // NOI18N
-        }        
+                throw new IllegalStateException();
+        }
+        return checkStatement(ctx, "LBL_Braces_For", st, ctx.getPath());
     }
-
-    public String getDescription() {
-        switch( treeKind ) {
-            case FOR_LOOP:
-                return NbBundle.getMessage(Braces.class, "DSC_Braces_For"); // NOI18N
-            case WHILE_LOOP:
-                return NbBundle.getMessage(Braces.class, "DSC_Braces_While"); // NOI18N
-            case DO_WHILE_LOOP:
-                return NbBundle.getMessage(Braces.class, "DSC_Braces_DoWhile"); // NOI18N
-            case IF:
-                return NbBundle.getMessage(Braces.class, "DSC_Braces_If"); // NOI18N
-            default:
-                return "No Description"; // NOI18N
-        }            
+    
+    @Hint(displayName="#LBL_Braces_While", description="#DSC_Braces_While", category="braces", id=BRACES_ID + "WHILE_LOOP")
+    @TriggerTreeKind(Tree.Kind.WHILE_LOOP)
+    public static ErrorDescription checkWhile(HintContext ctx) {
+        WhileLoopTree wlt = (WhileLoopTree) ctx.getPath().getLeaf();
+        return checkStatement(ctx, "LBL_Braces_While", wlt.getStatement(), ctx.getPath());
+    }
+    
+    @Hint(displayName="#LBL_Braces_DoWhile", description="#DSC_Braces_DoWhile", category="braces", id=BRACES_ID + "DO_WHILE_LOOP")
+    @TriggerTreeKind(Tree.Kind.DO_WHILE_LOOP)
+    public static ErrorDescription checkDoWhile(HintContext ctx) {
+        DoWhileLoopTree dwlt = (DoWhileLoopTree) ctx.getPath().getLeaf();
+        return checkStatement(ctx, "LBL_Braces_DoWhile", dwlt.getStatement(), ctx.getPath());
+    }
+    
+    @Hint(displayName="#LBL_Braces_If", description="#DSC_Braces_If", category="braces", id=BRACES_ID + "IF")
+    @TriggerTreeKind(Tree.Kind.IF)
+    public static List<ErrorDescription> checkIf(HintContext ctx) {
+        IfTree it = (IfTree) ctx.getPath().getLeaf();
+        return checkifStatements(ctx, "LBL_Braces_If", it.getThenStatement(), it.getElseStatement(), ctx.getPath());
     }
     
     // Private methods ---------------------------------------------------------
     
-    private ErrorDescription checkStatement( StatementTree statement, TreePath tp, CompilationInfo info )  {
-        int[] span;
-
+    private static ErrorDescription checkStatement(HintContext ctx, String dnKey, StatementTree statement, TreePath tp)  {
         if ( statement != null && 
              statement.getKind() != Tree.Kind.EMPTY_STATEMENT && 
              statement.getKind() != Tree.Kind.BLOCK &&
              statement.getKind() != Tree.Kind.ERRONEOUS &&
-             !isErroneousExpression( statement ) &&
-             (span = span(info, statement)) != null) {
-            return ErrorDescriptionFactory.createErrorDescription(
-                        getSeverity().toEditorSeverity(), 
-                        getDisplayName(), 
-                        Collections.<Fix>singletonList(new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info) ).toEditorFix( )),
-                        info.getFileObject(),
-                        span[0],
-                        span[1]);
+             !isErroneousExpression( statement )) {
+            return ErrorDescriptionFactory.forTree(
+                        ctx,
+                        statement,
+                        NbBundle.getMessage(Braces.class, dnKey),
+                        new BracesFix(ctx.getInfo().getFileObject(), TreePathHandle.create(tp, ctx.getInfo())).toEditorFix());
                     
         }        
         return null;
     }
     
     
-    private List<ErrorDescription> checkifStatements( StatementTree thenSt, StatementTree elseSt, TreePath tp, CompilationInfo info )  {
+    private static List<ErrorDescription> checkifStatements(HintContext ctx, String dnKey, StatementTree thenSt, StatementTree elseSt, TreePath tp)  {
         
         boolean fixThen = false;
         boolean fixElse = false;
@@ -242,37 +152,32 @@ public class Braces extends AbstractHint {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         int[] span;
         
-        if ( fixThen && (span = span(info, thenSt)) != null) {
-            BracesFix bf  = new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info));
+        if (fixThen) {
+            BracesFix bf  = new BracesFix( ctx.getInfo().getFileObject(), TreePathHandle.create(tp, ctx.getInfo()));
             bf.fixThen = fixThen;
             bf.fixElse = fixElse;
-            result.add( ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(), 
-                getDisplayName(), 
-                Collections.<Fix>singletonList(bf.toEditorFix()),
-                info.getFileObject(),
-                span[0],
-                span[1]));
+            result.add( ErrorDescriptionFactory.forTree(
+                ctx,
+                thenSt,
+                NbBundle.getMessage(Braces.class, dnKey), 
+                bf.toEditorFix()));
         }
         
-        if ( fixElse && (span = span(info, elseSt)) != null) {
-            BracesFix bf  = new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info));
+        if ( fixElse) {
+            BracesFix bf  = new BracesFix( ctx.getInfo().getFileObject(), TreePathHandle.create(tp, ctx.getInfo()));
             bf.fixThen = fixThen;
             bf.fixElse = fixElse;
-            result.add( ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(), 
-                getDisplayName(), 
-                Collections.<Fix>singletonList(bf.toEditorFix()),
-                info.getFileObject(),
-                span[0],
-                span[1]) );
-
+            result.add( ErrorDescriptionFactory.forTree(
+                ctx, 
+                elseSt,
+                NbBundle.getMessage(Braces.class, dnKey), 
+                bf.toEditorFix()));
         }
                 
         return result;
     }
     
-    private boolean isErroneousExpression(StatementTree statement) {
+    private static boolean isErroneousExpression(StatementTree statement) {
         if ( statement instanceof ExpressionStatementTree ) {
             if ( ((ExpressionStatementTree)statement).getExpression().getKind() == Kind.ERRONEOUS ) {
                 return true;
@@ -281,17 +186,6 @@ public class Braces extends AbstractHint {
         return false;
     }
 
-    private int[] span(CompilationInfo info, Tree t) {
-        int start = (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
-        int end   = (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
-
-        if (start >= 0 && end >= 0) {
-            return new int[] {start, end};
-        }
-
-        return null;
-    }
-    
     private static class BracesFix extends JavaFix {
 
         boolean fixThen;

@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.support;
 import java.io.Reader;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 
 /**
  * Creates token stream for input path
@@ -69,39 +70,39 @@ public final class APTTokenStreamBuilder {
         char[] buf = new char[text.length()];
         text.getChars(0, text.length(), buf, 0);
         APTLexer lexer = new APTLexer(buf);
-        lexer.init(text, 0, lang);
+        lexer.init(text, 0, lang, APTLanguageSupport.FLAVOR_UNKNOWN);
         return lexer;
     }  
 
     public static TokenStream buildTokenStream(char[] buf, String lang) {
         APTLexer lexer = new APTLexer(buf);
-        lexer.init("", 0, lang); //NOI18N
+        lexer.init("", 0, lang, APTLanguageSupport.FLAVOR_UNKNOWN); //NOI18N
         return lexer;
     }
     
     public static TokenStream buildLightTokenStream(CharSequence name, Reader in, String lang) {
         APTLexer lexer = new APTLexer(in);
-        lexer.init(name.toString(), 0, lang);
+        lexer.init(name.toString(), 0, lang, APTLanguageSupport.FLAVOR_UNKNOWN);
         lexer.setOnlyPreproc(true);
         return lexer;
     }    
 
-    public static TokenStream buildLightTokenStream(CharSequence name, char[] buf, String lang) {
+    public static TokenStream buildLightTokenStream(CharSequence name, char[] buf, String lang, String flavor) {
         APTLexer lexer = new APTLexer(buf);
-        lexer.init(name.toString(), 0, lang);
+        lexer.init(name.toString(), 0, lang, flavor);
         lexer.setOnlyPreproc(true);
         return lexer;
     }
     
     public static TokenStream buildTokenStream(CharSequence name, Reader in, String lang) {
         APTLexer lexer = new APTLexer(in);
-        lexer.init(name.toString(), 0, lang);
+        lexer.init(name.toString(), 0, lang, APTLanguageSupport.FLAVOR_UNKNOWN);
         return lexer;
     }     
 
-    public static TokenStream buildTokenStream(CharSequence name, char[] buf, String lang) {
+    public static TokenStream buildTokenStream(CharSequence name, char[] buf, String lang, String flavor) {
         APTLexer lexer = new APTLexer(buf);
-        lexer.init(name.toString(), 0, lang);
+        lexer.init(name.toString(), 0, lang, flavor);
         return lexer;
     }
 }

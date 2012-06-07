@@ -80,6 +80,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.api.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * an instance resides in project lookup, allows to get notified on project and 
@@ -179,6 +181,7 @@ public final class NbMavenProject {
         task = createBinaryDownloadTask(BINARYRP);
     }
 
+    @Messages({"Progress_Download=Downloading Maven dependencies", "MSG_Failed=Failed to download - {0}", "MSG_Done=Finished retrieving dependencies from remote repositories."})
     private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {
         return rp.create(new Runnable() {
             @Override
@@ -198,7 +201,7 @@ public final class NbMavenProject {
                         return;
                     }
                     MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                             ProgressTransferListener.cancellable(), null);
@@ -214,7 +217,7 @@ public final class NbMavenProject {
                         if (res.hasExceptions()) {
                             ok = false;
                             Exception ex = (Exception)res.getExceptions().get(0);
-                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbMavenProject.class, "MSG_Failed", ex.getLocalizedMessage()));
+                            StatusDisplayer.getDefault().setStatusText(MSG_Failed(ex.getLocalizedMessage()));
                         }
                     } catch (ThreadDeath d) { // download interrupted
                     } catch (IllegalStateException x) {
@@ -228,7 +231,7 @@ public final class NbMavenProject {
                         ProgressTransferListener.clearAggregateHandle();
                     }
                     if (ok) {
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbMavenProject.class, "MSG_Done"));
+                        StatusDisplayer.getDefault().setStatusText(MSG_Done());
                     }
                     if (support.hasListeners(NbMavenProject.PROP_PROJECT)) {
                         NbMavenProject.fireMavenProjectReload(project);
@@ -397,6 +400,7 @@ public final class NbMavenProject {
     }
 
 
+    @Messages({"Progress_Javadoc=Downloading Javadoc", "Progress_Source=Downloading Sources"})
     public void triggerSourceJavadocDownload(final boolean javadoc) {
         NONBINARYRP.post(new Runnable() {
             @Override
@@ -406,7 +410,7 @@ public final class NbMavenProject {
                 for (int i = 0; i < arts.size(); i++) {
                     contribs[i] = AggregateProgressFactory.createProgressContributor("multi-" + i); //NOI18N
                 }
-                String label = javadoc ? NbBundle.getMessage(NbMavenProject.class, "Progress_Javadoc") : NbBundle.getMessage(NbMavenProject.class, "Progress_Source");
+                String label = javadoc ? Progress_Javadoc() : Progress_Source();
                 AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label,
                         contribs, ProgressTransferListener.cancellable(), null);
                 handle.start();
@@ -428,6 +432,7 @@ public final class NbMavenProject {
     }
 
 
+    @Messages({"MSG_Checking_Javadoc=Checking Javadoc for {0}", "MSG_Checking_Sources=Checking Sources for {0}"})
     private static void downloadOneJavadocSources(ProgressContributor progress,
                                                NbMavenProjectImpl project, Artifact art, boolean isjavadoc) {
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
@@ -444,7 +449,7 @@ public final class NbMavenProject {
                     art.getVersion(),
                     art.getType(),
                     "javadoc"); //NOI18N
-                progress.progress(NbBundle.getMessage(NbMavenProject.class, "MSG_Checking_Javadoc", art.getId()), 1);
+                progress.progress(MSG_Checking_Javadoc(art.getId()), 1);
                 online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             } else {
                 Artifact sources = project.getEmbedder().createArtifactWithClassifier(
@@ -453,7 +458,7 @@ public final class NbMavenProject {
                     art.getVersion(),
                     art.getType(),
                     "sources"); //NOI18N
-                progress.progress(NbBundle.getMessage(NbMavenProject.class, "MSG_Checking_Sources",art.getId()), 1);
+                progress.progress(MSG_Checking_Sources(art.getId()), 1);
                 online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             }
         } catch (ArtifactNotFoundException ex) {
