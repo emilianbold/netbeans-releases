@@ -63,10 +63,7 @@ public class RefactoringTreeElement implements TreeElement {
     RefactoringTreeElement(RefactoringElement element) {
         this.refactoringElement = element;
         thisFeature = getFeature(element.getLookup().lookup(ElementGrip.class));
-        parent =  thisFeature;
-        if (parent == null) {
-            parent = thisFeature;
-        }
+        parent = thisFeature;
     }
     
     @Override
