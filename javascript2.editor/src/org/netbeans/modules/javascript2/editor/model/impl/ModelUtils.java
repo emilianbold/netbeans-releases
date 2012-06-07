@@ -262,9 +262,17 @@ public class ModelUtils {
             } else {
                 parent = object.getParent();
             } 
-            if (parent.getJSKind() == JsElement.Kind.FUNCTION 
-                    && parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                result.add(new TypeUsageImpl("@global", 0, true)); //NOI18N
+            if (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD) {
+                if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
+                    result.add(new TypeUsageImpl("@global", 0, true)); //NOI18N
+                } else {
+                    JsObject grandParent = parent.getParent();
+                    if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                        result.add(new TypeUsageImpl(ModelUtils.createFQN(grandParent), type.getOffset(), true));
+                    } else {
+                        result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
+                    }
+                }
             } else {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }

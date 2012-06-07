@@ -153,5 +153,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testSingletonCloser03() throws Exception {
         checkCompletion("testfiles/completion/patterns/SingletonCloser.js", "test.^createArr(); // OK: SHOW properties", false);
     }
-        
+   
+    public void testResolvingThis01() throws Exception {
+        checkCompletion("testfiles/completion/resolvingThis.js", "me.^fnc1();", false);
+    }
 }
