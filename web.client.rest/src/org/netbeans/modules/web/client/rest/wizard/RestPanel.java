@@ -62,7 +62,8 @@ public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescrip
 {
     
     public static String FILE_NAME = "js-file-name";        // NOI18N
-    public static String BACKBONE = "backbone";             // NOI18N
+    public static String ADD_BACKBONE = "backbone";         // NOI18N
+    public static String EXISTS_BACKBONE ="exists-backbone";// NOI18N
     
     
     RestPanel(WizardDescriptor descriptor) {

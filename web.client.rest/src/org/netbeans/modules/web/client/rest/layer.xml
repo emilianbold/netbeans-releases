@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Templates">
         <folder name="ClientSide">
-            <file name="RestJavascriptClient">
+            <file name="RestJavascriptClient.js">
                 <attr name="position" intvalue="420"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="clientside-types, web-types"/>
