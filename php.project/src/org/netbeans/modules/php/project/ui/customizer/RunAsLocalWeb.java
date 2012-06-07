@@ -43,6 +43,8 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -64,8 +66,6 @@ import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -154,12 +154,12 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private RunConfigLocal createRunConfig() {
         return RunConfigLocal.create()
                 .setUrl(urlTextField.getText())
-                .setIndexParentDir(FileUtil.toFile(getWebRoot()))
+                .setIndexParentDir(getWebRoot())
                 .setIndexRelativePath(indexFileTextField.getText())
                 .setArguments(argsTextField.getText());
     }
 
-    private FileObject getWebRoot() {
+    private File getWebRoot() {
         return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
@@ -311,8 +311,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    @NbBundle.Messages("RunAsLocalWeb.webRoot.notFound=Web Root directory does not exist (see Sources).")
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
+        } catch (FileNotFoundException ex) {
+            category.setErrorMessage(Bundle.RunAsLocalWeb_webRoot_notFound());
+            category.setValid(true);
+        }
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed

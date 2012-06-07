@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.doctrine2.commands;
 
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.doctrine2.options.Doctrine2Options;
@@ -83,6 +85,22 @@ public final class Doctrine2Script extends PhpProgram {
     @Override
     public String validate() {
         return FileUtils.validateFile(Bundle.Doctrine2Script_script_label(), getProgram(), false);
+    }
+
+    @Override
+    public ExternalProcessBuilder getProcessBuilder() {
+        // XXX
+        if (getProgram().endsWith(".bat")) { // NOI18N
+            return super.getProcessBuilder();
+        }
+        // run file via php interpreter
+        try {
+            return PhpInterpreter.getDefault().getProcessBuilder()
+                    .addArgument(getProgram());
+        } catch (InvalidPhpProgramException ex) {
+            // ignored
+        }
+        return super.getProcessBuilder();
     }
 
 }

@@ -59,6 +59,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,8 +70,8 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
     WebProject project;
     
     /** Creates a new instance of WebProjectJAXWSClientSupport */
-    public WebProjectJAXWSClientSupport(WebProject project) {
-        super(project);
+    public WebProjectJAXWSClientSupport(WebProject project,AntProjectHelper helper) {
+        super(project,helper);
         this.project=project;    
     }
 

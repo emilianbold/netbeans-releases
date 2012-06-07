@@ -107,11 +107,33 @@ public class ToggleBlockCommentAction extends BaseAction{
                     }
                     if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                         processedHere = true;
-                        final int changeOffset = ts.offset() + ts.token().length();
-                        final boolean lineComment = (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT)
-                                || (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT);
-
-                        final int length = lineComment ? ts.offset() + ts.token().length() - changeOffset : 0;
+                        int firstChangeOffset = ts.offset() + ts.token().length();
+                        int possibleWhitespaceLength = 0;
+                        boolean possibleLineComment = false;
+                        if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                            possibleLineComment = true;
+                        } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                            possibleWhitespaceLength = ts.token().length();
+                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                possibleLineComment = true;
+                            }
+                        }
+                        final boolean lineComment = possibleLineComment;
+                        final int changeOffset = lineComment ? firstChangeOffset + possibleWhitespaceLength : firstChangeOffset;
+                        int forgingWhitespaces = 0;
+                        if (lineComment) {
+                            ts.moveNext();
+                            String commentedText = ts.token().text().toString();
+                            for (int i = 0; i < commentedText.length(); i++) {
+                                if (Character.isWhitespace(commentedText.charAt(i))) {
+                                    forgingWhitespaces++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            ts.movePrevious();
+                        }
+                        final int length = lineComment ? ts.offset() + ts.token().length() + forgingWhitespaces - changeOffset : 0;
                         doc.runAtomic(new Runnable() {
 
                             public @Override
