@@ -100,7 +100,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     
     /** Creates a new instance of J2SEProjectJAXWSClientSupport */
     public J2SEProjectJAXWSClientSupport(Project project) {
-        super(project);
+        super(project, null);
         this.project=project;
     }
 

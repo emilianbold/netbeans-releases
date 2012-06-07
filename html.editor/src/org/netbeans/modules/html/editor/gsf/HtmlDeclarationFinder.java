@@ -225,7 +225,8 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             //
             //#1 seems to be at least faster
             final Document doc = info.getSnapshot().getSource().getDocument(true);
-            final AtomicReference<DeclarationLocation> ret = new AtomicReference<DeclarationLocation>();
+            final AtomicReference<RefactoringElementType> type = new AtomicReference<RefactoringElementType>();
+            final AtomicReference<String> unquotedValue = new AtomicReference<String>();
             doc.render(new Runnable() {
 
                 @Override
@@ -236,77 +237,66 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                         Token<HTMLTokenId> valueToken = ts.token();
                         if (valueToken.id() == HTMLTokenId.VALUE_CSS) {
                             TokenSequence<CssTokenId> cssTs = ts.embedded(CssTokenId.language());
-                            String unquotedValue = null;
                             if (cssTs != null) {
                                 cssTs.move(caretOffset);
                                 if (cssTs.moveNext() || cssTs.movePrevious()) {
                                     if (cssTs.token().id() == CssTokenId.IDENT) {
-                                        unquotedValue = cssTs.token().text().toString();
+                                        unquotedValue.set(cssTs.token().text().toString());
                                     }
                                 }
                             }
-                            if (unquotedValue == null) {
-                                return;
-                            }
-
                             //the value_css token contains a metainfo about the type of its css embedding
                             String cssTokenType = (String) valueToken.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
                             if (cssTokenType == null) {
                                 return;
                             }
 
-                            RefactoringElementType type;
                             if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(cssTokenType)) {
                                 //class selector
-                                type = RefactoringElementType.CLASS;
+                                type.set(RefactoringElementType.CLASS);
                             } else if (HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID.equals(cssTokenType)) { // instances comparison is ok here!
                                 //id selector
-                                type = RefactoringElementType.ID;
+                                type.set(RefactoringElementType.ID);
                             } else {
-                                type = null;
                                 assert false; //something very bad is going on!
                             }
-
-                            Map<FileObject, Collection<EntryHandle>> occurances = CssRefactoring.findAllOccurances(unquotedValue, type, file, true); //non virtual element only - this means only css declarations, not usages in html code
-                            if (occurances == null) {
-                                return;
-                            }
-
-                            DeclarationLocation dl = null;
-                            for (FileObject f : occurances.keySet()) {
-                                Collection<EntryHandle> entries = occurances.get(f);
-                                for (EntryHandle entryHandle : entries) {
-                                    //grrr, the main declarationlocation must be also added to the alternatives
-                                    //if there are more than one
-                                    DeclarationLocation dloc = new DeclarationLocation(f, entryHandle.entry().getDocumentRange().getStart());
-                                    if (dl == null) {
-                                        //ugly DeclarationLocation alternatives handling workaround - one of the
-                                        //locations simply must be "main"!!!
-                                        dl = dloc;
-                                    }
-                                    HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle, type);
-                                    dl.addAlternative(aloc);
-                                }
-                            }
-
-                            //and finally if there was just one entry, remove the "alternative"
-                            if (dl != null && dl.getAlternativeLocations().size() == 1) {
-                                dl.getAlternativeLocations().clear();
-                            }
-
-                            ret.set(dl);
-
-
-                        } else {
-                            //some bad guy modified the code meanwhile so the offsets aren't matching
                         }
-
                     }
-
                 }
             });
+                            
+            if(unquotedValue.get() == null || type.get() == null) {
+                return null;
+            }
+                            
+            Map<FileObject, Collection<EntryHandle>> occurances = CssRefactoring.findAllOccurances(unquotedValue.get(), type.get(), file, true); //non virtual element only - this means only css declarations, not usages in html code
+            if (occurances == null) {
+                return null;
+            }
 
-            return ret.get();
+            DeclarationLocation dl = null;
+            for (FileObject f : occurances.keySet()) {
+                Collection<EntryHandle> entries = occurances.get(f);
+                for (EntryHandle entryHandle : entries) {
+                    //grrr, the main declarationlocation must be also added to the alternatives
+                    //if there are more than one
+                    DeclarationLocation dloc = new DeclarationLocation(f, entryHandle.entry().getDocumentRange().getStart());
+                    if (dl == null) {
+                        //ugly DeclarationLocation alternatives handling workaround - one of the
+                        //locations simply must be "main"!!!
+                        dl = dloc;
+                    }
+                    HtmlDeclarationFinder.AlternativeLocation aloc = new HtmlDeclarationFinder.AlternativeLocationImpl(dloc, entryHandle, type.get());
+                    dl.addAlternative(aloc);
+                }
+            }
+
+            //and finally if there was just one entry, remove the "alternative"
+            if (dl != null && dl.getAlternativeLocations().size() == 1) {
+                dl.getAlternativeLocations().clear();
+            }
+
+            return dl;
 
         }
 

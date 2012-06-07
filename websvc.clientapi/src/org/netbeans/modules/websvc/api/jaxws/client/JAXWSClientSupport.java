@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientSupportImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.nodes.Node;
 
 /** JAXWSClientSupport should be used to manipulate representations
@@ -191,5 +192,9 @@ public final class JAXWSClientSupport {
      */    
      public String getServiceRefName(Node clientNode){
          return impl.getServiceRefName(clientNode);
+     }
+     
+     public AntProjectHelper getAntProjectHelper(){
+         return impl.getAntProjectHelper();
      }
 }

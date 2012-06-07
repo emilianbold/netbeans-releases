@@ -169,6 +169,9 @@ public final class PhpProject implements Project {
     // ok to read it more times
     volatile FileObject webRootDirectory;
 
+    // true if property src.dir does not exist
+    volatile boolean sourcesDirectoryInvalid = false;
+
     // try to restore missing test folders just once
     volatile boolean testsDirectoryResolved = false;
     volatile boolean seleniumDirectoryResolved = false;
@@ -309,12 +312,17 @@ public final class PhpProject implements Project {
     private FileObject resolveSourcesDirectory() {
         FileObject sourceDir = resolveDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderTemporaryToProjectDirectory"); // NOI18N
         if (sourceDir != null) {
+            sourcesDirectoryInvalid = false;
             return sourceDir;
         }
         // source dir not resolved?!
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
-        // #168390, #165494
-        if (srcDirProperty == null) {
+        // #168390, #165494, #213468
+        if (srcDirProperty == null && !sourcesDirectoryInvalid) {
+            sourcesDirectoryInvalid = true;
+            // inform user
+            warnInvalidSourcesDirectory();
+            // diagnostics
             FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             boolean projectPropsFound = projectProps != null;
 
@@ -351,18 +359,36 @@ public final class PhpProject implements Project {
                 buffer.append("\nnbproject exists: "); // NOI18N
                 buffer.append(nbprojectFound);
                 if (nbprojectFound) {
+                    buffer.append("\nnbproject valid: "); // NOI18N
+                    buffer.append(nbproject.isValid());
                     buffer.append("\nnbproject children: "); // NOI18N
                     buffer.append(Arrays.asList(nbproject.getChildren()));
                 }
             }
+            buffer.append("\nsource roots: "); // NOI18N
+            buffer.append(Arrays.asList(getSourceRoots().getRoots()));
+            buffer.append("\nsource roots - fired changes: "); // NOI18N
+            buffer.append(getSourceRoots().getFiredChanges());
             buffer.append("\nproperties (helper): "); // NOI18N
             buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
             buffer.append("\nproperties (evaluator): "); // NOI18N
             buffer.append(eval.getProperties());
-            throw new IllegalStateException(buffer.toString());
+            LOGGER.log(Level.WARNING, null, new IllegalStateException(buffer.toString()));
         }
         // temporarily return project directory (to avoid NPE)
         return helper.getProjectDirectory();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "PhpProject.metadata.corrupted=<html><b>Project {0} has corrupted metadata</b>.<br><br>Repair manually \"src.dir\" property in <i>nbproject/project.properties</i> and reopen the project."
+    })
+    public void warnInvalidSourcesDirectory() {
+        warnUser(Bundle.PhpProject_metadata_corrupted(getName()));
+    }
+
+    public boolean isSourcesDirectoryInvalid() {
+        return sourcesDirectoryInvalid;
     }
 
     /**
@@ -875,6 +901,7 @@ public final class PhpProject implements Project {
         private void reinitFolders() {
             // #165494 - moved from projectClosed() to projectOpened()
             // clear references to ensure that all the dirs are read again
+            sourcesDirectoryInvalid = false;
             resetSourcesDirectory();
             resetTestsDirectory();
             resetSeleniumDirectory();
@@ -953,6 +980,9 @@ public final class PhpProject implements Project {
                 webRootDirectory = null;
                 // useful since it fires changes with fileobjects -> client can better use it than "htdocs/web/" values
                 propertyChangeSupport.firePropertyChange(PROP_WEB_ROOT, oldWebRoot, getWebRootDirectory());
+            } else if (sourcesDirectoryInvalid || sourceRoots.getRoots().length == 0) {
+                // nb metadata corrupted -> maybe fixed?
+                sourcesDirectory = null;
             }
         }
     }
