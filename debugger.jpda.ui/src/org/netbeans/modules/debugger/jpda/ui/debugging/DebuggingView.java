@@ -523,12 +523,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             refreshView();
         } else if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
             final Node[] nodes = (Node[]) evt.getNewValue();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setActivatedNodes (nodes);
-                }
-            });
+            if (SwingUtilities.isEventDispatchThread()) {
+                setActivatedNodes (nodes);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setActivatedNodes (nodes);
+                    }
+                });
+            }
         }
     }
 
