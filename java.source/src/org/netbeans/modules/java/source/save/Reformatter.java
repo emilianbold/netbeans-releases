@@ -1478,7 +1478,9 @@ public class Reformatter implements ReformatTask {
                         WrapAbort oldCheckWrap = checkWrap;
                         checkWrap = new WrapAbort(o);
                         try {
+                            spaces(0, true);
                             accept(DOT);
+                            spaces(0, true);
                             scanMethodCall(node);
                         } catch (WrapAbort wa) {
                         } finally {
@@ -1497,7 +1499,9 @@ public class Reformatter implements ReformatTask {
                         }
                         break;
                     case WRAP_NEVER:
+                        spaces(0, true);
                         accept(DOT);
+                        spaces(0, true);
                         scanMethodCall(node);
                         break;
                 }
