@@ -55,10 +55,8 @@ made subject to such option by the copyright holder.
         <zip basedir="BluetoothDemo" destfile="${examples}/BluetoothDemo.zip"/>
         <zip basedir="CityGuide" destfile="${examples}/CityGuide.zip"/>
         <zip basedir="converter" destfile="${examples}/converter.zip"/>
-        <zip basedir="GameBuilderDemo" destfile="${examples}/GameBuilderDemo.zip"/>
         <zip basedir="I18nDemo" destfile="${examples}/I18nDemo.zip"/>
         <zip basedir="JSR172Demo" destfile="${examples}/JSR172Demo.zip"/>
-        <zip basedir="LocalizationDemo" destfile="${examples}/LocalizationDemo.zip"/>
         <zip basedir="MMAPIDemos" destfile="${examples}/MMAPIDemos.zip"/>
         <zip basedir="NetworkDemo" destfile="${examples}/NetworkDemo.zip"/>
         <zip basedir="ObexDemo" destfile="${examples}/ObexDemo.zip"/>
@@ -71,6 +69,5 @@ made subject to such option by the copyright holder.
         <zip basedir="SVGDemo" destfile="${examples}/SVGDemo.zip"/>
         <zip basedir="UIDemo" destfile="${examples}/UIDemo.zip"/>
         <zip basedir="WMADemo" destfile="${examples}/WMADemo.zip"/>
-        <zip basedir="VDCustomComponents" destfile="${examples}/VDCustomComponents.zip"/>        
     </target>
 </project>

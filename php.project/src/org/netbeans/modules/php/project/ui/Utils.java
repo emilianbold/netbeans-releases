@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui;
 import java.awt.Color;
 import java.awt.Image;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -471,7 +472,7 @@ public final class Utils {
      * @param folder folder to browse files from.
      * @param textField textfield to update.
      */
-    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, JTextField textField) {
+    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, JTextField textField) throws FileNotFoundException {
         String selected = browseFolderFile(phpVisibilityQuery, folder, textField.getText());
         if (selected != null) {
             textField.setText(selected);
@@ -481,7 +482,7 @@ public final class Utils {
     /**
      * @see #browseFolderFile(org.openide.filesystems.FileObject, javax.swing.JTextField)
      */
-    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, File folder, JTextField textField) {
+    public static void browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, File folder, JTextField textField) throws FileNotFoundException {
         browseFolderFile(phpVisibilityQuery, FileUtil.toFileObject(folder), textField);
     }
 
@@ -491,7 +492,10 @@ public final class Utils {
      * @param preselected the preselected value, can be null.
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
-    public static String browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, String preselected) {
+    public static String browseFolderFile(PhpVisibilityQuery phpVisibilityQuery, FileObject folder, String preselected) throws FileNotFoundException {
+        if (folder == null) {
+            throw new FileNotFoundException();
+        }
         FileObject selected = BrowseFolders.showDialog(phpVisibilityQuery, new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
         if (selected != null) {
             return PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));

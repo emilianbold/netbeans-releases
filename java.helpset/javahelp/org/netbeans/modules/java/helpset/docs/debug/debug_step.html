@@ -7,49 +7,80 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Stepping Through Your Program</title>
+<title>Stepping Through Your Program in the Java Debugger</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Stepping Through Your Program</h2>
+<h2>Stepping Through Your Program in the Java Debugger</h2>
 <p> <small><a href="#seealso">See Also</a></small></p>
-<p>Once execution of your program is halted, you can step through your lines of 
-  code using the following commands on the Debug menu or toolbar: </p>
-<ul>
-    <li><b>Step Over (F8).</b> Executes one source line. If the source line contains 
-        a call, executes the entire routine without stepping through the individual instructions. </li>
-    <li><b>Step Over Expression (Shift-F8).</b> Executes one method call in an expression.
+<p>After execution of your program is halted, you can step through your lines of 
+  code using the following commands in the Debug menu or the corresponding icons in the toolbar. </p>
+
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr> 
+    <th align="left" scope="col"><b>Command</b></th>
+    <th align="left" scope="col"><b>Icon</b></th>
+    <th align="left" scope="col" valign="top"><b>Description</b></th>
+  </tr>
+  <tr> 
+    <td valign="top"><b>Step Over (F8)</b></td>
+    <td valign="top"><img src="images/StepOver24.gif" alt="Step Over icon"></td>
+    <td valign="top">Executes one source line. If the source line contains 
+        a call, executes the entire routine without stepping through the individual instructions. </td>
+  </tr>
+  <tr> 
+    <td valign="top"><b>Step Over Expression (Shift-F8)</b></td>
+    <td valign="top"><img src="images/StepOverOperation24.gif" alt="Step Over Expression icon"></td>
+    <td valign="top"> Executes one method call in an expression.
         If an expression has multiple method calls, you can use Step Over Expression to step 
         through an expression and view the value of each method call in the expression in 
         the Variables window. Each time you use the Step Over Expression command, the debugger
         advances to the next method call in the expression and the completed method call is underlined. 
-        Step Over Expression behaves like Step Over when there are no additional method calls.</li>
-    <li><b>Step Into (F7).</b> Executes one method call in a source line. 
+        Step Over Expression behaves like Step Over when there are no additional method calls.</td>
+  </tr>
+  <tr> 
+    <td valign="top"><b>Step Into (F7)</b></td>
+    <td valign="top"><img src="images/StepInto24.gif" alt="Step Into icon"></td>
+    <td valign="top"> Executes one method call in a source line. 
         If the line has more than one method call you can choose which method call 
         to step into by using the arrow keys or mouse in the source editor to select the method call.
         The selected method call to step into is indicated by a box around the method call in the source editor.
-        The most likely method call in the line is selected by default.</li>
-    <li><b>Step Into Next Method (Shift-F7).</b> Executes one source line. If the source line contains
+        The most likely method call in the line is selected by default.</td>
+  </tr>
+  <tr> 
+    <td valign="top"><b>Step Into Next Method (Shift-F7)</b></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Executes one source line. If the source line contains
   	a call, the IDE stops just before executing the first statement of the routine.
   	You can also start a debugging session with the Step Into command. Program
   	execution stops on the first line after the <tt>main</tt> routine before
-  	any changes have been made to the state of the program. </li>
-    <li><b>Step Out (Ctrl-F7).</b> Executes one source line. If the source 
+  	any changes have been made to the state of the program. </td>
+  </tr>
+  <tr> 
+    <td valign="top"><b>Step Out (Ctrl-F7)</b></td>
+    <td valign="top"><img src="images/StepOut24.gif" alt="Step Out icon"></td>
+    <td valign="top">Executes one source line. If the source 
         line is part of a routine, executes the remaining lines of the routine and 
         returns control to the caller of the routine. 
-        The completed method call is highlighted in the Source Editor.</li>
-    
-</ul>
-<!--<p><b>Notes:</b></p>
+        The completed method call is highlighted in the Source Editor.</td>
+  </tr>
+  <tr> 
+    <td valign="top"><b>Run to Cursor (F4)</b></td>
+    <td valign="top"><img src="images/RunToCursor24.gif" alt="Run to Cursor icon"></td>
+    <td valign="top">Runs the program to the cursor location in the Source Editor 
+      and pauses the program. The file you have selected in the Source Editor 
+      must be called from the main class of the main project.</td>
+  </tr>
+</table>
+
+<p><b>Notes:</b></p>
 <ul>
-  <li>By default, the IDE steps over all calls to JDK classes. To step into JDK 
-    classes when debugging, choose Window  &gt; Debugging &gt;  
-    Sources (Alt-Shift-8). The sources window lists all of the source directories 
-    on your project classpath. Check the checkbox for the JDK sources to let the 
-    debugger step into the JDK sources. </li>
-    
-</ul>-->
+  <li>You can view the source code files that
+    are potentially available to the Debugger by choosing Window &gt; Debugging &gt;  
+    Sources (Alt-Shift-8) to open the Sources window.
+    The Sources window lists the source directories on your project classpath.</li>
+</ul>
 
 
 <dl>

@@ -90,7 +90,7 @@ import org.openide.windows.OutputListener;
  */
 public abstract class AbstractMavenExecutor extends OutputTabMaintainer<AbstractMavenExecutor.TabContext> implements MavenExecutor, Cancellable {
 
-    static final class TabContext {
+    public static final class TabContext {
         ReRunAction rerun;
         ReRunAction rerunDebug;
         ResumeAction resume;
@@ -429,7 +429,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
 
     }
 
-    private class MavenItem implements BuildExecutionSupport.Item {
+    protected class MavenItem implements BuildExecutionSupport.Item {
 
         @Override public String getDisplayName() {
             return config.getTaskDisplayName();

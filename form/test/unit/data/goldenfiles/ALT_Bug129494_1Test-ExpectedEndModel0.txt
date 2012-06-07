@@ -23,25 +23,20 @@
                       <EmptySpace min="$pref" max="$pref" attributes="0"/>
                       <Group type="parallel" groupAlignment="leading" attributes="0">
                           <Group type="sequential" attributes="0">
-                              <Group type="parallel" groupAlignment="leading" attributes="0">
-                                  <Group type="sequential" attributes="0">
-                                      <Group type="parallel" groupAlignment="trailing" attributes="0">
-                                          <Component id="jTextField4" alignment="leading" max="Short.MAX_VALUE" attributes="514"/>
-                                          <Component id="jTextField3" alignment="leading" max="Short.MAX_VALUE" attributes="514"/>
-                                      </Group>
-                                      <EmptySpace min="$pref" pref="7" max="$pref" attributes="0"/>
-                                  </Group>
-                                  <Group type="sequential" alignment="leading" attributes="0">
-                                      <Component id="jComboBox1" min="$pref" pref="86" max="$pref" attributes="3"/>
-                                      <EmptySpace max="Short.MAX_VALUE" attributes="512"/>
-                                      <Component id="jButton1" min="$pref" max="$pref" attributes="0"/>
-                                      <EmptySpace min="$pref" pref="56" max="$pref" attributes="0"/>
-                                  </Group>
-                                  <Component id="jTextField1" alignment="leading" min="$pref" pref="151" max="$pref" attributes="2"/>
+                              <Group type="parallel" groupAlignment="trailing" attributes="0">
+                                  <Component id="jTextField4" alignment="leading" max="Short.MAX_VALUE" attributes="514"/>
+                                  <Component id="jTextField3" alignment="leading" max="Short.MAX_VALUE" attributes="514"/>
                               </Group>
-                              <EmptySpace min="$pref" pref="56" max="$pref" attributes="0"/>
+                              <EmptySpace min="$pref" pref="63" max="$pref" attributes="0"/>
                           </Group>
-                          <Component id="jTextField2" alignment="leading" min="$pref" pref="340" max="$pref" attributes="1026"/>
+                          <Group type="sequential" alignment="leading" attributes="0">
+                              <Component id="jComboBox1" min="$pref" pref="86" max="$pref" attributes="3"/>
+                              <EmptySpace max="Short.MAX_VALUE" attributes="512"/>
+                              <Component id="jButton1" min="$pref" max="$pref" attributes="0"/>
+                              <EmptySpace min="$pref" pref="112" max="$pref" attributes="0"/>
+                          </Group>
+                          <Component id="jTextField1" alignment="leading" min="$pref" pref="151" max="$pref" attributes="2"/>
+                          <Component id="jTextField2" min="$pref" pref="340" max="$pref" attributes="1026"/>
                       </Group>
                       <Group type="parallel" groupAlignment="leading" attributes="0">
                           <Group type="parallel" alignment="trailing" groupAlignment="leading" max="$pref" attributes="0">

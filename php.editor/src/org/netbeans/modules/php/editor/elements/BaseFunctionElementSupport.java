@@ -50,6 +50,7 @@ import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 
 /**
@@ -76,17 +77,17 @@ public class BaseFunctionElementSupport  {
     }
 
 
-    public final String asString(PrintAs as, BaseFunctionElement element) {
+    public final String asString(PrintAs as, BaseFunctionElement element, TypeNameResolver typeNameResolver) {
         StringBuilder template = new StringBuilder();
         switch (as) {
             case NameAndParamsDeclaration:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), OutputType.SHORTEN_DECLARATION));
+                template.append(parameters2String(getParameters(), OutputType.SHORTEN_DECLARATION, typeNameResolver));
                 template.append(")"); //NOI18N
                 break;
             case NameAndParamsInvocation:
                 template.append(" ").append(element.getName()).append("("); //NOI18N
-                template.append(parameters2String(getParameters(), OutputType.SIMPLE_NAME));
+                template.append(parameters2String(getParameters(), OutputType.SIMPLE_NAME, typeNameResolver));
                 template.append(")"); //NOI18N
                 break;
             case DeclarationWithoutBody:
@@ -95,16 +96,16 @@ public class BaseFunctionElementSupport  {
                     template.append(modifiers).append(" ");//NOI18N
                 }
                 template.append("function");//NOI18N
-                template.append(asString(PrintAs.NameAndParamsDeclaration, element));
+                template.append(asString(PrintAs.NameAndParamsDeclaration, element, typeNameResolver));
                 break;
             case DeclarationWithEmptyBody:
-                template.append(asString(PrintAs.DeclarationWithoutBody, element));
+                template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver));
                 template.append("{\n}");//NOI18N
                 break;
             case DeclarationWithParentCallInBody:
-                template.append(asString(PrintAs.DeclarationWithoutBody, element));
+                template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver));
                 Collection<TypeResolver> returns = getReturnTypes();
-                String methdodInvocation = asString(PrintAs.NameAndParamsInvocation, element);
+                String methdodInvocation = asString(PrintAs.NameAndParamsInvocation, element, typeNameResolver);
                 if (methdodInvocation.startsWith(" ")) {
                     methdodInvocation = methdodInvocation.substring(1);
                 }
@@ -120,7 +121,7 @@ public class BaseFunctionElementSupport  {
                         QualifiedName typeName = typeResolver.getTypeName(false);
                         if (typeName != null) {
                             if (template.length() > 0) template.append("|");//NOI18N
-                            template.append(typeName.toString());
+                            template.append(typeNameResolver.resolve(typeName).toString());
                         }
                     } else {
                         String typeName = typeResolver.getRawTypeName();
@@ -137,7 +138,7 @@ public class BaseFunctionElementSupport  {
                         QualifiedName typeName = typeResolver.getTypeName(false);
                         if (typeName != null) {
                             if (template.length() > 0) template.append("|");//NOI18N
-                            template.append(typeName.toString());
+                            template.append(typeNameResolver.resolve(typeName).toString());
                         }
                     }
                 }
@@ -146,7 +147,7 @@ public class BaseFunctionElementSupport  {
         return template.toString();
     }
 
-    private static String parameters2String(final List<ParameterElement> parameterList, OutputType stringOutputType) {
+    private static String parameters2String(final List<ParameterElement> parameterList, OutputType stringOutputType, TypeNameResolver typeNameResolver) {
         StringBuilder template = new StringBuilder();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
@@ -155,7 +156,7 @@ public class BaseFunctionElementSupport  {
                     paramSb.append(", "); //NOI18N
                 }
                 final ParameterElement param = parameterList.get(i);
-                paramSb.append(param.asString(stringOutputType));
+                paramSb.append(param.asString(stringOutputType, typeNameResolver));
                 template.append(paramSb);
             }
         }

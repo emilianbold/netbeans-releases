@@ -108,6 +108,12 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
         ApisupportAntUIUtils.setText(majorRelVerValue, getProperties().getMajorReleaseVersion());
         ApisupportAntUIUtils.setText(tokensValue, getProperties().getProvidedTokens());
         String specVersion = getProperties().getSpecificationVersion();
+        if (getProperties().isOSGi()) {
+            ApisupportAntUIUtils.setText(specificationVerValue, specVersion);
+            appendImpl.setEnabled(false);
+            implVer.setEnabled(false);
+            implVerValue.setEnabled(false);
+        } else {
         if (null == specVersion || "".equals(specVersion)) { // NOI18N
             appendImpl.setSelected(true);
             ApisupportAntUIUtils.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
@@ -115,6 +121,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single {
             ApisupportAntUIUtils.setText(specificationVerValue, specVersion);
         }
         ApisupportAntUIUtils.setText(implVerValue, getProperties().getImplementationVersion());
+        }
         friendsList.setModel(getProperties().getFriendListModel());
         ApisupportAntUIUtils.setText(cnbValue, getProperties().getCodeNameBase());
         regularMod.setSelected(true);

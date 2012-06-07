@@ -954,7 +954,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                     // connection was broken while we read directory content - add notification
                     getFileSystem().addPendingFile(this);
-                    RemoteLogger.assertFalse(fromMemOrDiskCache && !forceRefresh && storage != null);
                     throw new ConnectException(problem.getMessage());
                 } else {
                     boolean fileNotFoundException = RemoteFileSystemUtils.isFileNotFoundException(problem);

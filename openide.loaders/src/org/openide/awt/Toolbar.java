@@ -381,18 +381,25 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         protected InstanceCookie acceptCookie (InstanceCookie cookie)
             throws IOException, ClassNotFoundException {
             boolean is;
+            boolean action;
             
             if (cookie instanceof InstanceCookie.Of) {
                 InstanceCookie.Of of = (InstanceCookie.Of)cookie;
+                action = of.instanceOf (Action.class);
                 is = of.instanceOf (Component.class) ||
                      of.instanceOf (Presenter.Toolbar.class) ||
-                     of.instanceOf (Action.class);
+                     action;
             } else {
                 Class c = cookie.instanceClass();
+                action = Action.class.isAssignableFrom (c);
                 is = Component.class.isAssignableFrom(c) ||
                      Presenter.Toolbar.class.isAssignableFrom(c) ||
-                     Action.class.isAssignableFrom (c);
+                     action;
             }
+            if (action) {
+                cookie.instanceCreate();
+            }
+            
             return is ? cookie : null;
         }
 
@@ -489,7 +496,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         */
         @Override
         protected Task postCreationTask (Runnable run) {
-            return new AWTTask (run);
+            return new AWTTask (run, this);
         }
 
     } // end of inner class Folder

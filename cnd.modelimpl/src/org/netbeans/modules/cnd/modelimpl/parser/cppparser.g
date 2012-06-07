@@ -125,6 +125,7 @@ tokens {
 	CSM_TRANSLATION_UNIT<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CLASS_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_ENUM_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_ENUM_FWD_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_NAMESPACE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_CTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_TEMPLATE_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -769,7 +770,7 @@ template_explicit_specialization
                 |   cv_qualifier
                 |   LITERAL_typedef
                 )*
-                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
+                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
             ) =>
             (LITERAL___extension__!)?
             (LITERAL_template LESSTHAN GREATERTHAN)?
@@ -780,6 +781,24 @@ template_explicit_specialization
             enum_specifier (init_declarator_list[declOther])? 
             SEMICOLON!
             { #template_explicit_specialization = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #template_explicit_specialization); }
+        |
+            (   (LITERAL___extension__!)?
+                (LITERAL_template LESSTHAN GREATERTHAN)?
+                (   storage_class_specifier
+                |   cv_qualifier
+                |   LITERAL_typedef
+                )*
+                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
+            ) =>
+            (LITERAL___extension__!)?
+            (LITERAL_template LESSTHAN GREATERTHAN)?
+                (   sc = storage_class_specifier
+                |   tq = cv_qualifier
+                |   LITERAL_typedef
+            )*
+            enum_specifier
+            SEMICOLON
+            { #template_explicit_specialization = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #template_explicit_specialization); }
         |  
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
@@ -916,7 +935,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                         |   cv_qualifier
                         |   LITERAL_typedef
                         )*
-                        LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
+                        LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
                     ) =>
                     (LITERAL___extension__!)?
                         (   sc = storage_class_specifier
@@ -926,6 +945,22 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                     enum_specifier (init_declarator_list[declOther])? 
                     SEMICOLON!
                     { #external_declaration_template = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration_template); }
+                |
+                    (   (LITERAL___extension__!)?
+                        (   storage_class_specifier
+                        |   cv_qualifier
+                        |   LITERAL_typedef
+                        )*
+                        LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
+                    ) =>
+                    (LITERAL___extension__!)?
+                        (   sc = storage_class_specifier
+                        |   tq = cv_qualifier
+                        |   LITERAL_typedef
+                    )*
+                    enum_specifier
+                    SEMICOLON
+                    { #external_declaration_template = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration_template); }
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1039,10 +1074,10 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   tq = cv_qualifier
         )*
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
-        enum_specifier (init_declarator_list[declOther])? 
+        enum_specifier
         {action.end_enum_declaration(LT(1));}
-        SEMICOLON! //{end_of_stmt();}
-        { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
+        SEMICOLON //{end_of_stmt();}
+        { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?
@@ -1399,7 +1434,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (LCURLY | SEMICOLON) )=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY )=>
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1410,6 +1445,19 @@ member_declaration
                 {action.end_enum_declaration(LT(1));}
                 SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
+	|
+		// Enum definition (don't want to backtrack over this in other alts)
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON )=>
+                {action.enum_declaration(LT(1));}
+                (sc = storage_class_specifier)?
+		{if (statementTrace>=1)
+			printf("member_declaration_2b[%d]: Enum forward declaration\n",
+				LT(1).getLine());
+		}
+		enum_specifier
+                {action.end_enum_declaration(LT(1));}
+                SEMICOLON	//{end_of_stmt();}
+		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	
                 (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
@@ -1997,7 +2045,10 @@ enum_specifier
 {int ts = 0;
  String qid;}
 :   LITERAL_enum
-    (LITERAL_class! | LITERAL_struct!)?    
+    (
+        (LITERAL_class | LITERAL_struct)
+        {action.enum_strongly_typed(LT(1));}
+    )?
     (   (COLON ts = builtin_cv_type_specifier[ts])?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }

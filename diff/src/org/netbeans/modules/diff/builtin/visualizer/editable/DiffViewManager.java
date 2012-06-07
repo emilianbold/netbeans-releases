@@ -102,9 +102,6 @@ class DiffViewManager implements ChangeListener {
     private void initScrolling() {
         leftContentPanel.getScrollPane().getVerticalScrollBar().getModel().addChangeListener(this);
         rightContentPanel.getScrollPane().getVerticalScrollBar().getModel().addChangeListener(this);
-        // The vertical scroll bar must be there for mouse wheel to work correctly.
-        // However it's not necessary to be seen (but must be visible so that the wheel will work).
-        leftContentPanel.getScrollPane().getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
     }
 
     private final Boolean [] smartScrollDisabled = new Boolean[] { Boolean.FALSE };

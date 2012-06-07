@@ -72,8 +72,12 @@ import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import static java.util.logging.Level.*;
+
+import javax.swing.text.BadLocationException;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
+
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 public class CasualDiff {
@@ -136,7 +140,14 @@ public class CasualDiff {
 
         for (Tree t : oldTreePath) {
             if (t != oldTree && (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) || t.getKind() == Kind.BLOCK)) {
-                td.printer.indent();
+                int indent = getOldIndent(diffContext, t);
+                if (indent < 0) {
+                    td.printer.indent();
+                } else {
+                    td.printer.setIndent(indent);
+                    td.printer.indent();
+                    break;
+                }
             }
         }
 
@@ -276,6 +287,17 @@ public class CasualDiff {
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), diffContext);
         localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
         printer.print(origText.substring(localPointer));
+    }
+    
+    private static int getOldIndent(DiffContext diffContext, Tree t) {
+        if (diffContext.doc != null) {
+            try {
+                int offset = (int) diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, t);
+                int lineStartOffset = IndentUtils.lineStartOffset(diffContext.doc, offset);
+                return IndentUtils.lineIndent(diffContext.doc, lineStartOffset);
+            } catch (BadLocationException ex) {}
+        }
+        return -1;
     }
 
     private static enum ChangeKind {
@@ -832,10 +854,10 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = oldT.pos + 1);
         }
         // syntetic super() found, skip it
-        if (oldT.stats.head != null && oldT.stats.head.pos == oldT.pos) {
+        if (diffContext.syntheticTrees.contains(oldT.stats.head)) {
             oldT.stats = oldT.stats.tail;
         }
-        if (newT.stats.head != null && newT.stats.head.pos == oldT.pos) {
+        if (diffContext.syntheticTrees.contains(newT.stats.head)) {
             newT.stats = newT.stats.tail;
         }
         PositionEstimator est = EstimatorFactory.statements(
@@ -2825,21 +2847,34 @@ public class CasualDiff {
                         }
                     }
                     if (!found) {
-                        if (lastdel != null && treesMatch(item.element, lastdel, false)) {
-                            VeryPretty oldPrinter = this.printer;
-                            int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
-                            this.printer.reset(old);
-                            this.printer.oldTrees = oldTrees;
-                            int index = oldList.indexOf(lastdel);
-                            int[] poss = estimator.getPositions(index);
-                            //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                            localPointer = diffTree(lastdel, item.element, poss);
-                            printer.print(this.printer.toString());
-                            this.printer = oldPrinter;
-                            this.printer.undent(old);
-                            lastdel = null;
-                            break;
+                        if (lastdel != null) {
+                            boolean wasInFieldGroup = false;
+                            if(lastdel instanceof FieldGroupTree) {
+                                FieldGroupTree fieldGroupTree = (FieldGroupTree) lastdel;
+                                for (JCVariableDecl var : fieldGroupTree.getVariables()) {
+                                    if(treesMatch(item.element, var, false)) {
+                                        wasInFieldGroup = true;
+                                        oldTrees.remove(item.element);
+                                        break;
+                                    }
+                                }
+                            }
+                            if(wasInFieldGroup || treesMatch(item.element, lastdel, false)) {
+                                VeryPretty oldPrinter = this.printer;
+                                int old = oldPrinter.indent();
+                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer.reset(old);
+                                this.printer.oldTrees = oldTrees;
+                                int index = oldList.indexOf(lastdel);
+                                int[] poss = estimator.getPositions(index);
+                                //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
+                                localPointer = diffTree(lastdel, item.element, poss);
+                                printer.print(this.printer.toString());
+                                this.printer = oldPrinter;
+                                this.printer.undent(old);
+                                lastdel = null;
+                                break;
+                            }
                         }
                         if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
                         printer.print(item.element);

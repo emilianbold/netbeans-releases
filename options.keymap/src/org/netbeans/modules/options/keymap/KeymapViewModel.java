@@ -109,10 +109,10 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
      */
     public KeymapViewModel () {
         super(new String[]{
-                    NbBundle.getMessage(KeymapViewModel.class, "Actions"), //NOI18N
-                    NbBundle.getMessage(KeymapViewModel.class, "Shortcut"), //NOI18N
-                    NbBundle.getMessage(KeymapViewModel.class, "Category"), //NOI18N
-//                    NbBundle.getMessage(KeymapViewModel.class, "Scope") //NOI18N
+                    NbBundle.getMessage(KeymapViewModel.class, "ActionsColumnName"), //NOI18N
+                    NbBundle.getMessage(KeymapViewModel.class, "ShortcutColumnName"), //NOI18N
+                    NbBundle.getMessage(KeymapViewModel.class, "CategoryColumnName"), //NOI18N
+//                    NbBundle.getMessage(KeymapViewModel.class, "ScopeColumnName") //NOI18N
                 }, 0);
         currentProfile = model.getCurrentProfile ();
     }

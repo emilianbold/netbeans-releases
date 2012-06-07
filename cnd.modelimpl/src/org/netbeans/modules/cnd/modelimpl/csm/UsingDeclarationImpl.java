@@ -182,10 +182,12 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                             CsmDeclaration elem = it.next();
                             if (CsmKindUtilities.isEnum(elem)) {
                                 CsmEnum e = (CsmEnum) elem;
-                                for (CsmEnumerator enumerator : e.getEnumerators()) {
-                                    if(lastName.toString().equals(enumerator.getName().toString())) {
-                                        referencedDeclaration = enumerator;
-                                        break outer2;
+                                if (!e.isStronglyTyped()) {
+                                    for (CsmEnumerator enumerator : e.getEnumerators()) {
+                                        if(lastName.toString().equals(enumerator.getName().toString())) {
+                                            referencedDeclaration = enumerator;
+                                            break outer2;
+                                        }
                                     }
                                 }
                             }

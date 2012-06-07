@@ -171,6 +171,7 @@ public class RetrieverTest implements Retriever.Updater {
                 assert status.startsWith("I/O Exception: http://") ||
                         status.startsWith("I/O Exception: connect timed out") ||
                         status.startsWith("I/O Exception: java.net") ||
+                        status.startsWith("I/O Exception: Connection reset") ||
                         status.startsWith("Connection Exception: Connection timed out") : status ;
             } finally {
                 deleteJunk(file);

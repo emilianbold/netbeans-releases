@@ -2040,9 +2040,15 @@ public final class FileUtil extends Object {
                     }
                     return new URL(jarPath);
 
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(Exceptions.attachMessage(mue,
-                    "URL: " + url.toExternalForm() +" jarPath: " + jarPath));   //NOI18N
+                } catch (MalformedURLException mue) {                    
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL ({0}): {1}, jarPath: {2}", //NOI18N
+                        new Object[] {
+                            mue.getMessage(),
+                            url.toExternalForm(),
+                            jarPath
+                        });
                 }
             }
         }

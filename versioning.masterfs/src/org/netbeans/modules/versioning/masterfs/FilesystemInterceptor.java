@@ -54,6 +54,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationEvent;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor.VCSAnnotationListener;
+import org.netbeans.modules.versioning.core.util.Utils;
 
 /**
  * Plugs into IDE filesystem and delegates file operations to registered versioning systems.
@@ -166,10 +167,30 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         return new DeleteHandler() {
 
             @Override
-            public boolean delete(File dummy) {
+            public boolean delete(File deleteHandlerFile) {
 //                assert dummy.equals(file);
                 try {
-                    h.handle();
+                    
+                    if(deleteHandlerFile.equals(file)) {
+                        h.handle();
+                    } else {
+                        // called for a different file than the file for which the DeleteHandler was created ->
+                        // this is the case when a root files delete wasn't properly handled by the responsible VCS and
+                        // master fs now tries to remove each child file one by one.
+                        // extected to be a corner case caused by a bugy or missing implementation in the underlying VCS module.
+                        // see also issue #213226
+                        VCSFilesystemInterceptor.IOHandler h = VCSFilesystemInterceptor.getDeleteHandler(VCSFileProxy.createFileProxy(deleteHandlerFile));
+                        if (h == null) {
+                            // no handler for a file where the root was accepted by the VCS for delete? again - seems to be a 
+                            // bugy implementation, so remove as that is what the masterfs would do anyway if the root wouldn't 
+                            // be accepted in the first place.
+                            LOG.log(Level.WARNING, "no iohandler for file {0} which is supposed to be from {1}", new Object[]{deleteHandlerFile, file});
+                            deleteRecursively(deleteHandlerFile);
+                            return !deleteHandlerFile.exists();
+                        }
+                        h.handle();
+                    }
+                    
                     return true;
                 } catch (IOException ex) {
                     LOG.log(Level.INFO, null, ex);
@@ -324,4 +345,18 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
             }
         };
     }
+    
+    private void deleteRecursively(File file) throws IOException {
+        if(file.isFile()) {
+            file.delete();
+        } else { 
+            File[] files = file.listFiles();
+            if(files != null) {
+                for (File f : files) {
+                    deleteRecursively(f);
+                }
+            } 
+            file.delete();
+        }
+    }    
 }

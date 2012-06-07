@@ -1,0 +1,3 @@
+Templates/Project/Samples/J2ME/MIDP/GameBuilderDemo.zip=GameBuilderDemo
+Templates/Project/Samples/J2ME/MIDP/LocalizationDemo.zip=Localization Support Example
+Templates/Project/Samples/J2ME/MIDP/VDCustomComponents.zip=Visual Designer Custom Components

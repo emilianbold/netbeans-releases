@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.options.keymap;
 
+import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -69,6 +72,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,6 +83,11 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.spi.KeymapManager.class)
 public class LayersBridge extends KeymapManager {
+    
+    /**
+     * Extension for DataObjects, which cause an action to be removed from the parent (general) keymap.
+     */
+    private static final String EXT_REMOVED = "removed"; // NOI18N
     
     private static final Logger LOG = Logger.getLogger(LayersBridge.class.getName());
     
@@ -221,6 +231,12 @@ public class LayersBridge extends KeymapManager {
             new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     
     /**
+     * The base keymap, shared for all profiles. Used as a baseline when generating
+     * 'removed' instructions for a profile.
+     */
+    private volatile Map<ShortcutAction, Set<String>> baseKeyMap;
+    
+    /**
      * Returns Map (GlobalAction > Set (String (shortcut))).
      */
     public Map<ShortcutAction, Set<String>> getKeymap (String profile) {
@@ -229,9 +245,19 @@ public class LayersBridge extends KeymapManager {
             Map<ShortcutAction, Set<String>> m = readKeymap (root);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
             overrideWithKeyMap(m, readKeymap(root), profile);
+            m.remove(REMOVED);
             keymaps.put (profile, m);
         }
         return Collections.unmodifiableMap (keymaps.get (profile));
+    }
+        
+    private Map<ShortcutAction, Set<String>> getBaseKeyMap() {
+        if (baseKeyMap == null) {
+            DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
+            Map<ShortcutAction, Set<String>> m = readKeymap (root);
+            baseKeyMap = m;
+        }
+        return baseKeyMap;
     }
     
     /**
@@ -286,12 +312,14 @@ public class LayersBridge extends KeymapManager {
     /**
      * Returns Map (GlobalAction > Set (String (shortcut))).
      */
-    public Map<ShortcutAction, Set<String>> getDefaultKeymap (String profile) {
+    public synchronized Map<ShortcutAction, Set<String>> getDefaultKeymap (String profile) {
         if (!keymapDefaults.containsKey (profile)) {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
+            System.err.println(Arrays.asList(root.getChildren()));
             Map<ShortcutAction, Set<String>> m = readKeymap (root);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
-            m.putAll (readKeymap (root));
+            overrideWithKeyMap(m, readKeymap(root), profile);
+            m.remove(REMOVED);
             keymapDefaults.put (profile, m);
         }
         return Collections.unmodifiableMap (keymapDefaults.get (profile));
@@ -302,9 +330,20 @@ public class LayersBridge extends KeymapManager {
     }
     
     /**
+     * Placeholder, which indicates shortcut(s) that should be removed. Must be used
+     * only internally !
+     */
+    private static final GlobalAction REMOVED = new GlobalAction(null, null, "<removed>") {
+        { 
+            name = ""; // NOI18N
+        }
+    };
+    
+    /**
      * Read keymap from one folder Map (GlobalAction > Set (String (shortcut))).
      */
     private Map<ShortcutAction, Set<String>> readKeymap (DataFolder root) {
+        LOG.log(Level.FINEST, "Reading keymap from: {0}", root);
         Map<ShortcutAction, Set<String>> keymap = 
                 new HashMap<ShortcutAction, Set<String>> ();
         if (root == null) return keymap;
@@ -314,7 +353,7 @@ public class LayersBridge extends KeymapManager {
             if (dataObject instanceof DataFolder) continue;
             GlobalAction action = createAction (dataObject, null);
             if (action == null) continue;
-            String shortcut = dataObject.getName ();
+            String shortcut = dataObject.getPrimaryFile().getName();
             
             LOG.log(Level.FINEST, "Action {0}: {1}, by {2}", new Object[] {
                 action.getDisplayName(),
@@ -331,6 +370,7 @@ public class LayersBridge extends KeymapManager {
         return keymap;
     }
 
+    @Override
     public void deleteProfile (String profile) {
         FileObject root = FileUtil.getConfigFile(KEYMAPS_FOLDER);
         if (root == null) return;
@@ -344,11 +384,13 @@ public class LayersBridge extends KeymapManager {
     }
     
     // actionToShortcuts Map (GlobalAction > Set (String (shortcut))
+    @Override
     public void saveKeymap (String profile, Map<ShortcutAction, Set<String>> actionToShortcuts) {
         // discard our cached copy first
         keymaps.remove(profile);
-        
+        keymapDefaults.remove(profile);
         // 1) get / create Keymaps/Profile folder
+        DataFolder defaultFolder = getRootFolder(SHORTCUTS_FOLDER, null);
         DataFolder folder = getRootFolder (KEYMAPS_FOLDER, profile);
         if (folder == null) {
             folder = getRootFolder (KEYMAPS_FOLDER, null);
@@ -359,36 +401,41 @@ public class LayersBridge extends KeymapManager {
                 return;
             }
         }
-        saveKeymap (folder, actionToShortcuts, true);
-        
-        // FIXME: this rewrites the shared Shortcuts (default) folder; should be
-        // done only after switching the profile
-        folder = getRootFolder (SHORTCUTS_FOLDER, null);
-        saveKeymap (folder, actionToShortcuts, false);
+        saveKeymap (defaultFolder, folder, actionToShortcuts);
     }
     
-    private void saveKeymap (DataFolder folder, Map<ShortcutAction, Set<String>> actionToShortcuts, boolean add) {
+    private void saveKeymap (DataFolder defaultMap, DataFolder folder, Map<ShortcutAction, Set<String>> actionToShortcuts) {
+        LOG.log(Level.FINEST, "Saving keymap to: {0}", folder.getPrimaryFile().getPath());
         // hack: initialize the actions map first
   	getActions();
         // 2) convert to: Map (String (shortcut AC-C X) > GlobalAction)
         Map<String, ShortcutAction> shortcutToAction = shortcutToAction (actionToShortcuts);
         
+        Set<String> definedShortcuts = new HashSet<String>(shortcutToAction.keySet());
+        
         // 3) delete obsolete DataObjects
+        FileObject targetDir = folder.getPrimaryFile();
+
         Enumeration en = folder.children ();
         while (en.hasMoreElements ()) {
             DataObject dataObject = (DataObject) en.nextElement ();
+            if (dataObject.getPrimaryFile().getExt().equals(EXT_REMOVED)) {
+                continue;
+            }
             GlobalAction a1 = (GlobalAction) shortcutToAction.get (dataObject.getName ());
             if (a1 != null) {
                 GlobalAction action = createAction (dataObject, null);
                 if (action == null) continue;
                 if (action.equals (a1)) {
                     // shortcut already saved
+                    LOG.log(Level.FINEST, "Found same binding: {0} -> {1}", new Object[] { dataObject.getName(), action.getId()});
                     shortcutToAction.remove (dataObject.getName ());
                     continue;
                 }
             }
-            // obsolete shortcut
+            // obsolete shortcut. 
             try {
+                LOG.log(Level.FINEST, "Removing obsolete binding: {0}", dataObject.getName());
                 dataObject.delete ();
             } catch (IOException ex) {
                 ex.printStackTrace ();
@@ -396,10 +443,24 @@ public class LayersBridge extends KeymapManager {
         }
         
         // 4) add new shortcuts
-        if (!add) return;
+        en = defaultMap.children();
+        while (en.hasMoreElements()) {
+            DataObject dataObject = (DataObject)en.nextElement();
+            GlobalAction ga = (GlobalAction)shortcutToAction.get(dataObject.getName());
+            if (ga == null) {
+                continue;
+            }
+            GlobalAction action = createAction(dataObject, null);
+            if (ga.equals(action)) {
+                LOG.log(Level.FINEST, "Leaving default shortcut: {0}", dataObject.getName());
+                shortcutToAction.remove(dataObject.getName());
+            }
+        }
+        
         Iterator it = shortcutToAction.keySet ().iterator ();
         while (it.hasNext ()) {
             String shortcut = (String) it.next ();
+            // check whether the DO does not already exist:
             GlobalAction action = (GlobalAction) shortcutToAction.get (shortcut);
             DataObject dataObject = actionToDataObject.get (action);
             if (dataObject == null) {
@@ -409,11 +470,39 @@ public class LayersBridge extends KeymapManager {
             }
             try {
                 DataShadow.create (folder, shortcut, dataObject);
+                // remove the '.remove' file, if it exists:
+                FileObject f = targetDir.getFileObject(shortcut, EXT_REMOVED);
+                if (f != null) {
+                    f.delete();
+                }
             } catch (IOException ex) {
                 ex.printStackTrace ();
                 continue;
             }
         }
+
+        // 5, mask out DataObjects from the global keymap, which are NOT present in this profile:
+        if (defaultMap != null) {
+            en = defaultMap.children();
+            while (en.hasMoreElements()) {
+                DataObject dataObject = (DataObject) en.nextElement ();
+                if (definedShortcuts.contains(dataObject.getName())) {
+                    continue;
+                }
+                try {
+                    FileObject pf = dataObject.getPrimaryFile();
+                    // If the shortcut is ALSO defined in 'parent' folder,
+                    // we cannot just 'delete' it, but also mask the parent by adding 'removed' file.
+                    if (targetDir.getFileObject(pf.getName(), EXT_REMOVED) == null) {
+                        LOG.log(Level.FINEST, "Masking out binding: {0}", pf.getName());
+                        folder.getPrimaryFile().createData(pf.getName(), EXT_REMOVED);
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace ();
+                }
+            }
+        }
+        
     }    
 
     private static DataFolder getRootFolder (String name1, String name2) {
@@ -438,16 +527,65 @@ public class LayersBridge extends KeymapManager {
      */
     private GlobalAction createAction (DataObject dataObject, String prefix) {
         InstanceCookie ic = dataObject.getCookie(InstanceCookie.class);
-        if (ic == null) return null;
+        // handle any non-IC file as instruction to remove the action
+        if (ic == null) {
+            FileObject pf = dataObject.getPrimaryFile();
+            if (!EXT_REMOVED.equals(pf.getExt())) {
+                LOG.log(Level.WARNING, "Invalid shortcut: {0}", dataObject);
+            }
+            // ignore the 'remove' file, if there's a shadow (= real action) present
+            if (FileUtil.findBrother(pf, "shadow") != null) {
+                // handle redefinition + removal: ignore the removal.
+                return null;
+            }
+            return REMOVED;
+        }
         try {
             Object action = ic.instanceCreate ();
             if (action == null) return null;
             if (!(action instanceof Action)) return null;
-            return new GlobalAction ((Action) action, prefix, dataObject.getPrimaryFile().getName());
+            return createAction((Action) action, prefix, dataObject.getPrimaryFile().getName());
         } catch (Exception ex) {
             ex.printStackTrace ();
             return null;
         }
+    }
+
+    // hack: hardcoded OpenIDE impl class name + field
+    private static final String OPENIDE_DELEGATE_ACTION = "org.openide.awt.GeneralAction$DelegateAction"; // NOI18N
+    private static Field KEY_FIELD;
+
+    /**
+     * Hack, which allows to somehow extract actionId from OpenIDE actions. Public API
+     * does not exist for this.
+     * 
+     * @param a
+     * @param prefix
+     * @param name
+     * @return 
+     */
+    private static GlobalAction createAction(Action a, String prefix, String name) {
+        String id = name;
+        
+        try {
+            if (a.getClass().getName().equals(OPENIDE_DELEGATE_ACTION)) {
+                if (KEY_FIELD == null) {
+                    Class c = a.getClass();
+                    KEY_FIELD = c.getSuperclass().getDeclaredField("key"); // NOI18N
+                    KEY_FIELD.setAccessible(true);
+                }
+                String key = (String)KEY_FIELD.get(a);
+                if (key != null) {
+                    id = key;
+                }
+            }
+        } catch (NoSuchFieldException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return new GlobalAction(a, prefix, id);
     }
     
     /**
@@ -494,7 +632,7 @@ public class LayersBridge extends KeymapManager {
     
     private static class GlobalAction implements ShortcutAction {
         private Action action;
-        private String name;
+        String name;
         private String id;
         
         /**
@@ -539,12 +677,12 @@ public class LayersBridge extends KeymapManager {
         @Override
         public boolean equals (Object o) {
             if (!(o instanceof GlobalAction)) return false;
-            return ((GlobalAction) o).action.equals (action);
+            return ((GlobalAction) o).action == action || ((GlobalAction) o).action.equals (action);
         }
         
         @Override
         public int hashCode () {
-            return action.hashCode ();
+            return action == null ? 111 : action.hashCode ();
         }
         
         @Override

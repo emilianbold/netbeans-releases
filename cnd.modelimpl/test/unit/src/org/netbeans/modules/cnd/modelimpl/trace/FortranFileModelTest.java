@@ -127,5 +127,20 @@ public class FortranFileModelTest extends TraceModelTestBase {
         // Bug 207573 - *Fortran* navigator doesn't show subroutines in some cases
         performTest("bug207573.f"); // NOI18N
     }
-    
+
+    public void testBug212602() throws Exception {
+        // Bug 212602 - Navigator does not work with Fortran files (new project from existing sources)
+        performTest("bug212602.f"); // NOI18N
+    }
+
+    public void testBug208927() throws Exception {
+        // Bug 208927 - Fortran Navigator not showing subroutines if they contain a continuation line or semicolon
+        performTest("bug208927.f"); // NOI18N
+    }
+
+    public void testBug207681() throws Exception {
+        // Bug 207681 - Navigator does not show the list of subroutines in fortran file
+        performTest("bug207681.f"); // NOI18N
+    }
+
 }

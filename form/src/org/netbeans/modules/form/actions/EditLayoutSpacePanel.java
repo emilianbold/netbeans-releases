@@ -339,7 +339,7 @@ class EditLayoutSpacePanel extends javax.swing.JPanel {
         singleGapPanelLayout.setVerticalGroup(
             singleGapPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(singleGapPanelLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addGroup(singleGapPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(singleTitleLabel)
                     .addComponent(actualSizeLabel))

@@ -46,8 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
@@ -75,18 +73,16 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
-import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.execute.AbstractMavenExecutor;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -179,7 +175,7 @@ public final class NbMavenProjectImpl implements Project {
         projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
         userFolderUpdater = new Updater("settings.xml");//NOI18N
         problemReporter = new ProblemReporterImpl(this);
-        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(this);
+        M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, problemReporter);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
         profileHandler = new ProjectProfileHandlerImpl(this, auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
@@ -208,6 +204,7 @@ public final class NbMavenProjectImpl implements Project {
      * @param properties
      * @return
      */
+    //TODO revisit usage, eventually should be only reuse MavenProjectCache
     public @NonNull MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
         try {
             MavenExecutionRequest req = embedder.createMavenExecutionRequest();
@@ -215,7 +212,7 @@ public final class NbMavenProjectImpl implements Project {
             req.setPom(projectFile);
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            Properties props = createSystemPropsForProjectLoading();
+            Properties props = MavenProjectCache.createSystemPropsForProjectLoading(null);
             if (properties != null) {
                 props.putAll(properties);
             }
@@ -241,7 +238,7 @@ public final class NbMavenProjectImpl implements Project {
             //#136184 NumberFormatException
             LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
         }
-        return getFallbackProject();
+        return MavenProjectCache.getFallbackProject(this.getPOMFile());
     }
 
     public List<String> getCurrentActiveProfiles() {
@@ -249,35 +246,12 @@ public final class NbMavenProjectImpl implements Project {
         toRet.addAll(configProvider.getActiveConfiguration().getActivatedProfiles());
         return toRet;
     }
-    private static final Properties statics = new Properties();
 
-    private static Properties cloneStaticProps() {
-        synchronized (statics) {
-            if (statics.isEmpty()) { // not yet initialized
-                // Now a misnomer, but available to activate profiles only during NB project parse:
-                statics.setProperty("netbeans.execution", "true"); // NOI18N
-                EmbedderFactory.fillEnvVars(statics);
-                statics.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
-            }
-            Properties toRet = new Properties();
-            toRet.putAll(statics);
-            return toRet;
-        }
-    }
-
-    //#158700
-    private Properties createSystemPropsForProjectLoading() {
-        Properties props = cloneStaticProps();
-        props.putAll(configProvider.getActiveConfiguration().getProperties());
-        //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
-        // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
-        return props;
-    }
 
     //#172952 for property expression resolution we need this to include
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
     public Map<? extends String,? extends String> createSystemPropsForPropertyExpressions() {
-        Map<String,String> props = NbCollections.checkedMapByCopy(cloneStaticProps(), String.class, String.class, true);
+        Map<String,String> props = NbCollections.checkedMapByCopy(MavenProjectCache.cloneStaticProps(), String.class, String.class, true);
         ActiveJ2SEPlatformProvider platformProvider = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
         if (platformProvider != null) { // may be null inside PackagingProvider
             props.putAll(platformProvider.getJavaPlatform().getSystemProperties());
@@ -293,7 +267,7 @@ public final class NbMavenProjectImpl implements Project {
     public @NonNull synchronized MavenProject getOriginalMavenProject() {
         MavenProject mp = project == null ? null : project.get();
         if (mp == null) {
-            mp = loadOriginalMavenProject();
+            mp = loadOriginalMavenProject(false);
         }
         project = new SoftReference<MavenProject>(mp);
         return mp;
@@ -317,53 +291,20 @@ public final class NbMavenProjectImpl implements Project {
             + "This is preventing the project model from loading properly. \n"
             + "Please file a bug report with details about your project and the IDE's log file.\n\n"
     })
-    private @NonNull MavenProject loadOriginalMavenProject() {
-        long startLoading = System.currentTimeMillis();
-        MavenProject newproject = null;
+    private @NonNull MavenProject loadOriginalMavenProject(boolean reload) {
+        MavenProject newproject;
         try {
-//                ProgressTransferListener.setAggregateHandle(hndl);
-//                hndl.start();
-           final  MavenExecutionRequest req = getEmbedder().createMavenExecutionRequest();
-                
-            //#172526 have the modellineage cache reset at the same time the project cache resets
-            profileHandler.clearLineageCache();
-            req.addActiveProfiles(getCurrentActiveProfiles());
-            req.setPom(projectFile);
-            req.setNoSnapshotUpdates(true);
-            req.setUpdateSnapshots(false);
-            //MEVENIDE-634 i'm wondering if this fixes the issue
-            req.setInteractiveMode(false);
-            // recursive == false is important to avoid checking all submodules for extensions
-            // that will not be used in current pom anyway..
-            // #135070
-            req.setRecursive(false);
-            req.setOffline(true);
-            req.setUserProperties(createSystemPropsForProjectLoading());
-             MavenExecutionResult res = getEmbedder().readProjectWithDependencies(req, true);
-             newproject = res.getProject();
+            newproject = MavenProjectCache.getMavenProject(this.folderFileObject, reload);
+            if (newproject == null) {
+                newproject = MavenProjectCache.getFallbackProject(projectFile);
+            }
+            MavenExecutionResult res = MavenProjectCache.getExecutionResult(newproject);
             if (res.hasExceptions()) {
                 problemReporter.reportExceptions(res);
+            } else {
+                problemReporter.doArtifactChecks(newproject);
             }
-        } catch (RuntimeException exc) {
-            //guard against exceptions that are not processed by the embedder
-            //#136184 NumberFormatException
-            LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
-            StringWriter wr = new StringWriter();
-            PrintWriter pw = new PrintWriter(wr);
-            exc.printStackTrace(pw);
-            pw.flush();
-
-            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    TXT_RuntimeException(),
-                    TXT_RuntimeExceptionLong() + wr.toString(), null);
-            problemReporter.addReport(report);
-
         } finally {
-            if (newproject == null) {
-                newproject = getFallbackProject();
-            }
-            long endLoading = System.currentTimeMillis();
-            LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, getProjectDirectory().getPath()});
             if (LOG.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
                 LOG.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
@@ -372,21 +313,7 @@ public final class NbMavenProjectImpl implements Project {
         return newproject;
     }
 
-    @Messages({
-        "LBL_Incomplete_Project_Name=<partially loaded Maven project>",
-        "LBL_Incomplete_Project_Desc=Partially loaded Maven project; try building it."
-    })
-    private MavenProject getFallbackProject() throws AssertionError {
-        MavenProject newproject = new MavenProject();
-        newproject.setGroupId("error");
-        newproject.setArtifactId("error");
-        newproject.setVersion("0");
-        newproject.setPackaging("pom");
-        newproject.setName(LBL_Incomplete_Project_Name());
-        newproject.setDescription(LBL_Incomplete_Project_Desc());
-        newproject.setFile(projectFile);
-        return newproject;
-    }
+
 
     public void fireProjectReload() {
         //#149566 prevent project firing squads to execute under project mutex.
@@ -403,17 +330,16 @@ public final class NbMavenProjectImpl implements Project {
             return;
         }
         problemReporter.clearReports(); //#167741 -this will trigger node refresh?
-        MavenProject prj = loadOriginalMavenProject();
+        MavenProject prj = loadOriginalMavenProject(true);
         synchronized (this) {
             project = new SoftReference<MavenProject>(prj);
         }
         ACCESSOR.doFireReload(watcher);
-        problemReporter.doBaseProblemChecks(getOriginalMavenProject());
+        problemReporter.doIDEConfigChecks();
     }
 
     public static void refreshLocalRepository(NbMavenProjectImpl project) {
-        String basedir = project.getEmbedder().getLocalRepository().getBasedir();
-        File file = FileUtil.normalizeFile(new File(basedir));
+        File file = project.getEmbedder().getLocalRepositoryFile();
         FileUtil.refreshFor(file);
     }
 

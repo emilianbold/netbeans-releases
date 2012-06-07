@@ -47,16 +47,22 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.JGitText;
 import org.eclipse.jgit.errors.NotSupportedException;
 import org.eclipse.jgit.errors.TransportException;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.transport.CredentialItem;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.TransportProtocol;
 import org.eclipse.jgit.transport.URIish;
+import org.eclipse.jgit.util.FS;
+import org.eclipse.jgit.util.SystemReader;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -66,8 +72,10 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  * @author ondra
  */
 abstract class TransportCommand extends GitCommand {
+    private static final String PROP_ENV_GIT_SSH = "GIT_SSH"; //NOI18N
     private CredentialsProvider credentialsProvider;
     private final String remote;
+    private static final Logger LOG = Logger.getLogger(TransportCommand.class.getName());
 
     public TransportCommand (Repository repository, GitClassFactory gitFactory, String remote, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
@@ -114,6 +122,24 @@ abstract class TransportCommand extends GitCommand {
 
     public final void setCredentialsProvider (CredentialsProvider credentialsProvider) {
         this.credentialsProvider = credentialsProvider;
+    }
+    
+    @Override
+    public final void run () throws GitException {
+        SystemReader original = SystemReader.getInstance();
+        String externalTool = original.getenv(PROP_ENV_GIT_SSH);
+        boolean replace = externalTool != null;
+        try {
+            if (replace) {
+                LOG.log(Level.WARNING, "{0} set to {1}, ignoring and using the default implementation via JSch", new Object[] { PROP_ENV_GIT_SSH, externalTool }); //NOI18N
+                SystemReader.setInstance(new DelegatingSystemReader(original));
+            }
+            runTransportCommand();
+        } finally {
+            if (replace) {
+                SystemReader.setInstance(original);
+            }
+        }
     }
     
     protected final CredentialsProvider getCredentialsProvider () {
@@ -173,6 +199,54 @@ abstract class TransportCommand extends GitCommand {
             }
         } else {
             throw new GitException(message, e);
+        }
+    }
+
+    protected abstract void runTransportCommand () throws GitException;
+    
+    private static class DelegatingSystemReader extends SystemReader {
+        private final SystemReader instance;
+
+        public DelegatingSystemReader (SystemReader sr) {
+            this.instance = sr;
+        }
+
+        @Override
+        public String getHostname () {
+            return instance.getHostname();
+        }
+
+        @Override
+        public String getenv (String string) {
+            if (PROP_ENV_GIT_SSH.equals(string)) {
+                return null;
+            }
+            return instance.getenv(string);
+        }
+
+        @Override
+        public String getProperty (String string) {
+            return instance.getProperty(string);
+        }
+
+        @Override
+        public FileBasedConfig openUserConfig (Config config, FS fs) {
+            return instance.openUserConfig(config, fs);
+        }
+
+        @Override
+        public FileBasedConfig openSystemConfig (Config config, FS fs) {
+            return instance.openSystemConfig(config, fs);
+        }
+
+        @Override
+        public long getCurrentTime () {
+            return instance.getCurrentTime();
+        }
+
+        @Override
+        public int getTimezone (long l) {
+            return instance.getTimezone(l);
         }
     }
 }

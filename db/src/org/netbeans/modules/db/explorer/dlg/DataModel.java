@@ -221,6 +221,7 @@ public class DataModel extends AbstractTableModel
     public void addRow(ColumnItem object)
     {
         data.add(object);
+        addToKeyLists(object);
         fireTableChanged(new TableModelEvent(this, getRowCount()-1, getRowCount()-1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
     }
 
@@ -234,6 +235,7 @@ public class DataModel extends AbstractTableModel
     public void insertRow(int row, ColumnItem item)
     {
         data.add(row, item);
+        addToKeyLists(item);
         fireTableRowsInserted(row, row);
     }
 
@@ -271,5 +273,13 @@ public class DataModel extends AbstractTableModel
      */
     public ColumnItem getRow(int rowIndex) {
         return (ColumnItem) data.get(rowIndex);
+    }
+
+    private void addToKeyLists(ColumnItem item) {
+        if (item.isPrimaryKey()) {
+            primaryKeys.add(item);
+        } else if (item.isUnique()) {
+            uniqueKeys.add(item);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -49,17 +50,25 @@ public class ValueCellEditor extends AbstractCellEditor implements TableCellRend
 
     @SuppressWarnings({"unchecked"})
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        JavaVMOption<?> option = (JavaVMOption<?>) value;
-        if (column == 1 && (option instanceof SwitchNode || option.getValue() instanceof OptionValue.SwitchOnly)) {
-            SwitchNode sn = (SwitchNode) option;
-            booleanLabel.setSelected(sn.getValue().getValue());
-            return booleanLabel;
-        }        
-        label.setText(extractText(option, column));
+        String text;
+        if (value instanceof JavaVMOption) {
+            JavaVMOption<?> option = (JavaVMOption<?>) value;
+            if (column == 1 && (option instanceof SwitchNode || option.getValue() instanceof OptionValue.SwitchOnly)) {
+                SwitchNode sn = (SwitchNode) option;
+                booleanLabel.setSelected(sn.getValue().getValue());
+                return booleanLabel;
+            }
+            text = extractText(option, column);
+        } else {
+            text = "";      //NOI18N
+        }
+        label.setText(text);
         return label;
     }
 
-    private String extractText(JavaVMOption<?> option, int column) {
+    private String extractText(
+            @NonNull final JavaVMOption<?> option,
+            final int column) {
         final OptionValue<?> ov = option.getValue();
         if (option instanceof UserPropertyNode) {
             Map.Entry<String, String> entry = (ov != null ? ((OptionValue.StringPair) ov).getValue() : null);
@@ -104,6 +113,7 @@ public class ValueCellEditor extends AbstractCellEditor implements TableCellRend
         JavaVMOption<?> option = (JavaVMOption<?>) value;
         if (column == 0) {
             textEditor.setText(extractText(option, column));
+            currentEditor = textEditor;
             return textEditor;
         } else if (option instanceof SwitchNode) {
             SwitchNode sn = (SwitchNode) option;

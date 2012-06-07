@@ -622,7 +622,11 @@ public final class GeneratedFilesHelper {
                         String[] split = oldCrcAndV.split("@", 2); // NOI18N
                         if (!crc.equals(split[0])) {
                             SpecificationVersion newV = stylesheetVersion(stylesheet);
-                            if (newV == null || newV.compareTo(new SpecificationVersion(split[1])) >= 0) {
+                            try {
+                                if (newV == null || newV.compareTo(new SpecificationVersion(split[1])) >= 0) {
+                                    flags |= FLAG_OLD_STYLESHEET;
+                                }
+                            } catch (NumberFormatException x) { // #212443
                                 flags |= FLAG_OLD_STYLESHEET;
                             }
                         }

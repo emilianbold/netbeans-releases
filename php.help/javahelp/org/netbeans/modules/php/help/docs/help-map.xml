@@ -12,7 +12,6 @@
     <mapID target="php_process" url="process.html"/>
     <mapID target="org.netbeans.modules.php.help.about" url="help-about.html"/>
     <mapID target="php_projects" url="php-projects.html"/>
-    <mapID target="xdebug_setup" url="xdebug-setup.html"/>
     <mapID target="php_hudson" url="hudson-php.html"/>
     <!-- TOC Editor help -->
     <mapID target="php_editor" url="editor/editor-about.html"/>
@@ -24,6 +23,25 @@
     <mapID target="php_renaming" url="editor/renaming.html"/>
     <mapID target="php_codegen" url="editor/code-generators.html"/>
     <mapID target="def_var_in_comment" url="editor/def-var-in-comment.html"/>
+    
+    <!-- TOC debugging help -->
+    <mapID target="php_debug_about" url="debug/debug_about.html"/>
+    <mapID target="php_debug_process" url="debug/debug_process.html"/>
+    <mapID target="xdebug_setup" url="debug/xdebug-setup.html"/>
+    <mapID target="php_breakpoints" url="debug/breakpoint_php.html"/>
+    <mapID target="php_debug_context" url="debug/debug_context.html"/>
+    <mapID target="php_debug_start" url="debug/debug_local.html"/>
+    <mapID target="php_debug_remote" url="debug/debug_remote.html"/>
+    <mapID target="php_stepthrough" url="debug/debug_step.html"/>
+    <mapID target="php_debug_finish" url="debug/debug_finish.html"/>
+    <mapID target="php_debug_windows" url="debug/windows/debug_window.html"/>
+    <mapID target="php_breakpoint_window" url="debug/windows/breakpoint_view.html"/>
+    <mapID target="php_callstack_window" url="debug/windows/callstack_view.html"/>
+    <mapID target="php_threads_window" url="debug/windows/threads_view.html"/>
+    <mapID target="php_variables_window" url="debug/windows/variables_view.html"/>
+    <mapID target="php_watches_window" url="debug/windows/watches_view.html"/>
+    <mapID target="php_debug_variables" url="debug/debug_variables.html"/>
+    <mapID target="php_debug_watches" url="debug/debug_new_watch.html"/>
 
     <!-- CSH -->
     <!-- Projects window F1 help-->

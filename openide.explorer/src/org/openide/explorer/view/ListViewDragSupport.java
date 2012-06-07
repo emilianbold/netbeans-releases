@@ -100,9 +100,14 @@ class ListViewDragSupport extends ExplorerDragSupport {
     * @return Node array or null if position of the cursor points
     * to no node.
     */
+    @Override
     Node[] obtainNodes(DragGestureEvent dge) {
         Point dragOrigin = dge.getDragOrigin();
-        int index = list.locationToIndex(dge.getDragOrigin());
+        int index = list.locationToIndex(dragOrigin);
+        if (index < 0) {
+            return null;
+        }
+        
         Object obj = list.getModel().getElementAt(index);
 
         if (obj instanceof VisualizerNode) {

@@ -1105,8 +1105,10 @@ public class Annotations implements DocumentListener {
             AnnotationType type;
             AnnotationType.CombinationMember[] combs;
             
-            for (Iterator<String> it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
-                type = AnnotationTypes.getTypes().getType(it.next());
+            AnnotationTypes types = AnnotationTypes.getTypes();
+            for (Iterator<String> it = types.getAnnotationTypeNames(); it.hasNext(); ) {
+                String typeName = it.next();
+                type = types.getType(typeName);
                 if (type == null)
                     continue;
                 combs = type.getCombinations();

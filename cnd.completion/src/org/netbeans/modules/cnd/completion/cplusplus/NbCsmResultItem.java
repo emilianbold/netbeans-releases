@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -311,6 +312,22 @@ public abstract class NbCsmResultItem extends CsmResultItem{
         @Override
         protected CsmPaintComponent.UnionPaintComponent createUnionPaintComponent() {
             return new NbCsmPaintComponent.NbUnionPaintComponent();
+        }
+    }
+
+    public final static class NbForwardEnumResultItem extends ForwardEnumResultItem {
+
+        public NbForwardEnumResultItem(CsmEnumForwardDeclaration cls, boolean displayFQN, int priority) {
+            this(cls, 0, displayFQN, priority);
+        }
+
+        public NbForwardEnumResultItem(CsmEnumForwardDeclaration cls, int classDisplayOffset, boolean displayFQN, int priority) {
+            super(cls, classDisplayOffset, displayFQN, priority);
+        }
+
+        @Override
+        protected CsmPaintComponent.EnumPaintComponent createEnumPaintComponent() {
+            return new NbCsmPaintComponent.NbEnumPaintComponent();
         }
     }
 

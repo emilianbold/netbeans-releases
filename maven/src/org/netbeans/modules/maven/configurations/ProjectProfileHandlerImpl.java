@@ -77,35 +77,12 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private final List<String> sharedProfiles = new ArrayList<String>();
     private final AuxiliaryConfiguration ac;
     private final NbMavenProjectImpl nmp;
-    private List<Model> lineage;
 
     public ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
         this.nmp = nmp;
         this.ac = ac;
         privateProfiles.addAll(retrieveActiveProfiles(ac, false));
         sharedProfiles.addAll(retrieveActiveProfiles(ac, true));
-    }
-
-    /**
-     * reset caching of the lineage, invoked from MavenProject reloads
-     */
-    public synchronized void clearLineageCache() {
-        lineage = null;
-    }
-
-    /**
-     * cache the lineage for repeated use
-     */
-    private synchronized List<Model> getLineage() {
-        if (lineage == null) {
-            try {
-                lineage = nmp.getEmbedder().createModelLineage(nmp.getPOMFile());
-            } catch (ModelBuildingException ex) {
-                Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
-                lineage = Collections.emptyList();
-            }
-        }
-        return lineage;
     }
 
     public @Override List<String> getAllProfiles() {
@@ -197,17 +174,10 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
 
     private void extractProfiles(Set<String> profileIds) {
-        /* Cannot use this as it would trigger a stack overflow when loading the project:
         for (Profile profile : nmp.getOriginalMavenProject().getModel().getProfiles()) {
             profileIds.add(profile.getId());
         }
-         */
-        for (Model model : getLineage()) {
-            for (Profile profile : model.getProfiles()) {
-                profileIds.add(profile.getId());
             }
-        }
-    }
 
     private List<String> retrieveActiveProfiles(AuxiliaryConfiguration ac, boolean shared) {
 

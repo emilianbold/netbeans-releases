@@ -764,8 +764,10 @@ public class ElementsFactory {
         @Override
         public void detachFromParent() {
             ModifiableOpenTag mot = (ModifiableOpenTag) parent();
-            mot.removeChild(this);
-            setParent(null);
+            if(mot != null) {
+                mot.removeChild(this);
+                setParent(null);
+            }
         }
 
         @Override

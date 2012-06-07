@@ -76,6 +76,23 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="java-classpath-compile-only">
+            <api name="classpath"/>
+            <summary>Introducing JavaClassPathConstants.COMPILE_ONLY</summary>
+            <version major="1" minor="39"/>
+            <date day="23" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a new <code>COMPILE_ONLY</code> classpath type allowing project types to add
+                    classpath resources which should be included in the complile classpath but should not
+                    be inherited by runtime classpath.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.classpath" name="JavaClassPathConstants" />
+            <issue number="207717"/>
+        </change>
         <change id="source-javadoc-attacher">
             <api name="queries"/>
             <summary>Added SourceJavadocAttacher to allow clients to attach source (javadoc) roots to binary root</summary>
@@ -93,7 +110,7 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.netbeans.api.java.queries" name="SourceJavadocAttacher" />
             <class package="org.netbeans.spi.java.queries" name="SourceJavadocAttacherImplementation" />
-            <issue number="47498"/>
+            <issue number="200698"/>
         </change>
         <change id="source-level-changes">
             <api name="queries"/>

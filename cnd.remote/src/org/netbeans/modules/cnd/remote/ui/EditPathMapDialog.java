@@ -74,12 +74,10 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -87,6 +85,7 @@ import org.netbeans.modules.cnd.remote.mapper.HostMappingsAnalyzer;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -180,12 +179,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Explanation");
         }
         txtExplanation.setText(explanationText);
-
-        // bg color jdk bug fixup
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            jScrollPane1.setOpaque(false);
-            jScrollPane3.setOpaque(false);
-        }
 
         initTableModel();
     }

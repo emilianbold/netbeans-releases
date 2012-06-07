@@ -388,7 +388,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             if (file.isValid()) {
                 FileBuffer buffer = file.getBuffer();
                 if (buffer != null){
-                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getFileLanguage());
+                    ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), buffer.getCharBuffer(), file.getFileLanguage(), file.getFileLanguageFlavor());
                 }
             }
         } catch (IOException ex) {

@@ -53,13 +53,16 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.index.Term;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.lucene.DocumentIndexImpl;
 import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.SupportAccessor;
 import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
+import org.netbeans.modules.parsing.lucene.support.Index.WithTermFrequencies.TermFreq;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -76,6 +79,10 @@ public final class IndexManager {
     private static final Lookup.Result<? extends ScanSuspendImplementation> res = Lookup.getDefault().lookupResult(ScanSuspendImplementation.class);
 
     static IndexFactory factory = new LuceneIndexFactory();    //Unit tests overrides the factory
+    
+    static {
+        SupportAccessor.setInstance(new SupportAccessorImpl());
+    }
     
     private IndexManager() {}
     
@@ -336,6 +343,26 @@ public final class IndexManager {
         for (ScanSuspendImplementation impl : res.allInstances()) {
             impl.resume();
         }
+    }
+    
+    private static class SupportAccessorImpl extends SupportAccessor {
+
+        @Override
+        @NonNull
+        public TermFreq newTermFreq() {
+            return new Index.WithTermFrequencies.TermFreq();
+        }
+
+        @Override
+        public Index.WithTermFrequencies.TermFreq setTermFreq(
+            @NonNull final TermFreq into,
+            @NonNull final Term term,
+            final int freq) {
+            into.setTerm(term);
+            into.setFreq(freq);
+            return into;
+        }
+        
     }
 
 }

@@ -68,7 +68,7 @@ public class ChooseWizardPanel implements WizardDescriptor.ValidatingPanel<Wizar
     }
     
     public @Override HelpCtx getHelp() {
-        return new HelpCtx(ChooseWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.maven.newproject.ChooseWizardPanel");
     }
     
     public @Override boolean isValid() {

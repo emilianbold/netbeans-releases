@@ -7,7 +7,7 @@
               <Group type="parallel" groupAlignment="leading" max="$pref" attributes="0">
                   <Component id="jToggleButton1" min="$pref" max="$pref" attributes="0"/>
                   <Component id="jButton3" min="$pref" max="$pref" attributes="1"/>
-                  <Component id="jButton1" alignment="leading" pref="127" max="Short.MAX_VALUE" attributes="1025"/>
+                  <Component id="jButton1" pref="127" max="Short.MAX_VALUE" attributes="1025"/>
                   <Component id="jButton2" alignment="leading" max="Short.MAX_VALUE" attributes="1537"/>
               </Group>
               <EmptySpace pref="127" max="Short.MAX_VALUE" attributes="4"/>

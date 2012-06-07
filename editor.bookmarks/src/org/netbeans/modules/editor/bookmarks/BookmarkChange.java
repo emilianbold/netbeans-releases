@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
+import java.net.URI;
 import org.netbeans.api.project.Project;
 
 /**
@@ -62,26 +63,26 @@ public class BookmarkChange {
     
     private static final int KEY_CHANGED = 32;
     
-    private final Project project;
+    private final URI projectURI;
     
     private final BookmarkInfo bookmark;
     
     private int statusBits;
     
     BookmarkChange(BookmarkInfo bookmark) {
-        this(bookmark.getFileBookmarks().getProjectBookmarks().getProject(), bookmark);
+        this(bookmark.getFileBookmarks().getProjectBookmarks().getProjectURI(), bookmark);
     }
     
     /**
      * Constructor for project loading/unloading (should be followed by markAdded()/markRemoved()).
-     * @param project 
+     * @param projectURI 
      */
-    BookmarkChange(Project project) {
-        this(project, null);
+    BookmarkChange(URI projectURI) {
+        this(projectURI, null);
     }
     
-    BookmarkChange(Project project, BookmarkInfo bookmark) {
-        this.project = project;
+    BookmarkChange(URI projectURI, BookmarkInfo bookmark) {
+        this.projectURI = projectURI;
         this.bookmark = bookmark;
     }
 
@@ -104,8 +105,8 @@ public class BookmarkChange {
      *
      * @return non-null project.
      */
-    public Project getProject() {
-        return project;
+    public URI getProjectURI() {
+        return projectURI;
     }
     
     public boolean isAdded() {

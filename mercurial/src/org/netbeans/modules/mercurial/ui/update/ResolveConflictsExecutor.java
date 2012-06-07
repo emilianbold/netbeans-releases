@@ -106,7 +106,15 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                 Mercurial.LOG.warning("can't resolve conflicts for null fileobject : " + file + ", exists: " + file.exists());
                 return;
             }
-            handleMergeFor(file, fo, fo.lock(), merge);
+            FileLock lock = fo.lock();
+            boolean mergeViewerDisplayed = false;
+            try {
+                mergeViewerDisplayed = handleMergeFor(file, fo, lock, merge);
+            } finally {
+                if (!mergeViewerDisplayed) {
+                    lock.releaseLock();
+                }
+            }
         } catch (FileAlreadyLockedException e) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -124,7 +132,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         }
     }
     
-    private void handleMergeFor(final File file, FileObject fo, FileLock lock,
+    private boolean handleMergeFor(final File file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = (fo == null) ? "" : "." + fo.getExt();             //NOI18N
@@ -139,7 +147,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         final Difference[] diffs = copyParts(true, file, f1, true, encoding);
         if (diffs.length == 0) {
             ConflictResolvedAction.resolved(file);  // remove conflict status
-            return;
+            return false;
         }
 
         copyParts(false, file, f2, false, encoding);
@@ -194,6 +202,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
                 }
             }
         });
+        return true;
     }
 
     /**

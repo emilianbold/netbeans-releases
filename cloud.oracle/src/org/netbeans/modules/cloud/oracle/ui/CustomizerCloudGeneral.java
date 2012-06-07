@@ -130,6 +130,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
                     if (!OracleWizardPanel.testPassword(identityDomainField.getText(), 
                             usernameField.getText(), 
                             String.valueOf(passwordField.getPassword()), 
+                            serviceInstanceField.getText(),
                             adminUrlField.getText(), 
                             sdkTextField.getText())) {
                         DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(

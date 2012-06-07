@@ -180,6 +180,18 @@
     
     <!-- Check availability of JavaFX SDK deployment support (ant-javafx.jar) -->
 
+    <target name="-check-endorsed-javafx-ant-classpath">
+        <condition property="endorsed-javafx-ant-classpath-available">
+            <and>
+                <isset property="endorsed.javafx.ant.classpath"/>
+                <not>
+                    <equals arg1="${endorsed.javafx.ant.classpath}" arg2=""/>
+                </not>
+            </and>
+        </condition>
+        <echo message="endorsed-javafx-ant-classpath-available = ${endorsed-javafx-ant-classpath-available}" level="verbose"/>
+    </target>
+
     <target name="-check-property-javafx.sdk">
         <echo message="javafx.sdk = ${javafx.sdk}" level="verbose"/>
         <condition property="javafx.sdk.defined">
@@ -314,11 +326,19 @@
             </and>
         </condition>
     </target>
-    <target name="-check-ant-javafx-version" depends="-pre-check-ant-javafx-version" if="do.check.ant-javafx.version">
+    <target name="-set-endorsed-javafx-ant-classpath" depends="-check-endorsed-javafx-ant-classpath,-pre-check-ant-javafx-version" if="endorsed-javafx-ant-classpath-available">
+        <property name="javafx.ant.classpath" value="${endorsed.javafx.ant.classpath}:${ant-javafx.jar.location}"/>
+    </target>
+    <target name="-set-javafx-ant-classpath" depends="-check-endorsed-javafx-ant-classpath,-pre-check-ant-javafx-version" unless="endorsed-javafx-ant-classpath-available">
+        <property name="javafx.ant.classpath" value="${ant-javafx.jar.location}"/>
+    </target>
+    <target name="-check-ant-javafx-version" depends="-pre-check-ant-javafx-version,
+            -set-endorsed-javafx-ant-classpath,-set-javafx-ant-classpath" if="do.check.ant-javafx.version">
         <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
+        <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
         <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
             uri="javafx:com.sun.javafx.tools.ant"
-            classpath="${ant-javafx.jar.location}"/>
+            classpath="${javafx.ant.classpath}"/>
         <condition property="have-fx-ant-init">
             <typefound name="javafx:com.sun.javafx.tools.ant:init-ant"/>
         </condition>
@@ -338,6 +358,7 @@
     <target name="-check-jfx-sdk-version" depends="-check-jfx-sdk-version-old, -check-jfx-sdk-version-new">
         <echo message="Detected JavaFX Ant API version ${javafx.ant.version}" level="info"/>
         <echo message="have-fx-ant-api-1.1 = ${have-fx-ant-api-1.1}" level="verbose"/>
+        <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
     </target>
 
     <target name="-check-jfx-deployment" depends="-check-jdk-version,-check-jfx-sdk-version">
@@ -751,6 +772,7 @@
         </condition>
         <condition property="app-with-external-preloader-jar">
             <and>
+                <isset property="app-with-preloader"/>
                 <isset property="javafx.preloader.type"/>
                 <equals arg1="${javafx.preloader.type}" arg2="jar" trim="true"/>
             </and>
@@ -1239,7 +1261,8 @@
     <macrodef name="deploy-jar">
         <sequential>
             <antcall target="-pre-jfx-jar"/>
-            <typedef name="fx_jar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${ant-javafx.jar.location}"/>
+            <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
+            <typedef name="fx_jar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${javafx.ant.classpath}"/>
             <echo message="Launching &lt;fx:jar&gt; task from ${ant-javafx.jar.location}" level="info"/>
             <property name="pp_jar_destfile" value="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}"/>
             <property name="pp_jar_buildclasses" value="${basedir}${file.separator}${build.classes.dir}"/>
@@ -1471,7 +1494,8 @@
     <macrodef name="deploy-deploy">
         <sequential>
             <antcall target="-pre-jfx-deploy"/>
-            <typedef name="fx_deploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${ant-javafx.jar.location}"/>
+            <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
+            <typedef name="fx_deploy" classname="com.sun.javafx.tools.ant.DeployFXTask" classpath="${javafx.ant.classpath}"/>
             <echo message="Launching &lt;fx:deploy&gt; task from ${ant-javafx.jar.location}" level="info"/>
             <property name="pp_deploy_dir" value="${jfx.deployment.dir}"/>
             <property name="pp_deploy_fs1" value="lib${file.separator}${javafx.preloader.jar.filename}"/>

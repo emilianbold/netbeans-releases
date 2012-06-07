@@ -41,7 +41,6 @@
                 <tocitem text="Mapping an Ant Target to an IDE Command" target="proj_free_targets" />
                 <tocitem text="About Debugging Free-Form Projects" target="proj_free_debug_about" />
                 <tocitem text="Creating a Debug Target for a Free-Form Java Project" target="proj_free_debug" />
-                <tocitem text="Creating a Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
                 <tocitem text="Storing IDE Targets in a Separate Ant Script" target="proj_free_nbtargs" />
                 <tocitem text="Editing the project.xml File" target="proj_free_projectxml" />
             </tocitem>    
@@ -109,7 +108,6 @@
             <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
             <tocitem text="Attaching Source Code to a JAR File" target="debug.source"></tocitem>
             <tocitem text="Creating a Debug Target for a Free-Form Java Project" target="proj_free_debug" />
-            <tocitem text="Creating a Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
             <tocitem text="Setting Breakpoints">
                 <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
                 <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>

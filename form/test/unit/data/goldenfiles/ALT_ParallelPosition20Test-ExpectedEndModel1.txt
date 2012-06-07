@@ -5,11 +5,11 @@
           <Group type="sequential" alignment="trailing" attributes="0">
               <EmptySpace pref="187" max="Short.MAX_VALUE" attributes="12"/>
               <Group type="parallel" groupAlignment="leading" max="$pref" attributes="16">
-                  <Component id="jTextField1" alignment="leading" pref="160" max="Short.MAX_VALUE" attributes="1"/>
+                  <Component id="jTextField1" pref="160" max="Short.MAX_VALUE" attributes="1"/>
                   <Component id="jTextField2" alignment="leading" max="Short.MAX_VALUE" attributes="1"/>
                   <Component id="jTextField3" alignment="leading" max="Short.MAX_VALUE" attributes="1"/>
               </Group>
-              <EmptySpace min="$pref" max="$pref" attributes="16"/>
+              <EmptySpace max="$pref" attributes="16"/>
               <Component id="jScrollPane1" min="$pref" max="$pref" attributes="16"/>
               <EmptySpace max="$pref" attributes="16"/>
           </Group>

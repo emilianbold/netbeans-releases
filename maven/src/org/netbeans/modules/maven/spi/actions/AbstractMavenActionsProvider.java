@@ -94,7 +94,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
         List<FileObject> files = new ArrayList<FileObject>();
-        Iterator<? extends DataObject> it = lookup.lookup(new Lookup.Template<DataObject>(DataObject.class)).allInstances().iterator();
+        Iterator<? extends DataObject> it = lookup.lookupAll(DataObject.class).iterator();
         while (it.hasNext()) {
             DataObject d = it.next();
             FileObject f = d.getPrimaryFile();
@@ -109,6 +109,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
         return files.toArray(new FileObject[files.size()]);
     }
 
+    @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
         ActionToGoalMapping rawMappings = getRawMappings();
         Iterator it = rawMappings.getActions().iterator();
@@ -127,6 +128,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
         return false;
     }
 
+    @Override
     public final RunConfig createConfigForDefaultAction(String actionName, Project project, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         @SuppressWarnings("unchecked")
@@ -196,6 +198,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      * default implementation will look in the content of the
      * @return
      */
+    @Override
     public Set<String> getSupportedDefaultActions() {
         HashSet<String> toRet = new HashSet<String>();
         ActionToGoalMapping raw = getRawMappings();
@@ -222,6 +225,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      * No replacements happen.
      * The instance returned is always a new copy, can be modified or reused.
      */
+    @Override
     public NetbeansActionMapping getMappingForAction(String actionName, Project project) {
         NetbeansActionMapping action = null;
         try {
@@ -269,7 +273,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
                 if (actionName.equals(elem.getActionName()) &&
                         (elem.getPackagings().contains(prjPack.trim()) ||
-                        elem.getPackagings().contains("*") || elem.getPackagings().size() == 0)) {//NOI18N
+                        elem.getPackagings().contains("*") || elem.getPackagings().isEmpty())) {//NOI18N
                     action = elem;
                     break;
                 }
