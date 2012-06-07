@@ -248,7 +248,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     public void itemStateChanged(ItemEvent ie) {
         GitURI guri = getURI();
         if(guri != null) {
-            activeSettingsType.populateFields(recentConnectionSettings.get(guri.toString()));
+            ConnectionSettings setts = recentConnectionSettings.get(guri.toString());
+            if (setts != null) {
+                activeSettingsType.populateFields(setts);
+            }
         }
     }
 
