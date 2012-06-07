@@ -44,6 +44,7 @@
 
 package org.netbeans.api.java.queries;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
@@ -110,6 +111,36 @@ public class SourceLevelQueryTest extends NbTestCase {
         sourceLevel2.removeChangeListener(dummy);
         LEVEL = "1.5";
         assertEquals("1.5",sourceLevel2.getSourceLevel().toString());   //NOI18N
+    }
+    
+    public void testSynonyms() throws IOException {        
+        final FileObject f1 = f.createFolder("f1");   //NOI18N
+        //Test SLQ
+        LEVEL = "5";    //NOI18N
+        assertEquals("1.5", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.5", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        LEVEL = "6";    //NOI18N
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        LEVEL = "7";    //NOI18N
+        assertEquals("1.7", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.7", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        LEVEL = "8";    //NOI18N
+        assertEquals("1.8", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.8", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        //Test SLQ2
+        slq2Files.put(f1, "5");   //NOI18N
+        assertEquals("1.5", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.5", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        slq2Files.put(f1, "6");   //NOI18N
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.6", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        slq2Files.put(f1, "7");   //NOI18N
+        assertEquals("1.7", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.7", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
+        slq2Files.put(f1, "8");   //NOI18N
+        assertEquals("1.8", SourceLevelQuery.getSourceLevel(f1));   //NOI18N
+        assertEquals("1.8", SourceLevelQuery.getSourceLevel2(f1).getSourceLevel());   //NOI18N
     }
 
     public static final class SLQ implements SourceLevelQueryImplementation {

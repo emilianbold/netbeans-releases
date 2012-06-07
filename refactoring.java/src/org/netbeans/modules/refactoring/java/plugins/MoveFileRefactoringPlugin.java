@@ -351,7 +351,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
-        fireProgressListenerStart(ProgressEvent.START, -1);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, -1);
         initClasses();
         Problem p = initPackages();
         if (p != null) {
