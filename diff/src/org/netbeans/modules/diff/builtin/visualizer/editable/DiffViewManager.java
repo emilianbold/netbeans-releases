@@ -87,6 +87,7 @@ class DiffViewManager implements ChangeListener {
     private HighLight []            firstHilitesCached = new HighLight[0];
     private final ScrollMapCached   scrollMap = new ScrollMapCached();
     private final RequestProcessor.Task highlightComputeTask;
+    private Dimension leftScrollBarPrefSize;
     
     public DiffViewManager(EditableDiffView master) {
         this.master = master;
@@ -128,6 +129,31 @@ class DiffViewManager implements ChangeListener {
     
     @Override
     public void stateChanged(ChangeEvent e) {
+        
+        if (e.getSource() == rightContentPanel.getScrollPane().getVerticalScrollBar().getModel()) {
+            // show/hide left scrollbar depending on rights visibility
+            if(rightContentPanel.getScrollPane().getVerticalScrollBar().isVisible()) {
+                Dimension d = leftContentPanel.getScrollPane().getVerticalScrollBar().getSize();
+                if(d.getHeight() > 0 && d.getWidth() > 0) {
+                    leftScrollBarPrefSize = d;
+
+                    // The left vertical scroll bar must be there for mouse wheel to work correctly.
+                    // However it's not necessary to be seen (but must be visible so that the wheel will work).
+                    leftContentPanel.getScrollPane().getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+                    leftContentPanel.getScrollPane().getVerticalScrollBar().setSize(new Dimension(0, 0));
+                    leftContentPanel.getScrollPane().revalidate();
+                    leftContentPanel.getScrollPane().getVerticalScrollBar().revalidate();
+                    leftContentPanel.getScrollPane().getVerticalScrollBar().repaint();
+                } 
+            } else if(leftScrollBarPrefSize != null) {
+                leftContentPanel.getScrollPane().getVerticalScrollBar().setPreferredSize(leftScrollBarPrefSize);
+                leftContentPanel.getScrollPane().getVerticalScrollBar().setSize(leftScrollBarPrefSize);
+                leftContentPanel.getScrollPane().revalidate();
+                leftContentPanel.getScrollPane().getVerticalScrollBar().revalidate();
+                leftContentPanel.getScrollPane().getVerticalScrollBar().repaint();
+            }       
+        }
+        
         JScrollBar leftScrollBar = leftContentPanel.getScrollPane().getVerticalScrollBar();
         JScrollBar rightScrollBar = rightContentPanel.getScrollPane().getVerticalScrollBar();
         if (e.getSource() == leftContentPanel.getScrollPane().getVerticalScrollBar().getModel()) {
@@ -209,7 +235,7 @@ class DiffViewManager implements ChangeListener {
             }
             Difference diff = dd.getDiff();
             if (dd.getBottomLeft() == -1) continue;
-            int start = getRowStartFromLineOffset(doc, diff.getFirstStart() - 1);
+            int start = getRowStartFromLineOffset(doc, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
             if (isOneLineChange(diff)) {
                 CorrectRowTokenizer firstSt = new CorrectRowTokenizer(diff.getFirstText());
                 CorrectRowTokenizer secondSt = new CorrectRowTokenizer(diff.getSecondText());
@@ -255,7 +281,7 @@ class DiffViewManager implements ChangeListener {
             }
             Difference diff = dd.getDiff();
             if (dd.getBottomRight() == -1) continue;
-            int start = getRowStartFromLineOffset(doc, diff.getSecondStart() - 1);
+            int start = getRowStartFromLineOffset(doc, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
             if (isOneLineChange(diff)) {
                 CorrectRowTokenizer firstSt = new CorrectRowTokenizer(diff.getFirstText());
                 CorrectRowTokenizer secondSt = new CorrectRowTokenizer(diff.getSecondText());
@@ -458,7 +484,7 @@ class DiffViewManager implements ChangeListener {
         if (diff.getType() == Difference.DELETE) {
             start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
         } else {
-            start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+            start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
             end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
         }
         MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
