@@ -110,7 +110,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, name, CsmDeclaration.Kind.NAMESPACE_DEFINITION);
         
         if(TraceFlags.DYNAMIC_TESTS_TRACE) {
-            if(containerfile.getName().toString().equals("FieldInfos.cpp")) { // NOI18N
+            if (containerfile.getName().toString().equals("FieldInfos.cpp") || containerfile.getName().toString().equals("CompoundFile.cpp")) { // NOI18N
                 System.out.println("FieldInfos.cpp ns candidate " + candidate + " for name " + name); // NOI18N
             }
         }
