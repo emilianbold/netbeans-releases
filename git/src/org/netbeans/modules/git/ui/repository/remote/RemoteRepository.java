@@ -683,7 +683,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 settingsPanel.savePasswordCheckBox.setSelected(false);
                 settingsPanel.savePassphrase.setSelected(false);
                 settingsPanel.rbPrivateKey.setSelected(false);
-                settingsPanel.rbUsernamePassword.setSelected(!settings.isPrivateKeyAuth());
+                settingsPanel.rbUsernamePassword.setSelected(true);
                 settingsPanel.txtIdentityFile.setText(""); //NOI18N
                 return;
             }
