@@ -2157,6 +2157,9 @@ class OccurenceBuilder {
                 case USE_ALIAS:
                     kind = Kind.USE_ALIAS;
                     break;
+                case TRAIT:
+                    kind = Kind.TRAIT;
+                    break;
             }
             assert kind != null;
             return kind;
