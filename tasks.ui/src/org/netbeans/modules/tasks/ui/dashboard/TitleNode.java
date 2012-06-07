@@ -96,7 +96,7 @@ public class TitleNode extends LeafNode {
                 if (buttons != null) {
                     for (int i = 0; i < buttons.length; i++) {
                         LinkButton linkButton = buttons[i];
-                        panel.add(linkButton, new GridBagConstraints(5 + i, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                        panel.add(linkButton, new GridBagConstraints(5 + i, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
                     }
                 }
             }
