@@ -356,8 +356,12 @@ public final class PatternAnalyser {
                 }
             }
             else if ( params.length == 1 ) {
-                if ( params[0].asType().getKind() == TypeKind.INT && name.startsWith( GET_PREFIX )) {
-                    pp = new IdxProperty( p.ci, null, null, method, null );
+                if ( params[0].asType().getKind() == TypeKind.INT) {
+                    if(name.startsWith( GET_PREFIX )) {
+                        pp = new IdxProperty( p.ci, null, null, method, null );
+                    } else if ( returnType.getKind() == TypeKind.BOOLEAN && name.startsWith( IS_PREFIX )) {
+                        pp = new IdxProperty( p.ci, null, null, method, null );
+                    }
                 }
                 else if ( returnType.getKind() == TypeKind.VOID && name.startsWith( SET_PREFIX )) {
                     pp = new Property( p.ci, null, method );
