@@ -1091,6 +1091,7 @@ public class ProxyLookup extends Lookup {
                     one = computeSingleResult(i);
                     assert one != null;
                 }
+                boolean addAll = false;
                 synchronized (this) {
                     if (getComputed()[i] == null) {
                         getComputed()[i] = one;
@@ -1103,8 +1104,11 @@ public class ProxyLookup extends Lookup {
                             break;
                         }
                     } else {
-                        compute.addAll(one);
+                        addAll = true;
                     }
+                }
+                if (addAll) {
+                    compute.addAll(one);
                 }
             }
             if (i == arr.length && compute != null) {
