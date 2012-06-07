@@ -219,13 +219,7 @@ public class ImportDataCreator {
 
         @Override
         public int compare(String o1, String o2) {
-            int result = 0;
-            if (o1.equals(Bundle.DoNotUseType())) {
-                result = -1;
-            } else {
-                result = o1.compareToIgnoreCase(o2);
-            }
-            return result;
+            return o1.compareToIgnoreCase(o2);
         }
     }
 

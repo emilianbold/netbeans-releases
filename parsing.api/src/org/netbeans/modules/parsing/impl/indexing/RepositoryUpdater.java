@@ -434,6 +434,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             final boolean logStatistics,
             @NullAllowed final LogContext logCtx,
             @NullAllowed final Object... filesOrFileObjects) {
+        
+        boolean ae = false;
+        assert ae = true;
+        if (ae) {
+            for (final Object fileOrFileObject : filesOrFileObjects) {
+                if (fileOrFileObject instanceof File) {
+                    final File file = (File) fileOrFileObject;
+                    assert file.equals(FileUtil.normalizeFile(file)) : String.format("File: %s is not normalized.", file.toString());   //NOI18N
+                }
+            }
+        }
+        
         FSRefreshInterceptor fsRefreshInterceptor = null;
         for(IndexingActivityInterceptor iai : indexingActivityInterceptors.allInstances()) {
             if (iai instanceof FSRefreshInterceptor) {
@@ -3002,22 +3014,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         private String urlForMessage(URL currentlyScannedRoot) {
-            String msg = null;
-
-            URL tmp = FileUtil.getArchiveFile(currentlyScannedRoot);
-            if (tmp == null) {
-                tmp = currentlyScannedRoot;
-            }
-            try {
-                if ("file".equals(tmp.getProtocol())) { //NOI18N
-                    final File file = new File(new URI(tmp.toString()));
-                    msg = file.getAbsolutePath();
-                }
-            } catch (URISyntaxException ex) {
-                // ignore
-            }
-
-            return msg == null ? tmp.toString() : msg;
+            final File file = FileUtil.archiveOrDirForURL(currentlyScannedRoot);            
+            final String msg = file != null?
+                file.getAbsolutePath():
+                currentlyScannedRoot.toExternalForm();
+            return msg;
         }
 
         public @Override String toString() {
@@ -4512,13 +4513,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     totalRecursiveListenersTime += recursiveListenersTime[0];
                     reportRootScan(source, time);
                     if (LOGGER.isLoggable(Level.INFO)) {
-                        Object shown;
-                        try {
-                            final File f = FileUtil.archiveOrDirForURL(source);
-                            shown = f != null ? f : source;
-                        } catch (IllegalArgumentException e) {
-                            shown = source;
-                        }
+                        final File f = FileUtil.archiveOrDirForURL(source);
+                        final Object shown = f != null ? f : source;
                         LOGGER.log(
                             Level.INFO,
                             "Indexing of: {0} took: {1} ms (New or modified files: {2}, Deleted files: {3}) [Adding listeners took: {4} ms]", //NOI18N

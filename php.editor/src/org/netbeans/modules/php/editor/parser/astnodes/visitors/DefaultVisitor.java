@@ -525,7 +525,7 @@ public class DefaultVisitor implements Visitor {
     public void visit(TraitConflictResolutionDeclaration traitsInsteadofStatement) {
         scan(traitsInsteadofStatement.getPreferredTraitName());
         scan(traitsInsteadofStatement.getMethodName());
-        scan(traitsInsteadofStatement.getSuppressedTraitName());
+        scan(traitsInsteadofStatement.getSuppressedTraitNames());
     }
 
     @Override

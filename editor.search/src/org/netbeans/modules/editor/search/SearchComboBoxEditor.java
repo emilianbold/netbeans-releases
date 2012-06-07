@@ -133,6 +133,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     }
     
     public static void changeToOneLineEditorPane(JEditorPane editorPane) {
+        editorPane.putClientProperty("AsTextField", Boolean.TRUE);
         editorPane.putClientProperty(
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N

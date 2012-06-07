@@ -216,7 +216,7 @@ public final class JavadocImports {
                                     String simpleName = referenced.getSimpleName().toString();
                                     pos = ref.begin + simpleName.length() - 1;
                                 }
-                            } else if (rkind.isField() || rkind == ElementKind.METHOD || rkind == ElementKind.CONSTRUCTOR) {
+                            } else if (rkind.isField() || rkind == ElementKind.METHOD || rkind == ElementKind.CONSTRUCTOR || rkind == ElementKind.TYPE_PARAMETER) {
                                 pos = ref.end - 1;
                             }
 
@@ -334,7 +334,8 @@ public final class JavadocImports {
                         offset < reference.begin + reference.fqn.length ()
                     ) {
                         result = result.getKind ().isClass () ||
-                                 result.getKind ().isInterface ()
+                                 result.getKind ().isInterface () ||
+                                 result.getKind() == ElementKind.TYPE_PARAMETER
                                     ? result : result.getEnclosingElement ();
                         int elmNameLength = result.getSimpleName ().length ();
                         while (

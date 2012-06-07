@@ -51,6 +51,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -70,6 +71,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -104,11 +106,13 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
     protected static final String JAVA_EE_VERSION_16="java-ee-version-16"; //NOI18N
     
     Project project;
+    private AntProjectHelper helper;
     private FileObject clientArtifactsFolder;
     
     /** Creates a new instance of WebProjectJAXWSClientSupport */
-    public ProjectJAXWSClientSupport(Project project) {
+    public ProjectJAXWSClientSupport(Project project, AntProjectHelper helper ) {
         this.project=project;
+        this.helper = helper;
     }
     
     public void removeServiceClient(String serviceName) {
@@ -116,6 +120,10 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         if (jaxWsModel!=null && jaxWsModel.removeClient(serviceName)) {
             writeJaxWsModel(jaxWsModel);
         }
+    }
+    
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
     }
     
     public String getWsdlUrl(String serviceName) {
@@ -326,8 +334,9 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         try {
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
+                    Properties props = WSUtils.identifyWsimport(helper);
                     ExecutorTask wsimportTask =
-                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName},null); //NOI18N
+                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName},props); //NOI18N
                     return Boolean.TRUE;
                 }
             }).booleanValue();

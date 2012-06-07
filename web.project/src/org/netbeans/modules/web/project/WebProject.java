@@ -380,7 +380,7 @@ public final class WebProject implements Project {
         apiEjbJar = EjbJarFactory.createEjbJar(webEjbJarProvider);
         WebProjectWebServicesSupport webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
         WebProjectJAXWSSupport jaxwsSupport = new WebProjectJAXWSSupport(this, helper);
-        WebProjectJAXWSClientSupport jaxWsClientSupport = new WebProjectJAXWSClientSupport(this);
+        WebProjectJAXWSClientSupport jaxWsClientSupport = new WebProjectJAXWSClientSupport(this, helper);
         WebProjectWebServicesClientSupport webProjectWebServicesClientSupport = new WebProjectWebServicesClientSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
         apiJaxwsSupport = JAXWSSupportFactory.createJAXWSSupport(jaxwsSupport);

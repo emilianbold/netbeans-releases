@@ -201,11 +201,36 @@ public final class PhpProjectGenerator {
                         Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
                         ProjectManager.getDefault().saveProject(project);
 
+                        assert verifyProjectProperties(project);
+
                     } catch (IOException ioe) {
                         throw new MutexException(ioe);
                     }
                     return null;
                 }
+
+                // #213468 - check src.dir property
+                private boolean verifyProjectProperties(Project project) throws IOException {
+                    FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+                    if (nbproject == null) {
+                        throw new IllegalStateException("nbproject directory does not exist for project " + project.getProjectDirectory());
+                    }
+                    if (!nbproject.isValid()) {
+                        throw new IllegalStateException("nbproject directory not valid for project " + project.getProjectDirectory());
+                    }
+                    FileObject projectProperties = nbproject.getFileObject("project.properties"); // NOI18N
+                    if (projectProperties == null) {
+                        throw new IllegalStateException("nbproject/project.properties does not exist for project " + project.getProjectDirectory());
+                    }
+                    if (!projectProperties.isValid()) {
+                        throw new IllegalStateException("nbproject/project.properties not valid for project " + project.getProjectDirectory());
+                    }
+                    if (!projectProperties.asText().contains(PhpProjectProperties.SRC_DIR)) {
+                        throw new IllegalStateException("src.dir not found in nbproject/project.properties for project " + project.getProjectDirectory());
+                    }
+                    return true;
+                }
+
             });
         } catch (MutexException e) {
             Exception ie = e.getException();
