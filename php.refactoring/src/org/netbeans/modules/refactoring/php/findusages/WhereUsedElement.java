@@ -71,7 +71,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * An element in the refactoring preview list which holds information about the find-usages-match
- * 
+ *
  * @author Tor Norbye
  */
 
@@ -81,7 +81,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private FileObject parentFile;
     private final Icon icon;
     private final String name;
-    
+
     private static final Logger LOGGER = Logger.getLogger(WhereUsedElement.class.getName());
 
     public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, String name,
@@ -127,7 +127,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         return getFile();
     }
 
-    
+
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
@@ -150,15 +150,15 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     public static WhereUsedElement create(String name, FileObject fo,  OffsetRange range, Icon icon) {
         int start = range.getStart();
         int end = range.getEnd();
-        
+
         int sta = start;
         int en = start; // ! Same line as start
         String content = null;
-        
+
         try {
             BaseDocument bdoc = null;
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = od.getCookie(EditorCookie.class);
+            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
 
             if (ec != null) {
                 bdoc = (BaseDocument) ec.openDocument();
