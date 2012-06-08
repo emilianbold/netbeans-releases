@@ -187,7 +187,9 @@ public final class FileBasedURLMapper extends URLMapper {
         if (url.getHost() == null || url.getHost().length() == 0) {
             file = new File(url.toURI());
         } else {
-            file = new File("\\\\" + url.getHost() + url.getPath().replace('/', '\\')); // NOI18N
+            String path = "\\\\" + url.getHost() + url.getPath().replace('/', '\\'); // NOI18N
+            path = path.replace("%20", " "); // NOI18N
+            file = new File(path);
         }
         return file;
     }
