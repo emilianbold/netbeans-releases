@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.team.c2c;
 
+import com.tasktop.c2c.server.common.service.domain.QueryRequest;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
+import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.eclipse.mylyn.commons.net.AbstractWebLocation;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
@@ -69,10 +72,57 @@ public final class CloudClient {
     }
 
     public Profile getCurrentProfile () throws CloudException {
-        return this.<Profile>run(new Callable<Profile> () {
+        return run(new Callable<Profile> () {
             @Override
             public Profile call () throws Exception {
                 return delegate.getCurrentProfile();
+            }
+        }, PROFILE_SERVICE);
+    }
+
+    public Project getProjectById (final String projectId) throws CloudException {
+        return run(new Callable<Project> () {
+            @Override
+            public Project call () throws Exception {
+                return delegate.getProjectByIdentifier(projectId);
+            }
+        }, PROFILE_SERVICE);
+    }
+
+    public List<Project> getProjects (final Long profileId) throws CloudException {
+        return run(new Callable<List<Project>> () {
+            @Override
+            public List<Project> call () throws Exception {
+                return delegate.getProjects(profileId);
+            }
+        }, PROFILE_SERVICE);
+    }
+
+    public boolean isWatchingProject (final String projectId) throws CloudException {
+        return Boolean.TRUE.equals(run(new Callable<Boolean> () {
+            @Override
+            public Boolean call () throws Exception {
+                return delegate.isWatchingProject(projectId);
+            }
+        }, PROFILE_SERVICE));
+    }
+
+    public void unwatchProject (final String projectId) throws CloudException {
+        run(new Callable<Void> () {
+            @Override
+            public Void call () throws Exception {
+                delegate.unwatchProject(projectId);
+                return null;
+            }
+        }, PROFILE_SERVICE);
+    }
+
+    public void watchProject (final String projectId) throws CloudException {
+        run(new Callable<Void> () {
+            @Override
+            public Void call () throws Exception {
+                delegate.watchProject(projectId);
+                return null;
             }
         }, PROFILE_SERVICE);
     }
@@ -98,6 +148,5 @@ public final class CloudClient {
             throw new CloudException(ex);
         }
     }
-
     
 }

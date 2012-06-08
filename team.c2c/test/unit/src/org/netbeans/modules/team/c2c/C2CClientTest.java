@@ -42,10 +42,16 @@
 
 package org.netbeans.modules.team.c2c;
 
+import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
+import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.eclipse.mylyn.commons.net.WebLocation;
@@ -99,13 +105,63 @@ public class C2CClientTest extends NbTestCase  {
         }
     }
     
-    public void testCreateClient () throws Exception {
+    public void testGetUserInfo () throws Exception {
         CloudClient client = getClient();
         Profile currentProfile = client.getCurrentProfile();
         assertNotNull(currentProfile.getFirstName());
         assertNotNull(currentProfile.getLastName());
     }
-
+    
+    public void testGetMyProjects () throws Exception {
+        CloudClient client = getClient();
+        Profile currentProfile = client.getCurrentProfile();
+        List<Project> projects = client.getProjects(currentProfile.getId());
+        assertNotNull(projects);
+        assertFalse(projects.isEmpty());
+        // anagram game should be there
+        Project anagramGameProject = null;
+        for (Project p : projects) {
+            if ("anagramgame".equals(p.getIdentifier())) {
+                anagramGameProject = p;
+                break;
+            }
+        }
+        assertNotNull(anagramGameProject);
+    }
+    
+    public void testGetProjectById () throws Exception {
+        CloudClient client = getClient();
+        Project project = client.getProjectById("anagramgame");
+        assertNotNull(project);
+        assertEquals("anagramgame", project.getIdentifier());
+    }
+    
+    public void testGetProjectServices () throws Exception {
+        CloudClient client = getClient();
+        Project project = client.getProjectById("anagramgame");
+        assertNotNull(project);
+        assertEquals("anagramgame", project.getIdentifier());
+        List<ProjectService> services = project.getProjectServices();
+        Set<ServiceType> expectedServices = EnumSet.of(ServiceType.SCM, ServiceType.TASKS, ServiceType.WIKI, ServiceType.BUILD);
+        for (ProjectService s : services) {
+            if (expectedServices.remove(s.getServiceType())) {
+                assertNotNull(s.getUrl());
+            }
+        }
+        assertTrue(expectedServices.isEmpty());
+    }
+    
+    public void testWatchUnwatchProject () throws Exception {
+        CloudClient client = getClient();
+        String projectIdent = "qatestingproject";
+        client.unwatchProject(projectIdent);
+        assertFalse(client.isWatchingProject(projectIdent));
+        client.watchProject(projectIdent);
+        assertTrue(client.isWatchingProject(projectIdent));
+        client.unwatchProject(projectIdent);
+        assertFalse(client.isWatchingProject(projectIdent));
+    }
+    
     private CloudClient getClient () {
         return ClientFactory.getInstance().getClient(new WebLocation("https://q.tasktop.com/", 
                 uname, 
