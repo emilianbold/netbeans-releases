@@ -62,7 +62,6 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -451,16 +450,13 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             browser = view;
         }
 
-//        resizePanel = new ResizePanel( browser );
         HBox.setHgrow( browser, Priority.ALWAYS );
         HBox hbox = new HBox();
         hbox.getChildren().add( browser );
         VBox.setVgrow( hbox, Priority.ALWAYS );
         VBox root = new VBox();
         root.getChildren().add( hbox );
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setContent( root );
-        container.setScene( new Scene( scrollPane ) );
+        container.setScene( new Scene( root ) );
 
         if( null != urlToLoad ) {
             _setURL( urlToLoad );
@@ -713,10 +709,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.setMinHeight( height );
-                browser.setMaxHeight( height );
-                browser.setMinWidth( width );
                 browser.setMaxWidth( width );
+                browser.setMaxHeight( height );
             }
         });
     }
@@ -725,9 +719,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.setMinWidth( 10 );
                 browser.setMaxWidth( Integer.MAX_VALUE );
-                browser.setMinHeight( 10 );
                 browser.setMaxHeight( Integer.MAX_VALUE );
                 browser.autosize();
             }
