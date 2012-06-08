@@ -218,9 +218,10 @@ public final class LocFiles extends Task {
                 dir = dir.substring(0, dir.length() - remove);
             }
             
-            Jar jar = (Jar) getProject().createTask("jar");
-            Mkdir mkdir = (Mkdir) getProject().createTask("mkdir");
-            Task locJH = getProject().createTask("locjhindexer");
+            Jar jar = new Jar();
+            jar.setProject(getProject());
+            Mkdir mkdir = new Mkdir();
+            mkdir.setProject(getProject());
             
             String jarFileName;
             String subPath = "";
@@ -291,6 +292,7 @@ public final class LocFiles extends Task {
                 File hsFile = fileFrom(baseSrcDir, dir, ds.getIncludedFiles()[0]);
                 File baseJHDir = hsFile.getParentFile();
 
+                Task locJH = getProject().createTask("locjhindexer");
                 try {
                     System.out.println("Basedir: " + baseJHDir.getAbsolutePath());
                     locJH.getClass().getMethod("setBasedir", File.class).invoke(locJH, baseJHDir);
