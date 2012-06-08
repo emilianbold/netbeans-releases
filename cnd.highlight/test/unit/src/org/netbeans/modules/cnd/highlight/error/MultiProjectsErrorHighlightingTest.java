@@ -40,9 +40,14 @@ package org.netbeans.modules.cnd.highlight.error;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -152,17 +157,26 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
 
     public void testRedFilesWhenNoReparseProject210898() throws Exception {
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
-        CsmModel model = super.getModel();
-        assertNotNull("null model", model);
-        performStaticTest("first/first.cpp");
-        performStaticTest("fifth/fifth.cpp");
+        doTestRedFilesWhenReopenProject210898(false);
     }
 
-    private static final boolean ENABLED = false;
-    public void testRedFilesWhenReopenProject210898() throws Exception {
+    public void testRedFilesWhenReparseAndReopenProject210898() throws Exception {
+        // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
+        doTestRedFilesWhenReopenProject210898(true);
+    }
+
+    private void doTestRedFilesWhenReopenProject210898(boolean reparse) throws Exception {
         assertTrue("reposiroty Must Be ON " + TraceFlags.PERSISTENT_REPOSITORY, TraceFlags.PERSISTENT_REPOSITORY);
         // #210898 incorrect content of system includes after reopening projects => unresolved identifiers in dependent projects
         CsmModel model = super.getModel();
+        final AtomicInteger parseCounter = new AtomicInteger(0);
+        final CsmProgressListener listener = new CsmProgressAdapter() {
+            @Override
+            public void fileParsingFinished(CsmFile file) {
+                parseCounter.incrementAndGet();
+            }
+        };
+        CsmListeners.getDefault().addProgressListener(listener);
         assertNotNull("null model", model);
         performStaticTest("first/first.cpp");
         performStaticTest("fifth/fifth.cpp");
@@ -171,17 +185,19 @@ public class MultiProjectsErrorHighlightingTest extends ErrorHighlightingBaseTes
         // fifth project defines macro which defines extra classes
         CsmProject macroDefinedProject = super.getProject(PROJECT_FIFTH);
         assertNotNull("null project for first", macroDefinedProject);
+        assertEquals("reparse was detected ", 0, parseCounter.intValue());
         // close project which uses this extra classes
         super.closeProject(PROJECT_FIFTH);
-//        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
-        if (ENABLED) {
+        assertEquals("reparse was detected ", 0, parseCounter.intValue());
+        if (reparse) {
             // reparse all projects
-            super.reparseAllProjects(4);
+            super.reparseAllProjects();
+            parseCounter.set(0);
         }
-//        firstPrj = super.getProject(PROJECT_FIRST);
-//        assertEquals("first project has libs: " + firstPrj.getLibraries(), 2, firstPrj.getLibraries().size());
         performStaticTest("first/first.cpp");
-        super.reopenProject(PROJECT_FIFTH);
+        super.reopenProject(PROJECT_FIFTH, true);
         performStaticTest("fifth/fifth.cpp");
+        assertEquals("extra reparse was detected ", reparse ? 3 : 0, parseCounter.intValue());
+        CsmListeners.getDefault().removeProgressListener(listener);
     }
 }

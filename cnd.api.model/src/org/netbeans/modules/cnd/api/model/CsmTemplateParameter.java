@@ -65,7 +65,10 @@ public interface CsmTemplateParameter extends CsmOffsetableDeclaration {
     //CharSequence getText();
     
     /** Gets this parameter default value  */
-    CsmObject getDefaultValue();
+    CsmSpecializationParameter getDefaultValue();
+ 
+    /** returns true for "...", otherwise false */
+    boolean isVarArgs();
     
 }
 

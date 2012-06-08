@@ -59,6 +59,7 @@
 				<tocitem text="Using Code Completion" target="UsingCodeCompletion" />
 				<tocitem text="Using Code Templates" target="UsingAbbreviations" />
 				<tocitem text="Error Highlighting" target="ErrorHighlighting" />
+				<tocitem text="Finding Text in Projects" target="FindinProject" />
 				<tocitem text="Using Pair Completion" target="UsingPairCompletion" />
 				<tocitem text="Folding Blocks of Code" target="CandC++CodeFolding" />
 				<tocitem text="Commenting Lines in Your Code" target="Commenting" />

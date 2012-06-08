@@ -46,10 +46,12 @@ package org.netbeans.modules.cnd.navigation.macroview;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -61,6 +63,12 @@ import org.openide.util.actions.CookieAction;
  *
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
+@ActionID(id = "org.netbeans.modules.cnd.navigation.macroview.ShowMacroExpansionAction", category = "Edit")
+@ActionRegistration(lazy = true, displayName = "#CTL_ShowMacroExpansionAction")
+@ActionReferences(value = {
+    @ActionReference(path = "Editors/text/x-h/Popup/goto", position = 1600),
+    @ActionReference(path = "Editors/text/x-c++/Popup/goto", position = 1600),
+    @ActionReference(path = "Editors/text/x-c/Popup/goto", position = 1400)})
 public final class ShowMacroExpansionAction extends CookieAction {
 
     @Override
@@ -71,7 +79,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
     }
 
     private Document getDocument(Node[] activatedNodes) {
-        EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
+        EditorCookie c = activatedNodes[0].getLookup().lookup(EditorCookie.class);
         if (c != null) {
             return CsmUtilities.openDocument(c);
         }
@@ -79,7 +87,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
     }
 
     private int getOffset(Node[] activatedNodes) {
-        EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
+        EditorCookie c = activatedNodes[0].getLookup().lookup(EditorCookie.class);
         if (c != null) {
             JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(c);
             if (pane != null ) {
