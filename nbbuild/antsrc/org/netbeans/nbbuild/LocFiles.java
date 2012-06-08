@@ -99,22 +99,24 @@ public final class LocFiles extends Task {
     
     @Override
     public void execute() throws BuildException {
-        if (locales == null || locales.isEmpty()) {
-            locales = Locale.getDefault().toString();
-        }
-        if (!srcDir.exists()) {
-            log("No l10n files present. Do hg clone http://hg.netbeans.org/main/l10n!", Project.MSG_VERBOSE);
-            return;
-        }
-        
         List<String> includes = new ArrayList<String>();
-        StringTokenizer tok = new StringTokenizer(locales, ",");
-        while (tok.hasMoreElements()) {
-            String l = tok.nextToken();
-            do { 
-                processLocale(l, includes);
-                l = trailingUnderscore(l);
-            } while (l != null);
+        if (locales != null && !locales.isEmpty()) {
+            if (!srcDir.exists()) {
+                log("No l10n files present. Do hg clone http://hg.netbeans.org/main/l10n!", Project.MSG_VERBOSE);
+                return;
+            }
+
+            StringTokenizer tok = new StringTokenizer(locales, ",");
+            while (tok.hasMoreElements()) {
+                String l = tok.nextToken();
+                if (l.equals("default")) { // NOI18N
+                    l = Locale.getDefault().toString();
+                }
+                do { 
+                    processLocale(l, includes);
+                    l = trailingUnderscore(l);
+                } while (l != null);
+            }
         }
         
         if (patternset != null) {
