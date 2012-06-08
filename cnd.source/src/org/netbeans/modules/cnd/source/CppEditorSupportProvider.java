@@ -69,7 +69,7 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
         }
 
         @Override
-        public synchronized CppEditorSupport convert(SourceDataObject obj) {
+        public CppEditorSupport convert(SourceDataObject obj) {
             Node nodeDelegate = null;
             if (obj.isValid()) {
                 nodeDelegate = obj.getNodeDelegate();
