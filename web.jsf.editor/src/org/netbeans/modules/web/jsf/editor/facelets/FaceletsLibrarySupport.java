@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.spi.ConfigurationResourceProvider;
@@ -111,33 +112,36 @@ public class FaceletsLibrarySupport {
 
         //listen on /WEB-INF/web.xml changes - <param-name>javax.faces.FACELETS_LIBRARIES</param-name>
         //may change and redefine the libraries
-        final FileObject dd = jsfSupport.getWebModule().getDeploymentDescriptor();
-        if (dd != null) {
-            dd.addFileChangeListener(DDLISTENER);
-        }
+        WebModule webModule = jsfSupport.getWebModule();
+        if(webModule != null) {
+            final FileObject dd = webModule.getDeploymentDescriptor();
+            if (dd != null) {
+                dd.addFileChangeListener(DDLISTENER);
+            }
 
-        //listen on the /WEB-INF folder since the dd is arbitrary and may
-        //be created later
-        FileObject webInf = jsfSupport.getWebModule().getWebInf();
-        if (webInf != null) {
-            webInf.addFileChangeListener(new FileChangeAdapter() {
+            //listen on the /WEB-INF folder since the dd is arbitrary and may
+            //be created later
+            FileObject webInf = webModule.getWebInf();
+            if (webInf != null) {
+                webInf.addFileChangeListener(new FileChangeAdapter() {
 
-                @Override
-                public void fileDataCreated(FileEvent fe) {
-                    FileObject file = fe.getFile();
-                    if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
-                        file.addFileChangeListener(DDLISTENER);
+                    @Override
+                    public void fileDataCreated(FileEvent fe) {
+                        FileObject file = fe.getFile();
+                        if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                            file.addFileChangeListener(DDLISTENER);
+                        }
                     }
-                }
 
-                @Override
-                public void fileDeleted(FileEvent fe) {
-                    FileObject file = fe.getFile();
-                    if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
-                        file.removeFileChangeListener(DDLISTENER);
+                    @Override
+                    public void fileDeleted(FileEvent fe) {
+                        FileObject file = fe.getFile();
+                        if (file.getNameExt().equalsIgnoreCase(DD_FILE_NAME)) {
+                            file.removeFileChangeListener(DDLISTENER);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -300,7 +304,10 @@ public class FaceletsLibrarySupport {
 
         //1. first add provider which looks for libraries defined in web-inf.xml
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
-        faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
+        WebModule webModule = getJsfSupport().getWebModule();
+        if(webModule != null) {
+            faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(webModule));
+        }
 
         //2. second add a provider returning URIs of library descriptors found during indexing
         //   the URIs points to both source roots and binary roots of dependent libraries.
