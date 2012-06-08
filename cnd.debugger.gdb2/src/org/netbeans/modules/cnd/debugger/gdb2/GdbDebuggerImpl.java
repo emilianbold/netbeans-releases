@@ -2427,7 +2427,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         MITList results = miRecord.results();
         
         parent.setNumChild(results.getConstValue(MI_NUMCHILD));
-        parent.setHasMore(!results.getConstValue("has_more").equals("0"));
+        parent.setHasMore(!results.getConstValue("has_more").equals("0")); // NOI18N
         
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
 
