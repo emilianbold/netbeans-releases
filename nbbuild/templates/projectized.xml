@@ -65,6 +65,7 @@ made subject to such option by the copyright holder.
             cluster="${cluster.dir}" locales="${locales}" src="${nb_all}/l10n/src"
             codenamebase="${code.name.base}"
             patternset="module.l10n.files"
+            basefilesref="module.files"
         />
     </target>
     
@@ -454,6 +455,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
             cluster="${cluster.dir}" locales="${locales}" src="${nb_all}/l10n/src"
             codenamebase="${code.name.base}" destdir="${netbeans.dest.dir}"
             patternset="module.l10n.files"
+            basefilesref="module.files"
         />
     </target>
 

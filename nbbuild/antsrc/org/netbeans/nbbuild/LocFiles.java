@@ -92,6 +92,11 @@ public final class LocFiles extends Task {
         nbmsLocation = f;
     }
     
+    private String baseFiles;
+    public void setBaseFilesRef(String refid) {
+        baseFiles = refid;
+    }
+    
     @Override
     public void execute() throws BuildException {
         if (locales == null || locales.isEmpty()) {
@@ -230,7 +235,6 @@ public final class LocFiles extends Task {
                 String[] arr = dir.split("/");
                 assert arr.length >= segments : "Expected segments: " + dir;
                 final int jarIndex = arr.length - 1;
-                jarFileName = fixJarName(arr[jarIndex]) + "_" + locale + ".jar";
                 jarDir = fileFromIf(
                     fileFrom(root, arr, dirIndex, jarIndex, true),
                     "locale"
@@ -239,6 +243,7 @@ public final class LocFiles extends Task {
                     nameFrom(prefixRoot, arr, dirIndex, jarIndex, true),
                     "locale"
                 );
+                jarFileName = fixJarName(prefixDir, arr[jarIndex]) + "_" + locale + ".jar";
             }
             String fullName = prefixDir + jarFileName;
             toAdd.add(fullName);
@@ -344,7 +349,26 @@ public final class LocFiles extends Task {
         return nameFrom(fileFrom, add, 0, add.length, false);
     }
 
-    private static String fixJarName(String name) {
+    private String fixJarName(String prefixDir, String name) {
+        if (prefixDir.endsWith("locale/") && baseFiles != null) {
+            prefixDir = prefixDir.substring(0, prefixDir.length() - 7);
+            PatternSet bf = (PatternSet)getProject().getReference(baseFiles);
+            for (String p : bf.getIncludePatterns(getProject())) {
+                if (p.startsWith(prefixDir)) {
+                    String realName = p.substring(prefixDir.length());
+                    if (realName.indexOf('/') != -1 || realName.indexOf('\\') != -1) {
+                        continue;
+                    }
+                    int indx = realName.indexOf(name);
+                    if (indx == -1) {
+                        continue;
+                    }
+                    return realName.substring(0, indx + name.length());
+                }
+            }
+        }
+        
+        
         if (name.equals("autoupdate-ui_nb")) {
             return "org-netbeans-modules-autoupdate-ui_nb";
         }
