@@ -139,6 +139,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         return annotatedName;
     }
     
+    @Override
     public final void annotationChanged(FileStatusEvent event) {
         if (task == null) {
             task = RequestProcessor.getDefault().create(this);
@@ -162,6 +163,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         }
     }
     
+    @Override
     public final void run() {
         if (forceAnnotation || iconChange) {
             fireIconChange();
