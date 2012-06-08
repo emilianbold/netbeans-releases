@@ -123,7 +123,7 @@ public final class LocFiles extends Task {
             PatternSet ps = new PatternSet();
             ps.setProject(getProject());
             if (includes.isEmpty()) {
-                ps.createExclude().setName("**/*");
+                ps.createInclude().setName("I/dont/exist/at/all");
             } else {
                 for (String s : includes) {
                     ps.createInclude().setName(s);
