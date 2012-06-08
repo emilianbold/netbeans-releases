@@ -286,19 +286,19 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
     public void testDocumentationDescriptionReturns() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Shape(){^");
-        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Construct a new Shape object.</p><b>Returns:</b><br><p>Shape|Coordinate</p>");
+        checkDocumentation(testSource, caretOffset, "<p>Construct a new Shape object.</p><h3>Returns:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\"><i>Shape|Coordinate</i></td><td>A new shape.</td></tr></p>");
     }
 
     public void testDocumentationDescription() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function addReference(){^");
-        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>This is an inner method, just used here as an example</p>");
+        checkDocumentation(testSource, caretOffset, "<p>This is an inner method, just used here as an example</p>");
     }
 
     public void testDocumentationDescriptionExamples() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Hexagon(sideLength) {^");
-        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Create a new Hexagon instance.</p><b>Examples:</b><br><p>var h = new Hexagon(2);</p><p>if (hasHex) {\n      hex   = new Hexagon(5);\n      color = hex.getColor();\n  }</p>");
+        checkDocumentation(testSource, caretOffset, "<p>Create a new Hexagon instance.</p><h3>Parameters:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\"><i>int</i></td><td valign=\"top\"><b>sideLength</b></td><td>The length of one side for the new Hexagon</td></tr></p>");
     }
 
     public void testDeprecated01() throws Exception {
