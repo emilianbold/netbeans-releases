@@ -918,7 +918,7 @@ abstract public class CsmCompletionQuery {
                 resolveType = CsmCompletion.getObjectType(resolveObj, _const);
                 visible.set(true);
                 // trace
-                if (TRACE_MULTIPLE_VISIBE_OBJECTS && CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
                     if (visibleObject.size() > 1) {
                         // we have several visible classifiers
                         System.err.printf("getVariableOrClassifierType: : we have several objects visible from %s [%d]\n", contextFile.getAbsolutePath(), endOffset); // NOI18N
@@ -2466,7 +2466,7 @@ abstract public class CsmCompletionQuery {
                         }
                     }
                 }
-                if (CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
                     if (visibleClassifiers.size() > 1) {
                         // we have several visible classifiers
                         System.err.printf("findExactClass: we have several classifiers %s visible from %s [%d]\n", var, contextFile.getAbsolutePath(), endOffset); // NOI18N
