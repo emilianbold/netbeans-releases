@@ -42,7 +42,24 @@
  */
 package org.netbeans.modules.web.client.rest.wizard;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
+
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -51,8 +68,10 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
  */
 class JSClientGenerator {
     
+    private static final Logger LOG = Logger.getLogger( JSClientGenerator.class.getName()); 
+    
     private JSClientGenerator(RestServiceDescription description){
-        
+        myDescription = description;
     }
 
     static JSClientGenerator create( RestServiceDescription description )
@@ -60,9 +79,65 @@ class JSClientGenerator {
         return new JSClientGenerator(description);
     }
 
-    public void generate( boolean useBackbone ) {
-        // TODO Auto-generated method stub
-        
+    public void generate( FileObject jsFile) {
+        FileObject restSource = myDescription.getFile();
+        if ( restSource == null ){
+            return;
+        }
+        StringBuilder builder = new StringBuilder("$(function(){\n");
+        JavaSource javaSource = JavaSource.forFileObject( restSource);
+        Task<CompilationController> task = new Task<CompilationController>(){
+
+            @Override
+            public void run( CompilationController controller ) throws Exception {
+                TypeElement restResource = controller.getElements().getTypeElement( 
+                        myDescription.getClassName());
+                List<ExecutableElement> methods = ElementFilter.methodsIn(
+                        restResource.getEnclosedElements());
+                for (ExecutableElement method : methods) {
+                    List<? extends AnnotationMirror> annotations = 
+                        method.getAnnotationMirrors();
+                }
+            }
+            
+        };
+        try {
+            Future<Void> future = javaSource.runWhenScanFinished( task, true);
+            future.get();
+        }
+        catch (IOException e) {
+            LOG.log(Level.INFO , null ,e );
+        }
+        catch (InterruptedException e) {
+            LOG.log(Level.INFO , null ,e );
+        }
+        catch (ExecutionException e) {
+            LOG.log(Level.INFO , null ,e );
+        }
+        builder.append("});");
     }
+    
+    private AnnotationMirror getAnnotion( List<? extends AnnotationMirror> annotations, 
+            String annotation )
+    {
+        for (AnnotationMirror annotationMirror : annotations) {
+            Element annotationElement = annotationMirror.getAnnotationType().asElement();
+            if ( annotationElement instanceof TypeElement){
+                TypeElement annotationDecl = (TypeElement) annotationElement;
+                if ( annotationDecl.getQualifiedName().contentEquals( annotation)){
+                    return annotationMirror;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private  AnnotationMirror getAnnotion( Element element, String annotation )
+    {
+        List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
+        return getAnnotion(annotations, annotation);
+    }
+    
+    private RestServiceDescription myDescription;
 
 }

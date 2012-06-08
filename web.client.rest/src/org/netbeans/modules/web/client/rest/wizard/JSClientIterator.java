@@ -187,19 +187,16 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         RestServiceDescription description = restNode.getLookup().lookup(
                 RestServiceDescription.class);
         Boolean addBackbone = (Boolean)myWizard.getProperty(RestPanel.ADD_BACKBONE);
-        Boolean existsBackbone = (Boolean)myWizard.getProperty(RestPanel.EXISTS_BACKBONE);
-        boolean useLocalBackbone = false;
+        FileObject existedBackbone = (FileObject)myWizard.getProperty(
+                RestPanel.EXISTED_BACKBONE);
         
         FileObject libs = FileUtil.createFolder(project.
                 getProjectDirectory(),"js/libs");  // NOI18N
         
-        if ( existsBackbone == null || !existsBackbone){
+        if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
-                useLocalBackbone = addLibrary( libs );
+                existedBackbone = addLibrary( libs );
             }
-        }
-        else{
-            useLocalBackbone = true;
         }
         
         FileObject targetFolder = Templates.getTargetFolder(myWizard);
@@ -211,8 +208,10 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         DataObject createdFile = templateDO.createFromTemplate(dataFolder, targetName);
         createdFile.rename(targetName);
         
+        FileObject jsFile = createdFile.getPrimaryFile();
+        
         JSClientGenerator generator = JSClientGenerator.create( description );
-        generator.generate( useLocalBackbone );
+        generator.generate( jsFile);
         return null;
     }
 
@@ -232,7 +231,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myPanels = null;
     }
     
-    private boolean addLibrary(FileObject libs) {
+    private FileObject addLibrary(FileObject libs) {
         // TODO : Client side project should give API for library addition
         Library[] libraries = LibraryManager.getDefault().getLibraries();
         Library backbone = null;
@@ -259,9 +258,10 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             }
         }
         if ( backbone == null ){
-            return false;
+            return null;
         }
         try {
+            FileObject result = null;
             FileObject libFolder = libs.createFolder(
                     backbone.getProperties().get(PROPERTY_REAL_NAME).
                         replace(' ', '-')+"-"+ // NOI18N
@@ -276,27 +276,34 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             for (URL url : urls) {
                 String name = url.getPath();
                 name = name.substring(name.lastIndexOf("/")+1); // NOI18N
-                copyFile(url, name, libFolder);
+                if ( result == null ){ 
+                    /*
+                     *  all this algorithm along with main lib file choose 
+                     *  is not bullet-proof and should be rewritten via 
+                     *  JS project lib API when it will be available.
+                     *  At the moment it works with backbone.js in its current state.
+                     */
+                    result = copyFile(url, name, libFolder);
+                }
             }
+            return result;
         }
         catch(IOException e ){
-            return false;
+            return null;
         }
-        
-        return true;
     }
     
-    private void copyFile(URL u, String name, FileObject libTarget) throws IOException {
+    private FileObject copyFile(URL u, String name, FileObject libTarget) throws IOException {
         FileObject fo = libTarget.createData(name);
         InputStream is;
         try {
             is = u.openStream();
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.INFO, "could not open stream for "+u, ex); // NOI18N
-            return;
+            return null;
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "could not open stream for "+u, ex); // NOI18N
-            return;
+            return null;
         }
         OutputStream os = null;
         try {
@@ -308,6 +315,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
                 os.close();
             }
         }
+        return fo;
     }
 
     private WizardDescriptor myWizard;
