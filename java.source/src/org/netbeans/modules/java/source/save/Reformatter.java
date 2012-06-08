@@ -3620,6 +3620,12 @@ public class Reformatter implements ReformatTask {
                         }
                     }
                 } else {
+                    if (pendingDiff != null) {
+                        String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                        if (sub.equals(pendingDiff.text)) {
+                            pendingDiff = null;
+                        }
+                    }
                     if (enableCommentFormatting) {
                         if (currNWSPos < 0) {
                             currNWSPos = i;
