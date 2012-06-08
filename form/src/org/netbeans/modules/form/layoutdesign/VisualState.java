@@ -487,11 +487,15 @@ public class VisualState implements LayoutConstants {
             }
 
             boolean sizeDefined = false;
-            for (Iterator<LayoutInterval> it = group.getSubIntervals(); it.hasNext(); ) {
-                LayoutInterval sub = it.next();
+            for (int i=0; i < group.getSubIntervalCount(); i++) {
+                LayoutInterval sub = group.getSubInterval(i);
                 boolean forceUpdate = (sizeUpdate == 2) && (group.isSequential() || sub == repInt);
                 boolean updatedSub = false;
                 int diff = LayoutInterval.getDiffToDefaultSize(sub, true);
+                if (diff < 0 && sub.isEmptySpace() && sub.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                        && group.isSequential() && (i == 0 || i == group.getSubIntervalCount()-1)) {
+                    diff = 0; // default gap at group boundaries can sometimes be laid out incorrectly (squeezed by a few pixels)
+                }
                 if (diff == 0 // may support size of the group
                     && forceAtSecond && sizeUpdate == 1 && !sizeDefined // we may need second round
                     && LayoutInterval.getCurrentSize(sub, dimension)

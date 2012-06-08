@@ -43,6 +43,7 @@
  */
 package org.netbeans.spi.java.queries;
 
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,7 +60,9 @@ public interface SourceLevelQueryImplementation {
      * <code>javac</code> compiler .
      * @param javaFile Java source file in question
      * @return source level of the Java file, e.g. "1.3", "1.4" or "1.5", or
-     *    null if it is not known
+     *    null if it is not known. It is allowed to return source level synonyms
+     *    e.g. "5" for "1.5". These synonyms are always normalized by
+     * {@link SourceLevelQuery#getSourceLevel}.
      */
     public String getSourceLevel(FileObject javaFile);
 

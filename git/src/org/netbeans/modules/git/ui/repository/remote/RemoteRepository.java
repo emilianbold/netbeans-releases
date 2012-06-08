@@ -248,7 +248,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     public void itemStateChanged(ItemEvent ie) {
         GitURI guri = getURI();
         if(guri != null) {
-            activeSettingsType.populateFields(recentConnectionSettings.get(guri.toString()));
+            ConnectionSettings setts = recentConnectionSettings.get(guri.toString());
+            if (setts != null) {
+                activeSettingsType.populateFields(setts);
+            }
         }
     }
 
@@ -683,7 +686,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 settingsPanel.savePasswordCheckBox.setSelected(false);
                 settingsPanel.savePassphrase.setSelected(false);
                 settingsPanel.rbPrivateKey.setSelected(false);
-                settingsPanel.rbUsernamePassword.setSelected(!settings.isPrivateKeyAuth());
+                settingsPanel.rbUsernamePassword.setSelected(true);
                 settingsPanel.txtIdentityFile.setText(""); //NOI18N
                 return;
             }

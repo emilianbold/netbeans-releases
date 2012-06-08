@@ -393,6 +393,24 @@
             </file>
             <file name="GNU_cmake" url="resources/toolchaindefinition/GNU_cmake.xml">
             </file>
+<!-- CLang -->
+            <file name="CLang_flavor" url="resources/toolchaindefinition/CLang_flavor.xml">
+                <attr name="extends" stringvalue="GNU_flavor"/>
+            </file>
+            <file name="CLang_c" url="resources/toolchaindefinition/CLang_c.xml">
+                <attr name="extends" stringvalue="GNU_c"/>
+            </file>
+            <file name="CLang_cpp" url="resources/toolchaindefinition/CLang_cpp.xml">
+                <attr name="extends" stringvalue="GNU_cpp"/>
+            </file>
+<!-- CLang_mac -->
+            <file name="CLang_mac_flavor" url="resources/toolchaindefinition/CLang_mac_flavor.xml">
+                <attr name="extends" stringvalue="GNU_flavor"/>
+            </file>
+<!-- CLang_solaris -->
+            <file name="CLang_solaris_flavor" url="resources/toolchaindefinition/CLang_solaris_flavor.xml">
+                <attr name="extends" stringvalue="GNU_flavor"/>
+            </file>
         </folder>
         <folder name="ToolChains">
 <!-- SunStudio_12.4 -->
@@ -1400,6 +1418,120 @@
                 </file>
                 <file name="linker.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
+                </file>
+            </folder>
+<!-- CLang -->
+            <folder name="CLang">
+                <attr name="position" intvalue="4040"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
+                </file>
+            </folder>
+<!-- CLang_mac -->
+            <folder name="CLang_mac">
+                <attr name="position" intvalue="4050"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_mac_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_mac_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_mac_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
+                </file>
+            </folder>
+<!-- CLang_solaris -->
+            <folder name="CLang_solaris">
+                <attr name="position" intvalue="4060"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_solaris_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/CLang_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_solaris_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_solaris_linker"/>
                 </file>
                 <file name="make.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>

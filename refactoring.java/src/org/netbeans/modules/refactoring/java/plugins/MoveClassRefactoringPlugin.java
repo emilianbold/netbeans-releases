@@ -55,6 +55,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -216,7 +217,7 @@ public class MoveClassRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
-        fireProgressListenerStart(ProgressEvent.START, -1);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, -1);
         TreePathHandle tph = moveRefactoring.getRefactoringSource().lookup(TreePathHandle.class);
         Set<FileObject> a = getRelevantFiles(tph);
         Problem p = checkProjectDeps(a);

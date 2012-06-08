@@ -361,4 +361,6 @@
 	<mapID target="QT_Dynamic_Library" url="images/QT_Dynamic_Library.gif"/>
 	<mapID target="QT_Static_Library" url="images/QT_Static_Library.gif"/>
 	<mapID target="RemoteDevelopmentBrowsing" url="WorkingWithCandC++Projects/RemoteDevelopmentManaging.html"/>
+	<mapID target="refresh" url="images/refresh.png"/>
+	<mapID target="FindinProject" url="EditingSourceFiles/FindinProject.html"/>
 </map>

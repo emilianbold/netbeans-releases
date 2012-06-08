@@ -157,10 +157,16 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                     classnameExt.append(file.getNameExt());
                 }
             }
-        } // XXX is it useful to store these otherwise? is there no way to just disable the action if there is no valid selection?
-        replaceMap.put(PACK_CLASSNAME, packClassname.toString());
-        replaceMap.put(CLASSNAME, classname.toString());
-        replaceMap.put(CLASSNAME_EXT, classnameExt.toString());
+        }
+        if (packClassname.length() > 0) { //#213671
+            replaceMap.put(PACK_CLASSNAME, packClassname.toString());
+        }
+        if (classname.length() > 0) { //#213671
+            replaceMap.put(CLASSNAME, classname.toString());
+        }
+        if (classnameExt.length() > 0) { //#213671
+            replaceMap.put(CLASSNAME_EXT, classnameExt.toString());
+        }
 
         Collection<? extends SingleMethod> methods = lookup.lookupAll(SingleMethod.class);
         if (methods.size() == 1) {

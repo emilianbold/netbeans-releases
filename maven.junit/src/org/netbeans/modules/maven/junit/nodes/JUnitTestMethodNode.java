@@ -89,7 +89,7 @@ public class JUnitTestMethodNode extends TestMethodNode{
             actions.add(preferred);
         }
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
-        FileObject testFO = project.getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
+        FileObject testFO = getProject().getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
         if (testFO != null){
             Project suiteProject = FileOwnerQuery.getOwner(testFO);
             ActionProvider actionProvider = suiteProject.getLookup().lookup(ActionProvider.class);
@@ -146,6 +146,6 @@ public class JUnitTestMethodNode extends TestMethodNode{
     }
 
     public FileObject getTestcaseFileObject() {
-        return project.getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
+        return getProject().getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
     }
 }

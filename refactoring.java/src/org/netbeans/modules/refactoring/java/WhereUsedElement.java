@@ -68,6 +68,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import sun.security.krb5.internal.KDCOptions;
 
 public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private PositionBounds bounds;
@@ -149,6 +150,22 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                     //happens for anonymous innerclasses
                     anonClassNameBug128074 = true;
                     start = end = (int) sp.getStartPosition(unit, t);
+                }
+                // #213723 hotfix, happens for enum values
+                if(start < 0) {
+                    TreePath parentPath = tree.getParentPath();
+                    if(parentPath != null && (parentPath = parentPath.getParentPath()) != null
+                            && parentPath.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                        VariableTree enum_var = (VariableTree) parentPath.getLeaf();
+                        pos = treeUtils.findNameSpan(enum_var);
+                        if (pos == null) {
+                            //#121084 hotfix
+                            start = end = (int) sp.getStartPosition(unit, enum_var);
+                        } else {
+                            start = pos[0];
+                            end = pos[1];
+                        }
+                    }
                 }
             } else {
                 start = pos[0];
@@ -306,7 +323,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private static TreePath getEnclosingTree(TreePath tp) {
         while(tp != null) {
             Tree tree = tp.getLeaf();
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT || tree.getKind() == tree.getKind().VARIABLE) {
                 return tp;
             } 
             tp = tp.getParentPath();

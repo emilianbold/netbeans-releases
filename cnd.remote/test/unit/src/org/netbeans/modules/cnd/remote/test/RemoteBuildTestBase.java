@@ -305,6 +305,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertEquals("Wrong tools collection", toolchain.ID, CompilerSetManager.get(execEnv).getDefaultCompilerSet().getName());
         assertTrue(projectDirFile.exists());
         FileObject projectDirFO = CndFileUtils.toFileObject(projectDirFile);
+        projectDirFO.refresh(true);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         ensureMakefilesWritten(makeProject);
         //changeProjectHost(makeProject, execEnv);
@@ -316,6 +317,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         File nbproject = new File(FileUtil.toFile(makeProject.getProjectDirectory()), "nbproject");
         File publicConfFile = new File(nbproject, "configurations.xml");
         publicConfFile.setLastModified(publicConfFile.lastModified() + 1000*60*60); // this forces makefile regeneration for managed projects
+        FileUtil.toFileObject(publicConfFile).refresh(true);
         makeProject.save();
     }
 
