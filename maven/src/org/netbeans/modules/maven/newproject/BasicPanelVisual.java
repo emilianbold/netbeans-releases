@@ -746,6 +746,10 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
         } catch (ThreadDeath d) { // download interrupted
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }
         } finally {
             hndl.finish();
             ProgressTransferListener.clearAggregateHandle();
