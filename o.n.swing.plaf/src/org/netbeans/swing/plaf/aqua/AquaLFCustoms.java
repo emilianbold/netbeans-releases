@@ -212,7 +212,7 @@ public final class AquaLFCustoms extends LFCustoms {
             
             "Nb.MainWindow.Toolbar.Border", BorderFactory.createEmptyBorder(0, 0, 0, 3),
             
-            "Nb.MenuBar.VerticalAlign", Boolean.TRUE,
+            "Nb.MenuBar.VerticalAlign", Boolean.FALSE,
         }; //NOI18N
         return result;
     }

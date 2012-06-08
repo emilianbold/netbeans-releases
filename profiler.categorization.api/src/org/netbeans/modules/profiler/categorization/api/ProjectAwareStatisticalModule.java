@@ -59,10 +59,17 @@ public abstract class ProjectAwareStatisticalModule extends StatisticalModule {
     
     public abstract boolean supportsProject(Lookup.Provider project);
     final public void setProject(Lookup.Provider project) {
+        Lookup.Provider oldProject = this.project;
         this.project = project;
+
+        if (!this.project.equals(oldProject)) {
+            onProjectChange(oldProject, this.project);
+        }
     }
     
     final protected Lookup.Provider getProject() {
         return project;
     }
+    
+    protected void onProjectChange(Lookup.Provider oldValue, Lookup.Provider newValue) {}
 }

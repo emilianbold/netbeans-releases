@@ -85,16 +85,15 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.issue.AttachmentHyperlinkSupport.Attachement;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -316,18 +315,17 @@ public class CommentsPanel extends JPanel {
 
         // attachments
         if (!attachmentIds.isEmpty()) {
-            final int[] boundaries = AttachmentHyperlinkSupport.findBoundaries(comment, attachmentIds);
-            if ((boundaries != null) && (boundaries.length != 0)) {
-                String commentText = textPane.getText();
-                String attachmentId = AttachmentHyperlinkSupport.getAttachmentId(commentText);
+            AttachmentHyperlinkSupport.Attachement a = AttachmentHyperlinkSupport.findAttachment(comment, attachmentIds);
+            if (a != null) {
+                String attachmentId = a.id;
                 if (attachmentId != null) {
                     int index = attachmentIds.indexOf(attachmentId);
                     if (index != -1) {
                         BugzillaIssue.Attachment attachment = attachments.get(index);
                         AttachmentLink attachmentLink = new AttachmentLink(attachment);
-                        HyperlinkSupport.getInstance().registerLink(textPane, new int[] {boundaries[0], boundaries[1]}, attachmentLink);
+                        HyperlinkSupport.getInstance().registerLink(textPane, new int[] {a.idx1, a.idx2}, attachmentLink);
                     } else {
-                        Bugzilla.LOG.log(Level.WARNING, "couldn''t find attachment id in: {0}", commentText); // NOI18N
+                        Bugzilla.LOG.log(Level.WARNING, "couldn''t find attachment id in: {0}", comment); // NOI18N
                     }
                 }
             }

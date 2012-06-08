@@ -57,8 +57,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
@@ -218,7 +218,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem prepare(RefactoringElementsBag elements) {
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size() + 1);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, (a.size() * 2) + 1);
         Problem problem = null;
         if (!a.isEmpty()) {
             initDelegates();
@@ -631,22 +631,24 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
             Set<ElementHandle<TypeElement>> subTypes = RefactoringUtils.getImplementorsAsHandles(javac.getClasspathInfo().getClassIndex(), javac.getClasspathInfo(), enclosingTypeElement, cancel);
             for (ElementHandle<TypeElement> elementHandle : subTypes) {
                 TypeElement subtype = elementHandle.resolve(javac);
-                List<ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers(subtype));
-                for (ExecutableElement exMethod : methods) {
-                    if (!exMethod.equals(method)) {
-                        if (exMethod.getSimpleName().equals(method.getSimpleName())
-                                && exMethod.getParameters().size() == paramTable.length) {
-                            boolean sameParameters = true;
-                            for (int j = 0; j < exMethod.getParameters().size(); j++) {
-                                TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
-                                String type = paramTable[j].getType();
-                                TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
-                                if (!javac.getTypes().isSameType(exType, paramType)) {
-                                    sameParameters = false;
+                if(subtype != null) {
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers(subtype));
+                    for (ExecutableElement exMethod : methods) {
+                        if (!exMethod.equals(method)) {
+                            if (exMethod.getSimpleName().equals(method.getSimpleName())
+                                    && exMethod.getParameters().size() == paramTable.length) {
+                                boolean sameParameters = true;
+                                for (int j = 0; j < exMethod.getParameters().size(); j++) {
+                                    TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
+                                    String type = paramTable[j].getType();
+                                    TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                                    if (!javac.getTypes().isSameType(exType, paramType)) {
+                                        sameParameters = false;
+                                    }
                                 }
-                            }
-                            if (sameParameters) {
-                                returnmethods.add(exMethod);
+                                if (sameParameters) {
+                                    returnmethods.add(exMethod);
+                                }
                             }
                         }
                     }

@@ -61,15 +61,18 @@ public final class VisibilityQueryDataFilter implements ChangeListener, Changeab
 
     EventListenerList ell = new EventListenerList();        
     
+    @SuppressWarnings("LeakingThisInConstructor")
     public VisibilityQueryDataFilter() {
         VisibilityQuery.getDefault().addChangeListener(this);
     }
             
+    @Override
     public boolean acceptDataObject(DataObject obj) {                
         FileObject fo = obj.getPrimaryFile();                
         return VisibilityQuery.getDefault().isVisible(fo);
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {            
         Object[] listeners = ell.getListenerList();     
         ChangeEvent event = null;
@@ -83,10 +86,12 @@ public final class VisibilityQueryDataFilter implements ChangeListener, Changeab
         }
     }        
     
+    @Override
     public void addChangeListener(ChangeListener listener) {
         ell.add(ChangeListener.class, listener);
     }        
                     
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         ell.remove(ChangeListener.class, listener);
     }

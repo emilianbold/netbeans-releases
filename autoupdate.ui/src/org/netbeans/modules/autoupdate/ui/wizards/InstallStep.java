@@ -722,7 +722,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
     }
 
-    @Messages({"inBackground_WritePermission=You don`t have permission to install plugin(s) into the installation directory.",
+    @Messages({"inBackground_WritePermission=You don't have permission to install plugin(s) into the installation directory.",
         "inBackground_WritePermission_Details=details", "cancel=Cancel", "install=Install anyway"})
     private void notifyWritePermissionProblem(final OperationException ex) {
         // lack of privileges for writing

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Stepping Through Your Program</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>Stepping Through Your Program</h2>
+        <p> <small><a href="#seealso">See Also</a></small></p>
+        <p>By default, the debugging session stops at the first line of the PHP code. 
+            You can disable stopping at the first line in Tools &gt; Options 
+            (NetBeans Preferences on Mac) &gt; PHP &gt; Debugging. When the session 
+            stops, you can step through your lines of 
+            code using the following commands on the Debug menu or toolbar: </p>
+        <ul class="note">
+            <li>You should set <a href="breakpoint_php.html">breakpoints</a> before
+            you start a debugging session. Otherwise you have to step over/into/out of
+            your entire application. If you disable Stop at First Line and do not set
+            any breakpoints, your application never stops during debugging and you get no
+            useful results.</li>
+        </ul>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr> 
+                <th align="left" scope="col"><b>Command</b></th>
+                <th align="left" scope="col"><b>Shortcut</b></th>
+                <th align="left" scope="col" valign="top"><b>Description</b></th>
+            </tr>
+            <tr> 
+                <td valign="top">Debug  &gt; Continue</td>
+                <td valign="top">F5 or <img src="images/Continue.gif" alt="Continue icon"></td>
+                <td valign="top">Runs the program until it reaches the next breakpoint 
+                    or until the program terminates normally. </td>
+            </tr>
+            <tr>
+                <td>Debug &gt; Step Over </td> 
+                <td>F8 or <img src="images/StepOver.gif" alt="Step Over icon"></td>
+                <td>Executes one source line. If the source line contains 
+                    a call, executes the entire routine without stepping through the individual instructions.</td>
+            </tr>
+            <tr> 
+                <td valign="top">Debug &gt; Step Into</td>
+                <td valign="top">F7 or <img src="images/StepInto.gif" alt="Step Into icon"></td>
+                <td valign="top">Runs the program to the next line and pauses execution before 
+                    any changes have been made to the state of the program. </td>
+            </tr>
+            <tr>
+                <td>Debug &gt; Step Out</td> <td>Ctrl-F7 or <img src="images/StepOut.gif" alt="Step out icon"></td>
+                <td> Executes one source line. If the source 
+                    line is part of a routine, executes the remaining lines of the routine and 
+                    returns control to the caller of the routine. 
+                    The completed method call is highlighted in the Source Editor.</td>
+            </tr>
+            <tr> 
+                <td valign="top">Debug  &gt; Run to Cursor</td>
+                <td valign="top">F4 or <img src="images/RunToCursor.gif" alt="Run to Cursor icon"></td>
+                <td valign="top">Runs the program to the cursor location in the Source Editor 
+                    and pauses the program. The file you have selected in the Source Editor 
+                    must be called from the main class of the main project.</td>
+            </tr>
+        </table>
+
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="breakpoint_php.html">PHP Breakpoints in NetBeans IDE</a></dd>
+            <dd><a href="debug_local.html">Starting a Debugging Session</a></dd>
+            <dd><a href="debug_remote.html">Remote Debugging and Path Mapping</a></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/php/debugging.html">
+                    <param name="text" value="<html><u>Debugging PHP Source Code in NetBeans IDE</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table></body>
+</html>

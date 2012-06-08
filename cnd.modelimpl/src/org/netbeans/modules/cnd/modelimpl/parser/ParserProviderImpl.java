@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -56,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
@@ -69,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -274,7 +278,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
         
         @Override
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
-            parser = new FortranParserEx(ts);
+            int form = APTLanguageSupport.FLAVOR_FORTRAN_FIXED.equals(file.getFileLanguageFlavor()) ? 
+                    FortranParserEx.FIXED_FORM : 
+                    FortranParserEx.FREE_FORM;
+            
+            parser = new FortranParserEx(ts, form);
         }
 
         @Override

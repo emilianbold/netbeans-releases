@@ -23,7 +23,7 @@
         when you run or debug your project.</p>
 
         <ul class="note">
-            <li>You can disable the compile on save option in the Compile category of the project's Properties window.</li>
+            <li>You can disable the Compile on Save option in the Compile category of the project's Properties window.</li>
         </ul>
 
         <p>If you want to generate distributable files for the project, such as JAR files or WAR files, you need to build the project.
@@ -31,9 +31,10 @@
         <tt>install</tt> phase of the Maven lifecycle (builds the project and adds the artifact to the local repository).
         </p>
 
-        <p><strong>To build the main project:</strong></p>
+        <p><strong>To build a Maven project:</strong></p>
         <ol>
-            <li>Choose Run &gt; Build Main Project (F11).
+            <li>Select the project node in the Projects window.</li>
+            <li>Choose Run &gt; Build Project (F11).
             <p>The IDE displays the Maven output and any compilation errors in the Output window.
             You can double-click any error to go to the location in the source code where the error occurred.</p>
             </li>
@@ -46,7 +47,6 @@
 
         <ol>
             <li>Right-click the project's node in the Projects window and choose Build with Dependencies.
-            <p>The Build with Dependencies executes the <tt>reactor:make</tt> goal.</p>
                 <ul class="note">
                     <li>You can change the default Build action to Build with Dependencies by selecting the Build action
                         in the Actions category of the project's Properties window and then selecting the Build with Dependencies checkbox.</li>

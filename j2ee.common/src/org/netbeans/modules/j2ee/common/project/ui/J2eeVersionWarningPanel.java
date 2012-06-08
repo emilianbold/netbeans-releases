@@ -44,10 +44,12 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
@@ -136,17 +138,30 @@ final class J2eeVersionWarningPanel extends javax.swing.JPanel {
     public String getSuggestedJavaPlatformName() {
         if (WARN_SET_JDK_14.equals(warningType) ) {
             JavaPlatform[] javaPlatforms = getJavaPlatforms("1.4");
-            return javaPlatforms[0].getDisplayName();
+            return getPreferredPlatform(javaPlatforms).getDisplayName();
         }
         if (WARN_SET_JDK_15.equals(warningType) ) {
             JavaPlatform[] javaPlatforms = getJavaPlatforms("1.5");
-            return javaPlatforms[0].getDisplayName();
+            return getPreferredPlatform(javaPlatforms).getDisplayName();
         }
         if (WARN_SET_JDK_6.equals(warningType) ) {
             JavaPlatform[] javaPlatforms = getJavaPlatforms("1.6");
-            return javaPlatforms[0].getDisplayName();
+            return getPreferredPlatform(javaPlatforms).getDisplayName();
         }
-        return null;
+        return getPreferredPlatform(null).getDisplayName();
+    }
+    
+    private static JavaPlatform getPreferredPlatform(@NullAllowed final JavaPlatform[] platforms) {
+        final JavaPlatform pp = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName());
+        if (platforms == null) {
+            return pp;
+        }
+        for (JavaPlatform jp : platforms) {
+            if (jp.equals(pp)) {
+                return jp;
+            }
+        }
+        return platforms[0];
     }
 
     public static String findWarningType(Profile j2eeProfile) {

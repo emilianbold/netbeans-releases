@@ -135,6 +135,8 @@ public class HintsControllerImplTest extends NbTestCase {
         assertSpan(bdoc, 2, 10, 13);
         assertSpan(bdoc, 3, 14, 17);
         assertSpan(bdoc, 4, 19, 22);
+        assertSpan(bdoc, 5, 19, 22);
+        assertSpan(bdoc, 6, 19, 22);
         
         bdoc = creator.createDocument();
         

@@ -26,8 +26,8 @@
                       </Group>
                       <EmptySpace max="$pref" attributes="0"/>
                       <Group type="parallel" groupAlignment="leading" max="$pref" attributes="0">
-                          <Component id="jTextField5" max="Short.MAX_VALUE" attributes="1024"/>
                           <Component id="jTextField2" max="Short.MAX_VALUE" attributes="0"/>
+                          <Component id="jTextField5" max="Short.MAX_VALUE" attributes="1024"/>
                       </Group>
                   </Group>
                   <Component id="jTextField3" min="$pref" pref="181" max="$pref" attributes="1024"/>

@@ -196,7 +196,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             FetchType fetchType, CollectionType collectionType,
             ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
 
-        int progressMax = entityClasses.length * 2;
+        int progressMax = entityClasses.length * 3;
         progressContributor.start(progressMax);
         if (prj != null) {
             ContainerClassPathModifier modifier = prj.getLookup().lookup(ContainerClassPathModifier.class);
@@ -476,6 +476,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // and its primary key class
 
 
+            Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
+            Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
+            Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
+            JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
+            //1st just go through to refresh, in some rare cases entities can't be found/parsed, see #213736
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
                 String entityClassName = entityClass.getClassName();
@@ -503,13 +508,45 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 final FileObject entityClassFO = entityClassFO0;
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
+                    JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE)
+                            ? JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO)
+                            : JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
+                    javaSource.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
+                        public void run(WorkingCopy copy) throws IOException {
+                        }
+                    }).commit();
+                } catch (IOException e) {
+                    String message = e.getMessage();
+                    String newMessage = ((message == null)
+                            ? NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass_NoExceptionMessage", entityClassName)
+                            : NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass", entityClassName, message));
+                    IOException wrappedException = new IOException(newMessage);
+                    wrappedException.initCause(e);
+                    throw wrappedException;
+                }
 
-                    Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
-                    Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
-                    Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
+            }
+            //actual generation loop
+            for (int i = 0; i < entityClasses.length; i++) {
+                final EntityClass entityClass = entityClasses[i];
+                String entityClassName = entityClass.getClassName();
 
-                    JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
-
+                if (!generatedEntityClasses.contains(entityClassName) && !UpdateType.UPDATE.equals(entityClass.getUpdateType())) {
+                    // this entity class already existed, we didn't create it, so we don't want to touch it except Update type
+                    progressContributor.progress(entityClasses.length + i);
+                    continue;
+                }
+                String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
+                progressContributor.progress(progressMsg, 2*entityClasses.length + i);
+                if (progressPanel != null) {
+                    progressPanel.setText(progressMsg);
+                }
+                FileObject entityClassPackageFO = entityClass.getPackageFileObject();
+                FileObject entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                final FileObject entityClassFO = entityClassFO0;
+                final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
+                try {
                     JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE)
                             ? JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO)
                             : JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);

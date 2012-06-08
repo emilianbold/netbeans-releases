@@ -352,7 +352,16 @@ public class CsmKindUtilities {
             return false;
         }
     }
-    
+
+    public static boolean isEnumForwardDeclaration(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            CsmDeclaration.Kind kind = ((CsmDeclaration) obj).getKind();
+            return kind == CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION;
+        } else {
+            return false;
+        }
+    }
+
     public static boolean isScope(CsmObject obj) {
         if (obj instanceof CsmScope) {
             return true;

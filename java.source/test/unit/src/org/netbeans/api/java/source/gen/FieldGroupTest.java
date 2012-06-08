@@ -47,6 +47,7 @@ import java.io.File;
 import com.sun.source.tree.*;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -1102,6 +1103,45 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 BlockTree block = method.getBody();
                 workingCopy.rewrite(block, make.removeBlockStatement(block, 0));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveLastVariable() throws Exception { // #213252
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public int j,k = 1;\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    public int j;\n" +
+            "    private int k = 1;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                
+                VariableTree var2 = (VariableTree) clazz.getMembers().get(2);
+                VariableTree newNode = make.Variable(
+                                     make.Modifiers(EnumSet.of(Modifier.PRIVATE)),
+                                     var2.getName(), var2.getType(), var2.getInitializer());
+                workingCopy.rewrite(var2, newNode);
             }
         };
         testSource.runModificationTask(task).commit();

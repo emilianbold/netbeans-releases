@@ -885,7 +885,7 @@ public class TraceModel extends TraceModelBase {
         if (cleanAPT) {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
-            apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
+            apt = APTDriver.findAPT(buffer, getFileLanguage(fo), APTLanguageSupport.FLAVOR_UNKNOWN);
         }
         APTMacroMap macroMap = getMacroMap(fo);
         APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true);
@@ -1070,7 +1070,7 @@ public class TraceModel extends TraceModelBase {
         FileObject fo = buffer.getFileObject();
         long oldMem = usedMemory();
         long time = System.currentTimeMillis();
-        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(fo));
+        APTFile apt = APTDriver.findAPT(buffer, getFileLanguage(fo), APTLanguageSupport.FLAVOR_UNKNOWN);
         time = System.currentTimeMillis() - time;
         long newMem = usedMemory();
         if (isShowTime()) {

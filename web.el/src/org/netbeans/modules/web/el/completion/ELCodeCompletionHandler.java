@@ -45,6 +45,7 @@ import com.sun.el.parser.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +83,26 @@ import org.openide.util.Exceptions;
  */
 public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
+    private static Set<String> keywordFixedTexts = null;
+
+    /**
+     * Gets Set of {@link ELTokenId#fixedText()} values with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.<br/>
+     * Result is resolved and stored on first method call into static field {@link #keywordFixedTexts}.
+     * On next call is returned the same Set instance.
+     * @return Set of {@link ELTokenId#fixedText()} values with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.
+     */
+    private static synchronized Set<String> getKeywordFixedTexts() {
+        if (keywordFixedTexts == null) {
+            keywordFixedTexts = new HashSet<String>();
+            for (ELTokenId elTokenId : ELTokenId.values()) {
+                if (ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elTokenId)) {
+                    keywordFixedTexts.add(elTokenId.fixedText());
+                }
+            }
+        }
+        return keywordFixedTexts;
+    }
+ 
     @Override
     public CodeCompletionResult complete(final CodeCompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
@@ -238,6 +259,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
+                
+                // Now check methodName or propertyName is EL keyword.
+                if (getKeywordFixedTexts().contains(propertyName) || 
+                        getKeywordFixedTexts().contains(methodName) ) {
+                    continue;
+                }
+                
                 ELJavaCompletionItem item = new ELJavaCompletionItem(info, enclosed, elElement);
                 item.setSmart(true);
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());

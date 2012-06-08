@@ -43,6 +43,9 @@
 package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
@@ -95,13 +98,18 @@ public class LanguageRegistryTest extends NbTestCase {
         LanguageRegistry r = LanguageRegistry.getInstance();
 
         assertNull("No languages thus far", r.getLanguageByMimeType("text/x-php5"));
-        assertFalse("No extensions", loader.getExtensions().mimeTypes().hasMoreElements());
+        
+        Collection<String> previous = Collections.list(loader.getExtensions().mimeTypes());
 
         FileObject inst = FileUtil.createData(plugins, "text/x-php5/language.instance");
         inst.setAttribute("instanceCreate", new MyLang());
 
         assertNotNull("Language found", r.getLanguageByMimeType("text/x-php5"));
-        Enumeration<String> en = loader.getExtensions().mimeTypes();
+        
+        Collection<String> current = new ArrayList<String>(Collections.list(loader.getExtensions().mimeTypes()));
+        current.removeAll(previous);
+        
+        Enumeration<String> en = Collections.enumeration(current);
         assertTrue("One extension", en.hasMoreElements());
         assertEquals("One extension", "text/x-php5", en.nextElement());
         assertFalse("No extensions", en.hasMoreElements());

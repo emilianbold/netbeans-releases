@@ -366,7 +366,7 @@ public class CsmContextUtilities {
                     }
                     if (CsmKindUtilities.isEnum(decl)) {
                         CsmEnum en = (CsmEnum)decl;
-                        if (en.getName().length()==0){
+                        if (!en.isStronglyTyped() && en.getName().length()==0){
                             addEnumerators(res, en, strPrefix, match, caseSensitive);
                         }
                     } else if (CsmKindUtilities.isNamespaceDefinition(decl) && decl.getName().length()==0){
@@ -380,7 +380,7 @@ public class CsmContextUtilities {
                             }
                             if (CsmKindUtilities.isEnum(nsDecl)) {
                                 CsmEnum en = (CsmEnum)nsDecl;
-                                if (en.getName().length()==0){
+                                if (!en.isStronglyTyped() && en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
                             }
@@ -393,7 +393,7 @@ public class CsmContextUtilities {
                             }                            
                             if (CsmKindUtilities.isEnum(member)) {
                                 CsmEnum en = (CsmEnum)member;
-                                if (en.getName().length()==0){
+                                if (!en.isStronglyTyped() && en.getName().length()==0){
                                     addEnumerators(res, en, strPrefix, match, caseSensitive);
                                 }
                             }
@@ -526,14 +526,21 @@ public class CsmContextUtilities {
 
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
+        CsmScope enumScope = null;
         for (int i = context.size() - 1; 0 <= i; --i) {
             CsmScope scope = context.get(i).getScope();
+            if (CsmKindUtilities.isEnum(scope)) {
+                enumScope = ((CsmEnum)scope).getScope();
+            }
             if (CsmKindUtilities.isClass(scope)
                     && (!inScope || CsmOffsetUtilities.isInClassScope((CsmClass)scope, context.getOffset()))) {
                 clazz = (CsmClass)scope;
                 break;
             }
-        }        
+        }
+        if (CsmKindUtilities.isClass(enumScope)) {
+            clazz = (CsmClass) enumScope;
+        }
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
             CsmFunction fun = getFunction(context, false);

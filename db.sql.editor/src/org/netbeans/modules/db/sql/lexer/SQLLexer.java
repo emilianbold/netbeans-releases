@@ -128,7 +128,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             }
 
                             // Otherwise it's an identifier.
-                            if (isStartQuoteChar(actChar)) {
+                            if (isStartIdentifierQuoteChar(actChar)) {
                                 startQuoteChar = actChar;
                             }
                             state = State.ISI_IDENTIFIER;
@@ -182,7 +182,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // or a keyword.
                 case ISI_IDENTIFIER:
                     if (startQuoteChar != -1) {
-                        if (!isEndQuoteChar(startQuoteChar, actChar)) {
+                        if (!isEndIdentifierQuoteChar(startQuoteChar, actChar)) {
                             break;
                         }
                     } else {
@@ -377,16 +377,27 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     public void release() {
     }
 
-    private static boolean isStartQuoteChar(int start) {
+    public static boolean isStartStringQuoteChar(int start) {
+        return start == '\'';  // SQL-99 string
+    }
+
+    public static boolean isStartIdentifierQuoteChar(int start) {
         return start == '\"' || // SQL-99
                 start == '`' || // MySQL
                 start == '[';    // MS SQL Server
     }
 
-    private static boolean isEndQuoteChar(int start, int end) {
-        return start == '\"' && end == start || // SQL-99
-                start == '`' && end == start || // MySQL
-                start == '[' && end == ']';      // MS SQL Server
+    public static int getMatchingQuote(int start) {
+        switch(start) {
+            case '[':
+                return ']';
+            default:
+                return start;
+        }
+    }
+
+    public static boolean isEndIdentifierQuoteChar(int start, int end) {
+        return end == getMatchingQuote(start);
     }
 
     private static SQLTokenId testKeyword(CharSequence value) {

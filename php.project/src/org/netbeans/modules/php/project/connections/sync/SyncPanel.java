@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.sync;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,7 +82,9 @@ import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -92,8 +96,12 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
@@ -131,11 +139,12 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private static final String ERROR_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/error.png"; // NOI18N
     @StaticResource
     private static final String WARNING_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/warning.gif"; // NOI18N
+    @StaticResource
+    private static final String HORIZONTAL_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/horizontal.png"; // NOI18N
+    @StaticResource
+    private static final String HEADER_INFO_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/header_info.png"; // NOI18N
 
     static final RequestProcessor RP = new RequestProcessor("PHP: Sync items validation & information"); // NOI18N
-
-    static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
-    static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
     // @GuardedBy(AWT)
     private static final List<SyncItem.Operation> OPERATIONS = Arrays.asList(
@@ -151,13 +160,18 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     final FileTableModel tableModel;
     // @GuardedBy(AWT)
+    final JPopupMenu headerPopupMenu = new JPopupMenu();
+    // @GuardedBy(AWT)
     final JPopupMenu popupMenu = new JPopupMenu();
 
+    // @GuardedBy(AWT)
+    boolean remotePathFirst = true;
     // @GuardedBy(AWT)
     boolean selectionIsAdjusting = false;
     // @GuardedBy(AWT)
     Point popupMenuPoint = new Point(); // XXX is there a better way?
-
+    // @GuardedBy(AWT)
+    List<? extends RowSorter.SortKey> sortKeys = Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING));
 
     private final PhpProject project;
     private final String remoteConfigurationName;
@@ -167,6 +181,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     // @GuardedBy(AWT)
     private final ItemListener viewListener = new ViewListener();
 
+    // @GuardedBy(AWT)
+    private PopupMenuListener popupMenuListener;
     // @GuardedBy(AWT)
     private DialogDescriptor descriptor = null;
     // @GuardedBy(AWT)
@@ -330,7 +346,29 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private void initTable() {
         assert SwingUtilities.isEventDispatchThread();
-        // model
+        initTableModel();
+        initTableSorter();
+        initTableRenderers();
+        initTableHeader();
+        initTableRows();
+        initTableColumns();
+        initTableSelections();
+        initTableActions();
+        initTableHeaderPopupMenu();
+        initTablePopupMenu();
+    }
+
+    private void reinitTable() {
+        assert SwingUtilities.isEventDispatchThread();
+        initTableSorter();
+        initTableHeader();
+        initTableRows();
+        initTableColumns();
+        initTableHeaderPopupMenu();
+        initTablePopupMenu();
+    }
+
+    private void initTableModel() {
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -339,14 +377,61 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
         });
         itemTable.setModel(tableModel);
-        // renderer
+    }
+
+    private void initTableSorter() {
+        TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
+        itemTable.setRowSorter(sorter);
+        // default sort keys
+        sorter.setSortKeys(sortKeys);
+        // sorting
+        sorter.setComparator(0, new SyncItemImageIconComparator());
+        sorter.setSortable(2, false);
+    }
+
+    private void initTableRenderers() {
         itemTable.setDefaultRenderer(Icon.class, new IconRenderer());
         itemTable.setDefaultRenderer(String.class, new StringRenderer());
         itemTable.setDefaultRenderer(SyncItem.Operation.class, new OperationRenderer());
-        // rows
-        itemTable.setRowHeight(20);
+    }
+
+    @NbBundle.Messages({
+        "SyncPanel.table.header.info.toolTip=Click to sort by Information",
+        "SyncPanel.table.header.remotePath.toolTip=Click to sort by Remote Path",
+        "SyncPanel.table.header.localPath.toolTip=Click to sort by Local Path",
+        "SyncPanel.table.header.operation.toolTip=Click to swap Remote Path and Local Path"
+    })
+    private void initTableHeader() {
+        JTableHeader header = itemTable.getTableHeader();
+        header.setPreferredSize(new Dimension(itemTable.getColumnModel().getTotalColumnWidth(), Math.max(20, itemTable.getFont().getSize() + 5)));
+        header.setReorderingAllowed(false);
         // columns
-        itemTable.getTableHeader().setReorderingAllowed(false);
+        TableColumn infoColumn = header.getColumnModel().getColumn(0);
+        infoColumn.setHeaderRenderer(new HeaderRenderer(Bundle.SyncPanel_table_header_info_toolTip()));
+        infoColumn.setHeaderValue(ImageUtilities.loadImageIcon(HEADER_INFO_ICON_PATH, false));
+        TableColumn operationColumn = header.getColumnModel().getColumn(2);
+        operationColumn.setHeaderRenderer(new HeaderRenderer(Bundle.SyncPanel_table_header_operation_toolTip()));
+        operationColumn.setHeaderValue(ImageUtilities.loadImageIcon(HORIZONTAL_ICON_PATH, false));
+        TableColumn remotePathColumn = header.getColumnModel().getColumn(remotePathFirst ? 1 : 3);
+        remotePathColumn.setHeaderRenderer(new HeaderRenderer(Bundle.SyncPanel_table_header_remotePath_toolTip()));
+        TableColumn localPathColumn = header.getColumnModel().getColumn(remotePathFirst ? 3 : 1);
+        localPathColumn.setHeaderRenderer(new HeaderRenderer(Bundle.SyncPanel_table_header_localPath_toolTip()));
+        // listener
+        itemTable.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (itemTable.columnAtPoint(e.getPoint()) == 2) {
+                    swapPaths();
+                }
+            }
+        });
+    }
+
+    private void initTableRows() {
+        itemTable.setRowHeight(Math.max(20, itemTable.getFont().getSize() + 5));
+    }
+
+    private void initTableColumns() {
         TableColumnModel columnModel = itemTable.getColumnModel();
         columnModel.getColumn(0).setMinWidth(20);
         columnModel.getColumn(0).setMaxWidth(20);
@@ -355,7 +440,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         columnModel.getColumn(2).setMinWidth(40);
         columnModel.getColumn(2).setPreferredWidth(40);
         columnModel.getColumn(3).setPreferredWidth(1000);
-        // selections
+    }
+
+    private void initTableSelections() {
         itemTable.setColumnSelectionAllowed(false);
         itemTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -371,9 +458,24 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                 setEnabledDiffButton();
             }
         });
-        // popup menu
-        initTablePopupMenu();
-        // actions
+    }
+
+    private void initTableActions() {
+        itemTable.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showPopup(e);
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showPopup(e);
+            }
+            private void showPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    headerPopupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
         itemTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -406,6 +508,46 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     @NbBundle.Messages({
+        "SyncPanel.popupMenu.swapPaths=Swap Local and Remote Columns",
+        "SyncPanel.popupMenu.sort.local.asc=Sort Ascending By Local Path",
+        "SyncPanel.popupMenu.sort.remote.asc=Sort Ascending By Remote Path",
+        "SyncPanel.popupMenu.sort.local.desc=Sort Descending By Local Path",
+        "SyncPanel.popupMenu.sort.remote.desc=Sort Descending By Remote Path",
+        "SyncPanel.popupMenu.sort.info=Sort By Info"
+    })
+    private void initTableHeaderPopupMenu() {
+        assert SwingUtilities.isEventDispatchThread();
+        // cleanup
+        headerPopupMenu.removeAll();
+        // swap
+        JMenuItem swapMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_swapPaths());
+        swapMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                swapPaths();
+            }
+        });
+        headerPopupMenu.add(swapMenuItem);
+        headerPopupMenu.addSeparator();
+        // sort
+        JMenuItem sortLocalAscMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_local_asc());
+        sortLocalAscMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 3 : 1, SortOrder.ASCENDING));
+        headerPopupMenu.add(sortLocalAscMenuItem);
+        JMenuItem sortRemoteAscMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_remote_asc());
+        sortRemoteAscMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 1 : 3, SortOrder.ASCENDING));
+        headerPopupMenu.add(sortRemoteAscMenuItem);
+        JMenuItem sortLocalDescMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_local_desc());
+        sortLocalDescMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 3 : 1, SortOrder.DESCENDING));
+        headerPopupMenu.add(sortLocalDescMenuItem);
+        JMenuItem sortRemoteDescMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_remote_desc());
+        sortRemoteDescMenuItem.addActionListener(new SortPopupMenuItemListener(remotePathFirst ? 1 : 3, SortOrder.DESCENDING));
+        headerPopupMenu.add(sortRemoteDescMenuItem);
+        JMenuItem sortInfoMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_sort_info());
+        sortInfoMenuItem.addActionListener(new SortPopupMenuItemListener(0, SortOrder.DESCENDING));
+        headerPopupMenu.add(sortInfoMenuItem);
+    }
+
+    @NbBundle.Messages({
         "SyncPanel.popupMenu.resetItem=Reset Operation",
         "SyncPanel.popupMenu.disable.download=Disable Downloads",
         "SyncPanel.popupMenu.disable.upload=Disable Uploads",
@@ -413,6 +555,12 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         "SyncPanel.popupMenu.diffItem=Diff..."
     })
     private void initTablePopupMenu() {
+        assert SwingUtilities.isEventDispatchThread();
+        // cleanup
+        popupMenu.removeAll();
+        if (popupMenuListener != null) {
+            popupMenu.removePopupMenuListener(popupMenuListener);
+        }
         // reset
         final JMenuItem resetMenuItem = new JMenuItem(Bundle.SyncPanel_popupMenu_resetItem(), ImageUtilities.loadImageIcon(RESET_ICON_PATH, false));
         resetMenuItem.addActionListener(new ActionListener() {
@@ -432,19 +580,19 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         popupMenu.addSeparator();
         // set operations
         // - noop
-        final JMenuItem operationNoopMenuItem = new JMenuItem(SyncItem.Operation.NOOP.getToolTip(), SyncItem.Operation.NOOP.getIcon());
+        final JMenuItem operationNoopMenuItem = new JMenuItem(SyncItem.Operation.NOOP.getToolTip(), SyncItem.Operation.NOOP.getIcon(!remotePathFirst));
         operationNoopMenuItem.addActionListener(new PopupMenuItemListener(SyncItem.Operation.NOOP));
         popupMenu.add(operationNoopMenuItem);
         // - noop
-        final JMenuItem operationDownloadMenuItem = new JMenuItem(SyncItem.Operation.DOWNLOAD.getToolTip(), SyncItem.Operation.DOWNLOAD.getIcon());
+        final JMenuItem operationDownloadMenuItem = new JMenuItem(SyncItem.Operation.DOWNLOAD.getToolTip(), SyncItem.Operation.DOWNLOAD.getIcon(!remotePathFirst));
         operationDownloadMenuItem.addActionListener(new PopupMenuItemListener(SyncItem.Operation.DOWNLOAD));
         popupMenu.add(operationDownloadMenuItem);
         // - noop
-        final JMenuItem operationUploadMenuItem = new JMenuItem(SyncItem.Operation.UPLOAD.getToolTip(), SyncItem.Operation.UPLOAD.getIcon());
+        final JMenuItem operationUploadMenuItem = new JMenuItem(SyncItem.Operation.UPLOAD.getToolTip(), SyncItem.Operation.UPLOAD.getIcon(!remotePathFirst));
         operationUploadMenuItem.addActionListener(new PopupMenuItemListener(SyncItem.Operation.UPLOAD));
         popupMenu.add(operationUploadMenuItem);
         // - noop
-        final JMenuItem operationDeleteMenuItem = new JMenuItem(SyncItem.Operation.DELETE.getToolTip(), SyncItem.Operation.DELETE.getIcon());
+        final JMenuItem operationDeleteMenuItem = new JMenuItem(SyncItem.Operation.DELETE.getToolTip(), SyncItem.Operation.DELETE.getIcon(!remotePathFirst));
         operationDeleteMenuItem.addActionListener(new PopupMenuItemListener(SyncItem.Operation.DELETE));
         popupMenu.add(operationDeleteMenuItem);
         popupMenu.addSeparator();
@@ -472,7 +620,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         });
         popupMenu.add(diffMenuItem);
         // listener
-        popupMenu.addPopupMenuListener(new PopupMenuListener() {
+        popupMenuListener = new PopupMenuListener() {
             @Override
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 // enable/disable actions
@@ -495,7 +643,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             public void popupMenuCanceled(PopupMenuEvent e) {
                 // noop
             }
-        });
+        };
+        popupMenu.addPopupMenuListener(popupMenuListener);
     }
 
     private void initOperationButtons() {
@@ -510,9 +659,20 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private void initOperationButton(JButton button, SyncItem.Operation operation) {
         button.setText(null);
-        button.setIcon(operation.getIcon());
+        button.setIcon(operation.getIcon(!remotePathFirst));
         button.setToolTipText(operation.getToolTip());
         button.addActionListener(new OperationButtonListener(operation));
+    }
+
+    private void reinitOperationButtons() {
+        reinitOperationButton(noopButton, SyncItem.Operation.NOOP);
+        reinitOperationButton(downloadButton, SyncItem.Operation.DOWNLOAD);
+        reinitOperationButton(uploadButton, SyncItem.Operation.UPLOAD);
+        reinitOperationButton(deleteButton, SyncItem.Operation.DELETE);
+    }
+
+    private void reinitOperationButton(JButton button, SyncItem.Operation operation) {
+        button.setIcon(operation.getIcon(!remotePathFirst));
     }
 
     @NbBundle.Messages("SyncPanel.resetButton.toolTip=Reset to suggested operation (discards Diff changes)")
@@ -620,6 +780,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         assert itemTable.getSelectedRowCount() <= 1 : "Selected rows in table: " + itemTable.getSelectedRowCount();
         Integer index = itemsToIndex(displayedItems).get(syncItem);
         if (index != null) {
+            index = itemTable.convertRowIndexToView(index);
             itemTable.getSelectionModel().setSelectionInterval(index, index);
         }
     }
@@ -629,13 +790,13 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         int[] selectedRows = itemTable.getSelectedRows();
         if (selectedRows.length == 0) {
             if (includingMousePosition) {
-                return Collections.singletonList(displayedItems.get(itemTable.rowAtPoint(popupMenuPoint)));
+                return Collections.singletonList(displayedItems.get(itemTable.convertRowIndexToModel(itemTable.rowAtPoint(popupMenuPoint))));
             }
             return Collections.emptyList();
         }
         List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
         for (int index : selectedRows) {
-            SyncItem syncItem = displayedItems.get(index);
+            SyncItem syncItem = displayedItems.get(itemTable.convertRowIndexToModel(index));
             selectedItems.add(syncItem);
         }
         return selectedItems;
@@ -649,7 +810,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             for (SyncItem item : selectedItems) {
                 Integer index = itemsToIndex.get(item);
                 if (index != null) {
-                    selectedRows.add(index);
+                    selectedRows.add(itemTable.convertRowIndexToView(index));
                 }
             }
         }
@@ -929,6 +1090,41 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         tableModel.fireSyncItemsChange();
     }
 
+    void swapPaths() {
+        assert SwingUtilities.isEventDispatchThread();
+        // swap columns
+        remotePathFirst = !remotePathFirst;
+        // remember sorting and selected items
+        sortKeys = adjustSortKeys(itemTable.getRowSorter().getSortKeys());
+        List<SyncItem> selectedItems = getSelectedItems(false);
+        // reinit table
+        tableModel.fireTableHeaderChanged();
+        reinitTable();
+        reinitOperationButtons();
+        reselectItems(selectedItems);
+    }
+
+    /**
+     * Adjust possible sort keys to new column order.
+     */
+    private List<? extends RowSorter.SortKey> adjustSortKeys(List<? extends RowSorter.SortKey> sortKeys) {
+        List<RowSorter.SortKey> currentKeys = new ArrayList<RowSorter.SortKey>(sortKeys);
+        List<RowSorter.SortKey> newKeys = new ArrayList<RowSorter.SortKey>(currentKeys.size());
+        for (RowSorter.SortKey sortKey : currentKeys) {
+            int column = sortKey.getColumn();
+            RowSorter.SortKey newSortKey;
+            if (column == 1) {
+                newSortKey = new RowSorter.SortKey(3, sortKey.getSortOrder());
+            } else if (column == 3) {
+                newSortKey = new RowSorter.SortKey(1, sortKey.getSortOrder());
+            } else {
+                newSortKey = sortKey;
+            }
+            newKeys.add(newSortKey);
+        }
+        return newKeys;
+    }
+
     private List<ViewCheckBox> getSelectedViewCheckBoxes() {
         List<ViewCheckBox> selected = new ArrayList<ViewCheckBox>(viewCheckBoxes.size());
         for (ViewCheckBox button : viewCheckBoxes) {
@@ -1137,20 +1333,13 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     //~ Inner classes
 
-    private static final class FileTableModel extends AbstractTableModel {
+    @NbBundle.Messages({
+        "SyncPanel.table.column.remote.title=Remote Path",
+        "SyncPanel.table.column.local.title=Local Path"
+    })
+    private final class FileTableModel extends AbstractTableModel {
 
         private static final long serialVersionUID = 16478634354314324L;
-
-        @NbBundle.Messages({
-            "SyncPanel.table.column.remote.title=Remote Path",
-            "SyncPanel.table.column.local.title=Local Path"
-        })
-        private static final String[] COLUMNS = {
-            "", // NOI18N
-            Bundle.SyncPanel_table_column_remote_title(),
-            "", // NOI18N
-            Bundle.SyncPanel_table_column_local_title(),
-        };
 
         private final List<SyncItem> items;
 
@@ -1174,8 +1363,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public int getColumnCount() {
-            assert SwingUtilities.isEventDispatchThread();
-            return COLUMNS.length;
+            return 4;
         }
 
         @Override
@@ -1191,20 +1379,32 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
                     return ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false);
                 }
                 return null;
-            } else if (columnIndex == 1) {
-                return syncItem.getRemotePath();
+            } else if (columnIndex == 1
+                    || columnIndex == 3) {
+                if (isRemotePathColumn(columnIndex)) {
+                    return syncItem.getRemotePath();
+                }
+                return syncItem.getLocalPath();
             } else if (columnIndex == 2) {
                 return syncItem.getOperation();
-            } else if (columnIndex == 3) {
-                return syncItem.getLocalPath();
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
 
         @Override
-        public String getColumnName(int column) {
+        public String getColumnName(int columnIndex) {
             assert SwingUtilities.isEventDispatchThread();
-            return COLUMNS[column];
+            if (columnIndex == 0
+                    || columnIndex == 2) {
+                return ""; // NOI18N
+            } else if (columnIndex == 1
+                    || columnIndex == 3) {
+                if (isRemotePathColumn(columnIndex)) {
+                    return Bundle.SyncPanel_table_column_remote_title();
+                }
+                return Bundle.SyncPanel_table_column_local_title();
+            }
+            throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
 
         @Override
@@ -1226,9 +1426,49 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             fireTableDataChanged();
         }
 
+        public void fireTableHeaderChanged() {
+            assert SwingUtilities.isEventDispatchThread();
+            fireTableStructureChanged();
+        }
+
+        boolean isRemotePathColumn(int columnIndex) {
+            assert SwingUtilities.isEventDispatchThread();
+            if (remotePathFirst && columnIndex == 1) {
+                return true;
+            }
+            return !remotePathFirst && columnIndex == 3;
+        }
+
     }
 
-    private final class IconRenderer implements TableCellRenderer {
+    private final class HeaderRenderer implements TableCellRenderer {
+
+        private static final long serialVersionUID = -6517698451435465L;
+
+        private final String toolTip;
+
+
+        public HeaderRenderer(String toolTip) {
+            this.toolTip = toolTip;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            assert SwingUtilities.isEventDispatchThread();
+            JLabel rendererComponent = (JLabel) table.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (value instanceof Icon) {
+                Icon icon = (Icon) value;
+                rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
+                rendererComponent.setText(null);
+                rendererComponent.setIcon(icon);
+            }
+            rendererComponent.setToolTipText(toolTip);
+            return rendererComponent;
+        }
+
+    }
+
+    private final class IconRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = -46865321321L;
 
@@ -1237,7 +1477,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             assert SwingUtilities.isEventDispatchThread();
             Icon icon = (Icon) value;
-            JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel rendererComponent = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
             rendererComponent.setToolTipText(displayedItems.get(row).validate().getMessage());
             rendererComponent.setText(null);
@@ -1247,7 +1487,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class StringRenderer implements TableCellRenderer {
+    private final class StringRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = 567654543546954L;
 
@@ -1259,11 +1499,11 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String text = (String) value;
-            JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel rendererComponent = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if (text != null) {
                 rendererComponent.setHorizontalAlignment(SwingConstants.LEFT);
                 rendererComponent.setToolTipText(text);
-                if (column == 3) {
+                if (!tableModel.isRemotePathColumn(column)) {
                     // local file
                     if (displayedItems.get(row).hasTmpLocalFile()) {
                         text = Bundle.SyncPanel_localFile_modified_mark(text);
@@ -1280,7 +1520,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
-    private final class OperationRenderer implements TableCellRenderer {
+    private final class OperationRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = -6786654671313465458L;
 
@@ -1291,9 +1531,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         })
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel rendererComponent = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             SyncItem.Operation operation = (SyncItem.Operation) value;
-            rendererComponent.setIcon(operation.getIcon());
+            rendererComponent.setIcon(operation.getIcon(!remotePathFirst));
             if (OPERATIONS.contains(operation)) {
                 rendererComponent.setToolTipText(Bundle.SyncPanel_operation_tooltip(operation.getTitle()));
             } else {
@@ -1414,6 +1654,25 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     }
 
+    private class SortPopupMenuItemListener implements ActionListener {
+
+        private final int column;
+        private final SortOrder sortOrder;
+
+
+        public SortPopupMenuItemListener(int column, SortOrder sortOrder) {
+            this.column = column;
+            this.sortOrder = sortOrder;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RowSorter<? extends TableModel> rowSorter = itemTable.getRowSorter();
+            rowSorter.setSortKeys(Collections.singletonList(new RowSorter.SortKey(column, sortOrder)));
+        }
+
+    }
+
     private class PopupMenuItemListener implements ActionListener {
 
         private final Collection<SyncItem.Operation> fromOperations;
@@ -1459,6 +1718,39 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         public int noop = 0;
         public int errors = 0;
         public int warnings = 0;
+
+    }
+
+    private final class SyncItemImageIconComparator implements Comparator<ImageIcon> {
+
+        @Override
+        public int compare(ImageIcon icon1, ImageIcon icon2) {
+            ImageIcon error = ImageUtilities.loadImageIcon(ERROR_ICON_PATH, false);
+            boolean isError1 = error.equals(icon1);
+            boolean isError2 = error.equals(icon2);
+            if (isError1 && isError2) {
+                return 0;
+            }
+            if (isError1) {
+                return 1;
+            }
+            if (isError2) {
+                return -1;
+            }
+            ImageIcon warning = ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false);
+            boolean isWarning1 = warning.equals(icon1);
+            boolean isWarning2 = warning.equals(icon2);
+            if (isWarning1 && isWarning2) {
+                return 0;
+            }
+            if (isWarning1) {
+                return 1;
+            }
+            if (isWarning2) {
+                return -1;
+            }
+            return 0;
+        }
 
     }
 

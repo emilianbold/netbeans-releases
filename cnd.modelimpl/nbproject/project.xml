@@ -106,7 +106,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.16.0</specification-version>
+                        <specification-version>1.17.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -306,8 +306,9 @@
                 <friend>com.sun.tools.dwarf.lwmodel</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
-                <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.modelui</friend>
+                <friend>org.netbeans.modules.cnd.remote.projectui</friend>
                 <package>org.netbeans.modules.cnd.modelimpl.csm</package>
                 <package>org.netbeans.modules.cnd.modelimpl.csm.core</package>
                 <package>org.netbeans.modules.cnd.modelimpl.parser.apt</package>

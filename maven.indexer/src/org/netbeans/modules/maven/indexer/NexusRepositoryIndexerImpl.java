@@ -86,6 +86,7 @@ import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.*;
@@ -139,16 +140,17 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     
     private static final Logger LOGGER = Logger.getLogger(NexusRepositoryIndexerImpl.class.getName());
        
-    public static Accessor ACCESSOR = null;
+    @SuppressWarnings("MS_SHOULD_BE_FINAL")
+    public static Accessor ACCESSOR;
 
     static {
         // invokes static initializer of RepositoryQueries.class
         // that will assign value to the ACCESSOR field above
-        Class c = RepositoryQueries.class;
+        Class<?> c = RepositoryQueries.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "", ex);
+        } catch (ClassNotFoundException x) {
+            throw new ExceptionInInitializerError(x);
         }
     }     
 
@@ -462,7 +464,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             synchronized (indexingMutexes) {
                 indexingMutexes.remove(mutex);
             }
-            RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
+            RepositoryPreferences.setLastIndexUpdate(repo.getId(), new Date());
             fireChangeIndex(repo);
             
         }
@@ -701,10 +703,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return filterGroupIds("", repos);
     }
 
-    private boolean isIndexing(RepositoryInfo repo, Mutex mutex) {
+    private static boolean isIndexing(Mutex mutex) {
         synchronized (indexingMutexes) {
-            boolean b = indexingMutexes.contains(mutex);
-            return b;
+            return indexingMutexes.contains(mutex);
         }
     }
 
@@ -718,7 +719,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
         for (final RepositoryInfo repo : repos) {
             Mutex mutex = getRepoMutex(repo);
-            if (skipUnIndexed && isIndexing(repo, mutex)) {
+            if (skipUnIndexed && isIndexing(mutex)) {
                 try {
                     actionSkip.run(repo, null);
                 } catch (IOException ex) {
@@ -926,7 +927,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 String clsname = className.replace(".", "/");
                 FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(
-                        indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()))),
+                        indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)))),
                         ArtifactInfo.VERSION_COMPARATOR);
                 fsr.setCount(MAX_RESULT_COUNT);
                 FlatSearchResponse response = repeatedFlatSearch(fsr, Collections.singletonList(context), false);
@@ -1267,11 +1268,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         if (ArtifactInfo.NAMES.equals(fieldName)) {
                             try {
                                 String clsname = one.replace(".", "/"); //NOI18N
-                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
+                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)));
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
                                 String clsname = QueryParser.escape(one.replace(".", "/")); //NOI18N
-                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase()));
+                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)));
                             }
                         } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
                             try {
@@ -1393,7 +1394,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return q;
     }
 
-    private class SkippedAction implements RepoAction {
+    private static class SkippedAction implements RepoAction {
 
         private final Result<?> result;
 

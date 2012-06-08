@@ -231,9 +231,9 @@ made subject to such option by the copyright holder.
     <target name="-strip-empty-lines">
         <copy file="${jnlp.dest.dir}/${jnlp.file}_" tofile="${jnlp.dest.dir}/${jnlp.file}" overwrite="true" encoding="UTF-8">
             <filterchain>
-                <linecontainsregexp>
-                    <regexp pattern=".+"/>
-                </linecontainsregexp>
+                <tokenfilter>
+                    <ignoreblank/>
+                </tokenfilter>
             </filterchain>
         </copy>
         <delete file="${jnlp.dest.dir}/${jnlp.file}_" failonerror="false"/>
@@ -324,10 +324,14 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-jnlp-init-keystore1" if="generated.key.signing">
-        <property name="jnlp.signjar.keystore" value="${basedir}/build/nb-jws.ks" />
+        <local name="generated.signing.alias"/>
+        <condition property="generated.signing.alias" value="${jnlp.signing.alias}" else="nb-jws">
+            <isset property="jnlp.signing.alias"/>
+        </condition>
+        <property name="jnlp.signjar.keystore" value="${basedir}/build/${generated.signing.alias}.ks" />
         <property name="jnlp.signjar.storepass" value="storepass"/>
         <property name="jnlp.signjar.keypass" value="keypass"/>
-        <property name="jnlp.signjar.alias" value="nb-jws"/>
+        <property name="jnlp.signjar.alias" value="${generated.signing.alias}"/>
     </target>
 
     <target name="-jnlp-init-keystore2" unless="generated.key.signing">

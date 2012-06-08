@@ -350,24 +350,27 @@ final class ViewHierarchy {
         separateModeViews.clear();
         separateModeViews.putAll(newViews);
         
-        // Close all old views.
-        for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
-            ModeView mv = (ModeView)it.next();
-            Component comp = mv.getComponent();
-            if(comp.isVisible()) {
-                comp.setVisible(false);
+        //#212590 - main window must be visible before showing child Dialogs
+        if( WindowManagerImpl.getInstance().getMainWindow().isVisible() ) {
+            // Close all old views.
+            for(Iterator it = oldViews.iterator(); it.hasNext(); ) {
+                ModeView mv = (ModeView)it.next();
+                Component comp = mv.getComponent();
+                if(comp.isVisible()) {
+                    comp.setVisible(false);
+                }
+                ((Window) comp).dispose();
             }
-            ((Window) comp).dispose();
-        }
         
-        // Open all new views.
-        for(Iterator it = newViews.keySet().iterator(); it.hasNext(); ) {
-            ModeView mv = (ModeView)it.next();
-            Component comp = mv.getComponent();
-            // #37463, it is needed to provide a check, otherwise the window would 
-            // get fronted each time.
-            if(!comp.isVisible()) {
-                comp.setVisible(true);
+            // Open all new views.
+            for(Iterator it = newViews.keySet().iterator(); it.hasNext(); ) {
+                ModeView mv = (ModeView)it.next();
+                Component comp = mv.getComponent();
+                // #37463, it is needed to provide a check, otherwise the window would 
+                // get fronted each time.
+                if(!comp.isVisible()) {
+                    comp.setVisible(true);
+                }
             }
         }
     }
@@ -607,7 +610,7 @@ final class ViewHierarchy {
                 mv.getComponent().setVisible(visible);
             }
         }
-    }
+        }
 
     public void updateEditorAreaFrameState(int frameState) {
         if(editorAreaFrame != null) {

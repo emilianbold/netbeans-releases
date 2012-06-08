@@ -487,11 +487,15 @@ public class VisualState implements LayoutConstants {
             }
 
             boolean sizeDefined = false;
-            for (Iterator<LayoutInterval> it = group.getSubIntervals(); it.hasNext(); ) {
-                LayoutInterval sub = it.next();
+            for (int i=0; i < group.getSubIntervalCount(); i++) {
+                LayoutInterval sub = group.getSubInterval(i);
                 boolean forceUpdate = (sizeUpdate == 2) && (group.isSequential() || sub == repInt);
                 boolean updatedSub = false;
                 int diff = LayoutInterval.getDiffToDefaultSize(sub, true);
+                if (diff < 0 && sub.isEmptySpace() && sub.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                        && group.isSequential() && (i == 0 || i == group.getSubIntervalCount()-1)) {
+                    diff = 0; // default gap at group boundaries can sometimes be laid out incorrectly (squeezed by a few pixels)
+                }
                 if (diff == 0 // may support size of the group
                     && forceAtSecond && sizeUpdate == 1 && !sizeDefined // we may need second round
                     && LayoutInterval.getCurrentSize(sub, dimension)
@@ -758,6 +762,9 @@ public class VisualState implements LayoutConstants {
         int index = parent.indexOf(gap);
         if (index > 0) {
             neighbors[LEADING] = parent.getSubInterval(index-1);
+            if (neighbors[LEADING].isEmptySpace()) {
+                return null; // for robustness, 2 consecutive gaps happened somehow, would throw AE below
+            }
             gapPos[LEADING] = neighbors[LEADING].getCurrentSpace().positions[dimension][TRAILING];
         } else {
             gapPos[LEADING] = (resizing ? parent.getParent() : parent)
@@ -765,6 +772,9 @@ public class VisualState implements LayoutConstants {
         }
         if (index+1 < parent.getSubIntervalCount()) {
             neighbors[TRAILING] = parent.getSubInterval(index+1);
+            if (neighbors[TRAILING].isEmptySpace()) {
+                return null; // for robustness, 2 consecutive gaps happened somehow, would throw AE below
+            }
             gapPos[TRAILING] = neighbors[TRAILING].getCurrentSpace().positions[dimension][LEADING];
         } else {
             gapPos[TRAILING] = (resizing ? parent.getParent() : parent)
@@ -841,7 +851,11 @@ public class VisualState implements LayoutConstants {
         int[] ortPos = { Integer.MAX_VALUE, Integer.MIN_VALUE };
         for (int e=LEADING; e <= TRAILING; e++) {
             if (neighbors[e] != null) {
-                for (LayoutInterval comp : LayoutUtils.getSideComponents(neighbors[e], e^1, true, false)) {
+                List<LayoutInterval> relatedComps = LayoutUtils.getSideComponents(neighbors[e], e^1, true, false);
+                if (relatedComps.isEmpty()) {
+                    relatedComps = LayoutUtils.getSideComponents(neighbors[e], e^1, false, false);
+                }
+                for (LayoutInterval comp : relatedComps) {
                     int[][] pos = comp.getCurrentSpace().positions;
                     if (component == null || comp.getComponent() == component
                             || Math.abs((pos[dimension][e^1] - gapPos[e])) < PROXIMITY) {
@@ -952,5 +966,18 @@ public class VisualState implements LayoutConstants {
 
     static String getDefaultGapDisplayName(PaddingType pt) {
         return pt != null ? PADDING_DISPLAY_NAMES[pt.ordinal()] : "default"; // TODO internationalize
+    }
+
+    static List<LayoutComponent> getComponentsInRegion(LayoutComponent container, LayoutRegion space) {
+        List<LayoutComponent> list = null;
+        for (LayoutComponent comp : container.getSubcomponents()) {
+            if (LayoutRegion.overlap(space, comp.getCurrentSpace())) {
+                if (list == null) {
+                    list = new LinkedList<LayoutComponent>();
+                }
+                list.add(comp);
+            }
+        }
+        return list != null ? list : Collections.EMPTY_LIST;
     }
 }

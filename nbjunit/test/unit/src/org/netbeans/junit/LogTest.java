@@ -45,11 +45,12 @@
 package org.netbeans.junit;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.netbeans.junit.internal.NbModuleLogHandler;
 
 /** Is logging working OK?
  */
@@ -85,15 +86,16 @@ public class LogTest extends NbTestCase {
         }
     }
 
-    public void testPublish() throws Exception {
-        CharSequence seq = Log.enable(LOG.getName(), Level.INFO);
-        LOG.info("some stuff");
-        LOG.log(Level.INFO, null);
-        LOG.log(Level.INFO, "found {0} great", new File(getWorkDir(), "some/thing"));
+    public void testNormalize() throws Exception {
+        StringWriter w = new StringWriter();
+        PrintWriter pw = new PrintWriter(w);
+        pw.println("some stuff");
+        pw.println((String) null);
+        pw.println("found " + new File(getWorkDir(), "some/thing") + " great");
         Object o0 = new Object();
         Object o1 = new Object();
-        LOG.log(Level.INFO, "o0={0} o1={1}", new Object[] {o0, o1});
-        LOG.log(Level.INFO, "o0={0}", o0);
+        pw.println("o0=" + o0 + " o1=" + o1);
+        pw.println("o0=" + o0);
         class Group {
             @Override public String toString() {
                 return String.format("Group@%h", this);
@@ -109,20 +111,14 @@ public class LogTest extends NbTestCase {
         Object i4 = g2.new Item();
         Group g5 = new Group();
         Object i6 = g5.new Item();
-        LOG.log(Level.INFO, "g2={0} i3={1} i4={2}", new Object[] {g2, i3, i4});
-        LOG.log(Level.INFO, "g5={0} i6={1}", new Object[] {g5, i6});
-        LOG.log(Level.INFO, "i4={0} o1={1}", new Object[] {i4, o1});
-        String expect = seq.toString().replaceAll("(?m)^\\Q[my.log.for.test] THREAD: Test Watch Dog: testPublish MSG: \\E(.+)(\r?\n)+", "$1\n");
-        expect = expect.replace('\\', '/');
-        
-        Pattern p = Pattern.compile(".*(WORKDIR.*)/some/thing");
-        Matcher m = p.matcher(expect);
-        if (m.find()) {
-            expect = expect.substring(0, m.start(1)) + "WRKD" + expect.substring(m.end(1));
-        }
+        pw.println("g2=" + g2 + " i3=" + i3 + " i4=" + i4);
+        pw.println("g5=" + g5 + " i6=" + i6);
+        pw.println("i4=" + i4 + " o1=" + o1);
+        pw.flush();
+        String expect = NbModuleLogHandler.normalize(w.getBuffer(), getWorkDirPath()).replace('\\', '/').replace("\r\n", "\n");
         assertEquals("some stuff\n"
                 + "null\n"
-                + "found WRKD/some/thing great\n"
+                + "found WORKDIR/some/thing great\n"
                 + "o0=java.lang.Object@0 o1=java.lang.Object@1\n"
                 + "o0=java.lang.Object@0\n"
                 + "g2=Group@2 i3=Item@3:2 i4=Item@4:2\n"

@@ -1681,6 +1681,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
          classpath="${nbantext.jar}"/>
       <property name="nbms.location" location="nbms"/>
       <property name="catalog.file" location="${nbms.location}/updates.xml"/>
+      <property name="tasks.file" location="${catalog.file}/../tasks.jar"/>
       <property name="catalog.base.url" value="."/>
       <property name="use.license.url.in.catalog" value="true"/>
       <property name="catalog.notification.message" value=""/>
@@ -1697,6 +1698,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           </updaterjar>
       </makeupdatedesc>
       <gzip src="${catalog.file}" destfile="${catalog.file}.gz"/>
+      <copy tofile="${tasks.file}" file="netbeans/harness/tasks.jar"/>
   </target>
 
   <target name="verify-update-descriptor" depends="init">

@@ -66,6 +66,12 @@ public class ImportDataCreator {
     private boolean shouldShowUsesPanel = false;
     private final Options options;
 
+    private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
+        final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
+        Collections.sort(sortedTypeElements, new TypeElementsComparator());
+        return sortedTypeElements;
+    }
+
     public ImportDataCreator(final Map<String, List<UsedNamespaceName>> usedNames, final Index phpIndex, final QualifiedName currentNamespace, final Options options) {
         this.usedNames = usedNames;
         this.phpIndex = phpIndex;
@@ -86,9 +92,9 @@ public class ImportDataCreator {
 
     private void processTypeName(final int index, final String typeName) {
         data.names[index] = typeName;
-        Set<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
-        Set<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
-        Set<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
+        Collection<TypeElement> possibleTypes = fetchPossibleTypes(typeName);
+        Collection<TypeElement> filteredDuplicates = filterDuplicates(possibleTypes);
+        Collection<TypeElement> filteredTypeElements = filterExactUnqualifiedName(filteredDuplicates, typeName);
         if (filteredTypeElements.isEmpty()) {
             insertEmptyData(index);
         } else {
@@ -96,10 +102,10 @@ public class ImportDataCreator {
         }
     }
 
-    private Set<TypeElement> fetchPossibleTypes(final String typeName) {
-        Set<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
-        Set<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
-        Set<TypeElement> possibleTypes = new HashSet<TypeElement>();
+    private Collection<TypeElement> fetchPossibleTypes(final String typeName) {
+        Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
+        Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
+        Collection<TypeElement> possibleTypes = new HashSet<TypeElement>();
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
         return possibleTypes;
@@ -114,12 +120,13 @@ public class ImportDataCreator {
         data.icons[index][0] = IconsUtils.getErrorGlyphIcon();
     }
 
-    private void insertPossibleData(final int index, final Set<TypeElement> filteredTypeElements, final String typeName) {
-        data.variants[index] = new String[filteredTypeElements.size() + 1];
+    private void insertPossibleData(final int index, final Collection<TypeElement> filteredTypeElements, final String typeName) {
+        Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
+        data.variants[index] = new String[sortedTypeElements.size() + 1];
         data.icons[index] = new Icon[data.variants[index].length];
         data.usedNamespaceNames.put(index, usedNames.get(typeName));
         int i = -1;
-        for (TypeElement typeElement : filteredTypeElements) {
+        for (TypeElement typeElement : sortedTypeElements) {
             data.variants[index][++i] = typeElement.getFullyQualifiedName().toString();
             data.icons[index][i] = IconsUtils.getElementIcon(typeElement.getPhpElementKind());
             if (i == 0) {
@@ -136,16 +143,16 @@ public class ImportDataCreator {
             }
         } else {
             QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
-            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(filteredTypeElements)) || hasExactName(filteredTypeElements, exactMatchName)) {
+            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(sortedTypeElements)) || hasExactName(sortedTypeElements, exactMatchName)) {
                 data.defaults[index] = data.variants[index][i];
             }
         }
         Arrays.sort(data.variants[index], new VariantsComparator());
     }
 
-    private Set<TypeElement> filterDuplicates(final Set<TypeElement> possibleTypes) {
-        Set<TypeElement> result = new HashSet<TypeElement>();
-        Set<String> filteredTypeElements = new HashSet<String>();
+    private Collection<TypeElement> filterDuplicates(final Collection<TypeElement> possibleTypes) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
+        Collection<String> filteredTypeElements = new HashSet<String>();
         for (TypeElement typeElement : possibleTypes) {
             String typeElementName = typeElement.toString();
             if (!filteredTypeElements.contains(typeElementName)) {
@@ -156,8 +163,8 @@ public class ImportDataCreator {
         return result;
     }
 
-    private Set<TypeElement> filterExactUnqualifiedName(final Set<TypeElement> possibleTypes, final String typeName) {
-        Set<TypeElement> result = new HashSet<TypeElement>();
+    private Collection<TypeElement> filterExactUnqualifiedName(final Collection<TypeElement> possibleTypes, final String typeName) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getFullyQualifiedName().toString().endsWith(typeName)) {
                 result.add(typeElement);
@@ -186,7 +193,7 @@ public class ImportDataCreator {
         return result;
     }
 
-    private boolean hasDefaultNamespaceName(final Set<TypeElement> possibleTypes) {
+    private boolean hasDefaultNamespaceName(final Collection<TypeElement> possibleTypes) {
         boolean result = false;
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getNamespaceName().isDefaultNamespace()) {
@@ -197,7 +204,7 @@ public class ImportDataCreator {
         return result;
     }
 
-    private boolean hasExactName(final Set<TypeElement> typeElements, final QualifiedName exactName) {
+    private boolean hasExactName(final Collection<TypeElement> typeElements, final QualifiedName exactName) {
         boolean result = false;
         for (TypeElement typeElement : typeElements) {
             if (typeElement.getFullyQualifiedName().equals(exactName)) {
@@ -212,14 +219,17 @@ public class ImportDataCreator {
 
         @Override
         public int compare(String o1, String o2) {
-            int result = 0;
-            if (o1.equals(Bundle.DoNotUseType())) {
-                result = -1;
-            } else {
-                result = o1.compareToIgnoreCase(o2);
-            }
-            return result;
+            return o1.compareToIgnoreCase(o2);
         }
+    }
+
+    private static class TypeElementsComparator implements Comparator<TypeElement> {
+
+        @Override
+        public int compare(TypeElement o1, TypeElement o2) {
+            return o1.getFullyQualifiedName().toString().compareToIgnoreCase(o2.getFullyQualifiedName().toString()) * -1;
+        }
+
     }
 
 }

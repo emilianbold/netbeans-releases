@@ -227,9 +227,10 @@ public class DependencyTest extends NbTestCase {
         misparse(Dependency.TYPE_JAVA, "Java > 1.4.0, Java = 1.4.0_01");
     }
     
-    public void testMisparseNumbers() throws Exception {
-        misparse(Dependency.TYPE_MODULE, "acme.2.webapp.importing");
-        misparse(Dependency.TYPE_MODULE, "acme.2xyz.webapp.importing");
+    public void testAllowNumbers() throws Exception {
+        Dependency.create(Dependency.TYPE_MODULE, "acme.2.webapp.importing");
+        Dependency.create(Dependency.TYPE_MODULE, "acme.2xyz.webapp.importing");
+        Dependency.create(Dependency.TYPE_MODULE, "org.apache.servicemix.specs.jsr303_api_1.0.0");
     }
     
     public void testConstants() throws Exception {

@@ -2534,17 +2534,22 @@ public class FileObjectTestHid extends TestBaseHid {
 
 
 
+        FileLock lock = null;
         try {
             OutputStream os = fo1.getOutputStream();
             os.write("Ahoj".getBytes());
             os.close();
             
-            FileLock lock = fo1.lock ();
+            lock = fo1.lock ();
             fo1.delete(lock);
         } catch (IOException iex) {
             fsAssert("FileObject shopuld be allowd to be modified.",
             fs.isReadOnly() || fo1.isReadOnly()) ;
             return;
+        } finally {
+            if (lock != null) {
+                lock.releaseLock();
+            }
         }
         fsAssert ("After delete should be invalid",!fo1.isValid());
     }

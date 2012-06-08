@@ -57,14 +57,13 @@ import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 
-
 public class ClosedCategoryNode extends CategoryNode {
 
     private JPanel panel;
     private TreeLabel lblName;
 
     public ClosedCategoryNode(Category category) {
-        super(category, false);
+        super(category, false, false);
     }
 
     @Override
@@ -84,27 +83,42 @@ public class ClosedCategoryNode extends CategoryNode {
     List<Issue> getTasks() {
         return Collections.emptyList();
     }
-    
+
     @Override
     public boolean isOpened() {
         return false;
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        synchronized (UI_LOCK) {
-            if (panel == null) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category_closed.png", true)); //NOI18N
-                panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+    protected List<Issue> load() {
+        return Collections.emptyList();
+    }
 
-                lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
-                panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-            }
+    @Override
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        super.configure(component, foreground, background, isSelected, hasFocus);
+        if (panel != null) {
             lblName.setText(Utils.getCategoryDisplayText(this));
-            lblName.setForeground(foreground);
+        }
+    }
+
+    @Override
+    protected JComponent createComponent(List<Issue> data) {
+        updateNodes();
+        panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        synchronized (LOCK) {
+            labels.clear();
+            buttons.clear();
+            panel = new JPanel(new GridBagLayout());
+            panel.setOpaque(false);
+            final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
+            iconLabel.setEnabled(false);
+            panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
+            labels.add(lblName);
+            panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             return panel;
         }
     }

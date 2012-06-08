@@ -94,7 +94,7 @@ public final class RepositoryUtil {
         }
         ArtifactRepository repo = online.getLocalRepository();
         String localPath = repo.pathOf(art);
-        art.setFile(new File(repo.getBasedir(), localPath));
+        art.setFile(new File(online.getLocalRepositoryFile(), localPath));
 
         return art;
     }

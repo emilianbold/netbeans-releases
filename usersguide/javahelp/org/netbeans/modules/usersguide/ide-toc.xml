@@ -30,7 +30,7 @@ Other names may be trademarks of their respective owners.
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />
     <tocitem text="Working with Action Items" target="files.tasklist" />
-    <tocitem text="Creating a Template" target="files.template" />
+    <tocitem text="Creating a File Template" target="files.template" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
     <tocitem text="About File Encodings" target="files.about-encoding" />

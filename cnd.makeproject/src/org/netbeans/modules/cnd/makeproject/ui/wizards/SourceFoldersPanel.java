@@ -43,14 +43,14 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /*package*/ final class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            String workingdir = ((File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER)).getAbsolutePath();
+            String workingdir = ((FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER)).getPath();
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
@@ -174,6 +174,6 @@ import org.openide.util.NbBundle;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String s) {
-        return NbBundle.getBundle(PanelProjectLocationVisual.class).getString(s);
+        return NbBundle.getMessage(PanelProjectLocationVisual.class, s);
     }
 }

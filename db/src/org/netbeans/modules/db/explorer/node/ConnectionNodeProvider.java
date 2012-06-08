@@ -119,11 +119,11 @@ public class ConnectionNodeProvider extends NodeProvider {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        newConnectionFinal.selectInExplorer();
+                        newConnectionFinal.selectInExplorer(false);
                     }
                 });
             } else {
-                newConnectionFinal.selectInExplorer();
+                newConnectionFinal.selectInExplorer(false);
             }
         }
     }

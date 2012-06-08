@@ -284,7 +284,9 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         // create the pu first if needed
         if(helper.isCreatePU()) {
             Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getDatabaseConnection()!=null ? helper.getTableSource().getName():null, null, null));
-       }
+        } else {
+                Util.addPersistenceUnitToProject( project );
+        }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);

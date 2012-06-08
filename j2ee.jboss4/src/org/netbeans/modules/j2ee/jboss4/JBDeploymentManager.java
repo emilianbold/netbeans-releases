@@ -203,9 +203,13 @@ public class JBDeploymentManager implements DeploymentManager {
             }
 
             JBoss5ProfileServiceProxy profileService = null;
-            Object service = ctx.lookup("ProfileService"); // NOI18N
-            if (service != null) {
-                profileService = new JBoss5ProfileServiceProxy(service);
+            try {
+                Object service = ctx.lookup("ProfileService"); // NOI18N
+                if (service != null) {
+                    profileService = new JBoss5ProfileServiceProxy(service);
+                }
+            } catch (NameNotFoundException ex) {
+                LOGGER.log(Level.FINE, null, ex);
             }
 
             return action.action(rmiServer, profileService);

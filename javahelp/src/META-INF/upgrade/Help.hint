@@ -1,0 +1,29 @@
+org.openide.util.Lookup.getDefault().lookup(org.netbeans.api.javahelp.Help.class).showHelp($c)
+:: $c instanceof org.openide.util.HelpCtx
+=>
+$c.display()
+;;
+
+org.openide.util.Lookup.getDefault().lookup(org.netbeans.api.javahelp.Help.class).showHelp($c, true)
+:: $c instanceof org.openide.util.HelpCtx
+=>
+$c.display()
+;;
+
+org.netbeans.api.javahelp.Help $h = org.openide.util.Lookup.getDefault().lookup(org.netbeans.api.javahelp.Help.class);
+if ($h != null) {
+    $h.showHelp($c);
+}
+:: $c instanceof org.openide.util.HelpCtx
+=>
+$c.display();
+;;
+
+org.netbeans.api.javahelp.Help $h = org.openide.util.Lookup.getDefault().lookup(org.netbeans.api.javahelp.Help.class);
+if ($h != null) {
+    $h.showHelp($c, true);
+}
+:: $c instanceof org.openide.util.HelpCtx
+=>
+$c.display();
+;;
