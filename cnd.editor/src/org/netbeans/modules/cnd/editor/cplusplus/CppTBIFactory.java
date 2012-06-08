@@ -148,7 +148,12 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
                     // XXX: vv159170 simplest hack
                     // insert "};" for "{" when in "enum", "class", "struct" and union completion
                     TokenItem<TokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
-                    if (firstNonWhiteBwd == null || firstNonWhiteBwd.id() != CppTokenId.LBRACE) {
+                    if (firstNonWhiteBwd == null) {
+                        return false;
+                    }
+                    if (!(firstNonWhiteBwd.id() == CppTokenId.LBRACE ||
+                        firstNonWhiteBwd.id() == CppTokenId.LINE_COMMENT ||
+                        firstNonWhiteBwd.id() == CppTokenId.BLOCK_COMMENT)) {
                         return false;
                     }
                     int lBracePos = firstNonWhiteBwd.offset();

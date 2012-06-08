@@ -66,6 +66,8 @@ public abstract class Variable {
     protected boolean waitingForDebugger;
     protected Variable[] children = null;
     private boolean stat;
+    
+    protected boolean hasMore = false;
 
     protected Variable(ModelChangeDelegator updater, Variable parent,
 				String name, String type, String value) {
@@ -226,6 +228,14 @@ public abstract class Variable {
     public boolean isPtr() {
 	return isPtr;
     }
+    
+    public boolean hasMore(){
+        return hasMore;
+    }
+    
+    public void setHasMore(boolean hasMore){
+        this.hasMore = hasMore;
+    }
 
     public void setChildren(Variable[] children, boolean andUpdate) {
 	if (Log.Variable.debug) {
@@ -287,6 +297,12 @@ public abstract class Variable {
 	    return new Variable[0];		// see IZ 99042
 	}
     }
+    
+    /**
+     * Shows the next 100 children of the variable
+     * Support for GdbVariable.getNextChildren()
+     */
+    public void getMoreChildren() {}
 
     @Override
     public String toString() {

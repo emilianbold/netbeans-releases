@@ -42,22 +42,15 @@
 
 package org.netbeans.modules.cnd.remote.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -76,18 +69,14 @@ import org.openide.util.WeakListeners;
     //@ActionReference(path="Menu/File", position=810),
     @ActionReference(path = "Toolbars/Remote", position = 3000)
 })
-public class OpenRemoteFileAction extends RemoteOpenActionBase  implements PropertyChangeListener {
+public class OpenRemoteFileAction extends RemoteOpenActionBase {
 
     private ImageIcon icon;
-    private static final boolean ALLOW_LOCAL = false;
     
     public OpenRemoteFileAction() {
-        super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"), ALLOW_LOCAL);
+        super(NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title")); //NOI18N
         icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openFile.png", false); //NOI18N
         putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openFile.png"); //NOI18N
-        if (!ALLOW_LOCAL) {
-            ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, this));
-        }
     }
 
     @Override
@@ -96,39 +85,17 @@ public class OpenRemoteFileAction extends RemoteOpenActionBase  implements Prope
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        String actionCommand = e.getActionCommand();
-        if (actionCommand != null && !actionCommand.isEmpty()) {
-            super.actionPerformed(e);
-        } else {
-            ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
-            if (!ALLOW_LOCAL && executionEnvironment.isLocal()) {
-                return;
-            }
-            actionPerformed(executionEnvironment);
-        }
-    }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (ServerList.PROP_DEFAULT_RECORD.equals(evt.getPropertyName())){
-            setEnabled(!ServerList.getDefaultRecord().getExecutionEnvironment().isLocal());
-        }
-    }
-
-
-    @Override
-    protected void actionPerformed(ExecutionEnvironment env) {
-        RemoteOpenHelper.openFile(env);
-    }
-
-    @Override
     protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title");
+        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.submenu.title"); //NOI18N
     }
 
     @Override
-    protected String getItemTitle(ServerRecord record) {
-        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.item.title", record.getDisplayName());
+    protected String getItemTitle(String record) {
+        return NbBundle.getMessage(OpenRemoteFileAction.class, "OpenRemoteFileAction.item.title", record); //NOI18N
     }        
+
+    @Override
+    protected String getPerformerID() {
+        return "CND/Toobar/Services/OpenRemoteFile"; //NOI18N
+    }
 }

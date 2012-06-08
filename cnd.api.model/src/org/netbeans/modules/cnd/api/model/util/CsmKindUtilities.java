@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariadicSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
@@ -188,6 +189,10 @@ public class CsmKindUtilities {
 
     public static boolean isExpressionBasedSpecalizationParameter(CsmObject obj) {
         return (obj instanceof CsmExpressionBasedSpecializationParameter);
+    }
+
+    public static boolean isVariadicSpecalizationParameter(CsmObject obj) {
+        return (obj instanceof CsmVariadicSpecializationParameter);
     }
     
     public static boolean isFunctionExplicitInstantiation(CsmObject obj) {
