@@ -59,6 +59,7 @@ public class ApisupportOutputProcessorFactory implements OutputProcessorFactory 
     public ApisupportOutputProcessorFactory() {
     }
 
+    @Override
     public Set<OutputProcessor> createProcessorsSet(Project project) {
         Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
         if (project != null) {

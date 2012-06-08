@@ -75,10 +75,12 @@ public class JaxWsAddOperation implements AddOperationCookie {
         this.implClassFo=implClassFo;
     }
 
+    @Override
     public void addOperation() {
         final AddWsOperationHelper strategy = new AddWsOperationHelper(
                 NbBundle.getMessage(JaxWsAddOperation.class, "TITLE_OperationAction"));  //NOI18N
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     String className = _RetoucheUtil.getMainClassName(implClassFo);

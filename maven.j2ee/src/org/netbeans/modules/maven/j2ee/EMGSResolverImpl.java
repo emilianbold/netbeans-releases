@@ -131,6 +131,7 @@ public class EMGSResolverImpl implements EntityManagerGenerationStrategyResolver
         JavaSource source = JavaSource.forFileObject(target);
         try{
             source.runModificationTask(new Task<WorkingCopy>(){
+                @Override
                 public void run(WorkingCopy parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement typeElement = SourceUtils.getPublicTopLevelElement(parameter);
