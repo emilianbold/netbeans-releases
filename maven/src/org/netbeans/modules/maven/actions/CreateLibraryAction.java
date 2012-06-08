@@ -253,6 +253,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 Exceptions.printStackTrace(ex);
             }
         } catch (ThreadDeath d) { // download interrupted
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }
         } finally {
             handle.finish();
         }

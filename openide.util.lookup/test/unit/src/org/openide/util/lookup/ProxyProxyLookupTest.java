@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.filebasedfs.utils;
+package org.openide.util.lookup;
 
-import java.io.File;
-import org.netbeans.junit.NbTestCase;
-import org.openide.util.Utilities;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Radek Matous
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FileInfoTest extends NbTestCase {
-
-    public FileInfoTest(String testName) {
+public class ProxyProxyLookupTest extends ProxyLookupTest {
+    public ProxyProxyLookupTest(String testName) {
         super(testName);
     }
 
-    /** Test getRoot() method. */
-    public void testGetRoot() {
-        if(!Utilities.isWindows()) {
-            return;
-        }
-        String[][] files = {
-            // filename, expected root
-            {"\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt", "\\\\computerName\\sharedFolder"},
-            {"\\\\computerName\\sharedFolder", "\\\\computerName\\sharedFolder"},
-            {"\\\\computerName", "\\\\computerName"},
-            {"\\\\", "\\\\"},
-            {"D:\\a\\b\\c\\a.txt", "D:\\"},
-            {"D:\\a.txt", "D:\\"},
-            {"D:\\", "D:\\"}
-        };
-        for (int i = 0; i < files.length; i++) {
-            assertEquals("Wrong root for file "+files[i][0]+".", files[i][1], new FileInfo(new File(files[i][0])).getRoot().toString());
-        }
+    @Override
+    public Lookup createLookup(Lookup lookup) {
+        return new ProxyLookup(new ProxyLookup(lookup));
     }
-
-    public void testComposeName() {
-        testComposeNameImpl("a.b");
-        testComposeNameImpl(".b");
-        testComposeNameImpl("a.");
-    }
-
-    private void testComposeNameImpl(final String fullName) {
-        String ext = FileInfo.getExt(fullName);
-        String name = FileInfo.getName(fullName);
-
-        assertEquals(fullName, FileInfo.composeName(name, ext));
+    
+    @Override
+    public void testDoubleAddIssue35274() {
+        // this one is unstable as the assertGC tries to free different
+        // result than the one needed. Ignore the test for now.
     }
 }

@@ -75,6 +75,8 @@ import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.Lookup.Template;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.test.MockLookup;
@@ -239,6 +241,30 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertEquals(first, l.lookupAll(xface).iterator().next());
         l = getTestedLookup(c2a);
         Object second = l.lookup(xface);
+        assertEquals(first, second);
+    }
+    
+    public void testDontCallMeUnderLock() throws Exception {
+        final Lookup l = getTestedLookup(c2);
+        ProxyLookup pl = new ProxyLookup(l) {
+            @Override
+            void beforeLookup(boolean call, Template<?> template) {
+                super.beforeLookup(call, template);
+                assertFalse("Don't hold MetaInfServicesLookup lock", Thread.holdsLock(l));
+            }
+        };
+        Class<?> xface = c1.loadClass("org.foo.Interface");
+        Result<?> res = pl.lookupResult(Object.class);
+        res.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+            }
+        });
+        assertTrue("Empty now", res.allItems().isEmpty());
+        
+        Object first = l.lookup(xface);
+        assertEquals(first, l.lookupAll(xface).iterator().next());
+        Object second = pl.lookup(xface);
         assertEquals(first, second);
     }
 

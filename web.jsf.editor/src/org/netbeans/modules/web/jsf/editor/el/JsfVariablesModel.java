@@ -52,6 +52,10 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.TagFeature;
+import org.netbeans.modules.web.jsfapi.spi.TagFeatureProvider;
 
 /**
  * @todo use the document's offsets instead of the html snapshot embedded offsets.            
@@ -114,61 +118,75 @@ public class JsfVariablesModel {
             if (inTest || faceletsLibsNamespaces.contains(namespace)) {
                 //ok, seems to be a facelets library
                 Node root = result.root(namespace);
+                final Library library = sup.getLibrary(namespace);
+                
                 //find all nodes with var and value attributes
                 List<Element> matches = ElementUtils.getChildrenRecursivelly(root, new ElementFilter() {
 
                     @Override
                     public boolean accepts(Element node) {
                         if(node.type() == ElementType.OPEN_TAG) {
+                            
                             OpenTag openTag = (OpenTag)node;
-                            Attribute valueName = openTag.getAttribute(VALUE_NAME);
-                            Attribute variableName = openTag.getAttribute(VARIABLE_NAME);
-                    
-                            //accept open tags with "value" and "var" attributes with some non-empty value
+                            final String tagName = openTag.unqualifiedName().toString();
+                            final LibraryComponent component = library.getComponent(tagName);
                             
-                            CharSequence valueName_value = valueName != null 
-                                    ? valueName.unquotedValue()
-                                    : null;
-                            
-                            CharSequence variableName_value = variableName != null 
-                                    ? variableName.unquotedValue()
-                                    : null;
-                            
-                            return valueName_value != null 
-                                    && valueName_value.length() > 0
-                                    && variableName_value != null
-                                    && variableName_value.length() > 0;
+                            if (component != null) {
+                                Collection<TagFeature.IterableTagPattern> tagFeatures = TagFeatureProvider.Query.getFeatures(component.getTag(), library, TagFeature.IterableTagPattern.class);
+                                for (TagFeature.IterableTagPattern iterableTagPattern : tagFeatures) {
+                                    if (iterableTagPattern.getVariable() != null && iterableTagPattern.getItems() != null) {
+                                        Attribute itemsAttribute = openTag.getAttribute(iterableTagPattern.getItems().getName());
+                                        Attribute variableAttribute = openTag.getAttribute(iterableTagPattern.getVariable().getName());
+                                        
+                                        CharSequence itemsValue = itemsAttribute == null ? null : itemsAttribute.unquotedValue();
+                                        CharSequence variableValue = variableAttribute == null ? null : variableAttribute.unquotedValue();
+                                        
+                                        return itemsValue != null && itemsValue.length() > 0 &&
+                                                variableValue != null && variableValue.length() > 0;
+                                    }
+                                }
+                            }
                         }
                         return false;
                     }
                 }, false);
 
+                //I need to get the original document context for the value attribute
+                //Since the virtual html source already contains the substituted text (@@@)
+                //instead of the expression language, the code needs to be taken from
+                //the original document
                 for (Element node : matches) {
-                    OpenTag ot = (OpenTag)node;
-
-                    //I need to get the original document context for the value attribute
-                    //Since the virtual html source already contains the substituted text (@@@)
-                    //instead of the expression language, the code needs to be taken from
-                    //the original document
-                    Attribute valueAttr = ot.getAttribute(VALUE_NAME);
+                    OpenTag openTag = (OpenTag) node;
+                    final String tagName = openTag.unqualifiedName().toString();
+                    final LibraryComponent component = library.getComponent(tagName);
                     
-                    int doc_from = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset());
-                    int doc_to = result.getSnapshot().getOriginalOffset(valueAttr.valueOffset() + valueAttr.value().length());
+                    if (component != null) {
+                        Collection<TagFeature.IterableTagPattern> tagFeatures = TagFeatureProvider.Query.getFeatures(component.getTag(), library, TagFeature.IterableTagPattern.class);
+                        for (TagFeature.IterableTagPattern iterableTagPattern : tagFeatures) {
+                            if (iterableTagPattern.getVariable() != null && iterableTagPattern.getItems() != null) {
+                                final String variableAttributeName = iterableTagPattern.getVariable().getName();
+                                final String itemsAttributeName = iterableTagPattern.getItems().getName();
+                                Attribute itemsAttribute = openTag.getAttribute(itemsAttributeName);
+                                int doc_from = result.getSnapshot().getOriginalOffset(itemsAttribute.valueOffset());
+                                int doc_to = result.getSnapshot().getOriginalOffset(itemsAttribute.valueOffset() + itemsAttribute.value().length());
 
-                    if(doc_from == -1 || doc_to == -1) {
-                        continue; //the offsets cannot be mapped to the document
+                                if(doc_from == -1 || doc_to == -1) {
+                                    continue; //the offsets cannot be mapped to the document
+                                }
+
+                                String documentValueContent = topLevelSnapshot.getText().subSequence(doc_from, doc_to).toString();
+
+                                JsfVariableContext context = new JsfVariableContext(
+                                        openTag.from(),
+                                        openTag.semanticEnd(),
+                                        openTag.getAttribute(variableAttributeName).unquotedValue().toString(),
+                                        unquotedValue(documentValueContent));
+
+                                contextsList.add(context);
+                            }
+                        }
                     }
                     
-                    String documentValueContent = topLevelSnapshot.getText().subSequence(doc_from, doc_to).toString();
-
-                    JsfVariableContext context = new JsfVariableContext(
-                            ot.from(),
-                            ot.semanticEnd(),
-                            ot.getAttribute(VARIABLE_NAME).unquotedValue().toString(),
-                            unquotedValue(documentValueContent));
-
-                    contextsList.add(context);
-
                 }
             }
         }

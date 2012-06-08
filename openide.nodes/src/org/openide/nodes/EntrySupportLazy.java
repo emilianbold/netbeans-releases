@@ -83,10 +83,10 @@ class EntrySupportLazy extends EntrySupport {
     
     private void setState(EntrySupportLazyState old, EntrySupportLazyState s) {
         assert Thread.holdsLock(LOCK);
-        if (!internal.compareAndSet(old, s)) {
-            IllegalStateException ex = new IllegalStateException("Somebody changed internal state meanwhile!\nExpected: " + old + "\ncurrent : " + internal.get()); // NOI18N
-            throw ex;
-        }
+        boolean success = internal.compareAndSet(old, s);
+        assert success : "Somebody changed internal state meanwhile!\n"
+            + "Expected: " + old + "\n"
+            + "Current : " + internal.get(); // NOI18N
     }
 
     public boolean checkInit() {
@@ -453,62 +453,71 @@ class EntrySupportLazy extends EntrySupport {
     @Override
     void setEntries(Collection<? extends Entry> newEntries, boolean noCheck) {
         assert Children.MUTEX.isWriteAccess();
-        EntrySupportLazyState[] stateHolder = { null };
-        Set<Entry> entriesToRemove = setEntriesSimple(stateHolder, newEntries);
-        if (entriesToRemove == null) {
-            return;
-        }
-        if (!entriesToRemove.isEmpty()) {
-            removeEntries(stateHolder, entriesToRemove, null, null, false, false);
-        }
-        // change the order of entries, notifies
-        // it and again brings children to up-to-date state, recomputes indexes
-        // state has been modified
-        Collection<Entry> toAdd = updateOrder(stateHolder, newEntries);
-        EntrySupportLazyState state = stateHolder[0];
-        if (!toAdd.isEmpty()) {
-            ArrayList<Entry> newStateEntries = new ArrayList<Entry>(newEntries);
-            int[] idxs = new int[toAdd.size()];
-            int addIdx = 0;
-            int inx = 0;
-            boolean createNodes = toAdd.size() == 2 && prefetchCount > 0;
-            ArrayList<Entry> newStateVisibleEntries = new ArrayList<Entry>();
-            Map<Entry, EntryInfo> newState2Info = new HashMap<Entry, EntryInfo>(state.getEntryToInfo());
-            for (int i = 0; i < newStateEntries.size(); i++) {
-                Entry entry = newStateEntries.get(i);
-                EntryInfo info = newState2Info.get(entry);
-                if (info == null) {
-                    info = new EntryInfo(this, entry);
-                    if (createNodes) {
-                        Node n = info.getNode();
-                        if (isDummyNode(n)) {
-                            // mark as hidden
-                            newState2Info.put(entry, info.changeIndex(-2));
-                            continue;
-                        }
-                    }
-                    idxs[addIdx++] = inx;
-                }
-                if (info.isHidden()) {
-                    continue;
-                }
-                newState2Info.put(entry, info.changeIndex(inx++));
-                newStateVisibleEntries.add(entry);
-            }
-            synchronized (LOCK) {
-                setState(state, state.changeEntries(newStateEntries, newStateVisibleEntries, newState2Info));
-            }
-            if (addIdx == 0) {
+        for (;;) {
+            EntrySupportLazyState[] stateHolder = { null };
+            Set<Entry> entriesToRemove = setEntriesSimple(stateHolder, newEntries);
+            if (entriesToRemove == null) {
                 return;
             }
-            if (idxs.length != addIdx) {
-                int[] tmp = new int[addIdx];
-                for (int i = 0; i < tmp.length; i++) {
-                    tmp[i] = idxs[i];
-                }
-                idxs = tmp;
+            if (!entriesToRemove.isEmpty()) {
+                removeEntries(stateHolder, entriesToRemove, null, null, false, false);
             }
-            fireSubNodesChangeIdx(true, idxs, null, createSnapshot(), null);
+            // change the order of entries, notifies
+            // it and again brings children to up-to-date state, recomputes indexes
+            // state has been modified
+            Collection<Entry> toAdd = updateOrder(stateHolder, newEntries);
+            EntrySupportLazyState state = stateHolder[0];
+            if (!toAdd.isEmpty()) {
+                ArrayList<Entry> newStateEntries = new ArrayList<Entry>(newEntries);
+                int[] idxs = new int[toAdd.size()];
+                int addIdx = 0;
+                int inx = 0;
+                boolean createNodes = toAdd.size() == 2 && prefetchCount > 0;
+                ArrayList<Entry> newStateVisibleEntries = new ArrayList<Entry>();
+                Map<Entry, EntryInfo> newState2Info = new HashMap<Entry, EntryInfo>(state.getEntryToInfo());
+                for (int i = 0; i < newStateEntries.size(); i++) {
+                    Entry entry = newStateEntries.get(i);
+                    EntryInfo info = newState2Info.get(entry);
+                    if (info == null) {
+                        info = new EntryInfo(this, entry);
+                        if (createNodes) {
+                            Node n = info.getNode();
+                            if (isDummyNode(n)) {
+                                // mark as hidden
+                                newState2Info.put(entry, info.changeIndex(-2));
+                                continue;
+                            }
+                        }
+                        idxs[addIdx++] = inx;
+                    }
+                    if (info.isHidden()) {
+                        continue;
+                    }
+                    newState2Info.put(entry, info.changeIndex(inx++));
+                    newStateVisibleEntries.add(entry);
+                }
+                synchronized (LOCK) {
+                    final EntrySupportLazyState newState = state.changeEntries(newStateEntries, newStateVisibleEntries, newState2Info);
+                    if (internal.get() != state) {
+                        // try once again
+                        state = internal.get();
+                        continue;
+                    }
+                    setState(state, newState);
+                }
+                if (addIdx == 0) {
+                    return;
+                }
+                if (idxs.length != addIdx) {
+                    int[] tmp = new int[addIdx];
+                    for (int i = 0; i < tmp.length; i++) {
+                        tmp[i] = idxs[i];
+                    }
+                    idxs = tmp;
+                }
+                fireSubNodesChangeIdx(true, idxs, null, createSnapshot(), null);
+            }
+            return;
         }
     }
 
