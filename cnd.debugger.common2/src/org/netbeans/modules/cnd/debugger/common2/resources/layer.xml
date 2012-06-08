@@ -64,10 +64,10 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-cnd+sourcefile">
                 <folder name="Actions">
-                    <file name="CompileDebugAction.shadow">
+<!--                    <file name="CompileDebugAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-debugger-common2-debugger-actions-CompileDebugAction.instance"/>
                         <attr name="position" intvalue="970"/>
-                    </file>
+                    </file>-->
                 </folder>
             </folder>
         </folder> <!-- text -->
@@ -829,9 +829,9 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Actions">
-        <folder name="Build">
+        <!--folder name="Build">
             <file name="org-netbeans-modules-cnd-debugger-common2-debugger-actions-CompileDebugAction.instance"/>
-        </folder>    
+        </folder-->    
 	<folder name="Debug">
 	    <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance">
 	        <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction"/>

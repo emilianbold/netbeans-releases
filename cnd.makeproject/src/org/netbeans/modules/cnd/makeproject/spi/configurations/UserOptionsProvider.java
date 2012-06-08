@@ -43,11 +43,11 @@
 package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Detect additional include paths and macros from compiler options.
@@ -62,5 +62,5 @@ public interface UserOptionsProvider {
     List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
     List<String> getItemUserUndefinedMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
     LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch(Project project);
+    NativeFileSearch getPackageFileSearch(ExecutionEnvironment env);
 }

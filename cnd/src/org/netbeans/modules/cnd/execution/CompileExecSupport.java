@@ -69,10 +69,10 @@ public final class CompileExecSupport extends ExecutionSupport {
 
     @Override
     public void addProperties(Sheet.Set set) {
-        set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_fileParams"), getString("HINT_fileParams"))); // NOI18N;
-        set.put(createRunDirectoryProperty());
+        //set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_fileParams"), getString("HINT_fileParams"))); // NOI18N;
+        //set.put(createRunDirectoryProperty());
         set.put(createCompileFlagsProperty());
-        set.put(createLinkFlagsProperty());
+        //set.put(createLinkFlagsProperty());
     }
 
     /**

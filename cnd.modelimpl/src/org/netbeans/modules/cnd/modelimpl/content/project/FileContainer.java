@@ -782,6 +782,20 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 if (yetOneMore != null) {
                     newData.add(yetOneMore);
                 }
+                if (TraceFlags.DYNAMIC_TESTS_TRACE) {
+                    for (int i = 0; i < newData.size(); i++) {
+                        PreprocessorStatePair first = newData.get(i);
+                        for (int j = i; j < newData.size(); j++) {
+                            PreprocessorStatePair second = newData.get(j);
+                            if (first.pcState == FilePreprocessorConditionState.PARSING
+                                    || second.pcState == FilePreprocessorConditionState.PARSING) {
+                                if (APTHandlersSupport.equalsIgnoreInvalid(first.state, second.state)) {
+                                    new Exception("setStates :\n" + newData).printStackTrace(System.err); //NOI18N
+                                }
+                            }
+                        }
+                    }
+                }
                 data = newData;
             }
             if (CndUtils.isDebugMode()) {
