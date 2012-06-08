@@ -1209,7 +1209,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     /** Options align.
      */
     protected int getOptionsAlign() {
-        return -1;
+        return DialogDescriptor.DEFAULT_ALIGN;
     }
     
     /** Getter for button listener or null
