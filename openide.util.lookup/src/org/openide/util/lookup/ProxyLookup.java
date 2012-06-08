@@ -201,7 +201,14 @@ public class ProxyLookup extends Lookup {
      * @param template the template of the query
      * @since 1.31
      */
-     protected void beforeLookup(Template<?> template) {
+    protected void beforeLookup(Template<?> template) {
+    }
+
+    // mostly for testing purposes
+    void beforeLookup(boolean call, Template<?> template) {
+        if (call) {
+            beforeLookup(template);
+        }
     }
 
     public final <T> T lookup(Class<T> clazz) {
@@ -642,9 +649,7 @@ public class ProxyLookup extends Lookup {
         ) {
             Template<T> template = template();
             
-            if (callBeforeLookup) {
-                proxy().beforeLookup(template);
-            }
+            proxy().beforeLookup(callBeforeLookup, template);
 
             Lookup.Result<T>[] arr = initResults();
 
@@ -1091,6 +1096,7 @@ public class ProxyLookup extends Lookup {
                     one = computeSingleResult(i);
                     assert one != null;
                 }
+                boolean addAll = false;
                 synchronized (this) {
                     if (getComputed()[i] == null) {
                         getComputed()[i] = one;
@@ -1103,8 +1109,11 @@ public class ProxyLookup extends Lookup {
                             break;
                         }
                     } else {
-                        compute.addAll(one);
+                        addAll = true;
                     }
+                }
+                if (addAll) {
+                    compute.addAll(one);
                 }
             }
             if (i == arr.length && compute != null) {

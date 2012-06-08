@@ -60,8 +60,8 @@ import org.openide.util.Exceptions;
  */
 public class JsfIndex {
 
-    public static JsfIndex create(WebModule wm) {
-        return new JsfIndex(wm);
+    public static JsfIndex create(FileObject baseFile) {
+        return new JsfIndex(baseFile);
     }
     private final FileObject[] sourceRoots;
     private final FileObject[] binaryRoots;
@@ -69,16 +69,16 @@ public class JsfIndex {
     private final FileObject base;
 
     /** Creates a new instance of JsfIndex */
-    private JsfIndex(WebModule wm) {
-        this.base = wm.getDocumentBase();
+    private JsfIndex(FileObject baseFile) {
+        this.base = baseFile;
         
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
         Collection<FileObject> roots = new HashSet<FileObject>();
-        ClassPath compileCp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        ClassPath compileCp = ClassPath.getClassPath(base, ClassPath.COMPILE);
         if(compileCp != null) {
             roots.addAll(Arrays.asList(compileCp.getRoots()));
         }
-        ClassPath executeCp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE);
+        ClassPath executeCp = ClassPath.getClassPath(base, ClassPath.EXECUTE);
         if(executeCp != null) {
             roots.addAll(Arrays.asList(executeCp.getRoots()));
         }

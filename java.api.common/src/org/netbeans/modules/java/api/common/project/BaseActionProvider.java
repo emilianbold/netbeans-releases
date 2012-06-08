@@ -79,6 +79,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -183,6 +184,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     public String unitTestingSupport_fixClasses;
     
     private volatile Boolean allowsFileTracking;
+    private volatile String buildXMLName;
 
     private SourceRoots projectSourceRoots;
     private SourceRoots projectTestRoots;
@@ -206,6 +208,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                     if (propName == null || ProjectProperties.TRACK_FILE_CHANGES.equals(propName)) {
                         allowsFileTracking = null;
                         dirty = null;
+                    }
+                    if (propName == null || BUILD_SCRIPT.equals(propName)) {
+                        buildXMLName = null;
                     }
                 }
             }
@@ -362,6 +367,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
 
+    @NonNull
     public static String getBuildXmlName (final Project project, PropertyEvaluator evaluator) {
         assert project != null;
         String buildScriptPath = evaluator.getProperty(BUILD_SCRIPT);
@@ -372,11 +378,23 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     public static FileObject getBuildXml (final Project project, PropertyEvaluator evaluator) {
-        return project.getProjectDirectory().getFileObject (getBuildXmlName(project, evaluator));
+        return getBuildXml(project, getBuildXmlName(project, evaluator));
+    }
+    
+    private static FileObject getBuildXml(
+            @NonNull final Project project,
+            @NonNull final String buildXmlName) {
+        return project.getProjectDirectory().getFileObject (buildXmlName);
     }
 
+    @CheckForNull
     private FileObject findBuildXml() {
-        return getBuildXml(project, evaluator);
+        String name = buildXMLName;
+        if (name == null) {
+            buildXMLName = name = getBuildXmlName(project, evaluator);
+        }
+        assert name != null;
+        return getBuildXml(project, name);
     }
 
     protected final Project getProject() {
@@ -1230,11 +1248,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             || COMMAND_COPY.equals(command)
             || COMMAND_RENAME.equals(command)) {
             return true;
-        }
-        FileObject buildXml = findBuildXml();
-        if (  buildXml == null || !buildXml.isValid()) {
-            return false;
-        }
+        }   
         if (   Arrays.asList(getActionsDisabledForQuickRun()).contains(command)
             && isCompileOnSaveEnabled()
             && !allowAntBuild()) {

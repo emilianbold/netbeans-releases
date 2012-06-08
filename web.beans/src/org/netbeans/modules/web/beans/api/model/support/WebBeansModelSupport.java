@@ -101,12 +101,22 @@ public final class WebBeansModelSupport {
     }
 
     //>>> copied from JsfModelFactory (web.jsf module), must be refactored out
+    
+    /*
+     * just for bw compatibility
+     */
     public static ModelUnit getModelUnit(WebModule module) {
         if (module == null) {
             return null;
         }
-        FileObject fileObject = getFileObject(module);
-        Project project = FileOwnerQuery.getOwner(fileObject);
+        return getModelUnit(getFileObject(module));
+    }
+    
+    public static ModelUnit getModelUnit(FileObject file) {
+        if (file == null) {
+            return null;
+        }
+        Project project = FileOwnerQuery.getOwner(file);
         if (project == null) {
             return null;
         }

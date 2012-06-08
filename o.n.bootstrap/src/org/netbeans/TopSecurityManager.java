@@ -402,6 +402,21 @@ public class TopSecurityManager extends SecurityManager {
         checkConnect(s, port);
     }
 
+    @Override
+    public void checkMemberAccess(Class<?> clazz, int which) {
+        final String n = clazz.getName();
+        if (n.startsWith("sun.misc")) { // NOI18N
+            Exception ex = new Exception("Dangerouns reflection access to " + n + " detected!"); // NOI18N
+            Level l = Level.FINE;
+            assert (l = Level.INFO) != null;
+            LOG.log(l, null, ex);
+        }
+        super.checkMemberAccess(clazz, which);
+    }
+    
+    
+
+    
     public @Override void checkPermission(Permission perm) {
 //        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);

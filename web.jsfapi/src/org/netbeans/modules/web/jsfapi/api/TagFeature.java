@@ -42,17 +42,30 @@
 package org.netbeans.modules.web.jsfapi.api;
 
 /**
+ * Interface to provide additional informations about JSF Tag.
  *
  * @author marekfukala
  */
 public interface TagFeature {
-    
+
+    /**
+     * Interface for "iterable" JSF Tags. 
+     * This tags typically has attribute for a collection of items and attribute to specify name of scoped variable.
+     * @author marekfukala
+     */
     public interface IterableTagPattern extends TagFeature {
         
-        public Attribute getVar();
+        /**
+         * The name of a collection of items that this tag iterates over.
+         * @return instance of tag attribute for collection of items. Null when no attribute of this kind.
+         */
+        Attribute getItems();
         
-        public Attribute getVariables();
+        /**
+         * Name of the exported scoped variable for the current item of the iteration.
+         * @return instance of tag attribute for name of scoped variable. Null when no attribute of this kind.
+         */
+        Attribute getVariable();
         
     }
-    
 }

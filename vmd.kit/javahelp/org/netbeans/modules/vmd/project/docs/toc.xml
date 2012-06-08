@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<toc version="2.0">
+    <tocitem text="IDE Basics">
+        <tocitem text="Getting Started">
+        <tocitem text="Java ME Applications" target="me.proj_working_top"/>
+    </tocitem>
+     </tocitem>
+        	<tocitem text="Web Services" expand="false">
+		<tocitem text="Using Java ME Applications" expand="false">
+			<tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
+			<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
+			<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
+		</tocitem>
+	</tocitem>
+	<tocitem text="Java ME Applications" expand="false">
+		<tocitem text="About Java ME Applications">
+		<tocitem text="About Java ME MIDP and CLDC Applications" target="me.welcome" />
+              	<tocitem text="About Java ME CDC Applications" target="cdc.welcome" />
+                <tocitem text="Working with Java ME Application Projects" target="me.proj_working" />
+                <tocitem text="Importing Java ME Projects" target="me.importprojects" />
+                <tocitem text="Java ME Project and File Templates" target="me.proj_templates" />
+		<tocitem text="Java ME Project Development Features Supported by the IDE" target="me.support" />
+	</tocitem>
+		<tocitem text="Working with Java ME Projects">
+				<tocitem text="About Java ME MIDP Projects" target="me.proj_about" />
+				<tocitem text="Java ME MIDP Application Tasks: Quick Reference" target="me.proj_quickref" />
+				<tocitem text="About CDC Projects" target="cdc.proj_about" />
+		            <tocitem text="CDC Project Tasks: Quick Reference" target="cdc.project_quickref" />
+		</tocitem>
+			<tocitem text="Creating MIDP Applications">
+				<tocitem text="Working with MIDlets">
+					<tocitem text="About MIDlets" target="me.midlet_about" />
+                              <tocitem text="Working with MIDlets" target="me.midlet_working" />
+					<tocitem text="Adding MIDlets to a Project Configuration" target="me.proj_quickref" />
+					<tocitem text="Adding Java ME Push Registry Entries" target="me.prop_setpushregistry" />
+					<tocitem text="About Java ME Push Registry Entries" target="me.pushregistry_about" />
+					<tocitem text="Adding Java ME API Permissions" target="me.prop_addAPI" />
+					<tocitem text="About Java ME API Permissions" target="me.api_about" />
+				</tocitem>
+				<tocitem text="Customizing MIDlet Properties">
+					<tocitem text="Customizing the Application Descriptor (JAD) Attributes" target="me.prop_set_jad" />
+					<tocitem text="Customizing MIDP Javadoc Settings " target="me.prop_setjavadoc" />
+				</tocitem>
+				<tocitem text="Building Java ME Applications">
+					<tocitem text="Customizing Compilation Options" target="me.prop_customize_build" />
+					<tocitem text="Adding Libraries and Resources to a MIDP Project" target="me.prop_addlibrary" />
+					<tocitem text="Customizing MIDP Build Filter Settings" target="me.prop_setfiltering" />
+					<tocitem text="Obfuscating a MIDlet Suite" target="me.prop_setobfuscation" />
+					<tocitem text="About MIDlet Obfuscation" target="me.obfuscation_about" />
+					<tocitem text="Customizing the JAR and JAD Files in a Build" target="me.prop_setjar" />
+				</tocitem>
+				<tocitem text="Working with Security and MIDlet Signing">
+                                    	<tocitem text="About Signing" target="me.signing_about" />
+					<tocitem text="Setting Security through MIDlet Signing" target="me.prop_customizesecurity" />
+					<tocitem text="Adding or Creating a Keystore" target="me.signing_createkeystore" />
+					<tocitem text="Creating a Key Pair" target="me.signing_createkeypair" />
+					<tocitem text="Setting the Security Domain" target="me.signing_setdomain" />
+					<tocitem text="Exporting a Key to an Emulator Platform" target="me.signing_exportkey" />
+				</tocitem>
+				<tocitem text="Adding Localization Support">
+					<tocitem text="About Java ME MIDP Localization Support" target="me.l10n_about" />
+					<tocitem text="Adding Java ME MIDP Localization Support" target="me.l10n_addsupport" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Connecting MIDP Applications to Web Services">
+				<tocitem text="Connecting MIDP Applications to Web Services" target="me.wcw_creating" />
+				<tocitem text="Creating a Java ME Web Services (JSR-172) Client" target="me.wcw_jsr172" />
+				<tocitem text="Updating Java ME Web Services Client Files" target="me.wcw_updatingjsr172" />
+			</tocitem>
+			<tocitem text="Visually Designing Java ME Applications">
+				<tocitem text="About Visually Designing Java ME Applications" target="me.mvd_about" />
+				<tocitem text="Working with the Visual Mobile Designer" target="me.mvd_working" />
+				<tocitem text="Visual Mobile Designer Tasks: Quick Reference" target="me.mvd_quickref" />
+				<tocitem text="Adding Custom Components to the Visual Mobile Designer" target="me.mvd_addcustomcomponent" />
+			</tocitem>
+			<tocitem text="Creating MIDP Games">
+				<tocitem text="About the Game Builder" target="cldc.games_about" />
+				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
+			</tocitem>
+                        <tocitem text="Adding and Editing SVG Graphic Files">
+				<tocitem text="About Scalable Vector Graphic (SVG) Files" target="cldc.svg_about" />
+				<tocitem text="Working with SVG Files" target="cldc.svg_working" />
+				<tocitem text="Using SVG Graphics: Quick Reference" target="cldc.svg_quickref" />
+				<tocitem text="Working with SVG Animations" target="cldc.svg_animations" />
+				<tocitem text="Adding SVG Splash Screens" target="cldc.svg_splashscreen" />
+				<tocitem text="Adding SVG Wait Screens" target="cldc.svg_waitscreen" />
+				<tocitem text="Adding SVG Menus" target="cldc.svg_menus" />
+			</tocitem>
+                        
+                        <tocitem text="Working with Java ME Project Configurations">
+				<tocitem text="About Java ME Project Configurations" target="me.config_about" />
+				<tocitem text="Working with Java ME Project Configurations" target="me.config_working" />
+				<tocitem text="Java ME Project Configuration Tasks: Quick Reference" target="me.config_quickref" />
+				<tocitem text="About Abilities" target="me.abilities_about" />
+				<tocitem text="Creating an Ability and Associating Configurations" target="me.abilities_add" />
+				<tocitem text="Customizing Java ME Project Configurations">
+					<tocitem text="Customizing Java ME Project Configurations" target="me.config_customizing" />
+					<tocitem text="Customizing Java ME Project Platform Properties" target="me.prop_setplatform" />
+					<tocitem text="Customizing the Application Descriptor (JAD) Attributes" target="me.prop_set_jad" />
+					<tocitem text="About Application Descriptor (JAD) Attributes" target="me.jad_about" />
+					<tocitem text="Adding MIDlets to a Project Configuration" target="me.proj_quickref" />
+					<tocitem text="Customizing Build Options" target="me.prop_customize_build" />
+					<tocitem text="Adding Libraries and Resources" target="me.prop_addlibrary" />
+				</tocitem>
+				<tocitem text="Working with Preprocessing">
+					<tocitem text="About Preprocessing" target="me.preprocess_about" />
+					<tocitem text="Managing Preprocessor Blocks" target="me.preprocess_manage" />
+					<tocitem text="About Preprocessor Directives" target="me.preprocessor_directives_about" />
+					<tocitem text="Comparison Syntax in Preprocessor Directives" target="me.preprocess_comparison" />
+				</tocitem>
+			</tocitem>
+			<tocitem text="Running MIDP Applications">
+				<tocitem text="Running MIDP Applications" target="me.run_runapps" />
+				<tocitem text="Customizing MIDP Project Run Options" target="me.prop_setrun" />
+				<tocitem text="Running a MIDlet Suite with OTA Provisioning" target="me.run_inota" />
+				<tocitem text="About Over-The-Air (OTA) Provisioning" target="me.about_ota" />
+				<tocitem text="Running Headless Applications" target="me.run_runheadlessapps" />
+			</tocitem>
+			<tocitem text="Testing with JMUnit">
+				<tocitem text="About JMUnit Testing" target="cldc.jmunit_about" />
+				<tocitem text="Working with JMUnit" target="cldc.jmunit_working" />
+			</tocitem>
+			<tocitem text="Deploying Java ME Applications">
+				<tocitem text="About Java ME Application Deployment" target="me.about_deployment" />
+                        <tocitem text="Deploying Java ME Applications" target="me.deploy_deploying" />
+                        <tocitem text="Deploying Java ME Applications to the Device Anywhere Website" target="me.deploy_devanywhere" />
+				<tocitem text="Deploying a MIDlet Suite Using File Copy" target="me.deploy_copy" />
+				<tocitem text="Deploying a MIDlet Suite Using FTP" target="me.deploy_ftp" />
+				<tocitem text="Deploying a MIDlet Suite Using WebDAV" target="me.deploy_webdav" />
+				<tocitem text="Deploying Java ME Applications to Nokia Mobile Devices" target="me.deploy_nokia" />
+				<tocitem text="Deploying CDC Applications to Ricoh Devices" target="me.deploy_ricoh" />
+				<tocitem text="Deploying a MIDlet Suite using SCP" target="me.deploy_scp" />
+				<tocitem text="Deploying a MIDlet Suite to a Sony Ericsson Phone" target="me.deploy_se" />
+				<tocitem text="Deploying MIDlets to Windows Mobile Devices" target="me.deploy_winmobile" />
+                        <tocitem text="Automatically Incrementing Java ME Application Version Attributes" target="me.deploy_increment" />
+			</tocitem>
+    			<tocitem text="Java ME Emulator Platforms">
+				<tocitem text="About MIDP Emulator Platforms" target="me.emulator_about" />
+				<tocitem text="Adding MIDP Emulator Platforms" target="me.emulator_adding" />
+                        <tocitem text="About CDC Emulator Platforms" target="cdc.emulator_about" /> 
+                		<tocitem text="Adding CDC Emulator Platforms" target="cdc.emulator_adding" />
+				<tocitem text="Customizing Java ME Platform Properties" target="me.prop_setplatform" />
+				<tocitem text="About the Java ME SDK" target="me.about_toolkit" />
+				<tocitem text="Using the Java ME SDK" target="me.toolkit_using" /> 
+			</tocitem>
+  	</tocitem>                 
+</toc>
