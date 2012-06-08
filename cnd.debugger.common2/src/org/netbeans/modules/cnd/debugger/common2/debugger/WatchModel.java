@@ -135,7 +135,16 @@ public final class WatchModel extends VariableModel
             return res;
 	} else if (parent instanceof Variable) {
 	    Variable v = (Variable) parent;
-	    return v.getChildren();
+	    Object[] children = v.getChildren();
+            
+            if (v.hasMore()) {
+                Object[] newChildren = new Object[children.length+1];
+                System.arraycopy(children, 0, newChildren, 0, children.length);
+                newChildren[newChildren.length-1] = new ShowMoreMessage(v);
+                children = newChildren;
+            }
+            
+            return children;
 	}
 
 	throw new UnknownTypeException (parent);
@@ -174,6 +183,9 @@ public final class WatchModel extends VariableModel
             return "<_html><font color=\"#808080\">&lt;" + // [TODO] <_html> tag used as workaround, see TreeModelNode.setName() // NOI18N
                         Catalog.get("CTL_WatchesModel_Empty_Watch_Hint") + // NOI18N
                         "&gt;</font></html>"; // NOI18N
+        }
+        if (node instanceof ShowMoreMessage) {
+            return  ((ShowMoreMessage) node).getMessage();
         }
 	if (node instanceof Watch)
 	    return ((Watch) node).getExpression ();
@@ -218,7 +230,9 @@ public final class WatchModel extends VariableModel
 		return ICON_WATCH1;
 	    }
 
-	} else {
+	} else if (node instanceof ShowMoreMessage) {
+            return null;
+        } else {
 	    return super.getIconBase(original, node);
 	}
     }
@@ -311,6 +325,8 @@ public final class WatchModel extends VariableModel
 	assert !(o instanceof Watch);
         if (o instanceof EmptyWatch) {
             NEW_WATCH_ACTION.actionPerformed(null);
+        } else if (o instanceof ShowMoreMessage) {
+            ((ShowMoreMessage) o).getMore();
         }
 	// no-op
 	// LATER: super.performDefaultAction(o);

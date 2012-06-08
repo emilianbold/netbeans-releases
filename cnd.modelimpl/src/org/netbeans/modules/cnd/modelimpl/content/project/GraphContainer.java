@@ -92,14 +92,14 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
         super(new GraphContainerKey(project.getUniqueName()));
-        CsmListeners.getDefault().addProgressListener(this);
+        CsmListeners.getDefault().addProgressListener(GraphContainer.this);
         put();
     }
 
     public GraphContainer(final RepositoryDataInput input) throws IOException {
         super(input);
         assert input != null;
-        CsmListeners.getDefault().addProgressListener(this);
+        CsmListeners.getDefault().addProgressListener(GraphContainer.this);
         readUIDToNodeLinkMap(input, graph);
     }
 

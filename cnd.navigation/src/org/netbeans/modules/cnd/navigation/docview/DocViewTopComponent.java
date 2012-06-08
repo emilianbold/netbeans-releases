@@ -53,7 +53,7 @@ import org.openide.windows.WindowManager;
  */
 @TopComponent.Description(preferredID = DocViewTopComponent.preferredID, persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position=1250)
-@Messages({"CTL_DocViewTopComponent=Doxygen","HINT_DocViewTopComponent=Doxygen window shows a documentation of element under the caret."})
+@Messages({"CTL_DocViewTopComponent=C/C++ Documentation","HINT_DocViewTopComponent=C/C++ documentation window shows a documentation of element under the caret."})
 public final class DocViewTopComponent extends TopComponent {
     private static transient DocViewTopComponent instance;
     private final transient DocViewPanel documentationPane;

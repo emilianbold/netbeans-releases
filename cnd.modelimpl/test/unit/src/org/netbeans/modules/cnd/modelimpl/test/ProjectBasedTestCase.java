@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -148,6 +149,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        CndUtils.clearLastAssertion();
         super.setUp();
         System.setProperty("cnd.modelimpl.persistent", needRepository() ? "true" : "false");
         //initDocumentSettings();
@@ -213,6 +215,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         sysIncludes.clear();
         usrIncludes.clear();
         projectDependencies.clear();
+        assertTrue("unexpected exception " + CndUtils.getLastAssertion(), CndUtils.getLastAssertion() == null);
     }
 
     @Override
@@ -253,18 +256,21 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         return null;
     }
 
-    protected void reopenProject(String name) {
+    protected void reopenProject(String name, boolean waitParse) {
         for (TestModelHelper testModelHelper : projectHelpers.values()) {
             if (name.contentEquals(testModelHelper.getProjectName())) {
                 testModelHelper.reopenProject();
+                if (waitParse) {
+                    waitAllProjectsParsed();
+                }
                 return;
             }
         }
     }
 
-    protected void reparseAllProjects(int expectedNrProjects) {
+    protected void reparseAllProjects() {
         Collection<CsmProject> projects = getModel().projects();
-        assertEquals("projects " + projects, expectedNrProjects, projects.size());
+        int expectedNrProjects = projects.size();
         getModel().scheduleReparse(projects);
         try {
             Thread.sleep(2000);
@@ -273,9 +279,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         }
         projects = getModel().projects();
         assertEquals("projects " + projects, expectedNrProjects, projects.size());
-        for (CsmProject csmProject : projects) {
-            TraceModelBase.waitProjectParsed(((ProjectBase) csmProject), true);
-        }
+        waitAllProjectsParsed();
     }
 
     protected void closeProject(String name) {
@@ -311,5 +315,14 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             }
         }
         LibraryManager.getInstance().dumpInfo(new PrintWriter(System.err), true);
+    }
+
+    protected void waitAllProjectsParsed() {
+        sleep(1000);
+        Collection<CsmProject> projects;
+        projects = getModel().projects();
+        for (CsmProject csmProject : projects) {
+            TraceModelBase.waitProjectParsed(((ProjectBase) csmProject), true);
+        }
     }
 }

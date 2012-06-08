@@ -103,16 +103,16 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
 
 
     public void performAction(Node node) {
-        performAction(node, null, getProject(node));
+        performAction(node, getProject(node));
     }
 
-    private Future<Integer> performAction(final Node node, final Writer outputListener, final Project project) {
+    private Future<Integer> performAction(final Node node, final Project project) {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private NativeExecutionService es;
                 @Override
                 public void doWork() {
-                    es = prepare(node, outputListener, project);
+                    es = prepare(node, project);
                 }
                 @Override
                 public void doPostRunInEDT() {
@@ -126,7 +126,7 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
             String msg = getString("MSG_TITLE_Prepare",node.getName()); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            NativeExecutionService es = prepare(node, outputListener, project);
+            NativeExecutionService es = prepare(node, project);
             if (es != null) {
                 return es.run();
             }
@@ -134,7 +134,8 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
         return null;
     }
 
-    private NativeExecutionService prepare(Node node, final Writer outputListener, Project project) {
+    private NativeExecutionService prepare(Node node, Project project) {
+        final Writer outputListener = null;
         CompileExecSupport ces = node.getLookup().lookup(CompileExecSupport.class);
         if (ces == null) {
             trace("Node "+node+" does not have CompileExecSupport"); //NOI18N
@@ -181,8 +182,8 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
             return null;
         }
         
-        String compilerPath = tool.getPath();
-        StringBuilder argsFlat = new StringBuilder();
+        final String compilerPath = tool.getPath();
+        final StringBuilder argsFlat = new StringBuilder();
         argsFlat.append(ces.getCompileFlags()).append(' ');// NOI18N
         argsFlat.append(fileObject.getNameExt()).append(' ');// NOI18N
         argsFlat.append("-o ").append(fileObject.getName()).append(' ');// NOI18N
@@ -192,7 +193,7 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
         String tabName = getTabName(node, execEnv);
         InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
         _tab.closeInputOutput(); // Close it...
-        InputOutput inputOutput = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+        final InputOutput inputOutput = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
         try {
             inputOutput.getOut().reset();
         } catch (IOException ioe) {
@@ -214,6 +215,7 @@ public abstract class CompileRunActionBase extends AbstractExecutorRunAction {
         ExecutionListener listener = new  ExecutionListener() {
             @Override
             public void executionStarted(int pid) {
+                inputOutput.getOut().println(compilerPath+" "+argsFlat.toString()); //NOI18N
             }
             @Override
             public void executionFinished(int rc) {

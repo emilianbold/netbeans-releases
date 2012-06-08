@@ -160,6 +160,8 @@ public class TraceFlags {
 
     public static final int REPARSE_DELAY = DebugUtils.getInt("cnd.reparse.delay", 1001); // NOI18N
 
+    public static final boolean DYNAMIC_TESTS_TRACE = DebugUtils.getBoolean("cnd.modelimpl.dynamic.tests.trace", false); // NOI18N
+    
     // experimental expression evaluator for template instantiations
     public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
     public static final boolean EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.deep.variable.provider", false); // NOI18N
