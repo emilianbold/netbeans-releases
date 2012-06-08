@@ -43,72 +43,53 @@ package org.netbeans.modules.web.jsfapi.spi;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.api.TagFeature;
 import org.openide.util.Lookup;
 
 /**
- *
+ * Interface to get additional informations about JSF Tag.
  * @author marekfukala
  */
 public interface TagFeatureProvider {
 
-    public <T extends TagFeature> Collection<T> createFeatures(Class<T> clazz, Tag tag);
+    /**
+     * Gets collection of needed {@link TagFeature}s for {@link Tag} from specified {@link Library}.<br />
+     * This method can be used to obtain additional informations about {@link Tag} provided by {@link TagFeatureProvider}s.
+     * 
+     * @param tag JSF {@link Tag} to process. Can be null.
+     * @param library JSF {@link Library} processed tag is from. Can be null.
+     * @param clazz Class of required {@link TagFeature}. Can be null.
+     * @return not null collection of needed {@link TagFeature}s for {@link Tag} from specified {@link Library}. 
+     */
+    <T extends TagFeature> Collection<T> getFeatures(Tag tag, Library library, Class<T> clazz);
 
-    public static class Query {
-
-        public static <T extends TagFeature> Collection<T> getFeatures(Class<T> clazz, Tag tag) {
-            Collection<? extends TagFeatureProvider> all = Lookup.getDefault().lookupAll(TagFeatureProvider.class);
+    static class Query {
+        
+        /**
+         * Gets collection of needed {@link TagFeature}s for {@link Tag} from specified {@link Library}.<br />
+         * This method can be used to obtain additional informations about {@link Tag} provided by {@link TagFeatureProvider}s.
+         * 
+         * @param tag JSF {@link Tag} to process. Can be null.
+         * @param library JSF {@link Library} processed tag is from. Can be null.
+         * @param clazz Class of required {@link TagFeature}. Can be null.
+         * @return not null collection of needed {@link TagFeature}s for {@link Tag} from specified {@link Library}. 
+         */
+        public static <T extends TagFeature> Collection<T> getFeatures(Tag tag, Library library, Class<T> clazz) {
+            Collection<? extends TagFeatureProvider> tagFeatureProviders = Lookup.getDefault().lookupAll(TagFeatureProvider.class);
+            
             Collection<T> query = new ArrayList<T>();
-            for (TagFeatureProvider fp : all) {
-                query.addAll(fp.createFeatures(clazz, tag));
+            
+            if (tagFeatureProviders == null || tag == null || library == null || clazz == null) {
+                return query;
+            }
+            
+            for (TagFeatureProvider tagFeatureProvider : tagFeatureProviders) {
+                query.addAll(tagFeatureProvider.getFeatures(tag, library, clazz));
             }
             return query;
         }
     }
 
-//    //example of usage
-//    public class Client {
-//        public void giveitatry() {
-//            Tag t = null;
-//            Collection<TagFeature.IterableTagPattern> features =
-//                    TagFeatureProvider.Query.getFeatures(TagFeature.IterableTagPattern.class, t);
-//            for(TagFeature.IterableTagPattern f : features) {
-//                System.out.println("var=" + f.getVar().getName());
-//                System.out.println("variable=" + f.getVariables().getName());
-//            }
-//            
-//        }
-//    } 
-    
-    
-//    //just an example of the provider: will be placed into a reasonable module once the 
-//    public class MyTagFeatureProvider implements TagFeatureProvider {
-//
-//        @Override
-//        public <T extends TagFeature> Collection<T> createFeatures(Class<T> clazz, final Tag tag) {
-//            if (clazz.equals(TagFeature.IterableTagPattern.class)) {
-//                if (supportsThePattern(tag)) {
-//                    return Collections.singleton(clazz.cast(new TagFeature.IterableTagPattern() {
-//                        @Override
-//                        public Attribute getVar() {
-//                            return tag.getAttribute("var");
-//                        }
-//
-//                        @Override
-//                        public Attribute getVariables() {
-//                            return tag.getAttribute("variable");
-//                        }
-//                    }));
-//                }
-//
-//            }
-//            return Collections.emptyList();
-//        }
-//    }
-    
-    
-    
 }
