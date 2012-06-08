@@ -732,23 +732,17 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             
             incrementModCount();
             
-            if (oldState == null || !oldState.isValid()) {
-                data = state;
-            } else {
-                if (oldState.isCompileContext()) {
-                    if (state.isCompileContext()) {
-                        data = state;
-                    } else {
-                        if (CndUtils.isDebugMode()) {
-                            String message = "Replacing correct state to incorrect " + canonical; // NOI18N
-                            Utils.LOG.log(Level.SEVERE, message, new Exception());
-                        }
-                        return;
-                    }
-                } else {
-                    data = state;
+            if (oldState != null
+                    && oldState.isValid()
+                    && oldState.isCompileContext()
+                    && !state.isCompileContext()) {
+                if (CndUtils.isDebugMode()) {
+                    String message = "Replacing correct state to incorrect " + canonical; // NOI18N
+                    Utils.LOG.log(Level.SEVERE, message, new Exception());
                 }
+                return;
             }
+            
             if (TRACE_PP_STATE_OUT) {
                 System.err.println("\nPut state for file" + canonical + "\n");
                 System.err.println(state);
