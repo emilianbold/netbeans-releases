@@ -360,6 +360,10 @@ public class DependenciesNode extends AbstractNode {
                             }
                         }
                     } catch (ThreadDeath d) { // download interrupted
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                     } finally {
                         handle.finish();
                         ProgressTransferListener.clearAggregateHandle();

@@ -205,6 +205,10 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         DialogDisplayer.getDefault().notify(dd);
                         ic.add(new MavenProject()); // XXX is this useful for anything?
                     } catch (ThreadDeath d) { // download interrupted
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
