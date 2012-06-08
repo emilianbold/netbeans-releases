@@ -158,78 +158,89 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         final Artifact fArt = artifact;
 
         if (prj == null) {
-        RP.post(new Runnable() {
-                @Override
-            public void run() {
-                MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-                AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(),
-                            new ProgressContributor[] {
-                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            ProgressTransferListener.cancellable(), null);
-                ProgressTransferListener.setAggregateHandle(hndl);
-                hndl.start();
-                try {
-                        List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
-                        if (fRepos != null) {
-                            repos.addAll(fRepos);
-                        }
-                        if (repos.isEmpty()) {
-                            //add central repo
-                            repos.add(embedder.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
-                            //add repository form info
-                            if (info != null && !RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(info.getRepoId())) {
-                                RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
-                                if (rinfo != null) {
-                                    String url = rinfo.getRepositoryUrl();
-                                    if (url != null) {
-                                        repos.add(embedder.createRemoteRepository(url, rinfo.getId()));
+            RP.post(new Runnable() {
+                    @Override
+                public void run() {
+                    MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(),
+                                new ProgressContributor[] {
+                                    AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
+                                ProgressTransferListener.cancellable(), null);
+                    ProgressTransferListener.setAggregateHandle(hndl);
+                    hndl.start();
+                    try {
+                            List<ArtifactRepository> repos = new ArrayList<ArtifactRepository>();
+                            if (fRepos != null) {
+                                repos.addAll(fRepos);
+                            }
+                            if (repos.isEmpty()) {
+                                //add central repo
+                                repos.add(embedder.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
+                                //add repository form info
+                                if (info != null && !RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(info.getRepoId())) {
+                                    RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+                                    if (rinfo != null) {
+                                        String url = rinfo.getRepositoryUrl();
+                                        if (url != null) {
+                                            repos.add(embedder.createRemoteRepository(url, rinfo.getId()));
+                                        }
                                     }
                                 }
                             }
+                            MavenProject mvnprj = readMavenProject(embedder, fArt, repos);
+
+                        if(mvnprj != null){
+                            DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
+                            ic.add(root);
+                            ic.add(mvnprj);
                         }
-                        MavenProject mvnprj = readMavenProject(embedder, fArt, repos);
 
-                    if(mvnprj != null){
-                        ic.add(mvnprj);
-                        DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
-                        ic.add(root);
+                    } catch (ProjectBuildingException ex) {
+                        ErrorPanel pnl = new ErrorPanel(ex);
+                        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Error());
+                        JButton close = new JButton();
+                        org.openide.awt.Mnemonics.setLocalizedText(close, BTN_CLOSE());
+                        dd.setOptions(new Object[] { close });
+                        dd.setClosingOptions(new Object[] { close });
+                        DialogDisplayer.getDefault().notify(dd);
+                        ic.add(new MavenProject()); // XXX is this useful for anything?
+                    } catch (ThreadDeath d) { // download interrupted
+                    } finally {
+                        hndl.finish();
+                        ProgressTransferListener.clearAggregateHandle();
                     }
-
-                } catch (ProjectBuildingException ex) {
-                    ErrorPanel pnl = new ErrorPanel(ex);
-                    DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Error());
-                    JButton close = new JButton();
-                    org.openide.awt.Mnemonics.setLocalizedText(close, BTN_CLOSE());
-                    dd.setOptions(new Object[] { close });
-                    dd.setClosingOptions(new Object[] { close });
-                    DialogDisplayer.getDefault().notify(dd);
-                    ic.add(new MavenProject()); // XXX is this useful for anything?
-                } catch (ThreadDeath d) { // download interrupted
-                } finally {
-                    hndl.finish();
-                    ProgressTransferListener.clearAggregateHandle();
                 }
-            }
-        });
+            });
         } else {
-            NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
-            List<String> profileIds = new ArrayList<String>();
-            for (Profile p : im.getMavenProject().getActiveProfiles()) {
-                profileIds.add(p.getId());
-            }
-            MavenProject mvnprj = im.loadAlternateMavenProject(EmbedderFactory.getProjectEmbedder(), profileIds, new Properties());
-            ic.add(mvnprj);
-            ic.add(DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getProjectEmbedder(), Artifact.SCOPE_TEST));
-            FileObject fo = prj.getLookup().lookup(FileObject.class);
-            if (fo != null) {
-                ModelSource ms = Utilities.createModelSource(fo);
-                if (ms.isEditable()) {
-                    POMModel model = POMModelFactory.getDefault().getModel(ms);
-                    if (model != null) {
-                        ic.add(model);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
+                    List<String> profileIds = new ArrayList<String>();
+                    for (Profile p : im.getMavenProject().getActiveProfiles()) {
+                        profileIds.add(p.getId());
                     }
+                    MavenProject mvnprj = im.loadAlternateMavenProject(EmbedderFactory.getProjectEmbedder(), profileIds, new Properties());
+                    DependencyNode tree = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getProjectEmbedder(), Artifact.SCOPE_TEST);
+                    FileObject fo = prj.getLookup().lookup(FileObject.class);
+                    POMModel pommodel = null;
+                    if (fo != null) {
+                        ModelSource ms = Utilities.createModelSource(fo);
+                        if (ms.isEditable()) {
+                            POMModel model = POMModelFactory.getDefault().getModel(ms);
+                            if (model != null) {
+                                pommodel = model;
+                            }
+                        }
+                    }
+                    //add all in one place to prevent large time delays between additions
+                    if (pommodel != null) {
+                        ic.add(pommodel);
+                    }
+                    ic.add(tree);
+                    ic.add(mvnprj);
                 }
-            }
+            });
         }
 
         Action[] toolbarActions = new Action[] {
