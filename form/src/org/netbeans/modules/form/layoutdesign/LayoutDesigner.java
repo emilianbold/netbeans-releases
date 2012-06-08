@@ -2292,12 +2292,34 @@ public final class LayoutDesigner implements LayoutConstants {
                         ? compInt : LayoutInterval.getCommonParent(commonParents[dim], compInt);
             }
         }
-        // determine the layout roots pair where the enclosing happens
+        // determine the layout roots pair where the enclosing happens, and resizability
         LayoutInterval[] parentRoots = new LayoutInterval[DIM_COUNT];
+        List<LayoutInterval> wl = new LinkedList<LayoutInterval>(); // working list for traversing intervals
         for (int dim=0; dim < DIM_COUNT; dim++) {
             LayoutInterval compParent = commonParents[dim];
             parentRoots[dim] = LayoutInterval.getRoot(compParent);
-            resizing[dim] = LayoutInterval.wantResize(compParent);
+            // now check if the selection contains some resizing intervals, excluding border gaps
+            if (LayoutInterval.canResize(compParent)) {
+                wl.add(compParent);
+                while (!wl.isEmpty()) {
+                    LayoutInterval li = wl.remove(0);
+                    if (li.isSingle()) {
+                        if (LayoutInterval.wantResize(li)) {
+                            resizing[dim] = true;
+                            wl.clear(); // done
+                        }
+                    } else {
+                        for (int ii=0; ii < li.getSubIntervalCount(); ii++) {
+                            LayoutInterval sub = li.getSubInterval(ii);
+                            if (LayoutInterval.canResize(sub)
+                                && (sub.isGroup() || sub.isComponent()
+                                    || (li.isSequential() && ii > 0 && ii+1 < li.getSubIntervalCount()))) {
+                                wl.add(sub);
+                            }
+                        }
+                    }
+                }
+            }
         }
         // initialize the dragger with the roots to make sure ther roots are not
         // removed when the enclosing components are removed (in case they were
