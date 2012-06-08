@@ -520,6 +520,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 int pathSize = getPath().size();
                 boolean isDeclaredInParent = false;
                 Node lastVisited = getPath().get(pathSize - 1);
+                VarNode varNode = null;
+                
                 if ( lastVisited instanceof VarNode) {
                     fqName = getName((VarNode)lastVisited);
                     isDeclaredInParent = true;
@@ -528,6 +530,12 @@ public class ModelVisitor extends PathNodeVisitor {
                     isDeclaredInParent = true;
                 } else if (lastVisited instanceof BinaryNode) {
                     BinaryNode binNode = (BinaryNode) lastVisited;
+                    if (getPath().size() > 1) {
+                        lastVisited = getPath().get(getPath().size() - 2);
+                        if (lastVisited instanceof VarNode) {
+                            varNode = (VarNode) lastVisited;
+                        }
+                    }
                     fqName = getName(binNode);
                     if (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
@@ -540,9 +548,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
                             ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
                 }
-                JsObjectImpl scope = modelBuilder.getCurrentObject();
-
-                JsObjectImpl objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                JsObjectImpl objectScope = varNode != null 
+                        ? modelBuilder.getCurrentObject()
+                        : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
                 objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                 modelBuilder.setCurrentObject(objectScope);
             }
