@@ -83,6 +83,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private Map<Tool, PredefinedPanel> predefinedPanels = new WeakHashMap<Tool, PredefinedPanel>();
     private boolean updating = false;
     private boolean modified = false;
+    private final RequestProcessor RP = new RequestProcessor("Init Parser Settings", 2); // NOI18N
 //    private boolean initialized = false;
     
     /**
@@ -211,7 +212,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 SwingUtilities.invokeLater(uiUpdater);
             }
         };
-        RequestProcessor.getDefault().post(worker);
+        RP.post(worker);
     }
 
     private synchronized void updateTabs() {

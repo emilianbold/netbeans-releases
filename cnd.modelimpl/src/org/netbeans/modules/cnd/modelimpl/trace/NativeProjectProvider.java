@@ -52,10 +52,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -284,16 +282,6 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public NativeFileSearch getNativeFileSearch() {
-            return new NativeFileSearch() {
-                @Override
-                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                    return Collections.<CharSequence>emptyList();
-                }
-            };
-        }
-
-        @Override
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.add(listener);
@@ -396,16 +384,6 @@ public final class NativeProjectProvider {
         @Override
         public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
-        }
-
-        @Override
-	public NativeExitStatus execute(String executable, String[] env, String... args) {
-	    return null;
-        }
-
-        @Override
-        public String getPlatformName() {
-            return null;
         }
 
         @Override

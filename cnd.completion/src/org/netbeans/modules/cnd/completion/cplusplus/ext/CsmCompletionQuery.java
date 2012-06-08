@@ -2375,7 +2375,7 @@ abstract public class CsmCompletionQuery {
             if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
                 CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                 List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
-                int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
+                int paramsNumber = exp.getParameterCount() - 1;
                 for (int i = 0; i < paramsNumber; i++) {
                     CsmCompletionExpression paramInst = exp.getParameter(i + 1);
                     if (paramInst != null) {

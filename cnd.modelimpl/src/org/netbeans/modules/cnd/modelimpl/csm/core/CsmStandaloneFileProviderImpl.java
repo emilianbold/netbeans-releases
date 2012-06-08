@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -62,12 +63,12 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
-import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -332,9 +333,20 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 return null;
             }
             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-            if (set == null || !set.isEmpty()) {
+            if (set == null) {
                 // it does not matter, what is there in the set! - see #185599, #185629
                 return null;
+            }
+            NativeFileItem itemPrototype = null;
+            if (!set.isEmpty()) {
+                Iterator<NativeFileItem> iterator = set.getItems().iterator();
+                Collection<NativeProject> openProjects = NativeProjectRegistry.getDefault().getOpenProjects();
+                while(iterator.hasNext()) {
+                    itemPrototype = iterator.next();
+                    if (openProjects.contains(itemPrototype.getNativeProject())) {
+                        return null;
+                    }
+                }
             }
             CsmModel model = ModelImpl.instance();
             List<FSPath> sysIncludes = new ArrayList<FSPath>();
@@ -342,7 +354,15 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
             List<String> undefinedMacros = new ArrayList<String>();
-            NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dao);
+            NativeFileItem.Language lang;
+            LanguageFlavor flavor;
+            if (itemPrototype != null) {
+                lang = itemPrototype.getLanguage();
+                flavor = itemPrototype.getLanguageFlavor();
+            } else {
+                lang = NativeProjectProvider.getLanguage(file, dao);
+                flavor = LanguageFlavor.UNKNOWN;
+            }
             NativeProject prototype = null;            
             for (CsmProject csmProject : model.projects()) {
                 Object p = csmProject.getPlatformProject();
@@ -363,6 +383,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     }
                 }
             }
+            if (prototype != null && ModelImpl.instance().isProjectDisabled(prototype)){
+                return null;
+            }
+                    
             FileSystem fs;
             try {
                 fs = file.getFileSystem();
@@ -370,22 +394,23 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 Exceptions.printStackTrace(ex);
                 fs = CndFileUtils.getLocalFileSystem();
             }
-                    
-            if (prototype == null) {
-                // Some default implementation should be provided.
-                sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang)));
-                sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang));
-            } else {
-                if (ModelImpl.instance().isProjectDiabled(prototype)){
-                    return null;
-                }
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
+            if (itemPrototype != null) {
+                sysIncludes.addAll(itemPrototype.getSystemIncludePaths());
+                sysMacros.addAll(itemPrototype.getSystemMacroDefinitions());
+                usrIncludes.addAll(itemPrototype.getUserIncludePaths());
+                usrMacros.addAll(itemPrototype.getUserMacroDefinitions());
+            } else if (prototype != null) {
                 sysIncludes.addAll(prototype.getSystemIncludePaths());
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
+            } else  {
+                sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
+                sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, impl));
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
-            impl.addFile(file);
+            impl.checkPaths();
+            impl.addFile(file, lang, flavor);
             set.add(impl.findFileItem(file));
             return impl;
         }
@@ -396,10 +421,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
             this.projectRoot = projectRoot;
             this.fileSystem = getFileSystem(projectRoot);
-            this.sysIncludes = createIncludes(sysIncludes);
-            this.usrIncludes = createIncludes(usrIncludes);
-            this.sysMacros = new ArrayList<String>(sysMacros);
-            this.usrMacros = new ArrayList<String>(usrMacros);
+            this.sysIncludes = sysIncludes;
+            this.usrIncludes = usrIncludes;
+            this.sysMacros = sysMacros;
+            this.usrMacros = usrMacros;
         }
         
         private static FileSystem getFileSystem(FileObject fo) {
@@ -411,22 +436,23 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
         }
 
-        private List<FSPath> createIncludes(List<FSPath> src) {
-            List<FSPath> result = new ArrayList<FSPath>(src.size());
-            for (FSPath path : src) {
-                if (CndPathUtilitities.isPathAbsolute(path.getPath())) {
-                    result.add(path);
-                } else {
-                    CndUtils.assertTrueInConsole(false, "Can not maconvert "); //NOI18N
+        private void checkPaths() {
+            check(sysIncludes);
+            check(usrIncludes);
+        }
+        
+        private void check(List<FSPath> list) {
+            for(Iterator<FSPath> it = list.iterator(); it.hasNext();){
+                FSPath path = it.next();
+                if (!CndPathUtilitities.isPathAbsolute(path.getPath())) {
+                    CndUtils.assertTrueInConsole(false, "Can not convert "+path.getPath()); //NOI18N
+                    it.remove();
                 }
             }
-            return result;
         }
-
-        private void addFile(FileObject file) {
-            DataObject dobj = NativeProjectProvider.getDataObject(file);
-            NativeFileItem.Language lang = NativeProjectProvider.getLanguage(file, dobj);
-            NativeFileItemImpl item = new NativeFileItemImpl(file, this, lang);
+        
+        private void addFile(FileObject file, NativeFileItem.Language lang, LanguageFlavor flavor) {
+            NativeFileItemImpl item = new NativeFileItemImpl(file, this, lang, flavor);
             //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
             this.files.add(item);
@@ -492,16 +518,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public NativeFileSearch getNativeFileSearch() {
-            return new NativeFileSearch() {
-                @Override
-                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                    return Collections.<CharSequence>emptyList();
-                }
-            };
-        }
-
-        @Override
         public List<FSPath> getSystemIncludePaths() {
             return this.sysIncludes;
         }
@@ -530,16 +546,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
         }
-
-        @Override
-	public NativeExitStatus execute(String executable, String[] env, String... args) {
-	    return null;
-        }
-        
-        @Override
-        public String getPlatformName() {
-            return null;
-        }
         
         @Override
         public void fireFilesPropertiesChanged() {
@@ -556,12 +562,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final FileObject fileObject;
         private final NativeProjectImpl project;
         private final NativeFileItem.Language lang;
+        private final NativeFileItem.LanguageFlavor flavor;
 
-        public NativeFileItemImpl(FileObject file, NativeProjectImpl project, NativeFileItem.Language language) {
+        public NativeFileItemImpl(FileObject file, NativeProjectImpl project, NativeFileItem.Language language, NativeFileItem.LanguageFlavor flavor) {
 
             this.project = project;
             this.fileObject = file;
             this.lang = language;
+            this.flavor = flavor;
         }
 
         @Override
@@ -622,7 +630,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            return NativeFileItem.LanguageFlavor.UNKNOWN;
+            return flavor;
         }
 
         @Override

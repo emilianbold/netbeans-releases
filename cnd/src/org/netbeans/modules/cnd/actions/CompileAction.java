@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.actions;
 
 import java.awt.Frame;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
@@ -53,29 +54,39 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.CompileExecSupport;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.LifecycleManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.WindowManager;
@@ -85,6 +96,11 @@ import org.openide.windows.WindowManager;
  * 
  * @author Alexander Simon
  */
+@ActionID(id = "org.netbeans.modules.cnd.actions.CompileAction", category = "Build")
+@ActionRegistration(lazy = false, displayName = "#BTN_Compile_File")
+@ActionReferences({
+    @ActionReference(path = "Loaders/text/x-cnd+sourcefile/Actions", name = "CompileAction", position = 950)
+})
 public class CompileAction extends AbstractExecutorRunAction {
 
     public CompileAction() {
@@ -112,17 +128,25 @@ public class CompileAction extends AbstractExecutorRunAction {
     }
 
 
-    public static void performAction(Node node) {
-        performAction(node, null, null, getProject(node), null);
+    private void performAction(Node node) {
+        final Project project = getProject(node);
+        if (project != null) {
+            ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+            if (ap != null) {
+                ap.invokeAction(ActionProvider.COMMAND_COMPILE_SINGLE, Lookups.singleton(node));
+                return;
+            }
+        }
+        performAction(node, project);
     }
 
-    private static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
+    private Future<Integer> performAction(final Node node, final Project project) {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private NativeExecutionService es;
                 @Override
                 public void doWork() {
-                    es = prepare(node, listener, outputListener, project, inputOutput);
+                    es = prepare(node, project);
                 }
                 @Override
                 public void doPostRunInEDT() {
@@ -136,7 +160,7 @@ public class CompileAction extends AbstractExecutorRunAction {
             String msg = getString("MSG_TITLE_Prepare",node.getName()); // NOI18N
             ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            NativeExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            NativeExecutionService es = prepare(node, project);
             if (es != null) {
                 return es.run();
             }
@@ -144,7 +168,8 @@ public class CompileAction extends AbstractExecutorRunAction {
         return null;
     }
 
-    private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private NativeExecutionService prepare(Node node, Project project) {
+        final Writer outputListener = null;
         CompileExecSupport ces = node.getLookup().lookup(CompileExecSupport.class);
         if (ces == null) {
             trace("Node "+node+" does not have CompileExecSupport"); //NOI18N
@@ -190,26 +215,23 @@ public class CompileAction extends AbstractExecutorRunAction {
             trace("Not found compiler"); //NOI18N
             return null;
         }
-        
-        String compilerPath = tool.getPath();
-        StringBuilder argsFlat = new StringBuilder();
+        final String compilerPath = convertPath(tool.getPath(), execEnv);
+        final StringBuilder argsFlat = new StringBuilder();
         argsFlat.append(ces.getCompileFlags()).append(' ');// NOI18N
         argsFlat.append("-c").append(' ');// NOI18N
         argsFlat.append(fileObject.getNameExt()).append(' ');// NOI18N
-        argsFlat.append("-o /dev/null");// NOI18N
+        argsFlat.append("-o ").append(getDevNull(execEnv, compilerSet));// NOI18N
         Map<String, String> envMap = getEnv(execEnv, node, project, null);
-        if (inputOutput == null) {
-            // Tab Name
-            String tabName = execEnv.isLocal() ? getString("COMPILE_LABEL", node.getName()) : getString("COMPILE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
-            InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
-            _tab.closeInputOutput(); // Close it...
-            final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
-            try {
-                tab.getOut().reset();
-            } catch (IOException ioe) {
-            }
-            inputOutput = tab;
+        // Tab Name
+        String tabName = execEnv.isLocal() ? getString("COMPILE_LABEL", node.getName()) : getString("COMPILE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
+        InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
+        _tab.closeInputOutput(); // Close it...
+        final InputOutput tab = IOProvider.getDefault().getIO(tabName, true); // Create a new ...
+        try {
+            tab.getOut().reset();
+        } catch (IOException ioe) {
         }
+        final InputOutput inputOutput = tab;
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
@@ -223,6 +245,15 @@ public class CompileAction extends AbstractExecutorRunAction {
         
         traceExecutable(compilerPath, compileDir, argsFlat, execEnv.toString(), mm.toMap());
         
+        ExecutionListener listener = new  ExecutionListener() {
+            @Override
+            public void executionStarted(int pid) {
+                inputOutput.getOut().println(compilerPath+" "+argsFlat.toString()); //NOI18N
+            }
+            @Override
+            public void executionFinished(int rc) {
+            }
+        };
         CompilerLineConvertor compilerLineConvertor = new CompilerLineConvertor(project, compilerSet, execEnv, compileDirObject);
         AbstractExecutorRunAction.ProcessChangeListener processChangeListener = new AbstractExecutorRunAction.ProcessChangeListener(listener, outputListener, compilerLineConvertor, syncWorker);
 
@@ -238,6 +269,8 @@ public class CompileAction extends AbstractExecutorRunAction {
         list = ImportUtils.normalizeParameters(list);
         npb.setExecutable(compilerPath);
         npb.setArguments(list.toArray(new String[list.size()]));
+        inputOutput.getOut().println(compilerPath+" "+argsFlat.toString()); // NOI18N
+        inputOutput.getOut().flush();
 
         NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
@@ -253,18 +286,14 @@ public class CompileAction extends AbstractExecutorRunAction {
         // Execute the shellfile
         return NativeExecutionService.newService(npb, descr, "Compile"); // NOI18N
     }
-    
-    private CompilerSet getCompilerSet(Project project) {
-        CompilerSet set = null;
-        if (project != null) {
-            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
-            if (toolchain != null) {
-                set = toolchain.getCompilerSet();
+
+    // find out right /dev/null
+    private String getDevNull(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        if (execEnv.isLocal() && Utilities.isWindows()){
+            if (!compilerSet.getCompilerFlavor().isCygwinCompiler()) {
+                return "NUL"; // NOI18N
             }
         }
-        if (set == null) {
-            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
-        }
-        return set;
+        return "/dev/null"; // NOI18N
     }
 }

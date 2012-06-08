@@ -732,23 +732,17 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             
             incrementModCount();
             
-            if (oldState == null || !oldState.isValid()) {
-                data = state;
-            } else {
-                if (oldState.isCompileContext()) {
-                    if (state.isCompileContext()) {
-                        data = state;
-                    } else {
-                        if (CndUtils.isDebugMode()) {
-                            String message = "Replacing correct state to incorrect " + canonical; // NOI18N
-                            Utils.LOG.log(Level.SEVERE, message, new Exception());
-                        }
-                        return;
-                    }
-                } else {
-                    data = state;
+            if (oldState != null
+                    && oldState.isValid()
+                    && oldState.isCompileContext()
+                    && !state.isCompileContext()) {
+                if (CndUtils.isDebugMode()) {
+                    String message = "Replacing correct state to incorrect " + canonical; // NOI18N
+                    Utils.LOG.log(Level.SEVERE, message, new Exception());
                 }
+                return;
             }
+            
             if (TRACE_PP_STATE_OUT) {
                 System.err.println("\nPut state for file" + canonical + "\n");
                 System.err.println(state);
@@ -781,6 +775,20 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 newData.addAll(pairs);
                 if (yetOneMore != null) {
                     newData.add(yetOneMore);
+                }
+                if (TraceFlags.DYNAMIC_TESTS_TRACE) {
+                    for (int i = 0; i < newData.size(); i++) {
+                        PreprocessorStatePair first = newData.get(i);
+                        for (int j = i; j < newData.size(); j++) {
+                            PreprocessorStatePair second = newData.get(j);
+                            if (first.pcState == FilePreprocessorConditionState.PARSING
+                                    || second.pcState == FilePreprocessorConditionState.PARSING) {
+                                if (APTHandlersSupport.equalsIgnoreInvalid(first.state, second.state)) {
+                                    new Exception("setStates :\n" + newData).printStackTrace(System.err); //NOI18N
+                                }
+                            }
+                        }
+                    }
                 }
                 data = newData;
             }
