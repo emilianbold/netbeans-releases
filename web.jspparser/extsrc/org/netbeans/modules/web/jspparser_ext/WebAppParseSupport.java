@@ -708,6 +708,16 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         assert Thread.holdsLock(this);
         try {
             // editor options
+            if (editorOptions == null) {
+                // issue #213548 - It looks that REINIT task was called earlier than the
+                // editorOptions initialization happened. It means that the #INITIAL_CACHES_DELAY
+                // delay wasn't long enough. In that case it is rescheduled the task again and
+                // finished current processing. This happens until the initialization procedure
+                // is comleted and the editorOptions initialized.
+                LOG.info("JSP parser :: EditorOption not initialized yet - reschedule reinit caches");
+                reinitCachesTask.schedule(REINIT_CACHES_DELAY);
+                return;
+            }
             TldScanner lc = editorOptions.getTldScanner();
 
             Field mappingsField = TldScanner.class.getDeclaredField("mappings"); //NOI18N

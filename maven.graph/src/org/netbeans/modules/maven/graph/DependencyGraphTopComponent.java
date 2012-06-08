@@ -113,6 +113,12 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     private static final Logger LOG = Logger.getLogger(DependencyGraphTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(DependencyGraphTopComponent.class);
+    private final RequestProcessor.Task task_reload = RP.create(new Runnable() {
+        @Override
+        public void run() {
+            createScene();
+        }
+    });
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
@@ -481,7 +487,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             return;
         }
         LOG.log(Level.FINE, hashCode() + " not expecting change", new Exception());
-        createScene();
+        System.out.println("got to listen..");
+        task_reload.schedule(200); // aggregate the events, multiple will be often coming close one by another..
     }
 
     /** Highlights/diminishes graph nodes and edges based on path from root depth */
@@ -517,11 +524,12 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             final POMModel model = it3.hasNext() ? it3.next() : null;
             RP.post(new Runnable() {
                 @Override public void run() {
-                    scene = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
-                    GraphConstructor constr = new GraphConstructor(scene);
+                    final DependencyGraphScene scene2 = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
+                    GraphConstructor constr = new GraphConstructor(scene2);
                     root.accept(constr);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override public void run() {
+                            scene = scene2;
                             JComponent sceneView = scene.getView();
                             if (sceneView == null) {
                                 sceneView = scene.createView();

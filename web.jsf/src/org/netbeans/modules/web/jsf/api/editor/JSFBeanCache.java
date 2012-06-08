@@ -60,6 +60,8 @@ import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.openide.util.Lookup;
 
 /**
+ * Actually this class does cache nothing, but grabs the data from beans model
+ * which is supposed to do the caching.
  *
  * @author Petr Pisl
  * @author ads
@@ -75,29 +77,6 @@ public class JSFBeanCache {
         //<<<
 
         final List<FacesManagedBean> beans = new ArrayList<FacesManagedBean>();
-        /* Old implementation based on several models over faces-config.xml files.
-         * 
-         * FileObject[] files = null; 
-        
-        
-        if (webModule != null) {
-            files = ConfigurationUtils.getFacesConfigFiles(webModule);
-        }
-        
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                    JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], true);
-                    if (model != null) {
-                        FacesConfig facesConfig = model.getRootComponent();
-                        if (facesConfig != null) {
-                            Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                            for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                                beans.add(it.next());   
-                            }
-                        }
-                    }
-            }
-        }*/
         MetadataModel<JsfModel> model = JsfModelFactory.getModel( webModule );
         if ( model == null){
             return beans;
@@ -126,10 +105,12 @@ public class JSFBeanCache {
             JSFBeanCache.class.getCanonicalName() );
 
 
+    //for unit tests>>>
     public static interface JsfBeansProvider {
 
         public List<FacesManagedBean> getBeans(WebModule webModule);
 
     }
+    //<<<
     
 }

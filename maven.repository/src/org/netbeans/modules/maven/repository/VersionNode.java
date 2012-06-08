@@ -295,6 +295,11 @@ public class VersionNode extends AbstractNode {
                         online.resolve(art, Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(info.getRepositoryUrl(), info.getId())), online.getLocalRepository());
                     } catch (ThreadDeath d) {
                         return;
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
+                        return;
                     } catch (AbstractArtifactResolutionException x) {
                         return;
                     } finally {

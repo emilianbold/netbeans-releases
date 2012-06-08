@@ -641,19 +641,19 @@ public final class WLStartServer extends StartServer {
             }
         }
 
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+        private ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
             
-            result = setJavaOptionsEnv( result );
+            result = setJavaOptionsEnv(result);
             String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
-            if (vendor != null && vendor.trim().length() >0) {
-                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
+            if (vendor != null && vendor.trim().length() > 0) {
+                result = result.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,
                         vendor.trim());
             }
             String memoryOptions = dm.getInstanceProperties().getProperty(
                     WLPluginProperties.MEM_OPTS);
-            if (memoryOptions != null && memoryOptions.trim().length() >0) {
-                result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
+            if (memoryOptions != null && memoryOptions.trim().length() > 0) {
+                result = result.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
                         memoryOptions.trim());
             }  
             return result;
