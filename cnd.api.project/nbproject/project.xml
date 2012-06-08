@@ -111,6 +111,7 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <package>org.netbeans.modules.cnd.api.project</package>
+                <package>org.netbeans.modules.cnd.spi.project</package>
             </friend-packages>
         </data>
     </configuration>

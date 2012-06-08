@@ -220,7 +220,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (parserResult instanceof PHPParseResult) {
                         PHPParseResult phpParserResult = (PHPParseResult) parserResult;
                         crate.setModel(phpParserResult.getModel());
-                        crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
+                        TokenHierarchy<?> tokenHierarchy = resultIterator.getSnapshot().getTokenHierarchy();
+                        if (tokenHierarchy != null) {
+                            crate.setTokenHierarchy(tokenHierarchy);
+                        }
                     }
                 }
             });

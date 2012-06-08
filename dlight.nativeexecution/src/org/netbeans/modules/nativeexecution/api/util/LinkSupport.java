@@ -109,13 +109,14 @@ public class LinkSupport {
         if (linkPath == null){
             return null;
         }
-        if (new File(linkPath).exists()) {
+        final File linkFile = new File(linkPath);
+        if (linkFile.exists()) {
             if (linkPath.endsWith(".lnk")) { // NOI18N
                 return getOriginalFile(linkPath, level);
             } else if (isLinkFile(linkPath)) {
                 return getOriginalFile(linkPath, level);
             }
-            return linkPath;
+            return linkFile.getAbsolutePath();
         } else if (new File(linkPath+".lnk").exists()){ // NOI18N
             return getOriginalFile(linkPath+".lnk", level); // NOI18N
         }
@@ -246,7 +247,7 @@ public class LinkSupport {
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
                 reader = null;
             }
@@ -318,7 +319,7 @@ public class LinkSupport {
             long n = 0;
             reader.readFully(bytes);
             for (int i = 0; i < size; i++) {
-                long u = 0;
+                long u;
                 if (isLSB) {
                     u = (0xff & bytes[i]);
                 } else {

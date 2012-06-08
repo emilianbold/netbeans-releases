@@ -3835,7 +3835,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             )
         )+
 
-        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false, false])?)?
+        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false])?)?
     ;
 
 protected
@@ -3947,6 +3947,11 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression
     :
+        // IZ 167547 : 100% CPU core usage with C++ project.
+        // This is check for too complicated tecmplates.
+        // If template depth is more then 20 we just skip it.
+        (templateDepthChecker[20]) => templateDepthChecker[20]
+    |
         // IZ 140991 : Parser "hangs" on Loki.
         // This is predicate for fast T<T<...>> pattern recognition.
         (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
