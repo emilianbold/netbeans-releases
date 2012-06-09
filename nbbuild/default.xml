@@ -80,6 +80,9 @@ made subject to such option by the copyright holder.
     <taskdef name="locjhindexer"
          classname="org.netbeans.nbbuild.LocJHIndexer"
          classpath="${nbantext.jar}"/>
+    <taskdef name="locfiles"
+         classname="org.netbeans.nbbuild.LocFiles"
+         classpath="${nbantext.jar}"/>
     <taskdef name="locmakenbm"
          classname="org.netbeans.nbbuild.LocMakeNBM"
          classpath="${nbantext.jar}"/>
