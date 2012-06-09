@@ -29,9 +29,9 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 2001-2006 Sun
 Microsystems, Inc. All Rights Reserved.
-
+/export/home/thp/netbeans-dev/main
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -43,39 +43,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="junit" default="netbeans" basedir=".">
 
-    <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="files-init" depends="projectized.files-init">
-        <property name="extra.arch.files.dir" value="arch"/>
-        <patternset id="extra.arch.files" includes="JUnitPlugin.png"/>
-    </target>
-
-    <target name="arch" depends="projectized-common.arch">
-        <copy todir="build">
-            <fileset dir="${extra.arch.files.dir}">
-                <patternset refid="extra.arch.files"/>
-            </fileset>
-        </copy>
-    </target>
-    
-    <target name="javadoc" depends="projectized.javadoc">
-        <property name="javadoc.name" value="${code.name.base.dashes}" />
-        <property name="javadoc.out" location="${netbeans.javadoc.dir}"/>
-        <property name="javadoc.out.dir" location="${javadoc.out}/${javadoc.name}"/>
-        <property name="javadoc.out.zip" location="${javadoc.out}/${javadoc.name}.zip"/>
-        <copy todir="${javadoc.out.dir}">
-            <fileset dir="${extra.arch.files.dir}">
-                <patternset refid="extra.arch.files"/>
-            </fileset>
-        </copy>
-        <zip destfile="${javadoc.out.zip}" basedir="${javadoc.out.dir}"
-             update="true" duplicate="preserve">
-            <fileset dir="${javadoc.out.dir}">
-                <patternset refid="extra.arch.files"/>
-            </fileset>
-        </zip>
-    </target>
-
-</project>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
+    <toolchain name="Intel" display="Intel Compiler Collection" family="GNU" qmakespec="${os}-icc"/>
+    <platforms stringvalue="linux,unix,none"/>
+</toolchaindefinition>

@@ -188,11 +188,13 @@ public class Task extends Object implements Runnable {
         // for the result, by that we can guarantee the semantics
         // of the call
         class Run implements Runnable {
+            @Override
             public void run() {
                 Task.this.waitFinished();
             }
         }
 
+        LOG.fine("Using compatibility waiting");
         RequestProcessor.Task task = RP.post(new Run());
 
         return task.waitFinished(milliseconds);

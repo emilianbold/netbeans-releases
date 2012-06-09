@@ -411,6 +411,19 @@
             <file name="CLang_solaris_flavor" url="resources/toolchaindefinition/CLang_solaris_flavor.xml">
                 <attr name="extends" stringvalue="GNU_flavor"/>
             </file>
+<!-- Intel -->
+            <file name="Intel_flavor" url="resources/toolchaindefinition/Intel_flavor.xml">
+                <attr name="extends" stringvalue="GNU_flavor"/>
+            </file>
+            <file name="Intel_c" url="resources/toolchaindefinition/Intel_c.xml">
+                <attr name="extends" stringvalue="GNU_c"/>
+            </file>
+            <file name="Intel_cpp" url="resources/toolchaindefinition/Intel_cpp.xml">
+                <attr name="extends" stringvalue="GNU_cpp"/>
+            </file>
+            <file name="Intel_fortran" url="resources/toolchaindefinition/Intel_fortran.xml">
+                <attr name="extends" stringvalue="GNU_fortran"/>
+            </file>
         </folder>
         <folder name="ToolChains">
 <!-- SunStudio_12.4 -->
@@ -1532,6 +1545,44 @@
                 </file>
                 <file name="linker.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_solaris_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_cmake"/>
+                </file>
+            </folder>
+<!-- Intel -->
+            <folder name="Intel">
+                <attr name="position" intvalue="4070"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/Intel_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/Intel_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/Intel_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/Intel_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_linker"/>
                 </file>
                 <file name="make.shadow">
                     <attr name="originalFile" stringvalue="CND/Tool/GNU_make"/>
