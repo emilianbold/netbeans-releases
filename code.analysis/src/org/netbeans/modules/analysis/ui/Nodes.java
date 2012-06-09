@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,7 +81,6 @@ import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -436,38 +434,16 @@ public class Nodes {
         return isParent(parent, p);
     }
         
-    private static class WrapperChildren extends Children.Keys<Node> {
+    private static class WrapperChildren extends FilterNode.Children {
 
         private final Node orig;
         private final FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodesFuture;
         private java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes;
 
         public WrapperChildren(Node orig, FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodes) {
+            super(orig);
             this.orig = orig;
             this.fileNodesFuture = fileNodes;
-        }
-        
-        @Override
-        protected void addNotify() {
-            super.addNotify();
-            doSetKeys();
-        }
-
-        private synchronized void doSetKeys() {
-            java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
-            Node[] nodes = orig.getChildren().getNodes(true);
-            List<Node> toSet = new LinkedList<Node>();
-            
-            OUTER: for (Node n : nodes) {
-                for (Node c : fileNodes.keySet()) {
-                    if (n == c || isParent(n, c)) {
-                        toSet.add(n);
-                        continue OUTER;
-                    }
-                }
-            }
-            
-            setKeys(toSet);
         }
         
         @Override
@@ -486,6 +462,9 @@ public class Nodes {
                         warnings += w.size();
                     }
                 }
+            }
+            if (fileNodesInside.isEmpty()) {
+                return new Node[0];
             }
             return new Node[] {new Wrapper(key, warnings, new FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>>() {
                 @Override
