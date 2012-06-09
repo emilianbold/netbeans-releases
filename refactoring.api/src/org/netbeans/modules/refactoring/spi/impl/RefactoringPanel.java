@@ -194,6 +194,7 @@ public class RefactoringPanel extends JPanel {
         if (!isQuery) {
             splitPane.setRightComponent(new JLabel(org.openide.util.NbBundle.getMessage(RefactoringPanel.class, "LBL_Preview_not_Available"), SwingConstants.CENTER));
         }
+        splitPane.setBorder(null);
         // add panel with buttons
         JButton[] buttons = getButtons();
         //if (buttons.length != 0) {
@@ -956,7 +957,12 @@ public class RefactoringPanel extends JPanel {
             tree.setToggleClickCount(0);
             tree.setTransferHandler(new TransferHandlerImpl());
             scrollPane = new JScrollPane(tree);
-            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            scrollPane.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1,
+                javax.swing.UIManager.getDefaults().getColor("Separator.background")),
+                javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1,
+                javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
+        
             RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
             RefactoringPanel.this.validate();
         } else {
