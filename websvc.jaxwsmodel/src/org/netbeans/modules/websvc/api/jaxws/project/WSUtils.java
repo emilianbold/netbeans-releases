@@ -651,7 +651,7 @@ public class WSUtils {
         EditableProperties props = helper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String wsImportCp = props.getProperty("j2ee.platform.wsimport.classpath");  // NOI18N
-        if ( wsImportCp ==null && wsImportCp.length() == 0 ){
+        if ( wsImportCp ==null || wsImportCp.length() == 0 ){
             return null;
         }
         PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
