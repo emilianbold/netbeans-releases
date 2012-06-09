@@ -91,6 +91,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class Nodes {
 
+    private static final Logger LOG = Logger.getLogger(Nodes.class.getName());
+    
     public static Node constructSemiLogicalView(AnalysisResult errors, boolean byCategory) {
         if (!byCategory) {
             return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors.provider2Hints, BY_FILE), errors.extraNodes));
@@ -178,6 +180,12 @@ public class Nodes {
 
         for (Entry<AnalyzerFactory, List<ErrorDescription>> e : errs.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {
+                if (ed == null) {
+                    //XXX:
+                    LOG.log(Level.FINE, "null ErrorDescription produced by {0} ({1})", new Object[] {SPIAccessor.ACCESSOR.getAnalyzerDisplayName(e.getKey()), e.getKey().getClass()});
+                    continue;
+                }
+                
                 A attribute = attributeRetriever.getAttribute(e.getKey(), ed);
                 Map<AnalyzerFactory, List<ErrorDescription>> errorsPerAttributeValue = sorted.get(attribute);
 
