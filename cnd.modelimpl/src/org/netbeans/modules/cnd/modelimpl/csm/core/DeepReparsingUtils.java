@@ -135,9 +135,15 @@ public final class DeepReparsingUtils {
     }
 
     static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
-        if (newSignature.equals(lastFileBasedSignature)) {
+        FileContentSignature.ComparisonResult compareResult = FileContentSignature.compare(newSignature, lastFileBasedSignature);
+        if (compareResult == FileContentSignature.ComparisonResult.SAME) {
             if (TRACE) {
                 LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for {0}", fileImpl.getAbsolutePath());
+            }
+            return true;
+        } else if (fileImpl.isSourceFile() && compareResult == FileContentSignature.ComparisonResult.FILE_LOCAL_CHANGE) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for changed src {0}", fileImpl.getAbsolutePath());
             }
             return true;
         } else if (TRACE) {
