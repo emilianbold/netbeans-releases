@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.indexer.spi;
 import java.util.Collection;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.openide.util.Lookup;
 
 /**
  * Implementation of repository indexer (repository manager). Apart from basic

@@ -78,7 +78,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.api.Bundle.*;
 import org.openide.util.NbBundle.Messages;

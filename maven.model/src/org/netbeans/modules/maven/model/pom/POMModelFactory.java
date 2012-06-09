@@ -82,6 +82,7 @@ public class POMModelFactory extends AbstractModelFactory<POMModel> {
         return super.getModel(source);
     }
     
+    @Override
     protected POMModel createModel(ModelSource source) {
         return new POMModelImpl(source);
     }

@@ -185,6 +185,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         content.add(implBeanClass);
         OpenCookie cookie = new OpenCookie() {
 
+            @Override
             public void open() {
                 OpenCookie oc = getOpenCookie();
                 if (oc != null) {
@@ -389,6 +390,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
 
             // remove execution from pom file
             ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                @Override
                 public void performOperation(POMModel model) {
                     MavenModelUtils.removeWsimportExecution(model, serviceId);
                 }

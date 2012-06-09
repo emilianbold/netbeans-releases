@@ -75,10 +75,12 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.NodeAction;
 
 public class WsTesterPageAction extends NodeAction {
+    @Override
     public String getName() {
         return NbBundle.getMessage(WsTesterPageAction.class, "LBL_TesterPageAction");
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -88,6 +90,7 @@ public class WsTesterPageAction extends NodeAction {
         return false;
     }
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         JaxWsNode wsNode = activatedNodes[0].getLookup().lookup(JaxWsNode.class);
         String wsdlURL = wsNode.getTesterPageURL();
@@ -95,6 +98,7 @@ public class WsTesterPageAction extends NodeAction {
             final URL url = new URL(wsdlURL);
             if (url!=null) {  
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         boolean connectionOK=false;
                         try {
@@ -142,6 +146,7 @@ public class WsTesterPageAction extends NodeAction {
         }
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes==null || activatedNodes.length==0) return false;
         FileObject srcRoot = activatedNodes[0].getLookup().lookup(FileObject.class);
