@@ -1037,9 +1037,22 @@ public class RequestProcessor180386Test extends NbTestCase {
             Future<?> f = rp.scheduleAtFixedRate(c, initialDelay, period, TimeUnit.MILLISECONDS);
             latch.await();
             f.cancel(true);
+            StringBuilder failures = new StringBuilder();
+            failures.append("Expected at least ").append(expectedInitialDelay).
+                append(" milliseconds before run:\n");
+            boolean fail = false;
             for (int i= 0; i < Math.min(runCount, intervals.size()); i++) {
                 long expect = i == 0 ? expectedInitialDelay : expectedPeriod;
-                assertTrue ("Expected at least " + expect + " milliseconds before run " + i + " but was " + intervals.get(i), intervals.get(i) >= expect);
+                failures.append("Round ").append(i).
+                    append(" expected delay ").append(expect).
+                    append(" but was ").append(intervals.get(i)).
+                    append("\n");
+                if (intervals.get(i) < expect) {
+                    fail = true;
+                }
+            }
+            if (fail) {
+                fail(failures.toString());
             }
             //Ensure we have really exited
             try {

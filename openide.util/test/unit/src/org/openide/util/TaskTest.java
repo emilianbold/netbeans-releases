@@ -46,6 +46,7 @@ package org.openide.util;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 
 public class TaskTest extends NbTestCase {
@@ -55,13 +56,9 @@ public class TaskTest extends NbTestCase {
         super(testName);
     }
     
-    protected Level logLevel() {
-        return Level.FINE;
-    }
-
     @Override
     protected void setUp() throws Exception {
-        LOG = Logger.getLogger("test." + getName());
+        LOG = Logger.getLogger("org.openide.util.Task." + getName());
     }
 
     
@@ -100,7 +97,8 @@ public class TaskTest extends NbTestCase {
     public void testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll () throws Exception {
         long time = -1;
         
-        for (int i = 1; i < 100; i++) {
+        CharSequence log = Log.enable("org.openide.util.Task", Level.FINE);
+        for (int i = 1; i < 10; i++) {
             Task t = new Task (new R ());
             time = System.currentTimeMillis ();
             t.waitFinished (1000);
@@ -110,10 +108,10 @@ public class TaskTest extends NbTestCase {
             if (time >= 900 && time < 1100) {
                 return;
             }
-            LOG.info("Round " + i + " took " + time);
+            LOG.log(Level.INFO, "Round {0} took {1}", new Object[]{i, time});
         }
         
-        fail ("Something wrong happened the task should wait for 1000ms but it took: " + time);
+        fail ("Something wrong happened the task should wait for 1000ms but it took: " + time + "\n" + log);
     }
     
     public void testWaitOnStrangeTaskThatStartsItsExecutionInOverridenWaitFinishedMethodLikeFolderInstancesDo () throws Exception {
