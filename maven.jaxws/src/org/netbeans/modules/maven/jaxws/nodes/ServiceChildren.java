@@ -79,6 +79,7 @@ public class ServiceChildren extends Children.Keys<WsdlPort> {
         setKeys(keys == null ? new ArrayList<WsdlPort>() : keys);
     }
 
+    @Override
     protected Node[] createNodes(WsdlPort key) {
         return new Node[]{new PortNode(key)};
     }

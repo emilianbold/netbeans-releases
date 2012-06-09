@@ -101,6 +101,7 @@ public class IDEOutputListenerProvider implements OutputProcessor {
         return null;
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
         if (classpath == null) {
             return;
@@ -111,18 +112,22 @@ public class IDEOutputListenerProvider implements OutputProcessor {
         }
     }
 
+    @Override
     public String[] getRegisteredOutputSequences() {
         return EXECGOALS;
     }
 
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         classpath = createCP(project, new HashSet<Project>());
     }
 
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         classpath = null;
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
         classpath = null;
     }

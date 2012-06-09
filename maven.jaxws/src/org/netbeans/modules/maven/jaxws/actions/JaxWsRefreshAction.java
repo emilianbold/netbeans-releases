@@ -50,18 +50,22 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 
 public class JaxWsRefreshAction extends CookieAction {
+    @Override
     public String getName() {
         return NbBundle.getMessage(JaxWsRefreshAction.class, "LBL_RefreshAction");
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
     
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] {RefreshCookie.class};
     }
@@ -71,6 +75,7 @@ public class JaxWsRefreshAction extends CookieAction {
         return true;
     }
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         RefreshCookie cookie = 
            activatedNodes[0].getCookie(RefreshCookie.class);
