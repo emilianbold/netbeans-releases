@@ -142,6 +142,7 @@ public class JaxWsClientRootNode extends AbstractNode {
 
     private static class WsPrivilegedTemplates implements PrivilegedTemplates {
 
+        @Override
         public String[] getPrivilegedTemplates() {
             return new String[] {
                 "Templates/WebServices/WebServiceClient", // NOI18N

@@ -138,6 +138,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         if (modeler!=null) {
             changeIcon();
             modeler.generateWsdlModel(new WsdlModelListener(){
+                @Override
                 public void modelCreated(WsdlModel model) {
                     modelGenerationFinished=true;
                     changeIcon();
@@ -229,6 +230,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         return getIcon( type);
     }
     
+    @Override
     public void open() {
         EditCookie ec = getEditCookie();
         if (ec != null) {
@@ -313,6 +315,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 
                 // remove entry from wsimport configuration
                 final ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         MavenModelUtils.removeWsimportExecution(model, clientId);
                     }
@@ -320,6 +323,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                 final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
                 RequestProcessor.getDefault().post(new Runnable() {
 
+                    @Override
                     public void run() {
                         Utilities.performPOMModelOperations(pom, Collections.singletonList(oper));
                     }
@@ -380,6 +384,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
 //    }
     
     
+    @Override
     public void configureHandler() {
         Project project = FileOwnerQuery.getOwner(wsdlFileObject);
         ArrayList<String> handlerClasses = new ArrayList<String>();
@@ -452,6 +457,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         modelGenerationFinished=value;
     }
 
+    @Override
     public void refreshService(boolean replaceLocalWsdl) {
         if (replaceLocalWsdl) {
             String wsdlUrl = client.getWsdlUrl();
@@ -532,6 +538,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
                             wsdlFileObject = wsdlFo;
                             // update project's pom.xml
                             ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                                @Override
                                 public void performOperation(POMModel model) {
                                     MavenModelUtils.renameWsdlFile(model, oldId, newId, client.getLocalWsdl(), relativePath);
                                 }
@@ -562,6 +569,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
         if (wsdlModeler != null) {
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
 
+                @Override
                 public void modelCreated(WsdlModel model) {
                     wsdlModel = model;
                     setModelGenerationFinished(true);

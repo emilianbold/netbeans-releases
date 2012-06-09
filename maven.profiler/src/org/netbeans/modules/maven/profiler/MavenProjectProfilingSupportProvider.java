@@ -70,15 +70,18 @@ public class MavenProjectProfilingSupportProvider extends JavaProjectProfilingSu
     };
     
     
+    @Override
     public JavaPlatform resolveProjectJavaPlatform() {
         return JavaPlatform.getDefaultPlatform();
     }
 
+    @Override
     public boolean isProfilingSupported() {
         NbMavenProject mproject = getProject().getLookup().lookup(NbMavenProject.class);
         return mproject == null ? false : supportedPTypes.contains(mproject.getPackagingType());
     }
 
+    @Override
     public boolean checkProjectIsModifiedForProfiler() {
         return true;
     }

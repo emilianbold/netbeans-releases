@@ -82,6 +82,7 @@ public class EntityClassScopeProviderImpl implements EntityClassScopeProvider {
     }
     
     
+    @Override
     public synchronized EntityClassScope findEntityClassScope(FileObject fo) {
         if (scope == null) {
             scope = EntityClassScopeFactory.createEntityClassScope(new ScopeImpl());
@@ -91,6 +92,7 @@ public class EntityClassScopeProviderImpl implements EntityClassScopeProvider {
 
     private class ScopeImpl implements EntityClassScopeImplementation {
 
+        @Override
         public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(boolean withDeps) {
             return getHelper().getDefaultEntityMappingsModel(withDeps);
         }

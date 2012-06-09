@@ -47,7 +47,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.ref.WeakReference;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
