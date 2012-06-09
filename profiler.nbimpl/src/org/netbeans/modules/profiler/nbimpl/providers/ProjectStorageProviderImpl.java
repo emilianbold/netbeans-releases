@@ -157,7 +157,7 @@ public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
             return GlobalStorage.getSettingsFolder(create);
         } else {
             // resolve 'nbproject'
-            Project p = project.getLookup().lookup(Project.class);
+            Project p = (Project)project;
             FileObject nbproject = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
             FileObject d;
             if (nbproject != null) {
