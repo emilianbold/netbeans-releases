@@ -2124,6 +2124,27 @@ abstract public class CsmCompletionQuery {
                                 // resolve all functions in context
                                 int varPos = mtdNameExp.getTokenOffset(0);
                                 boolean look4Constructors = findType || openingSource;
+                                if(methodOpen) {
+                                    Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
+                                    // try to resolve field initializers
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
+                                    if (resolve(varPos, mtdName, true)) {
+                                        compResolver.getResult().addResulItemsToCol(candidates);
+                                    }
+                                    ArrayList<CsmField> varList = new ArrayList<CsmField>();
+                                    for (CsmObject object : candidates) {
+                                        if (CsmKindUtilities.isField(object)) {
+                                            varList.add((CsmField)object);
+                                            break;
+                                        }
+                                    } 
+                                    if(!varList.isEmpty()) {
+                                        result = new CsmCompletionResult(component, getBaseDocument(), varList,
+                                                formatType(lastType, true, true, false) + mtdName,
+                                                item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                        return true;
+                                    }
+                                }
                                 if (look4Constructors) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     // try to resolve the most visible
