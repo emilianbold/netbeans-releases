@@ -1912,7 +1912,12 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="connect-debugger" unless="is.debugged">
-                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
+                <condition>
+                    <xsl:attribute name="property">listeningcp</xsl:attribute>
+                    <xsl:attribute name="value">sourcepath</xsl:attribute>
+                    <istrue value="${{j2ee.compile.on.save}}"/>
+                </condition>
+                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}" listeningcp="${{listeningcp}}">
                     <classpath>
                         <path path="${{debug.classpath}}"/>
                     </classpath>
