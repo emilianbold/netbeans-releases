@@ -93,12 +93,30 @@ public class Nodes {
 
     private static final Logger LOG = Logger.getLogger(Nodes.class.getName());
     
-    public static Node constructSemiLogicalView(AnalysisResult errors, boolean byCategory) {
+    public static Node constructSemiLogicalView(final AnalysisResult errors, final boolean byCategory) {
+        return new AbstractNode(Children.create(new ChildFactory<Node>() {
+            @Override protected boolean createKeys(List<Node> toPopulate) {
+                constructSemiLogicalView(errors, byCategory, toPopulate);
+                return true;
+            }
+            @Override protected Node createNodeForKey(Node key) {
+                return key;
+            }
+        }, true));
+    }
+    
+    private static void constructSemiLogicalView(AnalysisResult errors, boolean byCategory, List<Node> toPopulate) {
+        for (Node n : errors.extraNodes) {
+            toPopulate.add(n.cloneNode());
+        }
+        
         if (!byCategory) {
-            return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors.provider2Hints, BY_FILE), errors.extraNodes));
+            toPopulate.addAll(constructSemiLogicalViewNodes(new LogicalViewCache(), sortErrors(errors.provider2Hints, BY_FILE)));
         } else {
-            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, BY_CATEGORY);
+            Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description = new HashMap<AnalyzerFactory, Map<String, WarningDescription>>();
+            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, new ByCategoryRetriever(analyzerId2Description));
             List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size() + errors.extraNodes.size());
+            LogicalViewCache lvc = new LogicalViewCache();
 
             for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
                 Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
@@ -109,7 +127,7 @@ public class Nodes {
                     AnalyzerFactory analyzer = typeEntry.getValue().keySet().iterator().next();
                     final Image icon = SPIAccessor.ACCESSOR.getAnalyzerIcon(analyzer);
 
-                    String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(findWarningDescription(analyzer, typeEntry.getKey())) : null;
+                    String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(findWarningDescription(analyzerId2Description, analyzer, typeEntry.getKey())) : null;
                     long typeWarnings = 0;
 
                     for (List<ErrorDescription> v1 : typeEntry.getValue().values()) {
@@ -117,7 +135,7 @@ public class Nodes {
                     }
 
                     final String typeHtmlDisplayName = (typeDisplayName != null ? translate(typeDisplayName) : "Unknown") + " <b>(" + typeWarnings + ")</b>";
-                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE), Collections.<Node>emptyList())) {
+                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(lvc, sortErrors(typeEntry.getValue(), BY_FILE))) {
                         @Override public Image getIcon(int type) {
                             return icon;
                         }
@@ -171,7 +189,7 @@ public class Nodes {
             
             categoryNodes.addAll(0, extraNodesCopy);
 
-            return new AbstractNode(new DirectChildren(categoryNodes));
+            toPopulate.addAll(categoryNodes);
         }
     }
 
@@ -222,7 +240,11 @@ public class Nodes {
         }
     };
 
-    private static final AttributeRetriever<String> BY_CATEGORY = new AttributeRetriever<String>() {
+    private static final class ByCategoryRetriever implements AttributeRetriever<String> {
+        private final Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description;
+        public ByCategoryRetriever(Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description) {
+            this.analyzerId2Description = analyzerId2Description;
+        }
         @Override public String getAttribute(AnalyzerFactory a, ErrorDescription ed) {
             String id = ed.getId();
 
@@ -231,31 +253,30 @@ public class Nodes {
                 return "Unknown";
             }
 
-            WarningDescription wd = findWarningDescription(a, id);
+            WarningDescription wd = findWarningDescription(analyzerId2Description, a, id);
 
             if (wd == null) return "Unknown";
             else return SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(wd);
         }
-    };
+    }
 
-    private static WarningDescription findWarningDescription(AnalyzerFactory a, String id) {
-        //XXX: performance - should cache the results
-        for (WarningDescription wd : a.getWarnings()) {
-            if (id.equals(SPIAccessor.ACCESSOR.getWarningId(wd))) {
-                return wd;
+    private static WarningDescription findWarningDescription(Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description, AnalyzerFactory a, String id) {
+        Map<String, WarningDescription> warnings = analyzerId2Description.get(a);
+        
+        if (warnings == null) {
+            analyzerId2Description.put(a, warnings = new HashMap<String, WarningDescription>());
+            for (WarningDescription wd : a.getWarnings()) {
+                warnings.put(SPIAccessor.ACCESSOR.getWarningId(wd), wd);
             }
         }
 
-        return null;
+        return warnings.get(id);
     }
 
-    private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors, final Collection<Node> extraNodes) {
+    private static Children constructSemiLogicalViewChildren(final LogicalViewCache lvc, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
         return Children.create(new ChildFactory<Node>() {
             @Override protected boolean createKeys(List<Node> toPopulate) {
-                for (Node n : extraNodes) {
-                    toPopulate.add(n.cloneNode());
-                }
-                toPopulate.addAll(constructSemiLogicalViewNodes(errors));
+                toPopulate.addAll(constructSemiLogicalViewNodes(lvc, errors));
                 return true;
             }
             @Override protected Node createNodeForKey(Node key) {
@@ -264,7 +285,7 @@ public class Nodes {
         }, true);
     }
 
-    private static List<Node> constructSemiLogicalViewNodes(Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static List<Node> constructSemiLogicalViewNodes(LogicalViewCache lvc, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
         Map<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>> projects = new HashMap<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>>();
         
         for (FileObject file : errors.keySet()) {
@@ -288,7 +309,7 @@ public class Nodes {
         List<Node> nodes = new ArrayList<Node>(projects.size());
         
         for (Project p : projects.keySet()) {
-            nodes.add(constructSemiLogicalView(p, projects.get(p)));
+            nodes.add(constructSemiLogicalView(p, lvc, projects.get(p)));
         }
 
         Collections.sort(nodes, new Comparator<Node>() {
@@ -304,19 +325,23 @@ public class Nodes {
         return nodes;
     }
     
-    private static Node constructSemiLogicalView(final Project p, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static Node constructSemiLogicalView(final Project p, LogicalViewCache lvc, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+        Node view = lvc.project2LogicalViewRootNode.get(p.getProjectDirectory());
         final LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
-        final Node view;
         
-        if (lvp != null) {
-            view = lvp.createLogicalView();
-        } else {
-            try {
-                view = DataObject.find(p.getProjectDirectory()).getNodeDelegate();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-                return new AbstractNode(Children.LEAF);
+        if (view == null) {
+            if (lvp != null) {
+                view = lvp.createLogicalView();
+            } else {
+                try {
+                    view = DataObject.find(p.getProjectDirectory()).getNodeDelegate();
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return new AbstractNode(Children.LEAF);
+                }
             }
+            
+            lvc.project2LogicalViewRootNode.put(p.getProjectDirectory(), view);
         }
 
         int warnings = 0;
@@ -329,26 +354,24 @@ public class Nodes {
         
         final Wrapper[] w = new Wrapper[1];
 
-        w[0] = new Wrapper(view, warnings, new FutureValue<Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>>>() {
-            private Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> computed;
-            @Override public synchronized Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> get() {
-                if (computed == null) {
-                    computed = resolveFileNodes(lvp, w[0], view, errors);
-                }
-                
-                return computed;
-            }
-        });
+        w[0] = new Wrapper(view, warnings, resolveFileNodes(lvp, lvc, w[0], view, errors));
 
         return w[0];
     }
 
-    private static Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, Wrapper w, final Node view, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, LogicalViewCache lvc, Wrapper w, final Node view, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
         Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = new HashMap<Node, Map<AnalyzerFactory, List<ErrorDescription>>>();
 
         for (FileObject file : errors.keySet()) {
             Map<AnalyzerFactory, List<ErrorDescription>> eds = errors.get(file);
-            Node foundChild = locateChild(view, lvp, file);
+            Node foundChild = lvc.file2FileNode.get(file);
+            
+            if (foundChild == null) {
+                foundChild = locateChild(view, lvp, file);
+                if (foundChild != null) {
+                    lvc.file2FileNode.put(file, foundChild);
+                }
+            }
 
             if (foundChild == null) {
                 w.displayName = NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName());
@@ -376,7 +399,7 @@ public class Nodes {
 
         private final int warningsCount;
 
-        public Wrapper(Node orig, int warningsCount, FutureValue<Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodes) {
+        public Wrapper(Node orig, int warningsCount, Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes) {
             super(orig, new WrapperChildren(orig, fileNodes), Lookup.EMPTY);
             this.warningsCount = warningsCount;
         }
@@ -444,19 +467,15 @@ public class Nodes {
         
     private static class WrapperChildren extends FilterNode.Children {
 
-        private final Node orig;
-        private final FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodesFuture;
-        private java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes;
+        private final java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes;
 
-        public WrapperChildren(Node orig, FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodes) {
+        public WrapperChildren(Node orig, java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes) {
             super(orig);
-            this.orig = orig;
-            this.fileNodesFuture = fileNodes;
+            this.fileNodes = fileNodes;
         }
         
         @Override
         protected synchronized Node[] createNodes(Node key) {
-            java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
             if (fileNodes.containsKey(key)) {
                 
                 return new Node[] {new Wrapper(key, fileNodes.get(key), true)};
@@ -474,12 +493,7 @@ public class Nodes {
             if (fileNodesInside.isEmpty()) {
                 return new Node[0];
             }
-            return new Node[] {new Wrapper(key, warnings, new FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>>() {
-                @Override
-                public java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> get() {
-                    return fileNodesInside;
-                }
-            })};
+            return new Node[] {new Wrapper(key, warnings, fileNodesInside)};
         }
         
     }
@@ -611,6 +625,11 @@ public class Nodes {
     
     interface FutureValue<T> {
         T get();
+    }
+    
+    public static final class LogicalViewCache {
+        private final Map<FileObject, Node> project2LogicalViewRootNode = new HashMap<FileObject, Node>();
+        private final Map<FileObject, Node> file2FileNode = new HashMap<FileObject, Node>();
     }
 
 }
