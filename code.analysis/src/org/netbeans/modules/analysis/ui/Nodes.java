@@ -115,7 +115,7 @@ public class Nodes {
         } else {
             Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description = new HashMap<AnalyzerFactory, Map<String, WarningDescription>>();
             Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, new ByCategoryRetriever(analyzerId2Description));
-            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size() + errors.extraNodes.size());
+            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size());
             LogicalViewCache lvc = new LogicalViewCache();
 
             for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
@@ -180,14 +180,6 @@ public class Nodes {
                     return o1.getDisplayName().compareTo(o2.getDisplayName());
                 }
             });
-
-            List<Node> extraNodesCopy = new ArrayList<Node>(errors.extraNodes.size());
-            
-            for (Node n : errors.extraNodes) {
-                extraNodesCopy.add(n.cloneNode());
-            }
-            
-            categoryNodes.addAll(0, extraNodesCopy);
 
             toPopulate.addAll(categoryNodes);
         }
