@@ -45,21 +45,4 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="welcome">
     <import file="../nbbuild/templates/projectized.xml"/>
-    
-    <target name="netbeans-extra-ml" depends="release-ml" if="locales"/>
-    
-    <target name="release-ml" depends="build-init,check-run-mlbuild" if="run.ml.build">
-        <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
-                 classpath="${nbantext.jar}"/>
-        <repeat target="release-one-locale" name="locale" values="${locales}"/>
-    </target>
-    
-    <target name="release-one-locale" depends="build-init" if="locale">
-        <copy todir="${cluster}">
-            <fileset dir="${nb_all}/translatedfiles/src/ide/welcome/release">
-                <include name="**/*_${locale}.*"/>
-            </fileset>
-        </copy>
-    </target>
-    
 </project>

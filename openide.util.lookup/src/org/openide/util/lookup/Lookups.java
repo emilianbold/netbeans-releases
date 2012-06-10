@@ -44,12 +44,7 @@
 
 package org.openide.util.lookup;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
@@ -248,7 +243,8 @@ public class Lookups {
      * The complete behavior can be described as <code>classes</code> being
      * a barrier. For an object not to be excluded, there has to be an inheritance
      * path between the queried class and the actual class of the instance,
-     * that is not blocked by any of the excluded classes:
+     * that is not blocked by any of the excluded classes and
+     * the queried class cannot be subclass of an excluded class:
      * <pre>
      * interface A {}
      * interface B {}

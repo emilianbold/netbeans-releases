@@ -56,21 +56,25 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  * Provides information about unresolved identifiers.
  *
  * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=30)
+@ServiceProviders({
+    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1100),
+    @ServiceProvider(service=CsmErrorProvider.class, position=30)
+})
 public class IdentifierErrorProvider extends CsmErrorProvider {
 
-    private static final boolean ENABLED =
-            CndUtils.getBoolean("cnd.identifier.error.provider", true); //NOI18N
+    private static final boolean ENABLED = CndUtils.getBoolean("cnd.identifier.error.provider", true); //NOI18N
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     private static final int MAX_ERROR_LIMIT;
@@ -93,7 +97,12 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     }
 
     @Override
-    public boolean isEnabledByDefault() {
+    public OptionKind getKind() {
+        return OptionKind.Boolean;
+    }
+
+    @Override
+    public Object getDefaultValue() {
         return true;//!CndUtils.isReleaseMode();
     }
     
@@ -118,6 +127,16 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     @Override
     public String getName() {
         return "unresolved-identifier"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(IdentifierErrorProvider.class, "Show-unresolved-identifier"); //NOI18N
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(IdentifierErrorProvider.class, "Show-unresolved-identifier-AD"); //NOI18N
     }
 
     private static class ReferenceVisitor implements CsmFileReferences.Visitor {
@@ -152,6 +171,8 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     if (CsmFileReferences.isTemplateBased(context)) {
                         severity = Severity.WARNING;
                     } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) { // owner is needed
+                        severity = Severity.WARNING;
+                    } else if (CsmKindUtilities.isEnumForwardDeclaration(ref.getOwner())) { // owner is needed
                         severity = Severity.WARNING;
                     }
                     foundError++;

@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.api.model.util;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -192,6 +193,15 @@ public class CsmBaseUtilities {
             if (fd.getCsmClass() != null){
                 decl = target;
                 def = fd.getCsmClass();
+            } else {
+                decl = target;
+                def = null;
+            }
+        } else if (CsmKindUtilities.isEnumForwardDeclaration(target)) {
+            CsmEnumForwardDeclaration fd = (CsmEnumForwardDeclaration) target;
+            if (fd.getCsmEnum() != null) {
+                decl = target;
+                def = fd.getCsmEnum();
             } else {
                 decl = target;
                 def = null;

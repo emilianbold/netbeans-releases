@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.php.project.internalserver;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,6 +55,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -105,10 +111,14 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     // #207763
+    @NbBundle.Messages("InternalWebServer.error.stop=Timeout occured while stopping PHP built-in web server.")
     static synchronized void startingInstance(InternalWebServer serverToBeStarted) {
         if (runningInstance != null
                 && runningInstance != serverToBeStarted) {
-            runningInstance.stop();
+            InternalWebServer instanceRef = runningInstance;
+            if (!ensureServerStopped(instanceRef)) {
+                warnUser(instanceRef.project.getName(), Bundle.InternalWebServer_error_stop());
+            }
         }
         runningInstance = serverToBeStarted;
     }
@@ -119,13 +129,58 @@ public final class InternalWebServer implements PropertyChangeListener {
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "InternalWebServer.stopping=Stopping PHP built-in web server for project {0}..."
+    })
+    @SuppressWarnings("SleepWhileHoldingLock")
+    private static boolean ensureServerStopped(InternalWebServer instance) {
+        assert !EventQueue.isDispatchThread();
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.InternalWebServer_stopping(instance.project.getName()));
+        try {
+            progressHandle.start();
+            // stop server
+            instance.stop();
+            // wait for shutdown
+            RunConfigInternal runConfig = RunConfigInternal.forProject(instance.project);
+            String host = runConfig.getHostname();
+            int port = Integer.valueOf(runConfig.getPort());
+            for (int i = 0; i < 20; ++i) {
+                try {
+                    Socket socket = new Socket(host, port);
+                    socket.close();
+                    Thread.sleep(200);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (UnknownHostException ex) {
+                    return true;
+                } catch (IOException ex) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            progressHandle.finish();
+        }
+    }
+
+    private static void warnUser(String title, String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
+                message,
+                title,
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION));
+    }
+
     public synchronized boolean isRunning() {
         return process != null && !process.isDone();
     }
 
     public synchronized boolean start() {
         if (isRunning()) {
-            LOGGER.log(Level.INFO, "Internal web server already running for project {0}", project.getName());
+            LOGGER.log(Level.FINE, "Internal web server already running for project {0}", project.getName());
             return true;
         }
         process = createProcess();
@@ -215,6 +270,11 @@ public final class InternalWebServer implements PropertyChangeListener {
         if (RELATED_EVENT_NAMES.contains(evt.getPropertyName())) {
             restart();
         }
+    }
+
+    @Override
+    public String toString() {
+        return "InternalWebServer[" + project.getName() + "]"; // NOI18N
     }
 
 }

@@ -241,6 +241,12 @@ public class DashboardStorage {
         }
     }
 
+    public void deleteCategories(String... categoryNames) {
+        for (String name : categoryNames) {
+            deleteCategory(name);
+        }
+    }
+
     public boolean deleteCategory(String categoryName) {
         assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
         LOG.log(Level.FINE, "start deleting category {0}", categoryName); // NOI18N

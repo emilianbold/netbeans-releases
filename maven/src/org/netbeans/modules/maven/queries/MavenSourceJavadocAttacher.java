@@ -129,6 +129,10 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                             }
                         }
                     } catch (ThreadDeath d) {
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                     } catch (AbstractArtifactResolutionException x) {
                         // XXX probably ought to display some sort of notification in status bar
                     } finally {

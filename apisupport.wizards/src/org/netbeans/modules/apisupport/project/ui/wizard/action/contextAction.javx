@@ -5,14 +5,12 @@
 
 package ${PACKAGE_NAME};
 
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-${IMPORTS}
-<#if ANNOTATIONS??>
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionID;
+import java.awt.event.ActionListener;
+${IMPORTS}<#if ANNOTATIONS??>import org.openide.awt.ActionID;
+<#if 0 < REFERENCES?size>import org.openide.awt.ActionReference;
+</#if><#if 1 < REFERENCES?size>import org.openide.awt.ActionReferences;
+</#if>import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(
@@ -25,16 +23,16 @@ import org.openide.util.NbBundle.Messages;
     </#if>
     displayName="#${DISPLAY_NAME_KEY}"
 )
-@ActionReferences({
-<#list REFERENCES as r>
+<#if 1 < REFERENCES?size>@ActionReferences({
+</#if><#list REFERENCES as r>
   @ActionReference(path="${r.path()}"<#if
   r.position()!=-1>, position=${r.position()?string("0")}</#if><#if 
   r.separatorBefore()!=-1>, separatorBefore=${r.separatorBefore()?string("0")}</#if><#if 
   r.separatorAfter()!=-1>, separatorAfter=${r.separatorAfter()?string("0")}</#if><#if 
   r.name()?length != 0>, name="${r.name()}"</#if>)<#if r_has_next>,</#if>
 </#list>
-})
-@Messages("${DISPLAY_NAME_KEY}=${DISPLAY_NAME}")
+<#if 1 < REFERENCES?size>})
+</#if>@Messages("${DISPLAY_NAME_KEY}=${DISPLAY_NAME}")
 </#if>
 public final class ${CLASS_NAME} implements ActionListener {
     private final ${CONTEXT_TYPE} context;
@@ -43,7 +41,7 @@ public final class ${CLASS_NAME} implements ActionListener {
         this.context = context;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    @Override public void actionPerformed(ActionEvent ev) {
         ${PERFORM_ACTION_CODE}
     }
 }

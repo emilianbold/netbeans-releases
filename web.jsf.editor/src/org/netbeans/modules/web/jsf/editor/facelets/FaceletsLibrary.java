@@ -67,15 +67,13 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
     
     private final Map<String, NamedComponent> components = new HashMap<String, NamedComponent>();
     private LibraryDescriptor libraryDescriptor, faceletsLibraryDescriptor;
-    private final String defaultPrefix;
+    private String defaultPrefix;
     private final URL libraryDescriptorSource;
 
     public FaceletsLibrary(FaceletsLibrarySupport support, String namespace, URL libraryDescriptorSourceURL) {
         super(support);
         declaredNamespace = namespace;
         libraryDescriptorSource = libraryDescriptorSourceURL;
-
-        defaultPrefix = generateDefaultPrefix();
     }
     
     protected synchronized LibraryDescriptor getFaceletsLibraryDescriptor() throws LibraryDescriptorException {
@@ -112,10 +110,28 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
     }
 
     @Override
-    public String getDefaultPrefix() {
-        //non standard library will use a prefix generated from the library namespace
-        String superdefaultPrefix = super.getDefaultPrefix();
-        return superdefaultPrefix != null ? superdefaultPrefix : defaultPrefix;
+    public synchronized String getDefaultPrefix() {
+        if(defaultPrefix == null) {
+            try {
+                //first try to get the prefix from the facelets library descriptor
+                defaultPrefix = getFaceletsLibraryDescriptor().getPrefix();
+            } catch (LibraryDescriptorException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            if(defaultPrefix == null) {
+                //no prefix defined in the library descriptor
+                //if standard library, we have hardcododed prefixes
+                defaultPrefix = super.getDefaultPrefix();
+            }
+            
+            if(defaultPrefix == null) {
+                //non standard library will use a prefix generated from the library namespace
+                defaultPrefix = generateDefaultPrefix();
+                
+            }
+        }
+        return defaultPrefix;
     }
     
 

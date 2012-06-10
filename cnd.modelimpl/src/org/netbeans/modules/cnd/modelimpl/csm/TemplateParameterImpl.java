@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -76,12 +77,12 @@ import org.openide.util.CharSequences;
 public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T> implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
-
-    private CsmType defaultValue = null;
+        
+    private CsmSpecializationParameter defaultValue;
 
     private TemplateDescriptor templateDescriptor = null;
-    
-    public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global) {
+        
+    public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean variadic, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         // TODO what about explicite type in ast?
         this.name = NameCache.getManager().getString(name);
@@ -89,11 +90,15 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
         }
+        this.defaultValue = variadic ? VARIADIC : null;
     }
 
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global, AST defaultValue) {
-        this(ast, name, file, scope, global);
-        this.defaultValue = TypeFactory.createType(defaultValue, file, null, 0);
+        this(ast, name, file, scope, false, global);
+        CsmType type = TypeFactory.createType(defaultValue, file, null, 0);
+        if(type != null) {
+            this.defaultValue = new TypeBasedSpecializationParameterImpl(type);
+        }
     }
     
     @Override
@@ -102,8 +107,8 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     @Override
-    public CsmObject getDefaultValue() {
-        return defaultValue;
+    public CsmSpecializationParameter getDefaultValue() {
+        return defaultValue == VARIADIC ? null : defaultValue;
     }
     
     @Override
@@ -139,6 +144,12 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public boolean isExplicitSpecialization() {
         return false;
     }
+    
+
+    @Override
+    public boolean isVarArgs() {
+        return defaultValue == VARIADIC;
+    }    
 
     @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
@@ -158,7 +169,11 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         super.write(output); 
         PersistentUtils.writeUTF(name, output);
         UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
-        PersistentUtils.writeType(defaultValue, output);
+        boolean variadic = isVarArgs();
+        output.writeBoolean(variadic);
+        if(!variadic) {
+            PersistentUtils.writeSpecializationParameter(defaultValue, output);
+        }       
         PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
     
@@ -166,7 +181,12 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         super(input);
         this.name = PersistentUtils.readUTF(input, NameCache.getManager());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
-        this.defaultValue = PersistentUtils.readType(input);
+        boolean variadic = input.readBoolean();
+        if(!variadic) {
+            this.defaultValue = PersistentUtils.readSpecializationParameter(input);
+        } else {
+            this.defaultValue = VARIADIC;
+        }
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
     
@@ -195,4 +215,32 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public String toString() {
         return getQualifiedName().toString() + getPositionString();
     }
+    
+    private static CsmSpecializationParameter VARIADIC = new CsmSpecializationParameter() {
+        @Override
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public int getStartOffset() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public int getEndOffset() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public CharSequence getText() {
+            throw new UnsupportedOperationException();
+        }
+    };
+    
 }

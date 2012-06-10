@@ -91,12 +91,6 @@ made subject to such option by the copyright holder.
 
     <target name="test-build" depends="jar-bridge,projectized-common.test-build"/>
 
-    <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
-        <locjar jarfile="${cluster}/ant/nblib/bridge.jar"
-                basedir="${nb_all}/translatedfiles/src/${module.name}/src-bridge"
-                compress="${build.package.compress}"/>
-    </target>
-
     <target name="jnlp" depends="netbeans,-jnlp-init">
         <property name="dir" location="${jnlp.dest.dir}/org-apache-tools-ant-module"/>
         <mkdir dir="${dir}"/>

@@ -220,6 +220,42 @@ public class NbKeymapTest extends NbTestCase {
         assertEquals(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK), a.getValue(Action.ACCELERATOR_KEY));
     }
 
+    /*
+     * Checks that:
+     * - C-A is properly masked in one profile, visible in other profile
+     * - from two sequences C-C S-B, C-C S-S, only one is properly masked in a profile
+     */
+    public void testKeymapMasksShortcut() throws Exception {
+        make("Shortcuts/C-A.instance").setAttribute("instanceCreate", new DummyAction("one"));
+        make("Shortcuts/C-C S-B.instance").setAttribute("instanceCreate", new DummyAction("two"));
+        make("Shortcuts/C-C S-C.instance").setAttribute("instanceCreate", new DummyAction("four"));
+        make("Keymaps/NetBeans/C-C S-B.removed");
+        make("Keymaps/NetBeans/C-A.removed");
+        make("Keymaps/Eclipse/C-A.instance").setAttribute("instanceCreate", new DummyAction("three"));
+        NbKeymap km = new NbKeymap();
+        KeyStroke controlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
+        
+        assertNull("should be masked", km.getAction(controlA));
+        
+        KeyStroke controlC = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK);
+        KeyStroke shiftB = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.SHIFT_MASK);
+        KeyStroke shiftC = KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.SHIFT_MASK);
+        
+        Action a = km.getAction(controlC);
+        assertNotNull("other binding must prevail", a);
+        a.actionPerformed(null);
+        
+        assertNull("should be masked", km.getAction(shiftB));
+
+        a = km.getAction(controlC);
+        a.actionPerformed(null);
+        assertEquals("four", km.getAction(shiftC).getValue(Action.NAME));
+        
+        FileUtil.getConfigFile("Keymaps").setAttribute("currentKeymap", "Eclipse");
+        assertTrue(km.waitFinished());
+        assertEquals("three", km.getAction(controlA).getValue(Action.NAME));
+    }
+
     public void testMultiKeyShortcuts() throws Exception {
         final AtomicReference<String> ran = new AtomicReference<String>();
         class A extends AbstractAction {

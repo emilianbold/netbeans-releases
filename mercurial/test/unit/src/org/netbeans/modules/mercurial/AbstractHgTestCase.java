@@ -110,6 +110,7 @@ public abstract class AbstractHgTestCase extends NbTestCase {
 //        workDir = new File(System.getProperty("work.dir")); 
 //        FileUtil.refreshFor(workDir);          
         try {
+            assertTrue(getWorkTreeDir().mkdirs());
             HgCommand.doCreate(getWorkTreeDir(), null);
             new File(getWorkTreeDir(), "empty").createNewFile();
         } catch (IOException iOException) {

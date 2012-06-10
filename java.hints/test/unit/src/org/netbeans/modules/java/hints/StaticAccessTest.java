@@ -43,34 +43,19 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import java.util.Locale;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class StaticAccessTest extends TreeRuleTestBase {
+public class StaticAccessTest extends NbTestCase {
     
     public StaticAccessTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        Locale.setDefault(Locale.US);
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
-    }
-    
-    
-    
     public void testCallingStaticMethodInInitializer() throws Exception {
         String before = "package test; class Test {\n" +
             "{\n" +
@@ -197,7 +182,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     public void testIgnoreErrors1() throws Exception {
         String code = "package test; class Test {\n" +
             "public void run() {\n" +
-            "aaa.getClass().getNa|me();\n" +
+            "aaa.getClass().getName();\n" +
             "}\n" +
             "}";
         
@@ -207,7 +192,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     public void testIgnoreErrors2() throws Exception {
         String code = "package test; class Test {\n" +
             "public void run() {\n" +
-            "aaa.getCl|ass();\n" +
+            "aaa.getClass();\n" +
             "}\n" +
             "}";
         
@@ -217,7 +202,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     public void testIgnoreErrors3() throws Exception {
         String code = "package test; class Test {\n" +
             "public void run(String aaa) {\n" +
-            "aaa.ff|f();\n" +
+            "aaa.fff();\n" +
             "}\n" +
             "}";
         
@@ -227,7 +212,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     public void testIgnoreErrors4() throws Exception {
         String code = "package test; class Test {\n" +
             "public void run() {\n" +
-            "super.ff|f();\n" +
+            "super.fff();\n" +
             "}\n" +
             "}";
         
@@ -237,7 +222,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     public void testInterface198646() throws Exception {
         String code = "package test; class Test {\n" +
             "public void run(A a) {\n" +
-            "int i = a.I|II;\n" +
+            "int i = a.III;\n" +
             "}\n" +
             "}\n" +
             "interface A {\n" +
@@ -250,7 +235,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
     public void testEnum198646() throws Exception {
         String code = "package test; class Test {\n" +
             "public void run(A a) {\n" +
-            "int i = a.I|II;\n" +
+            "int i = a.III;\n" +
             "}\n" +
             "}\n" +
             "enum A {\n" +
@@ -261,20 +246,29 @@ public class StaticAccessTest extends TreeRuleTestBase {
         performAnalysisTest("test/Test.java", code, "2:10-2:13:verifier:AS0III");
     }
     
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        SourceUtilsTestUtil.setSourceLevel(info.getFileObject(), sourceLevel);
-        return new StaticAccess().run(info, path);
+    protected void performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
+        performFixTest(fileName, code, errorDescriptionToString, fixDebugString, golden);
+    }
+    
+    protected void performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
+        HintTest.create()
+                .input(fileName, code)
+                .run(StaticAccess.class)
+                .findWarning(errorDescriptionToString)
+                .applyFix(fixDebugString)
+                .assertCompilable()
+                .assertOutput(fileName, golden);
+    }
+    
+    protected void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
+        HintTest.create()
+                .input(fileName, code, false)
+                .run(StaticAccess.class)
+                .assertWarnings(golden);
     }
 
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
+    protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
+        performAnalysisTest(fileName, code, golden);
     }
-    
-    private String sourceLevel = "1.5";
-    
-    static {
-        NbBundle.setBranding("test");
-    }
-    
+
 }

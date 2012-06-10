@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +55,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
-import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidRepositoryException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -101,6 +101,7 @@ import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
@@ -127,6 +128,8 @@ public final class MavenEmbedder {
     private final EmbedderConfiguration embedderConfiguration;
     private final SettingsDecrypter settingsDecrypter;
     private long settingsTimestamp;
+    private static final Object lastLocalRepositoryLock = new Object();
+    private static URI lastLocalRepository;
     private Settings settings;
 
     MavenEmbedder(EmbedderConfiguration configuration) throws ComponentLookupException {
@@ -164,7 +167,19 @@ public final class MavenEmbedder {
             throw new IllegalStateException(ex);
         }
     }
+    
+    /**
+     * 
+     * @return normalized File for local repository root
+     * @since 2.26
+     */
+    public File getLocalRepositoryFile() {
+        String s = getLocalRepository().getBasedir();
+        return FileUtil.normalizeFile(new File(s));
+    }
 
+    @SuppressWarnings("NestedSynchronizedStatement")
+    @org.netbeans.api.annotations.common.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public synchronized Settings getSettings() {
         if (Boolean.getBoolean("no.local.settings")) { // for unit tests
             return new Settings(); // could instead make public void setSettings(Settings settingsOverride)
@@ -183,6 +198,22 @@ public final class MavenEmbedder {
         req.setSystemProperties(getSystemProperties());
         try {
             settings = settingsBuilder.build(req).getEffectiveSettings();
+            //now update the UNOWNED marker for FOQ at root of the local repository.
+            String localRep = settings.getLocalRepository();
+            if (localRep == null) {
+                localRep = RepositorySystem.defaultUserLocalRepository.getAbsolutePath();
+            }
+            URI localRepU = FileUtil.normalizeFile(new File(localRep)).toURI();
+            synchronized (lastLocalRepositoryLock) {
+                if (lastLocalRepository == null || !lastLocalRepository.equals(localRepU)) {
+                    FileOwnerQuery.markExternalOwner(localRepU, FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    if (lastLocalRepository != null) {
+                        FileOwnerQuery.markExternalOwner(lastLocalRepository, null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    }
+                    lastLocalRepository = localRepU;
+                }
+            }
+            
             settingsTimestamp = newSettingsTimestamp;
             return settings;
         } catch (SettingsBuildingException x) {

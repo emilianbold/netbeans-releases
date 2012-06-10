@@ -1,0 +1,3 @@
+# mobility/examples/midp
+read global
+vmd/examples/src/**/descriptions/*.html

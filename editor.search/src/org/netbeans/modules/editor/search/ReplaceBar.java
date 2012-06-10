@@ -110,6 +110,7 @@ public final class ReplaceBar extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 getSearchBar().lostFocusOnTextField();
+                getSearchBar().getIncSearchTextField().select(0, 0);
                 replaceTextField.selectAll();
             }
         });

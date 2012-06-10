@@ -69,7 +69,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -78,6 +77,7 @@ import org.openide.text.EditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -85,6 +85,8 @@ import org.openide.text.PositionRef;
  */
 public final class HintsControllerImpl {
     
+    private static final Logger LOG = Logger.getLogger(HintsControllerImpl.class.getName());
+
     private HintsControllerImpl() {}
     
     public static void setErrors(Document doc, String layer, Collection<? extends ErrorDescription> errors) {
@@ -96,7 +98,7 @@ public final class HintsControllerImpl {
         try {
             setErrorsImpl(od.getPrimaryFile(), layer, errors);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
     
@@ -104,7 +106,7 @@ public final class HintsControllerImpl {
         try {
             setErrorsImpl(file, layer, errors);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
         }
     }
     
@@ -138,6 +140,8 @@ public final class HintsControllerImpl {
     }
     
     static int[] computeLineSpan(Document doc, int lineNumber) throws BadLocationException {
+        lineNumber = Math.min(lineNumber, NbDocument.findLineRootElement((StyledDocument) doc).getElementCount());
+        
         int lineStartOffset = NbDocument.findLineOffset((StyledDocument) doc, lineNumber - 1);
         int lineEndOffset;
         
@@ -158,7 +162,19 @@ public final class HintsControllerImpl {
         return span;
     }
     
-    public static PositionBounds fullLine(Document doc, int lineNumber) {
+    public static PositionBounds fullLine(final Document doc, final int lineNumber) {
+        final PositionBounds[] result = new PositionBounds[1];
+        
+        doc.render(new Runnable() {
+            @Override public void run() {
+                result[0] = fullLineImpl(doc, lineNumber);
+            }
+        });
+        
+        return result[0];
+    }
+    
+    private static PositionBounds fullLineImpl(Document doc, int lineNumber) {
         DataObject file = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
         
         if (file == null)
@@ -169,7 +185,7 @@ public final class HintsControllerImpl {
             
             return linePart(file.getPrimaryFile(), span[0], span[1]);
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return null;
         }
     }
@@ -238,7 +254,7 @@ public final class HintsControllerImpl {
             
             return new PositionBounds(ces.createPositionRef(start, Position.Bias.Forward), ces.createPositionRef(end, Position.Bias.Backward));
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LOG.log(Level.INFO, null, e);
             return null;
         }
     }

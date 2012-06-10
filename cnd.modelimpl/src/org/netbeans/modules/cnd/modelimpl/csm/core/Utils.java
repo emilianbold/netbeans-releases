@@ -241,7 +241,8 @@ public class Utils {
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION) + namePostfix,
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM) + namePostfix,
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) + namePostfix
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) + namePostfix
                                 };
         return out;
     }
@@ -297,6 +298,8 @@ public class Utils {
                 return "v"; // NOI18N
             case CLASS_FORWARD_DECLARATION:
                 return "w"; // NOI18N
+            case ENUM_FORWARD_DECLARATION:
+                return "W"; // NOI18N
             case FUNCTION_FRIEND:
                 return "D"; // NOI18N
             case FUNCTION_FRIEND_DEFINITION:
@@ -356,6 +359,8 @@ public class Utils {
                 return VARIABLE_DEFINITION;
             case 'w': // NOI18N
                 return CLASS_FORWARD_DECLARATION;
+            case 'W': // NOI18N
+                return ENUM_FORWARD_DECLARATION;
             case 'D': // NOI18N
                 return FUNCTION_FRIEND;
             case 'd': // NOI18N

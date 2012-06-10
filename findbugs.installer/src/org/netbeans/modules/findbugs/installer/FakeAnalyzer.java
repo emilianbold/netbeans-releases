@@ -44,10 +44,9 @@ package org.netbeans.modules.findbugs.installer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -69,8 +68,9 @@ public class FakeAnalyzer implements Analyzer {
     @ServiceProvider(service=AnalyzerFactory.class)
     public static final class FakeAnalyzerFactory extends AnalyzerFactory {
 
+        @Messages("DN_FindBugs=FindBugs")
         public FakeAnalyzerFactory() {
-            super("findbugs", "FindBugs", null);
+            super("findbugs", Bundle.DN_FindBugs(), (String) null);
         }
 
         @Override
@@ -78,9 +78,10 @@ public class FakeAnalyzer implements Analyzer {
             return Collections.emptyList();
         }
 
+        @Messages("DN_FindBugsIntegration=FindBugs Integration")
         @Override
         public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-            return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", "FindBugs Integration"));
+            return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", Bundle.DN_FindBugsIntegration()));
         }
 
         @Override

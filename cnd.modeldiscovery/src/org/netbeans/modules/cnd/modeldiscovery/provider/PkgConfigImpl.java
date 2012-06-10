@@ -55,20 +55,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.nativeexecution.api.util.Path;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
@@ -85,44 +84,52 @@ public class PkgConfigImpl implements PkgConfig {
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
     private Map<String, List<Pair>> seachBase;
     private String drivePrefix;
-    private PlatformInfo pi;
+    private final ExecutionEnvironment env;
 
-    public PkgConfigImpl(MakeConfiguration mc) {
-        // TODO: need to support mc
-        if (mc != null) {
-            pi = mc.getPlatformInfo();
-            CompilerSet set = mc.getCompilerSet().getCompilerSet();
-            initPackagesFromSet(set);
-        } else {
-            // otherwise
-            pi = PlatformInfo.localhost();
-            initPackagesFromSet(null);
+    public PkgConfigImpl(ExecutionEnvironment env) {
+        this.env = env;
+        initPackages();
+    }
+
+    private boolean isWindows() {
+        try {
+            return HostInfoUtils.getHostInfo(env).getOSFamily()== HostInfo.OSFamily.WINDOWS;
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+            return false;
         }
     }
-
-    // for test
-    PkgConfigImpl(PlatformInfo pi, CompilerSet set) {
-        this.pi = pi;
-        initPackagesFromSet(set);
+    private boolean isLinux() {
+        try {
+            return HostInfoUtils.getHostInfo(env).getOSFamily()== HostInfo.OSFamily.LINUX;
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+            return false;
+        }
     }
-
+    
     private List<String> envPaths(String folder, String... foders){
-        ExitStatus status = ProcessUtils.execute(pi.getExecutionEnvironment(),
-                pi.isWindows()?"pkg-config.exe":"pkg-config", new String[]{"--variable", "pc_path", "pkg-config"}); // NOI18N
         List<String> res = new ArrayList<String>();
+        String pkg_config;
+        if (isWindows()) {
+            pkg_config = "pkg-config.exe"; // NOI18N
+        } else {
+            pkg_config = "pkg-config"; // NOI18N
+        }
+        ExitStatus status = ProcessUtils.execute(env, pkg_config, new String[]{"--variable", "pc_path", "pkg-config"}); // NOI18N
         if (status.isOK()) {
             addPaths(res, status.output);
         }
         res.add(folder);
         Collections.addAll(res, foders);
-        addPaths(res, pi.getEnv().get("PKG_CONFIG_PATH")); // NOI18N
+        addPaths(res, HostInfoProvider.getEnv(env).get("PKG_CONFIG_PATH")); // NOI18N
         return res;
     }
 
     private void addPaths(List<String> res, String additionalPaths) {
         if (additionalPaths != null && additionalPaths.length() > 0) {
             StringTokenizer st;
-            if (pi.isWindows()){
+            if (isWindows()){
                 st = new StringTokenizer(additionalPaths, ";"); // NOI18N
             } else {
                 st = new StringTokenizer(additionalPaths, ":"); // NOI18N
@@ -133,17 +140,16 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
     
-    private void initPackagesFromSet(CompilerSet set) {
-        if (pi.isWindows()){
+    private void initPackages() {
+        if (isWindows()){
             // at first find pkg-config.exe in paths
             String baseDirectory = getPkgConfihPath();
             if (baseDirectory == null) {
-                if (set == null) {
-                    for(CompilerSet cs : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
-                        if (cs.getCompilerFlavor().isCygwinCompiler()) {
-                            set = cs;
-                            break;
-                        }
+                CompilerSet set = null;
+                for(CompilerSet cs : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
+                    if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                        set = cs;
+                        break;
                     }
                 }
                 if (set != null){
@@ -167,11 +173,11 @@ public class PkgConfigImpl implements PkgConfig {
             initPackages(envPaths(baseDirectory), true); // NOI18N
         } else {
                 //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N     
-            if (pi.isLinux()) {
+            if (isLinux()) {
                 HostInfo hostinfo = null;
                 try {
-                    if (HostInfoUtils.isHostInfoAvailable(pi.getExecutionEnvironment())) {
-                        hostinfo = HostInfoUtils.getHostInfo(pi.getExecutionEnvironment());
+                    if (HostInfoUtils.isHostInfoAvailable(env)) {
+                        hostinfo = HostInfoUtils.getHostInfo(env);
                     }                
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -211,8 +217,7 @@ public class PkgConfigImpl implements PkgConfig {
     private void initPackages(List<String> folders, boolean isWindows) {
         Set<FileObject> done = new HashSet<FileObject>();
         for(String folder:folders) {
-            ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
-            FileObject file = RemoteFileUtil.getFileObject(RemoteFileUtil.normalizeAbsolutePath(folder, execEnv), execEnv);
+            FileObject file = RemoteFileUtil.getFileObject(RemoteFileUtil.normalizeAbsolutePath(folder, env), env);
             if (file == null) {
                 continue;
             }
@@ -385,7 +390,7 @@ public class PkgConfigImpl implements PkgConfig {
         Map<String, List<Pair>> res = new HashMap<String, List<Pair>>();
         for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
             Pair pair = new Pair(entry.getKey(), entry.getValue());
-            if (pi.isWindows()){
+            if (isWindows()){
                 if (entry.getKey().length() < 2 || entry.getKey().charAt(1) != ':') {
                     if (TRACE) {
                         System.err.println("ignore relative path "+entry.getKey());
@@ -400,8 +405,8 @@ public class PkgConfigImpl implements PkgConfig {
                     continue;
                 }
             }
-            String normalizedPath = RemoteFileUtil.normalizeAbsolutePath(entry.getKey(), pi.getExecutionEnvironment());
-            FileObject dir = RemoteFileUtil.getFileObject(normalizedPath, pi.getExecutionEnvironment());
+            String normalizedPath = RemoteFileUtil.normalizeAbsolutePath(entry.getKey(), env);
+            FileObject dir = RemoteFileUtil.getFileObject(normalizedPath, env);
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
             if (TRACE) {
                 System.err.println("init search base for "+entry.getKey());
@@ -582,9 +587,9 @@ public class PkgConfigImpl implements PkgConfig {
             }
             in.close();
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
     }
 

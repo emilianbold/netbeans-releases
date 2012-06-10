@@ -64,6 +64,8 @@ public class SharabilityQueryTest extends NbTestCase {
         super (testMethod);
     }
     
+    private File home = new File(System.getProperty("user.dir"));
+    
     @Override
     public void setUp() throws IOException {
         clearWorkDir();
@@ -71,7 +73,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
     
     public void testSharableBridge2Old() throws IOException {
-        File file = new File("/home/user/aFile.sharable");
+        File file = new File(home, "aFile.sharable");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.SHARABLE, sharability);
         URI uri = file.toURI();
@@ -82,7 +84,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testSharableBridge2New() throws IOException {
-        File file = new File("/home/user/aFile.sharable2");
+        File file = new File(home, "aFile.sharable2");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.SHARABLE, sharability);
         URI uri = file.toURI();
@@ -93,7 +95,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testNotSharableBridge2Old() throws IOException {
-        File file = new File("/home/user/aFile.not_sharable");
+        File file = new File(home, "aFile.not_sharable");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.NOT_SHARABLE, sharability);
         URI uri = file.toURI();
@@ -104,7 +106,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testNotSharableBridge2New() throws IOException {
-        File file = new File("/home/user/aFile.not_sharable2");
+        File file = new File(home, "aFile.not_sharable2");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.NOT_SHARABLE, sharability);
         URI uri = file.toURI();
@@ -115,7 +117,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
     
     public void testMixedBridge2Old() throws IOException {
-        File file = new File("/home/user/aFile.mixed");
+        File file = new File(home, "aFile.mixed");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.MIXED, sharability);
         URI uri = file.toURI();
@@ -126,7 +128,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testMixedBridge2New() throws IOException {
-        File file = new File("/home/user/aFile.mixed2");
+        File file = new File(home, "aFile.mixed2");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.MIXED, sharability);
         URI uri = file.toURI();
@@ -137,7 +139,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testUnknown() throws IOException {
-        File file = new File("/home/user/aFile.txt");
+        File file = new File(home, "aFile.txt");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.UNKNOWN, sharability);
         URI uri = file.toURI();
@@ -148,7 +150,7 @@ public class SharabilityQueryTest extends NbTestCase {
     }
 
     public void testNormalized() throws IOException {
-        File file = new File("/home/user/../aFile.txt");
+        File file = new File(home, "../aFile.txt");
         Exception exception = null;
         try {
             SharabilityQuery.getSharability(file);

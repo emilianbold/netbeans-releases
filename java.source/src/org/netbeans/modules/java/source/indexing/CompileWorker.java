@@ -95,6 +95,7 @@ abstract class CompileWorker {
 
     static class ParsingOutput {
         final boolean success;
+        final boolean lowMemory;
         final Map<JavaFileObject, List<String>> file2FQNs;
         final Set<ElementHandle<TypeElement>> addedTypes;
         final Set<File> createdFiles;
@@ -102,14 +103,46 @@ abstract class CompileWorker {
         final Set<ElementHandle<TypeElement>> modifiedTypes;
         final Set<CompileTuple> aptGenerated;
 
-        public ParsingOutput(boolean success, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes, Set<CompileTuple> aptGenerated) {
+        private ParsingOutput(boolean success, boolean lowMemory, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes, Set<CompileTuple> aptGenerated) {
+            assert (success && !lowMemory) || !success;
             this.success = success;
+            this.lowMemory = lowMemory;
             this.file2FQNs = file2FQNs;
             this.addedTypes = addedTypes;
             this.createdFiles = createdFiles;
             this.finishedFiles = finishedFiles;
             this.modifiedTypes = modifiedTypes;
             this.aptGenerated = aptGenerated;
+        }
+        
+        static ParsingOutput success (
+                final Map<JavaFileObject, List<String>> file2FQNs,
+                final Set<ElementHandle<TypeElement>> addedTypes,
+                final Set<File> createdFiles,
+                final Set<Indexable> finishedFiles,
+                final Set<ElementHandle<TypeElement>> modifiedTypes,
+                final Set<CompileTuple> aptGenerated) {
+            return new ParsingOutput(true, false, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);
+        }
+        
+        static ParsingOutput failure(
+                final Map<JavaFileObject, List<String>> file2FQNs,
+                final Set<ElementHandle<TypeElement>> addedTypes,
+                final Set<File> createdFiles,
+                final Set<Indexable> finishedFiles,
+                final Set<ElementHandle<TypeElement>> modifiedTypes,
+                final Set<CompileTuple> aptGenerated) {
+            return new ParsingOutput(false, false, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);
+        }
+        
+        static ParsingOutput lowMemory(
+                final Map<JavaFileObject, List<String>> file2FQNs,
+                final Set<ElementHandle<TypeElement>> addedTypes,
+                final Set<File> createdFiles,
+                final Set<Indexable> finishedFiles,
+                final Set<ElementHandle<TypeElement>> modifiedTypes,
+                final Set<CompileTuple> aptGenerated) {
+            return new ParsingOutput(false, true, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);            
         }
     }    
 }

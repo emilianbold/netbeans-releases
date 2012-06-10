@@ -812,7 +812,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private class DownloadJavadocSrcAction extends AbstractAction {
         private boolean javadoc;
         public DownloadJavadocSrcAction(boolean javadoc) {
-            putValue(Action.NAME, javadoc ? org.openide.util.NbBundle.getMessage(DependencyNode.class, "LBL_Download_Javadoc") : org.openide.util.NbBundle.getMessage(DependencyNode.class, "LBL_Download__Sources"));
+            putValue(Action.NAME, javadoc ? LBL_Download_Javadoc() : LBL_Download__Sources());
             this.javadoc = javadoc;
         }
 
@@ -824,7 +824,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 public @Override void run() {
                     ProgressContributor contributor =AggregateProgressFactory.createProgressContributor("multi-1");
                    
-                    String label = javadoc ? NbBundle.getMessage(DependencyNode.class, "Progress_Javadoc") : NbBundle.getMessage(DependencyNode.class, "Progress_Source");
+                    String label = javadoc ? Progress_Javadoc() : Progress_Source();
                     AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label, 
                             new ProgressContributor [] {contributor}, ProgressTransferListener.cancellable(), null);
                     handle.start();
@@ -840,6 +840,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                         }
                         
                     } catch (ThreadDeath d) { // download interrupted
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                     } finally {
                         handle.finish();
                         ProgressTransferListener.clearAggregateHandle();
@@ -1121,6 +1125,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
 
             @Override
+            @Messages("ERR_No_Javadoc_Found=Javadoc for {0} not found.")
             public void actionPerformed(ActionEvent e) {
                 DataObject dobj = getOriginal().getLookup().lookup(DataObject.class);
                 if (dobj == null) {
@@ -1139,7 +1144,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 if (javadocUrl != null) {
                     HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
                 } else {
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
+                    StatusDisplayer.getDefault().setStatusText(ERR_No_Javadoc_Found(fil.getPath()));
                 }
             }
 
@@ -1183,7 +1188,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
 
         public @Override Action createContextAwareInstance(final Lookup context) {
-            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+            return new AbstractAction(BTN_Open_Project()) {
                 public @Override void actionPerformed(ActionEvent e) {
                     Set<Project> projects = new HashSet<Project>();
                     for (Artifact art : context.lookupAll(Artifact.class)) {

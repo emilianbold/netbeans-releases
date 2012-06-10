@@ -604,7 +604,12 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                 primary = true;
 
             if (primary) {
-                if (ukes == null || ukes.length == 0) {
+                Object[] pkColNames = cols.values().toArray();
+                UniqueKeyElement uniqueKeyForPrimaryKey =
+                        findUniqueKeyForPrimaryKey(pkColNames, ukes);
+                if (uniqueKeyForPrimaryKey != null) {
+                    uniqueKeyForPrimaryKey.setPrimaryKey(primary);
+                } else {
                     // issue 56492: no index defined for the primary key
                     // generate a UniqueKeyElement and an IndexElement for it
 
@@ -630,32 +635,42 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                     UniqueKeyElement uke = new UniqueKeyElement(ukei, (TableElement)element, ie);
                     uke.setColumns(ie.getColumns());
                     changeKeys(new UniqueKeyElement[] { uke }, DBElement.Impl.ADD);
-                } else if (ukes.length == 1)
-                    ukes[0].setPrimaryKey(primary);
-                else {
-                    ColumnElement[] ces;
-                    Object[] o = cols.values().toArray();
-                    boolean equals;
-                    for (int i = 0; i < ukes.length; i++) {
-                        ces = ukes[i].getColumns();
-                        if (ces.length != o.length)
-                            continue;
-                        else {
-                            equals = true;
-                            for (int j = 0; j < ces.length; j++)
-                                if (! o[j].toString().equals(ces[j].getName().getName())) {
-                                    equals = false;
-                                    break;
-                                }
-                            if (equals) {
-                                ukes[i].setPrimaryKey(primary);
-                                break;
-                            }
-                        }
-                    }
                 }
             }
         }
+    }
+
+    /**
+     * Find already initialized unique key matching the primary key.
+     *
+     * @param columnNames Array of names of columns in the primary key, sorted
+     * by their order in the key.
+     * @param uKeys Already initialized unique keys.
+     * @return The unique key that matches the primary key, or null if none can
+     * be found.
+     */
+    private UniqueKeyElement findUniqueKeyForPrimaryKey(Object[] columnNames,
+            UniqueKeyElement[] uKeys) {
+
+        for (int i = 0; i < uKeys.length; i++) {
+            ColumnElement[] ces = uKeys[i].getColumns();
+            if (ces.length != columnNames.length) {
+                continue;
+            } else {
+                boolean equals = true;
+                for (int j = 0; j < ces.length; j++) {
+                    if (!columnNames[j].toString().equals(
+                            ces[j].getName().getName())) {
+                        equals = false;
+                        break;
+                    }
+                }
+                if (equals) {
+                    return uKeys[i];
+                }
+            }
+        }
+        return null;
     }
 
     @Override

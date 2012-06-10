@@ -77,6 +77,8 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -325,11 +327,23 @@ public class AnalyzeModel implements DiscoveryProvider {
             return excl.getValue();
         }
         
+        private ExecutionEnvironment getExecutionEnvironment() {
+            MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
+            ExecutionEnvironment env = null;
+            if (activeConfiguration != null) {
+                env = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+            }
+            if (env == null) {
+                env = ExecutionEnvironmentFactory.getLocal();
+            }
+            return env;
+        }
+        
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
             if (root != null) {
                 Map<String,List<String>> searchBase = search(root);
-                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfigurationDescriptor.getActiveConfiguration());
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(getExecutionEnvironment());
                 boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
                 Item[] items = makeConfigurationDescriptor.getProjectItems();
                 Map<String,Item> projectSearchBase = new HashMap<String,Item>();

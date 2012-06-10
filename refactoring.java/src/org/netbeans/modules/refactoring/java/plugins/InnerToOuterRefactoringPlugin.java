@@ -59,6 +59,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
@@ -230,7 +231,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         final InnerToOuterTransformer innerToOuter = new InnerToOuterTransformer(refactoring);
         TransformTask transform = new TransformTask(innerToOuter, refactoring.getSourceType());
         Problem problem = createAndAddElements(a, transform, refactoringElements, refactoring);

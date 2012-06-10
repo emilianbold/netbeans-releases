@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.client.commands;
 
 import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -239,6 +240,7 @@ public class AddTestHidden extends AbstractCommandTestCase {
         assertNotifiedFiles(new File[] {});
     }
 
+    @RandomlyFails
     public void testAddUnversionedDirectory() throws Exception {
         File parentFolder = createFolder("folder");
         File folder = createFolder(parentFolder, "fail");

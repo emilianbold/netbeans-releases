@@ -407,7 +407,7 @@ public class NameHolder {
     }
 
     private CharSequence findEnumName(AST ast){
-        CharSequence aName = findId(ast, CPPTokenTypes.RCURLY, false);
+        CharSequence aName = findId(ast, CPPTokenTypes.RCURLY, true);
         if (aName == null || aName.length()==0){
             AST token = ast.getNextSibling();
             if( token != null) {

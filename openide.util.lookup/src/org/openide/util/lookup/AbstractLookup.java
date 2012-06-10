@@ -306,7 +306,7 @@ public class AbstractLookup extends Lookup implements Serializable {
         notifyIn(notifyIn, listeners);
     }
     
-    private final void notifyIn(Executor notifyIn, final HashSet<R> listeners) {
+    final void notifyIn(Executor notifyIn, final HashSet<R> listeners) {
         NotifyListeners notify = new NotifyListeners(listeners);
         if (notify.shallRun()) {
             if (notifyIn == null) {

@@ -276,6 +276,9 @@ public final class LayerBuilder {
                 if (!originatingElement.getModifiers().contains(Modifier.PUBLIC)) {
                     throw new LayerGenerationException(clazz + " is not public", originatingElement, processingEnv, annotation, annotationMethod);
                 }
+                if (((TypeElement) originatingElement).getNestingKind().isNested() && !originatingElement.getModifiers().contains(Modifier.STATIC)) {
+                    throw new LayerGenerationException(clazz + " is nested but not static", originatingElement, processingEnv, annotation, annotationMethod);
+                }
                 return new String[] {clazz, null};
             }
             case METHOD: {
@@ -293,7 +296,7 @@ public final class LayerBuilder {
                 return new String[] {clazz, method};
             }
             default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + originatingElement);
+                throw new LayerGenerationException("Annotated element is not loadable as an instance", originatingElement, processingEnv, annotation, annotationMethod);
         }
     }
 

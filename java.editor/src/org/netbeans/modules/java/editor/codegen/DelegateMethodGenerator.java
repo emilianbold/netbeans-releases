@@ -43,16 +43,16 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
-import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,10 +64,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -77,7 +79,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
 
-import com.sun.source.tree.Tree;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -89,11 +90,13 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ScanUtils;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.DelegatePanel;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
@@ -107,9 +110,10 @@ import org.openide.util.NbBundle;
 public class DelegateMethodGenerator implements CodeGenerator {
 
     private static final String ERROR = "<error>"; //NOI18N
+    private static final Logger log = Logger.getLogger(DelegateMethodGenerator.class.getName());
 
-    public static class Factory implements CodeGenerator.Factory {
-        
+    public static class Factory implements CodeGenerator.Factory {        
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
@@ -146,10 +150,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
         this.description = description;
     }
 
+    @Override
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_delegate_method"); //NOI18N
     }
 
+    @Override
     public void invoke() {
         final DelegatePanel panel = new DelegatePanel(component, handle, description);
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
@@ -165,6 +171,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                 try {
                     final int caretOffset = component.getCaretPosition();
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             Element e = handle.resolve(copy);
@@ -191,7 +198,6 @@ public class DelegateMethodGenerator implements CodeGenerator {
         }
     }
 
-    private static Logger log = Logger.getLogger(DelegateMethodGenerator.class.getName());
     public static ElementNode.Description getAvailableMethods(final JTextComponent component, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
         if (fieldHandle.getKind().isField()) {
             final JavaSource js = JavaSource.forDocument(component.getDocument());
@@ -200,26 +206,26 @@ public class DelegateMethodGenerator implements CodeGenerator {
                 final ElementNode.Description[] description = new ElementNode.Description[1];
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
-
+                    @Override
                     public void run() {
                         try {
                             ScanUtils.waitUserActionTask(js, new Task<CompilationController>() {
-
-                            public void run(CompilationController controller) throws IOException {
-                                if (controller.getPhase().compareTo(Phase.RESOLVED) < 0) {
-                                        Phase phase = controller.toPhase(Phase.RESOLVED);
-                                    if (phase.compareTo(Phase.RESOLVED) < 0) {
-                                        if (log.isLoggable(Level.SEVERE)) {
-                                            log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
+                                @Override
+                                public void run(CompilationController controller) throws IOException {
+                                    if (controller.getPhase().compareTo(Phase.RESOLVED) < 0) {
+                                            Phase phase = controller.toPhase(Phase.RESOLVED);
+                                        if (phase.compareTo(Phase.RESOLVED) < 0) {
+                                            if (log.isLoggable(Level.SEVERE)) {
+                                                log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
+                                            }
+                                            return;
                                         }
+                                    }
+                                    if (cancel.get()) {
                                         return;
                                     }
+                                    description[0] = getAvailableMethods(controller, caretOffset, typeElementHandle, fieldHandle);
                                 }
-                                if (cancel.get()) {
-                                    return;
-                                }
-                                description[0] = getAvailableMethods(controller, caretOffset, typeElementHandle, fieldHandle);
-                            }
                             });
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
@@ -265,40 +271,40 @@ public class DelegateMethodGenerator implements CodeGenerator {
     }
         
     static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
-        TypeElement origin = typeElementHandle.resolve(controller);
-        VariableElement field = ScanUtils.checkElement(controller, fieldHandle.resolve(controller));
+        final TypeElement origin = typeElementHandle.resolve(controller);
+        final VariableElement field = ScanUtils.checkElement(controller, fieldHandle.resolve(controller));
         assert origin != null && field != null;
-        if (field.asType().getKind() == TypeKind.DECLARED) {
-            DeclaredType type = (DeclaredType) field.asType();
-            Trees trees = controller.getTrees();
-            ElementUtilities eu = controller.getElementUtilities();
-            Scope scope = controller.getTreeUtilities().scopeFor(caretOffset);
-            Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
-            for (ExecutableElement method : ElementFilter.methodsIn(controller.getElements().getAllMembers((TypeElement) type.asElement()))) {
-                if (trees.isAccessible(scope, method, type)) {
-                    Element impl = eu.getImplementationOf(method, origin);
-                    if (impl == null || (!impl.getModifiers().contains(Modifier.FINAL) && impl.getEnclosingElement() != origin)) { 
-                        List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
-                        if (descriptions == null) {
-                            descriptions = new ArrayList<ElementNode.Description>();
-                            map.put(method.getEnclosingElement(), descriptions);
-                        }
-                        descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
-                    }
+        final ElementUtilities eu = controller.getElementUtilities();
+        final TreeUtilities tu = controller.getTreeUtilities();
+        final Scope scope = controller.getTreeUtilities().scopeFor(caretOffset);
+        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+            @Override
+            public boolean accept(Element e, TypeMirror type) {
+                if (e.getKind() == ElementKind.METHOD && tu.isAccessible(scope, e, type)) {
+                    Element impl = eu.getImplementationOf((ExecutableElement)e, origin);
+                    return impl == null || (!impl.getModifiers().contains(Modifier.FINAL) && impl.getEnclosingElement() != origin);                    
                 }
+                return false;
             }
-            List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-            for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
-                descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(),
-                        false, false));
+        };
+        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
+        for (ExecutableElement method : ElementFilter.methodsIn(eu.getMembers(field.asType(), acceptor))) {
+            List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
+            if (descriptions == null) {
+                descriptions = new ArrayList<ElementNode.Description>();
+                map.put(method.getEnclosingElement(), descriptions);
             }
-            if (!descriptions.isEmpty()) {
-                Collections.reverse(descriptions);
-            }
-            return ElementNode.Description.create(descriptions);
+            descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
         }
-        
-        return null;
+        List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+        for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
+            descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(),
+                    false, false));
+        }
+        if (!descriptions.isEmpty()) {
+            Collections.reverse(descriptions);
+        }
+        return ElementNode.Description.create(descriptions);
     }
     
     static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods, int offset) {
@@ -317,10 +323,10 @@ public class DelegateMethodGenerator implements CodeGenerator {
         TreeMaker make = wc.getTreeMaker();
         
         boolean useThisToDereference = false;
-        String delegateName = delegate.getSimpleName().toString();
+        Name delegateName = delegate.getSimpleName();
         
         for (VariableElement ve : method.getParameters()) {
-            if (delegateName.equals(ve.getSimpleName().toString())) {
+            if (delegateName.contentEquals(ve.getSimpleName())) {
                 useThisToDereference = true;
                 break;
             }
@@ -334,11 +340,11 @@ public class DelegateMethodGenerator implements CodeGenerator {
             args.add(make.Identifier(ve.getSimpleName()));
         }
 
-        ExpressionTree methodSelect = useThisToDereference ? make.MemberSelect(make.Identifier("this"), delegate.getSimpleName()) : make.Identifier(delegate.getSimpleName()); //NOI18N
+        ExpressionTree methodSelect = useThisToDereference ? make.MemberSelect(make.Identifier("this"), delegateName) : make.Identifier(delegateName); //NOI18N
         ExpressionTree exp = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(methodSelect, method.getSimpleName()), args);
         StatementTree stmt = method.getReturnType().getKind() == TypeKind.VOID ? make.ExpressionStatement(exp) : make.Return(exp);
         BlockTree body = make.Block(Collections.singletonList(stmt), false);
-        MethodTree prototype = GeneratorUtilities.get(wc).createMethod((DeclaredType)delegate.asType(), method);
+        MethodTree prototype = GeneratorUtilities.get(wc).createMethod(delegate.asType().getKind() == TypeKind.DECLARED ? (DeclaredType)delegate.asType() : type, method);
         
         return make.Method(prototype.getModifiers(), prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), body, (ExpressionTree) prototype.getDefaultValue());
     }

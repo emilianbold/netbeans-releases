@@ -68,10 +68,4 @@ made subject to such option by the copyright holder.
 
     <target name="compile" depends="lib-jar,projectized-common.compile"/>
 
-    <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
-        <locjar jarfile="${netbeans.dest.dir}/ide/modules/ext/org-netbeans-tax.jar"
-                basedir="${nb_all}/translatedfiles/src/${module.name}/lib"
-                compress="${build.package.compress}"/>
-    </target>
-
 </project>

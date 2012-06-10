@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.List;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -48,13 +50,13 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class TraitConflictResolutionDeclaration extends Statement {
     private final Expression preferredTraitName;
     private final Identifier methodName;
-    private final Expression suppressedTraitName;
+    private final List<Expression> suppressedTraitNames;
 
-    public TraitConflictResolutionDeclaration(final int start, final int end, final Expression preferredTraitName, final Identifier methodName, final Expression suppressedTraitName) {
+    public TraitConflictResolutionDeclaration(final int start, final int end, final Expression preferredTraitName, final Identifier methodName, final List<Expression> suppressedTraitNames) {
         super(start, end);
         this.preferredTraitName = preferredTraitName;
         this.methodName = methodName;
-        this.suppressedTraitName = suppressedTraitName;
+        this.suppressedTraitNames = suppressedTraitNames;
     }
 
     public Expression getPreferredTraitName() {
@@ -65,8 +67,8 @@ public class TraitConflictResolutionDeclaration extends Statement {
         return methodName;
     }
 
-    public Expression getSuppressedTraitName() {
-        return suppressedTraitName;
+    public List<Expression> getSuppressedTraitNames() {
+        return suppressedTraitNames;
     }
 
     @Override

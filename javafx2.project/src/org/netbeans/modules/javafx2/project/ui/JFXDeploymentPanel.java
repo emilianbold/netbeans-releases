@@ -375,7 +375,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelSigning.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelSigning.text")); // NOI18N
 
         labelSigningMessage.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelSigningMessage.text")); // NOI18N
-        labelSigningMessage.setPreferredSize(new java.awt.Dimension(170, 14));
+        labelSigningMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -410,7 +410,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelCustomJS.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelCustomJS.text")); // NOI18N
 
         labelCustomJSMessage.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelCustomJSMessage.text")); // NOI18N
-        labelCustomJSMessage.setPreferredSize(new java.awt.Dimension(170, 14));
+        labelCustomJSMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -445,7 +445,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelDownloadMode.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelDownloadMode.text")); // NOI18N
 
         labelDownloadModeMessage.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelDownloadModeMessage.text")); // NOI18N
-        labelDownloadModeMessage.setPreferredSize(new java.awt.Dimension(170, 14));
+        labelDownloadModeMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;

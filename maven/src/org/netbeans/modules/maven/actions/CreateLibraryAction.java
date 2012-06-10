@@ -97,6 +97,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     private Lookup.Result<DependencyNode> result;
 
     @Messages("ACT_Library=Create Library")
+    @java.lang.SuppressWarnings("LeakingThisInConstructor")
     public CreateLibraryAction(Lookup lkp) {
         this.lookup = lkp;
         putValue(NAME, ACT_Library());
@@ -156,7 +157,6 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         try {
             MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
             int index = 1;
-            List<Artifact> failed = new ArrayList<Artifact>();
             List<URI> classpathVolume = new ArrayList<URI>();
             List<URI> javadocVolume = new ArrayList<URI>();
             List<URI> sourceVolume = new ArrayList<URI>();
@@ -166,7 +166,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             if (copyTo != null) {
                 //resolve there to copy files
                 URL libRoot = libraryManager.getLocation();
-                File base = null;
+                File base;
                 if (libRoot != null) {
                     try {
                         base = new File(libRoot.toURI());
@@ -242,7 +242,6 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                     }
 
                 } catch (Exception ex) {
-                    failed.add(a);
                     Logger.getLogger(CreateLibraryAction.class.getName()).log(Level.FINE, "Failed to download artifact", ex);
                 }
                 index = index + (allSourceAndJavadoc ? 3 : 1);
@@ -254,6 +253,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 Exceptions.printStackTrace(ex);
             }
         } catch (ThreadDeath d) { // download interrupted
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }
         } finally {
             handle.finish();
         }
