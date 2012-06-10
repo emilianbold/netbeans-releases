@@ -203,6 +203,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     // MouseListener implementation --------------------------------------------
     
+    @Override
     public void mouseClicked(MouseEvent e) {
         Point p = e.getPoint();
         TreePath path = errorTree.getPathForLocation(e.getPoint().x, e.getPoint().y);
@@ -217,20 +218,27 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         }
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {}
 
+    @Override
     public void mouseExited(MouseEvent e) {}
 
+    @Override
     public void mousePressed(MouseEvent e) {}
 
+    @Override
     public void mouseReleased(MouseEvent e) {}
     
     // KeyListener implementation ----------------------------------------------
 
+    @Override
     public void keyTyped(KeyEvent e) {}
 
+    @Override
     public void keyReleased(KeyEvent e) {}
 
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER ) {
 
@@ -247,6 +255,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     // TreeSelectionListener implementation ------------------------------------
     
+    @Override
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
@@ -295,6 +304,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     
     // ActionListener implementation -------------------------------------------
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if( errorTree.getSelectionPath() == null )
             return;
@@ -313,6 +323,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
    
     // ChangeListener implementation -------------------------------------------
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         // System.out.println("Task list box changed ");
     }
@@ -422,39 +433,48 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         }
         
+        @Override
         protected void putSpi(String key, String value) {
             map.put(key, value);            
         }
 
+        @Override
         protected String getSpi(String key) {
             return (String)map.get(key);                    
         }
 
+        @Override
         protected void removeSpi(String key) {
             map.remove(key);
         }
 
+        @Override
         protected void removeNodeSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected String[] keysSpi() throws BackingStoreException {
             String array[] = new String[map.keySet().size()];
             return map.keySet().toArray( array );
         }
 
+        @Override
         protected String[] childrenNamesSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected AbstractPreferences childSpi(String name) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void syncSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }

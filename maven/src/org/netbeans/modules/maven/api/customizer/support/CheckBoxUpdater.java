@@ -48,7 +48,6 @@ import javax.swing.JCheckBox;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import static org.netbeans.modules.maven.api.customizer.support.Bundle.*;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**

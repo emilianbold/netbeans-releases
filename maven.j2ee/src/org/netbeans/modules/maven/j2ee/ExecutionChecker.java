@@ -331,6 +331,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             logger = log;
         }
 
+        @Override
         public void log(String string) {
             logger.println(string);
         }

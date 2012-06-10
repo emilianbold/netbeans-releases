@@ -54,6 +54,7 @@ public class TestOutputListenerProviderTest extends TestCase {
         super(testName);
     }
    
+    @Override
     protected void setUp() throws java.lang.Exception {
         provider = new TestOutputListenerProvider();
     }

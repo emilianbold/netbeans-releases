@@ -82,6 +82,7 @@ public class PersistenceScopeImpl implements PersistenceScopeImplementation
      * property access to the project's persistence.xml
      * @return the persistence.xml file used in this project or null
      */
+    @Override
     public FileObject getPersistenceXml()
     {
         FileObject location = locationProvider.getLocation();
@@ -97,6 +98,7 @@ public class PersistenceScopeImpl implements PersistenceScopeImplementation
      * property access to the persistence project classpath
      * @return the classpath provided by the PersistenceClasspathProvider
      */
+    @Override
     public ClassPath getClassPath()
     {
         return getProjectSourcesClassPath();
@@ -115,6 +117,7 @@ public class PersistenceScopeImpl implements PersistenceScopeImplementation
     }
     
 
+    @Override
     public MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(String persistenceUnitName) {
         MetadataModel<EntityMappingsMetadata> metadataModel = modelHelper.getEntityMappingsModel(persistenceUnitName);
         if (metadataModel == null) {

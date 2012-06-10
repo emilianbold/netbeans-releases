@@ -132,6 +132,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
     /**
      * Refresh content according to content of mounted catalog.
      */
+    @Override
     public void refresh() {
     }
     

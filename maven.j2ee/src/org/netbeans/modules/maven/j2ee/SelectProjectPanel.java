@@ -137,10 +137,12 @@ public class SelectProjectPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(this);
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Node[] selNodes = manager.getSelectedNodes();
             if (selNodes.length == 1) {
@@ -162,6 +164,7 @@ public class SelectProjectPanel extends javax.swing.JPanel {
         }
 
         /** Loads dependencies outside EQ thread, updates tab state in EQ */
+        @Override
         public void run() {
             Project[] prjs = OpenProjects.getDefault().getOpenProjects();
             final List<Node> toRet = new ArrayList<Node>();
@@ -176,6 +179,7 @@ public class SelectProjectPanel extends javax.swing.JPanel {
                 }
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     Children.Array ch = new Children.Array();
                     ch.add(toRet.toArray(new Node[0]));
@@ -194,6 +198,7 @@ public class SelectProjectPanel extends javax.swing.JPanel {
             });
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             // empty impl, disables default action
         }

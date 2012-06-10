@@ -787,6 +787,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             p.setProperty("ignore.failing.tests", "true");  //NOI18N
             targetNames = getCommands().get(command);
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+            p.setProperty("ignore.failing.tests", "true");  //NOI18N
             final FileObject[] files = findTestSources(context, true);
             if (files == null) {
                 return null;
