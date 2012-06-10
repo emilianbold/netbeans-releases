@@ -281,6 +281,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
     private void byCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_byCategoryActionPerformed
         manager.setRootContext(Nodes.constructSemiLogicalView(analysisResult, byCategory.isSelected()));
+        updatePrevNextButtonsForNewRootContext();
     }//GEN-LAST:event_byCategoryActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -337,9 +338,18 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
             btv.expandAll();
         }
         refreshButton.setEnabled(context != Lookup.EMPTY);
+        updatePrevNextButtonsForNewRootContext();
+    }
+    
+    private void updatePrevNextButtonsForNewRootContext() {
         nodesForNext = null;
+        seenNodes = null;
         empty = analysisResult.provider2Hints.isEmpty();
         fireActionEnabledChange();
+        
+        if (!byCategory.isSelected() && nextAction.isEnabled()) {
+            nextAction.actionPerformed(null);
+        }
     }
 
     void fireActionEnabledChange() {
