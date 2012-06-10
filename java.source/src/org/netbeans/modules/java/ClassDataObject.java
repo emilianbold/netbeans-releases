@@ -148,12 +148,14 @@ public final class ClassDataObject extends MultiDataObject {
                         } else {
                             BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
-                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle, new AtomicBoolean())) {
-                                if (resourceName == null) {
-                                    resourceName = fo.getName();
+                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle, cancel)) {
+                                if (!cancel.get()) {
+                                    if (resourceName == null) {
+                                        resourceName = fo.getName();
+                                    }
+                                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class, "TXT_NoSources",
+                                            resourceName.replace('/', '.'))); //NOI18N
                                 }
-                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class, "TXT_NoSources",
-                                        resourceName.replace('/', '.'))); //NOI18N
                             }
                         }
                     } catch (DataObjectNotFoundException nf) {
@@ -163,7 +165,7 @@ public final class ClassDataObject extends MultiDataObject {
             },
             NbBundle.getMessage(ClassDataObject.class, "TXT_OpenClassFile"),
             cancel,
-            true);
+            false);
         }
     }
 }

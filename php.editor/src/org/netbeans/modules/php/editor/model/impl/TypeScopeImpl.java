@@ -281,4 +281,46 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return this.getPhpElementKind().equals(PhpElementKind.TRAIT);
     }
 
+    @Override
+    public final boolean isTraited() {
+        return this.getPhpElementKind().equals(PhpElementKind.TRAIT) || this.getPhpElementKind().equals(PhpElementKind.CLASS);
+    }
+
+    @Override
+    public boolean isSuperTypeOf(final TypeScope subType) {
+        boolean result = false;
+        for (InterfaceScope interfaceScope : subType.getSuperInterfaceScopes()) {
+            if (interfaceScope.equals(this)) {
+                result = true;
+            } else {
+                result = isSuperTypeOf(interfaceScope);
+            }
+            if (result == true) {
+                break;
+            }
+        }
+        if (result == false && !subType.isInterface()) {
+            result = subType.isSubTypeOf(this);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isSubTypeOf(final TypeScope superType) {
+        boolean result = false;
+        if (superType.isInterface()) {
+            for (InterfaceScope interfaceScope : getSuperInterfaceScopes()) {
+                if (interfaceScope.equals(superType)) {
+                    result = true;
+                } else {
+                    result = interfaceScope.isSubTypeOf(superType);
+                }
+                if (result == true) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
 }

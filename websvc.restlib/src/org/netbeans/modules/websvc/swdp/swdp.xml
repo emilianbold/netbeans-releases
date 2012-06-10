@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.8.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_1.0_api.jar!/</resource>
     </volume>  
      <volume>
         <type>javadoc</type>

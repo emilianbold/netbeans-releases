@@ -148,31 +148,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         return hash;
     }
 
-    private CsmObject getTemplateParameterDefultValue(CsmTemplate declaration, CsmTemplateParameter param, int index) {
-        CsmObject res = param.getDefaultValue();
-        if (res != null) {
-            return res;
-        }
-        if (CsmKindUtilities.isClass(declaration)) {
-            CsmClass cls = (CsmClass) declaration;
-            CsmClassForwardDeclaration fdecl;
-            fdecl = findCsmClassForwardDeclaration(cls.getContainingFile(), cls);
-            if (fdecl != null) {
-                List<CsmTemplateParameter> templateParameters = ((CsmTemplate) fdecl).getTemplateParameters();
-                if (templateParameters.size() > index) {
-                    CsmTemplateParameter p = templateParameters.get(index);
-                    if (p != null) {
-                        res = p.getDefaultValue();
-                        if (res != null) {
-                            return res;
-                        }
-                    }
-                }
-            }
-        }
-        return res;
-    }
-
     private CsmClassForwardDeclaration findCsmClassForwardDeclaration(CsmScope scope, CsmClass cls) {
         if (scope != null) {
             if (CsmKindUtilities.isFile(scope)) {
@@ -424,6 +399,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 return newClass;
             } else if (member instanceof CsmClassForwardDeclaration) {
                 return new ClassForward((CsmClassForwardDeclaration)member, getMapping());
+            } else if (member instanceof CsmEnumForwardDeclaration) {
+                return new EnumForward((CsmEnumForwardDeclaration)member, getMapping());
             } else if (member instanceof CsmEnum) {
                 // no need to instantiate enums?
                 return member;
@@ -817,6 +794,48 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         @Override
         public String toString() {
             return "INSTANTIATION OF CLASS FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+        }
+    }
+
+    private static class EnumForward extends Instantiation<CsmEnumForwardDeclaration> implements CsmEnumForwardDeclaration, CsmMember {
+
+        private CsmEnum csmEnum = null;
+
+        public EnumForward(CsmEnumForwardDeclaration forward, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(forward, mapping);
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return ((CsmMember) declaration).getContainingClass();
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return ((CsmMember) declaration).getVisibility();
+        }
+
+        @Override
+        public boolean isStatic() {
+            return ((CsmMember) declaration).isStatic();
+        }
+
+        @Override
+        public CsmEnum getCsmEnum() {
+            if (csmEnum == null) {
+                CsmEnum declClassifier = declaration.getCsmEnum();
+                if (CsmKindUtilities.isTemplate(declClassifier)) {
+                    csmEnum = (CsmEnum) Instantiation.create((CsmTemplate) declClassifier, getMapping());
+                } else {
+                    csmEnum = declClassifier;
+                }
+            }
+            return csmEnum;
+        }
+
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF ENUM FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
 
@@ -1633,7 +1652,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                     sb.append(TypeImpl.getCanonicalText(((CsmTypeBasedSpecializationParameter) param).getType()));
                 }
                 if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
-                    sb.append(((CsmExpressionBasedSpecializationParameter) param).getText());
+                    sb.append(param.getText());
+                }
+                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                    sb.append(param.getText());
                 }
             }
             TemplateUtils.addGREATERTHAN(sb);

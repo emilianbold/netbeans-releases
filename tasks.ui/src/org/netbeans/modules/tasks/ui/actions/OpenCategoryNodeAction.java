@@ -42,7 +42,6 @@
 package org.netbeans.modules.tasks.ui.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 
@@ -50,17 +49,21 @@ import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
  *
  * @author jpeska
  */
-public class OpenCategoryNodeAction extends AbstractAction {
+public class OpenCategoryNodeAction extends CategoryAction {
 
-    private final CategoryNode categoryNode;
-
-    public OpenCategoryNodeAction(CategoryNode categoryNode) {
-        super(org.openide.util.NbBundle.getMessage(OpenCategoryNodeAction.class, "CTL_OpenNode")); //NOI18N
-        this.categoryNode = categoryNode;
+    public OpenCategoryNodeAction(CategoryNode... categoryNodes) {
+        super(org.openide.util.NbBundle.getMessage(OpenCategoryNodeAction.class, "CTL_OpenNode"), categoryNodes); //NOI18N
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        DashboardViewer.getInstance().setCategoryOpened(categoryNode, true);
+        for (CategoryNode categoryNode : getCategoryNodes()) {
+            DashboardViewer.getInstance().setCategoryOpened(categoryNode, true);
+        }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

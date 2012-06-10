@@ -76,6 +76,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
     public MavenFileLocator(Project project) {
         this.project = project;
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 synchronized (LOCK) {
                     classpath = null;
@@ -84,6 +85,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
         });
     }
 
+    @Override
     public FileObject find(String filename) {
         if (filename == null) {
             return null;
@@ -99,7 +101,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
     }
 
     private ClassPath getProjectClasspath(Project p) {
-        ClassPath result = null;
+        ClassPath result;
         ClassPathProvider cpp = p.getLookup().lookup(ClassPathProvider.class);
         Set<FileObject> roots = new HashSet<FileObject>();
         Sources sources = ProjectUtils.getSources(p);
@@ -121,11 +123,8 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
         for (ClassPath cp : setCP) {
             FileObject[] rootsCP = cp.getRoots();
             for (FileObject fo : rootsCP) {
-                try {
-                    FileObject[] aaa = SourceForBinaryQuery.findSourceRoots(fo.getURL()).getRoots();
-                    roots.addAll(Arrays.asList(aaa));
-                } catch (Exception e) {
-                }
+                FileObject[] aaa = SourceForBinaryQuery.findSourceRoots(fo.toURL()).getRoots();
+                roots.addAll(Arrays.asList(aaa));
             }
         }
         JavaPlatform platform = p.getLookup().lookup(ActiveJ2SEPlatformProvider.class).getJavaPlatform();

@@ -264,8 +264,8 @@ public final class ResourceBundles {
      * JSF configuration files in a web module.
      */
     public List<ResourceBundle> getBundles(ResolverContext context) {
-        List<ResourceBundle> bundles =  webModule != null ? ELPlugin.Query.getResourceBundles(webModule.getDocumentBase(), context) : Collections.<ResourceBundle>emptyList();
-        return bundles;
+        FileObject docBase = webModule != null ? webModule.getDocumentBase() : null;
+        return docBase != null ? ELPlugin.Query.getResourceBundles(docBase, context) : Collections.<ResourceBundle>emptyList();
     }
 
      /*

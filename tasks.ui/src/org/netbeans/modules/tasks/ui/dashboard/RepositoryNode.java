@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.actions.CloseRepositoryNodeAction;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -56,7 +55,6 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.actions.*;
-import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -105,10 +103,17 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     @Override
     protected List<TreeListNode> createChildren() {
         if (refresh) {
-            //TODO refresh
-            updateNodes();
-            refresh = false;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    for (QueryNode queryNode : queryNodes) {
+                        queryNode.refreshContent();
+                    }
+                    refresh = false;
+                }
+            });
         }
+        loaded = true;
         List<QueryNode> children = getFilteredQueryNodes();
         boolean expand = DashboardViewer.getInstance().expandNodes();
         for (QueryNode queryNode : children) {
@@ -119,43 +124,30 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     }
 
     @Override
-    protected void childrenLoadingFinished() {
-        if (!loaded) {
-//            SwingUtilities.invokeLater(new Runnable() {
-//                @Override
-//                public void run() {
-            List<QueryNode> queries = getFilteredQueryNodes();
-            for (QueryNode queryNode : queries) {
-                queryNode.setExpanded(true);
-            }
-//                }
-//            });
-            loaded = true;
-        }
-    }
-
-    @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         synchronized (LOCK) {
             if (panel == null) {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
-                final JLabel iconLabel = new JLabel(getRepositoryIcon()); //NOI18N
+                final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
+                if (!isOpened()) {
+                    iconLabel.setEnabled(false);
+                }
                 panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
                 lblName = new TreeLabel(getRepository().getDisplayName());
                 panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
                 panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 if (isOpened()) {
-                    btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new DummyAction()); //NOI18N
+                    btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
                     btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
                     panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-                    btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(getRepository())); //NOI18N
+                    btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(this)); //NOI18N
                     btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
                     panel.add(btnSearch, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-                    btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(getRepository())); //NOI18N
+                    btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
                     btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
                     panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
                 }
@@ -190,10 +182,47 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     @Override
     public final Action[] getPopupActions() {
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        RepositoryNode[] repositoryNodes = new RepositoryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof RepositoryNode) {
+                repositoryNodes[i] = (RepositoryNode)treeListNode;
+            } else {
+                return null;
+            }
+        }
         List<Action> actions = new ArrayList<Action>();
-        actions.add(getRepositoryAction());
-        actions.addAll(Actions.getRepositoryPopupActions(this));
+        Action repositoryAction = getRepositoryAction(repositoryNodes);
+        if (repositoryAction != null) {
+            actions.add(repositoryAction);
+        }
+        actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private Action getRepositoryAction(RepositoryNode... repositoryNodes) {
+        boolean allOpened = true;
+        boolean allClosed = true;
+        for (RepositoryNode repositoryNode : repositoryNodes) {
+            if (repositoryNode.isOpened()) {
+                allClosed = false;
+            } else {
+                allOpened = false;
+            }
+        }
+        if (allOpened) {
+            if (closeRepositoryAction == null) {
+                closeRepositoryAction = new CloseRepositoryNodeAction(this);
+            }
+            return closeRepositoryAction;
+        } else if (allClosed){
+            if (openRepositoryAction == null) {
+                openRepositoryAction = new OpenRepositoryNodeAction(this);
+            }
+            return openRepositoryAction;
+        }
+        return null;
     }
 
     public List<QueryNode> getQueryNodes() {
@@ -273,7 +302,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     void updateContent() {
         updateNodes();
-        fireContentChanged();
         refreshChildren();
     }
 
@@ -281,21 +309,15 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         return repository.getQueries();
     }
 
-    private Action getRepositoryAction() {
-        if (isOpened()) {
-            if (closeRepositoryAction == null) {
-                closeRepositoryAction = new CloseRepositoryNodeAction(this);
-            }
-            return closeRepositoryAction;
-        } else {
-            if (openRepositoryAction == null) {
-                openRepositoryAction = new OpenRepositoryNodeAction(this);
-            }
-            return openRepositoryAction;
-        }
+    ImageIcon getIcon() {
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/remote_repo.png", true);
     }
 
-    ImageIcon getRepositoryIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/remote_repo.png", true);
+    public void refreshContent() {
+        refresh = true;
+        if (!isExpanded()) {
+            setExpanded(true);
+        }
+        updateContent();
     }
 }

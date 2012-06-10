@@ -88,8 +88,8 @@ public class WebSetup extends PerformanceTestCase2 {
         }
        // CommonUtilities.buildProject("PerformanceTestFolderWebApp");
     }
-        
+    /* not needed for 7.2   
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
-    }
+    }*/
 }        

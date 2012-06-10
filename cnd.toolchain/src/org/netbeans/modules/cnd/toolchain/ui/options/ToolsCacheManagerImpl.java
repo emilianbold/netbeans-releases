@@ -52,20 +52,21 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -77,9 +78,9 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
 
     private static final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
     private ServerUpdateCache serverUpdateCache;
-    private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
+    private final HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
             new HashMap<ExecutionEnvironment, CompilerSetManager>();
-    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private final AtomicBoolean canceled = new AtomicBoolean(false);
     private Cancellable longTaskCancelable;
 
     public ToolsCacheManagerImpl(boolean initialize) {
@@ -120,21 +121,28 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
     }
 
     @Override
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
-        CompilerSetManagerImpl out = (CompilerSetManagerImpl) copiedManagers.get(env);
+    public CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
+        CompilerSetManagerImpl out;
+        synchronized(canceled) {
+            out = (CompilerSetManagerImpl) copiedManagers.get(env);
+        }
         if (out == null) {
             out = (CompilerSetManagerImpl) CompilerSetManagerAccessorImpl.getDeepCopy(env, initialize);
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSetImpl.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }
-            copiedManagers.put(env, out);
+            synchronized(canceled) {
+                copiedManagers.put(env, out);
+            }
         }
         return out;
     }
 
     @Override
-    public synchronized void addCompilerSetManager(CompilerSetManager newCsm) {
-        copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
+    public void addCompilerSetManager(CompilerSetManager newCsm) {
+        synchronized(canceled) {
+            copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
+        }
     }
 
     public CompilerSetManagerImpl restoreCompilerSets(CompilerSetManagerImpl oldCsm) {
@@ -287,31 +295,37 @@ public final class ToolsCacheManagerImpl extends ToolsCacheManager {
         return serverUpdateCache != null;
     }
 
-    public synchronized void clear() {
-        canceled.set(false);
-        serverUpdateCache = null;
-        copiedManagers.clear();
+    public void clear() {
+        synchronized(canceled) {
+            canceled.set(false);
+            serverUpdateCache = null;
+            copiedManagers.clear();
+        }
     }
 
-    public synchronized void cancel() {
-        canceled.set(true);
-        Cancellable aLongTaskCancelable = longTaskCancelable;
-        if (aLongTaskCancelable != null) {
-            aLongTaskCancelable.cancel();
+    public void cancel() {
+        synchronized(canceled) {
+            canceled.set(true);
+            Cancellable aLongTaskCancelable = longTaskCancelable;
+            if (aLongTaskCancelable != null) {
+                aLongTaskCancelable.cancel();
+            }
+            serverUpdateCache = null;
+            copiedManagers.clear();
         }
-        serverUpdateCache = null;
-        copiedManagers.clear();
     }
 
     private synchronized void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
         Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
-        for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
-            if (liveServers == null || liveServers.contains(copiedServer)) {
-                allCSMs.add(copiedManagers.get(copiedServer));
+        synchronized(canceled) {
+            for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
+                if (liveServers == null || liveServers.contains(copiedServer)) {
+                    allCSMs.add(copiedManagers.get(copiedServer));
+                }
             }
+            copiedManagers.clear();
         }
         CompilerSetManagerAccessorImpl.setManagers(allCSMs, liveServers);
-        copiedManagers.clear();
     }
 
     public static void addChangeListener(ChangeListener l) {

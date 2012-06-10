@@ -62,12 +62,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import static org.netbeans.modules.project.ui.Bundle.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -87,6 +89,7 @@ public class Hacks {
      * Show name of project corresponding to selection in Main Window title bar.
      * @author Jesse Glick
      */
+    @Messages("LBL_MultipleProjects=Multiple Projects")
     static void keepCurrentProjectNameUpdated() {
         final TopComponent.Registry r = TopComponent.getRegistry();
         final AtomicReference<PropertyChangeListener> displayNameListener = new AtomicReference<PropertyChangeListener>();
@@ -137,7 +140,7 @@ public class Hacks {
                 } else if (projects.isEmpty()) {
                     pname = null;
                 } else {
-                    pname = NbBundle.getMessage(Hacks.class, "LBL_MultipleProjects");
+                    pname = LBL_MultipleProjects();
                 }
                 EventQueue.invokeLater(new Runnable() {
                     public @Override void run() {

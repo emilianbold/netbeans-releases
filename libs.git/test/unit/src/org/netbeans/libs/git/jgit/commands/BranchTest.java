@@ -64,6 +64,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  *
@@ -388,5 +389,25 @@ public class BranchTest extends AbstractGitTestCase {
         assertTrue(b.getTrackedBranch().isRemote());
         b = branches.get("origin/master");
         assertNull(b.getTrackedBranch());
+    }
+    
+    public void testListBranches_Issue213538 () throws Exception {
+        GitClient client = getClient(workDir);
+        File f = new File(workDir, "f");
+        write(f, "init");
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        // cannot end with a RuntimeException
+        File configFile = new File(Utils.getMetadataFolder(workDir), Constants.CONFIG);
+        String config = read(configFile);
+        config += "\n\tbla:\n";
+        write(configFile, config);
+        Thread.sleep(1100);
+        try {
+            client.getBranches(false, NULL_PROGRESS_MONITOR);
+        } catch (GitException ex) {
+            assertEquals("It seems the config file for repository at [" + workDir + "] is corrupted.\nEnsure it's valid.", ex.getMessage());
+        }
     }
 }

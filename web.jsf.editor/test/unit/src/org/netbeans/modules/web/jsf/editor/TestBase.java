@@ -94,7 +94,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
-import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -383,7 +382,6 @@ public class TestBase extends CslTestBase {
             InstanceContent ic = new InstanceContent();
             ic.add(classpathProvider);
             ic.add(sources);
-            ic.add(new JsfSupportHandle());
 
             this.lookup = new AbstractLookup(ic);
 

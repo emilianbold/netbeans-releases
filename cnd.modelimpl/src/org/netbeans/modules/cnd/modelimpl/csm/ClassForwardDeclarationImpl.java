@@ -117,7 +117,6 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     public static ForwardClass createForwardClassIfNeeded(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global) {
         ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, false);
-        cfdi.createForwardClassIfNeed(ast, scope, global);
         return cfdi.createForwardClassIfNeed(ast, scope, global);
     }
 

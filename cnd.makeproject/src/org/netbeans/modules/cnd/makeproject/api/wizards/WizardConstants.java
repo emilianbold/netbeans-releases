@@ -61,7 +61,6 @@ public class WizardConstants {
     public static final String MAIN_CLASS = "mainClass"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
     public static final String PROPERTY_SIMPLE_MODE = "simpleMode"; // Boolean // NOI18N
-    public static final String PROPERTY_FULL_REMOTE = "fullRemote"; // Boolean // NOI18N
     public static final String PROPERTY_HOST_UID = "hostUID"; // String // NOI18N
     public static final String PROPERTY_SOURCE_HOST_ENV = "sourceHostEnv"; // ExecutionEnvironment // NOI18N
     public static final String PROPERTY_TOOLCHAIN = "toolchain"; // CompilerSet // NOI18N
@@ -94,6 +93,8 @@ public class WizardConstants {
     public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
     public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N
     public static final String PROPERTY_SIMPLE_MODE_FOLDER = "simpleModeFolder"; // String // NOI18N
+
+    public static final String PROPERTY_REMOTE_FILE_SYSTEM_ENV = "REMOTE_FILE_ENV"; //NOI18N
     
     public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {
         ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SOURCE_HOST_ENV);

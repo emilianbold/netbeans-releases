@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -80,7 +81,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
-public class BasicPomMD implements MultiViewDescription {
+public class BasicPomMD implements MultiViewDescription, Serializable {
 
     private static final RequestProcessor RP = new RequestProcessor(BasicPomMD.class);
 

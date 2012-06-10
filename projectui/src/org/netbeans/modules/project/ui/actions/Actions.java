@@ -54,15 +54,14 @@ import org.netbeans.spi.project.ui.support.FileActionPerformer;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Factory for all kinds of actions used in projectui and
  *projectuiapi.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.ActionsFactory.class)
+@ServiceProvider(service=ActionsFactory.class)
 public class Actions implements ActionsFactory {
     
     //private static final Actions INSTANCE = new Actions();  
@@ -80,25 +79,25 @@ public class Actions implements ActionsFactory {
     private static Action MOVE_PROJECT;
     private static Action RENAME_PROJECT;
 
-    public synchronized Action setAsMainProjectAction() {
+    @Override public synchronized Action setAsMainProjectAction() {
         if ( SET_AS_MAIN_PROJECT == null ) {
             SET_AS_MAIN_PROJECT = new SetMainProject();
         }
         return SET_AS_MAIN_PROJECT;
     }
     
-    public synchronized Action customizeProjectAction() {
+    @Override public synchronized Action customizeProjectAction() {
         if ( CUSTOMIZE_PROJECT == null ) {
             CUSTOMIZE_PROJECT = new CustomizeProject();
         }
         return CUSTOMIZE_PROJECT;
     }
     
-    public synchronized Action openSubprojectsAction() {
+    @Override public synchronized Action openSubprojectsAction() {
         return SystemAction.get(OpenSubprojects.class);
     }
     
-    public Action closeProjectAction() {
+    @Override public Action closeProjectAction() {
         return closeProject();
     }
 
@@ -109,7 +108,7 @@ public class Actions implements ActionsFactory {
         return CLOSE_PROJECT;        
     }
     
-    public Action newFileAction() {
+    @Override public Action newFileAction() {
         return newFile();
     }
 
@@ -120,44 +119,44 @@ public class Actions implements ActionsFactory {
         return NEW_FILE;
     }
     
-    public Action deleteProjectAction() {
+    @Override public Action deleteProjectAction() {
         return deleteProject();
     }
 
-    public Action copyProjectAction() {
+    @Override public Action copyProjectAction() {
         return copyProject();
     }
     
-    public Action moveProjectAction() {
+    @Override public Action moveProjectAction() {
         return moveProject();
     }
     
-    public Action renameProjectAction() {
+    @Override public Action renameProjectAction() {
         return renameProject();
     }
     
-    public synchronized Action newProjectAction() {
+    @Override public synchronized Action newProjectAction() {
         return new NewProject();
     }
     
-    public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon ) {
+    @Override public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon ) {
         return new ProjectAction( command, namePattern, icon, null );
     }
     
-    public Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
+    @Override public Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
         return new ProjectAction( performer, namePattern, icon, null );
     }
     
-    public Action mainProjectCommandAction(String command, String name, Icon icon) {
+    @Override public Action mainProjectCommandAction(String command, String name, Icon icon) {
         return new MainProjectAction( command, name, icon );
     }
     
-    public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
+    @Override public Action mainProjectSensitiveAction(ProjectActionPerformer performer, String name, Icon icon) {
         return new MainProjectAction( performer, name, icon );
     }
 
     
-    public Action fileCommandAction(String command, String name, Icon icon) {
+    @Override public Action fileCommandAction(String command, String name, Icon icon) {
         return new FileAction( command, name, icon, null );
     }
 
@@ -182,7 +181,7 @@ public class Actions implements ActionsFactory {
             ActionProvider.COMMAND_TEST,
             NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name"),
             NbBundle.getMessage(Actions.class, "LBL_TestProjectAction_Name_popup"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testProject.png", false),
+            null,
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testProject.png"); //NOI18N
         a.putValue("noIconInMenu", Boolean.TRUE); //NOI18N
@@ -195,7 +194,7 @@ public class Actions implements ActionsFactory {
             ActionProvider.COMMAND_BUILD, 
             NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name"),
             NbBundle.getMessage(Actions.class, "LBL_BuildProjectAction_Name_popup"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/buildCurrentProject.gif", false),
+            null,
             null );  
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildCurrentProject.gif"); //NOI18N
         return a;
@@ -206,7 +205,7 @@ public class Actions implements ActionsFactory {
                 ActionProvider.COMMAND_CLEAN,
                 NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name"),
                 NbBundle.getMessage(Actions.class, "LBL_CleanProjectAction_Name_popup"),
-                ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif", false),
+                null,
                 null );
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/cleanCurrentProject.gif"); //NOI18N
         return a;
@@ -217,7 +216,7 @@ public class Actions implements ActionsFactory {
             ActionProvider.COMMAND_REBUILD,
             NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name"),
             NbBundle.getMessage(Actions.class, "LBL_RebuildProjectAction_Name_popup"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif", false),
+            null,
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildCurrentProject.gif"); //NOI18N
         return a;
@@ -228,7 +227,7 @@ public class Actions implements ActionsFactory {
             ActionProvider.COMMAND_RUN, 
             NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name"),
             NbBundle.getMessage(Actions.class, "LBL_RunProjectAction_Name_popup"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runCurrentProject.gif", false),
+            null,
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runCurrentProject.gif"); //NOI18N
         return a;
@@ -301,7 +300,7 @@ public class Actions implements ActionsFactory {
         Action a = new FileAction(
             ActionProvider.COMMAND_COMPILE_SINGLE,
             NbBundle.getMessage(Actions.class, "LBL_CompileSingleAction_Name"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/compileSingle.png", true),
+            null,
             null);
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/compileSingle.png"); //NOI18N
         a.putValue("noIconInMenu", true); //NOI18N
@@ -312,7 +311,7 @@ public class Actions implements ActionsFactory {
         Action a = new FileAction(
             ActionProvider.COMMAND_RUN_SINGLE,
             NbBundle.getMessage(Actions.class, "LBL_RunSingleAction_Name"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runSingle.png", true),
+            null,
             null);
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runSingle.png"); //NOI18N
         a.putValue("noIconInMenu", true); //NOI18N
@@ -323,7 +322,7 @@ public class Actions implements ActionsFactory {
         Action a = new FileAction(
             ActionProvider.COMMAND_TEST_SINGLE,
             NbBundle.getMessage(Actions.class, "LBL_TestSingleAction_Name"),
-            ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/testSingle.png", true),
+            null,
             null);
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/testSingle.png"); //NOI18N
         a.putValue("noIconInMenu", true); //NOI18N
@@ -336,7 +335,7 @@ public class Actions implements ActionsFactory {
     public static Action buildMainProject() {
         Action a = new MainProjectAction (
             ActionProvider.COMMAND_BUILD, 
-            NbBundle.getMessage(Actions.class, "LBL_BuildMainProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/buildProject.png", false));  //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_BuildMainProjectAction_Name" ),null);  //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/buildProject.png"); //NOI18N
         return a;
     }
@@ -344,7 +343,7 @@ public class Actions implements ActionsFactory {
     public static Action cleanMainProject() {
         Action a = new MainProjectAction(
                 ActionProvider.COMMAND_CLEAN,
-                NbBundle.getMessage(Actions.class, "LBL_CleanMainProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/cleanProject.gif", false));  //NOI18N
+                NbBundle.getMessage(Actions.class, "LBL_CleanMainProjectAction_Name" ),null);  //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/cleanProject.gif"); //NOI18N
         return a;
     }
@@ -352,7 +351,7 @@ public class Actions implements ActionsFactory {
     public static Action rebuildMainProject() {
         Action a = new MainProjectAction(
             ActionProvider.COMMAND_REBUILD,
-            NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/rebuildProject.png", false)); //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_RebuildMainProjectAction_Name"),null); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/rebuildProject.png"); //NOI18N
         return a;
     }
@@ -360,12 +359,12 @@ public class Actions implements ActionsFactory {
     public static Action runMainProject() {
         Action a = new MainProjectAction(
             ActionProvider.COMMAND_RUN,
-            NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"),ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/runProject.png", false)); //NOI18N
+            NbBundle.getMessage(Actions.class, "LBL_RunMainProjectAction_Name"),null); //NOI18N
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runProject.png"); //NOI18N
         return a;
     }
     
-    public Action setProjectConfigurationAction() {
+    @Override public Action setProjectConfigurationAction() {
         return SystemAction.get(ActiveConfigAction.class);
     }
 

@@ -516,6 +516,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public static boolean isObjectVisibleInFile(CsmFile currentFile, CsmOffsetableDeclaration item) {
         CsmFile file = item.getContainingFile();
+        if (file == null) {
+            return false;
+        }
         if (file.equals(currentFile)) {
             return true;
         }

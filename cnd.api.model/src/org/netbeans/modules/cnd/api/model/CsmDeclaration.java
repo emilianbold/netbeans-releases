@@ -86,6 +86,7 @@ public interface CsmDeclaration extends CsmQualifiedNamedElement,
         USING_DECLARATION,
         
         CLASS_FORWARD_DECLARATION,
+        ENUM_FORWARD_DECLARATION,
 
         CLASS_FRIEND_DECLARATION,
 

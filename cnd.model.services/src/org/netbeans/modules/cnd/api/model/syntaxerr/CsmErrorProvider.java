@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.cnd.api.model.syntaxerr;
 
-import java.util.Iterator;
-import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -55,8 +54,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -64,7 +63,7 @@ import org.openide.util.RequestProcessor;
  * An abstract error provider.
  * @author Vladimir Kvashin
  */
-public abstract class CsmErrorProvider implements NamedEntity {
+public abstract class CsmErrorProvider extends NamedOption {
     private static final boolean TRACE_TASKS = false;
 
     //
@@ -115,11 +114,16 @@ public abstract class CsmErrorProvider implements NamedEntity {
     }
 
     protected boolean validate(CsmErrorProvider.Request request) {
-        return NamedEntityOptions.instance().isEnabled(this) && !request.isCancelled();
+        return NamedOption.getAccessor().getBoolean(getName()) && !request.isCancelled();
+    }
+    
+    @Override
+    public OptionKind getKind() {
+        return OptionKind.Boolean;
     }
 
     @Override
-    public boolean isEnabledByDefault() {
+    public Object getDefaultValue() {
         return true;
     }
 
@@ -173,6 +177,15 @@ public abstract class CsmErrorProvider implements NamedEntity {
             }
         }
 
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
    }
 
     private static class SynchronousMerger extends BaseMerger {
@@ -210,9 +223,9 @@ public abstract class CsmErrorProvider implements NamedEntity {
                                 provider.getErrors(request, response);
                                 if (TRACE_TASKS) {System.err.println("finish "+provider);} //NOI18N
                             } catch (AssertionError ex) {
-                                ex.printStackTrace();
+                                ex.printStackTrace(System.err);
                             } catch (Exception ex) {
-                                ex.printStackTrace();
+                                ex.printStackTrace(System.err);
                             }
                         }
                     }
@@ -234,7 +247,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
     /** default instance */
     private static CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
     
-    public static synchronized  CsmErrorProvider getDefault() {
+    public static synchronized CsmErrorProvider getDefault() {
         return DEFAULT;
     }
 

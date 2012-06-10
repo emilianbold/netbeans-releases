@@ -53,6 +53,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -84,6 +86,8 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     
     private final Project p;
     private final HashMap<String, BinResult> map;
+    private static final Logger LOGGER = Logger.getLogger(MavenForBinaryQueryImpl.class.getName());
+    
 
     public MavenForBinaryQueryImpl(Project proj) {
         p = proj;
@@ -93,7 +97,10 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(event.getPropertyName())) {
                     synchronized (map) {
                         for (BinResult res : map.values()) {
-                            if (!Arrays.equals(res.getCached(), res.getRoots())) {
+                            FileObject[] cached = res.getCached();
+                            FileObject[] current = res.getRoots();
+                            if (!Arrays.equals(cached, current)) {
+                                LOGGER.log(Level.FINE, "SFBQ.Result changed from {0} to {1}", new Object[]{Arrays.toString(cached), Arrays.toString(current)});
                                 res.fireChanged();
                             }
                         }

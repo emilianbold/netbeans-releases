@@ -93,7 +93,7 @@ public class JavacPackageInfo extends SourcePackageInfo {
     public Collection<SourceClassInfo> getClasses() {
         final List<SourceClassInfo> clzs = new ArrayList<SourceClassInfo>();
         
-        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController> () {
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController> () {
             @Override
             public void run(CompilationController cc)
                     throws Exception {
@@ -121,7 +121,7 @@ public class JavacPackageInfo extends SourcePackageInfo {
         final ClassIndex index = cpInfo.getClassIndex();
         final List<SourcePackageInfo> pkgs = new ArrayList<SourcePackageInfo>();
 
-        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>(true) {
             @Override
             public void run(CompilationController cc) {
                 for (String pkgName : index.getPackageNames(getBinaryName() + ".", true, sScope)) { // NOI18N

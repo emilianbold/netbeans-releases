@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,6 +75,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -87,10 +89,12 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 public class ExportZIP extends JPanel {
 
@@ -125,7 +129,9 @@ public class ExportZIP extends JPanel {
                     @Override public void run() {
                         try {
                             if (!build(root, zip)) {
-                                zip.delete();
+                                if (!zip.delete()) {
+                                    throw new IOException("Cannot delete " + zip);
+                                }
                                 return;
                             }
                         } catch (IOException x) {
@@ -204,11 +210,11 @@ public class ExportZIP extends JPanel {
             }
             boolean kidMixed;
             if (mixedSharability) {
-                switch (SharabilityQuery.getSharability(kid)) {
-                case SharabilityQuery.SHARABLE:
+                switch (SharabilityQuery.getSharability(kid.toURI())) {
+                case SHARABLE:
                     kidMixed = false;
                     break;
-                case SharabilityQuery.NOT_SHARABLE:
+                case NOT_SHARABLE:
                     continue;
                 default:
                     kidMixed = true;
@@ -310,6 +316,18 @@ public class ExportZIP extends JPanel {
         initComponents();
         projectCombo.setRenderer(new ProjectCellRenderer());
         projectCombo.setModel(new DefaultComboBoxModel(OpenProjects.getDefault().getOpenProjects()));
+        Collection<? extends Project> selectedProjects = Utilities.actionsGlobalContext().lookupAll(Project.class);
+        if (selectedProjects.size() == 1) {
+            projectCombo.setSelectedItem(selectedProjects.iterator().next());
+        } else {
+            Collection<? extends FileObject> selectedFiles = Utilities.actionsGlobalContext().lookupAll(FileObject.class);
+            if (selectedFiles.size() == 1) {
+                Project p = FileOwnerQuery.getOwner(selectedFiles.iterator().next());
+                if (p != null) {
+                    projectCombo.setSelectedItem(p);
+                }
+            }
+        }
         zipField.getDocument().addDocumentListener(new DocumentListener() {
             private void edited() {
                 firePropertyChange("validity", null, null);

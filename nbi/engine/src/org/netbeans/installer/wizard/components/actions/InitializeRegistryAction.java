@@ -44,6 +44,7 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
@@ -71,7 +72,7 @@ public class InitializeRegistryAction extends WizardAction {
             getWizardUi().setProgress(progress);
             Registry.getInstance().initializeRegistry(progress);
         } catch (InitializationException e) {
-            ErrorManager.notifyCritical(
+            ErrorManager.notifyError(
                     StringUtils.format(
                     getProperty(REGISTRY_INITIALIZATION_FAILED_PROPERTY)), e);
         }

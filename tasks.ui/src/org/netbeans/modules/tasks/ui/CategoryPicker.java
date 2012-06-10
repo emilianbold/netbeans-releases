@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.tasks.ui;
 
+import java.awt.event.ActionEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.model.Category;
 
 /**
@@ -52,20 +56,16 @@ import org.netbeans.modules.tasks.ui.model.Category;
 public class CategoryPicker extends javax.swing.JPanel {
 
     private List<Category> categories;
+    private Action newCatAction;
 
     /**
      * Creates new form CategoryPicker
      */
     public CategoryPicker(List<Category> categories) {
         this.categories = categories;
-        String[] names = new String[categories.size()];
-        //names[0] = NbBundle.getMessage(CategoryPicker.class, "LBL_NoCategory"); //NOI18N
-        int i = 0;
-        for (Category category : categories) {
-            names[i++] = category.getName();
-        }
+        newCatAction = getNewCatAction();
         initComponents();
-        cbCategory.setModel(new DefaultComboBoxModel(names));
+        initCombo();
     }
 
     public Category getChosenCategory() {
@@ -83,8 +83,11 @@ public class CategoryPicker extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         cbCategory = new javax.swing.JComboBox();
+        btnNewCat = new LinkButton("", newCatAction);
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(CategoryPicker.class, "CategoryPicker.jLabel1.text")); // NOI18N
+
+        btnNewCat.setText(org.openide.util.NbBundle.getMessage(CategoryPicker.class, "LBL_New"));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -95,6 +98,8 @@ public class CategoryPicker extends javax.swing.JPanel {
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(cbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnNewCat)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -103,12 +108,40 @@ public class CategoryPicker extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(cbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnNewCat))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnNewCat;
     private javax.swing.JComboBox cbCategory;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
+
+    private Action getNewCatAction() {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DashboardTopComponent tc = DashboardTopComponent.findInstance();
+                Category category = tc.createCategory();
+                if (category == null) {
+                    return;
+                }
+                categories.add(category);
+                initCombo();
+                cbCategory.setSelectedItem(category.getName());
+            }
+        };
+    }
+
+    private void initCombo() {
+        String[] names = new String[categories.size()];
+        //names[0] = NbBundle.getMessage(CategoryPicker.class, "LBL_NoCategory"); //NOI18N
+        int i = 0;
+        for (Category category : categories) {
+            names[i++] = category.getName();
+        }
+        cbCategory.setModel(new DefaultComboBoxModel(names));
+    }
 }

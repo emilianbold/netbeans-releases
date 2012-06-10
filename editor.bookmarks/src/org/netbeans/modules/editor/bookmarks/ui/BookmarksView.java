@@ -102,6 +102,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -119,6 +120,8 @@ public final class BookmarksView extends TopComponent
 implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Provider
 {
     
+    private static final String HELP_ID = "bookmarks_window_csh"; // NOI18N
+
     private static final int PREVIEW_PANE_REFRESH_DELAY = 300;
     
     /**
@@ -198,6 +201,11 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     @Override
     public String getName () {
         return NbBundle.getMessage (BookmarksView.class, "LBL_BookmarksView");
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(HELP_ID);
     }
 
     @Override
@@ -474,36 +482,38 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             final BookmarkInfo bookmark = selectedBookmark;
             if (bookmark != displayedBookmarkInfo) {
                 final FileObject fo = bookmark.getFileBookmarks().getFileObject();
-                try {
-                    DataObject dob = DataObject.find(fo);
-                    final EditorCookie ec = dob.getCookie(EditorCookie.class);
-                    if (ec != null) {
-                        Document doc = ec.getDocument();
-                        if (doc == null) {
-                            // Open document on background
-                            RequestProcessor.getDefault().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        final Document d = ec.openDocument();
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                showPreview(fo, d, bookmark);
-                                            }
-                                        });
-                                    } catch (IOException ex) {
-                                        Exceptions.printStackTrace(ex);
+                if (fo != null) {
+                    try {
+                        DataObject dob = DataObject.find(fo);
+                        final EditorCookie ec = dob.getCookie(EditorCookie.class);
+                        if (ec != null) {
+                            Document doc = ec.getDocument();
+                            if (doc == null) {
+                                // Open document on background
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            final Document d = ec.openDocument();
+                                            SwingUtilities.invokeLater(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    showPreview(fo, d, bookmark);
+                                                }
+                                            });
+                                        } catch (IOException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
                                     }
-                                }
-                            });
-                        } else { // doc != null
-                            showPreview(fo, doc, bookmark);
+                                });
+                            } else { // doc != null
+                                showPreview(fo, doc, bookmark);
+                            }
                         }
+                    } catch (DataObjectNotFoundException ex) {
+                        // Ignore preview
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    // Ignore preview
-                }
+                } // else: file does not exist -> ignore preview
             }
         }
     }

@@ -1780,6 +1780,7 @@ public final class FileUtil extends Object {
         File ret;
         if (normalized == null) {
             ret = normalizeFileImpl(file);
+            assert !ret.getName().equals(".") : "Original file " + file + " normalized: " + ret;
             normalizedPaths.put(unnormalized, ret.getPath());
         } else if (normalized.equals(unnormalized)) {
             ret = file;
@@ -2040,9 +2041,15 @@ public final class FileUtil extends Object {
                     }
                     return new URL(jarPath);
 
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(Exceptions.attachMessage(mue,
-                    "URL: " + url.toExternalForm() +" jarPath: " + jarPath));   //NOI18N
+                } catch (MalformedURLException mue) {                    
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL ({0}): {1}, jarPath: {2}", //NOI18N
+                        new Object[] {
+                            mue.getMessage(),
+                            url.toExternalForm(),
+                            jarPath
+                        });
                 }
             }
         }

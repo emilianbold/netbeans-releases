@@ -748,6 +748,15 @@ implements java.io.Serializable {
      * otherwise IDE settings will not work at all. No module is permitted to use
      * .settings files.
      */
+    @NbBundle.Messages({
+            "CTL_SettingsFile=Settings Files"
+    })
+    @MIMEResolver.ExtensionRegistration(
+        displayName = "#CTL_SettingsFile",
+        extension = { InstanceDataObject.INSTANCE, InstanceDataObject.XML_EXT },
+        mimeType = "application/x-nbsettings",
+        position = 44
+    )
     private static class InstanceLoaderSystem extends InstanceLoader {
         private static final long serialVersionUID = -935749906623354837L;
         

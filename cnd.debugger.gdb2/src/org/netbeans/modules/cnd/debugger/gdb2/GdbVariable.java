@@ -65,7 +65,10 @@ class GdbVariable extends Variable {
     
     protected final GdbDebuggerImpl debugger;
     private final boolean isWatch;
-
+    
+    private int childrenRequested = 0;
+    private final int REQUEST_STEP = 100;
+    
     private String mi_name;
     //private String value; // should use the one in parent (VARIABLE) class
     private String mi_format = "natural"; // NOI18N
@@ -75,7 +78,7 @@ class GdbVariable extends Variable {
     private boolean inScope = true;
     private boolean dynamic = false;
     private DisplayHint displayHint = DisplayHint.NONE;
-
+    
     public GdbVariable(GdbDebuggerImpl debugger, ModelChangeDelegator updater,
 		       Variable parent,
 		       String name, String type, String value,
@@ -226,6 +229,23 @@ class GdbVariable extends Variable {
     public void setChildren() {
         debugger.getMIChildren(this, getMIName(), 0);
     }
+    
+    public int getChildrenRequestedCount() {
+        return childrenRequested;
+    }
+    
+    public void stepChildrenRequestedCount() {
+        this.childrenRequested += REQUEST_STEP;
+    }
+    
+    public void resetChildrenRequestedCount() {
+        this.childrenRequested = 0;
+    }
+    
+    @Override
+    public void getMoreChildren() {
+        debugger.getMoreMIChildren(this, this.getMIName(), 1);
+    }
 
     // interface Variable
     @Override
@@ -335,7 +355,8 @@ class GdbVariable extends Variable {
             setDisplayHint(results.getConstValue("displayhint")); //NOI18N
             String hasMoreVal = results.getConstValue("has_more"); //NOI18N
             if (!hasMoreVal.isEmpty()) {
-                numchild_l = hasMoreVal; // NOI18N
+                numchild_l = hasMoreVal;
+                hasMore = !hasMoreVal.equals("0"); // NOI18N
             } else {
                 switch (displayHint) {
                     case ARRAY:
@@ -367,7 +388,9 @@ class GdbVariable extends Variable {
                 if (!"0".equals(item.value().asConst().value())) { //NOI18N
                     setNumChild(item.value().asConst().value());
                     setChildren(null, false);
+                    hasMore = true;
                 }
+                hasMore = false;
             } else if (item.matches("new_children")) { //NOI18N
                 //TODO: can update new children from here
             }

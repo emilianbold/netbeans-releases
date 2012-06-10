@@ -383,14 +383,17 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             @NonNull final Map<String,Integer> pkgFreq) throws IOException, InterruptedException {
         assert typeFreq != null;
         assert pkgFreq != null;
+        if (!(index instanceof Index.WithTermFrequencies)) {
+            throw new IllegalStateException("Index does not support frequencies!"); //NOI18N
+        }
         try {
             IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     final Term startTerm = DocumentUtil.referencesTerm("", null, true);    //NOI18N
-                    final StoppableConvertor<Term,Void> convertor = new FreqCollector(
+                    final StoppableConvertor<Index.WithTermFrequencies.TermFreq,Void> convertor = new FreqCollector(
                             startTerm, typeFreq, pkgFreq);
-                    index.queryTerms(
+                    ((Index.WithTermFrequencies)index).queryTermFrequencies(
                         Collections.<Void>emptyList(),
                         startTerm,
                         convertor,
@@ -694,12 +697,12 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private static final class FreqCollector implements StoppableConvertor<Term, Void>, IndexReaderInjection {
+    private static final class FreqCollector implements StoppableConvertor<Index.WithTermFrequencies.TermFreq, Void> {
         
+        private final int postfixLen = ClassIndexImpl.UsageType.values().length;
         private final String fieldName;
         private final Map<String,Integer> typeFreq;
         private final Map<String,Integer> pkgFreq;
-        private IndexReader in;
         
         
         FreqCollector(
@@ -713,33 +716,23 @@ public final class PersistentClassIndex extends ClassIndexImpl {
 
         @CheckForNull
         @Override
-        public Void convert(@NonNull final Term param) throws Stop {
-            if (fieldName != param.field()) {
+        public Void convert(@NonNull final Index.WithTermFrequencies.TermFreq param) throws Stop {
+            final Term term = param.getTerm();
+            if (fieldName != term.field()) {
                 throw new Stop();
             }
-            try {
-                final String encBinName = param.text();
-                final String binName = encBinName.substring(
-                    0,
-                    encBinName.length() - ClassIndexImpl.UsageType.values().length);
-                final int dotIndex = binName.lastIndexOf('.');  //NOI18N
-                final String pkgName = dotIndex == -1 ? "" : binName.substring(0, dotIndex);    //NOI18N
-                final int docCount = in.docFreq(param);
-                final Integer typeCount = typeFreq.get(binName);
-                final Integer pkgCount = pkgFreq.get(pkgName);
-                typeFreq.put(binName, typeCount == null ? docCount : docCount + typeCount);
-                pkgFreq.put(pkgName, pkgCount == null ? docCount : docCount + pkgCount);                
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                throw new Stop();
-            }
+            final int docCount = param.getFreq();
+            final String encBinName = term.text();
+            final String binName = encBinName.substring(
+                0,
+                encBinName.length() - postfixLen);
+            final int dotIndex = binName.lastIndexOf('.');  //NOI18N
+            final String pkgName = dotIndex == -1 ? "" : binName.substring(0, dotIndex);    //NOI18N
+            final Integer typeCount = typeFreq.get(binName);
+            final Integer pkgCount = pkgFreq.get(pkgName);
+            typeFreq.put(binName, typeCount == null ? docCount : docCount + typeCount);
+            pkgFreq.put(pkgName, pkgCount == null ? docCount : docCount + pkgCount);
             return null;
         }
-
-        @Override
-        public void setIndexReader(IndexReader indexReader) {
-            in = indexReader;
-        }
-        
     }
 }

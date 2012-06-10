@@ -94,8 +94,6 @@ public final class Manager {
     static final int EVENT_SEARCH_CANCELLED = 4;
     
     private static final Manager instance = new Manager();
-    
-    private boolean moduleBeingUninstalled = false;
 
     private final List<Runnable> pendingTasks = new LinkedList<Runnable>();
     
@@ -434,9 +432,6 @@ public final class Manager {
         assert EventQueue.isDispatchThread();
         
         searchWindowOpen = false;
-        if (moduleBeingUninstalled) {
-            return;
-        }
         Runnable[] tasks = currentTasks.toArray(new Runnable[currentTasks.size()]);
         for(int i=0;i < tasks.length;i++){
             if (tasks[i] instanceof SearchTask){
@@ -615,36 +610,7 @@ public final class Manager {
             notifyPrintingDetailsFinished();
         }
     }
-    
-    /**
-     * Called from the <code>Installer</code> to notify that the module
-     * is being uninstalled.
-     * Calling this method sets a corresponding flag. When the flag is set,
-     * no new actions (cleaning results, printing details, etc.) are started
-     * and the behaviour is changed so that manipulation with the ResultView
-     * is reduced or eliminated. Also, if no tasks are currently active,
-     * immediatelly closes the results window; otherwise it postpones closing
-     * the window until the currently active task(s) finish.
-     */
-    void doCleanup() {
 
-        Runnable[] tasksToStop = null;
-        synchronized (this) {
-            moduleBeingUninstalled = true;
-            pendingTasks.clear();
-            tasksToStop = currentTasks.toArray(
-                    new Runnable[currentTasks.size()]);
-        }
-        for (Runnable task : tasksToStop) {
-            if (task instanceof SearchTask) {
-                ((SearchTask) task).stop();
-            } else if (task instanceof PrintDetailsTask) {
-                ((PrintDetailsTask) task).stop();
-            }
-        }
-        callOnWindowFromAWT("closeResults");                        //NOI18N
-    }
-    
     /**
      */
     private TaskListener getTaskListener() {

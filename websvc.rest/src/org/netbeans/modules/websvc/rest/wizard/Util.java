@@ -654,6 +654,9 @@ public class Util {
             if (entityFileObject == null) {
                 return; 
             }
+            if ( !entityFileObject.canWrite()) {
+                return;
+            }
             final JavaSource javaSource = JavaSource.forFileObject(entityFileObject);
             if (javaSource == null) {
                 return;

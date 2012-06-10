@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,8 +66,12 @@ import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProg
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -158,8 +161,12 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (selectedExecutable == null) {
             return ApplicableImpl.getNotApplicable(null);
         }
-        File file = new File(selectedExecutable);
-        if (!file.exists()) {
+        FileSystem fileSystem = descriptor.getFileSystem();
+        if (fileSystem == null) {
+            fileSystem = FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal());
+        }
+        FileObject file = new FSPath(fileSystem, selectedExecutable).getFileObject();
+        if (file == null || !file.isValid()) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundExecutable",selectedExecutable))); // NOI18N
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
@@ -167,6 +174,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
             provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+            provider.getProperty("filesystem").setValue(descriptor.getFileSystem()); // NOI18N
             ProviderProperty property = provider.getProperty("find_main");
             if (property != null) {
                 if (findMain) {

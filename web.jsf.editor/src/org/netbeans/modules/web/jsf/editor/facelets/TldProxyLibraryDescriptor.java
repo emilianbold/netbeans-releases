@@ -87,6 +87,11 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
     }
 
     @Override
+    public String getPrefix() {
+        return source.getPrefix();
+    }
+
+    @Override
     public Map<String, Tag> getTags() {
         if(tld == null) {
             return source.getTags();
@@ -143,7 +148,7 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
                 Node tag = tagNodes.item(i);
                 String tagName = getTextContent(tag, "name"); //NOI18N
                 String tagDescription = getTextContent(tag, "description"); //NOI18N
-
+ 
                 Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                 //find attributes
                 for (Node attrNode : FaceletsLibraryDescriptor.getNodesByName(tag, "attribute")) { //NOI18N
@@ -152,13 +157,19 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
                     boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
                     
                     String aType = null;
+                    String aMethodSignature = null;
                     //type
                     Node aDeferredValueNode = FaceletsLibraryDescriptor.getNodeByName(attrNode, "deferred-value"); //NOI18N
                     if(aDeferredValueNode != null) {
-                        aType = FaceletsLibraryDescriptor.getTextContent(aDeferredValueNode, "type");
+                        aType = FaceletsLibraryDescriptor.getTextContent(aDeferredValueNode, "type"); //NOI18N
+                    }
+                    //method signature
+                    Node aDeferredMethodNode = FaceletsLibraryDescriptor.getNodeByName(attrNode, "deferred-method"); //NOI18N
+                    if(aDeferredMethodNode != null) {
+                        aType = FaceletsLibraryDescriptor.getTextContent(aDeferredMethodNode, "method-signature"); //NOI18N
                     }
 
-                    attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired));
+                    attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired, aMethodSignature));
                 }
 
                 tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));
@@ -173,6 +184,11 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
                 return TldProxyLibraryDescriptor.this.getNamespace();
             }
 
+            @Override
+            public String getPrefix() {
+                return TldProxyLibraryDescriptor.this.getPrefix();
+            }
+            
             @Override
             public Map<String, Tag> getTags() {
                 return tags;

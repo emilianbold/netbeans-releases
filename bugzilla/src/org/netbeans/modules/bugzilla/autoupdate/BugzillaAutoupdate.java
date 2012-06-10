@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  */
 public class BugzillaAutoupdate {
 
-    static final BugzillaVersion SUPPORTED_BUGZILLA_VERSION;
+    public static final BugzillaVersion SUPPORTED_BUGZILLA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.bugzilla.supported.version"); // NOI18N
         SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : BugzillaVersion.BUGZILLA_4_0; // NOI18N

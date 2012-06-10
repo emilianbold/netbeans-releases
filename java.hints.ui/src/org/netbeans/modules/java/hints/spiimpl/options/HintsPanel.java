@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.MissingResourceException;
@@ -152,7 +153,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, true, false, false, true);
+                        HintsPanel.this.init(filter, true, false, false, true, false);
                         buttonsPanel.setVisible(false);
                         searchPanel.setVisible(false);
                         configurationsPanel.setVisible(false);
@@ -167,12 +168,12 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
     public HintsPanel(Configuration preselected, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, true, true, true);
+        init(null, false, true, true, true, true);
         configCombo.setSelectedItem(preselected);
     }
     public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, false, cc == null, false);
+        init(null, false, false, cc == null, false, cc == null);
         select(preselected);
         configurationsPanel.setVisible(false);
         
@@ -191,7 +192,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
     public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, false, false, true);
+        init(null, false, false, false, true, false);
         setOverlayPreferences(configurations);
         configurationsPanel.setVisible(false);
     }
@@ -205,7 +206,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     }
     
 
-    private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes) {
+    private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes, boolean noQueries) {
         initComponents();
         scriptScrollPane.setVisible(false);
         org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter f = null;
@@ -277,7 +278,21 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         toProblemCheckBox.setVisible(false);
         
-        errorTreeModel = constructTM(inOptionsDialog?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet()):Utilities.getBatchSupportedHints(cpBased).keySet(), inOptionsDialog);
+        Collection<? extends HintMetadata> hints = inOptionsDialog?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet()):Utilities.getBatchSupportedHints(cpBased).keySet();
+
+        if (noQueries) {
+            hints = new ArrayList<HintMetadata>(hints);
+            
+            for (Iterator<? extends HintMetadata> it = hints.iterator(); it.hasNext();) {
+                HintMetadata hm = it.next();
+                
+                if (hm.options.contains(Options.QUERY)) {
+                    it.remove();
+                }
+            }
+        }
+        
+        errorTreeModel = constructTM(hints, inOptionsDialog);
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());

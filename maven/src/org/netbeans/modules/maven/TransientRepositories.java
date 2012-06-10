@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.Level;
@@ -61,12 +63,20 @@ final class TransientRepositories {
     private static final Logger LOGGER = Logger.getLogger(TransientRepositories.class.getName());
 
     private final NbMavenProject p;
+    private final PropertyChangeListener l = new PropertyChangeListener() {
+        @Override public void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                doUnregister();
+                doRegister();
+            }
+        }
+    };
 
     TransientRepositories(NbMavenProject p) {
         this.p = p;
     }
 
-    void register() {
+    private void doRegister() {
         MavenProject mp = p.getMavenProject();
         for (ArtifactRepository repo : mp.getRemoteArtifactRepositories()) {
             register(repo, mp.getRepositories());
@@ -74,6 +84,11 @@ final class TransientRepositories {
         for (ArtifactRepository repo : mp.getPluginArtifactRepositories()) {
             register(repo, mp.getPluginRepositories());
         }
+    }
+
+    void register() {
+        doRegister();
+        p.addPropertyChangeListener(l);
     }
 
     private void register(ArtifactRepository repo, List<Repository> definitions) {
@@ -107,6 +122,11 @@ final class TransientRepositories {
     }
 
     void unregister() {
+        p.removePropertyChangeListener(l);
+        doUnregister();
+    }
+
+    private void doUnregister() {
         RepositoryPreferences.getInstance().removeTransientRepositories(this);
     }
 

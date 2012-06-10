@@ -70,6 +70,7 @@ final class RegexpUtils {
     static final String RUNNING_SUITE_REGEX = "[^\"]*\"([^\"]+)\" [a-z]+ \"(\\d+)\"[^:]*: ([^\\)]*)\\)";
     static final String TEST_REGEX = "[^\"]*\"([^\"]+)\" - ([^\\(]+)(\\(([^\\)]*)\\)([^:]+: (.*)\\))?( finished in (\\d+) ms)?)?( \\((\\d+) of (\\d+)\\))?( success: (\\d+)%)?";
     static final String TEST_REGEX_2 = "[^\"]*\"([^\"]+)\" - ([^\\(]+)(\\(([^\\)]*)\\))(.)*";
+    static final String TEST_REGEX_3 = "(.)*( \\((\\d+) of (\\d+)\\))$";
     static final String STATS_REGEX = "\\D+(\\d+)\\D+(\\d+)(\\D+(\\d+))?";
 
     /** */

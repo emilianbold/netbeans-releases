@@ -119,7 +119,7 @@ public final class ContentComparator {
             if (a1.size() != a2.size()) {
                 return false;
             }
-            for (Iterator i = a1.keySet().iterator(); i.hasNext();) {
+            for (Iterator<Object> i = a1.keySet().iterator(); i.hasNext();) {
                 Attributes.Name a = (Attributes.Name) i.next();
                 boolean b = true;
                 for (int j = 0; j < ignoredEntries.length; j++) {

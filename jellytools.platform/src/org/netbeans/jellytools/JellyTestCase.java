@@ -55,6 +55,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JDialog;
@@ -153,6 +154,14 @@ public class JellyTestCase extends NbTestCase {
                     methodRegisterPE.invoke(null);
                 } catch (Exception e) {
                     throw new JemmyException("Cannot call CoreBridgeImpl.doRegisterPropertyEditors().", e);
+                }
+                // Add core.execution property editor search path.
+                String coreExecutionPath = "org.netbeans.core.execution.beaninfo.editors";
+                List<String> paths = Arrays.asList(PropertyEditorManager.getEditorSearchPath());
+                if (!paths.contains(coreExecutionPath)) {
+                    paths = new ArrayList<String>(paths);
+                    paths.add(coreExecutionPath);
+                    PropertyEditorManager.setEditorSearchPath(paths.toArray(new String[0]));
                 }
             }
         });

@@ -151,7 +151,18 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         if ( fo != null && fo.isValid() && fo.isFolder()) {
             Object o = names2nodes.get(path);
             PackageNode n;
-            DataFolder folder = DataFolder.findFolder(fo);
+            DataFolder folder;
+            try {
+                folder = DataFolder.findFolder(fo);
+            } catch (IllegalArgumentException iae) {
+                throw new IllegalStateException(
+                    MessageFormat.format(
+                        "Root: {0}, Path: {1}, Visible: {2}",           //NOI18N
+                        FileUtil.getFileDisplayName(root),
+                        path,
+                        VisibilityQuery.getDefault().isVisible(fo)),
+                    iae);
+            }
             if (folder.isValid()) {
                 if ( o == NODE_NOT_CREATED ) {
                     n = new PackageNode(root, folder, false);

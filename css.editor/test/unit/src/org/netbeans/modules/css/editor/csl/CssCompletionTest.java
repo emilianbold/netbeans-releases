@@ -261,5 +261,10 @@ public class CssCompletionTest extends CssModuleTestBase {
         
         
     }
+    //Bug 212664 - No CC for inline CSS style (without prefix)
+    public void testCompletionBeforeSemicolon() throws ParseException, BadLocationException {
+        checkCC("div { background: | ; }", arr("red"), Match.CONTAINS);
+        checkCC("div { background: |; }", arr("red"), Match.CONTAINS);
+    }
     
 }

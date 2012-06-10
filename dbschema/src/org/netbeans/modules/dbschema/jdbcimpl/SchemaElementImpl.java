@@ -209,7 +209,19 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
     * @return the table, or <code>null</code> if it does not exist
     */
     public TableElement getTable(DBIdentifier name) {
-		return (TableElement) tables.find(name);
+        TableElement tableElement = (TableElement) tables.find(name);
+        if (tableElement != null) {
+            return tableElement;
+        } else if (getDriver().contains("mysql")) { //NOI18N
+            // Case-insensitive search - workaround for #167389
+            for (DBElement dbElement : tables.getElements()) {
+                TableElement te = (TableElement) dbElement;
+                if (te.getName().getName().equalsIgnoreCase(name.getName())) {
+                    return te;
+                }
+            }
+        }
+        return null;
     }
     
     public void initTables(ConnectionProvider cp) {

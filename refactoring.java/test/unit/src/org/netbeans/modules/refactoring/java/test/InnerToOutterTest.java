@@ -447,6 +447,15 @@ public class InnerToOutterTest extends RefactoringTestBase {
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { /** jdoc */ A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { class B { } }"));
     }
+    
+    public void test119419() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("t/A.java", "package t; public class A {\n enum B { A(0); private B(int i) { System.err.println(i); } }\n}"));
+        performInnerToOuterTest(null);
+        verifyContent(src,
+                      new File("t/A.java", "package t; public class A { }"),
+                      new File("t/B.java", "/* * Refactoring License */ package t; /** * * @author junit */ enum B { A(0); private B(int i) { System.err.println(i); } } "));
+    }
 
     private void performInnerToOuterTest(String generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];

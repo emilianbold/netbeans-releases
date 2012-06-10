@@ -259,7 +259,7 @@ public class CLIOptions extends CLIHandler {
         w.println("  --fontsize <size>     set the base font size of the user interface, in points");
         w.println("  --locale <language[:country[:variant]]> use specified locale");
         w.println("  --userdir <path>      use specified directory to store user settings");
-        w.println("  --cachedir <path>     use specified directory to store user cache");
+        w.println("  --cachedir <path>     use specified directory to store user cache, must be different from userdir");
         w.println("  --nosplash            do not show the splash screen");
         w.println("");
 //   \  --branding <token>    use specified branding (- for default)
