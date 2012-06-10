@@ -126,6 +126,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         return project.getLookup().lookup(NbMavenProject.class);
     }
 
+    @Override
     public Profile getJ2eeProfile() {
         //try to apply the hint if it exists.
         String version = project.getLookup().lookup(AuxiliaryProperties.class).get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
@@ -169,12 +170,14 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         return Profile.J2EE_14;
     }
 
+    @Override
     public String getJ2eePlatformVersion() {
         return getJ2eeProfile().toPropertiesString();
     }
 
     /** META-INF folder for the Ear.
      */
+    @Override
     public FileObject getMetaInf() {
         String appsrcloc =  PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
                 Constants.PLUGIN_EAR, "earSourceDirectory", "ear");//NOI18N
@@ -205,6 +208,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
 
     /** Deployment descriptor (application.xml file) of the ejb module.
      */
+    @Override
     public FileObject getDeploymentDescriptor() {
         if (isApplicationXmlGenerated()) {
             String generatedLoc = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
@@ -237,6 +241,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      *
      * @param module the module to be added
      */
+    @Override
     public void addWebModule(WebModule webModule) {
         //TODO this probably means adding the module as dependency to the pom.
         throw new IllegalStateException("Not implemented for maven based projects.");//NOI18N
@@ -247,6 +252,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * 
      * @param module the module to be added
      */
+    @Override
     public void addEjbJarModule(EjbJar ejbJar) {
         //TODO this probably means adding the module as dependency to the pom.
         throw new IllegalStateException("Not implemented for maven based projects.");//NOI18N
@@ -266,6 +272,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         return true;
     }
 
+    @Override
     public J2eeModule.Type getModuleType() {
         return J2eeModule.Type.EAR;
     }
@@ -273,6 +280,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     /**
      * Returns module specification version
      */
+    @Override
     public String getModuleVersion() {
         Profile prf = getJ2eeProfile();
         if (prf == Profile.JAVA_EE_6_FULL) return Application.VERSION_6;
@@ -283,6 +291,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     /**
      * Returns the location of the module within the application archive.
      */
+    @Override
     public String getUrl() {
         String toRet =  "/" + mavenproject().getMavenProject().getBuild().getFinalName(); //NOI18N
         return toRet;
@@ -293,6 +302,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * Returns the archive file for the module of null if the archive file 
      * does not exist (for example, has not been compiled yet).
      */
+    @Override
     public FileObject getArchive() throws IOException {
         //TODO get the correct values for the plugin properties..
         MavenProject proj = mavenproject().getMavenProject();
@@ -312,6 +322,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * 
      * @return Iterator through {@link RootedEntry}s
      */
+    @Override
     public Iterator getArchiveContents() throws IOException {
         //      System.out.println("ear get archive content");
         FileObject fo = getContentDirectory();
@@ -329,6 +340,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * 
      * @return FileObject for the content directory
      */
+    @Override
     public FileObject getContentDirectory() throws IOException {
         MavenProject proj = mavenproject().getMavenProject();
         String finalName = proj.getBuild().getFinalName();
@@ -385,6 +397,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         return null;
     }
 
+    @Override
     public J2eeModule[] getModules() {
         MavenProject mp = mavenproject().getMavenProject();
         @SuppressWarnings("unchecked")
@@ -447,6 +460,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         return toRet.toArray(new J2eeModule[toRet.size()]);
     }
 
+    @Override
     public List<Project> getProjects() {
         MavenProject mp = mavenproject().getMavenProject();
         @SuppressWarnings("unchecked")
@@ -497,20 +511,25 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     }
 
 
+    @Override
     public void addModuleListener(ModuleListener ml) {
     }
 
+    @Override
     public void removeModuleListener(ModuleListener ml) {
     }
 
+    @Override
     public EjbChangeDescriptor getEjbChanges(long timestamp) {
         return new EjbChangeDescriptorImpl();
     }
 
+    @Override
     public boolean isManifestChanged(long timestamp) {
         return false;
     }
 
+    @Override
     public void addCarModule(Car arg0) {
         throw new UnsupportedOperationException("Not supported yet.");//NOI18N
     }
@@ -529,10 +548,12 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             this.root = f;
         }
 
+        @Override
         public boolean hasNext() {
             return ! ch.isEmpty();
         }
 
+        @Override
         public Object next() {
             FileObject f = ch.get(0);
             ch.remove(0);
@@ -546,6 +567,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             return new FSRootRE(root, f);
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -561,10 +583,12 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             root = rt;
         }
 
+        @Override
         public FileObject getFileObject() {
             return f;
         }
 
+        @Override
         public String getRelativePath() {
             return FileUtil.getRelativePath(root, f);
         }
@@ -578,6 +602,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      *         directory.
      */
 
+    @Override
     public File getResourceDirectory() {
         //TODO .. in ant projects equals to "setup" directory.. what's it's use?
         File toRet = new File(FileUtil.toFile(project.getProjectDirectory()), "src" + File.separator + "main" + File.separator + "setup");//NOI18N
@@ -594,6 +619,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * @return absolute path to the deployment configuration file, or null if the
      *         specified file name is not known to this J2eeModule.
      */
+    @Override
     public File getDeploymentConfigurationFile(String name) {
         if (name == null) {
             return null;
@@ -610,6 +636,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * 
      * @param listener PropertyChangeListener
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener arg0) {
         //TODO..
     }
@@ -619,6 +646,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      * 
      * @param listener PropertyChangeListener
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener arg0) {
         //TODO..
     }
@@ -634,6 +662,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     }
 
 
+    @Override
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == ApplicationMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
@@ -814,46 +843,57 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             this.fileNameMapping = fileNameMapping;
         }
 
+        @Override
         public String getModuleVersion() {
             return module.getModuleVersion();
         }
 
+        @Override
         public J2eeModule.Type getModuleType() {
             return module.getType();
         }
 
+        @Override
         public String getUrl() {
             return mavenModule.resolveUri(fileNameMapping);
         }
 
+        @Override
         public FileObject getArchive() throws IOException {
             return module.getArchive();
         }
 
+        @Override
         public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
             return module.getArchiveContents();
         }
 
+        @Override
         public FileObject getContentDirectory() throws IOException {
             return module.getContentDirectory();
         }
 
+        @Override
         public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             return module.getMetadataModel(type);
         }
 
+        @Override
         public File getResourceDirectory() {
             return module.getResourceDirectory();
         }
 
+        @Override
         public File getDeploymentConfigurationFile(String name) {
             return module.getDeploymentConfigurationFile(name);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             module.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             module.removePropertyChangeListener(listener);
         }

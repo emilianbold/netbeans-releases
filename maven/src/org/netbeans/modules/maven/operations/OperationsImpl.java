@@ -65,7 +65,6 @@ import org.netbeans.spi.project.ProjectState;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.operations.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 

@@ -384,6 +384,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
     
+    @Override
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         btnRemoveAdded.setEnabled(false);
         WebFrameworkProvider framework = (WebFrameworkProvider) jListFrameworks.getSelectedValue();
@@ -515,6 +516,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             stateChanged(new ChangeEvent(this));
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             controller.setErrorMessage(null);
             if (extender.isValid()) {

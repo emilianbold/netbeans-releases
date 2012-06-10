@@ -68,6 +68,7 @@ public class RecommendedTemplatesImpl implements RecommendedTemplates {
         this.prj = prj;
     }
 
+    @Override
     public String[] getRecommendedTypes() {
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
         return NbMavenProject.TYPE_WAR.equals(project.getPackagingType())
