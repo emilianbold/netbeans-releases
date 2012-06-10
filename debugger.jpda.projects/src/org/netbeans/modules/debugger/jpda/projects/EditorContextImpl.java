@@ -1915,7 +1915,7 @@ public class EditorContextImpl extends EditorContext {
                 retValue = visitor.scan(treePath, context);
             } else {
                 if (tree == null) {
-                    throw new InvalidExpressionException(NbBundle.getMessage(EditorContextImpl.class, "MSG_NoParseNoEval"));
+                    throw new InvalidExpressionException(NbBundle.getMessage(EditorContextImpl.class, "MSG_NoParseNoEval")+" URL="+url+":"+line);
                 }
                 retValue = tree.accept(visitor, context);
             }
