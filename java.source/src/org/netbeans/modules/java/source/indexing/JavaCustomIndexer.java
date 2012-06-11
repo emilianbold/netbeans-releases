@@ -360,7 +360,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
-                File file = new File(indexable.getURL().toURI().getPath());
+                File file = Utilities.toFile(indexable.getURL().toURI());
                 return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
