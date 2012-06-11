@@ -144,15 +144,15 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
             FileObject f = refactoring.getRefactoringSource().lookup(FileObject.class);
             if (f!=null) {
                 String newName = ((RenameRefactoring) refactoring).getNewName();
-                if (!RefactoringUtils.isValidPackageName(newName)) {
-                    String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_InvalidPackage")).format(
+                if (!RefactoringUtils.isValidPackageName(newName) || newName.indexOf('.') > 0) {
+                    String msg = new MessageFormat(NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_InvalidFolder")).format(
                             new Object[] {newName}
                     );
                     return new Problem(true, msg);
                 }
                 
                 if (f.getParent().getFileObject(newName, f.getExt())!=null) {
-                    String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class,"ERR_PackageExists")).format(
+                    String msg = new MessageFormat(NbBundle.getMessage(MoveFileRefactoringPlugin.class,"ERR_PackageExists")).format(
                             new Object[] {newName}
                     );
                     return new Problem(true, msg);

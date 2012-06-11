@@ -241,7 +241,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                             round++;
                         } else {
                             toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                            for (CompileTuple ct : compileResult.aptGenerated) {
+                            final SPIAccessor accessor = SPIAccessor.getInstance();
+                            for (javax.tools.FileObject fo : compileResult.aptGenerated) {
+                                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
+                                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
+                                CompileTuple ct = new CompileTuple(pfo, i, false, true, true);
                                 toCompileRound.add(ct);
                                 toCompile.add(ct);
                             }
@@ -576,16 +580,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             @NonNull final Context context,
             @NonNull JavaParsingContext javaContext,
             @NonNull final CompileTuple source,
-            @NonNull final Set<CompileTuple> aptGenerated) throws IOException {
+            @NonNull final Set<javax.tools.FileObject> aptGenerated) throws IOException {
         boolean ret = false;
         final Set<javax.tools.FileObject> genSources = javaContext.getProcessorGeneratedFiles().getGeneratedSources(source.indexable.getURL());
         if (genSources != null) {
-            final SPIAccessor accessor = SPIAccessor.getInstance();
-            for (javax.tools.FileObject fo : genSources) {
-                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
-                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
-                ret |= aptGenerated.add(new CompileTuple(pfo, i, false, true, true));
-            }
+            ret |= aptGenerated.addAll(genSources);
         }
         return ret;
     }

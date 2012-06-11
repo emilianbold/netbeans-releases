@@ -337,6 +337,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
             btv.expandAll();
         }
         refreshButton.setEnabled(context != Lookup.EMPTY);
+        descriptionPanel.setText(null);
         nodesForNext = null;
         empty = analysisResult.provider2Hints.isEmpty();
         fireActionEnabledChange();

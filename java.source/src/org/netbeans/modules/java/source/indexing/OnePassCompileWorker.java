@@ -100,7 +100,7 @@ final class OnePassCompileWorker extends CompileWorker {
         final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<File>();
         final Set<Indexable> finished = previous != null ? previous.finishedFiles : new HashSet<Indexable>();
         final Set<ElementHandle<TypeElement>> modifiedTypes = previous != null ? previous.modifiedTypes : new HashSet<ElementHandle<TypeElement>>();
-        final Set<CompileTuple> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<CompileTuple>();
+        final Set<javax.tools.FileObject> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<javax.tools.FileObject>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
         final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();

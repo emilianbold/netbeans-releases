@@ -1335,7 +1335,7 @@ public class Annotations implements DocumentListener {
      * annotations which are representd by this combined annotation. The only
      * added functionality is for tooltip text and annotation type.
      */
-    private static final class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
+    static final class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
         
         /** Delegate annotaiton */
         private AnnotationDesc delegate;
