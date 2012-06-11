@@ -101,7 +101,7 @@ public class JsfIndexer extends EmbeddingIndexer {
     public static class Factory extends EmbeddingIndexerFactory {
 
         static final String NAME = "jsf"; //NOI18N
-        static final int VERSION = 2;
+        static final int VERSION = 3;
 
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {

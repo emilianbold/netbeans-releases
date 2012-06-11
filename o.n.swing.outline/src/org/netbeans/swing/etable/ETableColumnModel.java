@@ -129,7 +129,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         String sh = p.getProperty(propertyPrefix + NUMBER_OF_HIDDEN_COLUMNS);
         int numHiddenColumns = Integer.parseInt(sh);
         for (int i = 0; i < numHiddenColumns; i++) {
-            ETableColumn etc = new ETableColumn(table);
+            ETableColumn etc = (ETableColumn)table.createColumn(0);
             etc.readSettings(p, i, propertyPrefix + PROP_HIDDEN_PREFIX);
             hiddenColumns.add(etc);
         }

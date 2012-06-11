@@ -49,6 +49,7 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -182,21 +183,29 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         private Model model;
         private TokenHierarchy<?> tokenHierarchy;
 
+        /**
+         *
+         * @return model, or null.
+         */
+        @CheckForNull
         public Model getModel() {
             return model;
         }
 
+        /**
+         *
+         * @return token hierarchy, or null.
+         */
+        @CheckForNull
         public TokenHierarchy<?> getTokenHierarchy() {
             return tokenHierarchy;
         }
 
         public void setModel(Model model) {
-            Parameters.notNull("model", model);
             this.model = model;
         }
 
         public void setTokenHierarchy(TokenHierarchy<?> tokenHierarchy) {
-            Parameters.notNull("tokenHierarchy", tokenHierarchy);
             this.tokenHierarchy = tokenHierarchy;
         }
 
@@ -220,10 +229,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (parserResult instanceof PHPParseResult) {
                         PHPParseResult phpParserResult = (PHPParseResult) parserResult;
                         crate.setModel(phpParserResult.getModel());
-                        TokenHierarchy<?> tokenHierarchy = resultIterator.getSnapshot().getTokenHierarchy();
-                        if (tokenHierarchy != null) {
-                            crate.setTokenHierarchy(tokenHierarchy);
-                        }
+                        crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
                     }
                 }
             });

@@ -74,6 +74,8 @@ import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
+import org.netbeans.modules.web.jsf.editor.index.JsfPageModel;
+import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
@@ -379,44 +381,90 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
+        JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
+        if (jsfs == null) {
+            return Collections.emptyList();
+        }
+
         List<CompletionItem> items = new ArrayList<CompletionItem>();
 
-        //first try to complete using special metadata
-        completeTagLibraryMetadata(context, items);
-        if (!items.isEmpty()) {
+        //complete xmlns attribute value
+        completeXMLNSAttribute(context, items, jsfs);
+
+        String ns = ElementUtils.getNamespace(context.getCurrentNode());
+        if (ns == null) {
             return items;
         }
+        Element element = context.getCurrentNode();
+        if (element.type() != ElementType.OPEN_TAG) {
+            return items;
+        }
+        OpenTag openTag = (OpenTag) element;
+
+        //first try to complete using special metadata
+        completeTagLibraryMetadata(context, items, ns, openTag, jsfs);
 
         //then try to complete according to the attribute type (taken from the library descriptor)
-        completeValueAccordingToType(context, items);
+        completeValueAccordingToType(context, items, ns, openTag, jsfs);
 
-        //complete xmlns attribute value
-        completeXMLNSAttribute(context, items);
-        if (!items.isEmpty()) {
-            return items;
-        }
+        //facets
+        completeFacetsInCCImpl(context, items, ns, openTag, jsfs);
+        completeFacets(context, items, ns, openTag, jsfs);
 
         return items;
     }
 
-    private void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items) {
-        String ns = ElementUtils.getNamespace(context.getCurrentNode());
-        if (ns == null) {
-            return;
+    //1.
+    //<cc:implementation>
+    //<cc:render/insertFacet name="|" />  
+    //</cc:implementation>
+    //offsers facet declarations only from within this document
+    private void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns)) {
+            String tagName = openTag.unqualifiedName().toString();
+            if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
+                if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
+                    CompositeComponentModel ccModel = (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).getModel(context.getResult());
+                    if (ccModel != null) {
+                        Collection<String> facets = ccModel.getDeclaredFacets();
+                        for (String facet : facets) {
+                            items.add(HtmlCompletionItem.createAttributeValue(facet, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        Element element = context.getCurrentNode();
-        if (element.type() != ElementType.OPEN_TAG) {
-            return;
+    //2.<f:facet name="|">
+    //offsers all facetes
+    private void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns)) {
+            String tagName = openTag.unqualifiedName().toString();
+            if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
+                if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
+                    //try to get composite library model for all declared libraries and extract facets from there
+                    for(String libraryNs : context.getResult().getNamespaces().keySet()) {
+                        Library library = jsfs.getLibrary(libraryNs);
+                        if(library != null) {
+                            if(library instanceof CompositeComponentLibrary) {
+                                Collection<? extends LibraryComponent> lcs = library.getComponents();
+                                for(LibraryComponent lc : lcs) {
+                                    CompositeComponentLibrary.CompositeComponent ccomp = (CompositeComponentLibrary.CompositeComponent)lc;
+                                    CompositeComponentModel model = ccomp.getComponentModel();
+                                    for(String facetName : model.getDeclaredFacets()) {
+                                        items.add(HtmlCompletionItem.createAttributeValue(facetName, context.getCCItemStartOffset(), !context.isValueQuoted())); //NOI18N
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        OpenTag openTag = (OpenTag) element;
-
-        JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
-        if (jsfs == null) {
-            return;
-        }
-
+    private void completeValueAccordingToType(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         Library lib = jsfs.getLibrary(ns);
         if (lib == null) {
             return;
@@ -445,16 +493,11 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
-    private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items) {
+    private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
             HtmlParserResult result = context.getResult();
             Source source = result.getSnapshot().getSource();
-            JsfSupportImpl jsfs = JsfSupportImpl.findFor(source);
-            if (jsfs == null) {
-                return;
-            }
-
             Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
             //add also xhtml ns to the completion
             nss.add(LibraryUtils.XHTML_NS);
@@ -466,19 +509,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
     }
 
-    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items) {
-        String ns = ElementUtils.getNamespace(context.getCurrentNode());
-        if (ns == null) {
-            return;
-        }
-
-        Element element = context.getCurrentNode();
-        if (element.type() != ElementType.OPEN_TAG) {
-            return;
-        }
-
-        OpenTag openTag = (OpenTag) element;
-
+    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
         String attrName = context.getAttributeName();
         String tagName = openTag.unqualifiedName().toString();
         LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
@@ -519,9 +550,9 @@ public class JsfHtmlExtension extends HtmlExtension {
     public DeclarationLocation findDeclaration(ParserResult result, final int caretOffset) {
         assert result instanceof HtmlParserResult;
         HtmlParserResult htmlresult = (HtmlParserResult) result;
-        
+
         Snapshot snapshot = result.getSnapshot();
-        
+
         Element leaf = htmlresult.findByPhysicalRange(caretOffset, true);
         if (leaf == null || leaf.type() != ElementType.OPEN_TAG) {
             return DeclarationLocation.NONE;
@@ -531,18 +562,18 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return DeclarationLocation.NONE;
         }
-        
+
         String ns = ElementUtils.getNamespace(leaf);
         if (ns == null) {
             return DeclarationLocation.NONE;
         }
-        
+
         AbstractFaceletsLibrary lib = jsfs.getLibraries().get(ns);
         if (lib == null) {
             return DeclarationLocation.NONE;
         }
         if (lib instanceof CompositeComponentLibrary) {
-            
+
             OpenTag openTag = (OpenTag) leaf;
             String tagName = openTag.unqualifiedName().toString();
             LibraryComponent component = lib.getComponent(tagName);
@@ -582,16 +613,16 @@ public class JsfHtmlExtension extends HtmlExtension {
                                     ElementUtils.visitChildren(root, new ElementVisitor() {
                                         @Override
                                         public void visit(Element node) {
-                                            OpenTag ot = (OpenTag)node;
-                                            if(LexerUtils.equals("interface", ot.unqualifiedName(), true, true)) { //NOI18N
+                                            OpenTag ot = (OpenTag) node;
+                                            if (LexerUtils.equals("interface", ot.unqualifiedName(), true, true)) { //NOI18N
                                                 for (Element child : ot.children(ElementType.OPEN_TAG)) {
-                                                    OpenTag otch = (OpenTag)child;
+                                                    OpenTag otch = (OpenTag) child;
                                                     if (LexerUtils.equals("attribute", otch.unqualifiedName(), true, true)) { //NOI18N
                                                         org.netbeans.modules.html.editor.lib.api.elements.Attribute nameAttr = otch.getAttribute("name"); //NOI18N
-                                                        if(nameAttr != null) {
+                                                        if (nameAttr != null) {
                                                             CharSequence value = nameAttr.unquotedValue();
-                                                            if(value != null) {
-                                                                if(LexerUtils.equals(attributeName, value, true, false)) {
+                                                            if (value != null) {
+                                                                if (LexerUtils.equals(attributeName, value, true, false)) {
                                                                     //we found it
                                                                     attrOffset[0] = child.from(); //offset of the attribute tag is fine
                                                                     break;

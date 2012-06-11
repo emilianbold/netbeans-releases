@@ -141,6 +141,8 @@ public final class EditorContextDispatcher {
     private final Lookup.Result<FileObject> resFileObject;
     private final Lookup.Result<EditorCookie> resEditorCookie;
     private final PropertyChangeListener  tcListener;
+    private final ThreadLocal<CoalescedChange> lookupCoalescedChange = new ThreadLocal<CoalescedChange>();
+    private final RequestProcessor ccrp = new RequestProcessor("Coalesced Change Request Processor", 1, false, false); // NOI18N
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Map<String, PropertyChangeSupport> pcsByMIMEType = new HashMap<String, PropertyChangeSupport>();
@@ -537,6 +539,7 @@ public final class EditorContextDispatcher {
 
     private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {
         
+        private RequestProcessor.Task cctask;
         private Class type;
         
         public EditorLookupListener(Class type) {
@@ -544,11 +547,38 @@ public final class EditorContextDispatcher {
         }
         
         public void resultChanged(LookupEvent ev) {
-            lookupChanged(true);
+            // It can happen, that we're called many times in one AWT cycle...
+            coalescedLookupChanged();
+        }
+        
+        private void coalescedLookupChanged() {
+            CoalescedChange cc = lookupCoalescedChange.get();
+            if (cc == null) {
+                cc = new CoalescedChange();
+                lookupCoalescedChange.set(cc);
+            }
+            if (cc.isCoalescing()) {
+                RequestProcessor.Task task;
+                synchronized (this) {
+                    if (cctask == null) {
+                        cctask = ccrp.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                lookupChanged(true);
+                            }
+                        });
+                    }
+                    task = cctask;
+                }
+                task.schedule(2);
+            } else {
+                lookupChanged(true);
+            }
+            cc.done();
         }
 
         private void lookupChanged(final boolean doFire) {
-            //System.err.println("EditorContextDispatcher.resultChanged(), type = "+type);
+            //System.err.println("EditorContextDispatcher.resultChanged(), type = "+type+" in "+Thread.currentThread());
             if (type == FileObject.class) {
                 Collection<? extends FileObject> fos = resFileObject.allInstances();
                 FileObject oldFile;
@@ -791,6 +821,31 @@ public final class EditorContextDispatcher {
         
     }
     
+    private static final class CoalescedChange {
+        
+        private static final int NUM = 5; // Start coalescing after 5 fast calls
+        private static final long TD = 20; // 20ms delta
+        private long lastTime = 0l;
+        private int num = 0;
+        
+        public CoalescedChange() {
+        }
+        
+        public void done() {
+            lastTime = System.currentTimeMillis();
+        }
+
+        private boolean isCoalescing() {
+            if (System.currentTimeMillis() <= (lastTime + TD)) {
+                num++;
+            } else {
+                num = 0;
+            }
+            return num > NUM;
+        }
+
+    }
+
     /**
      * Use this class to add or remove file change listener in EQ thread.
      * The addition or removal of a listener may require some disk operations.
