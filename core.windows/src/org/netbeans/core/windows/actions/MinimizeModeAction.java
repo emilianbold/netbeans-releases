@@ -118,7 +118,8 @@ implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())
-                || WindowManager.PROP_MODES.equals(evt.getPropertyName()) ) {
+                || WindowManager.PROP_MODES.equals(evt.getPropertyName())
+                || WindowManagerImpl.PROP_ACTIVE_MODE.equals(evt.getPropertyName()) ) {
             updateEnabled();
         }
     }
