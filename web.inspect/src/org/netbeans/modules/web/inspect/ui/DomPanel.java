@@ -175,15 +175,19 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                 }
                 if (hover != lastHover) {
                     lastHover = hover;
-                    List<? extends Node> highlight;
+                    final List<? extends Node> highlight;
                     if (hover != null) {
                         Node node = Visualizer.findNode(hover);
                         highlight = Arrays.asList(node);
                     } else {
                         highlight = Collections.EMPTY_LIST;
                     }
-                    pageModel.setHighlightedNodes(highlight);
-                    treeView.repaint();
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pageModel.setHighlightedNodes(highlight);
+                        }
+                    });
                 }
             }
             

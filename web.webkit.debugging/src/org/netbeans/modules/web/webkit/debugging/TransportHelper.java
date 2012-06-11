@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.webkit.debugging;
 
+import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,11 +79,13 @@ public class TransportHelper {
     }
     
     public void sendCommand(Command command) {
+        assert !EventQueue.isDispatchThread();
         log("send "+command.toString()); // NOI18N
         impl.sendCommand(command);
     }
     
     public Response sendBlockingCommand(Command command) {
+        assert !EventQueue.isDispatchThread();
         log("blocking send "+command.toString()); // NOI18N
         Handle handle = createSynchronizationHandle(command);
         impl.sendCommand(command);
@@ -96,6 +99,7 @@ public class TransportHelper {
 
     public void sendCallbackCommand(Command command, 
             ResponseCallback callback) {
+        assert !EventQueue.isDispatchThread();
         log("callback send "+command.toString()); // NOI18N
         createCallbackHandle(command, callback);
         impl.sendCommand(command);
