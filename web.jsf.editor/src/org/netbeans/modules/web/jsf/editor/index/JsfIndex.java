@@ -45,7 +45,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -168,13 +171,48 @@ public class JsfIndex {
             return null;
         }
     }
-
+    
+    public Map<FileObject, CompositeComponentModel> getCompositeComponentModels(String libraryName) {
+        //try both indexes, the embedding one first
+        Map<FileObject, CompositeComponentModel> models = new HashMap<FileObject, CompositeComponentModel>();
+        try {
+            models.putAll(getCompositeComponentModels(createEmbeddingIndex(), libraryName));
+            models.putAll(getCompositeComponentModels(createBinaryIndex(), libraryName));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return models;
+    }
+    
+    private Map<FileObject, CompositeComponentModel> getCompositeComponentModels(QuerySupport index, String libraryName) {
+        Map<FileObject, CompositeComponentModel> modelsMap = new HashMap<FileObject, CompositeComponentModel>();
+        try {
+            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT,
+                    CompositeComponentModel.LIBRARY_NAME_KEY,
+                    CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
+                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY,
+                    CompositeComponentModel.INTERFACE_FACETS);
+            for (IndexResult result : results) {
+                FileObject file = result.getFile(); //expensive? use result.getRelativePath?
+                if (file != null) {
+                    CompositeComponentModel model = (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
+                    modelsMap.put(file, model);
+                }
+            }
+            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return modelsMap;
+    }
+    
     private CompositeComponentModel getCompositeComponentModel(QuerySupport index, String libraryName, String componentName) {
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT,
                     CompositeComponentModel.LIBRARY_NAME_KEY,
                     CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
-                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY);
+                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY,
+                    CompositeComponentModel.INTERFACE_FACETS);
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
                 if (file != null) {
