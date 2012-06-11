@@ -692,10 +692,12 @@ public class ETable extends JTable {
                 if (sortedColumnIndexes != null) {
                     for (int sci = 0; sci < sortedColumnIndexes.length; sci++) {
                         int index = sortedColumnIndexes[sci];
-                        Sorting sorting = columnSorting[index];
-                        if (index >= 0 && newColumns[index] instanceof ETableColumn && sorting != null) {
-                            ETableColumn etc = (ETableColumn) newColumns[index];
-                            etcm.setColumnSorted(etc, sorting.ascending, sorting.sortRank);
+                        if (index >= 0) {
+                            Sorting sorting = columnSorting[index];
+                            if (newColumns[index] instanceof ETableColumn && sorting != null) {
+                                ETableColumn etc = (ETableColumn) newColumns[index];
+                                etcm.setColumnSorted(etc, sorting.ascending, sorting.sortRank);
+                            }
                         }
                     }
                 }
