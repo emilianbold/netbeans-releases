@@ -77,6 +77,7 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTRoot;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -163,25 +164,28 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 //            } catch (Exception ex) {
 //                Exceptions.printStackTrace(ex);
 //            }
-            try {
-                Source source = Source.create(fo);
-                // FIXME can we move this out of task (?)
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+            Source source = Source.create(fo);
+            // Check is here brecause of issue #213967
+            if (GroovyLanguage.GROOVY_MIME_TYPE.equals(source.getMimeType())) {
+                try {
+                    // FIXME can we move this out of task (?)
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
 
-                        ASTRoot astRootElement = result.getRootElement();
-                        if (astRootElement != null) {
-                            ModuleNode moduleNode = astRootElement.getModuleNode();
-                            if (moduleNode != null) {
-                                resultList.addAll(moduleNode.getClasses());
+                            ASTRoot astRootElement = result.getRootElement();
+                            if (astRootElement != null) {
+                                ModuleNode moduleNode = astRootElement.getModuleNode();
+                                if (moduleNode != null) {
+                                    resultList.addAll(moduleNode.getClasses());
+                                }
                             }
                         }
-                    }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
