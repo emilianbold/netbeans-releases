@@ -37,7 +37,6 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.ir.FunctionNode;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,8 +48,6 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,7 +60,7 @@ public class JsParser extends Parser {
     private JsParserResult lastResult = null;
 
     public JsParser() {
-
+        super();
     }
 
     @Override
@@ -91,9 +88,54 @@ public class JsParser extends Parser {
             scriptName = "javascript.js"; // NOI18N
         }
 
-        String text = snapshot.getText().toString();
+        JsParserResult result = parseContext(new Context(scriptName, snapshot),
+                sanitizing, errorManager);
 
-        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(scriptName, text);
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
+                    new Object[]{(System.nanoTime() - startTime) / 1000000, scriptName});
+        }
+        return result;
+    }
+    
+    private JsParserResult parseContext(Context context, Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
+        if ((sanitizing != Sanitize.NONE) && (sanitizing != Sanitize.NEVER)) {
+            boolean ok = sanitizeSource(context, sanitizing, errorManager);
+
+            if (ok) {
+                assert context.sanitizedSource != null;
+            } else {
+                // Try next trick
+                return parseContext(context, sanitizing.next(), errorManager);
+            }
+        }
+        
+        com.oracle.nashorn.ir.FunctionNode node = parseSource(context.getName(),
+                context.getSource(), errorManager);
+        if (node == null && sanitizing != Sanitize.NEVER) {
+            return parseContext(context, sanitizing.next(), errorManager);
+        }
+        
+        // process comment elements
+        Map<Integer, ? extends JsComment> comments;
+        try {
+            long startTime = System.nanoTime();
+            comments = JsDocParser.parse(context.getSnapshot());
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Parsing of comments took: {0} ms source: {1}",
+                        new Object[]{(System.nanoTime() - startTime) / 1000000, context.getName()});
+            }
+        } catch (Exception ex) {
+            // if anything wrong happen during parsing comments
+            LOGGER.log(Level.WARNING, null, ex);
+            comments = Collections.<Integer, JsComment>emptyMap();
+        }
+
+        return new JsParserResult(context.getSnapshot(), node, comments);
+    }
+    
+    private com.oracle.nashorn.ir.FunctionNode parseSource(String name, String text, JsErrorManager errorManager) throws Exception {
+        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, text);
         com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
         options.process(new String[]{
             "--parse-only=true",
@@ -107,27 +149,11 @@ public class JsParser extends Parser {
         com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
         com.oracle.nashorn.parser.Parser parser = new com.oracle.nashorn.parser.Parser(compiler);
         com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
-
-        // process comment elements
-        Map<Integer, ? extends JsComment> comments;
-        try {
-            long startTimeForDoc = System.currentTimeMillis();
-            comments = JsDocParser.parse(snapshot);
-            long endTimeForDoc = System.currentTimeMillis();
-            LOGGER.log(Level.FINE, "Parsing of comments took: {0}ms source: {1}",
-                    new Object[]{endTimeForDoc - startTimeForDoc, scriptName});
-        } catch (Exception ex) {
-            // if anything wrong happen during parsing comments
-            LOGGER.log(Level.WARNING, null, ex);
-            comments = Collections.<Integer, JsComment>emptyMap();
-        }
-
-        JsParserResult result = new JsParserResult(snapshot, node, comments);
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
-                    new Object[]{(System.nanoTime() - startTime) / 1000000, scriptName});
-        }
-        return result;
+        return node;
+    }
+    
+    private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
+        return false;
     }
 
     @Override
@@ -146,37 +172,163 @@ public class JsParser extends Parser {
     }
 
 
+    /**
+     * Parsing context
+     */
+    public static class Context {
 
+        private final String name;
+        
+        private final Snapshot snapshot;
+
+        private String source;
+        private String sanitizedSource;
+        
+        private Sanitize sanitization = Sanitize.NONE;
+
+        public Context(String name, Snapshot snapshot) {
+            this.name = name;
+            this.snapshot = snapshot;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Snapshot getSnapshot() {
+            return snapshot;
+        }
+
+        public String getSource() {
+            if (source == null) {
+                source = snapshot.getText().toString();
+            }
+            return source;
+        }
+
+        public String getSanitizedSource() {
+            return sanitizedSource;
+        }
+        
+    }
 
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
+        /** Only parse the current file accurately, don't try heuristics */
+        NEVER {
+
+            @Override
+            public Sanitize next() {
+                return NEVER;
+            }
+        },
+
         /** Perform no sanitization */
-        NONE,
+        NONE {
+
+            @Override
+            public Sanitize next() {
+                return MISSING_CURLY;
+            }
+        },
+        
+        /** Attempt to fix missing } */
+        MISSING_CURLY {
+
+            @Override
+            public Sanitize next() {
+                return SYNTAX_ERROR_CURRENT;
+            }
+        },
+        
         /** Remove current error token */
-        SYNTAX_ERROR_CURRENT,
+        SYNTAX_ERROR_CURRENT {
+
+            @Override
+            public Sanitize next() {
+                return SYNTAX_ERROR_PREVIOUS;
+            }
+        },
+        
         /** Remove token before error */
-        SYNTAX_ERROR_PREVIOUS,
+        SYNTAX_ERROR_PREVIOUS {
+
+            @Override
+            public Sanitize next() {
+                return SYNTAX_ERROR_PREVIOUS_LINE;
+            }
+        },
+        
         /** remove line with error */
-        SYNTAX_ERROR_PREVIOUS_LINE,
+        SYNTAX_ERROR_PREVIOUS_LINE {
+
+            @Override
+            public Sanitize next() {
+                return SYNTAX_ERROR_BLOCK;
+            }
+        },
+        
         /** try to delete the whole block, where is the error*/
-        SYNTAX_ERROR_BLOCK,
+        SYNTAX_ERROR_BLOCK {
+
+            @Override
+            public Sanitize next() {
+                return EDITED_DOT;
+            }
+        },
+        
         /** Try to remove the trailing . or :: at the caret line */
-        EDITED_DOT,
-        /** Try to remove the trailing . or :: at the error position, or the prior
-         * line, or the caret line */
-        ERROR_DOT,
-        /** Try to remove the initial "if" or "unless" on the block
+        EDITED_DOT {
+
+            @Override
+            public Sanitize next() {
+                return ERROR_DOT;
+            }
+        },
+        
+        /** 
+         * Try to remove the trailing . or :: at the error position, or the prior
+         * line, or the caret line
+         */
+        ERROR_DOT {
+
+            @Override
+            public Sanitize next() {
+                return BLOCK_START;
+            }
+        },
+        /** 
+         * Try to remove the initial "if" or "unless" on the block
          * in case it's not terminated
          */
-        BLOCK_START,
+        BLOCK_START {
+
+            @Override
+            public Sanitize next() {
+                return ERROR_LINE;
+            }
+        },
+        
         /** Try to cut out the error line */
-        ERROR_LINE,
+        ERROR_LINE {
+
+            @Override
+            public Sanitize next() {
+                return EDITED_LINE;
+            }
+        },
+        
         /** Try to cut out the current edited line, if known */
-        EDITED_LINE,
-        /** Attempt to fix missing } */
-        MISSING_CURLY,
-        /** Try to fix incomplete 'require("' function for FS code complete */
-        REQUIRE_FUNCTION_INCOMPLETE,
+        EDITED_LINE {
+
+            @Override
+            public Sanitize next() {
+                return NEVER;
+            }
+        };
+
+        
+        public abstract Sanitize next();
     }
 
 }
