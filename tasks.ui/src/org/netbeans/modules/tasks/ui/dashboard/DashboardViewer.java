@@ -66,6 +66,7 @@ import org.netbeans.modules.tasks.ui.dnd.DashboardTransferHandler;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.filter.DashboardFilter;
 import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
@@ -199,6 +200,13 @@ public final class DashboardViewer implements PropertyChangeListener {
                     titleRepositoryNode.setProgressVisible(true);
                     updateRepositories((List<Repository>) evt.getNewValue());
                     titleRepositoryNode.setProgressVisible(false);
+                }
+            });
+        } else if (evt.getPropertyName().equals(DashboardSettings.TASKS_LIMIT_SETTINGS_CHANGED)){
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateContent();
                 }
             });
         }
@@ -712,7 +720,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (refresh) {
             taskHits = 0;
             persistExpanded = !wasForceExpand;
-            refreshContent();
+            updateContent();
             persistExpanded = true;
             return taskHits;
         } else {
@@ -723,7 +731,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private int manageApplyFilter(boolean refresh) {
         if (refresh) {
             taskHits = 0;
-            refreshContent();
+            updateContent();
             return taskHits;
         } else {
             return -1;
@@ -941,9 +949,10 @@ public final class DashboardViewer implements PropertyChangeListener {
         model.removeRoot(node);
     }
 
-    private void refreshContent() {
+    private void updateContent() {
         synchronized (LOCK_CATEGORIES) {
             for (CategoryNode categoryNode : categoryNodes) {
+                categoryNode.initPaging();
                 categoryNode.updateContent();
             }
         }

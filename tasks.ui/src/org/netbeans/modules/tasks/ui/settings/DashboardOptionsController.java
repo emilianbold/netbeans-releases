@@ -39,61 +39,78 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.dashboard;
+package org.netbeans.modules.tasks.ui.settings;
 
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.tasks.ui.LinkButton;
-import org.netbeans.modules.tasks.ui.treelist.LeafNode;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author jpeska
  */
-public class ShowNextNode extends LeafNode {
+@OptionsPanelController.SubRegistration(
+    id = DashboardOptionsController.OPTIONS_PATH,
+    displayName = "#LBL_Options",
+    keywords = "#KW_Dashboard",
+    keywordsCategory = "Advanced/Dashboard"
+)
+public class DashboardOptionsController extends OptionsPanelController {
 
-    private final int count;
-    private JPanel panel;
-    private LinkButton btnName;
-    private Action showNextAction;
+    public static final String OPTIONS_PATH = "Dashboard"; // NOI18N
+    private DashboardOptions dashboardOptions;
 
-    public ShowNextNode(TaskContainerNode parent, int count) {
-        super(parent);
-        this.count = count;
-        this.showNextAction = new ShowNextAction();
+    @Override
+    public void update() {
+        getOptions().update();
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        if (panel == null) {
-            panel = new JPanel(new GridBagLayout());
-            panel.setOpaque(false);
-            btnName = new LinkButton(getCountString(), showNextAction);
-            panel.add(btnName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
-            panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        }
-        btnName.setForeground(foreground, isSelected);
-        return panel;
+    public void applyChanges() {
+        getOptions().applyChanges();
     }
 
-    private String getCountString() {
-        return NbBundle.getMessage(ShowNextNode.class, "LBL_ShowNext", count);
+    @Override
+    public void cancel() {
+        //do nothing
     }
 
-    private class ShowNextAction extends AbstractAction {
+    @Override
+    public boolean isValid() {
+        return getOptions().isDataValid();
+    }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ((TaskContainerNode) getParent()).showAdditionalPage();
+    @Override
+    public boolean isChanged() {
+        return getOptions().isChanged();
+    }
+
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        return getOptions();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx ("netbeans.optionsDialog.advanced.dashboard");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        getOptions().support.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        getOptions().support.removePropertyChangeListener(l);
+    }
+
+    private DashboardOptions getOptions() {
+        if( null == dashboardOptions ) {
+            dashboardOptions = new DashboardOptions();
         }
+        return dashboardOptions;
     }
 }
