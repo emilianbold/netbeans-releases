@@ -77,7 +77,6 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTRoot;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -97,11 +96,13 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider.class)
 public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
+    @Override
     public Set<String> getSupportedExtensions() {
         return Collections.singleton("groovy"); // NOI18N
 
     }
 
+    @Override
     public void translate(Iterable<File> files, File sourceRoot, Result result) {
         JavaStubGenerator generator = new JavaStubGenerator();
         FileObject rootFO = FileUtil.toFileObject(sourceRoot);
@@ -119,10 +120,10 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                         pkg = pkg.replace('/', '.');
                         StringBuilder sb = new StringBuilder();
                         if (!pkg.equals("")) { // NOI18N
-                            sb.append("package " + pkg + ";"); // NOI18N
+                            sb.append("package ").append(pkg).append(";"); // NOI18N
                         }
                         String name = fo.getName();
-                        sb.append("public class " + name + "{}"); // NOI18N
+                        sb.append("public class ").append(name).append("{}"); // NOI18N
                         result.add(file, pkg, name, sb.toString());
                     }
                 }
@@ -429,7 +430,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         }
 
         private void genEnumFields(List fields, PrintWriter out) {
-            if (fields.size() == 0) {
+            if (fields.isEmpty()) {
                 return;
             }
             boolean first = true;
@@ -471,7 +472,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
             }
             BlockStatement block = (BlockStatement) code;
             List stats = block.getStatements();
-            if (stats == null || stats.size() == 0) {
+            if (stats == null || stats.isEmpty()) {
                 return null;
             }
             Statement stat = (Statement) stats.get(0);
