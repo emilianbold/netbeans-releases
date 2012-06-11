@@ -1179,8 +1179,13 @@ class LayoutFeeder implements LayoutConstants {
         // align in parallel if required
         if (iDesc1.snappedParallel != null || (iDesc2 != null && iDesc2.snappedParallel != null)) {
             if (iDesc2 != null && iDesc2.snappedParallel != null) {
-                alignInParallel(getAlignRep(added, iDesc2.alignment), iDesc2.snappedParallel, iDesc2.alignment);
-                // TODO this aligning might eliminate (replace) the parallel group used in iDesc1.snappedParallel, so the following aligning may fail
+                boolean dangerousAligning = iDesc1.snappedParallel != null && iDesc1.snappedParallel.getParent() != null
+                                            && iDesc1.snappedParallel.isParentOf(iDesc2.snappedParallel);
+                LayoutInterval group = alignInParallel(getAlignRep(added, iDesc2.alignment), iDesc2.snappedParallel, iDesc2.alignment);
+                if (dangerousAligning && iDesc1.snappedParallel.getParent() == null) {
+                    // this aligning eliminated (replaced) the parallel group referred to in iDesc1.snappedParallel
+                    iDesc1.snappedParallel = group; // should be already aligned at what we need
+                }
             }
             if (iDesc1.snappedParallel != null) {
                 alignInParallel(getAlignRep(added, iDesc1.alignment), iDesc1.snappedParallel, iDesc1.alignment);
