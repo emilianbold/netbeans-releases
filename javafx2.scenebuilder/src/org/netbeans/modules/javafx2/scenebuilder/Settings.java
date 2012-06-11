@@ -83,7 +83,7 @@ final public class Settings {
         
         boolean isDefault = (homeDef != null && predefinedHome != null && homeDef.equals(predefinedHome.getPath()));
         
-        if (isDefault || selectedHome == null) {
+        if (isDefault) {
             selectedHome = predefinedHome;
         } else {
             StringTokenizer st = new StringTokenizer(homeDef, "#");
