@@ -953,63 +953,145 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug" if="${{junit.available}}">
+            <target name="-init-macrodef-junit-debug" if="${{junit.available}}" unless="${{nb.junit.batch}}">
                 <macrodef>
                     <xsl:attribute name="name">junit-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
                     <attribute>
-                        <xsl:attribute name="name">testClass</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
                     </attribute>
                     <attribute>
-                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <xsl:element name="element">
-                        <xsl:attribute name="name">customize2</xsl:attribute>
+                        <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </xsl:element>
                     <sequential>
-                        <property name="test.report.file" location="${{build.test.results.dir}}/TEST-@{{testClass}}.xml"/>
-                        <delete file="${{test.report.file}}"/>
-                        <mkdir dir="${{build.test.results.dir}}"/>
-                        <condition property="junit.methods.arg" value="methods=@{{testMethod}}" else="">
-                            <isset property="test.method"/>
-                        </condition>
-                        <!--Ugly, puts ant and ant-junit to the test classpath, but there is probably no other solution how to run the XML formatter -->
-                        <ejbjarproject1:debug args="@{{testClass}}" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}:${{j2ee.platform.embeddableejb.classpath}}">
-                            <customize>
-                                <arg value="${{junit.methods.arg}}"/>
-                                <arg value="showoutput=true"/>
-                                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
-                                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${{test.report.file}}"/>
-                                <customize2/>
-                            </customize>
-                        </ejbjarproject1:debug>
+                        <junit>
+                            <xsl:attribute name="showoutput">true</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> -->
+                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <test todir="${{build.test.results.dir}}" name="@{{testincludes}}" methods="@{{testmethods}}"/>
+                            <syspropertyset>
+                                <propertyref prefix="test-sys-prop."/>
+                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <formatter type="brief" usefile="false"/>
+                            <formatter type="xml"/>
+                            <jvmarg value="-ea"/>
+                            <jvmarg line="${{debug-args-line}}"/>
+                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <customize/>
+                        </junit>
                     </sequential>
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit-debug" if="${{junit.available}}">
+            <target name="-init-macrodef-junit-debug-batch" if="${{nb.junit.batch}}">
+                <macrodef>
+                    <xsl:attribute name="name">junit-debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property name="run.jvmargs.ide" value=""/>
+                        <junit>
+                            <xsl:attribute name="showoutput">true</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> -->
+                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <batchtest todir="${{build.test.results.dir}}">
+                                <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:test-roots"/>
+                                    <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
+                                </xsl:call-template>
+                            </batchtest>
+                            <syspropertyset>
+                                <propertyref prefix="test-sys-prop."/>
+                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <formatter type="brief" usefile="false"/>
+                            <formatter type="xml"/>
+                            <jvmarg value="-ea"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
+                            <jvmarg line="${{debug-args-line}}"/>
+                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <customize/>
+                        </junit>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit-debug,-init-macrodef-junit-debug-batch" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-debug-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
                     <attribute>
-                        <xsl:attribute name="name">testClass</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
                     </attribute>
                     <attribute>
-                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
-                    <xsl:element name="element">
-                        <xsl:attribute name="name">customize2</xsl:attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                         <xsl:attribute name="implicit">true</xsl:attribute>
-                    </xsl:element>
+                    </element>
                     <sequential>
-                        <ejbjarproject2:junit-debug testClass="@{{testClass}}" testMethod="@{{testMethod}}">
-                            <customize2/>
+                        <ejbjarproject2:junit-debug includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
+                            <customize/>
                         </ejbjarproject2:junit-debug>
                     </sequential>
                 </macrodef>
@@ -1083,21 +1165,32 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                     <xsl:attribute name="name">test-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2ee-ejbjarproject/2</xsl:attribute>
                     <attribute>
-                        <xsl:attribute name="name">testClass</xsl:attribute>
-                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
                     </attribute>
                     <attribute>
-                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <sequential>
-                        <ejbjarproject2:test-debug-impl testClass="@{{testClass}}" testMethod="@{{testMethod}}">
-                            <customize2>
-                                <syspropertyset>
-                                    <propertyref prefix="test-sys-prop."/>
-                                    <mapper from="test-sys-prop.*" to="*" type="glob"/>
-                                </syspropertyset>
-                            </customize2>
+                        <ejbjarproject2:test-debug-impl includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
+                            <customize>
+                                <classpath>
+                                    <path path="${{run.test.classpath}}"/>
+                                    <path path="${{j2ee.platform.classpath}}"/>
+                                    <path path="${{j2ee.platform.embeddableejb.classpath}}"/>
+                                </classpath>
+                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                                <jvmarg line="${{runmain.jvmargs}}"/>
+                            </customize>
                         </ejbjarproject2:test-debug-impl>
                     </sequential>
                 </macrodef>
@@ -1819,7 +1912,12 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="connect-debugger" unless="is.debugged">
-                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
+                <condition>
+                    <xsl:attribute name="property">listeningcp</xsl:attribute>
+                    <xsl:attribute name="value">sourcepath</xsl:attribute>
+                    <istrue value="${{j2ee.compile.on.save}}"/>
+                </condition>
+                <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}" listeningcp="${{listeningcp}}">
                     <classpath>
                         <path path="${{debug.classpath}}"/>
                     </classpath>
@@ -2257,16 +2355,17 @@ exists or setup the property manually. For example like this:
             
             <target name="-debug-start-debuggee-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <ejbjarproject2:test-debug testClass="${{test.class}}"/>
+                <ejbjarproject2:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{javac.includes}}"/>
             </target>
             
             <target name="-debug-start-debuggee-test-method">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <ejbjarproject2:test-debug testClass="${{test.class}}" testMethod="${{test.method}}"/>
+                <fail unless="test.method">Must select some method in the IDE or set test.method</fail>
+                <ejbjarproject2:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{test.class}}" testmethods="${{test.method}}"/>
             </target>
 
             <target name="-debug-start-debugger-test">

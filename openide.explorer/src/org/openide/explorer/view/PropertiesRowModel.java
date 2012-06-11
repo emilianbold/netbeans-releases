@@ -271,6 +271,12 @@ class PropertiesRowModel implements RowModel {
         }
         return descs [column];
     }
+    
+    public void setShortDescription(int column, String descr) {
+        assert column < prop.length : column + " must be bellow " + prop.length;
+        prop[column].setShortDescription(descr);
+        descs[column] = null;
+    }
 
     public String getRawColumnName (int column) {
         return prop[column].getDisplayName();

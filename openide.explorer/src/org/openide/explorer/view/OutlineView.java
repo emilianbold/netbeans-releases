@@ -1453,6 +1453,36 @@ public class OutlineView extends JScrollPane {
             }
             return null;
         }
+
+        @Override
+        public void setColumnModel(TableColumnModel columnModel) {
+            super.setColumnModel(columnModel);
+            if (rowModel == null) {
+                return ;
+            }
+            int cc = columnModel.getColumnCount();
+            if (cc > 0) {
+                Property[] properties = new Property[cc - 1];
+                for (int ic = 1; ic < cc; ic++) {
+                    TableColumn column = columnModel.getColumn(ic);
+                    String name = column.getHeaderValue().toString();
+                    properties[ic - 1] = new PrototypeProperty(name, name);
+                }
+                rowModel.setProperties(properties);
+            } else {
+                rowModel.setProperties(new Property[] {});
+            }
+        }
+
+        @Override
+        public void readSettings(Properties p, String propertyPrefix) {
+            super.readSettings(p, propertyPrefix);
+            int numColumns = getColumnModel().getColumnCount();
+            for (int i = 0; i < numColumns; i++) {
+                OutlineViewOutlineColumn ovoc = (OutlineViewOutlineColumn) getColumnModel().getColumn(i);
+                ovoc.postReadSettings(p, i, propertyPrefix);
+            }
+        }
         
         private TableQuickSearchSupport createDefaultTableQuickSearchSupport() {
             return new TableQuickSearchSupport(this, new DefaultQuickSearchTableFilter(), qss);
@@ -1948,7 +1978,11 @@ public class OutlineView extends JScrollPane {
          * Extension of ETableColumn using TableViewRowComparator as
          * comparator.
          */
-        private class OutlineViewOutlineColumn extends OutlineColumn {
+        class OutlineViewOutlineColumn extends OutlineColumn {
+            
+            private static final String PROP_PREFIX = "OutlineViewOutlineColumn-";  // NOI18N
+            private static final String PROP_SHORT_DESCRIPTION = "shortDescription";// NOI18N
+            
             private String tooltip;
             private final Comparator originalNodeComparator = new NodeNestedComparator ();
 
@@ -2012,6 +2046,28 @@ public class OutlineView extends JScrollPane {
                 return rowModel.getRawColumnName (getModelIndex () - 1);
             }
 
+            void postReadSettings(Properties p, int index, String propertyPrefix) {
+                TableModel model = getModel();
+                if (model.getRowCount() > 0 && getModelIndex () > 0) {
+                    String myPrefix = propertyPrefix + PROP_PREFIX + Integer.toString(index) + "-";
+                    String shortDescription = p.getProperty(myPrefix + PROP_SHORT_DESCRIPTION, null);
+                    if (shortDescription != null) {
+                        rowModel.setShortDescription(getModelIndex () - 1, shortDescription);
+                    }
+                }
+            }
+
+            @Override
+            public void writeSettings(Properties p, int index, String propertyPrefix) {
+                super.writeSettings(p, index, propertyPrefix);
+                TableModel model = getModel();
+                if (model.getRowCount() > 0 && getModelIndex () > 0) {
+                    String shortDescription = rowModel.getShortDescription(getModelIndex () - 1);
+                    String myPrefix = propertyPrefix + PROP_PREFIX + Integer.toString(index) + "-";
+                    p.setProperty(myPrefix + PROP_SHORT_DESCRIPTION, shortDescription);
+                }
+            }
+            
             /** This is here to compute and set the header tooltip. */
             class OutlineViewOutlineHeaderRenderer implements TableCellRenderer {
                 private TableCellRenderer orig;
