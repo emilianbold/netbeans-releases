@@ -56,12 +56,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.applet.AppletSupport;
@@ -73,7 +73,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
@@ -269,21 +268,13 @@ public class J2SEActionProviderTest extends NbTestCase {
         p = new Properties();
         context = Lookups.fixed(someSource1);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
-        assertNotNull("Must found some targets for COMMAND_TEST_SINGLE", targets);
-        assertEquals("There must be one target for COMMAND_TEST_SINGLE", 1, targets.length);
-        assertEquals("Unexpected target name", "test-single", targets[0]);
-        assertEquals("There must be one target parameter", 2, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
-        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));
+        assertEquals("correct targets for COMMAND_TEST_SINGLE", "[test-single]", Arrays.toString(targets));
+        assertEquals("correct target parameters", "{javac.includes=foo/BarTest.java, test.includes=foo/BarTest.java}", new TreeMap<Object,Object>(p).toString());
         p = new Properties();
         context = Lookups.fixed(someSource1,someSource2);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
-        assertNotNull("Must found some targets for COMMAND_TEST_SINGLE", targets);
-        assertEquals("There must be one target for COMMAND_TEST_SINGLE", 1, targets.length);
-        assertEquals("Unexpected target name", "test-single", targets[0]);
-        assertEquals("There must be one target parameter", 2, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("javac.includes"));
-        assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("test.includes"));        
+        assertEquals("correct targets for COMMAND_TEST_SINGLE", "[test-single]", Arrays.toString(targets));
+        assertEquals("correct target parameters", "{javac.includes=foo/BarTest.java,foo/MainTest.java, test.includes=foo/BarTest.java,foo/MainTest.java}", new TreeMap<Object,Object>(p).toString());
 
         // test COMMAND_DEBUG_TEST_SINGLE
 
