@@ -184,6 +184,6 @@
         
 <!-- Cloud support CSH topics -->
 <mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="web/cloud/csh/add-cloud-provider-oracle.html" />
-<mapID target="org.netbeans.api.server.CommonCloudUIs" url="web/cloud/csh/cloud-provider.html"/>
+<mapID target="org.netbeans.api.server.CommonCloudUIs" url="web/cloud/csh/cloud-providers.html"/>
 </map>
 
