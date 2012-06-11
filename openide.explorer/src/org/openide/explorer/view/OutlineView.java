@@ -51,6 +51,7 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -1964,6 +1965,16 @@ public class OutlineView extends JScrollPane {
                 }
             }
             return super.editCellAt(row, column, e);
+        }
+        
+        @Override
+        protected void processComponentKeyEvent(KeyEvent e) {
+            Component editorComponent = getEditorComponent();
+            if (editorComponent != null && editorComponent.isFocusable()) {
+                // The event should go to the editor component
+                editorComponent.requestFocusInWindow();
+                Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(e);
+            }
         }
         
         @Override
