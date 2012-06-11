@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -124,7 +125,7 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
         assert indexFolder != null;
         final String indexVersion = Integer.toString(VERSION);
         final File luceneIndexFolder = new File (FileUtil.toFile(indexFolder),indexVersion);
-        URL result = luceneIndexFolder.toURI().toURL();
+        URL result = Utilities.toURI(luceneIndexFolder).toURL();
         final String surl = result.toExternalForm();
         if (surl.charAt(surl.length()-1) != '/') {       //NOI18N
             result = new URL(surl+'/');  //NOI18N

@@ -49,6 +49,7 @@ import java.net.URI;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Find out whether some files logically belong in one directory tree,
@@ -85,8 +86,8 @@ public final class CollocationQuery {
             throw new IllegalArgumentException("Parameter file2 was not "+  // NOI18N
                 "normalized. Was "+file2+" instead of "+FileUtil.normalizeFile(file2));  // NOI18N
         }
-        URI uri1 = file1.toURI();
-        URI uri2 = file2.toURI();
+        URI uri1 = Utilities.toURI(file1);
+        URI uri2 = Utilities.toURI(file2);
         for (CollocationQueryImplementation2 cqi : implementations2.allInstances()) {
             if (cqi.areCollocated(uri1, uri2)) {
                 return true;
@@ -125,8 +126,8 @@ public final class CollocationQuery {
             }
         }
         if ("file".equals(file1.getScheme()) && "file".equals(file2.getScheme())) { // NOI18N
-            File f1 = FileUtil.normalizeFile(new File(file1));
-            File f2 = FileUtil.normalizeFile(new File(file2));
+            File f1 = FileUtil.normalizeFile(Utilities.toFile(file1));
+            File f2 = FileUtil.normalizeFile(Utilities.toFile(file2));
             for (org.netbeans.spi.queries.CollocationQueryImplementation cqi : implementations.allInstances()) {
                 if (cqi.areCollocated(f1, f2)) {
                     return true;
@@ -148,11 +149,11 @@ public final class CollocationQuery {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         for (CollocationQueryImplementation2 cqi : implementations2.allInstances()) {
             URI root = cqi.findRoot(uri);
             if (root != null) {
-                return new File(root);
+                return Utilities.toFile(root);
             }
         }
         for (org.netbeans.spi.queries.CollocationQueryImplementation cqi : implementations.allInstances()) {
@@ -183,11 +184,11 @@ public final class CollocationQuery {
             }
         }
         if ("file".equals(file.getScheme())) { // NOI18N
-            File f = FileUtil.normalizeFile(new File(file));
+            File f = FileUtil.normalizeFile(Utilities.toFile(file));
             for (org.netbeans.spi.queries.CollocationQueryImplementation cqi : implementations.allInstances()) {
                 File root = cqi.findRoot(f);
                 if (root != null) {
-                    return root.toURI();
+                    return Utilities.toURI(root);
                 }
             }
         }

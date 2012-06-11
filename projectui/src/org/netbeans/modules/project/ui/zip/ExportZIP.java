@@ -210,7 +210,7 @@ public class ExportZIP extends JPanel {
             }
             boolean kidMixed;
             if (mixedSharability) {
-                switch (SharabilityQuery.getSharability(kid.toURI())) {
+                switch (SharabilityQuery.getSharability(Utilities.toURI(kid))) {
                 case SHARABLE:
                     kidMixed = false;
                     break;

@@ -54,6 +54,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -111,7 +112,7 @@ public class SimpleAntArtifactTest extends NbTestCase {
         assertEquals("correct project", pm.findProject(sisterprojdir), art.getProject());
         
         art = sisterh.createSimpleAntArtifact("jar", "build.jar.absolute", sisterh.getStandardPropertyEvaluator(), "dojar", "clean");
-        assertEquals("correct artifact location", (new File(getWorkDir().getAbsolutePath()+"/build/proj3.jar")).toURI(), art.getArtifactLocations()[0]);
+        assertEquals("correct artifact location", Utilities.toURI((new File(getWorkDir().getAbsolutePath()+"/build/proj3.jar"))), art.getArtifactLocations()[0]);
     }
     
 }

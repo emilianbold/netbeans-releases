@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -392,7 +393,7 @@ import org.openide.util.RequestProcessor;
             for (URI uri : this.fileObjsChanged) {
                 String name;
                 try {
-                    final File f = new File(uri);
+                    final File f = Utilities.toFile(uri);
                     name = f.getAbsolutePath();
                 } catch (IllegalArgumentException iae) {
                     name = uri.toString();

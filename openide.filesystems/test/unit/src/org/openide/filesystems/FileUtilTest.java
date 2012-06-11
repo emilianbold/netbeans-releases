@@ -188,12 +188,12 @@ public class FileUtilTest extends NbTestCase {
     }
     private void assertCorrectURL(String filename, String expectedURLPrefix, String expectedURLSuffix) throws Exception {
         File d = getWorkDir();
-        assertEquals(expectedURLSuffix == null ? null : new URL(expectedURLPrefix + d.toURI() + expectedURLSuffix),
+        assertEquals(expectedURLSuffix == null ? null : new URL(expectedURLPrefix + Utilities.toURI(d) + expectedURLSuffix),
                 FileUtil.urlForArchiveOrDir(new File(d, filename)));
     }
     private void assertCorrectFile(String expectedFilename, String urlPrefix, String urlSuffix) throws Exception {
         assertEquals(expectedFilename == null ? null : new File(getWorkDir(), expectedFilename),
-                FileUtil.archiveOrDirForURL(new URL(urlPrefix + getWorkDir().toURI() + urlSuffix)));
+                FileUtil.archiveOrDirForURL(new URL(urlPrefix + Utilities.toURI(getWorkDir()) + urlSuffix)));
     }
 
     /** Tests translation from jar resource url to jar archive url. */
@@ -262,7 +262,7 @@ public class FileUtilTest extends NbTestCase {
         };
         log.addHandler(handler);
         try {
-            final boolean result = FileUtil.isArchiveFile(testFile.toURI().toURL());
+            final boolean result = FileUtil.isArchiveFile(Utilities.toURI(testFile).toURL());
             assertTrue("The test.jar should be archive.",result);   //NOI18N
         } finally {
             log.removeHandler(handler);

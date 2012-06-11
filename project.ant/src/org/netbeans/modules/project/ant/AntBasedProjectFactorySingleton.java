@@ -335,7 +335,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         byte[] data = baos.toByteArray();
         InputSource src = new InputSource(new ByteArrayInputStream(data));
-        src.setSystemId(projectDiskFile.toURI().toString());
+        src.setSystemId(Utilities.toURI(projectDiskFile).toString());
         try {
 //            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

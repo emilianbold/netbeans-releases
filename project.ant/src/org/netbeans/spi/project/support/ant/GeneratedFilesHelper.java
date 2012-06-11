@@ -327,7 +327,7 @@ public final class GeneratedFilesHelper {
                                 File projectXmlF = FileUtil.toFile(projectXml);
                                 assert projectXmlF != null;
                                 StreamSource projectXmlSource = new StreamSource(
-                                    new ByteArrayInputStream(projectXmlData), projectXmlF.toURI().toString());
+                                    new ByteArrayInputStream(projectXmlData), Utilities.toURI(projectXmlF).toString());
                                 ByteArrayOutputStream result = new ByteArrayOutputStream();
                                 t.transform(projectXmlSource, new StreamResult(result));
                                 if (BUILD_IMPL_XML_PATH.equals(path)) {

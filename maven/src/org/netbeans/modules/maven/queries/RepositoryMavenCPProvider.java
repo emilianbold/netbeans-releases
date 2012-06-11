@@ -66,6 +66,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -96,8 +97,8 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
                               //TODO can the .jar extension be hardwired? on CP..
                             File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
                             File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
-                            URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
-                            URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                            URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
+                            URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                             if (!rel.isAbsolute()) {
                                 String groupId = rel.getPath();
                                 if (groupId != null && !groupId.equals("")) {
