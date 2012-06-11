@@ -41,12 +41,11 @@
  */
 {
   "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.6",
+  "version": "0.4.7",
 
   "background_page": "main.html",
 
   "permissions": [
-    "contextMenus",
     "tabs",
     "<all_urls>",
     "debugger"
