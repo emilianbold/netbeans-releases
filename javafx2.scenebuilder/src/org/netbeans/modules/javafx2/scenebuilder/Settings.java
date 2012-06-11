@@ -87,8 +87,8 @@ final public class Settings {
             selectedHome = predefinedHome;
         } else {
             StringTokenizer st = new StringTokenizer(homeDef, "#");
-            if (st.countTokens() == 4) {
-                selectedHome = new Home(st.nextToken(), st.nextToken(), st.nextToken(), st.nextToken());
+            if (st.countTokens() > 0) {
+                selectedHome = SBHomeFactory.getDefault().loadHome(st.nextToken());
             }
         }
         
