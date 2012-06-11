@@ -416,6 +416,7 @@ public final class MavenModelUtils {
             final boolean[] libraryAdded = new boolean[1];
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
+                @Override
                 public void performOperation(POMModel model) {
                     try {
                         addJaxws21Library(project, model);
@@ -598,6 +599,7 @@ public final class MavenModelUtils {
             if (updateScopeTo != null) {
                 final String targetScope = updateScopeTo;
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         // update webservices-rt library dependency scope (provided or compile)
                         // depending whether J2EE Server contains metro jars or not

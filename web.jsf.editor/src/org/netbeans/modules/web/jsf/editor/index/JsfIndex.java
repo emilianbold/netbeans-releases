@@ -191,7 +191,8 @@ public class JsfIndex {
                     CompositeComponentModel.LIBRARY_NAME_KEY,
                     CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
                     CompositeComponentModel.HAS_IMPLEMENTATION_KEY,
-                    CompositeComponentModel.INTERFACE_FACETS);
+                    CompositeComponentModel.INTERFACE_FACETS,
+                    CompositeComponentModel.INTERFACE_DESCRIPTION_KEY);
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
                 if (file != null) {
@@ -212,7 +213,8 @@ public class JsfIndex {
                     CompositeComponentModel.LIBRARY_NAME_KEY,
                     CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
                     CompositeComponentModel.HAS_IMPLEMENTATION_KEY,
-                    CompositeComponentModel.INTERFACE_FACETS);
+                    CompositeComponentModel.INTERFACE_FACETS,
+                    CompositeComponentModel.INTERFACE_DESCRIPTION_KEY);
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
                 if (file != null) {

@@ -44,6 +44,7 @@
 	<mapID target="org.netbeans.modules.mercurial.ui.queues.GoToPatch" url="csh/mercurial-go-patch.html" />
     <mapID target="org.netbeans.modules.mercurial.ui.queues.FinishPatch" url="csh/mercurial-finish-patch.html" />
 	<mapID target="org.netbeans.modules.mercurial.ui.commit.TemplatePanel" url="csh/mercurial_select_template.html" />
+	<mapID target="org.netbeans.modules.mercurial.ui.branch.BranchSelector" url="csh/mercurial-switch-branch.html" />
 </map>
 
 

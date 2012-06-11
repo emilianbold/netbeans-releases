@@ -156,8 +156,8 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
        if (treePathHandles != null) { 
            for (TreePathHandle treePathHandle : treePathHandles) {
                 if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
-                    WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-                    if (webModule != null) {
+                    Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
+                    if (project != null) {
                         CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
                         if (info != null) {
                             Element resElement = treePathHandle.resolveElement(info);
@@ -167,12 +167,12 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                                 String newPackageName = JSFRefactoringUtils.getPackageName(refactoring.getTarget().lookup(URL.class));
                                 String newFQN = newPackageName.length() == 0 ? type.getSimpleName().toString() : newPackageName + '.' + type.getSimpleName().toString();
                                 if (isTargetOtherProject(treePathHandle.getFileObject(), refactoring)) {
-                                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+                                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
                                     for (Occurrences.OccurrenceItem item : items) {
                                         refactoringElements.add(refactoring, new JSFSafeDeletePlugin.JSFSafeDeleteClassElement(item));
                                     }
                                 } else {
-                                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+                                    List<Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
                                     Modifications modification = new Modifications();
                                     for (Occurrences.OccurrenceItem item : items) {
                                         Modifications.Difference difference = new Modifications.Difference(Modifications.Difference.Kind.CHANGE, item.getChangePosition().getBegin(), item.getChangePosition().getEnd(), item.getOldValue(), item.getNewValue(), item.getRenamePackageMessage());

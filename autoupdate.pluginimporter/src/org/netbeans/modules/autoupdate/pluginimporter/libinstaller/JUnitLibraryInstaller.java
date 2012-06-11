@@ -130,29 +130,32 @@ public class JUnitLibraryInstaller {
         }
         assert ! jUnitLib.getAvailableUpdates().isEmpty() : "Updates found for " + jUnitLib;
         if (jUnitLib.getAvailableUpdates().isEmpty()) {
-            LOG.info("No updates found for " + jUnitLib);
+            LOG.log(Level.INFO, "No updates found for {0}", jUnitLib);
             return ;
         }
         // make install container
         OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
         UpdateElement jUnitElement = jUnitLib.getAvailableUpdates().get(0);
         if (!oc.canBeAdded(jUnitLib, jUnitElement)) {
-            LOG.info("Could not add " + jUnitElement + " to updates");
+            LOG.log(Level.INFO, "Could not add {0} to updates", jUnitElement);
             return ;
         }
         for (UpdateElement req : oc.add(jUnitElement).getRequiredElements()) {
             oc.add(req);
         }
-        if (silent) {
-            try {
-                install(oc, jUnitElement, jUnitLib, false);
-            } catch (OperationException ex) {
-                LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
-                if (OperationException.ERROR_TYPE.WRITE_PERMISSION.equals(ex.getErrorType())) {
-                    notifyWarning(oc, jUnitElement, jUnitLib); 
-               }
+        // Commented so far, better is to do not show any messages to user 
+        // and silently try to installl JUnit to NB installation folder 
+        // and if it was unsuccessful install it into userdir.
+        //if (silent) {
+        try {
+            install(oc, jUnitElement, jUnitLib, false);
+        } catch (OperationException ex) {
+            LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
+            if (OperationException.ERROR_TYPE.WRITE_PERMISSION.equals(ex.getErrorType())) {
+                notifyWarning(oc, jUnitElement, jUnitLib); 
             }
-        } else {
+        }
+        /*} else {
             Confirmation question = new NotifyDescriptor.Confirmation(
                                             download_question(),
                                             download_title(),
@@ -165,22 +168,22 @@ public class JUnitLibraryInstaller {
             } else {
                 LOG.info("user denied JUnit installation");
             }
-        }
+        }*/
     }
     
     private static void install(OperationContainer<InstallSupport> oc, UpdateElement jUnitElement, UpdateUnit jUnitLib, boolean useUserdirAsFallback) throws OperationException {
         // download
-        LOG.fine("Try to download " + jUnitElement);
+        LOG.log(Level.FINE, "Try to download {0}", jUnitElement);
         ProgressHandle downloadHandle = ProgressHandleFactory.createHandle (download_handle());
         Validator validator = oc.getSupport().doDownload(downloadHandle, true, useUserdirAsFallback);
         // install
         ProgressHandle validateHandle = ProgressHandleFactory.createHandle (validate_handle());
         Installer installer = oc.getSupport().doValidate(validator, validateHandle);
-        LOG.fine("Try to install " + jUnitElement);
+        LOG.log(Level.FINE, "Try to install {0}", jUnitElement);
         ProgressHandle installHandle = ProgressHandleFactory.createHandle (install_handle());
         Restarter restarter = oc.getSupport().doInstall(installer, installHandle);
         assert restarter == null : "Not need to restart while installing " + jUnitLib;
-        LOG.fine("Done " + jUnitElement);
+        LOG.log(Level.FINE, "Done {0}", jUnitElement);
     }
 
     @Messages({"writePermission=You don't have permission to install JUnit Library into the installation directory which is recommended.",

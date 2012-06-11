@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -68,16 +69,16 @@ import org.openide.util.Lookup;
  */
 public class JSFBeanCache {
     
-    public static List<FacesManagedBean> getBeans(WebModule webModule) {
+    public static List<FacesManagedBean> getBeans(Project project) {
         //unit testing, tests can provider a fake beans provider >>>
         JsfBeansProvider beansProvider = Lookup.getDefault().lookup(JsfBeansProvider.class);
         if(beansProvider != null) {
-            return beansProvider.getBeans(webModule);
+            return beansProvider.getBeans(project);
         }
         //<<<
 
         final List<FacesManagedBean> beans = new ArrayList<FacesManagedBean>();
-        MetadataModel<JsfModel> model = JsfModelFactory.getModel( webModule );
+        MetadataModel<JsfModel> model = JsfModelFactory.getModel( project );
         if ( model == null){
             return beans;
         }
@@ -108,7 +109,7 @@ public class JSFBeanCache {
     //for unit tests>>>
     public static interface JsfBeansProvider {
 
-        public List<FacesManagedBean> getBeans(WebModule webModule);
+        public List<FacesManagedBean> getBeans(Project project);
 
     }
     //<<<
