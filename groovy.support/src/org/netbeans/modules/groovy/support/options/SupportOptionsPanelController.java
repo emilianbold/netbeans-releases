@@ -52,11 +52,18 @@ import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Adamek
  */
+@NbBundle.Messages(
+    "OptionsCategory_Groovy=Groovy"
+)
+@OptionsPanelController.SubRegistration(
+    displayName="#OptionsCategory_Groovy"
+)
 public final class SupportOptionsPanelController extends OptionsPanelController {
 
     private SupportPanel panel;
