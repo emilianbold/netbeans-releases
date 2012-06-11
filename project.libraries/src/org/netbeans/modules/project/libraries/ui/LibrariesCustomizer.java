@@ -327,7 +327,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         LibraryStorageArea area = nodes[0].getLookup().lookup(LibraryStorageArea.class);
         if (area != null && area != LibrariesModel.GLOBAL_AREA) {
             customizerContext = new LibraryCustomizerContextWrapper(impl, area);
-            File f = new File(URI.create(area.getLocation().toExternalForm()));
+            File f = Utilities.toFile(URI.create(area.getLocation().toExternalForm()));
             this.libraryLocation.setText(f.getPath());
         } else {
             customizerContext = new LibraryCustomizerContextWrapper(impl, null);

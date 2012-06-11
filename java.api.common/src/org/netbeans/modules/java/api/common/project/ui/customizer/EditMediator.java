@@ -89,6 +89,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  * Visual classpath customizer support.
@@ -368,7 +369,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                 String path = libraryPath.getText(0, libraryPath.getLength());
                 if (path != null && path.length() > 0) {
                     File fil = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), path);
-                    librariesFolder = FileUtil.normalizeFile(fil).toURI().toURL();
+                    librariesFolder = Utilities.toURI(FileUtil.normalizeFile(fil)).toURL();
                     manager = LibraryManager.forLocation(librariesFolder);
                 } else {
                     empty = true;

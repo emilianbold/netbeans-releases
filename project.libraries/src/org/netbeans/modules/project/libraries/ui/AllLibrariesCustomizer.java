@@ -63,6 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
 class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
     
@@ -155,7 +156,7 @@ class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
             try {
                 //#131452 prevent space in path problem when converting to URL.
                 File loc = FileUtil.normalizeFile(new File((String) libraryManagerComboBox.getModel().getSelectedItem()));
-                u = loc.toURI().toURL();
+                u = Utilities.toURI(loc).toURL();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }

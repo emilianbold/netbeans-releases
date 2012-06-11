@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.queries;
 import java.io.File;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 public class MavenSharabilityQueryImplTest extends NbTestCase {
@@ -82,7 +83,7 @@ public class MavenSharabilityQueryImplTest extends NbTestCase {
         assertSharability(SharabilityQuery.Sharability.NOT_SHARABLE, "prj/modules/mod/target");
     }
     private void assertSharability(SharabilityQuery.Sharability expected, String path) throws Exception {
-        assertEquals(path, expected, SharabilityQuery.getSharability(new File(getWorkDir(), path).toURI()));
+        assertEquals(path, expected, SharabilityQuery.getSharability(Utilities.toURI(new File(getWorkDir(), path))));
     }
 
 }

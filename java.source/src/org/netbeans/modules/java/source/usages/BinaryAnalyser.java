@@ -115,6 +115,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 
 
@@ -250,7 +251,7 @@ public class BinaryAnalyser {
             final URL innerURL = FileUtil.getArchiveFile(root);
             if ("file".equals(innerURL.getProtocol())) {  //NOI18N
                 //Fast way
-                final File archive = new File (URI.create(innerURL.toExternalForm()));
+                final File archive = Utilities.toFile(URI.create(innerURL.toExternalForm()));
                 if (archive.canRead()) {
                     if (!isUpToDate(ROOT,archive.lastModified())) {
                         writer.clear();
@@ -281,7 +282,7 @@ public class BinaryAnalyser {
             }
         } else if ("file".equals(mainP)) {    //NOI18N
             //Fast way
-            final File rootFile = new File (URI.create(root.toExternalForm()));
+            final File rootFile = Utilities.toFile(URI.create(root.toExternalForm()));
             if (rootFile.isDirectory()) {
                 String path = rootFile.getAbsolutePath ();
                 if (path.charAt(path.length()-1) != File.separatorChar) {
@@ -880,7 +881,7 @@ public class BinaryAnalyser {
                     } catch (InvalidClassFormatException icf) {
                         LOGGER.log(Level.WARNING, "Invalid class file format: {0}!/{1}",
                                 new Object[]{
-                                    new File(zipFile.getName()).toURI(),
+                                    Utilities.toURI(new File(zipFile.getName())),
                                     ze.getName()});     //NOI18N
                     } catch (IOException x) {
                         Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N

@@ -172,7 +172,7 @@ public final class SharabilityQuery {
         URI uri = null;
         for (SharabilityQueryImplementation2 sqi : implementations2.allInstances()) {
             if (uri == null) {
-                uri = file.toURI();
+                uri = Utilities.toURI(file);
             }
             Sharability x = sqi.getSharability(uri);
             if (x != Sharability.UNKNOWN) {
@@ -211,7 +211,7 @@ public final class SharabilityQuery {
             }
         }
         if ("file".equals(uri.getScheme())) { // NOI18N
-            File file = FileUtil.normalizeFile(new File(uri));
+            File file = FileUtil.normalizeFile(Utilities.toFile(uri));
             for (org.netbeans.spi.queries.SharabilityQueryImplementation sqi : implementations.allInstances()) {
                 int x = sqi.getSharability(file);
                 if (x != UNKNOWN) {

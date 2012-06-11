@@ -87,6 +87,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.actions.Bundle.*;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -169,7 +170,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 File base;
                 if (libRoot != null) {
                     try {
-                        base = new File(libRoot.toURI());
+                        base = Utilities.toFile(libRoot.toURI());
                         //getLocation() points to a file
                         base = base.getParentFile();
                         nonDefaultLibBase = base;
@@ -280,7 +281,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
 
     private static URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase, ClassifierType type) throws IOException {
         File res = a.getFile();
-        URI uri = res.toURI();
+        URI uri = Utilities.toURI(res);
         String jarPath = null;
         if (copyTo != null) {
             res = new File(copyTo, a.getFile().getName());

@@ -974,7 +974,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final File parentFile = FileUtil.toFile(newFile.getParent());
                     if (parentFile != null) {
                         try {
-                            URL oldBinaryRoot = new File (parentFile, oldNameExt).toURI().toURL();
+                            URL oldBinaryRoot = org.openide.util.Utilities.toURI(new File (parentFile, oldNameExt)).toURL();
                             eventQueue.record(
                                     FileEventLog.FileOp.DELETE,
                                     oldBinaryRoot,
@@ -4713,7 +4713,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         if (packedIndex != null ) {
                             unpack(packedIndex, downloadFolder);
                             packedIndex.delete();
-                            if (patchDownloadedIndex(root,downloadFolder.toURI().toURL())) {
+                            if (patchDownloadedIndex(root,org.openide.util.Utilities.toURI(downloadFolder).toURL())) {
                                 final FileObject df = CacheFolder.getDataFolder(root);
                                 assert df != null;
                                 final File dataFolder = FileUtil.toFile(df);
@@ -5588,7 +5588,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (sourcesListener != null) {
                     if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
                         try {
-                            File f = new File(root.toURI());
+                            File f = org.openide.util.Utilities.toFile(root.toURI());
                             safeAddRecursiveListener(sourcesListener, f, entry);
                             sourceRoots.put(root, f);
                         } catch (URISyntaxException use) {
@@ -5604,7 +5604,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         try {
                             URI uri = archiveUrl != null ? archiveUrl.toURI() : root.toURI();
                             if (uri.getScheme().equals("file")) { //NOI18N
-                                f = new File(uri);
+                                f = org.openide.util.Utilities.toFile(uri);
                             }
                         } catch (URISyntaxException use) {
                             LOGGER.log(Level.INFO, "Can't convert " + root + " to java.io.File; archiveUrl=" + archiveUrl, use); //NOI18N
@@ -5665,7 +5665,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             @Override
                             public boolean accept(@NonNull final File pathname) {
                                 try {
-                                    return entry.includes(pathname.toURI().toURL());
+                                    return entry.includes(org.openide.util.Utilities.toURI(pathname).toURL());
                                 } catch (MalformedURLException ex) {
                                     Exceptions.printStackTrace(ex);
                                     return true;

@@ -347,7 +347,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             return Collections.<CompileTuple>emptySet();
         }
         try {
-            final File root = new File (URI.create(rootURL.toString()));
+            final File root = Utilities.toFile(URI.create(rootURL.toString()));
             return VirtualSourceProviderQuery.translate(virtualSources, root);
         } catch (IllegalArgumentException e) {
             //Called on non local fs => not supported, log and ignore.
@@ -426,7 +426,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String fileName : readRSFile(file)) {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
-                            sourceRelativeURLPairs.add(Pair.of(fileName,f.toURI().toURL()));
+                            sourceRelativeURLPairs.add(Pair.of(fileName,Utilities.toURI(f).toURL()));
                         }
                         fmTx.delete(f);
                     }

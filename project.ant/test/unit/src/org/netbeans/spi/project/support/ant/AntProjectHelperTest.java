@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockChangeListener;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
@@ -371,8 +372,8 @@ public class AntProjectHelperTest extends NbTestCase {
         File somethingElseF = new File(scratchF.getParentFile(), "nonexistent-file-path");
         assertEquals("absolute (nonexistent) path is left alone", somethingElseF, h.resolveFile(somethingElseF.getAbsolutePath()));
         assertEquals("absolute (nonexistent) path has no file object", null, h.resolveFileObject(somethingElseF.getAbsolutePath()));
-        assertEquals("URI already normalized (Unix-style)", h.resolveFile("../proj").toURI().normalize().toURL(), h.resolveFile("../proj").toURI().toURL());
-        assertEquals("URI already normalized (DOS-style)", h.resolveFile("..\\proj").toURI().normalize().toURL(), h.resolveFile("..\\proj").toURI().toURL());
+        assertEquals("URI already normalized (Unix-style)", Utilities.toURI(h.resolveFile("../proj")).normalize().toURL(), Utilities.toURI(h.resolveFile("../proj")).toURL());
+        assertEquals("URI already normalized (DOS-style)", Utilities.toURI(h.resolveFile("..\\proj")).normalize().toURL(), Utilities.toURI(h.resolveFile("..\\proj")).toURL());
     }
     
     /**

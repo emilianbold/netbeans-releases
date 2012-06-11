@@ -118,10 +118,10 @@ public final class RegenerateFilesTask extends Task {
                 assert projectFO != null;
             }
             GeneratedFilesHelper h = new GeneratedFilesHelper(projectFO);
-            if (buildXsl != null && h.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH, buildXsl.toURI().toURL(), true)) {
+            if (buildXsl != null && h.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH, org.openide.util.Utilities.toURI(buildXsl).toURL(), true)) {
                 log("Regenerating " + new File(projectDir, GeneratedFilesHelper.BUILD_XML_PATH.replace('/', File.separatorChar)).getAbsolutePath());
             }
-            if (buildImplXsl != null && h.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH, buildImplXsl.toURI().toURL(), true)) {
+            if (buildImplXsl != null && h.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH, org.openide.util.Utilities.toURI(buildImplXsl).toURL(), true)) {
                 log("Regenerating " + new File(projectDir, GeneratedFilesHelper.BUILD_IMPL_XML_PATH.replace('/', File.separatorChar)).getAbsolutePath());
             }
         } catch (IOException e) {

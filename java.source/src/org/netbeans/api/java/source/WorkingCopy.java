@@ -108,6 +108,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
@@ -696,7 +697,7 @@ public class WorkingCopy extends CompilationController {
             return scratchFolder.createData("out", "java");
         }
 
-        File pack = new File(sourceFile.toUri()).getParentFile();
+        File pack = Utilities.toFile(sourceFile.toUri()).getParentFile();
 
         while (FileUtil.toFileObject(pack) == null) {
             pack = pack.getParentFile();

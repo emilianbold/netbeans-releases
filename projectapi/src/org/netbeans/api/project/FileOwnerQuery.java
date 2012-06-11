@@ -60,6 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 
 /**
  * Find the project which owns a file.
@@ -135,7 +136,7 @@ public class FileOwnerQuery {
                 try {
                     URL u = new URL(schemaPart);
                     // XXX bad to ever use new File(URL.getPath()):
-                    uri = new File(u.getPath()).toURI();
+                    uri = Utilities.toURI(new File(u.getPath()));
                 } catch (MalformedURLException ex2) {
                     ex2.printStackTrace();
                     assert false : schemaPart;

@@ -57,6 +57,7 @@ import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Associated built module files with their owning project.
@@ -73,7 +74,7 @@ public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImpleme
             return null; // #65700
         }
         if (file.getScheme().equals("file")) { // NOI18N
-            return getOwner(new File(file));
+            return getOwner(Utilities.toFile(file));
         } else {
             return null;
         }
