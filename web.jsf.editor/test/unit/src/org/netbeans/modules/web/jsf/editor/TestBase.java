@@ -466,7 +466,7 @@ public class TestBase extends CslTestBase {
             this.beans = beans;
         }
 
-        public List<FacesManagedBean> getBeans(WebModule webModule) {
+        public List<FacesManagedBean> getBeans(Project project) {
             return (List<FacesManagedBean>) beans;
         }
     }

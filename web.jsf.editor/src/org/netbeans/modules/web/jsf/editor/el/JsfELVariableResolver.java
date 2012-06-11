@@ -42,12 +42,13 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -55,7 +56,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.ResolverContext;
@@ -205,12 +205,12 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     }
 
     private List<FacesManagedBean> getJsfManagedBeans(FileObject target, ResolverContext context) {
-        WebModule webModule = WebModule.getWebModule(target);
-        if (webModule == null) {
+        Project project = FileOwnerQuery.getOwner(target);
+        if (project == null) {
             return Collections.<FacesManagedBean>emptyList();
         } else {
             if (context.getContent(CONTENT_NAME) == null) {
-                context.setContent(CONTENT_NAME, JSFBeanCache.getBeans(webModule));
+                context.setContent(CONTENT_NAME, JSFBeanCache.getBeans(project));
             }
             return (List<FacesManagedBean>) context.getContent(CONTENT_NAME);
         }
