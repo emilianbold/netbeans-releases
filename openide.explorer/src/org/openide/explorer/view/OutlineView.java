@@ -222,6 +222,7 @@ public class OutlineView extends JScrollPane {
     private QuickSearch quickSearch;
     private Component searchPanel;
     private final Object searchConstraints = new Object();
+    private KeyListener qsKeyListener;
 
     /** Creates a new instance of TableView */
     public OutlineView() {
@@ -237,7 +238,7 @@ public class OutlineView extends JScrollPane {
         outline = new OutlineViewOutline(model, rowModel);
         TableQuickSearchSupport tqss = outline.createDefaultTableQuickSearchSupport();
         attachQuickSearch(tqss, false, tqss.createSearchPopupMenu());
-        outline.addKeyListener(new KeyListener() {
+        qsKeyListener = new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
                 quickSearch.processKeyEvent(e);
@@ -250,7 +251,8 @@ public class OutlineView extends JScrollPane {
             public void keyReleased(KeyEvent e) {
                 quickSearch.processKeyEvent(e);
             }
-        });
+        };
+        outline.addKeyListener(qsKeyListener);
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
@@ -730,7 +732,15 @@ public class OutlineView extends JScrollPane {
      * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
      */
     public void setQuickSearchAllowed(boolean allowedQuickSearch) {
+        if (allowedQuickSearch == isQuickSearchAllowed()) {
+            return;
+        }
         quickSearch.setEnabled(allowedQuickSearch);
+        if (allowedQuickSearch) {
+            outline.addKeyListener(qsKeyListener);
+        } else {
+            outline.removeKeyListener(qsKeyListener);
+        }
     }
 
     /**
