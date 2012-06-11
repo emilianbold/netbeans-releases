@@ -236,10 +236,12 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     private javax.swing.JList lstTest;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public JComponent getVisualRepresentation() {
         return this;
     }
 
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
@@ -264,6 +266,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         super.componentOpened();
         result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 populateFields();
             }
@@ -299,6 +302,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
 
     public @Override void setMultiViewCallback(MultiViewElementCallback callback) {}
 
+    @Override
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
@@ -308,6 +312,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         if (iter.hasNext()) {
             final DependencyNode root = iter.next();
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     setDepModel(lstCompile, root, Arrays.asList(new String[]{ Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED}));
                     setDepModel(lstRuntime, root, Arrays.asList(new String[]{ Artifact.SCOPE_RUNTIME}));
@@ -319,6 +324,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         populateFields();
     }
@@ -371,6 +377,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             this.scopes = scopes;
         }
 
+        @Override
     public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
@@ -391,6 +398,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         return true;
     }
 
+        @Override
     public boolean endVisit(DependencyNode node) {
         if (root == node) {
             root = null;

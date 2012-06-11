@@ -435,10 +435,12 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
     private javax.swing.JTextField txtSystem;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public JComponent getVisualRepresentation() {
         return this;
     }
 
+    @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
@@ -495,6 +497,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
     public @Override void setMultiViewCallback(MultiViewElementCallback callback) {}
 
+    @Override
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
@@ -576,8 +579,10 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
 
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 populateFields();
             }
@@ -625,6 +630,7 @@ public class ProjectInfoPanel extends TopComponent implements MultiViewElement, 
         }
 
         @Messages("ERR_WrongURL=Not a proper URL, cannot open in browser: {0}")
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 URL u = new URL(url);

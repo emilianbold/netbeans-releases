@@ -65,6 +65,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 
 /**
  * Top component which displays something.
@@ -198,7 +199,7 @@ public final class DashboardTopComponent extends TopComponent {
         RepositoryManager.getInstance().addPropertChangeListener(dashboard);
 
         addComponentListener(componentAdapter);
-
+        DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
         //load data after the component is displayed
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -212,6 +213,7 @@ public final class DashboardTopComponent extends TopComponent {
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
         RepositoryManager.getInstance().removePropertChangeListener(DashboardViewer.getInstance());
+        DashboardSettings.getInstance().removePropertyChangedListener(DashboardViewer.getInstance());
         super.componentClosed();
     }
 

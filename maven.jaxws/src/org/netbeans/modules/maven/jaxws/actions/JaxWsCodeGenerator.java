@@ -445,6 +445,7 @@ public class JaxWsCodeGenerator {
         }
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(
@@ -459,6 +460,7 @@ public class JaxWsCodeGenerator {
                 }
             }
 
+            @Override
             public void cancel() {
             }
         };
@@ -627,6 +629,7 @@ public class JaxWsCodeGenerator {
                     // insert 2 parts in one atomic action
                     NbDocument.runAtomic((StyledDocument) document, new Runnable() {
 
+                        @Override
                         public void run() {
                             try {
                                 document.insertString(document.getLength(), methodBody, null);
@@ -865,6 +868,7 @@ public class JaxWsCodeGenerator {
             }
         }
 
+        @Override
         public void cancel() {
         }
 
@@ -973,6 +977,7 @@ public class JaxWsCodeGenerator {
             this.wsdlUrl = wsdlUrl;
         }
 
+        @Override
         public void run(WorkingCopy workingCopy) throws IOException {
             workingCopy.toPhase(Phase.RESOLVED);
             TreeMaker make = workingCopy.getTreeMaker();
@@ -1004,6 +1009,7 @@ public class JaxWsCodeGenerator {
             }
         }
 
+        @Override
         public void cancel() {
         }
     }
@@ -1020,6 +1026,7 @@ public class JaxWsCodeGenerator {
 
     static final class DispatchCompilerTask implements CancellableTask<WorkingCopy> {
 
+        @Override
         public void run(WorkingCopy workingCopy) throws Exception {
             boolean changed = false;
             workingCopy.toPhase(Phase.RESOLVED);
@@ -1062,6 +1069,7 @@ public class JaxWsCodeGenerator {
             }
         }
 
+        @Override
         public void cancel() {
         }
     }

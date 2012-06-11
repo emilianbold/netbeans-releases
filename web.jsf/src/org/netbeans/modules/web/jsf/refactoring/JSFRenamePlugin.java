@@ -62,6 +62,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -170,15 +173,15 @@ public class JSFRenamePlugin implements RefactoringPlugin {
             
             if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
                 //renaming a class
-                WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-                if (webModule != null){
+                Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
+                if (project != null){
                     CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
                     if (info != null) {
                         Element resElement = treePathHandle.resolveElement(info);
                         TypeElement type = (TypeElement) resElement;
                         String oldFQN = type.getQualifiedName().toString();
                         String newFQN = renameClass(oldFQN, refactoring.getNewName());
-                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, oldFQN, newFQN);
+                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, oldFQN, newFQN);
                         Modifications modification = new Modifications();
                         for (Occurrences.OccurrenceItem item : items) {
                            // refactoringElements.add(refactoring, new JSFConfigRenameClassElement(item));
