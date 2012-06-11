@@ -347,7 +347,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         empty = analysisResult.provider2Hints.isEmpty();
         fireActionEnabledChange();
         
-        if (!byCategory.isSelected() && nextAction.isEnabled()) {
+        if (!byCategory.isSelected() && nextAction.isEnabled() && !empty) {
             nextAction.actionPerformed(null);
         }
     }
