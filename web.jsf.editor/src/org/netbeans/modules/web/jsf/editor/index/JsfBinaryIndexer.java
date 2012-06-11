@@ -73,7 +73,7 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
 
     private static final Logger LOGGER = Logger.getLogger(JsfBinaryIndexer.class.getSimpleName());
     private static final String CONTENT_UNKNOWN = "content/unknown";    //NOI18N
-    static final int INDEXER_VERSION = 8; //NOI18N
+    static final int INDEXER_VERSION = 9; //NOI18N
     static final String INDEXER_NAME = "jsfBinary"; //NOI18N
 
     @Override

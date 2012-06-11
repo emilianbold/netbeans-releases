@@ -53,6 +53,7 @@ import java.util.List;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -74,7 +75,7 @@ public class ModelUnit {
     private final ClassPath bootPath;
     private final ClassPath compilePath;
     private final ClassPath sourcePath;
-    private final WebModule module;
+    private final Project project;
     
     private final PropertyChangeSupport changeSupport;
 
@@ -100,20 +101,18 @@ public class ModelUnit {
      */
     public final String PROP_CONFIG_FILES = "configFiles";
 
-    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath, WebModule webModule )
-    {
-        return new ModelUnit(bootPath, compilePath, sourcePath, 
-                webModule);
+    public static ModelUnit create(ClassPath bootPath, ClassPath compilePath,
+            ClassPath sourcePath, Project project) {
+        return new ModelUnit(bootPath, compilePath, sourcePath, project);
     }
     
     private ModelUnit(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath,  WebModule webModule ) {
+            ClassPath sourcePath, Project project) {
         Parameters.notNull("sourcePath", sourcePath);
         this.bootPath= bootPath;
         this.compilePath = compilePath;
         this.sourcePath = sourcePath;
-        this.module = webModule;
+        this.project = project;
         changeSupport = new PropertyChangeSupport(this);
         initListeners();
     }
@@ -136,19 +135,32 @@ public class ModelUnit {
      */
     public FileObject getApplicationFacesConfig() {
         List<FileObject> l = getConfigFilesImpl();
-        if (l.size() == 0) {
+        if (l.isEmpty()) {
             return null;
         }
         FileObject first = l.iterator().next();
 
-        FileObject documentBase = module.getDocumentBase();
-        if (documentBase == null) {
-            return null;
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            FileObject documentBase = webModule.getDocumentBase();
+            if (documentBase == null) {
+                return null;
+            }
+
+            FileObject mainConfigFile = documentBase.getFileObject(DEFAULT_FACES_CONFIG_PATH);
+            if (mainConfigFile != null && mainConfigFile.equals(first)) {
+                return first;
+            }
+        } else {
+            List<FileObject> projectConfigs = new LinkedList<FileObject>();
+            collectConfigurationFilesFromClassPath(sourcePath, projectConfigs, new LinkedList<FileObject>());
+            for (FileObject config : projectConfigs) {
+                if (config.getName().equals(FACES_CONFIG)) {
+                    return config;
+                }
+            }
         }
-        FileObject mainConfigFile = documentBase.getFileObject(DEFAULT_FACES_CONFIG_PATH);
-        if (mainConfigFile != null && mainConfigFile.equals(first)) {
-            return first;
-        }
+
         return null;
     }
 
@@ -216,13 +228,18 @@ public class ModelUnit {
         if (configs != null) {
             return configs;
         }
-        FileObject[] objects = ConfigurationUtils.getFacesConfigFiles( module );
+
+        List<FileObject> webFacesConfigs = new LinkedList<FileObject>();
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            webFacesConfigs.addAll(Arrays.asList(ConfigurationUtils.getFacesConfigFiles(webModule)));
+        }
         //add all the configs from WEB-INF/faces-config.xml and all configs declared in faces config DD entry
         //we need to ensure the original ordering
-        configs = Collections.synchronizedList(new LinkedList<FileObject>(Arrays.asList(objects)));
+        configs = Collections.synchronizedList(new LinkedList<FileObject>(webFacesConfigs));
         List<FileObject> localconfigRoots = Collections.synchronizedList(new LinkedList<FileObject>());
-        if (module.getDocumentBase() != null) {
-            localconfigRoots.add(module.getDocumentBase());
+        if (webModule != null && webModule.getDocumentBase() != null) {
+            localconfigRoots.add(webModule.getDocumentBase());
         }
         //find for configs in meta-inf
         collectConfigurationFilesFromClassPath(sourcePath, configs, localconfigRoots);

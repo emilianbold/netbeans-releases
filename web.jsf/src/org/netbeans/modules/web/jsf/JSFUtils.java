@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -298,5 +299,41 @@ public class JSFUtils {
             logRecord.setParameters(params);
         }
         USG_LOGGER.log(logRecord);
+    }
+
+    /**
+     * Gets any fileObject inside the given web module.
+     *
+     * @param module web module to be scanned
+     * @return fileObject if any found, {@code null} otherwise
+     */
+    public static FileObject getFileObject(WebModule module) {
+        FileObject fileObject = module.getDocumentBase();
+        if (fileObject != null) {
+            return fileObject;
+        }
+        fileObject = module.getDeploymentDescriptor();
+        if (fileObject != null) {
+            return fileObject;
+        }
+        fileObject = module.getWebInf();
+        if (fileObject != null) {
+            return fileObject;
+        }
+
+        FileObject[] facesConfigFiles = ConfigurationUtils.getFacesConfigFiles(module);
+        if (facesConfigFiles != null && facesConfigFiles.length > 0) {
+            return facesConfigFiles[0];
+        }
+
+        FileObject[] fileObjects = module.getJavaSources();
+        if (fileObjects != null) {
+            for (FileObject source : fileObjects) {
+                if (source != null) {
+                    return source;
+                }
+            }
+        }
+        return null;
     }
 }
