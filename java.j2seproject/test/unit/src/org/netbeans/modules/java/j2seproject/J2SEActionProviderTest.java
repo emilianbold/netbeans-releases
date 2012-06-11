@@ -269,12 +269,12 @@ public class J2SEActionProviderTest extends NbTestCase {
         context = Lookups.fixed(someSource1);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
         assertEquals("correct targets for COMMAND_TEST_SINGLE", "[test-single]", Arrays.toString(targets));
-        assertEquals("correct target parameters", "{javac.includes=foo/BarTest.java, test.includes=foo/BarTest.java}", new TreeMap<Object,Object>(p).toString());
+        assertEquals("correct target parameters", "{ignore.failing.tests=true, javac.includes=foo/BarTest.java, test.includes=foo/BarTest.java}", new TreeMap<Object,Object>(p).toString());
         p = new Properties();
         context = Lookups.fixed(someSource1,someSource2);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
         assertEquals("correct targets for COMMAND_TEST_SINGLE", "[test-single]", Arrays.toString(targets));
-        assertEquals("correct target parameters", "{javac.includes=foo/BarTest.java,foo/MainTest.java, test.includes=foo/BarTest.java,foo/MainTest.java}", new TreeMap<Object,Object>(p).toString());
+        assertEquals("correct target parameters", "{ignore.failing.tests=true, javac.includes=foo/BarTest.java,foo/MainTest.java, test.includes=foo/BarTest.java,foo/MainTest.java}", new TreeMap<Object,Object>(p).toString());
 
         // test COMMAND_DEBUG_TEST_SINGLE
 
