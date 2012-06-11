@@ -504,7 +504,8 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(ObjectNode objectNode, boolean onset) {
         Node previousVisited = getPath().get(getPath().size() - (onset ? 1 : 2));
         if (onset) {
-            if(previousVisited instanceof CallNode) {
+            if(previousVisited instanceof CallNode
+                    || previousVisited instanceof LiteralNode.ArrayLiteralNode) {
                 // TODO there should be handled anonymous object that are going as parameter to a funciton
                 //create anonymous object
                 JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
