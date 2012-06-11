@@ -800,6 +800,18 @@
                 <equals arg1="${javafx.swing}" arg2="true"/>
             </and>
         </condition>
+        <condition property="fx-in-swing-workaround-app">
+            <and>
+                <istrue value="${fx-in-swing-app}"/>
+                <istrue value="${preloader-app}"/>
+            </and>
+        </condition>
+        <condition property="preloader-app-no-workaround">
+            <and>
+                <istrue value="${preloader-app}"/>
+                <not><istrue value="${fx-in-swing-app}"/></not>
+            </and>
+        </condition>
         <condition property="html-template-available">
             <and>
                 <isset property="javafx.run.htmltemplate"/>
@@ -863,6 +875,8 @@
         <echo message="app-without-preloader = ${app-without-preloader}" level="verbose"/>
         <echo message="preloader-app = ${preloader-app}" level="verbose"/>
         <echo message="fx-in-swing-app = ${fx-in-swing-app}" level="verbose"/>
+        <echo message="fx-in-swing-workaround-app = ${fx-in-swing-workaround-app}" level="verbose"/>
+        <echo message="preloader-app-no-workaround = ${preloader-app-no-workaround}" level="verbose"/>
         <echo message="html-template-available = ${html-template-available}" level="verbose"/>
         <echo message="icon-available = ${icon-available}" level="verbose"/>
         <echo message="dimensions-available = ${dimensions-available}" level="verbose"/>
@@ -2052,7 +2066,7 @@
     <!-- project without preloader -->
     <!-- no html template -->
     <!-- FX in Swing app -->
-    <target name="-deploy-app-sign-nopreloader-notemplate-swing" depends="-check-sign" if="sign-nopreloader-notemplate-swing" unless="preloader-app">
+    <target name="-deploy-app-sign-nopreloader-notemplate-swing" depends="-check-sign" if="sign-nopreloader-notemplate-swing" unless="preloader-app-no-workaround">
         <echo message="-deploy-app-sign-nopreloader-notemplate-swing" level="verbose"/>
         <deploy-defines/>
         <deploy-preprocess/>
@@ -2064,7 +2078,7 @@
     <!-- project without preloader -->
     <!-- html template -->
     <!-- FX in Swing app -->
-    <target name="-deploy-app-sign-nopreloader-template-swing" depends="-check-sign" if="sign-nopreloader-template-swing" unless="preloader-app">
+    <target name="-deploy-app-sign-nopreloader-template-swing" depends="-check-sign" if="sign-nopreloader-template-swing" unless="preloader-app-no-workaround">
         <echo message="-deploy-app-sign-nopreloader-template-swing" level="verbose"/>
         <deploy-defines/>
         <deploy-preprocess/>
@@ -2122,7 +2136,7 @@
     <!-- project without preloader -->
     <!-- no html template -->
     <!-- FX in Swing app -->
-    <target name="-deploy-app-nosign-nopreloader-notemplate-swing" depends="-check-nosign" if="nosign-nopreloader-notemplate-swing" unless="preloader-app">
+    <target name="-deploy-app-nosign-nopreloader-notemplate-swing" depends="-check-nosign" if="nosign-nopreloader-notemplate-swing" unless="preloader-app-no-workaround">
         <echo message="-deploy-app-nosign-nopreloader-notemplate-swing" level="verbose"/>
         <deploy-defines/>
         <deploy-preprocess/>
@@ -2133,7 +2147,7 @@
     <!-- project without preloader -->
     <!-- html template -->
     <!-- FX in Swing app -->
-    <target name="-deploy-app-nosign-nopreloader-template-swing" depends="-check-nosign" if="nosign-nopreloader-template-swing" unless="preloader-app">
+    <target name="-deploy-app-nosign-nopreloader-template-swing" depends="-check-nosign" if="nosign-nopreloader-template-swing" unless="preloader-app-no-workaround">
         <echo message="-deploy-app-nosign-nopreloader-template-swing" level="verbose"/>
         <deploy-defines/>
         <deploy-preprocess/>
@@ -2145,7 +2159,7 @@
 
     <!-- Project Run Targets -->
 
-    <target name="-warn-of-preloader" depends="-check-project" if="preloader-app">
+    <target name="-warn-of-preloader" depends="-check-project" if="preloader-app-no-workaround">
         <fail message="Error:${line.separator}JavaFX 2 Preloader Project can not be executed directly.${line.separator}Please execute instead a JavaFX Application that uses the Preloader."/>
     </target>
     
