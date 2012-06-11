@@ -1934,7 +1934,8 @@ class LayoutFeeder implements LayoutConstants {
         do {
             neighbor = null;
             while (neighbor == null && parent.getParent() != null) {
-                if (isSignificantGroupEdge(parent, alignment, outOfGroup)) {
+                if (isSignificantGroupEdge(parent, alignment, outOfGroup)
+                        /*|| (!outOfGroup && dimension == VERTICAL)*/) {
                     break;
                 }
 
