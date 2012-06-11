@@ -328,7 +328,6 @@ o.n.m.ruby.project                        OptionsDialog/Advanced/RubyOptions.ins
 o.n.m.autosave                            OptionsDialog/Advanced/o-n-m-autosave-AutoSaveAdvancedOption.instance
 o.n.m.debugger.jpda.ui                    OptionsDialog/Advanced/o-n-m-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance
 o.n.m.genericnavigator                    OptionsDialog/Advanced/o-n-m-genericnavigator-GenericNavigatorOptionsAdvancedOption.instance
-o.n.m.groovy.support                      OptionsDialog/Advanced/o-n-m-groovy-support-api-GroovySettings.instance
 o.n.m.javacard.project                    OptionsDialog/Advanced/o-n-m-javacard-options-javacardAdvancedOption.instance
 o.n.m.mobility.svgcore                    OptionsDialog/Advanced/o-n-m-mobility-svgcore-options-SvgcoreAdvancedOption.instance
 o.n.m.perspective                         OptionsDialog/Advanced/o-n-m-perspective-options-PerspectiveAdvancedOption.instance

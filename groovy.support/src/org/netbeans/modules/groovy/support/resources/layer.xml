@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="org-netbeans-modules-groovy-support-api-GroovySettings.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.api.GroovySettings.getInstance"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Groovy">
             <attr name="position" intvalue="1350"/>
