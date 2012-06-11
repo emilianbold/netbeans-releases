@@ -94,6 +94,7 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
         } else {
             // see javadoc of this class
             root = ProjectManager.mutex().writeAccess(new Mutex.Action<Application>() {
+                @Override
                 public Application run() {
                     return new ApplicationImpl(earProject);
                 }
@@ -102,10 +103,12 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
         metadata = new ApplicationMetadataImpl(root);
     }
 
+    @Override
     public <R> R runReadAction(final MetadataModelAction<ApplicationMetadata, R> action) throws MetadataModelException, IOException {
         try {
             // see javadoc of this class
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<R>() {
+                @Override
                 public R run() throws Exception {
                     enterRunReadAction();
                     try {
@@ -120,10 +123,12 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
         }
     }
     
+    @Override
     public boolean isReady() {
         return true;
     }
     
+    @Override
     public <R> Future<R> runReadActionWhenReady(final MetadataModelAction<ApplicationMetadata, R> action) throws IOException {
         return new SimpleFuture(runReadAction(action));
     }
@@ -170,22 +175,27 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
             this.result = result;
         }
         
+        @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             return false;
         }
         
+        @Override
         public boolean isCancelled() {
             return false;
         }
         
+        @Override
         public boolean isDone() {
             return true;
         }
         
+        @Override
         public R get() throws InterruptedException, ExecutionException {
             return result;
         }
         
+        @Override
         public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return get();
         }

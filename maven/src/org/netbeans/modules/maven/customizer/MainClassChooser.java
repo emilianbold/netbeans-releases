@@ -63,7 +63,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.openide.util.NbBundle.Messages;

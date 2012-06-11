@@ -57,8 +57,8 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.CreateCategoryAction;
-import org.netbeans.modules.tasks.ui.actions.CreateRepositoryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CreateCategoryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CreateRepositoryAction;
 import org.netbeans.modules.tasks.ui.cache.CategoryEntry;
 import org.netbeans.modules.tasks.ui.cache.DashboardStorage;
 import org.netbeans.modules.tasks.ui.cache.TaskEntry;
@@ -66,6 +66,7 @@ import org.netbeans.modules.tasks.ui.dnd.DashboardTransferHandler;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
 import org.netbeans.modules.tasks.ui.filter.DashboardFilter;
 import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
@@ -150,7 +151,10 @@ public final class DashboardViewer implements PropertyChangeListener {
 
         LinkButton btnAddCategory = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_category.png", true), new CreateCategoryAction()); //NOI18N
         btnAddCategory.setToolTipText(NbBundle.getMessage(DashboardViewer.class, "LBL_CreateCategory")); // NOI18N
-        titleCategoryNode = new TitleNode(NbBundle.getMessage(TitleNode.class, "LBL_Categories"), btnAddCategory); // NOI18N
+        LinkButton btnClearCategories = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/clear.png", true), new Actions.ClearCategoriesAction());
+        btnClearCategories.setToolTipText(NbBundle.getMessage(DashboardViewer.class, "LBL_ClearCategories")); // NOI18N
+        titleCategoryNode = new TitleNode(NbBundle.getMessage(TitleNode.class, "LBL_Categories"), btnAddCategory, btnClearCategories); // NOI18N
+
         LinkButton btnAddRepo = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_repo.png", true), new CreateRepositoryAction()); //NOI18N
         btnAddRepo.setToolTipText(NbBundle.getMessage(DashboardViewer.class, "LBL_AddRepo")); // NOI18N
         titleRepositoryNode = new TitleNode(NbBundle.getMessage(TitleNode.class, "LBL_Repositories"), btnAddRepo); // NOI18N
@@ -196,6 +200,13 @@ public final class DashboardViewer implements PropertyChangeListener {
                     titleRepositoryNode.setProgressVisible(true);
                     updateRepositories((List<Repository>) evt.getNewValue());
                     titleRepositoryNode.setProgressVisible(false);
+                }
+            });
+        } else if (evt.getPropertyName().equals(DashboardSettings.TASKS_LIMIT_SETTINGS_CHANGED)){
+            requestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateContent();
                 }
             });
         }
@@ -297,19 +308,35 @@ public final class DashboardViewer implements PropertyChangeListener {
         storeCategory(category);
     }
 
-    public void removeTask(TaskNode taskNode) {
-        CategoryNode categoryNode = mapCategoryToNode.get(taskNode.getCategory());
-        final boolean isOldInFilter = isCategoryInFilter(categoryNode);
-        taskNode.setCategory(null);
-        categoryNode.removeTaskNode(taskNode);
-        model.contentChanged(categoryNode);
-        if (!isCategoryInFilter(categoryNode) && isOldInFilter) {
-            model.removeRoot(categoryNode);
-        } else {
-            //TODO only remove that child, dont updateContent all
-            categoryNode.updateContent();
+    public void removeTask(TaskNode... taskNodes) {
+        Map<Category, List<TaskNode>> map = new HashMap<Category, List<TaskNode>>();
+        for (TaskNode taskNode : taskNodes) {
+            List<TaskNode> tasks = map.get(taskNode.getCategory());
+            if (tasks == null) {
+                tasks = new ArrayList<TaskNode>();
+            }
+            tasks.add(taskNode);
+            map.put(taskNode.getCategory(), tasks);
         }
-        storeCategory(categoryNode.getCategory());
+        for (Entry<Category, List<TaskNode>> entry : map.entrySet()) {
+            Category category = entry.getKey();
+            CategoryNode categoryNode = mapCategoryToNode.get(category);
+            final boolean isOldInFilter = isCategoryInFilter(categoryNode);
+
+            List<TaskNode> tasks = entry.getValue();
+            for (TaskNode taskNode : tasks) {
+                taskNode.setCategory(null);
+                categoryNode.removeTaskNode(taskNode);
+            }
+            model.contentChanged(categoryNode);
+            if (!isCategoryInFilter(categoryNode) && isOldInFilter) {
+                model.removeRoot(categoryNode);
+            } else {
+                //TODO only remove that child, dont updateContent all
+                categoryNode.updateContent();
+            }
+            storeCategory(categoryNode.getCategory());
+        }
     }
 
     public List<Category> getCategories(boolean openedOnly) {
@@ -483,6 +510,30 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
             return closed;
+        }
+    }
+
+    public void clearCategories() {
+        NotifyDescriptor nd = new NotifyDescriptor(
+                NbBundle.getMessage(DashboardViewer.class, "LBL_ClearCatQuestion"), //NOI18N
+                NbBundle.getMessage(DashboardViewer.class, "LBL_ClearCatTitle"), //NOI18N
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.YES_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            List<TaskNode> finished = new ArrayList<TaskNode>();
+            for (CategoryNode categoryNode : categoryNodes) {
+                if (!categoryNode.isOpened()) {
+                    categoryNode = new CategoryNode(categoryNode.getCategory(), false);
+                }
+                for (TaskNode taskNode : categoryNode.getTaskNodes()) {
+                    if (taskNode.getTask().isFinished()) {
+                        finished.add(taskNode);
+                    }
+                }
+            }
+            removeTask(finished.toArray(new TaskNode[finished.size()]));
         }
     }
 
@@ -669,7 +720,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (refresh) {
             taskHits = 0;
             persistExpanded = !wasForceExpand;
-            refreshContent();
+            updateContent();
             persistExpanded = true;
             return taskHits;
         } else {
@@ -680,7 +731,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private int manageApplyFilter(boolean refresh) {
         if (refresh) {
             taskHits = 0;
-            refreshContent();
+            updateContent();
             return taskHits;
         } else {
             return -1;
@@ -898,9 +949,10 @@ public final class DashboardViewer implements PropertyChangeListener {
         model.removeRoot(node);
     }
 
-    private void refreshContent() {
+    private void updateContent() {
         synchronized (LOCK_CATEGORIES) {
             for (CategoryNode categoryNode : categoryNodes) {
+                categoryNode.initPaging();
                 categoryNode.updateContent();
             }
         }
@@ -990,8 +1042,8 @@ public final class DashboardViewer implements PropertyChangeListener {
             names += categoryNode.getCategory().getName() + " ";
         }
         NotifyDescriptor nd = new NotifyDescriptor(
-                message, //NOI18N
-                title, //NOI18N
+                message,
+                title,
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 null,

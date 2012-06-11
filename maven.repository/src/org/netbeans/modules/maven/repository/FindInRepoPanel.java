@@ -189,14 +189,17 @@ public class FindInRepoPanel extends javax.swing.JPanel implements DocumentListe
     private javax.swing.JTextField txtFind;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void insertUpdate(DocumentEvent arg0) {
         checkValid();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent arg0) {
         checkValid();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent arg0) {
         checkValid();
     }

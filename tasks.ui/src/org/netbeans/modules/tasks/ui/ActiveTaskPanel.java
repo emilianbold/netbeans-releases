@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui;
 
-import org.netbeans.modules.tasks.ui.actions.ActivateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -51,7 +50,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import javax.swing.*;
-import org.netbeans.modules.tasks.ui.actions.OpenTaskAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.ActivateTaskAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;

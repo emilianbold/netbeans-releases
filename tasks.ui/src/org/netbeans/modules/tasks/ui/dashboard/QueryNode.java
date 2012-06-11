@@ -52,7 +52,8 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 
@@ -93,26 +94,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected void dispose() {
         super.dispose();
         query.removePropertyChangeListener(queryListener);
-    }
-
-    @Override
-    protected List<TreeListNode> createChildren() {
-        List<TaskNode> filteredNodes = getFilteredTaskNodes();
-        Collections.sort(filteredNodes);
-        int taskCountToShow = getTaskCountToShow();
-        List<TaskNode> taskNodesToShow;
-        boolean addShowNext = false;
-        if (filteredNodes.size() <= taskCountToShow) {
-            taskNodesToShow = filteredNodes;
-        } else {
-            taskNodesToShow = new ArrayList<TaskNode>(filteredNodes.subList(0, taskCountToShow));
-            addShowNext = true;
-        }
-        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>(taskNodesToShow);
-        if (addShowNext) {
-            children.add(new ShowNextNode(this, Math.min(filteredNodes.size() - taskCountToShow, DEFAULT_TASKS_LIMIT)));
-        }
-        return children;
     }
 
     @Override
@@ -241,6 +222,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     @Override
     public String toString() {
         return this.query.getDisplayName();
+    }
+
+    @Override
+    boolean isTaskLimited() {
+        return DashboardSettings.getInstance().isTasksLimitQuery();
     }
 
     private class QueryListener implements PropertyChangeListener {

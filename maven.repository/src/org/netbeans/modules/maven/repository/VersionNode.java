@@ -176,6 +176,7 @@ public class VersionNode extends AbstractNode {
         Transferable deflt = super.clipboardCopy();
         ExTransferable enriched = ExTransferable.create(deflt);
         ExTransferable.Single ex = new ExTransferable.Single(DataFlavor.stringFlavor) {
+            @Override
             protected Object getData() {
                 return "<dependency>\n" + //NOI18N
                         "  <groupId>" + record.getGroupId() + "</groupId>\n" + //NOI18N
@@ -254,6 +255,7 @@ public class VersionNode extends AbstractNode {
             putValue(NAME, NbBundle.getMessage(VersionNode.class, "ACT_View_Details"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ArtifactViewer.showArtifactViewer(info);
         }

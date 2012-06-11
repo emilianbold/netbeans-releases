@@ -66,7 +66,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import static org.netbeans.modules.maven.actions.scm.Bundle.*;
