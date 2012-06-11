@@ -151,9 +151,12 @@
             </or>
         </condition>
         <fail message="Error:${line.separator}JavaFX 2.0+ projects require JDK version 1.6+ !" if="have-jdk-older-than-1.6"/>
-        <condition property="have-jdk-7u4-mac">
+        <condition property="have-jdk-7u4or5-mac">
             <and>
-                <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
+                <or>
+                    <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
+                    <contains string="${version-output}" substring="java version &quot;1.7.0_05"/>
+                </or>
                 <os family="mac"/>
             </and>
         </condition>
@@ -169,12 +172,12 @@
             </or>
         </condition>
         <property name="jdk-version-checked-in-jfximpl" value="true"/>
-        <echo message="have-jdk-7u4-mac = ${have-jdk-7u4-mac}" level="verbose"/>
+        <echo message="have-jdk-7u4or5-mac = ${have-jdk-7u4or5-mac}" level="verbose"/>
         <echo message="have-jdk-pre7u6 = ${have-jdk-pre7u6}" level="verbose"/>
     </target>
         
-    <target name="-check-jdk-7u4-mac" depends="-check-jdk-version" if="have-jdk-7u4-mac">
-        <fail message="Error:${line.separator}JDK 7u4 Mac does not support WebStart and JavaFX 2.0+ browser plugin technologies.${line.separator}Please upgrade to JDK 7u6 or later."/>
+    <target name="-check-jdk-7u4or5-mac" depends="-check-jdk-version" if="have-jdk-7u4or5-mac">
+        <fail message="Error:${line.separator}JDK 7u4 Mac and 7u5 Mac do not support WebStart and JavaFX 2.0+ browser plugin technologies.${line.separator}Please upgrade to JDK 7u6 or later."/>
     </target>
 
     
@@ -2207,14 +2210,14 @@
         <antcall target="-check-jnlp-file"/>
     </target>
 
-    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime" description="Start fx javaws execution">
+    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime" description="Start fx javaws execution">
         <echo message="Executing ${jfx.deployment.jnlp} using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
             <arg file="${jfx.deployment.jnlp}"/>
         </exec>
     </target>
     
-    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-debug-start-debugger,-debug-javaws-debuggee" 
+    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-debug-start-debugger,-debug-javaws-debuggee" 
         description="Debug fx javaws project in IDE"/>
         
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
@@ -2239,7 +2242,7 @@
         <antcall target="-profile-check-1"/>
     </target>
     
-    <target name="-do-jfxws-profile" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime">
+    <target name="-do-jfxws-profile" depends="-check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime">
         <echo message="Executing ${jfx.deployment.jnlp} in profile mode using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
             <env key="JAVAWS_VM_ARGS" value="${run.jvmargs.ide}"/>
@@ -2310,7 +2313,7 @@
         </condition>
     </target>
 
-    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime" description="Start JavaFX execution in browser">
+    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime" description="Start JavaFX execution in browser">
         <echo message="Executing ${jfx.deployment.html} using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <exec executable="${javafx.run.inbrowser.path}">
@@ -2318,7 +2321,7 @@
         </exec>
     </target>
     
-    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-debug-start-debugger,-debug-jfxbe-debuggee" 
+    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime,-debug-start-debugger,-debug-jfxbe-debuggee" 
         description="Debug JavaFX project in browser"/>
         
     <target name="-debug-jfxbe-debuggee" depends="-init-debug-args">
@@ -2334,7 +2337,7 @@
         <antcall target="-profile-check-1"/>
     </target>
 
-    <target name="-do-jfxbe-profile" depends="-check-jdk-7u4-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime">
+    <target name="-do-jfxbe-profile" depends="-check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime">
         <echo message="Executing ${jfx.deployment.html} in profile mode using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <exec executable="${javafx.run.inbrowser.path}">
