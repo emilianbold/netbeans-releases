@@ -101,9 +101,9 @@ abstract class CompileWorker {
         final Set<File> createdFiles;
         final Set<Indexable> finishedFiles;
         final Set<ElementHandle<TypeElement>> modifiedTypes;
-        final Set<CompileTuple> aptGenerated;
+        final Set<javax.tools.FileObject> aptGenerated;
 
-        private ParsingOutput(boolean success, boolean lowMemory, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes, Set<CompileTuple> aptGenerated) {
+        private ParsingOutput(boolean success, boolean lowMemory, Map<JavaFileObject, List<String>> file2FQNs, Set<ElementHandle<TypeElement>> addedTypes, Set<File> createdFiles, Set<Indexable> finishedFiles, Set<ElementHandle<TypeElement>> modifiedTypes, Set<javax.tools.FileObject> aptGenerated) {
             assert (success && !lowMemory) || !success;
             this.success = success;
             this.lowMemory = lowMemory;
@@ -121,7 +121,7 @@ abstract class CompileWorker {
                 final Set<File> createdFiles,
                 final Set<Indexable> finishedFiles,
                 final Set<ElementHandle<TypeElement>> modifiedTypes,
-                final Set<CompileTuple> aptGenerated) {
+                final Set<javax.tools.FileObject> aptGenerated) {
             return new ParsingOutput(true, false, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);
         }
         
@@ -131,7 +131,7 @@ abstract class CompileWorker {
                 final Set<File> createdFiles,
                 final Set<Indexable> finishedFiles,
                 final Set<ElementHandle<TypeElement>> modifiedTypes,
-                final Set<CompileTuple> aptGenerated) {
+                final Set<javax.tools.FileObject> aptGenerated) {
             return new ParsingOutput(false, false, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);
         }
         
@@ -141,7 +141,7 @@ abstract class CompileWorker {
                 final Set<File> createdFiles,
                 final Set<Indexable> finishedFiles,
                 final Set<ElementHandle<TypeElement>> modifiedTypes,
-                final Set<CompileTuple> aptGenerated) {
+                final Set<javax.tools.FileObject> aptGenerated) {
             return new ParsingOutput(false, true, file2FQNs, addedTypes, createdFiles, finishedFiles, modifiedTypes, aptGenerated);            
         }
     }    
