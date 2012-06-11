@@ -39,27 +39,78 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.actions;
+package org.netbeans.modules.tasks.ui.settings;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.openide.util.NbBundle;
+import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author jpeska
  */
-public class OpenTaskAction extends TaskAction {
+@OptionsPanelController.SubRegistration(
+    id = DashboardOptionsController.OPTIONS_PATH,
+    displayName = "#LBL_Options",
+    keywords = "#KW_Dashboard",
+    keywordsCategory = "Advanced/Dashboard"
+)
+public class DashboardOptionsController extends OptionsPanelController {
 
-    public OpenTaskAction(TaskNode... taskNodes) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open"), taskNodes); //NOI18N
+    public static final String OPTIONS_PATH = "Dashboard"; // NOI18N
+    private DashboardOptions dashboardOptions;
+
+    @Override
+    public void update() {
+        getOptions().update();
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        for (TaskNode taskNode : getTaskNodes()) {
-            Util.openIssue(taskNode.getTask().getRepository(), taskNode.getTask().getID());
+    public void applyChanges() {
+        getOptions().applyChanges();
+    }
+
+    @Override
+    public void cancel() {
+        //do nothing
+    }
+
+    @Override
+    public boolean isValid() {
+        return getOptions().isDataValid();
+    }
+
+    @Override
+    public boolean isChanged() {
+        return getOptions().isChanged();
+    }
+
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        return getOptions();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx ("netbeans.optionsDialog.advanced.dashboard");
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        getOptions().support.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        getOptions().support.removePropertyChangeListener(l);
+    }
+
+    private DashboardOptions getOptions() {
+        if( null == dashboardOptions ) {
+            dashboardOptions = new DashboardOptions();
         }
+        return dashboardOptions;
     }
 }
