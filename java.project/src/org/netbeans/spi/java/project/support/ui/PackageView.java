@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -87,6 +89,8 @@ import org.openide.util.WeakListeners;
  * @author Jesse Glick
  */
 public class PackageView {
+    
+    private static final Logger LOG = Logger.getLogger(PackageView.class.getName());
         
     private PackageView() {}
     
@@ -305,6 +309,16 @@ public class PackageView {
             //Guard condition, if the project is (closed) and deleted but not yet gced
             // and the view is switched, the source group is not valid.
             if ( root == null || !root.isValid()) {
+                return new AbstractNode (Children.LEAF);
+            }
+            if (!VisibilityQuery.getDefault().isVisible(root)) {
+                LOG.log(
+                    Level.WARNING,
+                    "Ignoring source group: {0} with non visible root: {1}",    //NOI18N
+                    new Object[]{
+                        group,
+                        FileUtil.getFileDisplayName(root)
+                });
                 return new AbstractNode (Children.LEAF);
             }
             switch (JavaProjectSettings.getPackageViewType()) {
