@@ -147,7 +147,10 @@ final public class Settings {
             String homeDef = st.nextToken();
             StringTokenizer st1 = new StringTokenizer(homeDef, "#");
             if (st1.countTokens() == 4) {
-                userDefinedHomes.add(new Home(st1.nextToken(), st1.nextToken(), st1.nextToken(), st1.nextToken()));
+                Home h = new Home(st1.nextToken(), st1.nextToken(), st1.nextToken(), st1.nextToken());
+                if (h.isValid()) {
+                    userDefinedHomes.add(h);
+                }
             }
         }
     }
@@ -159,11 +162,13 @@ final public class Settings {
         }
         StringBuilder sb = new StringBuilder();
         for(Home h : userDefinedHomes) {
-            sb.append(sb.length() > 0 ? File.pathSeparator : "");
-            sb.append(h.getPath()).append("#");
-            sb.append(h.getLauncherPath(true)).append("#");
-            sb.append(h.getPropertiesPath(true)).append("#");
-            sb.append(h.getVersion());
+            if (h.isValid()) {
+                sb.append(sb.length() > 0 ? File.pathSeparator : "");
+                sb.append(h.getPath()).append("#");
+                sb.append(h.getLauncherPath(true)).append("#");
+                sb.append(h.getPropertiesPath(true)).append("#");
+                sb.append(h.getVersion());
+            }
         }
         getPreferences().put(USER_DEFINED_HOMES, sb.toString());
     }
