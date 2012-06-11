@@ -346,7 +346,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
                 ActionUtils.closeAllExcept(tc, true);
             //Pin button handling here
             } else if (TabbedContainer.COMMAND_ENABLE_AUTO_HIDE.equals(cmd)) {
-                if( Switches.isTopComponentSlidingEnabled() ) {
+                if( Switches.isTopComponentSlidingEnabled() && tabbed.getComponent().isShowing() ) {
                     TopComponent tc = tabbed.getTopComponentAt(tae.getTabIndex());
                     // prepare slide operation
                     Component tabbedComp = tabbed.getComponent();
