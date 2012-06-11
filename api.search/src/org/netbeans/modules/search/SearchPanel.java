@@ -81,7 +81,6 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private static SearchPanel currentlyShown = null;
     private boolean replacing;
-    private boolean projectWide = Utils.hasProjectSearchScope();
     private List<PresenterProxy> presenters;
     private DialogDescriptor dialogDescr;
     /**
@@ -229,13 +228,9 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     public void showDialog() {
 
-        String titleMsgKey = projectWide
-                ? (replacing
+        String titleMsgKey = replacing
                 ? "LBL_ReplaceInProjects" //NOI18N
-                : "LBL_FindInProjects") //NOI18N
-                : (replacing
-                ? "LBL_ReplaceInFiles" //NOI18N
-                : "LBL_FindInFiles");         //NOI18N
+                : "LBL_FindInProjects"; //NOI18N
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 this,
