@@ -342,6 +342,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     }
     
     private void updatePrevNextButtonsForNewRootContext() {
+        descriptionPanel.setText(null);
         nodesForNext = null;
         seenNodes = null;
         empty = analysisResult.provider2Hints.isEmpty();
