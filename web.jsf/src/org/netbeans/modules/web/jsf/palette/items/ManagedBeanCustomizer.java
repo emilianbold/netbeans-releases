@@ -391,7 +391,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         List<String> res = new ArrayList<String>();
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         assert wm != null;
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(wm);
+        List<FacesManagedBean> beans = JSFBeanCache.getBeans(project);
         for (FacesManagedBean b : beans) {
             res.addAll(getManagedBeanPropertyNames(project, b.getManagedBeanClass(), entityClass, b.getManagedBeanName(), collection));
         }

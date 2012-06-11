@@ -45,20 +45,13 @@ package org.netbeans.modules.web.jsf.api.metamodel;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.logging.Logger;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -79,32 +72,27 @@ public final class JsfModelFactory {
                 JsfModelImplementation.create(unit));
     }
     
-    public static synchronized MetadataModel<JsfModel> getModel( WebModule module ){
-        MetadataModel<JsfModel> model = MODELS.get( module );
+    public static synchronized MetadataModel<JsfModel> getModel( Project project ){
+        MetadataModel<JsfModel> model = MODELS.get( project );
         if ( model == null ){
-            ModelUnit unit = getUnit( module );
+            ModelUnit unit = getUnit( project );
             if ( unit == null ){
                 return null;
             }
             model = JsfModelFactory.createMetaModel( unit );
-            MODELS.put(module, model);
+            MODELS.put(project, model);
         }
         return model;
     }
     
-    private static ModelUnit getUnit( WebModule module ) {
-        if ( module == null ){
-            return null;
-        }
-        FileObject fileObject = getFileObject( module );
-        Project project = (fileObject == null) ? null : FileOwnerQuery.getOwner( fileObject );
+    private static ModelUnit getUnit( Project project ) {
         if ( project == null ){
             return null;
         }
         ClassPath boot = getClassPath( project , ClassPath.BOOT);
         ClassPath compile = getClassPath(project, ClassPath.COMPILE );
         ClassPath src = getClassPath(project , ClassPath.SOURCE);
-        return (src == null) ? null: ModelUnit.create(boot, compile, src, module);
+        return (src == null) ? null: ModelUnit.create(boot, compile, src, project);
     }
     
     private static ClassPath getClassPath( Project project, String type ) {
@@ -128,37 +116,7 @@ public final class JsfModelFactory {
         return null;
     }
     
-    private static FileObject getFileObject( WebModule module ) {
-        FileObject fileObject = module.getDocumentBase();
-        if ( fileObject != null ){
-            return fileObject;
-        }
-        fileObject = module.getDeploymentDescriptor();
-        if ( fileObject != null ){
-            return fileObject;
-        }
-        fileObject = module.getWebInf();
-        if ( fileObject != null ){
-            return fileObject;
-        }
-        
-        FileObject[] facesConfigFiles = ConfigurationUtils.getFacesConfigFiles(module);
-        if ( facesConfigFiles!= null && facesConfigFiles.length >0 ){
-            return facesConfigFiles[0];
-        }
-        
-        FileObject[] fileObjects = module.getJavaSources();
-        if ( fileObjects!= null){
-            for (FileObject source : fileObjects) {
-                if ( source != null ){
-                    return source;
-                }
-            }
-        }
-        return null;
-    }
-    
-    private static final Map<WebModule, MetadataModel<JsfModel>> MODELS = 
-        new WeakHashMap<WebModule, MetadataModel<JsfModel>>();
+    private static final Map<Project, MetadataModel<JsfModel>> MODELS =
+        new WeakHashMap<Project, MetadataModel<JsfModel>>();
     
 }
