@@ -59,6 +59,7 @@ public interface SettingsComponent extends DocumentComponent<SettingsComponent> 
      * 
      * @return  the owner model
      */
+    @Override
     SettingsModel getModel();
     
     void accept(SettingsComponentVisitor visitor);

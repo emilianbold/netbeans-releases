@@ -312,6 +312,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                         SERVLET_SEARCH_MODULES.add(webModule);
                         if ( !initialScan || SwingUtilities.isEventDispatchThread()){
                             Runnable runnable = new Runnable() {
+                                @Override
                                 public void run() {
                                     setServletClasses(servletClasses, javaClass, webModule);
                                 }
@@ -348,6 +349,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         else {
             Runnable runnable = new Runnable() {
 
+                @Override
                 public void run() {
                     isServletFile(fileObject, true);
                     isScanFinished.set(true);
@@ -376,6 +378,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         try {
             javaSource.runUserActionTask(new Task<CompilationController>() {
 
+                @Override
                 public void run( CompilationController controller ) throws Exception {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     for (String servletClass : servletClasses) {
