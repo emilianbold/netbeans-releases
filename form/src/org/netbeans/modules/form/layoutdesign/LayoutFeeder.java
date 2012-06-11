@@ -1223,16 +1223,6 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
         } while (parent != null);
-
-        // check if intervals added to a sequence should not be rather placed
-        // inside an open neighbor parallel group
-        interval = getAddedIntervals().get(0); // get again, groups might have changed
-        parent = interval.getParent();
-        if (parent.isSequential()) {// && !alignedInParallel)
-            int nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
-            if (nonEmptyCount > 1 && dimension == HORIZONTAL) {
-            }
-        }
     }
 
     private List<LayoutInterval> getAddedIntervals() {
@@ -2388,14 +2378,13 @@ class LayoutFeeder implements LayoutConstants {
         assert alignment == LEADING || alignment == TRAILING;
 
         if (toAlignWith.isParentOf(interval) // already aligned to parent
-            || interval.isParentOf(toAlignWith)) // can't align with own subinterval
-        {   // contained intervals can't be aligned
-            return null;
-        }
-        else {
+                || interval.isParentOf(toAlignWith)) { // can't align with own subinterval
+            return null; // contained intervals can't be aligned
+        } else {
             LayoutInterval commonParent = LayoutInterval.getCommonParent(interval, toAlignWith);
-            if (commonParent == null || commonParent.isSequential()) // can't align with interval in the same sequence
-                return null;
+            if (commonParent == null || commonParent.isSequential()) {
+                return null; // can't align unrelated intervals or in the same sequence
+            }
         }
 
         // if not in same parallel group try to substitute interval with parent
@@ -5001,11 +4990,8 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    private static int getAddDirection(LayoutRegion adding,
-                                       LayoutRegion existing,
-                                       int dimension,
-                                       int alignment)
-    {
+    private static int getAddDirection(LayoutRegion adding, LayoutRegion existing,
+                                       int dimension, int alignment) {
         return LayoutRegion.distance(adding, existing, dimension, alignment, CENTER) > 0 ?
                LEADING : TRAILING;
     }
