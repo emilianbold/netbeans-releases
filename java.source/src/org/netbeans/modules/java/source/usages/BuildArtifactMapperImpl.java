@@ -249,6 +249,10 @@ public class BuildArtifactMapperImpl {
             IndexingManager.getDefault().refreshIndexAndWait(sourceRoot, null);
         }
 
+        if (JavaIndex.getAttribute(sourceRoot, DIRTY_ROOT, null) != null) {
+            return false;
+        }
+        
         FileObject[][] sources = new FileObject[1][];
         
         if (!protectAgainstErrors(targetFolder, sources, context)) {
@@ -273,9 +277,10 @@ public class BuildArtifactMapperImpl {
 
         sources(targetFolder, sources);
 
-        for (FileObject sr : sources[0]) {
+        for (int i = sources[0].length - 1; i>=0; i--) {
+            final FileObject sr = sources[0][i];
             if (!cosActive) {
-                URL srURL = sr.getURL();
+                URL srURL = sr.toURL();
                 File index = JavaIndex.getClassFolder(srURL, true);
 
                 if (index == null) {

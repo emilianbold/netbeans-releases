@@ -87,4 +87,23 @@ public class OSGiInstalledFileLocatorTest extends NbTestCase {
         }
     }
 
+    public void testLocateModuleJARs() throws Exception {
+        new OSGiProcess(getWorkDir()).newModule().clazz(LocateJARInstall.class).
+                manifest(
+                "OpenIDE-Module: some.cnb",
+                "OpenIDE-Module-Install: " + LocateJARInstall.class.getName(),
+                "OpenIDE-Module-Module-Dependencies: org.openide.modules").done().
+                run(false);
+        String myself = System.getProperty("myself");
+        assertNotNull(myself);
+        File jar = new File(myself);
+        assertTrue(jar.isFile());
+        assertEquals("some.cnb.jar", jar.getName());
+    }
+    public static class LocateJARInstall extends ModuleInstall {
+        public @Override void restored() {
+            System.setProperty("myself", String.valueOf(InstalledFileLocator.getDefault().locate("modules/some-cnb.jar", "some.cnb", false)));
+        }
+    }
+
 }

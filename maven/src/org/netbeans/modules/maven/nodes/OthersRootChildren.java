@@ -54,21 +54,22 @@ import javax.swing.Icon;
 import org.apache.maven.model.Resource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.VisibilityQueryDataFilter;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -83,6 +84,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         this.project = prj;
         test = testResource;
         changeListener  = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     regenerateKeys();
@@ -136,6 +138,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
     }
     
     
+    @Override
     protected Node[] createNodes(SourceGroup grp) {
         Node[] toReturn = new Node[1];
         DataFolder dobj = DataFolder.findFolder(grp.getRootFolder());
@@ -180,22 +183,27 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         }
 
         @Override
+        @Messages({"TIP_Resource1=<html>Resource directory defined in POM.<br><i>Directory: </i><b>{0}</b><br>", 
+            "TIP_Resource2=<i>Target Path: </i><b>{0}</b><br>", 
+            "TIP_Resource3=<i>Includes: </i><b>{0}</b><br>", 
+            "TIP_Resource4=<i>Excludes: </i><b>{0}</b><br>", 
+            "TIP_Resource5=<html>Configuration Directory<br><i>Directory: </i><b>{0}</b><br>"})
         public String getShortDescription() {
             if (group.getResource() != null) {
                 Resource rs = group.getResource();
-                String str = NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource1", rs.getDirectory());
+                String str = TIP_Resource1(rs.getDirectory());
                 if (rs.getTargetPath() != null) {
-                    str = str + NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource2", rs.getTargetPath());
+                    str = str + TIP_Resource2(rs.getTargetPath());
                 }
                 if (rs.getIncludes() != null && rs.getIncludes().size() > 0) {
-                    str = str + NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource3", Arrays.toString(rs.getIncludes().toArray()));
+                    str = str + TIP_Resource3(Arrays.toString(rs.getIncludes().toArray()));
                 }
                 if (rs.getExcludes() != null && rs.getExcludes().size() > 0) {
-                    str = str + NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource4", Arrays.toString(rs.getExcludes().toArray()));
+                    str = str + TIP_Resource4(Arrays.toString(rs.getExcludes().toArray()));
                 }
                 return str;
             } else {
-                return  NbBundle.getMessage(OthersRootChildren.class, "TIP_Resource5", FileUtil.getFileDisplayName(group.getRootFolder()));
+                return  TIP_Resource5(FileUtil.getFileDisplayName(group.getRootFolder()));
              }
         }
 

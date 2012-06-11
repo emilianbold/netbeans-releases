@@ -345,6 +345,18 @@ public abstract class RemoteFileObjectBase {
         throw new ReadOnlyException();
     }
     
+    protected byte[] getMagic() {
+        try {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent != null) {
+                return canonicalParent.getMagic(this);
+            }
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
+        }
+        return null;
+    }
+    
     private void populateWithChildren(RemoteFileObjectBase rfl, List<RemoteFileObjectBase> children) {
         children.add(rfl);
         for(RemoteFileObjectBase child: rfl.getExistentChildren()) {

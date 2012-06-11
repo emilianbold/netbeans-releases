@@ -46,10 +46,10 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -62,6 +62,7 @@ public class InstallLibraryTask implements Runnable {
     private static final String JUNIT_APPROVED = "junit_accepted"; // NOI18N
     private static final String JUNIT_DENIED = "junit_denied"; // NOI18N
     private static final Logger LOG = Logger.getLogger(InstallLibraryTask.class.getName());
+    public static final RequestProcessor RP = new RequestProcessor(InstallLibraryTask.class.getName(), 1);
 
     public @Override
     void run() {
@@ -91,7 +92,7 @@ public class InstallLibraryTask implements Runnable {
             } else {
                 // IDE license accepted, JUnit N/A => use prompt & wizard way
                 LOG.fine("IDE license accepted, JUnit N/A => use prompt & wizard way"); 
-                SwingUtilities.invokeLater(new Runnable() {
+                RP.post(new Runnable() {
 
                     @Override
                     public void run() {

@@ -62,6 +62,7 @@ public class UseOpenWizardPanel implements WizardDescriptor.Panel {
     }
     
     @Messages("TIT_UseOpenProjectStep=Open Maven project with Existing POM")
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new UseOpenPanel();
@@ -70,19 +71,25 @@ public class UseOpenWizardPanel implements WizardDescriptor.Panel {
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(UseOpenWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.maven.newproject.UseOpenWizardPanel");
     }
     
+    @Override
     public boolean isValid() {
         return true;
     }
     
+    @Override
     public final void addChangeListener(ChangeListener l) {}
+    @Override
     public final void removeChangeListener(ChangeListener l) {}
     
+    @Override
     public void readSettings(Object settings) {}
     
+    @Override
     public void storeSettings(Object settings) {}
     
     public boolean isFinishPanel() {

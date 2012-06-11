@@ -41,27 +41,19 @@
  */
 package org.netbeans.modules.php.editor;
 
-import javax.swing.text.Document;
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 
 /**
  *
@@ -78,6 +70,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     public PHPCodeTemplateFilter(final Document document, final int offset) {
         this.caretOffset = offset;
         future = requestProcessor.submit(new Callable<Future<Void>>() {
+
             @Override
             public Future<Void> call() {
                 try {
@@ -116,7 +109,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
     }
 
     @Override
-    public  void run(ResultIterator resultIterator) throws Exception {
+    public void run(ResultIterator resultIterator) throws Exception {
         ParserResult parameter = null;
         String mimeType = resultIterator.getSnapshot().getMimeType();
         if (!mimeType.equals(FileUtils.PHP_MIME_TYPE)) {

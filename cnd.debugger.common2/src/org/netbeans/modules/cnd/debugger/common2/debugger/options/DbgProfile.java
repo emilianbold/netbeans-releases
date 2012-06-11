@@ -51,9 +51,14 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSetOwner;
-import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSetOwner;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.openide.util.Utilities;
 
 public abstract class DbgProfile extends ProfileSupport implements OptionSetOwner {
 
@@ -66,19 +71,23 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
     protected OptionSet options;
     protected boolean savedBuildFirst;
     protected boolean buildFirstOverriden;
-
+    
+    private final Configuration config;
+    
     /**
      * Constructor
      * Don't call this directly. It will get called when creating
      * ...cnd.execution.profiles.Profile().
      */
     public DbgProfile() {
+        config = null;
     }
 
-    protected DbgProfile(PropertyChangeSupport pcs) {
+    protected DbgProfile(PropertyChangeSupport pcs, final Configuration configuration) {
 	super(pcs);
+        this.config = configuration;
     }
-
+    
     /**
      * Initializes the object to default values
      */
@@ -90,14 +99,14 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
     public OptionSet getOptions() {
 	return options;
     }
-
+    
     protected final void notifyOptionsChange() {
 	// clones don't have a pcs
 	if (pcs != null)
 	    pcs.firePropertyChange(PROP_OPTIONS, null, null);
 	needSave = true;
     }
-
+    
     protected Signals signals;
     protected Exceptions exceptions;
     protected Pathmap pathmap;
@@ -112,6 +121,10 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
 
     public Signals signals() {
 	return signals;
+    }
+    
+    public Configuration getConfiguration() {
+        return config;
     }
 
     protected String redirection;
@@ -193,33 +206,40 @@ public abstract class DbgProfile extends ProfileSupport implements OptionSetOwne
 	needSave = true;
     }
     
-    private String getDebugCommand() {
-        return DebuggerOption.DEBUG_COMMAND.getCurrValue(options);
-    }
-
-    // START: Copied from RunProfile
-    private int getArgIndex() {
-        return getDebugCommand().indexOf(" "); // NOI18N // FIXUP <=== need a better check
+    private String[] getDebugCommand() {
+        String command = DebuggerOption.DEBUG_COMMAND.getCurrValue(options);
+        if (config != null && config instanceof MakeConfiguration) {
+            return Utilities.parseParameters(
+                     ProjectActionEvent.getRunCommandAsString(
+                        command, 
+                        (MakeConfiguration) config, 
+                        NativeDebuggerImpl.getPathMapFromConfig(config)
+                    )
+            );
+        } else {
+            return Utilities.parseParameters("");
+        }
     }
 
     public String getExecutable() {
-        int argIndex = getArgIndex();
-        if (argIndex > 0) {
-            return getDebugCommand().substring(0, argIndex);
-        } else {
-            return getDebugCommand();
+        String[] debugCommand = getDebugCommand();
+        
+        if (debugCommand.length == 0) {
+            return "";
         }
+        return debugCommand[0];
     }
 
     public String getArgsFlat() {
-        int argIndex = getArgIndex();
-        if (argIndex > 0) {
-            return getDebugCommand().substring(argIndex+1);
-        } else {
-            return "";
+        String[] params = getDebugCommand();
+        StringBuilder retVal = new StringBuilder();
+        if (params.length > 1) {
+            for(int i = 1; i < params.length; i++) {
+                retVal.append("\"").append(params[i]).append("\" ");   // NOI18N
+            }
         }
+        return retVal.toString();
     }
-    // END: Copied from RunProfile
     
     public String getDebugDir() {
         return DebuggerOption.DEBUG_DIR.getCurrValue(options);

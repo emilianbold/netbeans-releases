@@ -158,6 +158,7 @@ public class HibernateMovePlugin implements RefactoringPlugin {
                         for (OccurrenceItem foundPlace : foundPlaces) {
                             HibernateRenameRefactoringElement elem = new HibernateRenameRefactoringElement(mFileObj,
                                     oldBinaryName,
+                                    foundPlace.getMatching(),
                                     newBinaryName,
                                     foundPlace.getLocation(),
                                     foundPlace.getText());

@@ -2019,6 +2019,9 @@ public class Term extends JComponent implements Accessible {
                 System.out.println("mouseReleased"); // NOI18N
                  */
                 if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (click_to_type) {
+                        requestFocus();
+                    }
 
                     if (e.isShiftDown()) {
                         // we're extending

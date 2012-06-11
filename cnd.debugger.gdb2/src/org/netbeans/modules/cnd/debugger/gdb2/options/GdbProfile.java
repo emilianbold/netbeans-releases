@@ -80,8 +80,8 @@ public class GdbProfile extends DbgProfile implements
 
     }
 
-    public GdbProfile(PropertyChangeSupport pcs) {
-	super(pcs);
+    public GdbProfile(PropertyChangeSupport pcs, Configuration configuration) {
+	super(pcs, configuration);
 	options = new ProfileOptionSet();
         exceptions = new Exceptions(this);
         signals = new Signals(this);
@@ -146,7 +146,7 @@ public class GdbProfile extends DbgProfile implements
 
     // interface ConfigurationAuxObject
     public ConfigurationAuxObject clone(Configuration conf) {
-	GdbProfile clone = new GdbProfile(null);
+	GdbProfile clone = new GdbProfile(null, conf);
 
 	// don't clone pcs ... we'll end up notifying listeners prematurely
 	// they will get notified on 'assign()'.

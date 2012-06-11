@@ -203,10 +203,11 @@ public class MatchingObjectNode extends AbstractNode {
             original.removeNodeListener(origNodeListener);
             origNodeListener = null;
         }
+        String oldDisplayName = original.getDisplayName();
         original = new AbstractNode(Children.LEAF);
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
-        fireDisplayNameChange(matchingObject.getDataObject().getName(),
+        fireDisplayNameChange(oldDisplayName,
                 matchingObject.getFileObject().getNameExt());
     }
 

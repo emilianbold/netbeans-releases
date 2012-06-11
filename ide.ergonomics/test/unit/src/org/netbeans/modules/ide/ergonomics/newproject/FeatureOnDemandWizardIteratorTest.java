@@ -44,18 +44,22 @@ package org.netbeans.modules.ide.ergonomics.newproject;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
-public class FeatureOnDemandWizardIteratorTest {
-    public FeatureOnDemandWizardIteratorTest() {
+public class FeatureOnDemandWizardIteratorTest extends NbTestCase {
+    public FeatureOnDemandWizardIteratorTest(String s) {
+        super(s);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 10000;
     }
     
-    @Test
     public void testIteratorCreatesUI() throws Exception {
         assertFalse("No EDT", EventQueue.isDispatchThread());
         

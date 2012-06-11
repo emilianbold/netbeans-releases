@@ -44,6 +44,7 @@
 
 package org.netbeans.api.java.queries;
 
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -51,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -70,7 +72,8 @@ public class SourceLevelQuery {
 
     private static final Logger LOGGER = Logger.getLogger(SourceLevelQuery.class.getName());
 
-    private static final Pattern SOURCE_LEVEL = Pattern.compile("\\d+\\.\\d+");
+    private static final Pattern SOURCE_LEVEL = Pattern.compile("\\d+\\.\\d+"); //NOI18N
+    private static final Pattern SYNONYM = Pattern.compile("\\d+");             //noI18N
 
     @SuppressWarnings("deprecation")
     private static final Lookup.Result<? extends org.netbeans.spi.java.queries.SourceLevelQueryImplementation> implementations =
@@ -88,14 +91,15 @@ public class SourceLevelQuery {
      * <code>javac</code> compiler .
      * @param javaFile Java source file, Java package or source folder in question
      * @return source level of the Java file, e.g. "1.3", "1.4" or "1.5", or null
-     *     if it is not known
+     *     if it is not known. Even it is allowed for a SPI implementation to return
+     *     a source level synonym e.g. "5" for "1.5" the returned value is always normalized.
      */
     @SuppressWarnings("deprecation")
     public static String getSourceLevel(FileObject javaFile) {
         for (SourceLevelQueryImplementation2 sqi : implementations2.allInstances()) {
             final SourceLevelQueryImplementation2.Result result = sqi.getSourceLevel(javaFile);
             if (result != null) {
-                final String s = result.getSourceLevel();
+                final String s = normalize(result.getSourceLevel());
                 if (s != null) {
                     if (!SOURCE_LEVEL.matcher(s).matches()) {
                         LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi}); //NOI18N
@@ -107,7 +111,7 @@ public class SourceLevelQuery {
             }
         }
         for  (org.netbeans.spi.java.queries.SourceLevelQueryImplementation sqi : implementations.allInstances()) {
-            String s = sqi.getSourceLevel(javaFile);
+            final String s = normalize(sqi.getSourceLevel(javaFile));
             if (s != null) {
                 if (!SOURCE_LEVEL.matcher(s).matches()) {
                     LOGGER.log(Level.WARNING, "#83994: Ignoring bogus source level {0} for {1} from {2}", new Object[] {s, javaFile, sqi});
@@ -168,10 +172,11 @@ public class SourceLevelQuery {
         /**
          * Get the source level.
          * @return a source level of the Java file, e.g. "1.3", "1.4", "1.5"
-         * or null if the source level is unknown.
+         * or null if the source level is unknown. Even it is allowed for a SPI implementation to return
+         *     a source level synonym e.g. "5" for "1.5" the returned value is always normalized.
          */
         public @CheckForNull String getSourceLevel() {
-            return delegate.hasFirst() ? delegate.first().getSourceLevel() : SourceLevelQuery.getSourceLevel(delegate.second());
+            return delegate.hasFirst() ? normalize(delegate.first().getSourceLevel()) : SourceLevelQuery.getSourceLevel(delegate.second());
         }
 
         /**
@@ -229,6 +234,14 @@ public class SourceLevelQuery {
         private SourceLevelQueryImplementation2.Result getDelegate() {
             return delegate.hasFirst() ? delegate.first() : null;
         }
-    }    
+    }
+    
+    @CheckForNull
+    private static String normalize(@NullAllowed String sourceLevel) {
+        if (sourceLevel != null && SYNONYM.matcher(sourceLevel).matches()) {
+            sourceLevel = MessageFormat.format("1.{0}", sourceLevel);   //NOI18N
+        }
+        return sourceLevel;
+    }
 
 }

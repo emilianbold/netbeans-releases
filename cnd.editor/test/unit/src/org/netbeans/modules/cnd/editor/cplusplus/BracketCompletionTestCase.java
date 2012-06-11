@@ -208,23 +208,23 @@ public class BracketCompletionTestCase extends EditorBase  {
                 + "}\n");
     }
     
-//    public void testAddRightBraceIfLeftBraceLineComment() {
-//        setDefaultsOptions();
-//        typeCharactersInText("if (true) { // line-comment|\n",
-//                "\n",
-//                "if (true) { // line-comment\n"
-//                + "    |\n"
-//                + "}\n");
-//    }
-//
-//    public void testAddRightBraceIfLeftBraceBlockComment() {
-//        setDefaultsOptions();
-//        typeCharactersInText("if (true) { /* block-comment */|\n",
-//                "\n",
-//                "if (true) { /* block-comment */\n"
-//                + "    |\n"
-//                + "}\n");
-//    }
+    public void testAddRightBraceIfLeftBraceLineComment() {
+        setDefaultsOptions();
+        typeCharactersInText("if (true) { // line-comment|\n",
+                "\n",
+                "if (true) { // line-comment\n"
+                + "    |\n"
+                + "}\n");
+    }
+
+    public void testAddRightBraceIfLeftBraceBlockComment() {
+        setDefaultsOptions();
+        typeCharactersInText("if (true) { /* block-comment */|\n",
+                "\n",
+                "if (true) { /* block-comment */\n"
+                + "    |\n"
+                + "}\n");
+    }
 
     public void testAddRightBraceIfLeftBraceAlreadyPresent() {
         setDefaultsOptions();
@@ -846,5 +846,20 @@ public class BracketCompletionTestCase extends EditorBase  {
                 "struct A {\n" +
                 "    |\n" +
                 "};");
+    }
+
+    public void testBlockCommentAutoCompletion() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("#define A\n/|\nvoid foo() {\n}\n", "*", "#define A\n/*|*/\nvoid foo() {\n}\n");
+        typeCharactersInText("#define A\n/|    \nvoid foo() {\n}\n", "*", "#define A\n/*|*/    \nvoid foo() {\n}\n");
+        typeCharactersInText("#define A\n   /|    \nvoid foo() {\n}\n", "*", "#define A\n   /*|*/    \nvoid foo() {\n}\n");
+        
+        typeCharactersInText("int a;\n   /|    \nvoid foo() {\n}\n", "*", "int a;\n   /*|*/    \nvoid foo() {\n}\n");
+        
+        typeCharactersInText("int a; /|\nvoid foo() {\n}\n", "*", "int a; /*|\nvoid foo() {\n}\n");
+        typeCharactersInText("int a; /|    \nvoid foo() {\n}\n", "*", "int a; /*|    \nvoid foo() {\n}\n");
+
+        typeCharactersInText("int a;\n/*void| foo() {\n}\n", "*", "int a;\n/*void*| foo() {\n}\n");
+        typeCharactersInText("int a;\n/*|void foo() {\n}\n", "*", "int a;\n/**|void foo() {\n}\n");
     }
 }

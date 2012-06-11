@@ -21,6 +21,8 @@
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="cbCategory" min="-2" pref="193" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="btnNewCat" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -32,6 +34,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbCategory" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnNewCat" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -47,6 +50,16 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="cbCategory">
+    </Component>
+    <Component class="javax.swing.JButton" name="btnNewCat">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="org.openide.util.NbBundle.getMessage(CategoryPicker.class, &quot;LBL_New&quot;)" type="code"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkButton(&quot;&quot;, newCatAction)"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

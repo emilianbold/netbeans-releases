@@ -78,6 +78,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
@@ -206,21 +207,33 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
         });
     }
 
+    private static final RequestProcessor RP = new RequestProcessor(MainMenuAction.class.getName(), 1, false, false);
+    private static boolean IS_SET_POST_SET_MENU_LISTENER = false;
     /** Sets the state of JMenuItem. Should be called from subclasses constructors
      * after their initialization is done.
      */
     protected void setMenu() {
-        if (kbs == null) {
-            // needs to listen on Registry - resultChanged event is fired before
-            // TopComponent is really focused - this causes problems in getComponent method
+        // needs to listen on Registry - resultChanged event is fired before
+        // TopComponent is really focused - this causes problems in getComponent method
+        if (!IS_SET_POST_SET_MENU_LISTENER) {
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     postSetMenu();
                 }
             });
-            kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
-            kbs.addLookupListener(WeakListeners.create(LookupListener.class, this, kbs));
-            kbs.allInstances();
+            IS_SET_POST_SET_MENU_LISTENER = true;
+        }
+    
+        if (kbs == null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
+                    kbs.addLookupListener(WeakListeners.create(LookupListener.class, MainMenuAction.this, kbs));
+                    kbs.allInstances(); 
+                }
+            });
         }
 
         ActionMap am = getContextActionMap();

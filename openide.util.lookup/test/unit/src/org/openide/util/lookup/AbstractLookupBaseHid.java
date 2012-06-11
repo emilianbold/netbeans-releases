@@ -82,7 +82,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** the lookup to work on */
     protected Lookup instanceLookup;
     /** the lookup created to work with */
-    private Lookup lookup;
+     Lookup lookup;
     /** implementation of methods that can influence the behaviour */
     Impl impl;
     
@@ -206,6 +206,64 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertEquals("There is One: ", 1, c.size());
         
         assertEquals(Long.valueOf(3L), c.iterator().next().getInstance());
+    }
+    
+    
+    public void testProxyOverProxyLocks() throws Exception {
+        final Collection[] noLocks = { null, null };
+        
+        
+        class IntPair extends AbstractLookup.Pair<Integer> {
+            Integer value = 1;
+            
+            @Override
+            protected boolean instanceOf(Class<?> c) {
+                return c.isAssignableFrom(Integer.class);
+            }
+
+            @Override
+            protected boolean creatorOf(Object obj) {
+                return obj == value;
+            }
+
+            @Override
+            public Integer getInstance() {
+                assertNoLocks();
+                return value;
+            }
+
+            @Override
+            public Class<? extends Integer> getType() {
+                return Integer.class;
+            }
+
+            @Override
+            public String getId() {
+                return value.toString();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return value.toString();
+            }
+            
+            public void assertNoLocks() {
+                for (Object o : noLocks) {
+                    if (o == null) {
+                        continue;
+                    }
+                    assertFalse("Don't hold lock", Thread.holdsLock(o));
+                }
+            }
+        }
+        
+        ic.addPair(new IntPair());
+        
+        noLocks[0] = lookup.lookupAll(Integer.class);
+        
+        assertFalse("Not empty", noLocks[0].isEmpty());
+        
+        assertEquals("One", 1, noLocks[0].size());
     }
     
     /** Test if first is really first.

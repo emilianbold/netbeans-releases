@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.editor.search.completion;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;

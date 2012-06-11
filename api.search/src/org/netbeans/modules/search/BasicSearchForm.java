@@ -130,6 +130,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             updateReplacePatternColor();
         }
         useCurrentlySelectedText();
+        setSearchCriteriaValues();
     }
 
     /**
@@ -459,6 +460,21 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
     }
     
+    private void setSearchCriteriaValues() {
+        searchCriteria.setWholeWords(chkWholeWords.isSelected());
+        searchCriteria.setCaseSensitive(chkCaseSensitive.isSelected());
+        searchCriteria.setRegexp(chkRegexp.isSelected());
+        searchCriteria.setFileNameRegexp(scopeSettingsPanel.isFileNameRegExp());
+        searchCriteria.setUseIgnoreList(scopeSettingsPanel.isUseIgnoreList());
+        searchCriteria.setSearchInArchives(
+                scopeSettingsPanel.isSearchInArchives());
+        searchCriteria.setSearchInGenerated(
+                scopeSettingsPanel.isSearchInGenerated());
+        if (chkPreserveCase != null) {
+            searchCriteria.setPreserveCase(chkPreserveCase.isSelected());
+        }
+    }
+
     @Override
     public boolean requestFocusInWindow() {
 	return cboxTextToFind.getComponent().requestFocusInWindow();

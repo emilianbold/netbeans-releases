@@ -74,7 +74,7 @@ public final class ReplaceConstructorWithBuilderAction extends JavaRefactoringGl
     }
 
     protected boolean enable(Lookup context) {
-        return ContextAnalyzer.canRefactorSingle(context, true);
+        return ContextAnalyzer.canRefactorSingle(context, true, false);
     }
 
     @Override

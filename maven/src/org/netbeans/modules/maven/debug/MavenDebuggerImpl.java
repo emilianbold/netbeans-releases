@@ -66,6 +66,7 @@ public class MavenDebuggerImpl implements MavenDebugger {
         nbproject = prj;
     }
 
+    @Override
     public void attachDebugger(InputOutput logger, String name,
             final String transport,
             final String host, 
@@ -85,6 +86,7 @@ public class MavenDebuggerImpl implements MavenDebugger {
 
         synchronized(lock) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     synchronized(lock) {
                         try {

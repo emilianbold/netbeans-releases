@@ -68,7 +68,7 @@ public class InstallTmpModuleTest extends NbTestCase {
     
     public static Test suite() {
         Configuration c = NbModuleSuite.createConfiguration(InstallTmpModuleTest.class);
-        c.addTest("testInstallJARFromTmp").failOnException(Level.INFO).gui(false);
+        c = c.addTest("testInstallJARFromTmp").failOnException(Level.INFO).gui(false);
         return c.suite();
     }
     

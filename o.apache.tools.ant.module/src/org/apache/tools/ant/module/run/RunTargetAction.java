@@ -65,7 +65,6 @@ public final class RunTargetAction implements ActionListener {
     }
 
     @Override public void actionPerformed(ActionEvent e) {
-        // XXX warn if is target.isInternal()? used to hide it
         try {
             new TargetExecutor(target.getOriginatingScript(), new String[] {target.getName()}).execute();
         } catch (IOException ioe) {

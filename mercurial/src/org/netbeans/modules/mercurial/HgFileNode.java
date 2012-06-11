@@ -56,12 +56,15 @@ import java.util.ArrayList;
  *
  * @author Padraig O'Briain
  */
-public class HgFileNode {
+public final class HgFileNode {
 
     private final File file;
+    private final File normalizedFile;
+    private FileObject fileObject;
 
     public HgFileNode(File file) {
         this.file = file;
+        normalizedFile = FileUtil.normalizeFile(file);
     }
 
     public String getName() {
@@ -77,17 +80,22 @@ public class HgFileNode {
         return file;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         return o instanceof HgFileNode && file.equals(((HgFileNode) o).file);
     }
 
+    @Override
     public int hashCode() {
         return file.hashCode();
     }
 
     public FileObject getFileObject() {
-        return FileUtil.toFileObject(file);
+        if (fileObject == null) {
+            fileObject = FileUtil.toFileObject(normalizedFile);
+        }
+        return fileObject;
     }
 
     public Object[] getLookupObjects() {

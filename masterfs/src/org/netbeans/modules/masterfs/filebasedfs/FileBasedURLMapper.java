@@ -126,7 +126,7 @@ public final class FileBasedURLMapper extends URLMapper {
         FileObject retVal = null;
         File file;
         try {
-            file = FileUtil.normalizeFile(new File(url.toURI()));
+            file = FileUtil.normalizeFile(url2F(url));
         } catch (URISyntaxException e) {
             LOG.log(Level.INFO, "URL=" + url, e); // NOI18N
             return null;
@@ -157,29 +157,40 @@ public final class FileBasedURLMapper extends URLMapper {
      * FileObject is a file or folder, so we can eliminate File.isDirectory
      * disk touch which is needed in file.toURI().  */
     private static URI toURI(final File file, boolean isDirectory) {
-	try {
-	    File f = file.getAbsoluteFile();
-	    String sp = slashify(f.getPath(), isDirectory);
-	    if (sp.startsWith("//")) {  //NOI18N
-		sp = "//" + sp;  //NOI18N
-            }
-	    return new URI("file", null, sp, null);  //NOI18N
-	} catch (URISyntaxException x) {
-	    throw new Error(x);		// Can't happen
-	}
+        return toURI(file.getAbsolutePath(), isDirectory, File.separatorChar);
+    }
+    
+    static URI toURI(String path, boolean isDirectory, char separator) {
+        try {
+            String sp = slashify(path, isDirectory, separator);
+            return new URI("file", null, sp, null);  //NOI18N
+        } catch (URISyntaxException x) {
+            throw new Error(x);		// Can't happen
+        }
     }
 
-    private static String slashify(String path, boolean isDirectory) {
-	String p = path;
-	if (File.separatorChar != '/') {  //NOI18N
-	    p = p.replace(File.separatorChar, '/');  //NOI18N
+    private static String slashify(String p, boolean isDirectory, char separatorChar) {
+        if (separatorChar != '/') {  //NOI18N
+            p = p.replace(separatorChar, '/');  //NOI18N
         }
-	if (!p.startsWith("/")) {  //NOI18N
-	    p = "/" + p;  //NOI18N
+        if (!p.startsWith("/")) {  //NOI18N
+            p = "/" + p;  //NOI18N
         }
-	if (!p.endsWith("/") && isDirectory) {  //NOI18N
-	    p = p + "/";  //NOI18N
+        if (!p.endsWith("/") && isDirectory) {  //NOI18N
+            p = p + "/";  //NOI18N
         }
-	return p;
+        return p;
+    }
+
+    static File url2F(final URL url) throws URISyntaxException {
+        File file;
+        if (url.getHost() == null || url.getHost().length() == 0) {
+            file = new File(url.toURI());
+        } else {
+            String path = "\\\\" + url.getHost() + url.getPath().replace('/', '\\'); // NOI18N
+            path = path.replace("%20", " "); // NOI18N
+            file = new File(path);
+        }
+        return file;
     }
 }

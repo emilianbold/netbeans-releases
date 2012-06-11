@@ -23,6 +23,19 @@
             </folder>
         </folder>
     </folder>
+    <folder name="Loaders">
+        <folder name="application">
+            <folder name="x-nbsettings">
+                <folder name="Factories">
+                    <file name="org-openide-loaders-InstanceDataLoader.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.loaders.DataLoader"/>
+                        <attr name="instanceOf" stringvalue="org.openide.loaders.DataLoader"/>
+                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.getInstanceLoader"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Templates"><!-- see NewTemplateAction -->
         <folder name="Privileged">
             <attr name="simple" boolvalue="false"/>

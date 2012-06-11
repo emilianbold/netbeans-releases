@@ -331,7 +331,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                     if (MethodOrder.isShuffled()) {
                         thrwn = Log.wrapWithAddendum(thrwn, "(executed in shuffle mode, run with -DNbTestCase.order=" + MethodOrder.getSeed() + " to reproduce the order)", true);
                     }
-                    this.t = Log.wrapWithMessages(thrwn);
+                    this.t = Log.wrapWithMessages(thrwn, getWorkDirPath());
                 } finally {
                     synchronized (this) {
                         finished = true;
@@ -369,7 +369,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 if (!finished) {
                     throw Log.wrapWithMessages(new AssertionFailedError ("The test " + getName() + " did not finish in " + timeout + "ms\n" +
                         threadDump())
-                    );
+                    , getWorkDirPath());
                 }
             }
         }

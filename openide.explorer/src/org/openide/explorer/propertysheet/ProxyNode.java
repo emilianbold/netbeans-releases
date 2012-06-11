@@ -61,8 +61,8 @@ import org.openide.nodes.Node.PropertySet;
  */
 final class ProxyNode extends AbstractNode {
     private static final int MAX_NAMES = 2;
-    private Node[] original;
-    private ArrayList<Node.PropertySet[]> originalPropertySets;
+    private volatile Node[] original;
+    private volatile ArrayList<Node.PropertySet[]> originalPropertySets;
     private NodeListener pcl;
     String displayName = null;
     private String shortDescription = null;
@@ -211,15 +211,18 @@ final class ProxyNode extends AbstractNode {
         }
     }
     
-    private ArrayList<Node.PropertySet[]> getOriginalPropertySets() {
+    private ArrayList<Node.PropertySet[]> getOriginalPropertySets(Node[] forWhat) {
         if( null == originalPropertySets ) {
-            originalPropertySets = new ArrayList<Node.PropertySet[]>( original.length );
+            ArrayList<PropertySet[]> arr = new ArrayList<Node.PropertySet[]>( forWhat.length );
             
-            for( int i=0; i<original.length; i++) {	    
-                Node.PropertySet[] p = original[i].getPropertySets();
-                originalPropertySets.add( p );
+            for( int i=0; i<forWhat.length; i++) {	    
+                Node.PropertySet[] p = forWhat[i].getPropertySets();
+                arr.add( p );
             }
-            
+            if (original == forWhat) {
+                originalPropertySets = arr;
+            }
+            return arr;
         }
         return originalPropertySets;
     }
@@ -228,8 +231,9 @@ final class ProxyNode extends AbstractNode {
      * of properties in those tabs.
      */
     private Sheet.Set[] computePropertySets() {
-        if (original.length > 0) {
-            final ArrayList<PropertySet[]> ops = getOriginalPropertySets();
+        Node[] copy = original;
+        if (copy.length > 0) {
+            final ArrayList<PropertySet[]> ops = getOriginalPropertySets(copy);
             if (ops.isEmpty()) {
                 return new Sheet.Set[0];
             }
@@ -289,7 +293,7 @@ final class ProxyNode extends AbstractNode {
                         continue;
                     }
 
-                    ProxyProperty pp = createProxyProperty(p[j].getName(), res.getName());
+                    ProxyProperty pp = createProxyProperty(copy, p[j].getName(), res.getName());
                     res.put(pp);
                 }
 
@@ -305,11 +309,11 @@ final class ProxyNode extends AbstractNode {
     /** Finds properties in original with specified
      * name in all tabs and constructs a ProxyProperty instance.
      */
-    private ProxyProperty createProxyProperty(String propName, String setName) {
-        Node.Property[] arr = new Node.Property[original.length];
+    private ProxyProperty createProxyProperty(Node[] copy, String propName, String setName) {
+        Node.Property[] arr = new Node.Property[copy.length];
 
-        for (int i = 0; i < original.length; i++) {
-            Node.PropertySet[] p = getOriginalPropertySets().get(i);
+        for (int i = 0; i < copy.length; i++) {
+            Node.PropertySet[] p = getOriginalPropertySets(copy).get(i);
 
             for (int j = 0; j < p.length; j++) {
                 if (p[j].getName().equals(setName)) {

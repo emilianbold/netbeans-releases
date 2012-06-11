@@ -143,8 +143,11 @@ public class FastOpenInfoParser {
                     DataObject dataObject = DataObject.find(fo);
                     Node.Cookie obj = dataObject.getLookup().lookup(org.openide.cookies.EditorCookie.class);
                     StyledDocument document = ((EditorCookie) obj).getDocument();
-                    String text = document.getText(0, document.getLength() < 8192 ? document.getLength() : 8192);
-                    is = new ByteArrayInputStream(text.getBytes());
+                    if (document != null) {
+                        // can be null if the document wasn't loaded yet
+                        String text = document.getText(0, document.getLength() < 8192 ? document.getLength() : 8192);
+                        is = new ByteArrayInputStream(text.getBytes());
+                    }
                 } catch (BadLocationException ex) {
                     LOGGER.log(Level.SEVERE, null, ex);
                 }

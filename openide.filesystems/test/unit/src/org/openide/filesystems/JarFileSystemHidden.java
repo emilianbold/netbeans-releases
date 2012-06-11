@@ -103,7 +103,7 @@ public class JarFileSystemHidden extends NbTestCase {
 
         CharSequence log = Log.enable(JarFileSystem.class.getName(), Level.FINE);
         JarFileSystem fs = new JarFileSystem(f);
-        final String match = "opened: WORKDIR/o.o.f.J/testLazyOpen/ok.jar".replace('/', File.separatorChar);
+        final String match = "opened: " + f.getAbsolutePath();
         if (log.toString().contains(match)) {
             fail("The file " + f + " shall not be opened when fs created:\n" + log);
         }

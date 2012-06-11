@@ -204,7 +204,13 @@ public class JDBCTable extends TableImplementation {
                 JDBCIndex index = null;
                 String currentIndexName = null;
                 while (rs.next()) {
-                    if (rs.getShort("TYPE") == DatabaseMetaData.tableIndexStatistic) {
+                    // Ignore Indices marked statistic
+                    // explicit: TYPE == DatabaseMetaData or
+                    // implicit: ORDINAL_POSITION == 0
+                    // @see java.sql.DatabaseMetaData#getIndexInfo
+                    if (rs.getShort("TYPE") //NOI18N
+                            == DatabaseMetaData.tableIndexStatistic
+                            || rs.getInt("ORDINAL_POSITION") == 0) { //NOI18N
                         continue;
                     }
 

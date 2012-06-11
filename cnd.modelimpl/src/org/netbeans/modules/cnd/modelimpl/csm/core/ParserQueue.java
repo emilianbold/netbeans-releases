@@ -419,7 +419,12 @@ public final class ParserQueue {
             }
         }
         if (ppStates.isEmpty()) {
-            Utils.LOG.log(Level.SEVERE, "Adding a file {0} with an emty preprocessor state set", file.getAbsolutePath()); //NOI18N
+            ProjectBase pi = file.getProjectImpl(false);
+            if (pi != null && !pi.isDisposing()) {
+                Utils.LOG.log(Level.SEVERE, "Adding a file {0} with an emty preprocessor state set", file.getAbsolutePath()); //NOI18N
+            } else {
+                return false;
+            }
         }
         assert state != null;
         if (TraceFlags.TRACE_PARSER_QUEUE) {

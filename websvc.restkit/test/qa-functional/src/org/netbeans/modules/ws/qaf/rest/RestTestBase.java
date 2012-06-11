@@ -70,7 +70,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
 /**
  * Base class for REST tests
@@ -238,7 +237,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
      */
     protected void prepareRestClient() throws IOException {
         //generate Rest test client into the <projectDir>/web directory
-        Class c = null;
+        Class<?> c = null;
         try {
             c = Class.forName("org.netbeans.modules.websvc.rest.spi.RestSupport");
         } catch (ClassNotFoundException cnfe) {
@@ -279,7 +278,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
         FileObject restClientFO = FileUtil.toFileObject(FileUtil.normalizeFile(restClient));
         DataObject dobj = DataObject.find(restClientFO);
         assertNotNull(dobj);
-        EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+        EditorCookie editorCookie = dobj.getLookup().lookup(EditorCookie.class);
         assertNotNull(editorCookie);
         editorCookie.open();
         try {
@@ -312,7 +311,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
             Set<String> set = new HashSet<String>(newFiles.size() / 2);
             for (Iterator<File> i = newFiles.iterator(); i.hasNext();) {
                 File newFile = i.next();
-                File goldenFile = null;
+                File goldenFile;
                 try {
                     goldenFile = getGoldenFile(getName() + "/" + newFile.getName() + ".pass"); //NOI18N
                     if (newFile.getName().endsWith(".xml") //NOI18N
@@ -351,14 +350,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     private void createGoldenFiles(Set<File> from) {
         File f = getDataDir();
-        List<String> names = new ArrayList<String>();
-        names.add("goldenfiles"); //NOI18N
         while (!f.getName().equals("test")) { //NOI18N
-            if (!f.getName().equals("sys") //NOI18N
-                    && !f.getName().equals("work") //NOI18N
-                    && !f.getName().equals("tests")) { //NOI18N
-                names.add(f.getName());
-            }
             f = f.getParentFile();
         }
         f = new File(f, "qa-functional/data/goldenfiles"); //NOI18N
@@ -406,6 +398,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
             LOGGER.log(Level.WARNING, "JDBC Driver was not copied", ex); //NOI18N
         }
         File jar = FileUtil.toFile(targetFolder.getFileObject("derbyclient", "jar")); //NOI18N
-        LOGGER.info("JDBC Driver was copied to: " + jar.getAbsolutePath()); //NOI18N
+        LOGGER.log(Level.INFO, "JDBC Driver was copied to: {0}", jar.getAbsolutePath()); //NOI18N
     }
 }

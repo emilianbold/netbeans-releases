@@ -69,14 +69,16 @@ import org.openide.util.Exceptions;
  */
 public class FortranParserEx {
     
-   public static final int UNKNOWN_SOURCE_FORM = -1;
-   public static final int FREE_FORM = 1;
-   public static final int FIXED_FORM = 2;
-    
+    public static final int UNKNOWN_SOURCE_FORM = -1;
+    public static final int FREE_FORM = 1;
+    public static final int FIXED_FORM = 2;
+
     public List<Object> parsedObjects = new ArrayList<Object>();
 
     private FortranParser parser;
 
+    private final int form;
+    
     public program_return program() throws RecognitionException {
         return parser.program();
     }
@@ -135,7 +137,8 @@ public class FortranParserEx {
 
     }
 
-    public FortranParserEx(TokenStream ts) {
+    public FortranParserEx(TokenStream ts, int form) {
+        this.form = form;
         MyTokenSource myts = new MyTokenSource(ts);
         FortranTokenStream tokens = new FortranTokenStream(myts);
         tokens.fill();
@@ -143,18 +146,18 @@ public class FortranParserEx {
         parser = new FortranParser(tokens);
         try {
             FortranLexicalPrepass prepass = new FortranLexicalPrepass(tokens);
-            prepass.setSourceForm(FIXED_FORM);
+            prepass.setSourceForm(form);
             prepass.performPrepass();
             tokens.finalizeTokenStream();
             
 //            int i = 0;
 //            Token token = tokens.get(i);
 //            while (token.getType() != -1) {
-//                System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+//                System.out.println(token.getType() + " " + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
 //                i++;
 //                token = tokens.get(i);
 //            }
-//            System.out.println(token.getType() + "" + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
+//            System.out.println(token.getType() + " " + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
             
         } catch (Throwable t) {
             System.out.println(t);

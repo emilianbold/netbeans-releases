@@ -48,6 +48,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -134,7 +136,11 @@ public class CheckBoxRenderrer extends JCheckBox implements ListCellRenderer, Se
         } else {
             border = getNoFocusBorder ();
         }
-        setBorder (border);
+        if (border != null) { //#189786: rarely, the border is null - reasons are unknown
+            setBorder (border);
+        } else {
+            Logger.getLogger(CheckBoxRenderrer.class.getName()).log(Level.INFO, "Cannot set any border");
+        }
 
         return this;
     }

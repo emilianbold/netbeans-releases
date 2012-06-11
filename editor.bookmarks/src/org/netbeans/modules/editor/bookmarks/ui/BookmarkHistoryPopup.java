@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -83,6 +85,9 @@ import org.openide.windows.WindowManager;
  */
 public final class BookmarkHistoryPopup implements KeyListener {
     
+    // -J-Dorg.netbeans.modules.editor.bookmarks.ui.BookmarkHistoryPopup.level=FINE
+    private static final Logger LOG = Logger.getLogger(BookmarkHistoryPopup.class.getName());
+
     private static BookmarkHistoryPopup INSTANCE = new BookmarkHistoryPopup();
     
     public static BookmarkHistoryPopup get() {
@@ -153,8 +158,8 @@ public final class BookmarkHistoryPopup implements KeyListener {
         panel.setBorder(new LineBorder(Color.black, 1));
 
         Dimension prefSize = panel.getPreferredSize();
-        int x = (screenBounds.width - prefSize.width) / 2;
-        int y = (screenBounds.height - prefSize.height) / 2;
+        int x = screenBounds.x + (screenBounds.width - prefSize.width) / 2;
+        int y = screenBounds.y + (screenBounds.height - prefSize.height) / 2;
         popup = PopupFactory.getSharedInstance().getPopup(WindowManager.getDefault().getMainWindow(), panel, x, y);
         popup.show();
         table.requestFocusInWindow();
@@ -278,6 +283,9 @@ public final class BookmarkHistoryPopup implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("BookmarkHistoryPopup.keyPressed: e=" + e + '\n');
+        }
         switch (e.getKeyCode()) {
             case KeyEvent.VK_ENTER:
                 BookmarkInfo selectedBookmark = getSelectedBookmark();
@@ -293,11 +301,13 @@ public final class BookmarkHistoryPopup implements KeyListener {
                 break;
                 
             case KeyEvent.VK_COMMA:
+            case KeyEvent.VK_DOWN:
                 e.consume();
                 selectNext();
                 break;
                 
             case KeyEvent.VK_PERIOD:
+            case KeyEvent.VK_UP:
                 e.consume();
                 selectPrevious();
                 break;
@@ -306,6 +316,9 @@ public final class BookmarkHistoryPopup implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("BookmarkHistoryPopup.keyReleased: e=" + e + '\n');
+        }
         // Check if Ctrl and Shift are still pressed
         int pressedMods = (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
         if ((e.getModifiersEx() & pressedMods) != pressedMods) {

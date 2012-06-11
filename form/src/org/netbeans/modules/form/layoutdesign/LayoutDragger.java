@@ -1424,14 +1424,32 @@ final class LayoutDragger implements LayoutConstants {
         int[][] groupPos = group.getCurrentSpace().positions;
         for (int i=0, n=group.getSubIntervalCount(); i < n; i++) {
             LayoutInterval li = group.getSubInterval(i);
+            LayoutInterval prev = null;
+            LayoutInterval next = null;
             int _x1, _x2, _y1, _y2;
             if (li.isEmptySpace()) {
-                if (group.isParallel())
+                if (group.isParallel()) {
                     continue;
-                _x1 = i == 0 ? groupPos[dim][LEADING] :
-                               group.getSubInterval(i-1).getCurrentSpace().positions[dim][TRAILING];
-                _x2 = i+1 == n ? groupPos[dim][TRAILING] :
-                                 group.getSubInterval(i+1).getCurrentSpace().positions[dim][LEADING];
+                }
+                for (int ii=i-1; ii >= 0; ii--) { // for robustness to occurrence of consecutive gaps
+                    prev = group.getSubInterval(ii);
+                    if (!prev.isEmptySpace()) {
+                        break;
+                    } else {
+                        prev = null;
+                    }
+                }
+                _x1 = prev != null ? prev.getCurrentSpace().positions[dim][TRAILING] : groupPos[dim][LEADING];
+                while (i+1 < n) { // for robustness to occurrence of consecutive gaps
+                    next = group.getSubInterval(i+1);
+                    if (!next.isEmptySpace()) {
+                        break;
+                    } else {
+                        next = null;
+                        i++;
+                    }
+                }
+                _x2 = next != null ? next.getCurrentSpace().positions[dim][LEADING] : groupPos[dim][TRAILING];
                 _y1 = groupPos[dim^1][LEADING];
                 _y2 = groupPos[dim^1][TRAILING];
                 if (_y1 < y1) {
@@ -1455,13 +1473,11 @@ final class LayoutDragger implements LayoutConstants {
                         return true;
                 }
                 else if (li.isEmptySpace()) {
-                    if (i > 0 && i+1 < n // first/last space is not in the way
+                    if (prev != null && next != null // first/last space is not in the way
                         && (li.getMinimumSize() == NOT_EXPLICITLY_DEFINED || li.getMinimumSize() == USE_PREFERRED_SIZE)
                         && li.getPreferredSize() == NOT_EXPLICITLY_DEFINED
                         && (li.getMaximumSize() == NOT_EXPLICITLY_DEFINED || li.getMaximumSize() == USE_PREFERRED_SIZE))
                     {   // preferred padding might be in the way
-                        LayoutInterval prev = group.getSubInterval(i-1);
-                        LayoutInterval next = group.getSubInterval(i+1);
                         if ((!prev.isComponent() || isValidInterval(prev))
                             && (!next.isComponent() || isValidInterval(next)))
                         {   // preferred padding between valid intervals (i.e. not next to the moving component itself)

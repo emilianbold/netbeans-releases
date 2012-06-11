@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="File" />
     <Toolbar name="Clipboard" visible="false"/>
     <Toolbar name="UndoRedo" />
+    <Toolbar name="Remote" visible="false"/>
     <Toolbar name="Build" />
     <Toolbar name="Debug" />
     <Toolbar name="Memory"/>

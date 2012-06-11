@@ -433,13 +433,9 @@ public class ProfilerLauncher {
             oldArgs = (oldArgs != null) ? oldArgs : "";
 
             StringBuilder oomArgsBuffer = new StringBuilder(oldArgs);
-            String heapDumpPath = getHeapDumpPath(gps, project);
+            String heapDumpPath = HeapDumpWatch.getHeapDumpPath(project);
 
             if ((heapDumpPath != null) && (heapDumpPath.length() > 0)) {
-                // used for filesystem listener
-                props.put(HeapDumpWatch.OOME_PROTECTION_ENABLED_KEY, "yes");
-                props.put(HeapDumpWatch.OOME_PROTECTION_DUMPPATH_KEY, heapDumpPath);
-
                 // used as an argument for starting java process
                 if (heapDumpPath.contains(" ")) {
                     heapDumpPath = "\"" + heapDumpPath + "\"";
@@ -453,27 +449,5 @@ public class ProfilerLauncher {
 
             props.put("profiler.info.jvmargs", oomArgsBuffer.toString()); // NOI18N
         }
-    }
-    
-    private static String getHeapDumpPath(ProfilerIDESettings gps, Project project) {
-        int oomeDetectionMode = gps.getOOMDetectionMode();
-
-        switch (oomeDetectionMode) {
-            case ProfilerIDESettings.OOME_DETECTION_TEMPDIR:
-                return System.getProperty("java.io.tmpdir"); // NOI18N
-            case ProfilerIDESettings.OOME_DETECTION_PROJECTDIR:
-
-                try {
-                    return FileUtil.toFile(ProjectStorage.getSettingsFolder(project, true)).getAbsolutePath();
-                } catch (IOException e) {
-                    LOG.log(Level.WARNING, "Cannot resolve project settings directory:\n" + e.getMessage(), e);
-                    
-                    return null;
-                }
-            case ProfilerIDESettings.OOME_DETECTION_CUSTOMDIR:
-                return gps.getCustomHeapdumpPath();
-        }
-
-        return null;
     }
 }

@@ -59,6 +59,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
 public class CKit extends CCKit {
@@ -96,10 +97,10 @@ public class CKit extends CCKit {
     protected Action getToggleCommentAction() {
         return new CToggleCommentAction();
     }
-    private static String START_BLOCK_COMMENT = "/*"; // NOI18N
-    private static String END_BLOCK_COMMENT = "*/"; // NOI18N
-    private static String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
-    private static String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
+    private static final String START_BLOCK_COMMENT = "/*"; // NOI18N
+    private static final String END_BLOCK_COMMENT = "*/"; // NOI18N
+    private static final String insertStartCommentString = START_BLOCK_COMMENT + "\n"; // NOI18N
+    private static final String insertEndCommentString = END_BLOCK_COMMENT + "\n"; // NOI18N
 
     private static final class CCommentAction extends CommentAction {
 
@@ -122,6 +123,7 @@ public class CKit extends CCKit {
                 final BaseDocument doc = (BaseDocument) target.getDocument();
                 doc.runAtomic(new Runnable() {
 
+                    @Override
                     public void run() {
                         Caret caret = target.getCaret();
                         try {
@@ -182,6 +184,7 @@ public class CKit extends CCKit {
                 final BaseDocument doc = (BaseDocument) target.getDocument();
                 doc.runAtomicAsUser(new Runnable() {
 
+                    @Override
                     public void run() {
                         Caret caret = target.getCaret();
                         try {
@@ -257,18 +260,31 @@ public class CKit extends CCKit {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (allComments(target)) {
-                CUncommentAction.doCStyleUncomment(target);
-            } else {
-                CCommentAction.doCStyleComment(target);
+            if (target != null) {
+                if (!target.isEditable() || !target.isEnabled()) {
+                    target.getToolkit().beep();
+                    return;
+                }
+                final BaseDocument doc = (BaseDocument) target.getDocument();
+                CodeStyle style = CodeStyle.getDefault(doc);
+                if (style.getUseBlockComment()) {
+                    if (allComments(target)) {
+                        CUncommentAction.doCStyleUncomment(target);
+                    } else {
+                        CCommentAction.doCStyleComment(target);
+                    }
+                } else {
+                    super.actionPerformed(evt, target);
+                }
             }
         }
-
+        
         private boolean allComments(final JTextComponent target) {
             final BaseDocument doc = (BaseDocument) target.getDocument();
             final AtomicBoolean res = new AtomicBoolean(false);
             doc.render(new Runnable() {
 
+                @Override
                 public void run() {
                     Caret caret = target.getCaret();
                     Token<TokenId> tok = null;

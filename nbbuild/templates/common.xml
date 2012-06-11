@@ -347,9 +347,11 @@ made subject to such option by the copyright holder.
         </xmlvalidate>
     </target>
 
-    <target name="netbeans" depends="init,jar,netbeans-extra,javahelp,module-auto-deps,release,module-xml-regular,
+    <target name="-netbeans" depends="init,jar,netbeans-extra,javahelp,module-auto-deps,release,module-xml-regular,
             module-xml-autoload,module-xml-eager,chmod-executables,verify-class-linkage,
-            -validate-layers,-verify-apichanges">            
+            -validate-layers,-verify-apichanges"/> 
+    
+    <target name="netbeans" depends="-netbeans">
         <property name="module.files.toString" refid="module.files"/>
         <echo level="verbose">Basic matching module files: ${module.files.toString}</echo>
         <genlist outputfiledir="${cluster}" module="${module.jar}">

@@ -46,6 +46,7 @@ package org.netbeans.api.java.source.gen;
 import com.sun.source.tree.*;
 import java.io.File;
 import static com.sun.source.tree.Tree.Kind.*;
+import com.sun.source.util.TreeScanner;
 import java.util.*;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -275,6 +276,98 @@ public class ConstructorTest extends GeneratorTestBase {
                 BlockTree body = make.createMethodBody(origConstr, "{ super(a); }");
                 MethodTree nueConstr = make.Constructor(mt, Collections.<TypeParameterTree>emptyList(), Collections.singletonList(param), Collections.<ExpressionTree>emptyList(), body);
                 workingCopy.rewrite(clazz, make.addClassMember(clazz, nueConstr));
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testConstructorWithSuper211913a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "        super(13);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+
+                    @Override
+                    public Void scan(Tree node, Void p) {
+                        return super.scan(node, p);
+                    }
+                    @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                        if ("super".equals(node.getMethodSelect().toString())) {
+                            workingCopy.rewrite(node, make.addMethodInvocationArgument(node, make.Literal(13)));
+                        }
+                        return super.visitMethodInvocation(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testConstructorWithSuper211913b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n\n" +
+            "    public Test() {\n" +
+            "        super(13);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+
+                new TreeScanner<Void, Void>() {
+
+                    @Override
+                    public Void scan(Tree node, Void p) {
+                        return super.scan(node, p);
+                    }
+                    @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                        if ("super".equals(node.getMethodSelect().toString())) {
+                            workingCopy.rewrite(node, make.addMethodInvocationArgument(node, make.Literal(13)));
+                        }
+                        return super.visitMethodInvocation(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
             }
 
         };

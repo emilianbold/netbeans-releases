@@ -142,6 +142,6 @@ public class PanelConfigureProjectVisual extends JPanel implements HelpCtx.Provi
      */
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PanelConfigureProjectVisual.class);
+        return new HelpCtx(PanelConfigureProjectVisual.class.getName());
     }    
 }
