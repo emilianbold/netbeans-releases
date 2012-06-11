@@ -41,43 +41,67 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
+import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 
 /**
  *
  * @author Tomas Stupka
  */
-@BugtrackingConnector.Registration (
-        id=C2CConnector.ID,
-        displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
-)    
-public class C2CConnector extends BugtrackingConnector {
-    public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
-    
+public class C2CQueryProvider extends QueryProvider<C2CQuery, C2CIssue> {
+
     @Override
-    public Repository createRepository(RepositoryInfo info) {
-        C2CRepository bugzillaRepository = new C2CRepository(info);
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+    public String getDisplayName(C2CQuery q) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Repository createRepository() {
-        C2CRepository bugzillaRepository = new C2CRepository();
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+    public String getTooltip(C2CQuery q) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public QueryController getController(C2CQuery q) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean isSaved(C2CQuery q) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void remove(C2CQuery q) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Collection<C2CIssue> getIssues(C2CQuery q) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean contains(C2CQuery q, String id) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void refresh(C2CQuery query) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void removePropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addPropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }

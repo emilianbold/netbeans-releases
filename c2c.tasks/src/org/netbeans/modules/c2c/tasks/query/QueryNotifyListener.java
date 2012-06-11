@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+package org.netbeans.modules.c2c.tasks.query;
+
+import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 
 /**
- *
+ * Notifies changes on a query
  * @author Tomas Stupka
  */
-@BugtrackingConnector.Registration (
-        id=C2CConnector.ID,
-        displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
-)    
-public class C2CConnector extends BugtrackingConnector {
-    public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
-    
-    @Override
-    public Repository createRepository(RepositoryInfo info) {
-        C2CRepository bugzillaRepository = new C2CRepository(info);
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
-    }
+public interface QueryNotifyListener {
 
-    @Override
-    public Repository createRepository() {
-        C2CRepository bugzillaRepository = new C2CRepository();
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
-    }
-    
+    /**
+     * Query execution was started
+     */
+    public void started();
+
+    /**
+     *
+     * @param issue
+     */
+    public void notifyData(C2CIssue issue);
+
+    /**
+     * Query execution was finished
+     */
+    public void finished();
+
 }

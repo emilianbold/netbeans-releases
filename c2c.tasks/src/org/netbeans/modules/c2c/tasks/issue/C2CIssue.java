@@ -39,45 +39,22 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks;
+package org.netbeans.modules.c2c.tasks.issue;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import java.io.IOException;
 
 /**
  *
  * @author Tomas Stupka
  */
-@BugtrackingConnector.Registration (
-        id=C2CConnector.ID,
-        displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
-)    
-public class C2CConnector extends BugtrackingConnector {
-    public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
-    
-    @Override
-    public Repository createRepository(RepositoryInfo info) {
-        C2CRepository bugzillaRepository = new C2CRepository(info);
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
-    }
+public class C2CIssue {
 
-    @Override
-    public Repository createRepository() {
-        C2CRepository bugzillaRepository = new C2CRepository();
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+    public void setSeen(boolean b) throws IOException {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public String getID() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
     
 }

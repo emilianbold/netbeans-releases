@@ -47,13 +47,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
@@ -62,6 +62,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 
 /**
  *
@@ -98,8 +99,13 @@ public class C2CTest extends NbTestCase  {
     protected void setUp() throws Exception {
         super.setUp();
         
+        trm = new TaskRepositoryManager();
+        cfcrc = new CfcRepositoryConnector();
+        trlf = new TaskRepositoryLocationFactory();
+        cfcrc.getClientManager().setTaskRepositoryLocationFactory(trlf);
+        
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        repository = new TaskRepository("c2c", "https://q.tasktop.com/alm/s/anagramgame/tasks");
+        repository = new TaskRepository(cfcrc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
         
         if(firstRun) {
             if (uname == null) {
@@ -133,22 +139,23 @@ public class C2CTest extends NbTestCase  {
             
 //        repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
 
-        trm = new TaskRepositoryManager();
-        cfcrc = new CfcRepositoryConnector();
-        trlf = new TaskRepositoryLocationFactory();
-        cfcrc.getClientManager().setTaskRepositoryLocationFactory(trlf);
-                
         trm.addRepository(repository);
         trm.addRepositoryConnector(cfcrc);
 
-        WebUtil.init();
     }
 
     public void testC2CTasks() throws Throwable {
 //        TaskDataState state;
 //        TaskData d;
         try {
-
+            //            ContextFactory.createContext(
+            //                        "META-INF/spring/applicationContext-multiUserRestClient.xml",
+            //                        new BaseProfileConfiguration().getClass().getClassLoader());
+            //            ctx = ContextFactory.createContext(
+            //                    "com/tasktop/c2c/internal/client/tasks/core/client/tasksApplicationContext.xml",
+            //                    getClass().getClassLoader());
+            URL r = Thread.currentThread().getContextClassLoader().getResource("com/tasktop/c2c/internal/client/tasks/core/client/tasksApplicationContext.xml");
+            
             // create issue
             TaskData data = createIssue(repository, "this is a bug", "a bug", "bug");
 
@@ -186,8 +193,8 @@ public class C2CTest extends NbTestCase  {
     }
 
     public TaskData createIssue(TaskRepository repository, String summary, String desc, String typeName) throws CoreException, MalformedURLException {
-        TaskData data = TestUtil.createTaskData(cfcrc, repository, summary, desc, typeName);
-        RepositoryResponse rr = TestUtil.postTaskData(cfcrc, repository, data);
+        TaskData data = C2CUtil.createTaskData(cfcrc, repository, summary, desc, typeName);
+        RepositoryResponse rr = C2CUtil.postTaskData(cfcrc, repository, data);
         String taskId = rr.getTaskId();
         data = cfcrc.getTaskData(repository, taskId, nullProgressMonitor);
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);

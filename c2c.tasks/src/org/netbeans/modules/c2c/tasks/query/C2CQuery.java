@@ -39,45 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks;
+package org.netbeans.modules.c2c.tasks.query;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import java.util.Collection;
+import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-@BugtrackingConnector.Registration (
-        id=C2CConnector.ID,
-        displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
-)    
-public class C2CConnector extends BugtrackingConnector {
-    public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
-    
-    @Override
-    public Repository createRepository(RepositoryInfo info) {
-        C2CRepository bugzillaRepository = new C2CRepository(info);
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+public class C2CQuery {
+
+    boolean isSaved() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    @Override
-    public Repository createRepository() {
-        C2CRepository bugzillaRepository = new C2CRepository();
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+    int getSize() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    boolean wasRun() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public String getDisplayName() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    void setName(String name) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    void setSaved(boolean b) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    long getLastRefresh() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    boolean contains(String iD) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    void remove() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    Collection<C2CIssue> getIssues() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public String getParametersString() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    void addNotifyListener(QueryNotifyListener l) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
     
 }

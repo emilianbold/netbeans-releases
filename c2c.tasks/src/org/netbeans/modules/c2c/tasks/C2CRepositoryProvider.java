@@ -41,43 +41,70 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import java.awt.Image;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
+import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Stupka
  */
-@BugtrackingConnector.Registration (
-        id=C2CConnector.ID,
-        displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
-)    
-public class C2CConnector extends BugtrackingConnector {
-    public static final String ID = "org.netbeans.modules.c2c.tasks"; // NOI18N
-    
+public class C2CRepositoryProvider extends RepositoryProvider<C2CRepository, C2CQuery, C2CIssue> {
+
     @Override
-    public Repository createRepository(RepositoryInfo info) {
-        C2CRepository bugzillaRepository = new C2CRepository(info);
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+    public RepositoryInfo getInfo(C2CRepository r) {
+        return r.getInfo();
     }
 
     @Override
-    public Repository createRepository() {
-        C2CRepository bugzillaRepository = new C2CRepository();
-        return C2C.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    C2C.getInstance().getRepositoryProvider(), 
-                    C2C.getInstance().getQueryProvider(), 
-                    C2C.getInstance().getIssueProvider());
+    public Image getIcon(C2CRepository r) {
+        return r.getIcon();
+    }
+
+    @Override
+    public C2CIssue[] getIssues(C2CRepository r, String... ids) {
+        return r.getIssues(ids);
+    }
+
+    @Override
+    public void remove(C2CRepository r) {
+        r.remove();
+    }
+
+    @Override
+    public RepositoryController getController(C2CRepository r) {
+        return r.getControler();
+    }
+
+    @Override
+    public C2CQuery createQuery(C2CRepository r) {
+        return r.createQuery();
+    }
+
+    @Override
+    public C2CIssue createIssue(C2CRepository r) {
+        return r.createIssue();
+    }
+
+    @Override
+    public Collection<C2CQuery> getQueries(C2CRepository r) {
+        return r.getQueries();
+    }
+
+    @Override
+    public Lookup getLookup(C2CRepository r) {
+        return r.getLookup();
+    }
+
+    @Override
+    public Collection<C2CIssue> simpleSearch(C2CRepository r, String criteria) {
+        return r.simpleSearch(criteria);
     }
     
 }

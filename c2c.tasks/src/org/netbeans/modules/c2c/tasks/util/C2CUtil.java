@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.c2c.tasks.util;
 
-package org.netbeans.modules.c2c.tasks;
-
-import com.tasktop.c2c.internal.client.tasks.core.CfcExtensions;
 import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
+import com.tasktop.c2c.server.tasks.domain.Product;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import com.tasktop.c2c.server.tasks.domain.Product;
-import java.util.Collection;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.c2c.tasks.C2C;
+import org.netbeans.modules.c2c.tasks.C2CConnector;
+import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
+import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class TestUtil {
-    
-    public static void handleException(Exception exception) throws Throwable {
-        exception.printStackTrace();
-        if (exception instanceof CoreException) {
-            CoreException e = (CoreException) exception;
-            IStatus status = e.getStatus();
-            if (status instanceof RepositoryStatus) {
-                RepositoryStatus rs = (RepositoryStatus) status;
-                String html = rs.getHtmlMessage();
-                throw new Exception(html);
-            }
-            if (e.getStatus().getException() != null) {
-                throw e.getStatus().getException();
-            }
-            if (e.getCause() != null) {
-                throw e.getCause();
-            }
-            throw e;
-        }
-        throw exception;
-    }
-
-    public static TaskData createTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, String summary, String desc, String typeName) throws MalformedURLException, CoreException {
+public class C2CUtil {
+     public static TaskData createTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, String summary, String desc, String typeName) throws MalformedURLException, CoreException {
         TaskAttributeMapper attributeMapper = cfcrc.getTaskDataHandler().getAttributeMapper(repository);
         TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
         
@@ -169,53 +148,25 @@ public class TestUtil {
 
         return data;
     }
-
+     
     public static RepositoryResponse postTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
         return  cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
+    }     
+
+    public static void openIssue(C2CIssue sue) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public static TaskData getTaskData(CfcRepositoryConnector cfcrc, TaskRepository taskRepository, String id) throws CoreException {
-        return cfcrc.getTaskData(taskRepository, id, new NullProgressMonitor());
+    public static Repository getRepository(C2CRepository c2cRepository) {
+        Repository repository = C2C.getInstance().getBugtrackingFactory().getRepository(C2CConnector.ID, c2cRepository.getID());
+        if(repository == null) {
+            repository = C2C.getInstance().getBugtrackingFactory().createRepository(
+                    c2cRepository, 
+                    C2C.getInstance().getRepositoryProvider(), 
+                    C2C.getInstance().getQueryProvider(),
+                    C2C.getInstance().getIssueProvider());
+        }
+        return repository;
     }
-
-//    public static String createIssue(BugzillaRepository repo, String summary) throws MalformedURLException, CoreException {
-//        BugzillaRepositoryConnector brc = Bugzilla.getInstance().getRepositoryConnector();
-//        TaskRepository tr = repo.getTaskRepository();
-//        TaskData data = TestUtil.createTaskData(brc, tr, summary, ISSUE_DESCRIPTION, ISSUE_SEVERITY);
-//        RepositoryResponse rr = TestUtil.postTaskData(brc, tr, data);
-//        return rr.getTaskId();
-//    }
-////
-////    public static RepositoryResponse addComment(BugzillaRepository repository, TaskData data, String comment) throws CoreException {
-////        return addComment(repository.getTaskRepository(), id, comment);
-////    }
-//
-//    public static RepositoryResponse addComment(TaskRepository taskRepository, String id, String comment) throws CoreException {
-//        TaskData data = getTaskData(taskRepository, id);
-//        return addComment(taskRepository, data, comment);
-//    }
-//
-//    public static RepositoryResponse addComment(TaskRepository taskRepository, TaskData data, String comment) throws CoreException {
-//        TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-//        ta.setValue(comment);
-//
-//        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>();
-//        attrs.add(ta);
-//        return Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(taskRepository, data, attrs, new NullProgressMonitor());
-//    }
-//
-//    public static BugzillaRepository getRepository(String name, String url, String user, String psswd) {
-//        RepositoryInfo info = new RepositoryInfo(name, BugzillaConnector.ID, url, name, name, user, null, psswd.toCharArray(), null);
-//        return new BugzillaRepository(info);
-//    }
-//
-//    public static void validate(BugzillaRepositoryConnector brc, TaskRepository repository) throws Throwable {
-//        try {
-//            brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR).validate(NULL_PROGRESS_MONITOR);
-//        } catch (Exception ex) {
-//            handleException(ex);
-//        }
-//    }
-    
 }
