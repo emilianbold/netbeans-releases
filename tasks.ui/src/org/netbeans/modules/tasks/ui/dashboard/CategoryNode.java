@@ -49,9 +49,10 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CloseCategoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -93,13 +94,6 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             setRefresh(false);
         }
         return new ArrayList<Issue>(category.getTasks());
-    }
-
-    @Override
-    protected List<TreeListNode> createChildren() {
-        List<TaskNode> children = getFilteredTaskNodes();
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
     }
 
     @Override
@@ -299,5 +293,10 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     ImageIcon getIcon() {
         return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true);
+    }
+
+    @Override
+    boolean isTaskLimited() {
+        return DashboardSettings.getInstance().isTasksLimitCategory();
     }
 }

@@ -58,6 +58,7 @@ public class JavaOutputListenerProviderTest extends TestCase {
         super(testName);
     }
    
+    @Override
     protected void setUp() throws java.lang.Exception {
         provider = new JavaOutputListenerProvider();
     }

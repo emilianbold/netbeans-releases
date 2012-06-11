@@ -93,7 +93,7 @@ public class ShowNextNode extends LeafNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            ((TaskContainerNode) getParent()).showNextTasks(count);
+            ((TaskContainerNode) getParent()).showAdditionalPage();
         }
     }
 }

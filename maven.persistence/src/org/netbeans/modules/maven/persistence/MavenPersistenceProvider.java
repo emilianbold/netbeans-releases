@@ -98,11 +98,13 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
     /**************************************************************************
      * PersistenceLocationProvider methodes
      *************************************************************************/
+    @Override
     public FileObject getLocation()
     {
         return locProvider.getLocation();
     }
 
+    @Override
     public FileObject createLocation() throws IOException
     {
          return locProvider.createLocation();
@@ -111,6 +113,7 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
     /**************************************************************************
      * PersistenceScopeProvider methodes
      *************************************************************************/
+    @Override
     public PersistenceScope findPersistenceScope(FileObject fileObject)
     {
         return scopeProvider.findPersistenceScope(fileObject);
@@ -119,6 +122,7 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
     /**************************************************************************
      * PersistenceScopesProvider methodes
      *************************************************************************/
+    @Override
     public PersistenceScopes getPersistenceScopes()
     {
         return scopesProvider.getPersistenceScopes();
@@ -127,6 +131,7 @@ public class MavenPersistenceProvider implements PersistenceLocationProvider,
     
     //TODO rewrite..
     private class ResourceListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent event) {
             if (NbMavenProject.PROP_RESOURCE.equals(event.getPropertyName())) {
                 URI newval = (URI)event.getNewValue();

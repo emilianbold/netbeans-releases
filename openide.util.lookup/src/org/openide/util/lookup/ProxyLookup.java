@@ -549,8 +549,9 @@ public class ProxyLookup extends Lookup {
             // if caches exist, wait for finished
             Lookup.Result[] arr = myBeforeLookup(callBeforeLookup, cachedResult != null);
             // use caches, if they exist
+            Collection[] cc;
             synchronized (proxy()) {
-                Collection[] cc = getCache();
+                cc = getCache();
                 if (cc != null && cc != R.NO_CACHE) {
                     cachedResult = cc[indexToCache];
                 }
@@ -559,9 +560,9 @@ public class ProxyLookup extends Lookup {
                 return cachedResult;
             }
             if (indexToCache == 1) {
-                return new LazySet(this, indexToCache, callBeforeLookup, arr);
+                return new LazySet(this, cc, indexToCache, callBeforeLookup, arr);
             }
-            return new LazyList(this, indexToCache, callBeforeLookup, arr);
+            return new LazyList(this, cc, indexToCache, callBeforeLookup, arr);
         }
 
         /** When the result changes, fire the event.
@@ -689,9 +690,15 @@ public class ProxyLookup extends Lookup {
             return weakL.result.template;
         }
 
-        private void updateResultCache(int indexToCache, Result[] arr, Collection<Object> ret) {
+        private void updateResultCache(Object[] oldCC, int indexToCache, Result[] arr, Collection<Object> ret) {
             synchronized (proxy()) {
                 Collection[] cc = getCache();
+                if (cc != oldCC) {
+                    // don't change the cache when it is based on 
+                    // outdated results
+                    return;
+                }
+                
                 if (cc == null || cc == R.NO_CACHE) {
                     // initialize the cache to indicate this result is in use
                     setCache(cc = new Collection[3]);
@@ -1026,6 +1033,7 @@ public class ProxyLookup extends Lookup {
     private static class LazyCollection implements Collection {
 
         private R result;
+        private final Object[] cc;
         private final int indexToCache;
         private final boolean callBeforeLookup;
         private final Lookup.Result[] arr;
@@ -1034,9 +1042,10 @@ public class ProxyLookup extends Lookup {
         /** GuardedBy("this") */
         private Collection delegate;
 
-        public LazyCollection(R result, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+        public LazyCollection(R result, Object[] cc, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
             this.result = result;
             this.indexToCache = indexToCache;
+            this.cc = cc;
             this.callBeforeLookup = callBeforeLookup;
             this.arr = arr;
             this.computed = new Collection[arr.length];
@@ -1119,7 +1128,7 @@ public class ProxyLookup extends Lookup {
             if (i == arr.length && compute != null) {
                 R r = result;
                 if (r != null) {
-                    r.updateResultCache(indexToCache, arr, ret);
+                    r.updateResultCache(cc, indexToCache, arr, ret);
                 }
                 result = null;
             }
@@ -1283,8 +1292,8 @@ public class ProxyLookup extends Lookup {
 
     private final static class LazyList extends LazyCollection implements List {
 
-        public LazyList(R data, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
-            super(data, indexToCache, callBeforeLookup, arr);
+        public LazyList(R data, Object[] cc, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            super(data, cc, indexToCache, callBeforeLookup, arr);
         }
 
         final List delegateList() {
@@ -1344,8 +1353,8 @@ public class ProxyLookup extends Lookup {
 
     private static final class LazySet extends LazyCollection implements Set {
 
-        public LazySet(R data, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
-            super(data, indexToCache, callBeforeLookup, arr);
+        public LazySet(R data, Object[] cc, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            super(data, cc, indexToCache, callBeforeLookup, arr);
         }
     } // end of LazySet
 }

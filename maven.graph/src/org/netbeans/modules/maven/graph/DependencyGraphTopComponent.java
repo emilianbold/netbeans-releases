@@ -487,7 +487,6 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             return;
         }
         LOG.log(Level.FINE, hashCode() + " not expecting change", new Exception());
-        System.out.println("got to listen..");
         task_reload.schedule(200); // aggregate the events, multiple will be often coming close one by another..
     }
 

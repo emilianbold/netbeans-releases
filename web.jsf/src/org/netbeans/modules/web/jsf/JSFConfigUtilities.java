@@ -167,7 +167,7 @@ public class JSFConfigUtilities {
             if (!preferences.get(JSF_PRESENT_PROPERTY, "").equals("true")) {
                 long time = System.currentTimeMillis();
                 try {
-                    Future<Boolean> future =  JsfModelFactory.getModel(webModule).runReadActionWhenReady(new MetadataModelAction<JsfModel, Boolean>() {
+                    Future<Boolean> future =  JsfModelFactory.getModel(project).runReadActionWhenReady(new MetadataModelAction<JsfModel, Boolean>() {
 
                         @Override
                         public Boolean run(JsfModel metadata) throws Exception {

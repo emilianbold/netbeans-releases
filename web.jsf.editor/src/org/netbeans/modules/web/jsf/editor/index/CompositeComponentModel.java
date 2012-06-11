@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -87,6 +88,7 @@ public class CompositeComponentModel extends JsfPageModel {
     //index keys
     static final String LIBRARY_NAME_KEY = "library"; //NOI18N
     static final String INTERFACE_ATTRIBUTES_KEY = "interface_attributes"; //NOI18N
+    static final String INTERFACE_DESCRIPTION_KEY = "interface_description"; //NOI18N
     static final String INTERFACE_FACETS = "interface_facets"; //NOI18N
     static final String HAS_IMPLEMENTATION_KEY = "has_implementation"; //NOI18N
     //other
@@ -94,6 +96,9 @@ public class CompositeComponentModel extends JsfPageModel {
     private static final char VALUES_SEPARATOR = ','; //NOI18N
     private static final char ATTRIBUTES_SEPARATOR = ';'; //NOI18N
     private static final char KEY_VALUE_SEPARATOR = '='; //NOI18N
+    
+    private static final String NOT_AVAILABLE_VALUE = "n/a"; //NOI18N
+    
     private static final Collection<String> COMPOSITE_ATTRIBUTE_TAG_ATTRIBUTES =
             Arrays.asList(new String[]{"name", "targets", "default", "displayName", "expert",
                 "method-signature", "preferred", "required", "shortDescription", "type"}); //NOI18N
@@ -102,22 +107,42 @@ public class CompositeComponentModel extends JsfPageModel {
     protected boolean hasImplementation;
     protected FileObject sourceFile;
     protected String relativePath;
+    protected String interfaceDisplayName, interfaceShortDescription;
 
-    public CompositeComponentModel(FileObject file, Collection<Map<String, String>> attributes, boolean hasImplementation, Collection<String> facetsDeclarations) {
-        this(file, null, attributes, hasImplementation, facetsDeclarations);
+    public CompositeComponentModel(FileObject file, Collection<Map<String, String>> attributes, 
+            boolean hasImplementation, Collection<String> facetsDeclarations, 
+            String interfaceDisplayName, String interfaceShortDescription) {
+        
+        this(file, null, attributes, hasImplementation, facetsDeclarations, 
+                interfaceDisplayName, interfaceShortDescription);
     }
 
-    public CompositeComponentModel(FileObject file, String relativePath, Collection<Map<String, String>> attributes, boolean hasImplementation, Collection<String> facetsDeclarations) {
+    public CompositeComponentModel(FileObject file, String relativePath, 
+            Collection<Map<String, String>> attributes, boolean hasImplementation, 
+            Collection<String> facetsDeclarations, String interfaceDisplayName, 
+            String interfaceShortDescription) {
         super();
         this.attributes = attributes;
         this.hasImplementation = hasImplementation;
         this.sourceFile = file;
         this.relativePath = relativePath;
         this.facetsDeclarations = facetsDeclarations;
+        this.interfaceDisplayName = interfaceDisplayName;
+        this.interfaceShortDescription = interfaceShortDescription;
     }
 
     public String getComponentName() {
         return sourceFile.getName();
+    }
+    
+    public String getDisplayName() {
+        return interfaceDisplayName != null && NOT_AVAILABLE_VALUE.equals(interfaceDisplayName) 
+                ? null : interfaceDisplayName;
+    }
+    
+    public String getShortDescription() {
+           return interfaceShortDescription != null && NOT_AVAILABLE_VALUE.equals(interfaceShortDescription) 
+                ? null : interfaceShortDescription;
     }
 
     public FileObject getSourceFile() {
@@ -185,6 +210,13 @@ public class CompositeComponentModel extends JsfPageModel {
             }
         }
         document.addPair(INTERFACE_FACETS, sb.toString(), false, true);
+        
+        //interface displayname and short description
+        StringBuilder dsb = new StringBuilder();
+        dsb.append(encode(interfaceDisplayName != null ? interfaceDisplayName : NOT_AVAILABLE_VALUE));
+        dsb.append(VALUES_SEPARATOR);
+        dsb.append(encode(interfaceShortDescription != null ? interfaceShortDescription : NOT_AVAILABLE_VALUE));
+        document.addPair(INTERFACE_DESCRIPTION_KEY, dsb.toString(), false, true);
         
 	return LibraryUtils.getCompositeLibraryURL(libraryName);
 
@@ -290,6 +322,8 @@ public class CompositeComponentModel extends JsfPageModel {
             final Collection<String> facetDeclarations = new ArrayList<String>();
             final boolean[] hasInterface = new boolean[1];
             final boolean[] hasImplementation = new boolean[1];
+            final AtomicReference<String> interfaceDisplayName = new AtomicReference<String>();
+            final AtomicReference<String> interfaceShortDescrption = new AtomicReference<String>();
 
             ElementUtils.visitChildren(node, new ElementVisitor() {
 
@@ -302,6 +336,16 @@ public class CompositeComponentModel extends JsfPageModel {
                             OpenTag openTag = (OpenTag)node;
                             if(LexerUtils.equals(INTERFACE_TAG_NAME, openTag.unqualifiedName(), true, true)) {
                                 inInterface = true;
+                                
+                                Attribute displayName = openTag.getAttribute("displayName"); //NOI18N
+                                if(displayName != null) {
+                                    interfaceDisplayName.set(displayName.unquotedValue().toString());
+                                }
+                                Attribute shortDescription = openTag.getAttribute("shortDescription"); //NOI18N
+                                if(shortDescription != null) {
+                                    interfaceShortDescrption.set(shortDescription.unquotedValue().toString());
+                                }
+                                
                                 hasInterface[0] = true;
                                 for (Element child : openTag.children(ElementType.OPEN_TAG)) {
                                     OpenTag openTagInner = (OpenTag)child;
@@ -350,7 +394,8 @@ public class CompositeComponentModel extends JsfPageModel {
             //#176807 - The component file itself doesn't have to declare the interface or
             //implementation, it can be done in another referred page
 //            if (hasInterface[0]) {
-            return new CompositeComponentModel(file, interfaceAttrs, hasImplementation[0], facetDeclarations);
+            return new CompositeComponentModel(file, interfaceAttrs, hasImplementation[0], 
+                    facetDeclarations, interfaceDisplayName.get(), interfaceShortDescrption.get());
         }
 
         @Override
@@ -381,7 +426,20 @@ public class CompositeComponentModel extends JsfPageModel {
                 facetDeclarations.add(decode(fst.nextToken()));
                 
             }
-            return new CompositeComponentModel(result.getFile(), result.getRelativePath(), parsedAttrs, hasImplementation, facetDeclarations);
+            
+            //interface display name and short description
+            String displayName = null;
+            String shortDescription = null;
+            String descr = result.getValue(INTERFACE_DESCRIPTION_KEY);
+            StringTokenizer dst = new StringTokenizer(descr, Character.valueOf(VALUES_SEPARATOR).toString());
+            assert dst.hasMoreTokens();
+            displayName = dst.nextToken();
+            assert dst.hasMoreTokens();
+            shortDescription = dst.nextToken();
+            
+            return new CompositeComponentModel(result.getFile(), result.getRelativePath(), 
+                    parsedAttrs, hasImplementation, facetDeclarations,
+                    displayName, shortDescription);
         }
     }
 

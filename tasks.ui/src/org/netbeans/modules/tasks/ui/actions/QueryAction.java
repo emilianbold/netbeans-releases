@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 
@@ -50,14 +48,14 @@ import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
  *
  * @author jpeska
  */
-public abstract class QueryAction extends AbstractAction{
+public abstract class QueryAction extends AbstractAction {
 
     private QueryNode[] queryNodes;
 
-        public QueryAction(String name, QueryNode... queryNodes) {
-            super(name);
-            this.queryNodes = queryNodes;
-        }
+    public QueryAction(String name, QueryNode... queryNodes) {
+        super(name);
+        this.queryNodes = queryNodes;
+    }
 
     public QueryNode[] getQueryNodes() {
         return queryNodes;

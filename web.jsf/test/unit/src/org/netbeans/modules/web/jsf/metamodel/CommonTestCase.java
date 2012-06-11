@@ -44,15 +44,28 @@
 package org.netbeans.modules.web.jsf.metamodel;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Icon;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
@@ -60,7 +73,15 @@ import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
 
 
@@ -70,6 +91,7 @@ import org.openide.util.test.MockLookup;
  */
 public class CommonTestCase extends JavaSourceTestCase {
 
+    private FileObject srcFo, webFo, projectFo;
     WebModuleProvider webModuleProvider;
 
     public CommonTestCase( String testName ) {
@@ -78,10 +100,41 @@ public class CommonTestCase extends JavaSourceTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
+
+        this.projectFo = getTestFile("testWebProject");
+        assertNotNull(projectFo);
+        this.srcFo = getTestFile("testWebProject/src");
+        assertNotNull(srcFo);
+        this.webFo = getTestFile("testWebProject/web");
+        assertNotNull(webFo);
+
+        List<FileObject> projects = new LinkedList<FileObject>();
+
+        //create classpath for web project
+        Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
+        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo, webFo}));
+
+        projects.add(projectFo);
+
         webModuleProvider = new FakeWebModuleProvider(srcFO);
-        MockLookup.setInstances(webModuleProvider,
-                new ClassPathProviderImpl()
-                );
+        MockLookup.setInstances(
+                webModuleProvider,
+                new ClassPathProviderImpl(),
+                new SimpleFileOwnerQueryImplementation(),
+                new TestProjectFactory(projects));
+        Project p = FileOwnerQuery.getOwner(projectFo);
+        assertNotNull(p);
+    }
+
+    protected FileObject getTestFile(String relFilePath) {
+        File wholeInputFile = new File(getDataDir(), relFilePath);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
+
+        return fo;
     }
     
     public MetadataModel<JsfModel> createJsfModel() throws IOException, InterruptedException {
@@ -90,7 +143,7 @@ public class CommonTestCase extends JavaSourceTestCase {
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
-                webModuleProvider.findWebModule(srcFO));
+                FileOwnerQuery.getOwner(projectFo));
         return JsfModelFactory.createMetaModel(modelUnit);
     }
 
@@ -154,4 +207,58 @@ public class CommonTestCase extends JavaSourceTestCase {
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
+
+    private static class TestProjectFactory implements ProjectFactory {
+
+        private List<FileObject> projects;
+
+        public  TestProjectFactory(List<FileObject> projects) {
+            this.projects = projects;
+        }
+
+        @Override
+        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+            return new TestProject(projectDirectory, state);
+        }
+
+        @Override
+        public void saveProject(Project project) throws IOException, ClassCastException {
+        }
+
+        @Override
+        public boolean isProject(FileObject dir) {
+            return projects.contains(dir);
+        }
+    }
+
+    protected static class TestProject implements Project {
+
+        private final FileObject dir;
+        final ProjectState state;
+        Throwable error;
+        int saveCount = 0;
+        private Lookup lookup;
+
+        public TestProject(FileObject dir, ProjectState state) {
+            this.dir = dir;
+            this.state = state;
+
+            InstanceContent ic = new InstanceContent();
+            this.lookup = new AbstractLookup(ic);
+
+        }
+
+        public Lookup getLookup() {
+            return lookup;
+        }
+
+        public FileObject getProjectDirectory() {
+            return dir;
+        }
+
+        public String toString() {
+            return "testproject:" + getProjectDirectory().getNameExt();
+        }
+    }
+
 }
