@@ -178,7 +178,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
         }
-        String beanName = getUniqueName((String) wizard.getProperty(WizardProperties.NAME), wm);
+        String beanName = getUniqueName((String) wizard.getProperty(WizardProperties.NAME), project);
         Object scope = wizard.getProperty(WizardProperties.SCOPE);
         boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
         DataObject dobj = null;
@@ -212,7 +212,6 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             FileObject fo = dir.getFileObject(configFile); //NOI18N
             JSFConfigModel configModel = ConfigurationUtils.getConfigModel(fo, true);
             FacesConfig facesConfig = configModel.getRootComponent();
-            JSFBeanCache.getBeans(wm);
             dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard ));
 
             ManagedBean bean = configModel.getFactory().createManagedBean();
@@ -331,10 +330,10 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         } catch (javax.swing.text.BadLocationException ex){}
     }
 
-    private String getUniqueName(String original, WebModule wm) {
+    private String getUniqueName(String original, Project project) {
         String value = original;
         int count=0;
-        for (FacesManagedBean managedBean: JSFBeanCache.getBeans(wm)) {
+        for (FacesManagedBean managedBean: JSFBeanCache.getBeans(project)) {
             if (value.equals(managedBean.getManagedBeanName())) {
                 count++;
                 value = original+count;
