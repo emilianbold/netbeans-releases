@@ -568,7 +568,7 @@ public final class EditorFindSupport {
                 //pos = doc.find(sf, startPos, back ? blockStartPos : blockEndPos);
                 int off1 = startPos;
                 int off2 = back ? blockStartPos : blockEndPos;
-                FindReplaceResult result = DocumentFinder.findReplaceResult(replaceExp, doc, Math.min(off1, off2), Math.max(off1, off2), 
+                FindReplaceResult result = DocumentFinder.findReplaceResult(replaceExp, doc, off1, off2, 
                        props, oppositeDir);
                 if (result == null){
                     return null;

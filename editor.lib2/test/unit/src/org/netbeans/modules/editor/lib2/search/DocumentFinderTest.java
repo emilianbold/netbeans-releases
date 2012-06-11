@@ -124,6 +124,10 @@ public class DocumentFinderTest {
         }
     }
 
+    private int[] find(SearchBuilder searchBuilder, String docText, int startOffset, int endOffset) throws BadLocationException {
+        return DocumentFinder.find(getDocument(docText), startOffset, endOffset, searchBuilder.getProps(), false);
+    }
+    
     private int[] find(SearchBuilder searchBuilder, String docText) throws BadLocationException {
         if (docText != null) {
             return DocumentFinder.find(getDocument(docText), 0, docText.length(), searchBuilder.getProps(), false);
@@ -172,7 +176,7 @@ public class DocumentFinderTest {
         final int[] expectedFinds = {docText.toLowerCase().indexOf(findWhat), docText.toLowerCase().indexOf(findWhat) + findWhat.length()};
         assertArrayEquals(expectedFinds, finds);
 
-        finds = find(new SearchBuilder().setBwdSearch(findWhat), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat), docText, docText.length(), docText.length());
         assertArrayEquals(expectedFinds, finds);
     }
 
@@ -185,30 +189,30 @@ public class DocumentFinderTest {
         final int[] expectedFinds = {docText.toLowerCase().indexOf(findWhat), docText.toLowerCase().indexOf(findWhat) + findWhat.length()};
         assertArrayEquals(expectedFinds, finds);
 
-        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(expectedFinds, finds);
 
         docText = "...Text... Test1 ...Text...";
-        finds = find(new SearchBuilder().setFwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setFwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
-        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
         findWhat = "Test1";
         docText = "...Text...test1 ...Text...";
-        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
-        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
         findWhat = "Test1";
         docText = "...Text... test1 ...Text...";
-        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
-        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
     }
 
@@ -221,14 +225,14 @@ public class DocumentFinderTest {
         final int[] expectedFinds = {docText.toLowerCase().indexOf(findWhat), docText.toLowerCase().indexOf(findWhat) + findWhat.length()};
         assertArrayEquals(expectedFinds, finds);
 
-        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(expectedFinds, finds);
 
         docText = "...Text...atest1...Text...";
-        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat), docText);
+        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
-        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat), docText);
+        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
 
@@ -236,15 +240,15 @@ public class DocumentFinderTest {
         finds = find(new SearchBuilder().setFwdSearch(findWhat), docText);
         assertArrayEquals(expectedFinds, finds);
 
-        finds = find(new SearchBuilder().setBwdSearch(findWhat), docText);
+        finds = find(new SearchBuilder().setBwdSearch(findWhat), docText, docText.length(), docText.length());
         assertArrayEquals(expectedFinds, finds);
 
         findWhat = "Test1";
         docText = "...Text... test1 ...Text...";
-        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
 
-        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText);
+        finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat).setMatchCase(), docText, docText.length(), docText.length());
         assertArrayEquals(NOT_FOUND_RESULT, finds);
     }
 
@@ -272,7 +276,7 @@ public class DocumentFinderTest {
         String findWhat = "Test1";
         String docText = "Test1 ";
 
-        int[] finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat), docText);
+        int[] finds = find(new SearchBuilder().setWholeWordsBwdSearch(findWhat), docText, docText.length(), docText.length());
 
         final int[] expectedFinds = {0, findWhat.length()};
         assertArrayEquals(expectedFinds, finds);
