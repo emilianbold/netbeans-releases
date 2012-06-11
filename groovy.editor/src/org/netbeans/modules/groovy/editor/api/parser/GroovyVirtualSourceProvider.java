@@ -149,22 +149,6 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         final List<ClassNode> resultList = new ArrayList<ClassNode>();
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
-//            try {
-//                SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-//                    public void run(GroovyParserResult result) throws Exception {
-//                        AstRootElement astRootElement = result.getRootElement();
-//                        if (astRootElement != null) {
-//                            ModuleNode moduleNode = astRootElement.getModuleNode();
-//                            if (moduleNode != null) {
-//                                resultList.addAll(moduleNode.getClasses());
-//                            }
-//                        }
-//                    }
-//                    public void cancel() {}
-//                }, false);
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
             Source source = Source.create(fo);
             // Check is here brecause of issue #213967
             if (GroovyLanguage.GROOVY_MIME_TYPE.equals(source.getMimeType())) {
@@ -823,6 +807,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
     }
 
+    @Override
     public boolean index() {
         return false;
     }
