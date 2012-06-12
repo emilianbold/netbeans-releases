@@ -383,25 +383,26 @@ public class JsfHtmlExtension extends HtmlExtension {
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         List<CompletionItem> items = new ArrayList<CompletionItem>();
 
+        JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
         String ns = ElementUtils.getNamespace(context.getCurrentNode());
-        if (ns == null) {
+        OpenTag openTag = context.getCurrentNode().type() == ElementType.OPEN_TAG 
+                ? (OpenTag) context.getCurrentNode() : null;
+
+        //complete xmlns attribute value
+        if(jsfs != null) {
+            completeXMLNSAttribute(context, items, jsfs);
+        }
+        
+        if(ns == null || openTag == null) {
             return items;
         }
-        Element element = context.getCurrentNode();
-        if (element.type() != ElementType.OPEN_TAG) {
-            return items;
-        }
-        OpenTag openTag = (OpenTag) element;
         
         //first try to complete using special metadata
         completeTagLibraryMetadata(context, items, ns, openTag);
 
-        JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
-        if (jsfs == null) {
+        if(jsfs == null) {
             return items;
         }
-        //complete xmlns attribute value
-        completeXMLNSAttribute(context, items, jsfs);
 
         //then try to complete according to the attribute type (taken from the library descriptor)
         completeValueAccordingToType(context, items, ns, openTag, jsfs);
