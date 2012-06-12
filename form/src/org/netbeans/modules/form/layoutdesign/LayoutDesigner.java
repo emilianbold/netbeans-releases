@@ -2369,8 +2369,11 @@ public final class LayoutDesigner implements LayoutConstants {
         for (int dim=0; dim < DIM_COUNT; dim++) {
             LayoutInterval interval = enclosingCont.getLayoutInterval(dim);
             addingInts[dim] = interval;
-            interval.setSizes(USE_PREFERRED_SIZE, DEFAULT,
-                              resizing[dim] ? Short.MAX_VALUE : USE_PREFERRED_SIZE);
+            if (resizing[dim]) {
+                interval.setSizes(DEFAULT, DEFAULT, Short.MAX_VALUE);
+            } else {
+                interval.setSizes(USE_PREFERRED_SIZE, DEFAULT, USE_PREFERRED_SIZE);
+            }
         }
         dragger.move(new int[] { 10, 10 }, true, false);
         dragger.move(new int[] { 0, 0 }, true, false);
