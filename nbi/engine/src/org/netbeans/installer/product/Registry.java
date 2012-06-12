@@ -650,7 +650,7 @@ public class Registry implements PropertyContainer {
                         ERROR_REQUIREMENT_KEY, sourceId, requirementId));
 
                 ErrorManager.notifyError(StringUtils.format(
-                        getProperty(REGISTRY_INITIALIZATION_FAILED_PROPERTY)), e);
+                        ResourceUtils.getString(Registry.class, REGISTRY_INITIALIZATION_FAILED_PROPERTY)), e);
             }
             
             // iterate over the list of satisfying products, and check whether they
@@ -1925,5 +1925,5 @@ public class Registry implements PropertyContainer {
     private static final String ERROR_UNKNOWN_DEPENDENCY_KEY =
             "R.error.unknown.dependency";//NOI18N
     private static final String REGISTRY_INITIALIZATION_FAILED_PROPERTY =             
-            "registry.initialization.failed"; // NOI18N
+            "R.registry.initialization.failed"; // NOI18N
 }

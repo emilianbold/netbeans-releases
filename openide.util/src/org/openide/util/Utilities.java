@@ -72,7 +72,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -3057,7 +3056,7 @@ widthcheck:  {
             try {
                 return (URI) pathToUri.invoke(fileToPath.invoke(f));
             } catch (Exception x) {
-                LOG.log(Level.WARNING, "could not convert " + f + " to URI", x);
+                LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
             }
         }
         String path = f.getAbsolutePath();
@@ -3068,7 +3067,7 @@ widthcheck:  {
             try {
                 return new URI("file", null, path.replace('\\', '/'), null);
             } catch (URISyntaxException x) {
-                LOG.log(Level.WARNING, "could not convert " + f + " to URI", x);
+                LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
             }
         }
         return f.toURI();
@@ -3086,17 +3085,8 @@ widthcheck:  {
         if (pathsGet != null) {
             try {
                 return (File) pathToFile.invoke(pathsGet.invoke(null, u));
-            } catch (InvocationTargetException x) {
-                Throwable cause = x.getCause();
-                if (cause instanceof IllegalArgumentException) {
-                    throw (IllegalArgumentException) cause;
-                } else if (cause instanceof UnsupportedOperationException || cause != null && cause.getClass().getName().equals("java.nio.file.FileSystemNotFoundException")) {
-                    throw new IllegalArgumentException(cause);
-                } else {
-                    LOG.log(Level.WARNING, "could not convert " + u + " to File", x);
-                }
             } catch (Exception x) {
-                LOG.log(Level.WARNING, "could not convert " + u + " to File", x);
+                LOG.log(Level.FINE, "could not convert " + u + " to File", x);
             }
         }
         String host = u.getHost();
