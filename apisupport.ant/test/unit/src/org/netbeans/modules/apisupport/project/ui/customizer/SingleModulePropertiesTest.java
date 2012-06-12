@@ -141,6 +141,7 @@ public class SingleModulePropertiesTest extends TestBase {
     private SingleModuleProperties doTestThatPropertiesAreRefreshed(boolean osgi) throws Exception {
         NbModuleProject p = generateStandaloneModule(getWorkDir(), "module1", osgi);
         SingleModuleProperties props = loadProperties(p);
+        assertEquals(osgi, props.isOSGi());
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertEquals("display name", "Testing Module", props.getBundleInfo().getDisplayName());
         int deps;

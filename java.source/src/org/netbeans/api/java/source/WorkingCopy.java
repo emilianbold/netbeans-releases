@@ -108,6 +108,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
@@ -374,7 +375,7 @@ public class WorkingCopy extends CompilationController {
             
     private static boolean REWRITE_WHOLE_FILE = Boolean.getBoolean(WorkingCopy.class.getName() + ".rewrite-whole-file");
 
-    private void addNonSyntheticTree(DiffContext diffContext, Tree node) {
+    private void addSyntheticTrees(DiffContext diffContext, Tree node) {
         if (node != null && node.getKind() == Kind.EXPRESSION_STATEMENT) {
             ExpressionTree est = ((ExpressionStatementTree) node).getExpression();
 
@@ -400,11 +401,21 @@ public class WorkingCopy extends CompilationController {
 
         if (CasualDiff.OLD_TREES_VERBATIM) {
             new TreeScanner<Void, Void>() {
+                private boolean synthetic = false;
                 @Override
                 public Void scan(Tree node, Void p) {
-                    oldTrees.add(node);
-                    addNonSyntheticTree(diffContext, node);
-                    return super.scan(node, p);
+                    if (node == null) return null;
+                    boolean oldSynthetic = synthetic;
+                    try {
+                        synthetic |= getTreeUtilities().isSynthetic(diffContext.origUnit, node);
+                        if (!synthetic) {
+                            oldTrees.add(node);
+                        }
+                        addSyntheticTrees(diffContext, node);
+                        return super.scan(node, p);
+                    } finally {
+                        synthetic = oldSynthetic;
+                    }
                 }
 
                 @Override
@@ -439,7 +450,7 @@ public class WorkingCopy extends CompilationController {
             new TreeScanner<Void, Void>() {
                 @Override
                 public Void scan(Tree node, Void p) {
-                    addNonSyntheticTree(diffContext, node);
+                    addSyntheticTrees(diffContext, node);
                     return super.scan(node, p);
                 }
             }.scan(diffContext.origUnit, null);
@@ -686,7 +697,7 @@ public class WorkingCopy extends CompilationController {
             return scratchFolder.createData("out", "java");
         }
 
-        File pack = new File(sourceFile.toUri()).getParentFile();
+        File pack = Utilities.toFile(sourceFile.toUri()).getParentFile();
 
         while (FileUtil.toFileObject(pack) == null) {
             pack = pack.getParentFile();

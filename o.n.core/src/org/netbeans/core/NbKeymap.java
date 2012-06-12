@@ -85,6 +85,18 @@ import org.openide.util.lookup.ServiceProvider;
 public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
 
     private static final RequestProcessor RP = new RequestProcessor(NbKeymap.class);
+    
+    /**
+     * Extension, which indicates that the given binding should be removed by keymap
+     * profile. The marker is ignored in the 'Shortcuts' base directory.
+     */
+    public static final String BINDING_REMOVED = "removed";  // NO18N
+    
+    /**
+     * Extension of the DataShadow files; private in loaders API
+     */
+    public static final String SHADOW_EXT = "shadow"; // NOI18N
+    
     //for unit testing only
     private RequestProcessor.Task refreshTask;
 
@@ -196,10 +208,12 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                 }
             }
             Map<String,FileObject> id2Dir = new HashMap<String,FileObject>(); // #170677
+            boolean processingProfile = false;
             for (FileObject dir : dirs) {
                 if (dir != null) {
                     for (FileObject def : dir.getChildren()) {
                         if (def.isData()) {
+                            boolean removed = processingProfile && BINDING_REMOVED.equals(def.getExt());
                             KeyStroke[] strokes = Utilities.stringToKeys(def.getName());
                             if (strokes == null || strokes.length == 0) {
                                 LOG.log(Level.WARNING, "could not load parse name of " + def.getPath());
@@ -213,17 +227,38 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                                     sub = null;
                                 }
                                 if (sub == null) {
+                                    if (removed) {
+                                        // nothing more to remove now
+                                        break;
+                                    }
                                     binder.put(strokes[i], sub = new Binding());
                                 }
                                 binder = sub.nested;
                             }
-                            // XXX warn about conflicts here too:
-                            binder.put(strokes[strokes.length - 1], new Binding(def));
-                            if (strokes.length == 1) {
-                                String id = idForFile(def);
-                                KeyStroke former = id2Dir.put(id, dir) == dir ? id2Stroke.get(id) : null;
-                                if (former == null || compare(former, strokes[0]) > 0) {
-                                    id2Stroke.put(id, strokes[0]);
+                            if (removed) {
+                                if (strokes.length == 1) {
+                                    // remove the recorded stroke so it is not found by keyStrokeForAction
+                                    id2Stroke.values().remove(strokes[0]);
+                                }
+                                
+                                KeyStroke stroke = strokes[strokes.length - 1];
+                                Binding b = binder.get(stroke);
+                                if (b.nested != null) {
+                                    Binding b2 = new Binding();
+                                    b2.nested.putAll(b.nested);
+                                    binder.put(stroke, b2);
+                                } else {
+                                    binder.remove(stroke);
+                                }
+                            } else {
+                                // XXX warn about conflicts here too:
+                                binder.put(strokes[strokes.length - 1], new Binding(def));
+                                if (strokes.length == 1) {
+                                    String id = idForFile(def);
+                                    KeyStroke former = id2Dir.put(id, dir) == dir ? id2Stroke.get(id) : null;
+                                    if (former == null || compare(former, strokes[0]) > 0) {
+                                        id2Stroke.put(id, strokes[0]);
+                                    }
                                 }
                             }
                         }
@@ -231,6 +266,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                     dir.removeFileChangeListener(bindingsListener);
                     dir.addFileChangeListener(bindingsListener);
                 }
+                processingProfile = true;
             }
             if (refresh) {
                 // Update accelerators of existing actions after switching keymap.
@@ -394,7 +430,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
      * else just returns file path (usual for more modern registrations).
      */
     private static String idForFile(FileObject f) {
-        if (f.hasExt("shadow")) {
+        if (f.hasExt(SHADOW_EXT)) {
             String path = (String) f.getAttribute("originalFile");
             if (path != null && f.getSize() == 0) {
                 f = FileUtil.getConfigFile(path);

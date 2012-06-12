@@ -71,6 +71,8 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
@@ -121,8 +123,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "doDelete {0}", file);
         if (file == null) return;
         File root = hg.getRepositoryRoot(file);
+        Utils.deleteRecursively(file);
+        if (file.exists()) {
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(MercurialInterceptor.class, "MSG_DeleteFailed", new Object[] { file })); //NOI18N
+            throw ex;
+        }
         try {
-            file.delete();
             HgCommand.doRemove(root, file, null);
         } catch (HgException ex) {
             Mercurial.LOG.log(Level.FINE, "doDelete(): File: {0} {1}", new Object[] {file.getAbsolutePath(), ex.toString()}); // NOI18N
@@ -196,6 +203,9 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
         if (!result) {
             Mercurial.LOG.log(Level.WARNING, "Cannot rename file {0} to {1}", new Object[] {srcFile, dstFile});
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(MercurialInterceptor.class, "MSG_MoveFailed", new Object[] { srcFile, dstFile })); //NOI18N
+            throw ex;
         }
         if (root == null) {
             return;

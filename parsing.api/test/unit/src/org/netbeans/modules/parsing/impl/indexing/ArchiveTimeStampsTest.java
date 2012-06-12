@@ -58,6 +58,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -94,7 +95,7 @@ public class ArchiveTimeStampsTest extends NbTestCase {
             final File base = getWorkDir();
             for (int i=1; i<=100; i++) {
                 final File f = new File(base,String.format("archive%d.jar", i));    //NOI18N
-                final URL u = f.toURI().toURL();
+                final URL u = Utilities.toURI(f).toURL();
                 final Pair<Long,Map<Pair<String,Integer>,Integer>> state =
                         Pair.<Long,Map<Pair<String,Integer>,Integer>>of((long)i,indexers);
                 expected.put(u, state);
@@ -132,7 +133,7 @@ public class ArchiveTimeStampsTest extends NbTestCase {
             final File base = getWorkDir();
             for (int i=1; i<=100; i++) {
                 final File f = new File(base,String.format("archive%d.jar", i));    //NOI18N
-                final URL u = f.toURI().toURL();
+                final URL u = Utilities.toURI(f).toURL();
                 final Pair<Long,Map<Pair<String,Integer>,Integer>> state =
                         Pair.<Long,Map<Pair<String,Integer>,Integer>>of((long)i,indexers);
                 expected.put(u, state);
@@ -177,7 +178,7 @@ public class ArchiveTimeStampsTest extends NbTestCase {
                         File f = new File(base,String.format("ar_bs.jar"));    //NOI18N
                         Pair<Long,Map<Pair<String,Integer>,Integer>> state =
                             Pair.<Long,Map<Pair<String,Integer>,Integer>>of(1L,indexers);
-                        URL u = f.toURI().toURL();
+                        URL u = Utilities.toURI(f).toURL();
                         expected.put(u, state);
                         ArchiveTimeStamps.setLastModified(u,state);
                     } catch (IOException e) {
@@ -194,7 +195,7 @@ public class ArchiveTimeStampsTest extends NbTestCase {
                         File f = new File(base,String.format("ar_as.jar"));    //NOI18N
                         Pair<Long,Map<Pair<String,Integer>,Integer>> state =
                             Pair.<Long,Map<Pair<String,Integer>,Integer>>of(1L,indexers);
-                        URL u = f.toURI().toURL();
+                        URL u = Utilities.toURI(f).toURL();
                         expected.put(u, state);
                         ArchiveTimeStamps.setLastModified(u,state);
                     } catch (IOException e) {
@@ -208,7 +209,7 @@ public class ArchiveTimeStampsTest extends NbTestCase {
                 File f = new File(base,String.format("start.jar"));    //NOI18N
                 Pair<Long,Map<Pair<String,Integer>,Integer>> state =
                     Pair.<Long,Map<Pair<String,Integer>,Integer>>of(1L,indexers);
-                URL u = f.toURI().toURL();
+                URL u = Utilities.toURI(f).toURL();
                 expected.put(u, state);
                 h.last = true;
                 ArchiveTimeStamps.setLastModified(u,state);

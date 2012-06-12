@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.java.hints.providers.spi;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
@@ -58,6 +62,7 @@ public class HintDescriptionFactory {
     private       Worker worker;
     private       AdditionalQueryConstraints additionalConstraints;
     private       String hintText;
+    private       Set<Options> options;
     private       boolean finished;
 
     private HintDescriptionFactory() {
@@ -101,6 +106,14 @@ public class HintDescriptionFactory {
         return this;
     }
 
+    public HintDescriptionFactory addOptions(Options... options) {
+        if (this.options == null) {
+            this.options = EnumSet.noneOf(Options.class);
+        }
+        this.options.addAll(Arrays.asList(options));
+        return this;
+    }
+        
     public HintDescription produce() {
         if (metadata == null) {
             metadata = HintMetadata.Builder.create("no-id").addOptions(Options.NON_GUI).build();
@@ -108,7 +121,7 @@ public class HintDescriptionFactory {
         if (this.additionalConstraints == null) {
             this.additionalConstraints = AdditionalQueryConstraints.empty();
         }
-        return HintDescription.create(metadata, trigger, worker, additionalConstraints, hintText);
+        return HintDescription.create(metadata, trigger, worker, additionalConstraints, hintText, options != null ? options : Collections.<Options>emptySet());
     }
     
 }

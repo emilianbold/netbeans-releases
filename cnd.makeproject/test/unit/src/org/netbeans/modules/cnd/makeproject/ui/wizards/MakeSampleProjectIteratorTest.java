@@ -53,27 +53,30 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.test.CndTestIOProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -239,7 +242,9 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
                 wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
-                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
+                ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, 
+                    new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(destdir.getAbsolutePath(), ee)));
                 try {
                     setRef.set(projectCreator.instantiate());
                 } catch (IOException ex) {
@@ -313,7 +318,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                             try {
                                 rc = Integer.parseInt(tokens[4]);
                             } catch(NumberFormatException nfe) {
-                                nfe.printStackTrace();
+                                nfe.printStackTrace(System.err);
                             }
                         }
                         build_rc.set(rc);

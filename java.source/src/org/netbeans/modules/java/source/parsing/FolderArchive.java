@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -120,7 +121,7 @@ public class FolderArchive implements Archive {
                 for (File f : content) {
                     if ((kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) &&
                         f.isFile() &&
-                        (entry == null || entry.includes(f.toURI().toURL()))) {
+                        (entry == null || entry.includes(Utilities.toURI(f).toURL()))) {
                         result.add(FileObjects.fileFileObject(f,this.root,filter, encoding));
                     }
                 }
@@ -152,10 +153,10 @@ public class FolderArchive implements Archive {
             return FileObjects.fileFileObject(file,this.root,null,encoding);
         }
         try {
-            final URL srcRoot = getBaseSourceRoot(this.root.toURI().toURL());
+            final URL srcRoot = getBaseSourceRoot(Utilities.toURI(this.root).toURL());
             if (srcRoot != null && JavaIndex.hasSourceCache(srcRoot, false)) {
                 if ("file".equals(srcRoot.getProtocol())) {         //NOI18N
-                    final File folder = new File(srcRoot.toURI());
+                    final File folder = Utilities.toFile(srcRoot.toURI());
                     file = new File (folder,path);
                     if (file.exists()) {
                         return FileObjects.fileFileObject(file,folder,null,encoding);

@@ -140,11 +140,12 @@ public class NbURLStreamHandlerFactoryTest extends NbTestCase {
         } catch (IOException e) {
             // OK.
         }
+        sndFastGetResourceLoc();
     }
     
     // tests that loading of localized resources tries unlocalized version first
     // to optimize for more common case (where class loader cache are more efficient too)
-    public void testFastGetResourceLoc() throws Exception {
+    private void sndFastGetResourceLoc() throws Exception {
         TestClassLoader.firstFindRequest(); // reset
         URL u = new URL("nbresloc:/test/who");
         // Should initially be getting an unlocalized version:

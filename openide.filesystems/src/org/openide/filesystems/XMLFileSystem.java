@@ -74,6 +74,7 @@ import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -1119,7 +1120,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 
                 if ("file".equals(protocol)) { //NOI18N
                     try {
-                        File f = new File(URI.create(url.toExternalForm()));
+                        File f = Utilities.toFile(URI.create(url.toExternalForm()));
                         if (!f.equals(lastFile)) {
                             lastFile = f;
                             lastFileDate = new Date(f.lastModified());

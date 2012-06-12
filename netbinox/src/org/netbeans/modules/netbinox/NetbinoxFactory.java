@@ -82,6 +82,7 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put("osgi.instance.area", userArea); // NOI18N
         configMap.put("osgi.instance.area.default", userArea); // NOI18N
         final String installArea = toFileURL(findInstallArea());
+        LOG.log(Level.INFO, "Install area set to {0}", installArea); // NOI18N
         configMap.put("osgi.install.area", installArea); // NOI18N
         // some useless value
         configMap.put("osgi.framework.properties", System.getProperty("netbeans.user")); // NOI18N
@@ -117,20 +118,30 @@ public class NetbinoxFactory implements FrameworkFactory {
     }
     private static String findInstallArea() {
         String ia = System.getProperty("netbeans.home"); // NOI18N
+        LOG.log(Level.FINE, "Home is {0}", ia);
         String rest = System.getProperty("netbeans.dirs"); // NOI18N
         if (rest != null) {
             for (String c : rest.split(File.pathSeparator)) {
                 File cf = new File(c);
                 if (!cf.isAbsolute() || !cf.exists()) {
+                    LOG.log(Level.FINE, "Skipping non-existent {0}", c);
                     continue;
                 }
                 int prefix = findCommonPrefix(ia, c);
+                if (prefix == ia.length()) {
+                    LOG.log(Level.FINE, "No change to prefix by {0}", c);
+                    continue;
+                }
                 if (prefix <= 3) {
                     LOG.log(Level.WARNING, "Cannot compute install area. No common prefix between {0} and {1}", new Object[]{ia, c});
                 } else {
+                    LOG.log(Level.FINE, "Prefix shortened by {0} to {1} chars", new Object[]{c, prefix});
                     ia = ia.substring(0, prefix);
+                    LOG.log(Level.FINE, "New prefix {0}", ia);
                 }
             }
+        } else {
+            LOG.fine("No dirs");
         }
         return ia;
     }

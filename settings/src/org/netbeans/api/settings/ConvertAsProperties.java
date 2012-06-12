@@ -52,7 +52,7 @@ import java.util.Properties;
 
 /** Annotation to attach to object that is wishing to support conversion from
  * and to {@link Properties}. More info about the format and protocol
- * <a href="../../spi/settings/doc-files/api.html#xmlprops">is available</a> in separate document,
+ * <a href="../../spi/settings/package-summary.html">is available</a> in separate document,
  * here is the shortest possible howto:
  * <pre>
  * <code>@</code>ConvertAsProperties(dtd="-//Your Org//Your Setting//EN")

@@ -645,7 +645,7 @@ public class Util {
             if( projVersion == null )projVersion = "1.0";//NOI18N minimum version, will not affect
             double version = Math.max(Double.parseDouble(PersistenceUtils.getJPAVersion(lib)), Double.parseDouble(projVersion));
             if (version > 1.0 && Util.isJPAVersionSupported(project, Double.toString(version))) {
-                Library mLib = LibraryManager.getDefault().getLibrary(lib.getName()+"modelgen");
+                Library mLib = LibraryManager.getDefault().getLibrary(lib.getName()+"modelgen");//NOI18N
                 if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
             }
         }
@@ -694,6 +694,26 @@ public class Util {
                  "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
         } else {
             addLibraryToProject0(project, library, classpathType);
+        }
+    }
+
+    /**
+     * add persistence api, will be added if no api is present on classpath
+     * @param project 
+     */
+    public static void addPersistenceUnitToProject(Project project) {
+        if(PersistenceUtils.getJPAVersion(project) == null){
+            Library lib;
+            if(isJPAVersionSupported(project, Persistence.VERSION_2_0)) {
+                lib = LibraryManager.getDefault().getLibrary("jpa20-persistence");
+
+            } else {
+                lib = LibraryManager.getDefault().getLibrary("persistence");
+                
+            }
+            if(lib != null){
+                addLibraryToProject(project, lib);
+            }        
         }
     }
 

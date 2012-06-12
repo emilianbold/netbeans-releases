@@ -54,10 +54,11 @@ import org.openide.util.Lookup;
  * @author Jan Becicka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.java.spi.ui.JavaActionsImplementationProvider.class, position=100)
-public class JavaRefactoringActionsProvider extends JavaActionsImplementationProvider{
+public class JavaRefactoringActionsProvider extends JavaActionsImplementationProvider {
     
     public JavaRefactoringActionsProvider() {
     }
+
     @Override
     public void doExtractInterface(final Lookup lookup) {
         Runnable task = ContextAnalyzer.createTask(lookup, ExtractInterfaceRefactoringUI.factory());
@@ -66,7 +67,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public boolean canExtractInterface(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, false);
+        return ContextAnalyzer.canRefactorSingle(lookup, false, false);
     }
 
     @Override
@@ -77,7 +78,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public boolean canExtractSuperclass(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, false);
+        return ContextAnalyzer.canRefactorSingle(lookup, false, false);
     }
     
     @Override
@@ -88,7 +89,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public boolean canPushDown(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, false);
+        return ContextAnalyzer.canRefactorSingle(lookup, false, false);
     }
     
     @Override
@@ -99,12 +100,12 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public boolean canPullUp(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, false);
+        return ContextAnalyzer.canRefactorSingle(lookup, false, false);
     }    
 
     @Override
     public boolean canUseSuperType(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, false);    
+        return ContextAnalyzer.canRefactorSingle(lookup, false, false);    
     }
 
     @Override
@@ -115,7 +116,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public boolean canChangeParameters(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, true);
+        return ContextAnalyzer.canRefactorSingle(lookup, true, false);
     }
 
     @Override
@@ -126,7 +127,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public boolean canIntroduceParameter(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, true);
+        return ContextAnalyzer.canRefactorSingle(lookup, true, true);
     }
 
     @Override
@@ -137,7 +138,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public boolean canInnerToOuter(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, true);
+        return ContextAnalyzer.canRefactorSingle(lookup, true, false);
     }
     
     @Override
@@ -148,7 +149,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public boolean canEncapsulateFields(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, false);
+        return ContextAnalyzer.canRefactorSingle(lookup, false, false);
     }
 
     @Override
@@ -159,7 +160,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
 
     @Override
     public boolean canIntroduceLocalExtension(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, true);
+        return ContextAnalyzer.canRefactorSingle(lookup, true, false);
     }
 
     @Override
@@ -170,7 +171,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
     
     @Override
     public boolean canInline(Lookup lookup) {
-        return ContextAnalyzer.canRefactorSingle(lookup, true);
+        return ContextAnalyzer.canRefactorSingle(lookup, true, false);
     }
 
     @Override

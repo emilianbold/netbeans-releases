@@ -451,6 +451,19 @@ import org.openide.util.NbBundle;
             } catch (ExecutionException ex) {
             }
         }
+        
+        JavaSource facadeJS = JavaSource.forFileObject(facade);
+        if (facadeJS == null) {
+            ClassPath classPath = ClassPath.getClassPath(facade, ClassPath.SOURCE);
+            if (classPath == null) {
+                LOGGER.log(Level.WARNING, "facade FO: valid={0}, sourceCP=null", facade.isValid());
+            } else {
+                LOGGER.log(
+                        Level.WARNING,
+                        "facade FO: valid={0}, onSourceCP={1}",
+                        new Object[]{facade.isValid(), classPath.contains(facade)});
+            }
+        }
         JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
 
         return createdFiles;

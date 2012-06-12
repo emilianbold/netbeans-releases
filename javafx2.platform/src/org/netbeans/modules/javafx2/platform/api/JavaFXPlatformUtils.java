@@ -43,7 +43,12 @@ package org.netbeans.modules.javafx2.platform.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -357,16 +362,19 @@ public final class JavaFXPlatformUtils {
     public static String predictJavadocLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
+            List<File> files = new ArrayList<File>();
+            files.add(location); // check root location
             File[] children = location.listFiles();
             if (children == null) {
                 return null;
             }
-            for (File child : children) {
-                File docs = new File(child.getAbsolutePath() + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
+            files.addAll(Arrays.asList(children));
+            for (File file : files) {
+                File docs = new File(file.getAbsolutePath() + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }
-                docs = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
+                docs = new File(file.getAbsolutePath() + MAC_JDK_SUBDIR + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
                 }

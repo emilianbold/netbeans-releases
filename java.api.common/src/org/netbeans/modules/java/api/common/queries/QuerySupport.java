@@ -67,6 +67,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
 
@@ -208,7 +209,7 @@ public final class QuerySupport {
         final SharabilityQueryImplementation2 sq2 = createSharabilityQuery2(helper, evaluator, srcRoots, testRoots, additionalSourceRoots);
         return new SharabilityQueryImplementation() {
             @Override public int getSharability(File file) {
-                return sq2.getSharability(file.toURI()).ordinal();
+                return sq2.getSharability(Utilities.toURI(file)).ordinal();
             }
         };
     }

@@ -372,6 +372,20 @@ public class RemoteServices {
                             run,
                             latch
                         );
+                        VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
+                        ClassObjectReference serviceClassObject;
+                        synchronized (remoteServiceClasses) {
+                            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
+                        }
+                        try {
+                            ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
+                            Field fxAccess = ReferenceTypeWrapper.fieldByName(serviceClass, "fxAccess"); // NOI18N
+                            ClassTypeWrapper.setValue(serviceClass, fxAccess, VirtualMachineWrapper.mirrorOf(vm, true));
+                        } catch (InternalExceptionWrapper iex) {
+                        } catch (VMDisconnectedExceptionWrapper vmdex) {
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                         break;
                     }
                 }

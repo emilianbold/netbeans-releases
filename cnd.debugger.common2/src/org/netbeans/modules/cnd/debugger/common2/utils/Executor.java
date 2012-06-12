@@ -52,6 +52,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 
 import org.openide.ErrorManager;
 
@@ -89,6 +90,8 @@ public abstract class Executor {
     public boolean isRemote() {
 	return host.isRemote();
     }
+    
+    public abstract int getExitValue();
 
     public abstract ExecutionEnvironment getExecutionEnvironment();
 
@@ -140,7 +143,11 @@ public abstract class Executor {
     public static final int NOPTY = 1;
 
     public static Executor getDefault(String name, Host host, int flags) {
-        return new ExecutorCND(name, host);
+        return getDefault(name, host, flags, null);
+    }
+    
+    public static Executor getDefault(String name, Host host, int flags, ChangeListener changeListener) {
+        return new ExecutorCND(name, host, changeListener);
     }
 
     /**

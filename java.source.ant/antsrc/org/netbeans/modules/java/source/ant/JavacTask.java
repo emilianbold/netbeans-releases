@@ -57,6 +57,7 @@ import org.apache.tools.ant.taskdefs.Javac;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,7 +85,7 @@ public class JavacTask extends Javac {
                 File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
                 
                 try {
-                    Boolean built = BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), getProject(), false, true);
+                    Boolean built = BuildArtifactMapperImpl.ensureBuilt(Utilities.toURI(f).toURL(), getProject(), false, true);
 
                     if (built == null) {
                         noBin = true;
@@ -134,7 +135,7 @@ public class JavacTask extends Javac {
 
                     try {
                         p.log("Forcing rescan of: " + f.getAbsolutePath(), Project.MSG_VERBOSE);
-                        IndexingManager.getDefault().refreshIndex(f.toURI().toURL(), null, false);
+                        IndexingManager.getDefault().refreshIndex(Utilities.toURI(f).toURL(), null, false);
                     } catch (MalformedURLException ex) {
                         p.log(ex.getMessage(), ex, Project.MSG_VERBOSE);
                     }

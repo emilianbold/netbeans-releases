@@ -56,6 +56,7 @@ import java.util.zip.ZipFile;
 import javax.tools.StandardLocation;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
+import org.openide.util.Utilities;
 
 /** Base class for testing file managers. This class basically tests itself.
  *
@@ -97,10 +98,10 @@ public class FileManagerTest extends NbTestCase {
         // Create archive provider
         archiveProvider = CachingArchiveProvider.getDefault();
 
-        rtJarArchive = archiveProvider.getArchive(rtFile.toURI().toURL(), true);
-        rtFolderArchive = archiveProvider.getArchive(rtFolder.toURI().toURL(), true);
-        srcZipArchive = archiveProvider.getArchive(srcFile.toURI().toURL(), true);
-        srcFolderArchive = archiveProvider.getArchive(srcFolder.toURI().toURL(), true);
+        rtJarArchive = archiveProvider.getArchive(Utilities.toURI(rtFile).toURL(), true);
+        rtFolderArchive = archiveProvider.getArchive(Utilities.toURI(rtFolder).toURL(), true);
+        srcZipArchive = archiveProvider.getArchive(Utilities.toURI(srcFile).toURL(), true);
+        srcFolderArchive = archiveProvider.getArchive(Utilities.toURI(srcFolder).toURL(), true);
     }
 
     protected JavaFileManagerDescripton[] getDescriptions() throws IOException {

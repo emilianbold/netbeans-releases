@@ -195,6 +195,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                         break;
                     }
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
+                    case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
                     {
                         EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), fileContent, !isRenderingLocalContext());
                         declarators.add(csmEnum);

@@ -39,6 +39,7 @@ PACKAGE    Test204925_07_C                 [PUBLIC]   null
 PACKAGE    Test204925_07_P                 [PUBLIC]   null
 PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
+PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
@@ -96,6 +97,7 @@ CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
+CLASS      Base                            [PUBLIC]   issue208193.php
 CLASS      BaseClass                       [PUBLIC]   FrontSpace
 CLASS      BaseClass                       [PUBLIC]   traits.php
 CLASS      BaseFrontClass                  [PUBLIC]   FrontSpace
@@ -105,7 +107,10 @@ CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue153707.php
 CLASS      Book                            [PUBLIC]   issue197453.php
 CLASS      Book                            [PUBLIC]   mixedtypes.php
+CLASS      Book                            [PUBLIC]   test203332_01.php
+CLASS      BookTable                       [PUBLIC]   Test_03
 CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
+CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
@@ -129,9 +134,15 @@ CLASS      ClsFromFactory                  [PUBLIC]   issue144840_01.php
 CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
+CLASS      CultureTable                    [PUBLIC]   test203332_02.php
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
 CLASS      Delme1                          [PUBLIC]   delme
 CLASS      Delme2                          [PUBLIC]   Delme2.php
+CLASS      Deriv                           [PUBLIC]   issue208193.php
+CLASS      Doctrine_Query                  [PUBLIC]   test203332_02.php
+CLASS      Doctrine_Query_Abstract         [PUBLIC,   test203332_02.php
+CLASS      Doctrine_Table                  [PUBLIC]   Test_03
+CLASS      Doctrine_Table                  [PUBLIC]   test203332_02.php
 CLASS      EmptyClass                      [PUBLIC]   issue194875.php
 CLASS      EmptyClass                      [PUBLIC]   issue201310.php
 CLASS      EmptyClassFromNs                [PUBLIC]   Extra
@@ -156,6 +167,7 @@ CLASS      Foooo                           [PUBLIC]   test204104.php
 CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
+CLASS      FrontendBookTable               [PUBLIC]   Test_03
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php
@@ -167,10 +179,13 @@ CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
 CLASS      Image                           [PUBLIC]   Bar
 CLASS      Image                           [PUBLIC]   Foo
+CLASS      Index                           [PUBLIC]   issue208193.php
 CLASS      IndexController                 [PUBLIC]   App\Test
 CLASS      InsideClass                     [PUBLIC]   insideClass.php
 CLASS      InstanceOfBar                   [PUBLIC]   issue204958.php
 CLASS      InstanceOfFoo                   [PUBLIC]   issue204958.php
+CLASS      Inter                           [PUBLIC]   issue208193.php
+CLASS      Interf                          [PUBLIC]   issue208193.php
 CLASS      Interface1                      [PUBLIC]   test204104.php
 CLASS      Interface1                      [PUBLIC]   test204104_02.php
 CLASS      Interface2                      [PUBLIC]   test204104.php

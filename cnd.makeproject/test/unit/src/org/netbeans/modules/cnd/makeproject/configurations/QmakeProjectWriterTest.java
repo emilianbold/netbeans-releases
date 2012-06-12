@@ -41,26 +41,30 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.Test;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import static org.junit.Assert.*;
 
 /**
  * @author Alexey Vladykin
@@ -89,7 +93,9 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         wiz.setTemplate(templateDO);
         projectCreator.initialize(wiz);
         wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
-        wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
+        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+        wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, 
+                new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(destdir.getAbsolutePath(), ee)));
         projectCreator.instantiate();
     }
 

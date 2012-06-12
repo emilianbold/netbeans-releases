@@ -58,6 +58,7 @@ import org.openide.util.actions.NodeAction;
 
 public final class WSEditAttributesAction extends NodeAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
             final EditWSAttributesCookie cookie = activatedNodes[0].getLookup().lookup(EditWSAttributesCookie.class);
@@ -73,10 +74,12 @@ public final class WSEditAttributesAction extends NodeAction {
         }
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(WSEditAttributesAction.class, "CTL_WSEditAttributesAction");
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -99,6 +102,7 @@ public final class WSEditAttributesAction extends NodeAction {
         return registry;
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         
         if(activatedNodes.length == 1){

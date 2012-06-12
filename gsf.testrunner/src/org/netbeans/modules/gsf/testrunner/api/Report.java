@@ -45,10 +45,13 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.EventQueue;
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 
 /**
@@ -75,7 +78,8 @@ public final class Report {
     private int detectedPassedTests;
     private Collection<Testcase> tests;
     private FileLocator fileLocator;
-    private Project project;
+    private WeakReference<Project> project;
+    private final URI projectURI;
     private boolean aborted;
     private boolean skipped;
 
@@ -85,7 +89,8 @@ public final class Report {
      */
     public Report(String suiteClassName, Project project) {
         this.suiteClassName = suiteClassName;
-        this.project = project;
+        this.project = new WeakReference<Project>(project);
+        this.projectURI = project.getProjectDirectory().toURI();
         this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.tests = new ArrayList<Testcase>(10);
         this.completed = true;
@@ -98,7 +103,12 @@ public final class Report {
     }
 
     public Project getProject() {
-        return project;
+        Project prj = project.get();
+        if (prj == null) {
+            prj = FileOwnerQuery.getOwner(projectURI);
+            project = new WeakReference<Project>(prj);
+        }
+        return prj;
     }
 
     /**
@@ -324,7 +334,7 @@ public final class Report {
      * @param project the project to set
      */
     public void setProject(Project project) {
-        this.project = project;
+        this.project = new WeakReference<Project>(project);
     }
 
     public boolean isAborted() {

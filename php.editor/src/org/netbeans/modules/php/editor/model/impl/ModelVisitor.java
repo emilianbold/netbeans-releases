@@ -364,16 +364,31 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(UseTraitStatementPart node) {
-        super.addToPath(node);
+        occurencesBuilder.prepare(Kind.TRAIT, node.getName(), modelBuilder.getCurrentScope());
+        super.visit(node);
     }
 
     @Override
     public void visit(TraitMethodAliasDeclaration node) {
+        Expression traitName = node.getTraitName();
+        if (traitName instanceof NamespaceName) {
+            occurencesBuilder.prepare(Kind.TRAIT, traitName, modelBuilder.getCurrentScope());
+        }
         super.visit(node);
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration node) {
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        Expression preferredTraitName = node.getPreferredTraitName();
+        if (preferredTraitName instanceof NamespaceName) {
+            occurencesBuilder.prepare(Kind.TRAIT, preferredTraitName, currentScope);
+        }
+        for (Expression suppressedTraitName : node.getSuppressedTraitNames()) {
+            if (suppressedTraitName instanceof NamespaceName) {
+                occurencesBuilder.prepare(Kind.TRAIT, suppressedTraitName, currentScope);
+            }
+        }
         super.visit(node);
     }
 
@@ -418,6 +433,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         try {
             if (!lazyScan) {
+                lazyScan = true; // scan only one exact method...no nested methods (even though that they shouldn't exist)
                 scan(node.getFunction().getFormalParameters());
                 scan(node.getFunction().getBody());
             }
@@ -652,7 +668,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(FieldAccess node) {
         Variable field = node.getField();
-        if (field.isDollared()) {
+        if (field.isDollared() || field instanceof ReflectionVariable) {
             scan(field);
         } else {
             occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());

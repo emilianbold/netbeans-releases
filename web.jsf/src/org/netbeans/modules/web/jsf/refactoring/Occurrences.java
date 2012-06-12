@@ -51,11 +51,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
@@ -395,15 +395,15 @@ public class Occurrences {
         }
     }
     
-    public static List<OccurrenceItem> getAllOccurrences(WebModule webModule, 
+    public static List<OccurrenceItem> getAllOccurrences(Project project,
             final String oldName, final String newName)
     {
         final List<OccurrenceItem> result = new ArrayList<OccurrenceItem>();
-        assert webModule != null;
+        assert project != null;
         assert oldName != null;
         
-        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase() + ", " + oldName + ", " + newName + ")"); //NOI18N
-        if (webModule != null){
+        LOGGER.fine("getAllOccurences("+ project.getProjectDirectory() + ", " + oldName + ", " + newName + ")"); //NOI18N
+        if (project != null){
             // find all jsf configuration files in the web module
             /*
              * Old access code to JSF model.  
@@ -429,7 +429,7 @@ public class Occurrences {
              * @author ads
              * Migrated code .
              */
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel( webModule );
+            MetadataModel<JsfModel> model = JsfModelFactory.getModel( project );
             if ( model == null ){
                 return result;
             }
@@ -479,15 +479,15 @@ public class Occurrences {
         }
     }
     
-    public static List <OccurrenceItem> getPackageOccurrences(WebModule webModule, 
+    public static List <OccurrenceItem> getPackageOccurrences(Project project,
             final String oldPackageName,
             final String newPackageName, final boolean renameSubpackages)
     {
         final List<OccurrenceItem> result = new ArrayList<OccurrenceItem>();
-        assert webModule != null;
+        assert project != null;
         assert oldPackageName != null;
         
-        if (webModule != null){
+        if (project != null){
             // find all jsf configuration files in the web module
             /*
              * Old access code to JSF model. 
@@ -515,7 +515,7 @@ public class Occurrences {
             /**
              * @author ads
              */
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel( webModule );
+            MetadataModel<JsfModel> model = JsfModelFactory.getModel( project );
             if ( model == null ){
                 return result;
             }

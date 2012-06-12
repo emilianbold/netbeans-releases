@@ -63,7 +63,7 @@ import org.openide.util.Exceptions;
 public class JsfCustomIndexer extends CustomIndexer {
 
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
-    static final int INDEXER_VERSION = 3;
+    static final int INDEXER_VERSION = 4;
 
     public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
 

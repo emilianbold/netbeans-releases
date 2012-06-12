@@ -106,7 +106,7 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-public class LuceneIndex implements Index.Transactional, Runnable {
+public class LuceneIndex implements Index.Transactional, Index.WithTermFrequencies, Runnable {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
@@ -207,6 +207,24 @@ public class LuceneIndex implements Index.Transactional, Runnable {
             final @NullAllowed Term seekTo,
             final @NonNull StoppableConvertor<Term,T> filter,
             final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
+        queryTermsImpl(result, seekTo, StoppableConvertorAdapter.forTerms(filter), cancel);
+    }
+    
+    @Override
+    public <T> void queryTermFrequencies(
+            final @NonNull Collection<? super T> result,
+            final @NullAllowed Term seekTo,
+            final @NonNull StoppableConvertor<Index.WithTermFrequencies.TermFreq,T> filter,
+            final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
+        queryTermsImpl(result, seekTo, StoppableConvertorAdapter.forFreqs(filter), cancel);
+    }
+    
+    //where
+    private <T> void queryTermsImpl(
+            final @NonNull Collection<? super T> result,
+            final @NullAllowed Term seekTo,
+            final @NonNull StoppableConvertorAdapter<?,T> adapter,
+            final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
         
         IndexReader in = null;
         try {
@@ -217,28 +235,21 @@ public class LuceneIndex implements Index.Transactional, Runnable {
 
             final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
             try {
-                if (filter instanceof IndexReaderInjection) {
-                    ((IndexReaderInjection)filter).setIndexReader(in);
-                }
+                adapter.setIndexReader(in);
                 try {
                     do {
                         if (cancel != null && cancel.get()) {
                             throw new InterruptedException ();
                         }
-                        final Term currentTerm = terms.term();
-                        if (currentTerm != null) {                    
-                            final T vote = filter.convert(currentTerm);
-                            if (vote != null) {
-                                result.add(vote);
-                            }
+                        final T vote = adapter.convert(terms);
+                        if (vote != null) {
+                            result.add(vote);
                         }
                     } while (terms.next());
                 } catch (StoppableConvertor.Stop stop) {
                     //Stop iteration of TermEnum finally {
                 } finally {
-                    if (filter instanceof IndexReaderInjection) {
-                        ((IndexReaderInjection)filter).setIndexReader(null);
-                    }
+                    adapter.setIndexReader(null);
                 }
             } finally {
                 terms.close();
@@ -963,7 +974,7 @@ public class LuceneIndex implements Index.Transactional, Runnable {
         private synchronized void hit() {
             if (!cachePolicy.hasMemCache()) {
                 try {
-                    final URL url = folder.toURI().toURL();
+                    final URL url = Utilities.toURI(folder).toURL();
                     IndexCacheFactory.getDefault().getCache().put(url, this);
                 } catch (MalformedURLException e) {
                     Exceptions.printStackTrace(e);

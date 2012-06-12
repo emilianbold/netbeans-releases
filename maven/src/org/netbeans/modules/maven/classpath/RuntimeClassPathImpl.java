@@ -51,6 +51,7 @@ import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * class path def for runtime..
@@ -81,14 +82,14 @@ public class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             if (outputDirectory != null) {
                 File fil = new File(outputDirectory);
                 fil = FileUtil.normalizeFile(fil);
-                lst.add(fil.toURI());
+                lst.add(Utilities.toURI(fil));
             }
         }
         List<Artifact> arts = prj.getRuntimeArtifacts();
         for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(fil.toURI());
+                lst.add(Utilities.toURI(fil));
             } else {
               //NOPMD   //null means dependencies were not resolved..
             }

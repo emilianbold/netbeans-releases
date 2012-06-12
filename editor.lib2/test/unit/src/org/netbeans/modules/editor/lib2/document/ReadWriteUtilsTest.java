@@ -133,6 +133,11 @@ public class ReadWriteUtilsTest extends NbTestCase {
         convert = "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
         buffer = ReadWriteUtils.convertFromNewlines(convert, 1, convert.length() - 2, "\r\n");
         assertEquals(convert.substring(1, convert.length() - 2).replace("\n", "\r\n"), buffer.toString());
+        
+        // Test missing realloc due to a bug
+        convert = "a\n\n\n\n\n\n\n\n\n\n\n\n";
+        buffer = ReadWriteUtils.convertFromNewlines(convert, 0, convert.length(), "\r\n");
+        assertEquals(convert.replace("\n", "\r\n"), buffer.toString());
     }
 
 }

@@ -602,46 +602,59 @@ public final class SourceAnalyzerFactory {
                     } else {
                         topLevel = true;
                         className = getResourceName (this.cu);
-                        if (className != null) {
+                        if (className != null && !className.isEmpty()) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<String,String>of(classNameType, null);
                             simpleName = className.substring(className.lastIndexOf('.') + 1);
                         } else {
                             LOG.log(
                                 Level.WARNING,
-                                "Cannot resolve {0}, ignoring whole subtree.",  //NOI18N
-                                sym);
+                                "Cannot resolve {0} (class name: {1}), ignoring whole subtree.",  //NOI18N
+                                new Object[]{
+                                    sym,
+                                    className
+                                });
                         }
                     }
                 } else {
                     final StringBuilder classNameBuilder = new StringBuilder ();
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
-                    ElementKind kind = sym.getKind();
-                    classNameBuilder.append(DocumentUtil.encodeKind(kind));
-                    final String classNameType = classNameBuilder.toString();
-                    String resourceName = null;
-                    topLevel = activeClass.isEmpty();
-                    if (topLevel) {
-                        if (virtual || !className.equals(sourceName)) {
-                            if (signatureFiles && rsList == null) {
-                                rsList = new HashSet<String>();
-                                if (crossedTopLevel) {
-                                    rsList.add(sourceName);
+                    if (!className.isEmpty()) {
+                        ElementKind kind = sym.getKind();
+                        classNameBuilder.append(DocumentUtil.encodeKind(kind));
+                        final String classNameType = classNameBuilder.toString();
+                        String resourceName = null;
+                        topLevel = activeClass.isEmpty();
+                        if (topLevel) {
+                            if (virtual || !className.equals(sourceName)) {
+                                if (signatureFiles && rsList == null) {
+                                    rsList = new HashSet<String>();
+                                    if (crossedTopLevel) {
+                                        rsList.add(sourceName);
+                                    }
                                 }
+                                final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
+                                rnBuilder.append('.');  //NOI18N
+                                rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
+                                resourceName =  rnBuilder.toString();
+                            } else {
+                                crossedTopLevel = true;
                             }
-                            final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
-                            rnBuilder.append('.');  //NOI18N
-                            rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
-                            resourceName =  rnBuilder.toString();
                         } else {
-                            crossedTopLevel = true;
+                            resourceName = activeClass.peek().second;
                         }
+                        name = Pair.<String,String>of(classNameType, resourceName);
+                        simpleName = sym.getSimpleName().toString();
                     } else {
-                        resourceName = activeClass.peek().second;
+                        LOG.log(
+                            Level.WARNING,
+                            "Invalid symbol {0} (source: {1}), ignoring whole subtree.",  //NOI18N
+                            new Object[] {
+                                sym,
+                                siblingUrl
+                        });
                     }
-                    name = Pair.<String,String>of(classNameType, resourceName);
-                    simpleName = sym.getSimpleName().toString();
                 }
             }
             if (name != null) {

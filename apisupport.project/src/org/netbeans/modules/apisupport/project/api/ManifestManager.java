@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.modules.Dependency;
+import org.openide.util.Utilities;
 
 // XXX a lot of code in this method is more or less duplicated from
 // org.netbeans.core.modules.Module class. Do not forgot to refactor this as
@@ -210,7 +211,7 @@ public final class ManifestManager {
                             if (piece.isEmpty()) {
                                 continue;
                             }
-                            File ext = new File(jar.getParentFile().toURI().resolve(piece.trim()));
+                            File ext = Utilities.toFile(Utilities.toURI(jar.getParentFile()).resolve(piece.trim()));
                             if (ext.isFile()) {
                                 ManifestManager mm2 = getInstanceFromJAR(ext);
                                 List<String> toks = new ArrayList<String>(Arrays.asList(mm.provTokens));

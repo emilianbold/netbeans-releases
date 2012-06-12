@@ -152,7 +152,7 @@ public class Utilities {
         if (!root.exists()) {
             root.mkdirs();
         }
-        return ClassPathSupport.createClassPath(new URL[]{root.toURI().toURL()});
+        return ClassPathSupport.createClassPath(new URL[]{org.openide.util.Utilities.toURI(root).toURL()});
     }
 
     public static String projectOpen(String path, String tmpFile) {

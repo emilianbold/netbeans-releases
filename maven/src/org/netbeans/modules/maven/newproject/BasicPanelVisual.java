@@ -96,7 +96,6 @@ import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -746,6 +745,10 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
         } catch (ThreadDeath d) { // download interrupted
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }
         } finally {
             hndl.finish();
             ProgressTransferListener.clearAggregateHandle();

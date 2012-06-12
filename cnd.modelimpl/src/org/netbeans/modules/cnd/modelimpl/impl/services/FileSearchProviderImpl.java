@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.apt.support.spi.APTFileSearchImplementation;
 import org.netbeans.modules.cnd.apt.support.spi.APTProjectFileSearchProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -86,7 +87,7 @@ public class FileSearchProviderImpl implements APTProjectFileSearchProvider {
 
         @Override
         public String searchInclude(String include, CharSequence basePath) {
-            NativeFileSearch provider = project.getNativeFileSearch();
+            NativeFileSearch provider = NativeProjectSupport.getNativeFileSearch(project);
             if (provider != null) {
                 Collection<CharSequence> searchFile = provider.searchFile(project, include);
                 if (searchFile.size() > 0) {

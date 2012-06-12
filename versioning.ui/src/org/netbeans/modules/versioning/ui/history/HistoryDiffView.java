@@ -127,7 +127,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                             return;
 
                         case TOPARENT:    
-                            refreshRevisionDiffPanel(entry1, null, file1, null);
+                            refreshRevisionDiffPanel(null, entry1, null, file1);
                             return;
                             
                         default:
@@ -301,10 +301,10 @@ public class HistoryDiffView implements PropertyChangeListener {
     
     private class RevisionDiffPrepareTask extends DiffTask {
         
-        private final HistoryEntry entry1;
-        private HistoryEntry entry2;
-        private final VCSFileProxy file1;
-        private VCSFileProxy file2;
+        private HistoryEntry entry1;
+        private final HistoryEntry entry2;
+        private VCSFileProxy file1;
+        private final VCSFileProxy file2;
         private final boolean selectLast;
 
         public RevisionDiffPrepareTask(final HistoryEntry entry1, HistoryEntry entry2, VCSFileProxy file1, VCSFileProxy file2, boolean selectLast) {
@@ -328,16 +328,16 @@ public class HistoryDiffView implements PropertyChangeListener {
             FileObject revisionFo1;
             FileObject revisionFo2;
             try {
-                if(entry2 == null && file2 == null) {
-                    entry2 = entry1.getParent(file1);
-                    if(entry2 == null) {
-                        entry2 = tc.getParentEntry(entry1);
+                if(entry1 == null && file1 == null) {
+                    entry1 = entry2.getParent(file2);
+                    if(entry1 == null) {
+                        entry1 = tc.getParentEntry(entry2);
                         if(isCancelled()) {
                             return;
                         }
                     }
-                    file2 = file1;
-                    if (entry2 == null) {
+                    file1 = file2;
+                    if (entry1 == null) {
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run () {
@@ -347,7 +347,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                         return;
                     }                
                 }
-                DiffController dv = getView(entry1, file1, entry2);
+                DiffController dv = getView(entry2, file2, entry1);
                 if(isCancelled()) {
                     return;
                 }                

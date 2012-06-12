@@ -62,24 +62,25 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.*;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
-import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.nativeexecution.api.util.Path;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -109,12 +110,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        boolean enabled = false;
+        boolean enabled;
 
         if (activatedNodes == null || activatedNodes.length == 0 || activatedNodes.length > 1) {
             enabled = false;
         } else {
-            DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
+            DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
             if (accept(dataObject)) {
                 enabled = true;
             } else {
@@ -127,7 +128,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected abstract boolean accept(DataObject object);
 
     protected static Project getProject(Node node) {
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         if (dataObject != null) {
             FileObject fileObject = dataObject.getPrimaryFile();
             if (fileObject != null) {
@@ -185,7 +186,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected static CompilerSet getCompilerSet(Node node, Project project) {
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         if (project == null) {
             project = findProject(node);
@@ -223,17 +224,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
         if (command == null || command.length() == 0) {
             if (tool == PredefinedToolKind.MakeTool) {
-                MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+                MakeExecSupport mes = node.getLookup().lookup(MakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getMakeCommand();
                 }
             } else if (tool == PredefinedToolKind.QMakeTool) {
-                QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
+                QMakeExecSupport mes = node.getLookup().lookup(QMakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getQMakeCommand();
                 }
             } else if (tool == PredefinedToolKind.CMakeTool) {
-                CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
+                CMakeExecSupport mes = node.getLookup().lookup(CMakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getCMakeCommand();
                 }
@@ -246,22 +247,22 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected static FileObject getBuildDirectory(Node node, PredefinedToolKind tool) {
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         FileObject makeFileDir = dataObject.getPrimaryFile().getParent();
         // Build directory
         String bdir = null;
         if (tool == PredefinedToolKind.MakeTool) {
-            MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+            MakeExecSupport mes = node.getLookup().lookup(MakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getBuildDirectory();
             }
         } else if (tool == PredefinedToolKind.QMakeTool) {
-            QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
+            QMakeExecSupport mes = node.getLookup().lookup(QMakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getRunDirectory();
             }
         } else if (tool == PredefinedToolKind.CMakeTool) {
-            CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
+            CMakeExecSupport mes = node.getLookup().lookup(CMakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getRunDirectory();
             }
@@ -276,12 +277,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected static String[] getArguments(Node node, PredefinedToolKind tool) {
         String[] args = null;
         if (tool == PredefinedToolKind.QMakeTool) {
-            QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
+            QMakeExecSupport mes = node.getLookup().lookup(QMakeExecSupport.class);
             if (mes != null) {
                 args = mes.getArguments();
             }
         } else if (tool == PredefinedToolKind.CMakeTool) {
-            CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
+            CMakeExecSupport mes = node.getLookup().lookup(CMakeExecSupport.class);
             if (mes != null) {
                 args = mes.getArguments();
             }
@@ -347,7 +348,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     private static Map<String, String> getExecCookieEnvironment(Node node) {
-        ExecutionSupport execSupport = node.getCookie(ExecutionSupport.class);
+        ExecutionSupport execSupport = node.getLookup().lookup(ExecutionSupport.class);
         if (execSupport == null) {
             return Collections.emptyMap();
         } else {
@@ -363,6 +364,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
         return envMap;
     }
+    
+    // resolve windows links
+    protected String convertPath(String path, ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal()) {
+            return LinkSupport.resolveWindowsLink(path);
+        }
+        return path;
+    }
 
     @Override
     public HelpCtx getHelpCtx() {
@@ -370,7 +379,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     protected static String getString(String key) {
-        return NbBundle.getBundle(AbstractExecutorRunAction.class).getString(key);
+        return NbBundle.getMessage(AbstractExecutorRunAction.class, key);
     }
 
     protected static String getString(String key, String... a1) {
@@ -508,7 +517,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
-    protected static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
+    public static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
         private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
         private final ExecutionListener listener;
@@ -572,7 +581,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     outputListener.flush();
                     outputListener.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
                 outputListener = null;
             }

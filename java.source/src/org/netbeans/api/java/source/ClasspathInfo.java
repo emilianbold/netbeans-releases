@@ -147,8 +147,10 @@ public final class ClasspathInfo {
         this.listenerList = new ChangeSupport(this);
         this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
         this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath,backgroundCompilation);
-	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
-	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
+        if (!backgroundCompilation) {
+            this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
+            this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
+        }
         if (srcCp == null) {
             this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
             this.cachedAptSrcClassPath = null;
@@ -160,7 +162,9 @@ public final class ClasspathInfo {
             this.cachedAptSrcClassPath = ClassPathFactory.createClassPath(
                     SourcePath.filtered(AptSourcePath.aptCache(srcCp), backgroundCompilation));
             this.outputClassPath = CacheClassPath.forSourcePath (ClassPathFactory.createClassPath(noApt),backgroundCompilation);
-	    this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
+            if (!backgroundCompilation) {
+                this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
+            }
         }
         this.ignoreExcludes = ignoreExcludes;
         this.useModifiedFiles = useModifiedFiles;
@@ -383,10 +387,10 @@ public final class ClasspathInfo {
     
     // Package private methods -------------------------------------------------
     
-    synchronized JavaFileManager getFileManager() {
+    private synchronized JavaFileManager getFileManager() {
         if (this.fileManager == null) {
             boolean hasSources = this.cachedSrcClassPath != EMPTY_PATH;
-            pgTx.bind(this.cachedSrcClassPath, this.cachedAptSrcClassPath);
+            pgTx.bind(this, this.cachedSrcClassPath, this.cachedAptSrcClassPath);
             final SiblingSource siblings = SiblingSupport.create();
             this.fileManager = new ProxyFileManager (
                 new CachingFileManager (this.archiveProvider, this.cachedBootClassPath, true, true),

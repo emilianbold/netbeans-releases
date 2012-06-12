@@ -53,17 +53,20 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
-import javax.swing.UIManager;
-import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -75,22 +78,24 @@ import org.openide.util.NbBundle;
         setName("TAB_CndOtherOptionsTab"); // NOI18N (used as a pattern...)
         initComponents();
         initGeneratedComponents();
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            setOpaque( false );
-        }
     }
 
     void applyChanges() {
         for (ExtensionsElements ee : eeList) {
             ee.apply();
         }
-
+        for (Entity e : entities) {
+            NamedOption.getAccessor().setBoolean(e.se.getName(), e.cb.isSelected());
+        }
         isChanged = false;
     }
 
     void update() {
         for (ExtensionsElements ee : eeList) {
             ee.update();
+        }
+        for (Entity e : entities) {
+            e.cb.setSelected(NamedOption.getAccessor().getBoolean(e.se.getName()));
         }
     }
 
@@ -166,8 +171,12 @@ import org.openide.util.NbBundle;
 
             eeList.add(ee);
         }
-        GroupLayout layout = new GroupLayout(jPanel1);
-        jPanel1.setLayout(layout);
+        for(NamedOption ee : Lookups.forPath(NamedOption.OTHER_CATEGORY).lookupAll(NamedOption.class)) {
+            addEntity(ee);
+        }
+        
+        GroupLayout layout = new GroupLayout(extensionPanel);
+        extensionPanel.setLayout(layout);
         GroupLayout.SequentialGroup horizontalGroup = layout.createSequentialGroup();
         horizontalGroup.addGap(6, 6, 6);
 
@@ -222,6 +231,26 @@ import org.openide.util.NbBundle;
             .addGroup(verticalGroup)
         );
         
+        layout = new GroupLayout(optionsPanel);
+        optionsPanel.setLayout(layout);
+
+        GroupLayout.ParallelGroup pg = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        GroupLayout.SequentialGroup sg = layout.createSequentialGroup();
+        for (Entity e : entities) {
+            pg.addComponent(e.cb);
+            sg.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(e.cb);
+        }
+
+        layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pg))).addContainerGap()));
+
+        layout.setVerticalGroup(
+                layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(sg.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -232,41 +261,80 @@ import org.openide.util.NbBundle;
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        extensionPanel = new javax.swing.JPanel();
+        optionsPanel = new javax.swing.JPanel();
 
-        jPanel1.setOpaque(false);
+        extensionPanel.setOpaque(false);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout extensionPanelLayout = new javax.swing.GroupLayout(extensionPanel);
+        extensionPanel.setLayout(extensionPanelLayout);
+        extensionPanelLayout.setHorizontalGroup(
+            extensionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 423, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 306, Short.MAX_VALUE)
+        extensionPanelLayout.setVerticalGroup(
+            extensionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 118, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout optionsPanelLayout = new javax.swing.GroupLayout(optionsPanel);
+        optionsPanel.setLayout(optionsPanelLayout);
+        optionsPanelLayout.setHorizontalGroup(
+            optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        optionsPanelLayout.setVerticalGroup(
+            optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 182, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(extensionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(extensionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(optionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel extensionPanel;
+    private javax.swing.JPanel optionsPanel;
     // End of variables declaration//GEN-END:variables
 
     private static String getMessage(String resourceName) {
         return NbBundle.getMessage(CndOtherOptionsPanel.class, resourceName);
     }
+
+    private static class Entity {
+
+        public final NamedOption se;
+        public final JCheckBox cb;
+
+        public Entity(NamedOption se, JCheckBox cb) {
+            this.se = se;
+            this.cb = cb;
+        }
+    }
+    private List<Entity> entities = new ArrayList<Entity>();
+    private void addEntity(NamedOption ne) {
+        JCheckBox cb = new JCheckBox();
+        Mnemonics.setLocalizedText(cb, ne.getDisplayName());
+        if (ne.getDescription() != null) {
+            cb.setToolTipText(ne.getDescription());
+        }
+        cb.setOpaque(false);
+        entities.add(new Entity(ne, cb));
+    }
+
     
     private static final class ExtensionsElements {
 

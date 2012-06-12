@@ -72,6 +72,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -325,6 +326,10 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
                 result.put(currentMeta, hints = new LinkedList<HintDescription>());
             }
 
+            if (fixes.isEmpty()) {
+                f.addOptions(Options.QUERY);
+            }
+            
             hints.add(f.produce());
 
             count++;

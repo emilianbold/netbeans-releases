@@ -52,7 +52,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGeneratorImpl;
@@ -87,7 +86,6 @@ public class ProjectGenerator {
         private String mainFile;
         private String hostUID;
         private ExecutionEnvironment sourceEnv;
-        private boolean fullRemote;
         private String fullRemoteNativeProjectPath;
         private CompilerSet cs;
         private boolean defaultToolchain;
@@ -178,15 +176,6 @@ public class ProjectGenerator {
             return this;
         }
 
-        public ProjectParameters setFullRemote(boolean fullRemote) {
-            this.fullRemote = fullRemote;
-            return this;
-        }
-
-        public boolean getFullRemote() {
-            return fullRemote;
-        }
-
         public ProjectParameters setFullRemoteNativeProjectPath(String nativeProjectPath) {
             this.fullRemoteNativeProjectPath = nativeProjectPath;
             return this;
@@ -194,10 +183,6 @@ public class ProjectGenerator {
 
         public String getFullRemoteNativeProjectPath() {
             return fullRemoteNativeProjectPath;
-        }
-
-        public RemoteProject.Mode getRemoteMode() {
-            return fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES;
         }
 
         public ProjectParameters setTemplateParams(Map<String, Object> params) {

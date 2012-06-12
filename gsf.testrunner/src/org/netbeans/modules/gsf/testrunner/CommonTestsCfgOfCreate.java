@@ -1056,7 +1056,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             assert nodes.length == 1;
             
             ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
-            String packageName = cp.getResourceName(fileObj, '.', true);
+            String packageName = (cp == null) ? "" : cp.getResourceName(fileObj, '.', true);
             if (packageName.length() == 0) {
                 Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
                 for (GuiUtilsProvider provider : providers) {

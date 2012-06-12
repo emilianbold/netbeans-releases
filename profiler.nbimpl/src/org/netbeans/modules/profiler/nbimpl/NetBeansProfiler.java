@@ -67,45 +67,11 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
 
     // remembered values for rerun and modify actions
     private ProfilerControlPanel2Support actionSupport;
-
-    public void runTarget(FileObject buildScriptFO, String target, Properties props) {
-        getActionSupport().setAll(buildScriptFO, target, props);
-
-        doRunTarget(buildScriptFO, target, props);
-    }
-    
-    public void notifyRunTarget(FileObject buildXml, String target) {
-        getActionSupport().setAll(buildXml, target, null);
-    }
     
     public void storeProfilingProperties(Properties props) {
         getActionSupport().setProperties(props);
     }
 
-    /**
-     * Runs an target in Ant script with properties context.
-     *
-     * @param buildScript The build script to run the target from
-     * @param target The name of target to run
-     * @param props The properties context to run the task in
-     * @return ExecutorTask to track the running Ant process
-     */
-    public static ExecutorTask doRunTarget(final FileObject buildScript, final String target, final Properties props) {
-        try {
-            String oomeenabled = props.getProperty(HeapDumpWatch.OOME_PROTECTION_ENABLED_KEY);
-
-            if ((oomeenabled != null) && oomeenabled.equals("yes")) { // NOI18N
-                HeapDumpWatch.getDefault().monitor(props.getProperty(HeapDumpWatch.OOME_PROTECTION_DUMPPATH_KEY));
-            }
-
-            return ActionUtils.runTarget(buildScript, new String[] { target }, props);
-        } catch (IOException e) {
-            Profiler.getDefault().notifyException(Profiler.EXCEPTION, e);
-        }
-
-        return null;
-    }
-    
     @Override
     public String getLibsDir() {
         final File dir = InstalledFileLocator.getDefault()

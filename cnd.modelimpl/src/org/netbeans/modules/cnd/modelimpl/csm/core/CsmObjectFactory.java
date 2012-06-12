@@ -69,10 +69,12 @@ import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumForwardDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl;
@@ -161,6 +163,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 //            aHandler = UNRESOLVED_CLASS;
         } else if (object instanceof EnumImpl) {
             aHandler = ENUM_IMPL;
+            if (object instanceof ForwardEnum) {
+                aHandler = FORWARD_ENUM;
+            }
         } else if (object instanceof ClassImpl) {
             if (object instanceof ClassImplFunctionSpecialization) {
                 aHandler = CLASS_IMPL_FUNCTION_SPECIALIZATION;
@@ -192,6 +197,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 aHandler = CLASS_MEMBER_FORWARD_DECLARATION;
             } else {
                 aHandler = CLASS_FORWARD_DECLARATION_IMPL;
+            }
+        } else if (object instanceof EnumForwardDeclarationImpl) {
+            if (object instanceof ClassImpl.EnumMemberForwardDeclaration) {
+                aHandler = ENUM_MEMBER_FORWARD_DECLARATION;
+            } else {
+                aHandler = ENUM_FORWARD_DECLARATION_IMPL;
             }
         } else if (object instanceof FunctionImpl<?>) {
             // we have several FunctionImpl subclasses
@@ -379,6 +390,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new ForwardClass(stream);
                 break;
 
+            case FORWARD_ENUM:
+                obj = new ForwardEnum(stream);
+                break;
+
             case TYPEDEF_IMPL:
                 obj = new TypedefImpl(stream);
                 break;
@@ -411,8 +426,16 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new ClassForwardDeclarationImpl(stream);
                 break;
 
+            case ENUM_FORWARD_DECLARATION_IMPL:
+                obj = new EnumForwardDeclarationImpl(stream);
+                break;
+
             case CLASS_MEMBER_FORWARD_DECLARATION:
                 obj = new ClassImpl.ClassMemberForwardDeclaration(stream);
+                break;
+
+            case ENUM_MEMBER_FORWARD_DECLARATION:
+                obj = new ClassImpl.EnumMemberForwardDeclaration(stream);
                 break;
 
             case FUNCTION_IMPL:
@@ -602,7 +625,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int FILE_REFERENCES                = FILE_INCLUDES + 1;
     private static final int FILE_INSTANTIATIONS            = FILE_REFERENCES + 1;
     private static final int ENUM_IMPL                      = FILE_INSTANTIATIONS + 1;
-    private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
+    private static final int FORWARD_ENUM                   = ENUM_IMPL + 1;
+    private static final int CLASS_IMPL_SPECIALIZATION      = FORWARD_ENUM + 1;
     private static final int CLASS_IMPL_FUNCTION_SPECIALIZATION = CLASS_IMPL_SPECIALIZATION + 1;
     private static final int FORWARD_CLASS                  = CLASS_IMPL_FUNCTION_SPECIALIZATION + 1;
     private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;
@@ -616,9 +640,11 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int NAMESPACE_ALIAS_IMPL           = NAMESPACE_DEF_IMPL + 1;
     private static final int USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;
     private static final int USING_DIRECTIVE_IMPL           = USING_DECLARATION_IMPL + 1;
-    private static final int CLASS_FORWARD_DECLARATION_IMPL = USING_DIRECTIVE_IMPL + 1;   
+    private static final int ENUM_FORWARD_DECLARATION_IMPL  = USING_DIRECTIVE_IMPL + 1;
+    private static final int ENUM_MEMBER_FORWARD_DECLARATION= ENUM_FORWARD_DECLARATION_IMPL + 1;
+    private static final int CLASS_FORWARD_DECLARATION_IMPL = ENUM_MEMBER_FORWARD_DECLARATION + 1;
     private static final int CLASS_MEMBER_FORWARD_DECLARATION = CLASS_FORWARD_DECLARATION_IMPL + 1;   
-    private static final int FRIEND_CLASS_IMPL              = CLASS_MEMBER_FORWARD_DECLARATION + 1;   
+    private static final int FRIEND_CLASS_IMPL              = CLASS_MEMBER_FORWARD_DECLARATION + 1;
                 
     // functions
     private static final int FUNCTION_IMPL                  = FRIEND_CLASS_IMPL + 1;
