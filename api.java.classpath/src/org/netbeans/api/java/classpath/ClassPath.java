@@ -902,7 +902,12 @@ public final class ClassPath {
             }
             FileObject r = getRoot();
             if (r == null) {
-                throw new IllegalArgumentException("no root in " + url);
+                file.refresh();
+                if (!file.isValid()) {
+                    return false;
+                } else {
+                    throw new IllegalArgumentException("no root in " + url);
+                }
             }
             String path = FileUtil.getRelativePath(r, file);
             if (path == null) {
