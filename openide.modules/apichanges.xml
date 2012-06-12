@@ -50,6 +50,26 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="allow.numbers">
+        <api name="modules"/>
+        <summary>Less restrictive check of code names of modules and OSGi bundles</summary>
+        <version major="7" minor="32"/>
+        <date day="24" month="5" year="2012"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+        </compatibility>
+        <description>
+            <p>
+                <a href="@TOP@/org/openide/modules/Dependency.html#create(int,%20java.lang.String)">Dependency.create</a>
+                now allows code name base where dot is followed by number
+                (like <em>org.apache.servicemix.specs.jsr303_api_1.0.0</em>).
+                This increases the inter-operability with OSGi bundles
+                using such naming style.
+            </p>
+        </description>
+        <class package="org.openide.modules" name="Dependency"/>
+        <issue number="212364"/>
+    </change>
     <change id="provide.cnb">
         <api name="modules"/>
         <summary>By default each module provides its code name base as a token</summary>

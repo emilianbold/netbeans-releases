@@ -82,7 +82,7 @@ import org.openide.util.actions.CallableSystemAction;
  * @author  Marian Petras
  */
 @ActionID(id = "org.netbeans.modules.search.FindInFilesAction", category = "Edit")
-@ActionRegistration(lazy = false, displayName = "#LBL_Action_FindInFiles")
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_FindInProjects")
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "DS-F"),
     @ActionReference(path = "Menu/Edit", position = 2400, separatorBefore = 2300)
@@ -199,10 +199,8 @@ public class FindInFilesAction extends CallableSystemAction {
     
     @Override
     public String getName() {
-        String key = Utils.hasProjectSearchScope()
-                     ? "LBL_Action_FindInProjects"                      //NOI18N
-                     : "LBL_Action_FindInFiles";                        //NOI18N
-        return NbBundle.getMessage(getClass(), key);
+        return NbBundle.getMessage(getClass(),
+                "LBL_Action_FindInProjects"); //NOI18N
     }
 
     @Override

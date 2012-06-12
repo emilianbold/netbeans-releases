@@ -284,15 +284,18 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             sdkTextField.setText(file.getAbsolutePath());
             
             if (runtimeTextField.getText().length() == 0) {
-                runtimeTextField.setText(JavaFXPlatformUtils.predictRuntimeLocation(file.getParent()));
+                String runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getPath());
+                runtimeTextField.setText(runtimeLocation == null ? JavaFXPlatformUtils.predictRuntimeLocation(file.getParent()) : runtimeLocation);
             }
 
             if (javadocTextField.getText().length() == 0) {
-                javadocTextField.setText(JavaFXPlatformUtils.predictJavadocLocation(file.getParent()));
+                String javadocLocation = JavaFXPlatformUtils.predictJavadocLocation(file.getPath());
+                javadocTextField.setText(javadocLocation == null ? JavaFXPlatformUtils.predictJavadocLocation(file.getParent()) : javadocLocation);
             }
         
             if (srcTextField.getText().length() == 0) {
-                srcTextField.setText(JavaFXPlatformUtils.predictSourcesLocation(file.getParent()));
+                String srcLocation = JavaFXPlatformUtils.predictSourcesLocation(file.getPath());
+                srcTextField.setText(srcLocation == null ? JavaFXPlatformUtils.predictSourcesLocation(file.getParent()) : srcLocation);
             }
         }
 }//GEN-LAST:event_browseSDKButtonActionPerformed

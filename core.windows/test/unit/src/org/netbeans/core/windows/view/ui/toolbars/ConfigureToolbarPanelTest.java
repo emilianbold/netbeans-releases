@@ -86,6 +86,16 @@ public class ConfigureToolbarPanelTest extends NbTestCase {
         final InstanceCookie ic = arr[0].getLookup().lookup(InstanceCookie.class);
         assertEquals("Right class", SmallIcon.class, ic.instanceClass());
     }
+
+    public void testSubfolder() throws Exception {
+        DataFolder sub = DataFolder.findFolder(folder.getPrimaryFile().createFolder("sub"));
+        InstanceDataObject.create(sub, null, NoIcon.class);
+        InstanceDataObject.create(sub, null, SmallIcon.class);
+        Node[] arr = node.getChildren().getNodes(true);
+        assertEquals(1, arr.length);
+        arr = node.getChildren().getNodeAt(0).getChildren().getNodes(true);
+        assertEquals(1, arr.length);
+    }
     
     public static final class NoIcon extends CallbackSystemAction {
 

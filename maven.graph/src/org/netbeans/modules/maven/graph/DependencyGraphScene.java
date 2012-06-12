@@ -185,15 +185,15 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     }
     
     @Override protected Widget attachNodeWidget(ArtifactGraphNode node) {
+        if (rootNode == null) {
+            rootNode = node;
+        }
         if (node.getPrimaryLevel() > maxDepth) {
             maxDepth = node.getPrimaryLevel();
         }
         ArtifactWidget root = new ArtifactWidget(this, node);
         mainLayer.addChild(root);
         node.setWidget(root);
-        if (rootNode == null) {
-            rootNode = node;
-        }
         root.setOpaque(true);
         
         root.getActions().addAction(this.createObjectHoverAction());

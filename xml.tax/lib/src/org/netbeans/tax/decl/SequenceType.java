@@ -96,7 +96,7 @@ public class SequenceType extends ChildrenType {
     /**
      */
     public String getName () {
-        return Util.THIS.getString ("NAME_SEQUENCE") + getMultiplicity ();
+        return "SEQUENCE" + getMultiplicity(); // NOI18N
     }
     
     /**

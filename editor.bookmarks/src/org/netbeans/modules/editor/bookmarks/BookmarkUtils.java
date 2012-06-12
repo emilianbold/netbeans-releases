@@ -45,19 +45,30 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.MultiKeyBinding;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
-import org.netbeans.modules.editor.bookmarks.ui.BookmarksView;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 
 /**
  * Services to update or save bookmarks to persistent format.
@@ -180,5 +191,44 @@ public final class BookmarkUtils {
         return ec;
     }
     
-}
+    public static URI toURI(Project project) {
+        return (project != null) ? project.getProjectDirectory().toURI() : null;
+    }
+    
+    public static Project findProject(URI projectURI) {
+        if (projectURI != null) {
+            try {
+                FileObject prjFO = URLMapper.findFileObject(projectURI.toURL());
+                if (prjFO != null && prjFO.isFolder()) {
+                    return ProjectManager.getDefault().findProject(prjFO);
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                // Cannot load project -> return null
+            }
+        }
+        return null;
+    }
+    
+    public static Map<URI,Project> toURIMap(List<Project> projects) {
+        Map<URI,Project> uri2Project = new HashMap<URI, Project>(projects.size() << 1, 0.6f);
+        for (Project p : projects) {
+            uri2Project.put(toURI(p), p);
+        }
+        return uri2Project;
+    }
 
+    public static KeyStroke findKeyStroke(KeyBindingSettings kbs, String actionName) {
+        if (kbs != null) {
+            for (MultiKeyBinding kb : kbs.getKeyBindings()) {
+                // Currently only work if a single-key shortcut is used for the action
+                if (actionName.equals(kb.getActionName()) && kb.getKeyStrokeCount() == 1) {
+                    return kb.getKeyStroke(0);
+                }
+            }
+        }
+        return null;
+    }
+
+}

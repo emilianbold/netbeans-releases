@@ -117,6 +117,7 @@ public final class OutputUtils {
             cookie = cook;
             line = ln - 1;
         }
+        @Override
         public void outputLineSelected(OutputEvent ev) {
 //            cookie.getLineSet().getCurrent(line).show(Line.SHOW_SHOW);
         }
@@ -124,6 +125,7 @@ public final class OutputUtils {
         /** Called when some sort of action is performed on a line.
          * @param ev the event describing the line
          */
+        @Override
         public void outputLineAction(OutputEvent ev) {
             try {
                 cookie.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
@@ -135,6 +137,7 @@ public final class OutputUtils {
         /** Called when a line is cleared from the buffer of known lines.
          * @param ev the event describing the line
          */
+        @Override
         public void outputLineCleared(OutputEvent ev) {
         }
         

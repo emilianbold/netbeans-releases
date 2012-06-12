@@ -41,21 +41,36 @@
  */
 package org.netbeans.modules.hibernate.wizards;
 
+import java.io.File;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.hibernate.HibernateException;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.JDBCMetaDataConfiguration;
+import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
+import org.hibernate.cfg.reveng.OverrideRepository;
+import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
+import org.hibernate.cfg.reveng.ReverseEngineeringStrategy;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -66,6 +81,7 @@ import org.openide.util.NbBundle;
 public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private Logger logger = Logger.getLogger(HibernateCodeGenWizardDescriptor.class.getName());
     private HibernateCodeGenerationPanel component;
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
@@ -157,6 +173,18 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
             return false;
         }
         
+        try {
+            checkConfig(getComponent().getRevengFile());
+        } catch (HibernateException e) {
+            logger.log(Level.INFO, "access to hibernate fails.", e);//NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_HibernateError", e.getMessage())); // NOI18N
+            return false;
+        } catch (Exception e) {
+            logger.log(Level.INFO, "access to hibernate fails.", e);//NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_HibernateError", e.toString())); // NOI18N
+            return false;
+        }
+        
         String packageName = getComponent().getPackageName();
         if (sourceGroup == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_JavaTargetChooser_SelectSourceGroup")); // NOI18N
@@ -176,6 +204,7 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(HibernateCodeGenWizardDescriptor.class, "ERR_JavaTargetChooser_UnwritablePackage")); //NOI18N
             return false;
         }
+
 
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return true;
@@ -208,6 +237,59 @@ public class HibernateCodeGenWizardDescriptor implements WizardDescriptor.Panel,
     private void setErrorMessage(String errorMessage) {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
 
+    }
+    private  boolean checkConfig(FileObject revengFile) throws Exception{
+        JDBCMetaDataConfiguration cfg = null;
+        ReverseEngineeringSettings settings;
+        ClassLoader oldClassLoader = null;
+
+        File confFile = FileUtil.toFile(getComponent().getConfigurationFile());
+        try {
+            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
+            ClassLoader ccl = env.getProjectClassLoader(
+                    env.getProjectClassPath(revengFile).toArray(new URL[]{}));
+            oldClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(ccl);
+
+            // Configuring the reverse engineering strategy
+            try {
+
+                cfg = new JDBCMetaDataConfiguration();
+
+                DefaultReverseEngineeringStrategy defaultStrategy = new DefaultReverseEngineeringStrategy();
+                ReverseEngineeringStrategy revStrategy = defaultStrategy;
+                OverrideRepository or = new OverrideRepository();
+                Configuration c = cfg.configure(confFile);
+                or.addFile(FileUtil.toFile(revengFile));
+                revStrategy = or.getReverseEngineeringStrategy(revStrategy);
+
+                settings = new ReverseEngineeringSettings(revStrategy);
+                settings.setDefaultPackageName("validname");//NOI18N
+
+                defaultStrategy.setSettings(settings);
+                revStrategy.setSettings(settings);
+
+                cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(revStrategy));
+                
+                DataObject confDataObject = DataObject.find(getComponent().getConfigurationFile());
+                HibernateCfgDataObject hco = (HibernateCfgDataObject) confDataObject;
+                HibernateConfiguration hibConf = hco.getHibernateConfiguration();
+                DatabaseConnection dbconn = HibernateUtil.getDBConnection(hibConf);
+                if (dbconn != null) {
+                    dbconn.getJDBCConnection();
+                }
+                
+                cfg.readFromJDBC();
+                cfg.buildMappings();                
+            } catch(HibernateException e) {
+                throw e;
+            } catch (Exception e) {
+                throw e;
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        }
+        return true;
     }
 }
 

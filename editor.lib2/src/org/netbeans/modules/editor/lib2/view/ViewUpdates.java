@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.lib2.view;
 
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -142,16 +143,25 @@ public final class ViewUpdates implements DocumentListener, EditorViewFactoryLis
         DocumentUtilities.addDocumentListener(doc,
                 WeakListeners.create(DocumentListener.class, this, doc),
                 DocumentListenerPriority.VIEW);
-
+    }
+    
+    void initFactories() {
         // Init view factories
-        assert (viewFactories == null);
         List<EditorViewFactory.Factory> factoryFactories = EditorViewFactory.factories();
-        viewFactories = new EditorViewFactory[factoryFactories.size()];
-        for (int i = 0; i < factoryFactories.size(); i++) {
-            viewFactories[i] = factoryFactories.get(i).createEditorViewFactory(docView);
-            viewFactories[i].addEditorViewFactoryListener(WeakListeners.create(
-                    EditorViewFactoryListener.class, this, viewFactories[i]));
+        int size = factoryFactories.size();
+        List<EditorViewFactory> factoryList = new ArrayList<EditorViewFactory>(size);
+        for (int i = 0; i < size; i++) {
+            EditorViewFactory.Factory factoryFactory = factoryFactories.get(i);
+            if (factoryFactories != null) {
+                EditorViewFactory factory = factoryFactory.createEditorViewFactory(docView);
+                if (factory != null) {
+                    factory.addEditorViewFactoryListener(WeakListeners.create(
+                            EditorViewFactoryListener.class, this, factory));
+                    factoryList.add(factory);
+                }
+            }
         }
+        viewFactories = factoryList.toArray(new EditorViewFactory[factoryList.size()]);
     }
 
     /**

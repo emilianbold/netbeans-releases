@@ -133,7 +133,7 @@ public class NbLoaderPoolResolverChangeTest extends NbTestCase implements Change
 
     @Override
     protected void tearDown() throws Exception {
-        NbLoaderPool.remove(loader);
+        NbLoaderPool.remove(loader, NbLoaderPool.getNbLoaderPool());
     }
 
     public void testNewResolverShallInfluenceExistingDataObjects() throws Exception {

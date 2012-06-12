@@ -44,11 +44,9 @@
 package org.netbeans.api.project.libraries;
 
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 import java.awt.Dialog;
 import javax.swing.border.EmptyBorder;
+import static org.netbeans.api.project.libraries.Bundle.*;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
@@ -56,6 +54,9 @@ import org.netbeans.modules.project.libraries.ui.NewLibraryPanel;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle.Messages;
 
 /** Provides method for opening Libraries customizer
  *
@@ -70,14 +71,15 @@ public final class LibrariesCustomizer {
      * @param activeLibrary if not null the activeLibrary is selected in the opened customizer
      * @return true if user pressed OK and libraries were sucessfully modified
      */
+    @Messages("TXT_LibrariesManager=Ant Library Manager")
     public static boolean showCustomizer (Library activeLibrary, LibraryManager libraryManager) {
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
                 new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (libraryManager.getArea());
         customizer.setBorder(new EmptyBorder(12, 12, 0, 12));
-        if (activeLibrary != null)
+        if (activeLibrary != null) {
             customizer.setSelectedLibrary (activeLibrary.getLibraryImplementation ());
-        DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(LibrariesCustomizer.class,
-                "TXT_LibrariesManager"));
+        }
+        DialogDescriptor descriptor = new DialogDescriptor(customizer, TXT_LibrariesManager());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         setAccessibleDescription(dlg, customizer.getAccessibleContext().getAccessibleDescription());
         try {
@@ -107,6 +109,7 @@ public final class LibrariesCustomizer {
      * @return created persisted library or null if user cancelled operation
      * @since org.netbeans.modules.project.libraries/1 1.16
      */
+    @Messages("LibrariesCustomizer.createLibrary.title=Create New Library")
     public static Library showCreateNewLibraryCustomizer(LibraryManager manager) {                                             
         if (manager == null) {
             manager = LibraryManager.getDefault();
@@ -118,8 +121,7 @@ public final class LibrariesCustomizer {
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
                 new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (area);
         NewLibraryPanel p = new NewLibraryPanel(customizer.getModel(), null, area);
-        DialogDescriptor dd = new DialogDescriptor (p, 
-                NbBundle.getMessage(LibrariesCustomizer.class,"LibrariesCustomizer.createLibrary.title"),
+        DialogDescriptor dd = new DialogDescriptor(p, LibrariesCustomizer_createLibrary_title(),
                 true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
         p.setDialogDescriptor(dd);
         Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
@@ -165,13 +167,13 @@ public final class LibrariesCustomizer {
         return customizeLibrary(customizer, library.getLibraryImplementation());
     }
     
+    @Messages("LibrariesCustomizer.customizeLibrary.title=Customize Library")
     private static boolean customizeLibrary(org.netbeans.modules.project.libraries.ui.LibrariesCustomizer customizer, 
             LibraryImplementation activeLibrary) {
         customizer.hideLibrariesList();
         customizer.setBorder(new EmptyBorder(12, 8, 0, 10));
         customizer.setSelectedLibrary (activeLibrary);
-        DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(LibrariesCustomizer.class,
-                "LibrariesCustomizer.customizeLibrary.title"));
+        DialogDescriptor descriptor = new DialogDescriptor(customizer, LibrariesCustomizer_customizeLibrary_title());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         setAccessibleDescription(dlg, customizer.getAccessibleContext().getAccessibleDescription());
         try {

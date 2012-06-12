@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Copyright © 1997, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Starting a Profiling Session</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
         
@@ -31,9 +31,23 @@
     <th align="left" scope="col" valign="top"><b>Description</b></th>
   </tr>
   <tr> 
-    <td valign="top">Profile &gt; Profile Main Project</td>
-    <td valign="top">Opens the Select Profiling Task dialog box. 
-    The selected task is run on the main project.</td>
+    <td valign="top">Profile &gt; Profile Project</td>
+    <td valign="top"> 
+    The selected task is run on the project that is selected in the
+    Projects window or on the main project if a main project is set.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Profile &gt; Profile File</td>
+    <td valign="top">
+    The profiling task is run on the selected file.
+    The selected file must have a main method.</td>
+  </tr>
+  <tr> 
+    <td valign="top">Profile &gt; Profile Test File</td>
+    <td valign="top"> 
+    If a test file is selected the profiling task is run on the test file.
+    If the selected file is not a test file, the profiling task is run on the test file
+    associated with the selected file.</td>
   </tr>
   <tr> 
     <td valign="top">Profile&nbsp;&gt; Attach Profiler</td>
@@ -42,11 +56,6 @@
     and the mode for attaching to the application. 
     Use this to profile remote applications, running local applications, or applications 
     that you start outside the IDE.</td>
-  </tr>
-  <tr> 
-    <td valign="top">Profile&nbsp;&gt; Profile Other&nbsp;&gt; "<i>projectname</i>"</td>
-    <td valign="top">Opens the Select Profiling Task dialog box. 
-    The selected task is run on the selected project.</td>
   </tr>
 </table>
 
@@ -59,36 +68,27 @@
     The IDE creates a backup of your project build script before it performs the modifications.</li>
 </ul>
 
-<h3>To profile the Main Project</h3>
-    
+<h3>To profile an individual project</h3>
     <ol>
-        <li>Choose Profile &gt; Profile Main Project from the main menu.</li>
+        <li>Right-click a project in the Projects window and choose Profile.
+            <p>Alternatively, you can select a project in the Projects window and 
+            choose Profile &gt; Profile Project from the main menu.</p></li>
         <li><a href="profile_tasks_overview.html">Select a profiling task</a> in the Select Profiling Task dialog box.</li>
         <li>Specify any options for the task.</li>
         <li>Click Run.</li>
     </ol>
     <p>When you click Run, the IDE launches the main project and opens the Profiler window.</p>                 
 
-<h3>To profile an individual project</h3>
-    <ol>
-        <li>Right-click a project in the Projects window and choose Profile Project.
-            <p>Alternatively, select a file in the project and
-        choose Profile &gt; Profile Other &gt; Profile Project "<i>projectname</i>" from the main menu.</p></li>
-        <li><a href="profile_tasks_overview.html">Select a profiling task</a> in the Select Profiling Task dialog box.</li>
-        <li>Specify any options for the task.</li>
-        <li>Click Run.</li>
-    </ol>
-        <!--
     <ul class="note">
-        <li>If you want to profile an application that is already running on a local machine, you need to profile the application
-        in Attach mode. </li>
+        <li>If a project is set as the <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">main project</a>
+        the Profile Project command in the Profile menu will always profile the main project.</li>
     </ul>
--->
+    
 <h3>To profile a specific class:</h3>
     <ol>
-        <li>In the Projects window, select the class you want to profile. 
+        <li>In the Projects window, select the class that you want to profile. 
         (This class must contain a runnable method.)</li>
-        <li>Choose Profile &gt; Profile Other &gt; Profile "<i>filename</i>" from the main menu.</li>
+        <li>Choose Profile &gt; Profile File from the main menu.</li>
         <li><a href="profile_tasks_overview.html">Select a profiling task</a> in the Select Profiling Task dialog box.</li>
         <li>Specify any options for the task.</li>
         <li>Click Run.</li>

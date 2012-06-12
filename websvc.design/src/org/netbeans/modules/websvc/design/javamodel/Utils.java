@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -102,6 +103,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
@@ -181,7 +183,8 @@ public class Utils {
             List<JaxWsService> services = support.getServices();
             for (JaxWsService service : services) {
                 String implementationClass = service.getImplementationClass();
-                if ( getImplClass(fileObject).equals( implementationClass )){
+                String implClass = getImplClass(fileObject);
+                if ( implClass!= null && implClass.equals( implementationClass )){
                     return service.isServiceProvider();
                 }
             }
@@ -910,7 +913,7 @@ public class Utils {
         }
     }
     
-    public  static void invokeWsImport(Project project, final String serviceName) {
+    public  static void invokeWsImport(final Project project, final String serviceName) {
         if (project!=null) {
             JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
             if (jaxWsModel != null) {
@@ -921,9 +924,14 @@ public class Utils {
                     try {
                         ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
                             public Boolean run() throws IOException {
+                                JAXWSSupport support = JAXWSSupport.getJAXWSSupport(
+                                        project.getProjectDirectory());
+                                Properties props = WSUtils.identifyWsimport(
+                                        support.getAntProjectHelper());
                                 ExecutorTask wsimportTask =
                                     ActionUtils.runTarget(buildImplFo,
-                                    new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N                                       ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName,"wsimport-client-compile" },null); //NOI18N
+                                    new String[]{"wsimport-service-clean-"+serviceName,
+                                            "wsimport-service-"+serviceName},props); //NOI18N                                       ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName,"wsimport-client-compile" },null); //NOI18N
                                 wsimportTask.waitFinished();
                                 return Boolean.TRUE;
                             }

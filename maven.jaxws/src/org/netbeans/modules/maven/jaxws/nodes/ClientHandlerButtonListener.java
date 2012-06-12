@@ -139,10 +139,12 @@ public class ClientHandlerButtonListener implements ActionListener {
         this.node = node;
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == NotifyDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     configureHandler();
                 }
@@ -178,6 +180,7 @@ public class ClientHandlerButtonListener implements ActionListener {
 
                 bindingsFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
 
+                    @Override
                     public void run() throws IOException {
                         BufferedWriter bw = null;
                         OutputStream os = null;
@@ -293,6 +296,7 @@ public class ClientHandlerButtonListener implements ActionListener {
                 JaxWsClientNode clientNode = node.getLookup().lookup(JaxWsClientNode.class);
                 final FileObject wsdlFo = clientNode.getLocalWsdl();
                 ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         MavenModelUtils.addBindingFile(model, wsdlFo.getName(), bindingsHandlerFile);
                     }

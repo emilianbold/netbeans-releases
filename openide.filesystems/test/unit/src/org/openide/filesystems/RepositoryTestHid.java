@@ -44,13 +44,14 @@
 
 package org.openide.filesystems;
 import java.io.*;
+import java.util.Arrays;
 /**
  *
  * @author  rm111737
  */
 public class RepositoryTestHid extends TestBaseHid {
-    Repository repo;
-    FileSystem defFs;
+    private Repository repo;
+    private FileSystem defFs;
     String pkg = "/root/folder1/folder2";
     String name = "resource";
     String ext = "ext";
@@ -151,8 +152,13 @@ public class RepositoryTestHid extends TestBaseHid {
         }
         fsAssert("Expected two elements in enumeration",fss.length == 2);                    
         fsAssert("Expected two different elements in enumeration",fss[0] != fss[1]);                            
-        fsAssert("Wrong filesystems in enumeration",
-        (fss[0] == defFs && fss[1] == testedFS) || (fss[1] == defFs && fss[0] == testedFS)); 
+        if (fss[0] != defFs) {
+            FileSystem tmp = fss[0];
+            fss[0] = fss[1];
+            fss[1] = tmp;
+        }
+        fsAssertEquals("Defining fs is the first", defFs, fss[0]);
+        fsAssertEquals("Tested fs is the second", testedFS, fss[1]);
     }
     
     /** Test of fileSystems method, of class org.openide.filesystems.Repository. */
@@ -164,16 +170,19 @@ public class RepositoryTestHid extends TestBaseHid {
     public void testToArray() {
         FileSystem[] fss;
         fss = repo.toArray();
-        fsAssert("Expected one element in enumeration",fss.length == 1 && fss[0] == defFs);
+        String debug = Arrays.toString(fss);
+        fsAssert("Expected one element in the array:\n" + debug,fss.length == 1 && fss[0] == defFs);
 
         repo.addFileSystem(testedFS);
         fss = repo.toArray();        
-        fsAssert("Expected two elements in enumeration",fss.length == 2 && fss[1] == testedFS);        
+        debug = Arrays.toString(fss);
+        fsAssert("Expected two elements in the array\n" + debug,fss.length == 2 && fss[1] == testedFS);        
         
         MultiFileSystem mfs = new MultiFileSystem(testedFS);
         repo.addFileSystem(mfs);        
         fss = repo.toArray();        
-        fsAssert("Expected two elements in enumeration",fss.length == 3 && fss[2] == mfs);        
+        debug = Arrays.toString(fss);
+        fsAssert("Expected three elements in the array\n" + debug,fss.length == 3 && fss[2] == mfs);        
     }
     
     /** Test of findFileSystem method, of class org.openide.filesystems.Repository. */

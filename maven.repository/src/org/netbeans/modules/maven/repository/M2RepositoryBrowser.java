@@ -104,33 +104,33 @@ public final class M2RepositoryBrowser extends AbstractNode {
             super(ACT_Add_Repo());
         }
         @Override public void actionPerformed(ActionEvent e) {
-    final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
-    rrui.getAccessibleContext().setAccessibleDescription(LBL_Add_Repo());
-    DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Add_Repo());
-    dd.setClosingOptions(new Object[]{
-                rrui.getButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-    dd.setOptions(new Object[]{
-                rrui.getButton(),
-                DialogDescriptor.CANCEL_OPTION
-            });
-    Object ret = DialogDisplayer.getDefault().notify(dd);
-    if (rrui.getButton() == ret) {
-        final  RepositoryInfo info;
-        try {
-            info = rrui.getRepositoryInfo();
-        } catch (URISyntaxException x) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
-        RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
-        RequestProcessor.getDefault().post(new Runnable() {
-                @Override public void run() {
-                    RepositoryIndexer.indexRepo(info);
+            final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
+            rrui.getAccessibleContext().setAccessibleDescription(LBL_Add_Repo());
+            DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Add_Repo());
+            dd.setClosingOptions(new Object[]{
+                        rrui.getButton(),
+                        DialogDescriptor.CANCEL_OPTION
+                    });
+            dd.setOptions(new Object[]{
+                        rrui.getButton(),
+                        DialogDescriptor.CANCEL_OPTION
+                    });
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (rrui.getButton() == ret) {
+                final  RepositoryInfo info;
+                try {
+                    info = rrui.getRepositoryInfo();
+                } catch (URISyntaxException x) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(x.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    return;
                 }
-            });
-    }
+                RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
+                RequestProcessor.getDefault().post(new Runnable() {
+                        @Override public void run() {
+                            RepositoryIndexer.indexRepo(info);
+                        }
+                    });
+            }
         }
     }
 
@@ -141,17 +141,17 @@ public final class M2RepositoryBrowser extends AbstractNode {
         }
         @Messages("TIT_Find_In_Repositories=Find in Repositories")
         @Override public void actionPerformed(ActionEvent e) {
-    final FindInRepoPanel pnl = new FindInRepoPanel();
-    pnl.getAccessibleContext().setAccessibleDescription(TIT_Find_In_Repositories());
-    final DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Find_In_Repositories());
-    pnl.attachDesc(dd);
-    Object ret = DialogDisplayer.getDefault().notify(dd);
-    if (ret == DialogDescriptor.OK_OPTION) {
-        synchronized (searches) {
-            searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos()));
-        }
-        cs.fireChange();
-    }
+            final FindInRepoPanel pnl = new FindInRepoPanel();
+            pnl.getAccessibleContext().setAccessibleDescription(TIT_Find_In_Repositories());
+            final DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Find_In_Repositories());
+            pnl.attachDesc(dd);
+            Object ret = DialogDisplayer.getDefault().notify(dd);
+            if (ret == DialogDescriptor.OK_OPTION) {
+                synchronized (searches) {
+                    searches.add(new QueryRequest(pnl.getQuery(), RepositoryPreferences.getInstance().getRepositoryInfos()));
+                }
+                cs.fireChange();
+            }
         }
     }
 
@@ -171,6 +171,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
     }
 
     private static class RootNodes extends ChildFactory.Detachable<Union2<RepositoryInfo,QueryRequest>> implements ChangeListener, FileChangeListener {
+        boolean addNotifyCalled = false;
         @Override protected boolean createKeys(List<Union2<RepositoryInfo,QueryRequest>> toPopulate) {
             for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
                 toPopulate.add(Union2.<RepositoryInfo,QueryRequest>createFirst(info));
@@ -193,11 +194,14 @@ public final class M2RepositoryBrowser extends AbstractNode {
             RepositoryPreferences.getInstance().addChangeListener(this);
             FileUtil.addFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
             addChangeListener(this);
+            addNotifyCalled = true;
         }
         @Override protected void removeNotify() {
             RepositoryPreferences.getInstance().removeChangeListener(this);
             removeChangeListener(this);
-            FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+            if (addNotifyCalled) { //#213038
+                FileUtil.removeFileChangeListener(this, MavenCli.DEFAULT_USER_SETTINGS_FILE);
+            }
         }
         @Override public void stateChanged(ChangeEvent e) {
             refresh(false);

@@ -60,7 +60,10 @@ final class APTFortranFilterEx implements APTLanguageFilter {
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
-    public APTFortranFilterEx() {
+    private final boolean filterContinueChar;
+    
+    public APTFortranFilterEx(String flavor) {
+        filterContinueChar = APTLanguageSupport.FLAVOR_FORTRAN_FREE.equalsIgnoreCase(flavor);
     }
 
     @Override
@@ -71,6 +74,7 @@ final class APTFortranFilterEx implements APTLanguageFilter {
     private final class FilterStream implements TokenStream {
         private TokenStream orig;
         private Token nextToken = null;
+        private Token nextNextToken = null;
         boolean newLine = false;
 
         public FilterStream(TokenStream orig) {
@@ -79,12 +83,17 @@ final class APTFortranFilterEx implements APTLanguageFilter {
 
         @Override
         public Token nextToken() throws TokenStreamException {
+            if (nextNextToken != null) {
+                Token ret = nextToken;
+                nextToken = nextNextToken;
+                nextNextToken = null;
+                return ret;
+            }
             if (nextToken != null) {
                 Token ret = nextToken;
                 nextToken = null;
                 return ret;
-            }
-            
+            }            
             Token newToken = orig.nextToken();
             if (newToken.getType() == APTTokenTypes.T_ASTERISK) {
                 nextToken = orig.nextToken();
@@ -99,7 +108,63 @@ final class APTFortranFilterEx implements APTLanguageFilter {
                     nextToken = null;
                     return new FilterToken((APTToken)newToken, APTTokenTypes.T_REAL_CONSTANT);
                 }
+                if (nextToken.getType() == APTTokenTypes.DOT) {
+                    if (newToken.getText().endsWith(".and") || // NOI18N
+                            newToken.getText().endsWith(".AND")) { // NOI18N
+                        nextToken = new FilterToken((APTToken)nextToken, APTTokenTypes.T_AND);;
+                    }
+                }
+                if (nextToken.getType() == APTTokenTypes.DOT) {
+                    if (newToken.getText().endsWith(".eq") || // NOI18N
+                            newToken.getText().endsWith(".EQ")) { // NOI18N
+                        nextToken = new FilterToken((APTToken)nextToken, APTTokenTypes.T_EQ);;
+                    }
+                }
+                if (nextToken.getType() == APTTokenTypes.DOT) {
+                    if (newToken.getText().endsWith(".ne") || // NOI18N
+                            newToken.getText().endsWith(".NE")) { // NOI18N
+                        nextToken = new FilterToken((APTToken)nextToken, APTTokenTypes.T_NE);;
+                    }
+                }
             }
+            if (newToken.getType() == APTTokenTypes.DOT) {
+                nextToken = orig.nextToken();
+                if (nextToken.getType() == APTTokenTypes.T_IDENT) {
+                    if (nextToken.getText().equalsIgnoreCase("ne")) { // NOI18N
+                        nextNextToken = orig.nextToken();
+                        if (nextNextToken.getType() == APTTokenTypes.DOT) {
+                            nextToken = null;
+                            nextNextToken = null;
+                            return new FilterToken((APTToken)newToken, APTTokenTypes.T_NE);
+                        }
+                    }
+                    if (nextToken.getText().equalsIgnoreCase("gt")) { // NOI18N
+                        nextNextToken = orig.nextToken();
+                        if (nextNextToken.getType() == APTTokenTypes.DOT) {
+                            nextToken = null;
+                            nextNextToken = null;
+                            return new FilterToken((APTToken)newToken, APTTokenTypes.T_GREATERTHAN);
+                        }
+                    }
+                    if (nextToken.getText().equalsIgnoreCase("eq")) { // NOI18N
+                        nextNextToken = orig.nextToken();
+                        if (nextNextToken.getType() == APTTokenTypes.DOT) {
+                            nextToken = null;
+                            nextNextToken = null;
+                            return new FilterToken((APTToken)newToken, APTTokenTypes.T_EQ);
+                        }
+                    }
+                    if (nextToken.getText().equalsIgnoreCase("and")) { // NOI18N
+                        nextNextToken = orig.nextToken();
+                        if (nextNextToken.getType() == APTTokenTypes.DOT) {
+                            nextToken = null;
+                            nextNextToken = null;
+                            return new FilterToken((APTToken)newToken, APTTokenTypes.T_AND);
+                        }
+                    }
+                }
+            }
+            
             if (newToken.getType() == APTTokenTypes.T_END) {
                 nextToken = orig.nextToken();
                 if (nextToken.getType() == APTTokenTypes.T_IF) {
@@ -116,6 +181,13 @@ final class APTFortranFilterEx implements APTLanguageFilter {
                     nextToken = orig.nextToken();
                 }
                 return new FilterToken((APTToken)newToken, APTTokenTypes.FORTRAN_COMMENT);
+            }
+            if(filterContinueChar && newToken.getType() == APTTokenTypes.AMPERSAND) {
+                nextToken = orig.nextToken();
+                if (nextToken.getType() == APTTokenTypes.T_EOS) {
+                    nextToken = null;
+                    return new FilterToken((APTToken)newToken, APTTokenTypes.CONTINUE_CHAR);
+                }
             }
             return newToken;
         }

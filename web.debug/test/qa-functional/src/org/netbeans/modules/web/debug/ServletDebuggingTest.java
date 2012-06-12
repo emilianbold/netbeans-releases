@@ -50,7 +50,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -86,7 +85,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
+        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
                 "testSetBreakpoint",
                 "testDebugProject",
                 // testStepOut must be before testStepInto to prevent stopping debugger at JDK sources
@@ -95,7 +94,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
                 "testStepOver",
                 "testApplyCodeChanges",
                 "testStopServer").
-                enableModules(".*").clusters(".*"));
+                enableModules(".*").clusters(".*").suite();
     }
 
     /** Print test name and initialize status bar tracer. */
@@ -255,11 +254,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      * @param text text to wait for
      */
     private void waitText(String text) {
-        // stt.waitText(text);
-        // stt.clear();
-        // #201275 - use Debugger Console instead of status bar
-        OutputTabOperator debuggerConsole = new OutputTabOperator("Debugger Console");
-        debuggerConsole.waitText(text);
-        debuggerConsole.clear();
+        stt.waitText(text);
+        stt.clear();
     }
 }

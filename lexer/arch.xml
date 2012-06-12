@@ -667,10 +667,21 @@ see e.g. <code>org.netbeans.lib.lexer.test.simple.SimpleLanguage</code>.
 
 <p>
     Or it may be provided dynamically through the xml layer
-    by using file named with the token-id's name with ".instance" suffix
-    located in "Editors/language-mime-type/embed" folder. The file should instantiate
-    the language description for the embedded language.
+    by using a file in "Editors/language-mime-type/languagesEmbeddingMap" folder
+    named by the token-id's name containing target mime-type and initial and ending skip lengths:
 </p>
+<pre>
+    &lt;folder name="Editors"&gt;
+        &lt;folder name="text"&gt;
+            &lt;folder name="x-outer-language"&gt;
+                &lt;folder name="languagesEmbeddingMap"&gt;
+                    &lt;file name="WORD"&gt;&lt;![CDATA[text/x-inner-language,1,2]]&gt;
+                    &lt;/file&gt;
+                &lt;/folder&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;
+</pre>
 
 </answer>
 

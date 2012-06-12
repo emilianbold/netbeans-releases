@@ -34,6 +34,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
 import java.util.EnumSet;
@@ -103,7 +104,199 @@ public class InterfaceTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testClassToInterfaceTest213002a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public interface Test {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        src.runModificationTask(new Task<WorkingCopy>() {
 
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                TreeMaker make = wc.getTreeMaker();
+                ClassTree i = make.Interface(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getImplementsClause(), ct.getMembers());
+                wc.rewrite(ct, i);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testClassToInterfaceTest213002b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public interface Test {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        src.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                TreeMaker make = wc.getTreeMaker();
+                ClassTree i = make.Interface(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getImplementsClause(), ct.getMembers());
+                wc.rewrite(ct, i);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testClassToEnumTest213002c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public enum Test {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        src.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                TreeMaker make = wc.getTreeMaker();
+                ClassTree i = make.Enum(ct.getModifiers(), ct.getSimpleName(), ct.getImplementsClause(), ct.getMembers());
+                wc.rewrite(ct, i);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testClassToInterfaceTest213002d() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public class Test {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        src.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                TreeMaker make = wc.getTreeMaker();
+                //XXX: TreeMaker.Class will keep whatever "kind" is in the modifiers, need to strip this extra information:
+                ModifiersTree mt = make.Modifiers(ct.getModifiers().getFlags(), ct.getModifiers().getAnnotations());
+                ClassTree i = make.Class(mt, ct.getSimpleName(), ct.getTypeParameters(), null, ct.getImplementsClause(), ct.getMembers());
+                wc.rewrite(ct, i);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testClassToInterfaceTest213002e() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public @interface Test {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        src.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                TreeMaker make = wc.getTreeMaker();
+                ClassTree i = make.AnnotationType(ct.getModifiers(), ct.getSimpleName(), ct.getMembers());
+                wc.rewrite(ct, i);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testClassToInterfaceTest213002f() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public @interface Test {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@Deprecated\n" +
+            "public interface Test {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        src.runModificationTask(new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree ct = (ClassTree) wc.getCompilationUnit().getTypeDecls().get(0);
+                TreeMaker make = wc.getTreeMaker();
+                ClassTree i = make.Interface(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getImplementsClause(), ct.getMembers());
+                wc.rewrite(ct, i);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

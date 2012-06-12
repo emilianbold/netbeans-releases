@@ -195,14 +195,8 @@ public class HttpRequestTrackerPanel extends ProjectAwareStatisticalModule {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public void setSelectedMethodId(int methodId) {
-        int lastSelectedId = getSelectedMethodId();
-        super.setSelectedMethodId(methodId);
-
-        if (lastSelectedId != methodId) {
-            lastSelectedId = methodId;
-            refresh(lastAppNode);
-        }
+    protected void onMethodSelectionChange(int oldMethodId, int newMethodId) {
+        refresh(lastAppNode);
     }
 
     @Override

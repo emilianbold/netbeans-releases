@@ -165,6 +165,9 @@ public final class NavigatorController implements LookupListener, PropertyChange
     /** for tests - boolean flag to indicate whether the content will be updated when the TC is activated*/
     private boolean updateWhenNotShown = false;
 
+    /** boolean flag to indicate that the tc.open is in progress*/
+    private boolean tcOpening = false;
+
     /** Creates a new instance of NavigatorController */
     public NavigatorController(NavigatorDisplayer navigatorTC) {
         this.navigatorTC = navigatorTC;
@@ -183,6 +186,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     /** Starts listening to selected nodes and active component */
     private void navigatorTCOpened() {
+        tcOpening = true;
         if (panelLookupNodesResult != null) {
             return;
         }
@@ -460,6 +464,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
         } finally {
             inUpdate = false;
             navigatorTC.getTopComponent().makeBusy(false);
+            //in case of asynch obtain providers it is needed to request focus while opening TC
+            if (tcOpening && navigatorTC.allowAsyncUpdate()) {
+                navigatorTC.getTopComponent().requestFocus();
+                tcOpening = false;
+            }
         }
     }
 

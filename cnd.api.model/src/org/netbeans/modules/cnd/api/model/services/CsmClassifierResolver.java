@@ -76,7 +76,11 @@ public abstract class CsmClassifierResolver {
         return null;
     }
 
+    public boolean isForwardClassifier(CsmObject obj) {
+        return isForwardClass(obj) || isForwardEnum(obj);
+    }
     public abstract boolean isForwardClass(CsmObject cls);
+    public abstract boolean isForwardEnum(CsmObject cls);
 
     protected CsmClassifierResolver() {
     }
@@ -155,5 +159,13 @@ public abstract class CsmClassifierResolver {
             return false;
         }
 
+        @Override
+        public boolean isForwardEnum(CsmObject cls) {
+            CsmClassifierResolver service = getService();
+            if (service != null) {
+                return service.isForwardEnum(cls);
+            }
+            return false;
+        }
     }
 }

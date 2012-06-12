@@ -46,8 +46,8 @@ package org.netbeans.modules.editor.lib;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -256,27 +256,33 @@ public final class ColoringMap {
         return Collections.unmodifiableMap(coloringMap);
     }
 
+    private static final List<String> FONT_COLOR_NAMES_COLORINGS = 
+            Arrays.asList(
+            FontColorNames.DEFAULT_COLORING, 
+            FontColorNames.LINE_NUMBER_COLORING, 
+            FontColorNames.GUARDED_COLORING, 
+            FontColorNames.CODE_FOLDING_COLORING, 
+            FontColorNames.CODE_FOLDING_BAR_COLORING,
+            FontColorNames.SELECTION_COLORING, 
+            FontColorNames.HIGHLIGHT_SEARCH_COLORING, 
+            FontColorNames.INC_SEARCH_COLORING,
+            FontColorNames.BLOCK_SEARCH_COLORING,
+            FontColorNames.STATUS_BAR_COLORING,
+            FontColorNames.STATUS_BAR_BOLD_COLORING,
+            FontColorNames.CARET_ROW_COLORING,
+            FontColorNames.TEXT_LIMIT_LINE_COLORING,
+            FontColorNames.CARET_COLOR_INSERT_MODE,
+            FontColorNames.CARET_COLOR_OVERWRITE_MODE,
+            FontColorNames.DOCUMENTATION_POPUP_COLORING);
     private static void collectNonTokenColorings(
         HashMap<String, Coloring> coloringMap, 
         FontColorSettings fcs
     ) {
-        // Introspect the fields in FontColorNames class
-        for(Field field : FontColorNames.class.getDeclaredFields()) {
-            Object fieldValue = null;
-            
-            try {
-                fieldValue = field.get(null);
-            } catch (IllegalAccessException e) {
-                // ignore
-            }
-            
-            if (fieldValue instanceof String) {
-                String coloringName = (String) fieldValue;
-                AttributeSet attribs = fcs.getFontColors(coloringName);
-                if (attribs != null) {
-                    LOG.fine("Loading coloring '" + coloringName + "'"); //NOI18N
-                    coloringMap.put(coloringName, Coloring.fromAttributeSet(attribs));
-                }
+        for (String coloringName: FONT_COLOR_NAMES_COLORINGS) {
+            AttributeSet attribs = fcs.getFontColors(coloringName);
+            if (attribs != null) {
+                LOG.fine("Loading coloring '" + coloringName + "'"); //NOI18N
+                coloringMap.put(coloringName, Coloring.fromAttributeSet(attribs));
             }
         }
     }
@@ -357,17 +363,19 @@ public final class ColoringMap {
     }
 
     private static List<String> findLegacyNonTokenColoringNames(MimePath mimePath) {
-        List<String> legacyNonTokenColoringNames = null;
+        List<String> legacyNonTokenColoringNames = new ArrayList<String>();
 
         Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-        String namesList = prefs.get(EditorPreferencesKeys.COLORING_NAME_LIST, null); //NOI18N
-        
-        if (namesList != null && namesList.length() > 0) {
-            legacyNonTokenColoringNames = new ArrayList<String>();
-            
-            for(StringTokenizer t = new StringTokenizer(namesList, ","); t.hasMoreTokens(); ) { //NOI18N
-                String coloringName = t.nextToken().trim();
-                legacyNonTokenColoringNames.add(coloringName);
+        if (prefs != null) {
+            String namesList = prefs.get(EditorPreferencesKeys.COLORING_NAME_LIST, null); //NOI18N
+
+            if (namesList != null && namesList.length() > 0) {
+
+
+                for (StringTokenizer t = new StringTokenizer(namesList, ","); t.hasMoreTokens();) { //NOI18N
+                    String coloringName = t.nextToken().trim();
+                    legacyNonTokenColoringNames.add(coloringName);
+                }
             }
         }
         

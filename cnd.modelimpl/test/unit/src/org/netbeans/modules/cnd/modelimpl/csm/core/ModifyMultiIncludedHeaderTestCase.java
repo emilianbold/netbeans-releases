@@ -64,4 +64,47 @@ public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBas
         super.insertTextThenSaveAndCheck(sourceFile, 12 + 1, "void foo();\n", 
                 sourceFile, new DeclarationsNumberChecker(3, 4), true);
     }
+
+    public void test213261_1() throws Exception {
+        doTest213261(true, true);
+    }
+
+    public void test213261_2() throws Exception {
+        doTest213261(true, false);
+    }
+
+    public void test213261_3() throws Exception {
+        doTest213261(false, true);
+    }
+
+    public void test213261_4() throws Exception {
+        doTest213261(false, false);
+    }
+
+    private void doTest213261(boolean extraReopen, boolean waitParseAfterChange) throws Exception {
+        // #213261 - failing test on all platforms ModifyMultiIncludedHeaderTestCase.test174007
+        final File testFile = getDataFile("multiIncludedFileForModification.h");
+        FileImpl csmFile = (FileImpl) super.getCsmFile(testFile);
+        assertNotNull(csmFile);
+        ProjectBase project = csmFile.getProjectImpl(true);
+        if (project == null) {
+            assertNotNull("no project for test " + getName() + " in " + getModel().projects(), project);
+        }
+        String projectName = project.getName().toString();
+        if (extraReopen) {
+            super.closeProject(projectName);
+            super.reopenProject(projectName, true);
+        }
+        csmFile = (FileImpl) super.getCsmFile(testFile);
+        project = csmFile.getProjectImpl(true);
+        if (project == null) {
+            assertNotNull("no " + projectName + " for test " + getName() + " in " + getModel().projects(), project);
+        }
+        DeepReparsingUtils.tryPartialReparseOnChangedFile(project, csmFile);
+        if (waitParseAfterChange) {
+            super.waitAllProjectsParsed();
+        }
+        super.closeProject(projectName);
+        super.reopenProject(projectName, true);
+    }
 }

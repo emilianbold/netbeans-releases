@@ -760,6 +760,56 @@ public class InterceptorTest extends AbstractHgTestCase {
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getCache().refresh(fromFile).getStatus());
         assertEquals(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, getCache().refresh(toFile).getStatus());
     }
+    
+    public void testDeleteFile_FO () throws Exception {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file1");
+        commit(folder);
+        
+        deleteFO(file);
+        assertFalse(file.exists());
+        assertTrue(folder.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(file).getStatus());
+    }
+    
+    public void testDeleteFileDO () throws Exception {
+        File folder = createFolder("folder");
+        File file = createFile(folder, "file1");
+        commit(folder);
+        
+        deleteDO(file);
+        assertFalse(file.exists());
+        assertTrue(folder.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(file).getStatus());
+    }
+    
+    public void testDeleteFolder_FO () throws Exception {
+        File folder = createFolder("folder");
+        File file1 = createFile(folder, "file1");
+        File file2 = createFile(folder, "file2");
+        commit(folder);
+        
+        deleteFO(folder);
+        assertFalse(file1.exists());
+        assertFalse(file2.exists());
+        assertFalse(folder.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(file2).getStatus());
+    }
+    
+    public void testDeleteFolder_DO () throws Exception {
+        File folder = createFolder("folder");
+        File file1 = createFile(folder, "file1");
+        File file2 = createFile(folder, "file2");
+        commit(folder);
+        
+        deleteDO(folder);
+        assertFalse(file1.exists());
+        assertFalse(file2.exists());
+        assertFalse(folder.exists());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(file1).getStatus());
+        assertEquals(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, getCache().refresh(file2).getStatus());
+    }
 
     private void moveDO (File from, File to) throws DataObjectNotFoundException, IOException {
         DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));
@@ -775,6 +825,22 @@ public class InterceptorTest extends AbstractHgTestCase {
         FileLock lock = foFrom.lock();
         try {
             foFrom.move(lock, foTarget, to.getName(), null);
+        } finally {
+            lock.releaseLock();
+        }
+    }
+
+    private void deleteDO (File toDelete) throws DataObjectNotFoundException, IOException {
+        DataObject dao = DataObject.find(FileUtil.toFileObject(toDelete));
+        dao.delete();
+    }
+
+    private void deleteFO (File toDelete) throws DataObjectNotFoundException, IOException {
+        FileObject fo = FileUtil.toFileObject(toDelete);
+        assertNotNull(fo);
+        FileLock lock = fo.lock();
+        try {
+            fo.delete(lock);
         } finally {
             lock.releaseLock();
         }

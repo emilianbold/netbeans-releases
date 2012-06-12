@@ -52,7 +52,7 @@ import java.lang.management.MemoryUsage;
  * @since 1.2
  * @author Tomas Zezula
  */
-public class LowMemoryWatcher {
+public final class LowMemoryWatcher {
 
     private static float heapLimit = 0.8f;
     private static LowMemoryWatcher instance;
@@ -78,6 +78,14 @@ public class LowMemoryWatcher {
             }
         }
         return false;
+    }
+    
+    /**
+     * Tries to free memory.
+     * @since 2.12
+     */
+    public void free() {
+        System.gc();
     }
     
     /**

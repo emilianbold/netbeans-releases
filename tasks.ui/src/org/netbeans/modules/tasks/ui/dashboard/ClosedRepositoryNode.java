@@ -44,11 +44,9 @@ package org.netbeans.modules.tasks.ui.dashboard;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
-import org.openide.util.ImageUtilities;
 
 public class ClosedRepositoryNode extends RepositoryNode {
 
@@ -73,10 +71,5 @@ public class ClosedRepositoryNode extends RepositoryNode {
     @Override
     Collection<Query> getQueries() {
         return Collections.emptyList();
-    }
-
-    @Override
-    ImageIcon getRepositoryIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/local_repo.png", true);
     }
 }

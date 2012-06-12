@@ -132,7 +132,7 @@ import org.openide.filesystems.FileSystem;
     public static List<CppFoldRecord> parse(FileObject fo, char[] buf) {
         try {
             String name = fo.getPath();
-            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, buf, APTLanguageSupport.GNU_CPP);
+            TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, buf, APTLanguageSupport.GNU_CPP, APTLanguageSupport.FLAVOR_UNKNOWN);
             APTFoldingParser parser = getParser(fo.getFileSystem(), name, lexer);
             parser.translation_unit();
             return new ArrayList<CppFoldRecord>(parser.getFolders());

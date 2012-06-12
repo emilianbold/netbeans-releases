@@ -80,6 +80,34 @@ made subject to such option by the copyright holder.
             <available classname="org.testng.annotations.Test" classpath="${extra.test.libs}"/>
         </condition>
         <validatepath pathref="test.cp" failedproperty="wrong.classpath"/>
+        <pathconvert property="retouche.javac.api">
+            <fileset dir="${netbeans.dest.dir}">
+                <include name="java/modules/ext/*javac*api*.jar"/>
+            </fileset>
+        </pathconvert>
+        <pathconvert property="retouche.javac.impl">
+            <fileset dir="${netbeans.dest.dir}">
+                <include name="java/modules/ext/*javac*impl*.jar"/>
+            </fileset>
+            <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
+                <include name="*.jar"/>
+            </fileset>
+        </pathconvert>
+        <!-- When requires.nb.javac property is true, prepend javac-api on bootclasspath to allow override the default annotation
+             processing API located in rt.jar. On Mac, prepend also javac-impl, so that tests are built against correct version of javac. -->
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}:${retouche.javac.impl}">
+            <and>
+                <os family="mac"/>
+                <istrue value="${requires.nb.javac}"/>
+            </and>
+        </condition>
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
+            <istrue value="${requires.nb.javac}"/>
+        </condition>
+        <condition property="test.bootclasspath.prepend.args" value="-Xbootclasspath/p:&quot;${bootclasspath.prepend}&quot;">
+            <isset property="bootclasspath.prepend"/>
+        </condition>
+        <property name="test.bootclasspath.prepend.args" value=""/>
     </target>
 
     <target name="init-data" if="exists.test.data">
@@ -102,6 +130,7 @@ made subject to such option by the copyright holder.
                     <syspropertyset refid="test.properties"/>
                     <sysproperty key="nbjunit.workdir" path="${nbjunit.workdir}"/>
                     <sysproperty key="nbjunit.hard.timeout" value="${test.timeout}"/>
+                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
@@ -123,6 +152,7 @@ made subject to such option by the copyright holder.
                     <classfileset dir="${test.classes.dir}" includes="${test.includes}" excludes="${test.excludes}"/>
                     <propertyset refid="test.properties"/>
                     <classpath refid="test.cp"/>
+                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <sysproperty key="nbjunit.workdir" path="${nbjunit.workdir}"/>
                     <sysproperty key="nbjunit.hard.timeout" value="${test.timeout}"/>

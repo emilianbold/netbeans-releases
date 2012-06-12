@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -51,11 +50,18 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.WizardStorage;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -63,38 +69,22 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
+public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePanel<WizardDescriptor>, NamedPanel, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
     private String name;
-    private final WizardStorage wizardStorage;
+    private final MyWizardStorage wizardStorage;
     private boolean isValid = false;
-    private final boolean fullRemote;
-    private String existingFolder = null;
 
-    public SelectModeDescriptorPanel(boolean fullRemote, String existingFolder) {
+    public SelectModeDescriptorPanel() {
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
-        this.fullRemote = fullRemote;
-        wizardStorage = new WizardStorage(fullRemote);
-        this.existingFolder = existingFolder;
+        wizardStorage = new MyWizardStorage();
     }
 
-    public SelectModeDescriptorPanel(boolean fullRemote) {
-        this(fullRemote, null);
-    }    
-    
     @Override
     public String getName() {
         return name;
-    }
-
-    public String getExistingFolder() {
-        return existingFolder;
-    }
-    
-    public boolean isFullRemote() {
-        return fullRemote;
     }
 
     // Get the visual component for the panel. In this template, the component
@@ -199,11 +189,20 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         getComponent().store(settings);
     }
 
+    @Override
     public WizardStorage getWizardStorage(){
         return wizardStorage;
     }
 
-    public class WizardStorage {
+    @Override
+    public void setFinishPanel(boolean isFinishPanel) {
+    }
+
+    boolean isFullRemote() {
+        return wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null;
+    }
+
+    private class MyWizardStorage implements WizardStorage {
         private String projectPath = ""; // NOI18N
         private FileObject sourceFileObject;
         private String flags = ""; // NOI18N
@@ -213,33 +212,35 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         private boolean defaultCompilerSet;
         private ExecutionEnvironment buildEnv;
         private ExecutionEnvironment sourceEnv;
-        private final boolean fullRemote;
         private FileObject makefileFO;
 
-        public WizardStorage(boolean fullRemote) {
-            this.fullRemote = fullRemote;
+        public MyWizardStorage() {
             buildEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
             sourceEnv = NewProjectWizardUtils.getDefaultSourceEnvironment();
         }
 
+        @Override
+        public WizardDescriptor getAdapter() {
+            return new WizardDescriptorAdapter(this);
+        }
+        
         /**
          * @return the path
          */
+        @Override
         public void setMode(boolean isSimple) {
             SelectModeDescriptorPanel.this.setMode(isSimple);
         }
 
-        public boolean isFullRemote() {
-            return fullRemote;
-        }
-
         /**
          * @return the path
          */
+        @Override
         public String getProjectPath() {
             return projectPath;
         }
 
+        @Override
         public FileObject getSourcesFileObject() {
             return sourceFileObject;
         }
@@ -247,31 +248,44 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @param path the path to set
          */
+        @Override
         public void setProjectPath(String path) {
             this.projectPath = path.trim();
             validate();
         }
 
+        @Override
         public void setSourcesFileObject(FileObject fileObject) {
             this.sourceFileObject = fileObject;
             validate();
         }
 
+        @Override
         public String getConfigure(){
-            if (projectPath.length() == 0) {
-                return null;
-            }
+            //if (projectPath.length() == 0) {
+            //    return null;
+            //}
             if (sourceFileObject != null) {
                 return ConfigureUtils.findConfigureScript(sourceFileObject);
             } else {
-                return ConfigureUtils.findConfigureScript(projectPath);
+                if (wizardDescriptor != null) {
+                    ExecutionEnvironment env = (ExecutionEnvironment) wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV);
+                    if (env == null) {
+                        env = ExecutionEnvironmentFactory.getLocal();
+                    }
+                    FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
+                    return ConfigureUtils.findConfigureScript(fileSystem.findResource(projectPath));
+                }
             }
+            return null;
         }
 
+        @Override
         public String getMake(){
             return (makefileFO == null) ? null : makefileFO.getPath();
         }
 
+        @Override
         public void setMake(FileObject makefileFO) {
             this.makefileFO = makefileFO;
         }
@@ -279,6 +293,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @return the flags
          */
+        @Override
         public String getFlags() {
             return flags;
         }
@@ -286,6 +301,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @return the flags
          */
+        @Override
         public String getRealFlags() {
             return ConfigureUtils.getConfigureArguments(buildEnv, cs, getConfigure(), flags);
         }
@@ -293,6 +309,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @param flags the flags to set
          */
+        @Override
         public void setFlags(String flags) {
             this.flags = flags;
             validate();
@@ -301,6 +318,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @return the setMain
          */
+        @Override
         public boolean isSetMain() {
             return setMain;
         }
@@ -308,6 +326,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @param setMain the setMain to set
          */
+        @Override
         public void setSetMain(boolean setMain) {
             this.setMain = setMain;
             validate();
@@ -316,6 +335,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @return the buildProject
          */
+        @Override
         public boolean isBuildProject() {
             return buildProject;
         }
@@ -323,33 +343,54 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         /**
          * @param buildProject the buildProject to set
          */
+        @Override
         public void setBuildProject(boolean buildProject) {
             this.buildProject = buildProject;
             validate();
         }
 
-        void setCompilerSet(CompilerSet cs) {
+        @Override
+        public void setCompilerSet(CompilerSet cs) {
             this.cs = cs;
         }
 
-        void setExecutionEnvironment(ExecutionEnvironment ee) {
+        @Override
+        public CompilerSet getCompilerSet() {
+            return cs;
+        }
+
+        @Override
+        public void setExecutionEnvironment(ExecutionEnvironment ee) {
             this.buildEnv = ee;
         }
 
+        @Override
+        public ExecutionEnvironment getExecutionEnvironment() {
+            return buildEnv;
+        }
+
+        @Override
         public ExecutionEnvironment getSourceExecutionEnvironment() {
             return sourceEnv;
         }
 
+        @Override
         public void setSourceExecutionEnvironment(ExecutionEnvironment sourceEnv) {
             this.sourceEnv = sourceEnv;
         }
 
-        void setDefaultCompilerSet(boolean defaultCompilerSet) {
+        @Override
+        public void setDefaultCompilerSet(boolean defaultCompilerSet) {
             this.defaultCompilerSet = defaultCompilerSet;
+        }
+
+        @Override
+        public boolean isDefaultCompilerSet() {
+            return defaultCompilerSet;
         }
     }
 
-    public static class WizardDescriptorAdapter extends WizardDescriptor{
+    private static class WizardDescriptorAdapter extends WizardDescriptor{
         private WizardStorage storage;
         public WizardDescriptorAdapter(WizardStorage storage) {
             this.storage = storage;
@@ -377,25 +418,24 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) { // NOI18N
                 return storage.getConfigure();
             } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) { // NOI18N
-                return ExecutionEnvironmentFactory.toUniqueID(storage.buildEnv);
+                return ExecutionEnvironmentFactory.toUniqueID(storage.getExecutionEnvironment());
             } else if (WizardConstants.PROPERTY_SOURCE_HOST_ENV.equals(name)) {
                 return storage.getSourceExecutionEnvironment();
             } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) { // NOI18N
-                return storage.cs;
+                return storage.getCompilerSet();
             } else if (WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.equals(name)) { // NOI18N
-                return storage.defaultCompilerSet;
-            } else if (WizardConstants.PROPERTY_FULL_REMOTE.equals(name)) { // NOI18N
-                return storage.fullRemote;
+                return storage.isDefaultCompilerSet();
             } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N
                 return storage.getSourcesFileObject().getPath();
             } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) { // NOI18N
                 return storage.getSourcesFileObject();
             } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) { // NOI18N
-                //Object o = super.getProperty(name);
-                return new File(storage.getProjectPath());
+                try {
+                    return new FSPath(storage.getSourcesFileObject().getFileSystem(), storage.getSourcesFileObject().getPath());
+                } catch (FileStateInvalidException ex) {
+                }
             }
             return super.getProperty(name);
         }
     }
 }
-

@@ -118,13 +118,14 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(GuardedBlockTest.class);
-        suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
-        suite.addTest(new GuardedBlockTest("test119048"));
-        suite.addTest(new GuardedBlockTest("test119962"));
-        suite.addTest(new GuardedBlockTest("testRenameTypeParameter125385"));
+        suite.addTestSuite(GuardedBlockTest.class);
+//        suite.addTest(new GuardedBlockTest("testInsertMethodBeforeVariablesBug177824"));
+//        suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
+//        suite.addTest(new GuardedBlockTest("test119048"));
+//        suite.addTest(new GuardedBlockTest("test119962"));
+//        suite.addTest(new GuardedBlockTest("testRenameTypeParameter125385"));
 //        suite.addTest(new GuardedBlockTest("test119345"));
-        suite.addTest(new GuardedBlockTest("testComplex186754"));
+//        suite.addTest(new GuardedBlockTest("testComplex186754"));
         return suite;
     }
     
@@ -472,7 +473,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
      * #119345: Duplicated initComponents() when trying to rename in
      * the guarded.
      */
-    public void test119345() throws Exception {
+    public void Dtest119345() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
                 "package desktopapplication3;\n" +

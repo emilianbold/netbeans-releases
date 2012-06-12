@@ -67,9 +67,15 @@ final class CreateFilesWorker {
     private boolean lwmInited;
     private final ProjectBase project;
     private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
-
-    CreateFilesWorker(ProjectBase project) {
+    private final Set<FileImpl> reparseOnEdit = Collections.synchronizedSet(new HashSet<FileImpl>());
+    private final Set<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedSet(new HashSet<NativeFileItem>());
+    private final AtomicBoolean failureDetected = new AtomicBoolean(false);
+    private final Set<NativeFileItem> removedFiles;
+    private final ProjectSettingsValidator validator;
+    CreateFilesWorker(ProjectBase project, Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
         this.project = project;
+        this.removedFiles = removedFiles;
+        this.validator = validator;
     }
 
     private synchronized FileModel getLWM() {
@@ -83,13 +89,9 @@ final class CreateFilesWorker {
         return lwm;
     }
 
-    void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources,
-            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
+    void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources) {
 
-        List<FileImpl> reparseOnEdit = Collections.synchronizedList(new ArrayList<FileImpl>());
-        List<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedList(new ArrayList<NativeFileItem>());
         Set<CsmUID<CsmFile>> handledFiles = Collections.synchronizedSet(new HashSet<CsmUID<CsmFile>>(items.size()));
-        AtomicBoolean enougth = new AtomicBoolean(false);
         int size = items.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
         CountDownLatch countDownLatch = new CountDownLatch(threads);
@@ -104,15 +106,14 @@ final class CreateFilesWorker {
                     break;
                 }
             }
-            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, list, sources, removedFiles,
-                    validator, project, handledFiles, reparseOnEdit, reparseOnPropertyChanged, enougth);
+            CreateFileRunnable r = new CreateFileRunnable(countDownLatch, list, sources, handledFiles);
             PROJECT_FILES_WORKER.post(r);
         }
         try {
             countDownLatch.await();
         } catch (InterruptedException ex) {
         }
-        if (!enougth.get()) {
+        if (!failureDetected.get()) {
             // no issues with repository was found so far
             if (validator != null && !sources) {
                 final Set<CsmUID<CsmFile>> allFilesUID = new HashSet<CsmUID<CsmFile>>(project.getHeaderFilesUID());
@@ -129,7 +130,7 @@ final class CreateFilesWorker {
                 // of underlying NativeProject associated with CsmProject
                 for (CsmUID<CsmFile> csmUID : allFilesUID) {
                     if (csmUID == null || RepositoryUtils.getRepositoryErrorCount(project) > 0) {
-                        enougth.set(true);
+                        failureDetected.set(true);
                         break;
                     }
                     CsmFile file = UIDCsmConverter.UIDtoFile(csmUID);
@@ -146,27 +147,27 @@ final class CreateFilesWorker {
                             }
                         }
                     } else {
-                        enougth.set(true);
+                        failureDetected.set(true);
                         RepositoryUtils.registerRepositoryError(project, new Exception("Validation: file was not restored from " + csmUID)); // NOI18N
                         System.err.printf("Validation: file was not restored from %s\n", csmUID); //NOI18N
                         break;
                     }
                 }
                 if (TraceFlags.DEBUG_BROKEN_REPOSITORY) {
-                    enougth.set(true);
+                    failureDetected.set(true);
                     RepositoryUtils.registerRepositoryError(project, new Exception("Validation: INTENTIONAL interrupt")); // NOI18N
                 }
             }
         }
-        //for (NativeFileItem nativeFileItem : items) {
-        //    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
-        //            reparseOnEdit, reparseOnPropertyChanged, enougth)) {
-        //        return;
-        //    }
-        //}
-        if (!enougth.get()) {
+    }
+
+    /*package*/ void finishProjectFilesCreation() {
+        if (!failureDetected.get()) {
+            // add to parse all needed elements
             if (!reparseOnEdit.isEmpty()) {
-                DeepReparsingUtils.reparseOnEdit(reparseOnEdit, project, true);
+                for (FileImpl file : reparseOnEdit) {
+                    DeepReparsingUtils.tryPartialReparseOnChangedFile(project, file);
+                }
             }
             if (!reparseOnPropertyChanged.isEmpty()) {
                 DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project, false);
@@ -174,31 +175,23 @@ final class CreateFilesWorker {
         }
     }
 
+    /*package*/void checkLibraries() {
+        if (!failureDetected.get() && validator != null) {
+            // check libraries and find if our storage has extra model to contribute
+            reparseOnEdit.addAll(project.checkLibrariesAfterRestore());
+        }
+    }
+
     private class CreateFileRunnable implements Runnable {
         private final CountDownLatch countDownLatch;
         private final List<NativeFileItem> nativeFileItems;
         private final boolean sources;
-        private final Set<NativeFileItem> removedFiles;
-        private final ProjectSettingsValidator validator;
-        private final ProjectBase project;
-        private final List<FileImpl> reparseOnEdit;
-        private final List<NativeFileItem> reparseOnPropertyChanged;
-        private final AtomicBoolean enougth;
         private final Set<CsmUID<CsmFile>> handledFiles;
 
-        private CreateFileRunnable(CountDownLatch countDownLatch, List<NativeFileItem> nativeFileItems, boolean sources,
-            Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator, ProjectBase project,
-            Set<CsmUID<CsmFile>> handledFiles,
-            List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
+        private CreateFileRunnable(CountDownLatch countDownLatch, List<NativeFileItem> nativeFileItems, boolean sources, Set<CsmUID<CsmFile>> handledFiles){
             this.countDownLatch = countDownLatch;
             this.nativeFileItems = nativeFileItems;
             this.sources = sources;
-            this.removedFiles = removedFiles;
-            this.validator = validator;
-            this.project = project;
-            this.reparseOnEdit = reparseOnEdit;
-            this.reparseOnPropertyChanged = reparseOnPropertyChanged;
-            this.enougth = enougth;
             this.handledFiles = handledFiles;
         }
         
@@ -209,8 +202,7 @@ final class CreateFilesWorker {
                     return;
                 } 
                 for(NativeFileItem nativeFileItem : nativeFileItems) {
-                    if (!createProjectFilesIfNeedRun(nativeFileItem, sources, removedFiles, validator,
-                                            reparseOnEdit, reparseOnPropertyChanged, enougth)){
+                    if (!createProjectFilesIfNeedRun(nativeFileItem)){
                         return;
                     }
                 }
@@ -218,10 +210,8 @@ final class CreateFilesWorker {
                 countDownLatch.countDown();
             }
         }
-        private boolean createProjectFilesIfNeedRun(NativeFileItem nativeFileItem, boolean sources,
-                Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator,
-                List<FileImpl> reparseOnEdit, List<NativeFileItem> reparseOnPropertyChanged, AtomicBoolean enougth){
-            if (enougth.get()) {
+        private boolean createProjectFilesIfNeedRun(NativeFileItem nativeFileItem){
+            if (failureDetected.get()) {
                 return false;
             }
             final CsmModelState modelState = ModelImpl.instance().getState();
@@ -253,7 +243,7 @@ final class CreateFilesWorker {
                 FileImpl fileImpl = project.createIfNeed(nativeFileItem, sources, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
                 this.handledFiles.add(UIDCsmConverter.fileToUID(fileImpl));
                 if (project.isValidating() && RepositoryUtils.getRepositoryErrorCount(project) > 0) {
-                    enougth.set(true);
+                    failureDetected.set(true);
                     return false;
                 }
             } catch (Exception ex) {

@@ -50,9 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -98,7 +96,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
                               //TODO can the .jar extension be hardwired? on CP..
                             File bin = new File(parent, artifact + "-" + version + ".jar"); //NOI18N
                             File pom = new File(parent, artifact + "-" + version + ".pom"); //NOI18N
-                            URI localRepo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()).toURI();
+                            URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
                             URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
                             if (!rel.isAbsolute()) {
                                 String groupId = rel.getPath();

@@ -1,35 +1,64 @@
 <?php
-    $name = "Petr";
-    echo <<<HEREDOC
-Hello $name!
 
-HEREDOC;
+namespace My\Great\Space;
 
-    class Test {
-        const TEST = 1;
+trait Feature {
+    public function returnFive() {
+        // just a dummy code
+        return 5;
+    }
+}
 
-        // beginning of docblock area
-        /**
-         * @access private
-         * @var string 
-         */
-        var $_var1 = 'hello';
-        var $publicvar = 'Lookee me!';
+class TestClass {
+    use Feature;
 
-        /**
-         * readFile - do something
-         * @param string $src Path to dir or textfile (local or remote)
-         * @return string The content of the file or NULL
-         */
-        public static function readFile($src) {
-            if (!isset($src)) {
-                return NULL;
-            } else {
-                // TODO: read the $src file
-                return "Not yet implemented";
-            }
+    const CONSTANT = 1;
+
+    /** @var string */
+    public $everywhere = "Everyone can read me!";
+
+    /** @var string */
+    protected $under = "Descendants and such...";
+
+    /** @var string */
+    private $here = "Just me and such...";
+
+    /**
+     * Just prints private field.
+     * @return void
+     */
+    public function printPrivate() {
+        echo $this->here;
+    }
+
+    /**
+     * readFile - do something
+     * @param string $src Path to dir or textfile (local or remote)
+     * @return string The content of the file or NULL
+     */
+    public static function readFile($src) {
+        if (!isset($src)) {
+            return NULL;
+        } else {
+            // TODO: read the $src file
+            return "Not yet implemented";
         }
     }
-    
-    echo "File: " . Test::readFile("/tmp/greetings.txt");
+
+}
+
+$cls = new TestClass();
+
+echo TestClass::CONSTANT;
+echo $cls->everywhere;
+echo $cls->returnFive();
+$cls->printPrivate();
+
+echo "File: " . TestClass::readFile("/tmp/greetings.txt");
+
+$name = "Petr";
+echo <<<HEREDOC
+Hello $name!
+HEREDOC;
+
 ?>

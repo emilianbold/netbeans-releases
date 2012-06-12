@@ -65,6 +65,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 
 /**
  * Top component which displays something.
@@ -72,13 +73,11 @@ import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 @ConvertAsProperties(dtd = "-//org.netbeans.modules.demotasklist//Dashboard//EN",
 autostore = false)
 @TopComponent.Description(preferredID = "DashboardTopComponent",
-iconBase = "org/netbeans/modules/tasks/ui/resources/kenai-small.png",
+iconBase = "org/netbeans/modules/tasks/ui/resources/dashboard.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@TopComponent.Registration(mode = "explorer", openAtStartup = true, position=350)
 @ActionID(category = "Window", id = "org.netbeans.modules.tasks.ui.DashboardTopComponent")
-@ActionReference(path = "Menu/Window" /*
- * , position = 333
- */)
+@ActionReference(path = "Menu/Window", position = 501)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
 preferredID = "DashboardTopComponent")
 @NbBundle.Messages({
@@ -94,7 +93,6 @@ public final class DashboardTopComponent extends TopComponent {
     private FilterDocumentListener filterListener;
     private CategoryNameDocumentListener categoryNameListener;
     private Timer filterTimer;
-    private Timer cateregoryNameTimer;
     private ActiveTaskPanel activeTaskPanel;
     private final GridBagConstraints activeTaskConstrains;
     private FilterPanel filterPanel;
@@ -107,8 +105,6 @@ public final class DashboardTopComponent extends TopComponent {
         setName(NbBundle.getMessage(DashboardTopComponent.class, "CTL_DashboardTopComponent")); //NOI18N
         filterTimer = new Timer(500, new FilterTimerListener());
         filterTimer.stop();
-        cateregoryNameTimer = new Timer(200, new CategoryNameTimerListener());
-        cateregoryNameTimer.stop();
         activeTaskConstrains = new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 3, 0, 0), 0, 0);
         componentAdapter = new ComponentAdapter() {
             @Override
@@ -184,7 +180,8 @@ public final class DashboardTopComponent extends TopComponent {
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files
      * only, i.e. deserialization routines; otherwise you could get a
-     * non-deserialized instance. To obtain the singleton instance, use {@link #findInstance}.
+     * non-deserialized instance. To obtain the singleton instance, use
+     * {@link #findInstance}.
      */
     @Override
     public void componentOpened() {
@@ -202,10 +199,9 @@ public final class DashboardTopComponent extends TopComponent {
         RepositoryManager.getInstance().addPropertChangeListener(dashboard);
 
         addComponentListener(componentAdapter);
-
+        DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
         //load data after the component is displayed
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 dashboard.loadData();
@@ -217,6 +213,7 @@ public final class DashboardTopComponent extends TopComponent {
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
         RepositoryManager.getInstance().removePropertChangeListener(DashboardViewer.getInstance());
+        DashboardSettings.getInstance().removePropertyChangedListener(DashboardViewer.getInstance());
         super.componentClosed();
     }
 
@@ -241,29 +238,16 @@ public final class DashboardTopComponent extends TopComponent {
         }
     }
 
-    public void deleteCategory(Category category) {
-        NotifyDescriptor nd = new NotifyDescriptor(
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatQuestion", category.getName()), //NOI18N
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatTitle"), //NOI18N
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null,
-                NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            //TODO fire event to category listeners
-            DashboardViewer.getInstance().deleteCategory(category);
-        }
-    }
-
-    public void createCategory() {
+    public Category createCategory() {
         categoryNamePanel = new CategoryNamePanel(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CreateCatNameLabel"), ""); //NOI18N
 
         boolean confirm = showCategoryNameDialog(categoryNamePanel, NbBundle.getMessage(DashboardTopComponent.class, "LBL_CreateCatTitle")); //NOI18N
         if (confirm) {
-            //TODO fire event to category listeners
             Category category = new Category(categoryNamePanel.getCategoryName());
             DashboardViewer.getInstance().addCategory(category);
+            return category;
         }
+        return null;
     }
 
     public void renameCategory(Category category) {
@@ -271,7 +255,6 @@ public final class DashboardTopComponent extends TopComponent {
 
         boolean confirm = showCategoryNameDialog(categoryNamePanel, NbBundle.getMessage(DashboardTopComponent.class, "LBL_RenameCatTitle")); //NOI18N
         if (confirm) {
-            //TODO fire event to category listeners
             DashboardViewer.getInstance().renameCategory(category, categoryNamePanel.getCategoryName());
         }
     }
@@ -286,7 +269,7 @@ public final class DashboardTopComponent extends TopComponent {
                 NotifyDescriptor.OK_OPTION);
         categoryNameDialog.setValid(false);
         if (categoryNameListener == null) {
-            categoryNameListener = new CategoryNameDocumentListener(cateregoryNameTimer);
+            categoryNameListener = new CategoryNameDocumentListener();
         }
         panel.addDocumentListener(categoryNameListener);
         boolean confirm = DialogDisplayer.getDefault().notify(categoryNameDialog) == NotifyDescriptor.OK_OPTION;
@@ -294,14 +277,12 @@ public final class DashboardTopComponent extends TopComponent {
         return confirm;
     }
 
-    public void removeTask(TaskNode taskNode) {
-        DashboardViewer.getInstance().removeTask(taskNode);
-    }
-
-    public void addTask(TaskNode taskNode) {
-        List<Category> categories = DashboardViewer.getInstance().getCategories();
-        if (taskNode.isCategorized()) {
-            categories.remove(taskNode.getCategory());
+    public void addTask(TaskNode... taskNodes) {
+        List<Category> categories = DashboardViewer.getInstance().getCategories(true);
+        for (TaskNode taskNode : taskNodes) {
+            if (taskNode.isCategorized()) {
+                categories.remove(taskNode.getCategory());
+            }
         }
         CategoryPicker picker = new CategoryPicker(categories);
         NotifyDescriptor nd = new NotifyDescriptor(
@@ -314,7 +295,7 @@ public final class DashboardTopComponent extends TopComponent {
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
-            DashboardViewer.getInstance().addTaskToCategory(taskNode, category);
+            DashboardViewer.getInstance().addTaskToCategory(category, taskNodes);
         }
 
     }
@@ -358,26 +339,6 @@ public final class DashboardTopComponent extends TopComponent {
         }
     }
 
-    private class CategoryNameTimerListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == cateregoryNameTimer) {
-                cateregoryNameTimer.stop();
-                if (categoryNamePanel.getCategoryName().isEmpty()) {
-                    categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrEmpty")); //NOI18N
-                    categoryNameDialog.setValid(false);
-                } else if (!DashboardViewer.getInstance().isCategoryNameUnique(categoryNamePanel.getCategoryName())) {
-                    categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrUnique")); //NOI18N
-                    categoryNameDialog.setValid(false);
-                } else {
-                    categoryNamePanel.setErrorText("");
-                    categoryNameDialog.setValid(true);
-                }
-            }
-        }
-    }
-
     private class FilterDocumentListener implements DocumentListener {
 
         private Timer timer;
@@ -404,28 +365,35 @@ public final class DashboardTopComponent extends TopComponent {
 
     private class CategoryNameDocumentListener implements DocumentListener {
 
-        private Timer timer;
-
-        public CategoryNameDocumentListener(Timer timer) {
-            this.timer = timer;
+        public CategoryNameDocumentListener() {
         }
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            categoryNameDialog.setValid(false);
-            timer.restart();
+            checkCategoryName();
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            categoryNameDialog.setValid(false);
-            timer.restart();
+            checkCategoryName();
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            categoryNameDialog.setValid(false);
-            timer.restart();
+            checkCategoryName();
+        }
+
+        private void checkCategoryName() {
+            if (categoryNamePanel.getCategoryName().isEmpty()) {
+                categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrEmpty")); //NOI18N
+                categoryNameDialog.setValid(false);
+            } else if (!DashboardViewer.getInstance().isCategoryNameUnique(categoryNamePanel.getCategoryName())) {
+                categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrUnique")); //NOI18N
+                categoryNameDialog.setValid(false);
+            } else {
+                categoryNamePanel.setErrorText("");
+                categoryNameDialog.setValid(true);
+            }
         }
     }
 }

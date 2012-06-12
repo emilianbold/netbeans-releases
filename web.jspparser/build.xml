@@ -69,12 +69,6 @@ made subject to such option by the copyright holder.
 
     <target name="netbeans-extra" depends="release,ext-jar"/>
 
-    <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
-        <locjar jarfile="${cluster}/modules/ext/jsp-parser-ext.jar"
-                basedir="${nb_all}/translatedfiles/src/${module.name}/extsrc"
-                compress="${build.package.compress}"/>
-    </target>
-
     <target name="create-jars-from-glassfish">
         <!-- the latest binary generated on Aug 24, 2010 is based on GlassFish 3.0.1, 
              plus the following patch in addition (because of the following JSP engine bug: 

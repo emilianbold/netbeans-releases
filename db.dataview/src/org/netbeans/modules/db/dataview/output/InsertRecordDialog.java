@@ -67,11 +67,14 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -422,14 +425,18 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 }
                 jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql")); // NOI18N
                 jEditorPane1.setText(sqlText);
+                jScrollPane2.setViewportView(jEditorPane1);
             }
         } catch (DBException ex) {
-            jEditorPane1.setContentType("text/html"); // NOI18N
-            // a hack to avoid Parsing API to don't care about this editor now
-            jEditorPane1.getDocument().putProperty("mimeType", "text/plain"); // NOI18N
-            String str = "<html> <body><font color=" + "#FF0000" + ">" + ex.getMessage().replaceAll("\\n", "<br>") + "</font></body></html>";
-            jEditorPane1.setText(str);//ex.getMessage());
-            return;
+            JLabel errorLabel = new JLabel(
+                    "<html><body><font color=\"#FF0000\">" //NOI18N
+                    + ex.getMessage().replaceAll("\\n", "<br>") //NOI18N
+                    + "</font></body></html>"); //NOI18N
+            errorLabel.setBorder(new EmptyBorder(5, 5, 5, 5));
+            errorLabel.setVerticalAlignment(SwingConstants.TOP);
+            jScrollPane2.setViewportView(errorLabel);
+            jScrollPane2.revalidate();
+            jScrollPane2.repaint();
         }
     }
 

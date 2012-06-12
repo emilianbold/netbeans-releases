@@ -970,6 +970,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
             EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
+            final Set<TypeMemberElement> classTypes = new LinkedHashSet<TypeMemberElement>();
             QualifiedName superClassName = null;
             Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
             if (possibleFQSuperClassNames.size() == 1) {
@@ -978,27 +979,31 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 superClassName = ((ClassElement) typeElement).getSuperClassName();
             }
             if (superClassName != null) {
-                directTypes.addAll(extendedQuery.getFields(NameKind.exact(superClassName), NameKind.empty()));
-                directTypes.addAll(extendedQuery.getMethods(NameKind.exact(superClassName), NameKind.empty()));
-                directTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(superClassName), NameKind.empty()));
+                classTypes.addAll(extendedQuery.getFields(NameKind.exact(superClassName), NameKind.empty()));
+                classTypes.addAll(extendedQuery.getMethods(NameKind.exact(superClassName), NameKind.empty()));
+                classTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(superClassName), NameKind.empty()));
                 if (memberKinds.size() != 1) {
-                    directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(superClassName), NameKind.empty())));
+                    classTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(superClassName), NameKind.empty())));
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
+                            classTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
                                     getMethodsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
                         case FIELD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(superClassName), NameKind.empty())));
+                            classTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(superClassName), NameKind.empty())));
                             break;
                         case TYPE_CONSTANT:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
+                            classTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(
                                     getTypeConstantsImpl(NameKind.exact(superClassName), NameKind.empty(), EnumSet.of(PhpElementKind.CLASS))));
                             break;
                     }
                 }
+                if (classTypes.isEmpty()) {
+                    insertEmptyElement(classTypes, NameKind.exact(superClassName));
+                }
             }
+            directTypes.addAll(classTypes);
         }
         if (typeKinds.contains(PhpElementKind.IFACE)) {
             Collection<QualifiedName> interfaceNames = null;
@@ -1009,45 +1014,62 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 interfaceNames = typeElement.getSuperInterfaces();
             }
             for (QualifiedName iface : interfaceNames) {
-                directTypes.addAll(extendedQuery.getFields(NameKind.exact(iface), NameKind.empty()));
-                directTypes.addAll(extendedQuery.getMethods(NameKind.exact(iface), NameKind.empty()));
-                directTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(iface), NameKind.empty()));
+                final Set<TypeMemberElement> ifaceTypes = new LinkedHashSet<TypeMemberElement>();
+                ifaceTypes.addAll(extendedQuery.getFields(NameKind.exact(iface), NameKind.empty()));
+                ifaceTypes.addAll(extendedQuery.getMethods(NameKind.exact(iface), NameKind.empty()));
+                ifaceTypes.addAll(extendedQuery.getTypeConstants(NameKind.exact(iface), NameKind.empty()));
                 if (memberKinds.size() != 1) {
-                    directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(iface), NameKind.empty())));
+                    ifaceTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(iface), NameKind.empty())));
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(iface), NameKind.empty(),
+                            ifaceTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(iface), NameKind.empty(),
                                     EnumSet.of(PhpElementKind.IFACE))));
                             break;
                         case TYPE_CONSTANT:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
+                            ifaceTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeConstantsImpl(NameKind.exact(iface), NameKind.empty(),
                                     EnumSet.of(PhpElementKind.IFACE))));
                             break;
                     }
                 }
+                if (ifaceTypes.isEmpty()) {
+                    insertEmptyElement(ifaceTypes, NameKind.exact(iface));
+                }
+                directTypes.addAll(ifaceTypes);
             }
         }
         if (typeKinds.contains(PhpElementKind.TRAIT) && (typeElement instanceof TraitedElement)) {
             TraitedElement traitedElement = (TraitedElement) typeElement;
             Collection<QualifiedName> usedTraits = traitedElement.getUsedTraits();
             for (QualifiedName trait : usedTraits) {
+                final Set<TypeMemberElement> traitTypes = new LinkedHashSet<TypeMemberElement>();
                 if (memberKinds.size() != 1) {
-                    directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(trait), NameKind.empty())));
+                    traitTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getTypeMembers(NameKind.exact(trait), NameKind.empty())));
                 } else {
                     switch(memberKinds.iterator().next()) {
                         case METHOD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(trait), NameKind.empty(),
+                            traitTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getMethodsImpl(NameKind.exact(trait), NameKind.empty(),
                                     EnumSet.of(PhpElementKind.TRAIT))));
                             break;
                         case FIELD:
-                            directTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(trait), NameKind.empty())));
+                            traitTypes.addAll(ElementFilter.forFiles(typeElement.getFileObject()).prefer(getFields(NameKind.exact(trait), NameKind.empty())));
                             break;
                     }
                 }
+                if (traitTypes.isEmpty()) {
+                    insertEmptyElement(traitTypes, NameKind.exact(trait));
+                }
+                directTypes.addAll(traitTypes);
             }
         }
         return directTypes;
+    }
+
+    private void insertEmptyElement(final Set<TypeMemberElement> where, final Exact exactTypeName) {
+        TypeElement exactType = ModelUtils.getFirst(getTypes(exactTypeName));
+        if (exactType != null) {
+            where.add(new EmptyElement(exactType));
+        }
     }
 
     @Override
@@ -1185,7 +1207,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         if (recursionPrevention.add(typeElement)) {
             final LinkedHashSet<TypeMemberElement> typeMembers =
                     getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
-            retval.addAll(forComparingNameKinds(retval).reverseFilter(typeMembers));
+            retval.addAll(forEmptyElements().filter(forComparingNameKinds(retval).reverseFilter(typeMembers)));
             for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
                 retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
             }
@@ -1373,6 +1395,20 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
                 return false;
+            }
+        };
+    }
+
+    private static ElementFilter forEmptyElements() {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(final PhpElement element) {
+                boolean result = true;
+                if (PhpElementKind.EMPTY.equals(element.getPhpElementKind())) {
+                    result = false;
+                }
+                return result;
             }
         };
     }

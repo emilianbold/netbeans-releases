@@ -61,7 +61,9 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,6 +74,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String EXECUTABLE_KEY = "executable"; // NOI18N
     public static final String LIBRARIES_KEY = "libraries"; // NOI18N
+    public static final String FILE_SYSTEM = "filesystem"; // NOI18N
     public static final String FIND_MAIN_KEY = "find_main"; // NOI18N
     public static final String EXECUTABLE_PROVIDER_ID = "dwarf-executable"; // NOI18N
 
@@ -105,6 +108,31 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             @Override
             public ProviderProperty.PropertyKind getKind() {
                 return ProviderProperty.PropertyKind.BinaryFile;
+            }
+        });
+        myProperties.put(FILE_SYSTEM, new ProviderProperty(){
+            private FileSystem fs;
+            @Override
+            public String getName() {
+                return ""; // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return ""; // NOI18N
+            }
+            @Override
+            public Object getValue() {
+                return fs;
+            }
+            @Override
+            public void setValue(Object value) {
+                if (value instanceof FileSystem){
+                    fs = (FileSystem)value;
+                }
+            }
+            @Override
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.Object;
             }
         });
         myProperties.put(LIBRARIES_KEY, new ProviderProperty(){
@@ -154,7 +182,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             }
             @Override
             public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.BinaryFiles;
+                return ProviderProperty.PropertyKind.Boolean;
             }
         });
         myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
@@ -242,16 +270,24 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         }
         boolean findMain = (Boolean)getProperty(FIND_MAIN_KEY).getValue();
         Set<String> dlls = new HashSet<String>();
-        ApplicableImpl applicable = sizeComilationUnit(set, dlls, findMain);
-        if (applicable.isApplicable()) {
-            return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 70, applicable.isSunStudio(),
-                    applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());
-        }
-        if (applicable.getErrors().size() > 0) {
-            return ApplicableImpl.getNotApplicable(applicable.getErrors());
+        FileSystem fs = (FileSystem) getProperty(FILE_SYSTEM).getValue();
+        if (fs == null) {
+            ApplicableImpl applicable = sizeComilationUnit(set, dlls, findMain);
+            if (applicable.isApplicable()) {
+                return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 70, applicable.isSunStudio(),
+                        applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());
+            }
+            if (applicable.getErrors().size() > 0) {
+                return ApplicableImpl.getNotApplicable(applicable.getErrors());
+            }
         } else {
-            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "CannotAnalyzeExecutable",set)));
+            RemoteJavaExecution processor = new RemoteJavaExecution(fs);
+            ElfReader.SharedLibraries libs = processor.getDlls(set);
+            if (libs != null) {
+                return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(processor.getCompileLines(set)), null);
+            }
         }
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "CannotAnalyzeExecutable",set)));
     }
     
     @Override

@@ -150,13 +150,30 @@ public class CppTTIFactory implements TypedTextInterceptor.Factory {
                                 if (ts != null) {
                                     // this is begin of block comment
                                     if (ts.token().id() == CppTokenId.BLOCK_COMMENT) {
+                                        int offsetToken = ts.offset();
+                                        CharSequence text = ts.token().text();
                                         blockCommentStart = true;
                                         // check if it's begin of line
                                         while (ts.movePrevious()) {
                                             TokenId id = ts.token().id();
                                             if (id != CppTokenId.WHITESPACE) {
-                                                blockCommentStart = (id == CppTokenId.NEW_LINE) || (id == CppTokenId.ESCAPED_LINE);
+                                                blockCommentStart = (id == CppTokenId.NEW_LINE) ||
+                                                                    (id == CppTokenId.PREPROCESSOR_DIRECTIVE) ||
+                                                                    (id == CppTokenId.ESCAPED_LINE);
                                                 break;
+                                            }
+                                        }
+                                        if (blockCommentStart) {
+                                            int delta = offset - offsetToken;
+                                            String[] split = text.toString().split("\n"); // NOI18N
+                                            if (split.length > 0) {
+                                                String s = split[0];
+                                                if (!s.trim().equals("/*")) { // NOI18N
+                                                    blockCommentStart = false;
+                                                }
+                                                if (delta >= s.length()) {
+                                                    blockCommentStart = false;
+                                                }
                                             }
                                         }
                                     }
