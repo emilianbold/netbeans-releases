@@ -673,8 +673,11 @@ class OccurenceBuilder {
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
+            QualifiedName fullyQualifiedName = clzName;
+            if (!fullyQualifiedName.getKind().isFullyQualified()) {
+                fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+            }
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
                 fields.addAll(ElementFilter.forName(fieldName).filter(index.getAlllFields(typeElement)));
             }
         }
@@ -843,8 +846,11 @@ class OccurenceBuilder {
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            clzName = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(clzName))) {
+            QualifiedName fullyQualifiedName = clzName;
+            if (!fullyQualifiedName.getKind().isFullyQualified()) {
+                fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+            }
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
                 constants.addAll(ElementFilter.forName(methodName).filter(index.getAllTypeConstants(typeElement)));
             }
             if (elementInfo.setDeclarations(constants)) {
@@ -867,8 +873,11 @@ class OccurenceBuilder {
             }
         }
         if (clzName != null && clzName.toString().length() > 0) {
-            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualified))) {
+            QualifiedName fullyQualifiedName = clzName;
+            if (!fullyQualifiedName.getKind().isFullyQualified()) {
+                fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+            }
+            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
                 methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
             }
             if (elementInfo.setDeclarations(methods)) {
