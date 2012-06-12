@@ -90,7 +90,7 @@ public class AnalyzerTest extends JavadocTestSupport {
         
         TreePath zimapath = info.getTrees().getPath(leden);
         assertNotNull(zimapath);
-        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, HintSeverity.WARNING, true, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, true, Access.PRIVATE);
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         assertTrue(errs.toString(), errs.isEmpty());
@@ -152,7 +152,7 @@ public class AnalyzerTest extends JavadocTestSupport {
 
         TreePath zimapath = info.getTrees().getPath(leden);
         assertNotNull(zimapath);
-        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, HintSeverity.WARNING, false, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, zimapath, Severity.WARNING, false, Access.PRIVATE);
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         List<String> errorsAsStrings = new ArrayList<String>(errs.size());
