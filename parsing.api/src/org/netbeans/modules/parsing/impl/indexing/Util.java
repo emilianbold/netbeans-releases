@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -145,16 +146,18 @@ public final class Util {
      * about the target.
      * @return
      * @throws MalformedURLException 
+     * @throws IllegalStateException when file ends with '/'
      */
     public static URL resolveUrl(
             @NonNull final URL root,
             @NonNull final String relativePath,
-            @NullAllowed Boolean isDirectory) throws MalformedURLException {
+            @NullAllowed Boolean isDirectory) throws MalformedURLException, IllegalStateException {
         try {
             if ("file".equals(root.getProtocol())) { //NOI18N
-                if (isDirectory == Boolean.FALSE && relativePath.charAt(relativePath.length()-1) == File.separatorChar) {
-                    //issue #213032: AE Happenes when I try to delete a file named "\" (without quotes)
-                    isDirectory = null;
+                if (isDirectory == Boolean.FALSE &&
+                    (relativePath.isEmpty() || relativePath.charAt(relativePath.length()-1) == '/')) {  //NOI18N
+                    throw new IllegalStateException(
+                        MessageFormat.format("relativePath: {0}", relativePath));   //NOI18N
                 }
                 final Boolean isDirectoryFin = isDirectory;
                 // Performance optimization for File.toURI() which calls this method
