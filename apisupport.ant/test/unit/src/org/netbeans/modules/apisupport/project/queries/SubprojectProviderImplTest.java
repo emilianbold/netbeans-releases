@@ -59,6 +59,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Test subprojects.
@@ -147,7 +148,7 @@ public class SubprojectProviderImplTest extends TestBase {
             if (!f.isAbsolute()) {
                 f = file(sp);
             }
-            expected.add(f.toURI().toString());
+            expected.add(Utilities.toURI(f).toString());
         }
         SortedSet<String> actual = new TreeSet<String>();
         for (Project sp : spp.getSubprojects()) {

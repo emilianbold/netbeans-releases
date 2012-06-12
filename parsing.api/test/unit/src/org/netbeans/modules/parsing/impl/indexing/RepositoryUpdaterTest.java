@@ -543,7 +543,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
-        File file = new File (embeddedFiles[0].toURI());
+        File file = org.openide.util.Utilities.toFile(embeddedFiles[0].toURI());
         file.setLastModified(System.currentTimeMillis());
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
         assertTrue (handler.await());
@@ -561,9 +561,9 @@ public class RepositoryUpdaterTest extends NbTestCase {
         handler.reset();
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
         eindexerFactory.indexer.setExpectedFile(new URL[0],new URL[0], new URL[0]);
-        file = new File (embeddedFiles[0].toURI());
+        file = org.openide.util.Utilities.toFile(embeddedFiles[0].toURI());
         file.setLastModified(System.currentTimeMillis());
-        file = new File (embeddedFiles[1].toURI());
+        file = org.openide.util.Utilities.toFile(embeddedFiles[1].toURI());
         file.delete();
         srcRootWithFiles1.getFileSystem().refresh(true);
         
@@ -631,7 +631,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final File container = f.getParentFile();
         File newFile = new File (container,"c.emb");
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{org.openide.util.Utilities.toURI(newFile).toURL()}, new URL[0], new URL[0]);
         assertNotNull(FileUtil.createData(newFile));
         assertTrue(indexerFactory.indexer.awaitIndex(TIME));
         assertTrue(eindexerFactory.indexer.awaitIndex());
@@ -644,7 +644,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         newFile = new File (newFolder,"d.emb");
         File newFile2 = new File (newFolder,"e.emb");
         indexerFactory.indexer.setExpectedFile(new URL[0], new URL[0], new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[]{newFile.toURI().toURL(), newFile2.toURI().toURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{org.openide.util.Utilities.toURI(newFile).toURL(), org.openide.util.Utilities.toURI(newFile2).toURL()}, new URL[0], new URL[0]);
         newFolder.mkdirs();
         touchFile (newFile);
         touchFile (newFile2);
@@ -978,14 +978,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         File root = FileUtil.toFile(srcRootWithFiles1);
         File fdf = new File (root, "direct.emb");   //NOI18N
-        eindexerFactory.indexer.setExpectedFile(new URL[]{fdf.toURI().toURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{org.openide.util.Utilities.toURI(fdf).toURL()}, new URL[0], new URL[0]);
         FileObject df = FileUtil.createData(fdf);
         assertNotNull(df);
         assertEquals(EMIME, df.getMIMEType());
         eindexerFactory.indexer.awaitIndex();
 
         File newfdf = new File (root, "new_direct.emb");   //NOI18N
-        eindexerFactory.indexer.setExpectedFile(new URL[]{newfdf.toURI().toURL()}, new URL[]{fdf.toURI().toURL()}, new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{org.openide.util.Utilities.toURI(newfdf).toURL()}, new URL[]{org.openide.util.Utilities.toURI(fdf).toURL()}, new URL[0]);
         FileLock lock = df.lock();
         try {
             df.rename(lock, "new_direct", "emb");
@@ -1282,8 +1282,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         final File a = new File(srcRoot1File,"folder/a.foo");
         final File b = new File(srcRoot1File,"folder/b.emb");
-        indexerFactory.indexer.setExpectedFile(new URL[]{a.toURI().toURL()}, new URL[0], new URL[0]);
-        eindexerFactory.indexer.setExpectedFile(new URL[]{b.toURI().toURL()}, new URL[0], new URL[0]);
+        indexerFactory.indexer.setExpectedFile(new URL[]{org.openide.util.Utilities.toURI(a).toURL()}, new URL[0], new URL[0]);
+        eindexerFactory.indexer.setExpectedFile(new URL[]{org.openide.util.Utilities.toURI(b).toURL()}, new URL[0], new URL[0]);
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
@@ -2179,11 +2179,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Unsee root - index should be donwloaded and no indexer should be called
         final URL rootURL = FileUtil.urlForArchiveOrDir(root);
         final ClassPath cp1 = ClassPathSupport.createClassPath(rootURL);
-        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexDownloaderImpl.expect(rootURL, org.openide.util.Utilities.toURI(index).toURL());
         indexerFactory.indexer.setExpectedFile(
                 new URL[]{
-                    a.toURI().toURL(),
-                    b.toURI().toURL()},
+                    org.openide.util.Utilities.toURI(a).toURL(),
+                    org.openide.util.Utilities.toURI(b).toURL()},
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
@@ -2196,11 +2196,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         touchFile(a);
 
         //Seen root - index should NOT be donwloaded and indexer should be called on modified file
-        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexDownloaderImpl.expect(rootURL, org.openide.util.Utilities.toURI(index).toURL());
         indexerFactory.indexer.setExpectedFile(
                 new URL[]{
-                    a.toURI().toURL(),
-                    b.toURI().toURL(),  //Should be removed if timestamps maps
+                    org.openide.util.Utilities.toURI(a).toURL(),
+                    org.openide.util.Utilities.toURI(b).toURL(),  //Should be removed if timestamps maps
                 },
                 new URL[0],
                 new URL[0]);
@@ -2212,13 +2212,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Simulate the index download error - indexer should be started
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
         RepositoryUpdater.getDefault().waitUntilFinished(TIME);
-        FileObject fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        FileObject fo = CacheFolder.getDataFolder(org.openide.util.Utilities.toURI(root).toURL());
         fo.delete();
-        IndexDownloaderImpl.expect(rootURL, new File(workDir,"non_existent_index.zip").toURI().toURL());
+        IndexDownloaderImpl.expect(rootURL, org.openide.util.Utilities.toURI(new File(workDir,"non_existent_index.zip")).toURL());
         indexerFactory.indexer.setExpectedFile(
                 new URL[]{
-                    a.toURI().toURL(),
-                    b.toURI().toURL()},
+                    org.openide.util.Utilities.toURI(a).toURL(),
+                    org.openide.util.Utilities.toURI(b).toURL()},
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
@@ -2229,14 +2229,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Test DownloadedIndexPatcher - votes false -> IndexDownloader should be called and then Indexers should be called
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
         RepositoryUpdater.getDefault().waitUntilFinished(TIME);
-        fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo = CacheFolder.getDataFolder(org.openide.util.Utilities.toURI(root).toURL());
         fo.delete();
-        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexDownloaderImpl.expect(rootURL, org.openide.util.Utilities.toURI(index).toURL());
         IndexPatcherImpl.expect(rootURL, false);
         indexerFactory.indexer.setExpectedFile(
                 new URL[]{
-                    a.toURI().toURL(),
-                    b.toURI().toURL()},
+                    org.openide.util.Utilities.toURI(a).toURL(),
+                    org.openide.util.Utilities.toURI(b).toURL()},
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
@@ -2248,14 +2248,14 @@ public class RepositoryUpdaterTest extends NbTestCase {
         //Test DownloadedIndexPatcher - votes true -> IndexDownloader should be called and NO Indexers should be called
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp1});
         RepositoryUpdater.getDefault().waitUntilFinished(TIME);
-        fo = CacheFolder.getDataFolder(root.toURI().toURL());
+        fo = CacheFolder.getDataFolder(org.openide.util.Utilities.toURI(root).toURL());
         fo.delete();
-        IndexDownloaderImpl.expect(rootURL, index.toURI().toURL());
+        IndexDownloaderImpl.expect(rootURL, org.openide.util.Utilities.toURI(index).toURL());
         IndexPatcherImpl.expect(rootURL, true);
         indexerFactory.indexer.setExpectedFile(
                 new URL[]{
-                    a.toURI().toURL(),
-                    b.toURI().toURL()},
+                    org.openide.util.Utilities.toURI(a).toURL(),
+                    org.openide.util.Utilities.toURI(b).toURL()},
                 new URL[0],
                 new URL[0]);
         globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
@@ -2306,8 +2306,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File af = FileUtil.toFile(a);
         File anf = new File (af.getParentFile(),"an.foo");  //NOI18N
         indexerFactory.indexer.setExpectedFile(
-            new URL[]{anf.toURI().toURL()},
-            new URL[]{af.toURI().toURL()},
+            new URL[]{org.openide.util.Utilities.toURI(anf).toURL()},
+            new URL[]{org.openide.util.Utilities.toURI(af).toURL()},
             new URL[0]);
         FileLock l = a.lock();
         try {
@@ -2323,8 +2323,8 @@ public class RepositoryUpdaterTest extends NbTestCase {
         File bf = FileUtil.toFile(b);
         File bnf = new File (bf.getParentFile(),"bn.foo");  //NOI18N
         indexerFactory.indexer.setExpectedFile(
-            new URL[]{bnf.toURI().toURL()},
-            new URL[]{bf.toURI().toURL()},
+            new URL[]{org.openide.util.Utilities.toURI(bnf).toURL()},
+            new URL[]{org.openide.util.Utilities.toURI(bf).toURL()},
             new URL[0]);
         l = b.lock();
         try {

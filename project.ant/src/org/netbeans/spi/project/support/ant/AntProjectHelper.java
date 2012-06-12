@@ -92,6 +92,7 @@ import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -307,7 +308,7 @@ public final class AntProjectHelper {
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            Document doc = XMLUtil.parse(new InputSource(Utilities.toURI(f).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
             ProjectXMLCatalogReader.validate(doc.getDocumentElement());
             return doc;
         } catch (IOException e) {
@@ -1205,7 +1206,7 @@ public final class AntProjectHelper {
         final SharabilityQueryImplementation2 sq2 = createSharabilityQuery2(eval, sourceRoots, buildDirectories);
         return new SharabilityQueryImplementation() {
             @Override public int getSharability(File file) {
-                return sq2.getSharability(file.toURI()).ordinal();
+                return sq2.getSharability(Utilities.toURI(file)).ordinal();
             }
         };
     }

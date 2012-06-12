@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
         <folder name="Libraries">
             <file name="app_framework.xml" url="app_framework.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.swingapp.resources.Bundle#swing-app-framework"/>
+                <attr name="weight" intvalue="100"/> <!-- override variant from swingapplib -->
             </file>
         </folder>
     </folder>

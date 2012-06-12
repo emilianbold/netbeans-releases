@@ -45,6 +45,7 @@ package org.netbeans.api.java.source.gen;
 
 import java.io.File;
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
@@ -1189,6 +1190,96 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 nueClazz = make.addClassMember(nueClazz, block.getStatements().get(2));
 
                 workingCopy.rewrite(clazz, nueClazz);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFieldGroupComments213529a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    int i,j,k;\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    /* i */\n" +
+            "    int i,\n" +
+            "    /* j */\n" +
+            "    j,\n" +
+            "    /* k */\n" +
+            "    k;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                for (Tree m : clazz.getMembers()) {
+                    if (m.getKind() != Kind.VARIABLE) continue;
+                    VariableTree vt = (VariableTree) m;
+                    Tree nue = make.setLabel(m, vt.getName());
+                    make.addComment(nue, Comment.create(vt.getName().toString()), true);
+                    workingCopy.rewrite(m, nue);
+                }
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFieldGroupComments213529b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    int i = 1,\n" +
+            "        j = 2,\n" +
+            "        k = 3;\n" +
+            "}\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    /* i */\n" +
+            "    int i = 1,\n" +
+            "        /* j */\n" +
+            "        j = 2,\n" +
+            "        /* k */\n" +
+            "        k = 3;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                for (Tree m : clazz.getMembers()) {
+                    if (m.getKind() != Kind.VARIABLE) continue;
+                    VariableTree vt = (VariableTree) m;
+                    Tree nue = make.setLabel(m, vt.getName());
+                    make.addComment(nue, Comment.create(vt.getName().toString()), true);
+                    workingCopy.rewrite(m, nue);
+                }
             }
         };
         testSource.runModificationTask(task).commit();

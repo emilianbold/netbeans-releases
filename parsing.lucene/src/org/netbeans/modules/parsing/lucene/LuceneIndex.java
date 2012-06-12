@@ -974,7 +974,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         private synchronized void hit() {
             if (!cachePolicy.hasMemCache()) {
                 try {
-                    final URL url = folder.toURI().toURL();
+                    final URL url = Utilities.toURI(folder).toURL();
                     IndexCacheFactory.getDefault().getCache().put(url, this);
                 } catch (MalformedURLException e) {
                     Exceptions.printStackTrace(e);

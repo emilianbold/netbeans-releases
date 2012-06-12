@@ -64,6 +64,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Default implementation of {@link SourceForBinaryQueryImplementation}.
@@ -134,7 +135,7 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
             String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {
                 File f = helper.resolveFile(outDir);
-                URL url = f.toURI().toURL();
+                URL url = Utilities.toURI(f).toURL();
                 if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) { // NOI18N
                     // non-existing
                     assert !url.toExternalForm().endsWith("/") : f; // NOI18N

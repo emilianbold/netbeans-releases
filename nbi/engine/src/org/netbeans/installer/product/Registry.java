@@ -643,10 +643,14 @@ public class Registry implements PropertyContainer {
                         requirement.getVersionUpper() +
                         (requirement.getVersionResolved() != null ?
                             " [" + requirement.getVersionResolved() + "]" : "");
-                
-                throw new InitializationException(
+
+                // don't throw exception here, just ask user whether continue or not
+                InitializationException e = new InitializationException(
                         ResourceUtils.getString(Registry.class,
                         ERROR_REQUIREMENT_KEY, sourceId, requirementId));
+
+                ErrorManager.notifyError(StringUtils.format(
+                        getProperty(REGISTRY_INITIALIZATION_FAILED_PROPERTY)), e);
             }
             
             // iterate over the list of satisfying products, and check whether they
@@ -1920,5 +1924,6 @@ public class Registry implements PropertyContainer {
             "R.error.parser.not.support.schemas";//NOI18N
     private static final String ERROR_UNKNOWN_DEPENDENCY_KEY =
             "R.error.unknown.dependency";//NOI18N
-    
+    private static final String REGISTRY_INITIALIZATION_FAILED_PROPERTY =             
+            "registry.initialization.failed"; // NOI18N
 }

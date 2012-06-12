@@ -52,6 +52,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -76,7 +77,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.sharable");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.SHARABLE, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.SHARABLE, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "sharable");
@@ -87,7 +88,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.sharable2");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.SHARABLE, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.SHARABLE, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "sharable2");
@@ -98,7 +99,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.not_sharable");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.NOT_SHARABLE, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.NOT_SHARABLE, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "not_sharable");
@@ -109,7 +110,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.not_sharable2");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.NOT_SHARABLE, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.NOT_SHARABLE, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "not_sharable2");
@@ -120,7 +121,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.mixed");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.MIXED, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.MIXED, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "mixed");
@@ -131,7 +132,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.mixed2");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.MIXED, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.MIXED, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "mixed2");
@@ -142,7 +143,7 @@ public class SharabilityQueryTest extends NbTestCase {
         File file = new File(home, "aFile.txt");
         int sharability = SharabilityQuery.getSharability(file);
         assertEquals(SharabilityQuery.UNKNOWN, sharability);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         Sharability sharability2 = SharabilityQuery.getSharability(uri);
         assertEquals(SharabilityQuery.Sharability.UNKNOWN, sharability2);
         FileObject fo = FileUtil.toFileObject(getWorkDir()).createData("aFile", "txt");
@@ -158,7 +159,7 @@ public class SharabilityQueryTest extends NbTestCase {
             exception = e;
         }
         assertNotNull(exception);
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         exception = null;
         try {
             SharabilityQuery.getSharability(uri);

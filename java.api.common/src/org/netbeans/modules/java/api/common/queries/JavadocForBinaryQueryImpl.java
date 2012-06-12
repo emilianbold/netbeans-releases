@@ -56,6 +56,7 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -106,7 +107,7 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
                 if (javadocDir != null) {
                     File f = helper.resolveFile(javadocDir);
                     try {
-                        URL url = f.toURI().toURL();
+                        URL url = Utilities.toURI(f).toURL();
                         if (!f.exists()) {
                             assert !url.toExternalForm().endsWith("/") : f; // NOI18N
                             url = new URL(url.toExternalForm() + "/"); // NOI18N
@@ -165,7 +166,7 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
             String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {
                 File f = helper.resolveFile(outDir);
-                URL url = f.toURI().toURL();
+                URL url = Utilities.toURI(f).toURL();
                 if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) { // NOI18N
                     assert !url.toExternalForm().endsWith("/") : f; // NOI18N
                     url = new URL(url.toExternalForm() + "/"); // NOI18N

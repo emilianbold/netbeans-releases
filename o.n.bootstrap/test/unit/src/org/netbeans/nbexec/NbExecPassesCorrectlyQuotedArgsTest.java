@@ -93,13 +93,13 @@ public class NbExecPassesCorrectlyQuotedArgsTest extends NbTestCase {
     
     private void run(File workDir, String... args) throws Exception {
         URL u = Lookup.class.getProtectionDomain().getCodeSource().getLocation();
-        File f = new File(u.toURI());
+        File f = Utilities.toFile(u.toURI());
         assertTrue("file found: " + f, f.exists());
         File nbexec = Utilities.isWindows() ? new File(f.getParent(), "nbexec.exe") : new File(f.getParent(), "nbexec");
         assertTrue("nbexec found: " + nbexec, nbexec.exists());
 
         URL tu = MainCallback.class.getProtectionDomain().getCodeSource().getLocation();
-        File testf = new File(tu.toURI());
+        File testf = Utilities.toFile(tu.toURI());
         assertTrue("file found: " + testf, testf.exists());
         
         LinkedList<String> allArgs = new LinkedList<String>(Arrays.asList(args));

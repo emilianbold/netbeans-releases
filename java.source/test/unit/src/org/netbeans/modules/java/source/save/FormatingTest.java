@@ -76,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 /**
  * Test different formating options
@@ -4264,9 +4265,9 @@ public class FormatingTest extends NbTestCase {
         URL url = null;
         try {
             if (isArchiveFile(f)) {
-                url = FileUtil.getArchiveRoot(f.toURI().toURL());
+                url = FileUtil.getArchiveRoot(Utilities.toURI(f).toURL());
             } else {
-                url = f.toURI().toURL();
+                url = Utilities.toURI(f).toURL();
                 String surl = url.toExternalForm();
                 if (!surl.endsWith("/")) {
                     url = new URL(surl + "/");

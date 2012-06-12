@@ -82,6 +82,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -118,7 +119,7 @@ public class FileEncodingQueryTest extends NbTestCase {
     
     public static Test suite () throws Exception {
         URL url = FileEncodingQueryTest.class.getResource("data");        
-        File dataFolder = new File(URI.create(url.toExternalForm()));
+        File dataFolder = Utilities.toFile(URI.create(url.toExternalForm()));
         assertTrue(dataFolder.isDirectory());
         File dataFile = new File (dataFolder, "data.properties");
         assertTrue (dataFile.exists());
@@ -204,7 +205,7 @@ public class FileEncodingQueryTest extends NbTestCase {
     
     public void testLongUnicode () throws IOException {
         URL url = FileEncodingQueryTest.class.getResource("data");        
-        File dataFolder = new File(URI.create(url.toExternalForm()));
+        File dataFolder = Utilities.toFile(URI.create(url.toExternalForm()));
         assertTrue(dataFolder.isDirectory());
         File dataFile = new File (dataFolder, "longUnicode.txt");
         assertTrue (dataFile.exists());
@@ -220,7 +221,7 @@ public class FileEncodingQueryTest extends NbTestCase {
     
     public void testLongUnicode2 () throws IOException {
         URL url = FileEncodingQueryTest.class.getResource("data");        
-        File dataFolder = new File(URI.create(url.toExternalForm()));
+        File dataFolder = Utilities.toFile(URI.create(url.toExternalForm()));
         assertTrue(dataFolder.isDirectory());
         File dataFile = new File (dataFolder, "longUnicode2.txt");
         assertTrue (dataFile.exists());

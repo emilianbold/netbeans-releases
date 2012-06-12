@@ -133,6 +133,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private DefaultTreeModel errorTreeModel;
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final ClassPathBasedHintWrapper cpBased;
+    private final QueryStatus queryStatus;
     //AWT only:
     private HintMetadata toSelect = null;
     
@@ -143,6 +144,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     @Messages("LBL_Loading=Loading...")
     HintsPanel(@NullAllowed final OptionsFilter filter) {
         this.cpBased = null;
+        this.queryStatus = QueryStatus.SHOW_QUERIES;
         WORKER.post(new Runnable() {
 
             @Override
@@ -153,7 +155,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, true, false, false, true, false);
+                        HintsPanel.this.init(filter, true, false, false, true);
                         buttonsPanel.setVisible(false);
                         searchPanel.setVisible(false);
                         configurationsPanel.setVisible(false);
@@ -168,12 +170,14 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
     public HintsPanel(Configuration preselected, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, true, true, true, true);
+        this.queryStatus = QueryStatus.ONLY_ENABLED;
+        init(null, false, true, true, true);
         configCombo.setSelectedItem(preselected);
     }
     public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, false, cc == null, false, cc == null);
+        this.queryStatus = cc == null ? QueryStatus.NEVER : QueryStatus.SHOW_QUERIES;
+        init(null, false, false, cc == null, false);
         select(preselected);
         configurationsPanel.setVisible(false);
         
@@ -192,7 +196,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
     public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
-        init(null, false, false, false, true, false);
+        this.queryStatus = QueryStatus.SHOW_QUERIES;
+        init(null, false, false, false, true);
         setOverlayPreferences(configurations);
         configurationsPanel.setVisible(false);
     }
@@ -206,7 +211,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     }
     
 
-    private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes, boolean noQueries) {
+    private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes) {
         initComponents();
         scriptScrollPane.setVisible(false);
         org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter f = null;
@@ -280,18 +285,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
         
         Collection<? extends HintMetadata> hints = inOptionsDialog?filterCustom(RulesManager.getInstance().readHints(null, null, null).keySet()):Utilities.getBatchSupportedHints(cpBased).keySet();
 
-        if (noQueries) {
-            hints = new ArrayList<HintMetadata>(hints);
-            
-            for (Iterator<? extends HintMetadata> it = hints.iterator(); it.hasNext();) {
-                HintMetadata hm = it.next();
-                
-                if (hm.options.contains(Options.QUERY)) {
-                    it.remove();
-                }
-            }
-        }
-        
         errorTreeModel = constructTM(hints, inOptionsDialog);
 
         if (filter != null) {
@@ -687,6 +680,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         if (configCombo.getSelectedItem() instanceof ActionListener) {
             ((ActionListener) configCombo.getSelectedItem()).actionPerformed(evt);
+        }
+        if (queryStatus == QueryStatus.ONLY_ENABLED) {
+            errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
+            errorTree.setModel(errorTreeModel);
+            if (logic != null) {
+                logic.errorTreeModel = errorTreeModel;
+            }
         }
     }//GEN-LAST:event_configComboActionPerformed
 
@@ -1097,6 +1097,15 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         for (HintMetadata m : metadata) {
             if (m.options.contains(Options.NON_GUI)) continue;
+            if (   m.options.contains(Options.QUERY)
+                && !HintCategory.CUSTOM_CATEGORY.equals(m.category)) {
+                if (queryStatus == QueryStatus.NEVER) {
+                    continue;
+                }
+                if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !HintsSettings.isEnabled(m, logic.getCurrentPrefernces(m.id))) {
+                    continue;
+                }
+            }
 
             HintCategory cat = cat2CatDesc.get(m.category);
 
@@ -1327,5 +1336,11 @@ public final class HintsPanel extends javax.swing.JPanel   {
             }
             return false;
         }
+    }
+    
+    private enum QueryStatus {
+        SHOW_QUERIES,
+        ONLY_ENABLED,
+        NEVER;
     }
 }

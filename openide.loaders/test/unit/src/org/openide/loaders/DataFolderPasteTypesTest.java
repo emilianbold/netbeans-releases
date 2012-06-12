@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
 public class DataFolderPasteTypesTest extends NbTestCase {
@@ -119,7 +120,7 @@ public class DataFolderPasteTypesTest extends NbTestCase {
         DataFlavor flavor = new DataFlavor( "unsupported/flavor;class=java.lang.Object" );
         FileObject testFO = FileUtil.createData( testFileSystem.getRoot(), "testFile.txt" );
         File testFile = FileUtil.toFile( testFO );
-        String uriList = testFile.toURI() + "\r\n";
+        String uriList = Utilities.toURI(testFile) + "\r\n";
         Transferable t = new MockTransferable( new DataFlavor[] {new DataFlavor("text/uri-list;class=java.lang.String")}, uriList );
 
         DataFolder.FolderNode node = (DataFolder.FolderNode)folderNode;

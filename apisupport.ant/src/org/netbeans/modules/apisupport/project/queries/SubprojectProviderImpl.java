@@ -66,6 +66,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
@@ -163,7 +164,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
                     continue;
                 }
                 File jar = project.getHelper().resolveFile(piece);
-                Project owner = FileOwnerQuery.getOwner(jar.toURI());
+                Project owner = FileOwnerQuery.getOwner(Utilities.toURI(jar));
                 if (owner != null) {
                     s.add(owner);
                 }

@@ -73,6 +73,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Utilities to aid unit testing java.source module.
@@ -161,7 +162,7 @@ public final class TestUtilities {
             if (!f.exists()) {
                 continue;
             }
-            URL url = f.toURI().toURL();
+            URL url = Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
             }
