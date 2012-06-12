@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,7 +85,7 @@ class SourceClassPathImpl extends AbstractProjectClassPathImpl {
             }
         }
         URI webSrc = getMavenProject().getWebAppDirectory();
-        if (new File(webSrc).exists()) {
+        if (Utilities.toFile(webSrc).exists()) {
             col.add(webSrc);
         }
         col.addAll(resources);

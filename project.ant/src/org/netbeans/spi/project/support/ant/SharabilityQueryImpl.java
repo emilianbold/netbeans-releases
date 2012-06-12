@@ -53,6 +53,7 @@ import java.util.List;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -109,7 +110,7 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation2, Pro
 
     @Override public SharabilityQuery.Sharability getSharability(URI uri) {
         // XXX might be more efficient to precompute URIs for includePaths and excludePaths
-        String path = new File(uri).getAbsolutePath();
+        String path = Utilities.toFile(uri).getAbsolutePath();
         if (contains(path, excludePaths, false)) {
             return SharabilityQuery.Sharability.NOT_SHARABLE;
         }

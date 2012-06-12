@@ -52,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -92,7 +93,7 @@ public final class AptCacheForSourceQuery {
                 return sourceRoot;
             }
             final File aptFolder = JavaIndex.getAptFolder(sourceRoot, true);
-            final URL result = aptFolder.toURI().toURL();
+            final URL result = Utilities.toURI(aptFolder).toURL();
             emittedAptFolders.put(result,sourceRoot);
             return result;
         } catch (MalformedURLException e) {
@@ -113,7 +114,7 @@ public final class AptCacheForSourceQuery {
         if (sourceRoot != null) {
             try {
                 final File result = JavaIndex.getClassFolder(sourceRoot);
-                return result.toURI().toURL();
+                return Utilities.toURI(result).toURL();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -107,7 +108,7 @@ public final class JavaIndex {
     }
 
     public static File getClassFolder(File root) throws IOException {
-        return getClassFolder(root.toURI().toURL()); //XXX
+        return getClassFolder(Utilities.toURI(root).toURL()); //XXX
     }
 
     public static File getClassFolder(URL url) throws IOException {

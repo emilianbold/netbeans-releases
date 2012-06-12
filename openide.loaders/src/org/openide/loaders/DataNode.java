@@ -658,7 +658,7 @@ public class DataNode extends AbstractNode {
                 }
             });
             //linux
-            final String uriList = file.toURI().toString() + "\r\n";
+            final String uriList = Utilities.toURI(file).toString() + "\r\n";
             t.put( new ExTransferable.Single( createUriListFlavor() ) {
                 public Object getData() {
                     return uriList;

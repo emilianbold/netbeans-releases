@@ -54,6 +54,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -158,7 +159,7 @@ public final class Util {
                 final Boolean isDirectoryFin = isDirectory;
                 // Performance optimization for File.toURI() which calls this method
                 // and the original implementation calls into native method
-                return new File(new File(root.toURI()), relativePath) {
+                return Utilities.toURI(new File(Utilities.toFile(root.toURI()), relativePath) {
                     
                     @Override
                     public File getAbsoluteFile() {
@@ -175,7 +176,7 @@ public final class Util {
                             super.isDirectory() :
                             isDirectoryFin;
                     }
-                }.toURI().toURL();
+                }).toURL();
             } else {
                 return new URL(root, relativePath);
             }

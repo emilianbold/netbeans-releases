@@ -603,27 +603,27 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     @Override
-    public void setParent(View parent) {
+    public void setParent(final View parent) {
         if (parent != null) {
             Container container = parent.getContainer();
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
-            JTextComponent tc = (JTextComponent) container;
+            final JTextComponent tc = (JTextComponent) container;
             pMutex = (PriorityMutex) tc.getClientProperty(MUTEX_CLIENT_PROPERTY);
             if (pMutex == null) {
                 pMutex = new PriorityMutex();
                 tc.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
-            if (lock()) {
-                try {
-                    super.setParent(parent);
+
+            runReadLockTransaction(new Runnable() {
+                @Override
+                public void run() {
+                    DocumentView.super.setParent(parent);
                     textComponent = tc;
                     op.parentViewSet();
                     updateStartEndOffsets();
-                } finally {
-                    unlock();
                 }
-            }
+            });
 
         } else { // Setting null parent
             // Set the textComponent to null under mutex

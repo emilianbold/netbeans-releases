@@ -136,6 +136,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.XMLUtil;
@@ -535,7 +536,7 @@ public final class NbModuleProject implements Project {
                 URL[] roots = platform.getSourceRoots();
                 for (int i = 0; i < roots.length; i++) {
                     if (roots[i].getProtocol().equals("file")) { // NOI18N
-                        File f = new File(URI.create(roots[i].toExternalForm()));
+                        File f = Utilities.toFile(URI.create(roots[i].toExternalForm()));
                         if (ModuleList.isNetBeansOrg(f)) {
                             return f;
                         }

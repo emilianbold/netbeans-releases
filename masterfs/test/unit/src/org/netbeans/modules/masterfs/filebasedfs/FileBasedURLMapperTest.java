@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import java.net.URL;
-import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -93,16 +92,4 @@ public class FileBasedURLMapperTest extends NbTestCase {
         assertEquals("/data/services/web/com_resource/", uri.getPath());
     }
     
-    public void testReverseUNCPath() throws Exception {
-        if (!Utilities.isWindows()) {
-            return;
-        }
-        assertEquals("C:\\some\\random path", uri2File(new URI("file:/C:/some/random%20path/")).getAbsolutePath());
-        assertEquals("C:\\some\\random path", uri2File(new URI("file:///C:/some/random%20path/")).getAbsolutePath());
-        assertEquals("\\\\server\\share\\some\\random path", uri2File(new URI("file://server/share/some/random%20path/")).getAbsolutePath());
-    }    
-
-    private File uri2File(URI urI) throws Exception {
-        return FileBasedURLMapper.url2F(urI.toURL());
-    }
 }

@@ -48,6 +48,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -82,7 +83,7 @@ public class BinaryForSourceImplTest extends TestBase {
         final File classesF = file(projectFolder, classesPath);
         final File srcF = file(projectFolder, srcPath);
         assertEquals("right binary root for " + srcPath,    //NOI18N
-            Collections.singletonList(classesF.toURI().toURL()),
-            Arrays.asList(BinaryForSourceQuery.findBinaryRoots(srcF.toURI().toURL()).getRoots()));
+            Collections.singletonList(Utilities.toURI(classesF).toURL()),
+            Arrays.asList(BinaryForSourceQuery.findBinaryRoots(Utilities.toURI(srcF).toURL()).getRoots()));
     }
 }

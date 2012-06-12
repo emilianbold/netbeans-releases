@@ -73,6 +73,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -166,7 +167,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public @Override Project getOwner(URI uri) {
         LOG.log(Level.FINEST, "getOwner of uri={0}", uri);
         if ("file".equals(uri.getScheme())) { //NOI18N
-            File file = new File(uri);
+            File file = Utilities.toFile(uri);
             return getOwner(file);
         }
         return null;
@@ -314,7 +315,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             try {
                 URI uri = new URI(ownerURI);
                 if ("file".equals(uri.getScheme())) {
-                    File pom = new File(uri.resolve("pom.xml"));
+                    File pom = Utilities.toFile(uri.resolve("pom.xml"));
                     if (pom.isFile()) {
                         ModelReader reader = EmbedderFactory.getProjectEmbedder().lookupComponent(ModelReader.class);
                         Model model = reader.read(pom, Collections.singletonMap(ModelReader.IS_STRICT, false));
