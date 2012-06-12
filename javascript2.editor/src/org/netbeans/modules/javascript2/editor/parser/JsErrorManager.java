@@ -37,13 +37,13 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.runtime.ErrorManager;
 import com.oracle.nashorn.runtime.Source;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.openide.filesystems.FileObject;
@@ -54,32 +54,44 @@ import org.openide.filesystems.FileObject;
  */
 public class JsErrorManager extends ErrorManager {
 
-    ArrayList<ParserError> parserErrors = null;
+    private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
+    
+    private ArrayList<ParserError> parserErrors = null;
+    
     private FileObject fileObject;
     
     public JsErrorManager(FileObject fileObject) {
         this.fileObject = fileObject;
     }
     
+    public Error checkCurlyMissing() {
+        if (parserErrors == null) {
+            return null;
+        }
+        for (ParserError error : parserErrors) {
+            if (error.message != null
+                    && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
+                return convert(error);
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void error(String message, Source source, int line, int column, long token) {
-//        super.error(message, source, line, column, token);
-        System.out.println("Error1 " + message + "[" + line + "," + column + "]");
-        //source.getString(token)
+        LOGGER.log(Level.FINE, "Error {0} [{1}, {2}]", new Object[] {message, line, column});
         addParserError(new ParserError(message, line, column, token));
     }
 
     @Override
     public void error(String message, Source source, long token) {
-//        super.error(message, source, token);
-        System.out.println("Error2 " + message + "(" + token + ")");
+        LOGGER.log(Level.FINE, "Error {0} ({1})", new Object[] {message, token});
         addParserError(new ParserError(message, token));
     }
 
     @Override
     public void error(String message) {
-//        super.error(message);
-        System.out.println("Error3 " + message);
+        LOGGER.log(Level.FINE, "Error {0}", message);
         addParserError(new ParserError(message));
     }
 
@@ -92,20 +104,17 @@ public class JsErrorManager extends ErrorManager {
     
     @Override
     public void warning(String message, Source source, int line, int column, long token) {
-//        super.warning(message, source, line, column, token);
-        System.out.println("Warning1 " + message + "[" + line + "," + column + "]");
+        LOGGER.log(Level.FINE, "Warning {0} [{1}, {2}]",  new Object[] {message, line, column});
     }
 
     @Override
     public void warning(String message, Source source, long token) {
-//        super.warning(message, source, token);
-        System.out.println("Warning2 " + message + "(" + token + ")");
+        LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
     }
 
     @Override
     public void warning(String message) {
-//        super.warning(message);
-        System.out.println("Warning3 " + message);
+        LOGGER.log(Level.FINE, "Warning {0}", message);
     }
     
     public List<Error> getErrors() {
