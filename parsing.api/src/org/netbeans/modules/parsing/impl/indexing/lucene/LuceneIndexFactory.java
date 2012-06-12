@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -79,19 +80,25 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
     @Override
     @NonNull
     public IndexDocument createDocument(@NonNull final Indexable indexable) {
-        assert indexable !=null;
+        Parameters.notNull("indexable", indexable); //NOI18N
         return IndexManager.createDocument(indexable.getRelativePath());
     }
 
     @Override
     @NonNull
     public LayeredDocumentIndex createIndex (@NonNull final Context ctx) throws IOException {
-        return getIndexImpl(ctx.getIndexFolder(), DocumentBasedIndexManager.Mode.CREATE);
+        Parameters.notNull("ctx", ctx); //NOI18N
+        final FileObject indexBaseFolder = ctx.getIndexFolder();
+        if (indexBaseFolder == null) {
+            throw new IOException("No index base folder."); //NOI18N
+        }
+        return getIndexImpl(indexBaseFolder, DocumentBasedIndexManager.Mode.CREATE);
     }
 
     @Override
     @CheckForNull
     public LayeredDocumentIndex getIndex(@NonNull final FileObject indexFolder) throws IOException {
+        Parameters.notNull("indexFolder", indexFolder); //NOI18N
         return getIndexImpl(indexFolder, DocumentBasedIndexManager.Mode.IF_EXIST);
     }
     
