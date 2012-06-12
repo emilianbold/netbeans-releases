@@ -99,7 +99,7 @@ public class JsParser extends Parser {
         return result;
     }
     
-    private JsParserResult parseContext(Context context, Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
+    JsParserResult parseContext(Context context, Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
         boolean sanitized = false;
         if ((sanitizing != Sanitize.NONE) && (sanitizing != Sanitize.NEVER)) {
             boolean ok = sanitizeSource(context, sanitizing, errorManager);
@@ -124,20 +124,20 @@ public class JsParser extends Parser {
         }
         
         // process comment elements
-        Map<Integer, ? extends JsComment> comments;
-        try {
-            long startTime = System.nanoTime();
-            comments = JsDocParser.parse(context.getSnapshot());
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Parsing of comments took: {0} ms source: {1}",
-                        new Object[]{(System.nanoTime() - startTime) / 1000000, context.getName()});
+        Map<Integer, ? extends JsComment> comments = Collections.<Integer, JsComment>emptyMap();
+        if (context.getSnapshot() != null) {
+            try {
+                long startTime = System.nanoTime();
+                comments = JsDocParser.parse(context.getSnapshot());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Parsing of comments took: {0} ms source: {1}",
+                            new Object[]{(System.nanoTime() - startTime) / 1000000, context.getName()});
+                }
+            } catch (Exception ex) {
+                // if anything wrong happen during parsing comments
+                LOGGER.log(Level.WARNING, null, ex);
             }
-        } catch (Exception ex) {
-            // if anything wrong happen during parsing comments
-            LOGGER.log(Level.WARNING, null, ex);
-            comments = Collections.<Integer, JsComment>emptyMap();
         }
-
         return new JsParserResult(context.getSnapshot(), node, comments);
     }
     
@@ -216,7 +216,7 @@ public class JsParser extends Parser {
     /**
      * Parsing context
      */
-    public static class Context {
+    static class Context {
 
         private final String name;
         
@@ -224,12 +224,15 @@ public class JsParser extends Parser {
 
         private String source;
         private String sanitizedSource;
-        
-        private Sanitize sanitization = Sanitize.NONE;
 
         public Context(String name, Snapshot snapshot) {
             this.name = name;
             this.snapshot = snapshot;
+        }
+        
+        public Context(String name, String source) {
+            this(name, (Snapshot) null);
+            this.source = source;
         }
 
         public String getName() {

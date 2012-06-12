@@ -51,7 +51,7 @@ public class JsParserError implements Error {
     private final FileObject file;
     private final int startPosition;
     private final int endPosition;
-    boolean wholeLine;
+    private final boolean wholeLine;
     private final Severity severity;
     private final Object[] parameters;
     
