@@ -381,15 +381,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-        JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
-        if (jsfs == null) {
-            return Collections.emptyList();
-        }
-
         List<CompletionItem> items = new ArrayList<CompletionItem>();
-
-        //complete xmlns attribute value
-        completeXMLNSAttribute(context, items, jsfs);
 
         String ns = ElementUtils.getNamespace(context.getCurrentNode());
         if (ns == null) {
@@ -400,9 +392,16 @@ public class JsfHtmlExtension extends HtmlExtension {
             return items;
         }
         OpenTag openTag = (OpenTag) element;
-
+        
         //first try to complete using special metadata
-        completeTagLibraryMetadata(context, items, ns, openTag, jsfs);
+        completeTagLibraryMetadata(context, items, ns, openTag);
+
+        JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
+        if (jsfs == null) {
+            return items;
+        }
+        //complete xmlns attribute value
+        completeXMLNSAttribute(context, items, jsfs);
 
         //then try to complete according to the attribute type (taken from the library descriptor)
         completeValueAccordingToType(context, items, ns, openTag, jsfs);
@@ -496,8 +495,6 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
-            HtmlParserResult result = context.getResult();
-            Source source = result.getSnapshot().getSource();
             Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
             //add also xhtml ns to the completion
             nss.add(LibraryUtils.XHTML_NS);
@@ -509,7 +506,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         }
     }
 
-    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
+    private void completeTagLibraryMetadata(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag) {
         String attrName = context.getAttributeName();
         String tagName = openTag.unqualifiedName().toString();
         LibraryMetadata lib = FaceletsLibraryMetadata.get(ns);
