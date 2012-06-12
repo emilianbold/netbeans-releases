@@ -125,7 +125,9 @@ public class JsIndex {
             Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
             if (!assignments.isEmpty()) {
                 TypeUsage type = assignments.iterator().next();
-                result.addAll(getProperties(type.getType()));
+                if (!type.getType().equals(fqn)) {
+                    result.addAll(getProperties(type.getType()));
+                }
             }
             for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult, fqn)) {
                 result.add(indexedElement);
