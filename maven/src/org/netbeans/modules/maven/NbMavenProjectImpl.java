@@ -439,6 +439,9 @@ public final class NbMavenProjectImpl implements Project {
         File[] roots = Utilities.toFile(uri).listFiles();
         if (roots != null) {
             for (File root : roots) {
+                if (!VisibilityQuery.getDefault().isVisible(root)) { //#214002
+                   continue;
+                }
                 if (!test && root.getName().startsWith("test-")) {
                     continue;
                 }
@@ -454,6 +457,9 @@ public final class NbMavenProjectImpl implements Project {
             roots = Utilities.toFile(FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources")).listFiles();
             if (roots != null) {
                 for (File root : roots) {
+                    if (!VisibilityQuery.getDefault().isVisible(root)) { //#214002
+                       continue;
+                    }                    
                     if (root.getName().startsWith("test-")) {
                         File[] kids = root.listFiles();
                         if (kids != null && kids.length > 0) {
