@@ -249,7 +249,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
             }
         }
 
-        ui.refresh(new RootStructureItem(items), fileObject);
+        ui.refresh(result, new RootStructureItem(items), fileObject);
     }
 
     public @Override int getPriority() {
