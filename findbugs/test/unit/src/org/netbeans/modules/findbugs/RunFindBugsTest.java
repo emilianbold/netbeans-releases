@@ -42,15 +42,21 @@
 package org.netbeans.modules.findbugs;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -125,6 +131,43 @@ public class RunFindBugsTest extends NbTestCase {
 
         assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null).size());
     }
+    
+    public void testRunFindBugsFromDocument() throws Exception {
+        prepareTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public int test() {\n" +
+                    "        String str = null;\n" +
+                    "        return str.length();\n" +
+                    "    }\n" +
+                    "}\n");
+
+        DataObject d = DataObject.find(testSource);
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        Document doc = ec.openDocument();
+        
+        List<String> errors = new ArrayList<String>();
+
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
+            errors.add(ed.toString());
+        }
+
+        assertEquals(Arrays.asList("4:8-4:28:verifier:Null pointer dereference of str in test.Test.test()",
+                                   "4:8-4:28:verifier:Load of known null value in test.Test.test()"),
+                     errors);
+
+        TestUtilities.copyStringToFile(FileUtil.toFile(testSource), "package test;\n" +
+                                                                    "public class Test {\n" +
+                                                                    "    public int test() {\n" +
+                                                                    "        String str = \"foobar\";\n" +
+                                                                    "        return str.length();\n" +
+                                                                    "    }\n" +
+                                                                    "}\n");
+
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+
+        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null).size());
+        assertNotNull(doc);
+    }
 
     public void testFieldAnnotation() throws Exception {
         prepareTest("package test;\n" +
@@ -171,5 +214,27 @@ public class RunFindBugsTest extends NbTestCase {
 
         assertEquals(Arrays.asList("1:13-1:17:verifier:test.Test is Serializable; consider declaring a serialVersionUID"),
                      errors);
+    }
+    
+    public void testLineMapConstruction() throws IOException {
+        FileObject f = FileUtil.createData(FileUtil.createMemoryFileSystem().getRoot(), "test.txt");
+        write(f, "line1\nline2\r   line3   \r\nline4\n\rline6".getBytes("UTF-8"));
+        int[] lineMap = RunFindBugs.computeLineMap(f, Charset.forName("UTF-8"));
+        
+        assertLineMap(lineMap, 0, 5, 6, 11, 15, 20, 25, 30, 31, 31, 32, 37);
+    }
+    
+    private static void assertLineMap(int[] actual, int... golden) {
+        assertTrue(Arrays.equals(actual, golden));
+    }
+    
+    private static void write(FileObject f, byte[] data) throws IOException {
+        OutputStream out = f.getOutputStream();
+        
+        try {
+            out.write(data);
+        } finally {
+            out.close();
+        }
     }
 }
