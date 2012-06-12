@@ -294,6 +294,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     
     private void initializeMessage() {
         Object newMessage = descriptor.getMessage();
+        boolean isDefaultOptionPane = false;
         // replace only if old and new messages are different
         if ((currentMessage == null) || !currentMessage.equals(newMessage)) {
             uninitializeMessage();
@@ -306,6 +307,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 currentMessage = (Component)newMessage;
             } else {
                 currentMessage = createOptionPane();
+                isDefaultOptionPane = true;
             }
             Dimension prefSize = currentMessage.getPreferredSize();
             final Rectangle screenBounds = Utilities.getUsableScreenBounds();
@@ -382,7 +384,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 // toAdd is now enlargedToAdd
                 toAdd = enlargedToAdd;
             }
-
+            getRootPane().putClientProperty("nb.default.option.pane", isDefaultOptionPane); //NOI18N
             getContentPane ().add (toAdd, BorderLayout.CENTER);
         }
     }
