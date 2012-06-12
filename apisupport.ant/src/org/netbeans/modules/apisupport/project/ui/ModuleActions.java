@@ -583,6 +583,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     static void setRunArgsIde(Project project, PropertyEvaluator eval, String command, Properties p) {
         StringBuilder runArgsIde = new StringBuilder();
         StartupExtender.StartMode mode;
+        boolean isOsgi = command.equals("profile-osgi");
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
             mode = StartupExtender.StartMode.NORMAL;
         } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
@@ -609,7 +610,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
             Lookup context = Lookups.fixed(project, plaf != null ? plaf : JavaPlatformManager.getDefault().getDefaultPlatform());
             for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
                 for (String arg : group.getArguments()) {
-                    runArgsIde.append(isTest ? "" : "-J").append(arg).append(' ');
+                    runArgsIde.append((isTest | isOsgi) ? "" : "-J").append(arg).append(' ');
                 }
             }
         }
