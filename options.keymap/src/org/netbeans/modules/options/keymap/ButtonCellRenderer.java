@@ -45,6 +45,7 @@ package org.netbeans.modules.options.keymap;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
@@ -70,6 +71,8 @@ public class ButtonCellRenderer implements TableCellRenderer {
         JTable table, Object value,
         boolean isSelected, boolean hasFocus, int row, int column
     ) {
+        JLabel c = (JLabel)defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        
         if (value instanceof String) {
             Rectangle cellRect = table.getCellRect(row, column, false);
             String scCell = (String) value;
@@ -89,11 +92,16 @@ public class ButtonCellRenderer implements TableCellRenderer {
                 panel.setBgColor(table.getBackground());
                 panel.setFgCOlor(table.getForeground());
             }
+            if (hasFocus) {
+                panel.setBorder(c.getBorder());
+            } else {
+                panel.setBorder(null);
+            }
 
             return panel;
         }
         else {
-            return defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            return c;
         }
     }
 
