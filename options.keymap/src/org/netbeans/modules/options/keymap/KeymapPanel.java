@@ -46,6 +46,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -64,9 +65,14 @@ import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.RowSorterEvent;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -102,7 +108,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         sorter.setTableHeader(actionsTable.getTableHeader());
         sorter.getTableHeader().setReorderingAllowed(false);
         actionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        actionsTable.setAutoscrolls(true);
+        
         ActionListener al = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -172,6 +179,24 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         });
 
         actionsTable.addMouseListener(new ButtonCellMouseListener(actionsTable));
+        actionsTable.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() != KeyEvent.VK_CONTEXT_MENU &&
+                    e.getKeyCode() != KeyEvent.VK_F2) {
+                    return;
+                }
+		int leadRow = actionsTable.getSelectionModel().getLeadSelectionIndex();
+		int leadColumn = actionsTable.getColumnModel().getSelectionModel().
+		                   getLeadSelectionIndex();
+		if (leadRow != -1 && leadColumn != -1 && !actionsTable.isEditing()) {
+                    showPopupMenu(leadRow, leadColumn, -1, -1);
+                    e.consume();
+		}
+            }
+            
+        });
         TableColumn column = actionsTable.getColumnModel().getColumn(1);
         column.setCellEditor(new ButtonCellEditor(getModel()));
         column.setCellRenderer(new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
@@ -207,28 +232,89 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                 component.dispatchEvent(new KeyEvent(component, e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar()));
             }
         }
+        
+        private String selectedActionId;
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            super.valueChanged(e);
+            if (!e.getValueIsAdjusting()) {
+                int index = getSelectedRow();
+                selectedActionId = getActionId(index);
+            }
+        }
+        
+        
+
+        @Override
+        public void sorterChanged(RowSorterEvent e) {
+            String aid = selectedActionId;
+            int colIndex = getSelectedColumn();
+            super.sorterChanged(e);
+            restoreSelection(aid, colIndex);
+        }
+        
+        private void restoreSelection(String id, int colIndex) {
+            if (id == null) {
+                clearSelection();
+                return;
+            }
+            TableModel tm = getModel();
+            for (int i = 0; i < tm.getRowCount(); i++) {
+                ActionHolder ah = (ActionHolder)tm.getValueAt(i, 0);
+                if (ah != null && id.equals(ah.getAction().getId())) {
+                    changeSelection(i, colIndex, false, false);
+                    break;
+                }
+            }
+        }
+        
+        private String getActionId(int modelIndex) {
+            if (modelIndex >= 0 && modelIndex < getModel().getRowCount()) {
+                ActionHolder h = (ActionHolder)getModel().getValueAt(modelIndex, 0);
+                if (h != null) {
+                    ShortcutAction sa = h.getAction();
+                    return sa.getId();
+                }
+            }
+            return null;
+        }
+        
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            String aid = selectedActionId;
+            // preserve also table column selection:
+            int colIndex = getSelectedColumn();
+            super.tableChanged(e);
+            restoreSelection(aid, colIndex);
+        }
+
     }
 
     //todo: merge with update
     private void narrowByShortcut() {
         if (searchSCField.getText().length() != 0) {
-            String searchText = searchSCField.getText();
-            getModel().getDataVector().removeAllElements();
-            for (String categorySet : getModel().getCategories().keySet()) {
-                for (String category : getModel().getCategories().get(categorySet)) {
-                    for (Object o : getModel().getItems(category)) {
-                        if (o instanceof ShortcutAction) {
-                            ShortcutAction sca = (ShortcutAction) o;
-                            String[] shortcuts = getModel().getShortcuts(sca);
-                            for (int i = 0; i < shortcuts.length; i++) {
-                                String shortcut = shortcuts[i];
-                                if (searched(shortcut, searchText))
-                                    getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
+            final String searchText = searchSCField.getText();
+            getModel().runWithoutEvents(new Runnable() {
+                public void run() {
+                    getModel().getDataVector().removeAllElements();
+                    for (String categorySet : getModel().getCategories().keySet()) {
+                        for (String category : getModel().getCategories().get(categorySet)) {
+                            for (Object o : getModel().getItems(category)) {
+                                if (o instanceof ShortcutAction) {
+                                    ShortcutAction sca = (ShortcutAction) o;
+                                    String[] shortcuts = getModel().getShortcuts(sca);
+                                    for (int i = 0; i < shortcuts.length; i++) {
+                                        String shortcut = shortcuts[i];
+                                        if (searched(shortcut, searchText))
+                                            getModel().addRow(new Object[]{new ActionHolder(sca, false), shortcut, category, ""});
+                                    }
+                                }
                             }
                         }
                     }
                 }
-            }
+            });
             getModel().fireTableDataChanged();
         } else
             getModel().update();
@@ -515,24 +601,44 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             Point p = new Point(e.getX(), e.getY());
             int row = table.rowAtPoint(p);
             int col = table.columnAtPoint(p);
-            Object valueAt = table.getValueAt(row, col);
-            if (col == 1) {
-                ShortcutCellPanel scCell = (ShortcutCellPanel) table.getCellRenderer(row, col).getTableCellRendererComponent(table, valueAt, true, true, row, col);
-                Rectangle cellRect = table.getCellRect(row, col, false);
-                JButton button = scCell.getButton();
-                if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
-                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
-                    button.dispatchEvent(buttonEvent);
-                    e.consume();
-
-                    boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
-                    ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];
-                    panel.setDisplayAddAlternative(isShortcutSet);
-                    panel.setRow(row);
-                    popup.show(table, e.getX(), e.getY());
-                }
+            
+            if (showPopupMenu(row, col, e.getX(), e.getY())) {
+                e.consume();
             }
         }
+    }
+    
+    private boolean showPopupMenu(int row, int col, int x, int y) {
+        JTable table = actionsTable;
+        
+        if (col != 1) {
+            return false;
+        }
+        
+        Object valueAt = table.getValueAt(row, col);
+        ShortcutCellPanel scCell = (ShortcutCellPanel) table.getCellRenderer(row, col).getTableCellRendererComponent(table, valueAt, true, true, row, col);
+        Rectangle cellRect = table.getCellRect(row, col, false);
+        JButton button = scCell.getButton();
+        if (x < 0  || x > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
+            boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
+            final ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];
+            panel.setDisplayAddAlternative(isShortcutSet);
+            panel.setRow(row);
+
+            if (x == -1 || y == -1) {
+                x = button.getX() + 1;
+                y = button.getY() + 1;
+            }
+            popup.show(table, x, y);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    panel.requestFocus();
+                }
+            });
+            popup.requestFocus();
+            return true;
+        }
+        return false;
     }
 
     static String loc (String key) {
@@ -571,5 +677,4 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         }
         return;
     }
-
 }

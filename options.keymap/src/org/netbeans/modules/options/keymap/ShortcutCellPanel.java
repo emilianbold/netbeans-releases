@@ -100,6 +100,8 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
                     table.editCellAt(editingRow, 1);
                     table.setRowSelectionInterval(editingRow, editingRow);
                     scField.requestFocus();
+                    
+                    return;
                 }
             }
 
@@ -120,6 +122,7 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
                 changeButton.setText("..."); // NOI18N
             }
         });
+        setFocusable(true);
     }
 
     ShortcutCellPanel(String displayedShortcut) {
@@ -225,7 +228,7 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
     }// </editor-fold>//GEN-END:initComponents
 
     private void changeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeButtonActionPerformed
-        JComponent tf = (JComponent) evt.getSource();
+        JComponent tf = changeButton;
         Point p = new Point(tf.getX(), tf.getY());
         SwingUtilities.convertPointToScreen(p, this);
         //show special key popup
