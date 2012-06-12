@@ -46,14 +46,17 @@ package org.netbeans.api.options;
 
 import java.awt.Cursor;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.options.CategoryModel;
 import org.netbeans.modules.options.OptionsDisplayerImpl;
 import org.netbeans.spi.options.OptionsPanelController.ContainerRegistration;
 import org.netbeans.spi.options.OptionsPanelController.SubRegistration;
 import org.netbeans.spi.options.OptionsPanelController.TopLevelRegistration;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -71,6 +74,8 @@ public final class OptionsDisplayer {
      * @since 1.8
      */
     public static final String ADVANCED = "Advanced"; // NOI18N
+    private String currentCategoryID = null;
+    private AtomicBoolean operationCancelled;
         
     private OptionsDisplayer() {}    
     /**
@@ -87,8 +92,28 @@ public final class OptionsDisplayer {
      * category. If no category is registered at all then false will be returned and
      * options dialog won't be opened.
      */
+    @NbBundle.Messages("CTL_Loading_Options_Waiting=Loading Options Settings")
     public boolean open() {
         showWaitCursor();
+        
+        if (operationCancelled == null || operationCancelled.get()) {
+            if (operationCancelled == null) {
+                operationCancelled = new AtomicBoolean();
+            }
+            if (operationCancelled.get()) {
+                currentCategoryID = null;
+                operationCancelled.set(false);
+            }
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    currentCategoryID = CategoryModel.getInstance().getCurrentCategoryID();
+                }
+            }, Bundle.CTL_Loading_Options_Waiting(), operationCancelled, false, 0 , 3000);
+            return open(currentCategoryID);
+        }
+            
         return open(CategoryModel.getInstance().getCurrentCategoryID());
     }
     
@@ -117,6 +142,24 @@ public final class OptionsDisplayer {
         log.fine("Open Options Dialog: " + path); //NOI18N
         showWaitCursor();
         try {
+            if (path != null && (operationCancelled == null || operationCancelled.get())) {
+                if (operationCancelled == null) {
+                    operationCancelled = new AtomicBoolean();
+                }
+                if (operationCancelled.get()) {
+                    operationCancelled.set(false);
+                }
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        CategoryModel.getInstance().getCategoryIDs();
+                    }
+                }, Bundle.CTL_Loading_Options_Waiting(), operationCancelled, false, 0, 3000);
+                if(operationCancelled.get()) {
+                    return true;
+                }
+            }
             return openImpl(path);
         } finally {
             hideWaitCursor();
