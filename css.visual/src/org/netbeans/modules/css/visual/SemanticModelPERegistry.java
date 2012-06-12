@@ -39,62 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.v2;
+package org.netbeans.modules.css.visual;
 
-import java.awt.BorderLayout;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
+import org.openide.nodes.Node.Property;
 
 /**
- * 
- * @author mfukala@netbeans.org
+ * temporary
+ *
+ * @author marekfukala
  */
-@TopComponent.Description(
-        preferredID = RuleEditorTC.ID,
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
-        iconBase="org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
-@TopComponent.Registration(
-        mode = "properties", // NOI18N
-        openAtStartup = false)
-@ActionID(
-        category = "Window", // NOI18N
-        id = "org.netbeans.modules.css.visual.v2.RuleEditorTC") // NOI18N
-@ActionReference(
-        path = "Menu/Window/Navigator", // NOI18N
-        position = 900)
-@TopComponent.OpenActionRegistration(
-        displayName = "#CTL_RuleEditorAction", // NOI18N
-        preferredID = RuleEditorTC.ID)
-@NbBundle.Messages({
-    "CTL_RuleEditorAction=Rule Editor", // NOI18N
-    "CTL_RuleEditorTC=Rule Editor", // NOI18N
-    "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
-})
-public final class RuleEditorTC extends TopComponent {
-    /** TopComponent ID. */
-    public static final String ID = "RuleEditorTC"; // NOI18N
-    /** Panel shown in this {@code TopComponent}. */
-    private RuleEditorPanel panel;
-
-    public RuleEditorTC() {
-        initComponents();
-        setName(Bundle.CTL_RuleEditorTC());
-        setToolTipText(Bundle.HINT_RuleEditorTC());
-    }
-
-    public void setContext(RuleContext ruleContext) {
-        panel.setContext(ruleContext);
+public class SemanticModelPERegistry {
+    
+    //XXX use lookup
+    public static Property getProperty(RuleNode ruleNode, SemanticModel model) {
+        String catName = model.getCategoryName();
+        if(catName.equals("Box")) {
+            return new EditableBoxModelProperty(ruleNode, model);
+        }
+        return null;
     }
     
-    /**
-     * Initializes the components in this {@code TopComponent}.
-     */
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        panel = new RuleEditorPanel();
-        add(panel, BorderLayout.CENTER);
-    }
-
 }

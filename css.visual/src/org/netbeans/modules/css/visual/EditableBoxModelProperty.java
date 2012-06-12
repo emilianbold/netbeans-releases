@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.v2;
+package org.netbeans.modules.css.visual;
 
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;

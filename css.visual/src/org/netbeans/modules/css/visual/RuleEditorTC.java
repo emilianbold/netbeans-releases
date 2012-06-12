@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.visual;
 
-package org.netbeans.modules.css.visual.api;
-
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.css.visual.ui.preview.CssPreviewTopComponent;
+import java.awt.BorderLayout;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
- *
- * @author marekfukala
+ * 
+ * @author mfukala@netbeans.org
  */
-public interface CssPreviewComponentFactory {
+@TopComponent.Description(
+        preferredID = RuleEditorTC.ID,
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
+        iconBase="org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
+@TopComponent.Registration(
+        mode = "properties", // NOI18N
+        openAtStartup = false)
+@ActionID(
+        category = "Window", // NOI18N
+        id = "org.netbeans.modules.css.visual.v2.RuleEditorTC") // NOI18N
+@ActionReference(
+        path = "Menu/Window/Navigator", // NOI18N
+        position = 900)
+@TopComponent.OpenActionRegistration(
+        displayName = "#CTL_RuleEditorAction", // NOI18N
+        preferredID = RuleEditorTC.ID)
+@NbBundle.Messages({
+    "CTL_RuleEditorAction=Rule Editor", // NOI18N
+    "CTL_RuleEditorTC=Rule Editor", // NOI18N
+    "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
+}) 
+public final class RuleEditorTC extends TopComponent {
+    /** TopComponent ID. */
+    public static final String ID = "RuleEditorTC"; // NOI18N
+    /** Panel shown in this {@code TopComponent}. */
+    private RuleEditorPanel panel;
 
-    /** property fired when the preview component becomes available. the value is undefined */
-    public static final String ENABLED = "enabled";
-    /** property fired when the preview component becomes not available. the value is undefined*/
-    public static final String DISABLED = "disabled";
+    public RuleEditorTC() {
+        initComponents();
+        setName(Bundle.CTL_RuleEditorTC());
+        setToolTipText(Bundle.HINT_RuleEditorTC());
+    }
 
-    public CssPreviewComponent createCssPreviewComponent();
-
-    public void addPropertyChangeListener(PropertyChangeListener l);
-
-    public void removePropertyChangeListener(PropertyChangeListener l);
+    public void setContext(RuleContext ruleContext) {
+        panel.setContext(ruleContext);
+    }
+    
+    /**
+     * Initializes the components in this {@code TopComponent}.
+     */
+    private void initComponents() {
+        setLayout(new BorderLayout());
+        panel = new RuleEditorPanel();
+        add(panel, BorderLayout.CENTER);
+    }
 
 }

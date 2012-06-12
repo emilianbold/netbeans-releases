@@ -8,8 +8,8 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.css.visual</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>2.4</specification-version>
+                        <release-version>3</release-version>
+                        <specification-version>3.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

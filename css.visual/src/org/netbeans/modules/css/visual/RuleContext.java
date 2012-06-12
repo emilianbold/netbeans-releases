@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.visual;
 
-package org.netbeans.modules.css.visual.api;
-
-import javax.swing.JComponent;
-import org.xml.sax.InputSource;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
- * @author Milan Kubec
+ * @author marekfukala
  */
-public interface CssPreviewComponent {
+public class RuleContext {
+    
+    private Rule rule;
+    
+    private Model model;
+    
+    private Snapshot snapshot;
 
-    public JComponent getComponent();
+    public RuleContext(Rule rule, Model model) {
+        this.rule = rule;
+        this.model = model;
+    }
 
-    public void setDocument(InputSource is, String url) throws Exception;
+    public Rule getRule() {
+        return rule;
+    }
+    
+    public Model getModel() {
+        return model;
+    }
 
-    public void dispose();
-
-    public void addListener(CssPreviewComponentListener listener);
-
-    public void removeListener(CssPreviewComponentListener listener);
-
+    public RuleNode getNode() {
+        return rule == null ? null : new RuleNode(model, rule);
+    }
+    
 }

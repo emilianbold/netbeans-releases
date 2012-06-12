@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.visual;
 
-package org.netbeans.modules.css.visual.ui.preview;
-
-import org.netbeans.modules.css.visual.api.CssRuleContext;
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.openide.nodes.Node;
 
 /**
- * Allows to listen on underlaying CSS preview source changes.
- * New property value is the HTML code to be used in the preview.
  *
- * @author Marek Fukala
+ * @author marekfukala
  */
-public interface CssPreviewable extends Node.Cookie {
+public class BoxModelProperty extends Node.Property<EditableBox> {
 
-    public void addListener(Listener l);
-    
-    public void removeListener(Listener l);
-    
-    public CssRuleContext content();
-    
-    public interface Listener {
-        
-        /** called when the css model or selected rule has changed. */
-        public void activate(CssRuleContext content);
-        
-        /** called when the css model is broken or no rule selected. */
-        public void deactivate();
+    EditableBox model;
+    private RuleNode ruleNode;
+
+    public BoxModelProperty(RuleNode ruleNode, EditableBox model) {
+        super(EditableBox.class);
+        this.ruleNode = ruleNode;
+        this.model = model;
     }
+
+    @Override
+    public String getHtmlDisplayName() {
+//        return model.getDisplayName();
+        return null;
+    }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+//        return new EditableBoxPropertyEditor(this);
+        return null;
+    }
+    
+    @Override
+    public boolean canRead() {
+        return true;
+    }
+
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+
+    @Override
+    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
+        return model;
+    }
+
+    @Override
+    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        ruleNode.applyModelChanges();
+    }
+
     
 }

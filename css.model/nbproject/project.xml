@@ -115,9 +115,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.css.editor</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
                 <package>org.netbeans.modules.css.model.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
