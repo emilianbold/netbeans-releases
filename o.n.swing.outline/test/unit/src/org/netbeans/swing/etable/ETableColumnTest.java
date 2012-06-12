@@ -114,7 +114,7 @@ public class ETableColumnTest extends NbTestCase {
 
     /**
      * Test of getHeaderRenderer method, of class org.netbeans.swing.etable.ETableColumn.
-     */
+     * Changed in JDK 1.3.
     public void testGetHeaderRenderer() {
         System.out.println("testGetHeaderRenderer");
         ETableColumn etc = new ETableColumn(0, null);
@@ -122,6 +122,7 @@ public class ETableColumnTest extends NbTestCase {
         TableCellRenderer tcr2 = etc.getHeaderRenderer();
         assertEquals("createDefaultHeaderRenderer and getHeaderRenderer should return the same object, ", tcr1, tcr2);
     }
+    */
 
     /**
      * Test of readSettings and writeSettings methods, of class org.netbeans.swing.etable.ETableColumn.
