@@ -136,31 +136,37 @@ public class WebKitPageModel extends PageModel {
         return new DOM.Listener() {
             @Override
             public void childNodesSet(Node parent) {
-                int nodeId = parent.getNodeId();
-                DOMNode domNode = nodes.get(nodeId);
-                if (domNode != null) {
-                    updateNodes(parent);
-                    domNode.updateChildren();
+                synchronized(WebKitPageModel.this) {
+                    int nodeId = parent.getNodeId();
+                    DOMNode domNode = nodes.get(nodeId);
+                    if (domNode != null) {
+                        updateNodes(parent);
+                        domNode.updateChildren();
+                    }
                 }
             }
 
             @Override
             public void childNodeRemoved(Node parent, Node child) {
-                int nodeId = parent.getNodeId();
-                DOMNode domNode = nodes.get(nodeId);
-                if (domNode != null) {
-                    domNode.updateChildren();
+                synchronized(WebKitPageModel.this) {
+                    int nodeId = parent.getNodeId();
+                    DOMNode domNode = nodes.get(nodeId);
+                    if (domNode != null) {
+                        domNode.updateChildren();
+                    }
+                    nodes.remove(child.getNodeId());
                 }
-                nodes.remove(child.getNodeId());
             }
 
             @Override
             public void childNodeInserted(Node parent, Node child) {
-                int nodeId = parent.getNodeId();
-                updateNodes(child);
-                DOMNode domNode = nodes.get(nodeId);
-                if (domNode != null) {
-                    domNode.updateChildren();
+                synchronized(WebKitPageModel.this) {
+                    int nodeId = parent.getNodeId();
+                    updateNodes(child);
+                    DOMNode domNode = nodes.get(nodeId);
+                    if (domNode != null) {
+                        domNode.updateChildren();
+                    }
                 }
             }
 
@@ -181,53 +187,59 @@ public class WebKitPageModel extends PageModel {
 
             @Override
             public void attributeModified(Node node, String attrName) {
-                final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
-                final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
-                if (selected || highlighted) {
-                    Node.Attribute attr = node.getAttribute(attrName);
-                    String attrValue = attr.getValue();
-                    DOMNode n = getNode(node.getNodeId());
-                    final List<? extends org.openide.nodes.Node> selection;
-                    // attrValue == "false" is sent when the selection should be cleared only
-                    if (n == null || "false".equals(attrValue)) { // NOI18N
-                        selection = Collections.EMPTY_LIST;
-                    } else {
-                        selection = Collections.singletonList(n);
-                    }
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (selected) {
-                                setSelectedNodes(selection);
-                            } else {
-                                setHighlightedNodes(selection);
-                            }
+                synchronized(WebKitPageModel.this) {
+                    final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
+                    final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
+                    if (selected || highlighted) {
+                        Node.Attribute attr = node.getAttribute(attrName);
+                        String attrValue = attr.getValue();
+                        DOMNode n = getNode(node.getNodeId());
+                        final List<? extends org.openide.nodes.Node> selection;
+                        // attrValue == "false" is sent when the selection should be cleared only
+                        if (n == null || "false".equals(attrValue)) { // NOI18N
+                            selection = Collections.EMPTY_LIST;
+                        } else {
+                            selection = Collections.singletonList(n);
                         }
-                    });
-                    return;
-                }
-                int nodeId = node.getNodeId();
-                DOMNode domNode = nodes.get(nodeId);
-                if (domNode != null) {
-                    domNode.updateAttributes();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (selected) {
+                                    setSelectedNodes(selection);
+                                } else {
+                                    setHighlightedNodes(selection);
+                                }
+                            }
+                        });
+                        return;
+                    }
+                    int nodeId = node.getNodeId();
+                    DOMNode domNode = nodes.get(nodeId);
+                    if (domNode != null) {
+                        domNode.updateAttributes();
+                    }
                 }
             }
 
             @Override
             public void attributeRemoved(Node node, String attrName) {
-                int nodeId = node.getNodeId();
-                DOMNode domNode = nodes.get(nodeId);
-                if (domNode != null) {
-                    domNode.updateAttributes();
+                synchronized(WebKitPageModel.this) {
+                    int nodeId = node.getNodeId();
+                    DOMNode domNode = nodes.get(nodeId);
+                    if (domNode != null) {
+                        domNode.updateAttributes();
+                    }
                 }
             }
 
             @Override
             public void characterDataModified(Node node) {
-                int nodeId = node.getNodeId();
-                DOMNode domNode = nodes.get(nodeId);
-                if (domNode != null) {
-                    domNode.updateCharacterData();
+                synchronized(WebKitPageModel.this) {
+                    int nodeId = node.getNodeId();
+                    DOMNode domNode = nodes.get(nodeId);
+                    if (domNode != null) {
+                        domNode.updateCharacterData();
+                    }
                 }
             }
         };
@@ -266,7 +278,9 @@ public class WebKitPageModel extends PageModel {
      * @return {@code DOMNode} with the speicified ID.
      */
     DOMNode getNode(int nodeId) {
-        return nodes.get(nodeId);
+        synchronized(WebKitPageModel.this) {
+            return nodes.get(nodeId);
+        }
     }
 
     @Override
@@ -297,17 +311,17 @@ public class WebKitPageModel extends PageModel {
     public void setSelectedNodes(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
             selectedNodes = nodes;
-            webKit.getRuntime().evaluate("NetBeans.initNextSelection()"); // NOI18N
-            for (org.openide.nodes.Node node : nodes) {
-                Node webKitNode = node.getLookup().lookup(Node.class);
-                RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
-                if (remote != null) {
-                    webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
-                }
-            }
-            webKit.getRuntime().evaluate("NetBeans.finishNextSelection()"); // NOI18N
-            firePropertyChange(PROP_SELECTED_NODES, null, null);
         }
+        webKit.getRuntime().evaluate("NetBeans.initNextSelection()"); // NOI18N
+        for (org.openide.nodes.Node node : nodes) {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+            if (remote != null) {
+                webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
+            }
+        }
+        webKit.getRuntime().evaluate("NetBeans.finishNextSelection()"); // NOI18N
+        firePropertyChange(PROP_SELECTED_NODES, null, null);
     }
 
     @Override
@@ -321,17 +335,17 @@ public class WebKitPageModel extends PageModel {
     public void setHighlightedNodes(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
             highlightedNodes = nodes;
-            webKit.getRuntime().evaluate("NetBeans.initNextHighlight()"); // NOI18N
-            for (org.openide.nodes.Node node : nodes) {
-                Node webKitNode = node.getLookup().lookup(Node.class);
-                RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
-                if (remote != null) {
-                    webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
-                }
-            }
-            webKit.getRuntime().evaluate("NetBeans.finishNextHighlight()"); // NOI18N
-            firePropertyChange(PROP_HIGHLIGHTED_NODES, null, null);
         }
+        webKit.getRuntime().evaluate("NetBeans.initNextHighlight()"); // NOI18N
+        for (org.openide.nodes.Node node : nodes) {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+            if (remote != null) {
+                webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
+            }
+        }
+        webKit.getRuntime().evaluate("NetBeans.finishNextHighlight()"); // NOI18N
+        firePropertyChange(PROP_HIGHLIGHTED_NODES, null, null);
     }
 
     @Override
