@@ -1192,7 +1192,7 @@ is divided into following sections:
 
             <target name="-init-macrodef-testng-debug-impl" depends="-init-macrodef-testng-debug" if="${{testng.available}}">
                 <macrodef>
-                    <xsl:attribute name="name">test-debug-impl</xsl:attribute>
+                    <xsl:attribute name="name">testng-debug-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">testClass</xsl:attribute>
@@ -1215,7 +1215,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-test-debug" depends="-init-macrodef-junit-debug-impl,-init-macrodef-testng-debug-impl">
+            <target name="-init-macrodef-test-debug-junit" depends="-init-macrodef-junit-debug-impl" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1235,6 +1235,14 @@ is divided into following sections:
                         <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testClass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
                     <sequential>
                         <j2seproject3:test-debug-impl includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
                             <customize>
@@ -1249,6 +1257,49 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
+            
+            <target name="-init-macrodef-test-debug-testng" depends="-init-macrodef-testng-debug-impl" if="${{testng.available}}">
+                <macrodef>
+                    <xsl:attribute name="name">test-debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testClass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <j2seproject3:testng-debug-impl testClass="@{{testClass}}" testMethod="@{{testMethod}}">
+                            <customize2>
+                                <syspropertyset>
+                                    <propertyref prefix="test-sys-prop."/>
+                                    <mapper from="test-sys-prop.*" to="*" type="glob"/>
+                                </syspropertyset>
+                            </customize2>
+                        </j2seproject3:testng-debug-impl>
+                    </sequential>
+                </macrodef>
+            </target>
+            
+            <target name="-init-macrodef-test-debug" depends="-init-macrodef-test-debug-junit,-init-macrodef-test-debug-testng"/>
             
             <xsl:comment>
                 pre NB7.2 profiling section; consider it deprecated
@@ -2410,7 +2461,7 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <j2seproject3:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{javac.includes}}" />
+                <j2seproject3:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{javac.includes}}" testClass="${{test.class}}"/>
             </target>
             
             <target name="-debug-start-debuggee-test-method">
@@ -2418,7 +2469,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
                 <fail unless="test.method">Must select some method in the IDE or set test.method</fail>
-                <j2seproject3:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{test.class}}" testmethods="${{test.method}}"/>
+                <j2seproject3:test-debug includes="${{javac.includes}}" excludes="" testincludes="${{test.class}}" testmethods="${{test.method}}" testClass="${{test.class}}" testMethod="${{test.method}}"/>
             </target>
 
             <target name="-debug-start-debugger-test">
