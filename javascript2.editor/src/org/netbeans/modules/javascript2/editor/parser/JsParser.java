@@ -37,7 +37,8 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -76,7 +77,7 @@ public class JsParser extends Parser {
             lastResult = new JsParserResult(snapshot, null, Collections.<Integer, JsComment>emptyMap());
         }
         long endTime = System.currentTimeMillis();
-        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
+        LOGGER.log(Level.FINE, "Parsing took: {0} ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
     }
 
     private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
@@ -99,11 +100,13 @@ public class JsParser extends Parser {
     }
     
     private JsParserResult parseContext(Context context, Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
+        boolean sanitized = false;
         if ((sanitizing != Sanitize.NONE) && (sanitizing != Sanitize.NEVER)) {
             boolean ok = sanitizeSource(context, sanitizing, errorManager);
 
             if (ok) {
-                assert context.sanitizedSource != null;
+                sanitized = true;
+                assert context.getSanitizedSource() != null;
             } else {
                 // Try next trick
                 return parseContext(context, sanitizing.next(), errorManager);
@@ -112,8 +115,12 @@ public class JsParser extends Parser {
         
         com.oracle.nashorn.ir.FunctionNode node = parseSource(context.getName(),
                 context.getSource(), errorManager);
-        if (node == null && sanitizing != Sanitize.NEVER) {
-            return parseContext(context, sanitizing.next(), errorManager);
+        if (sanitizing != Sanitize.NEVER) {
+            if (!sanitized && errorManager.checkCurlyMissing() != null) {
+                return parseContext(context, Sanitize.MISSING_CURLY, errorManager);
+            } if (node == null) {
+                return parseContext(context, sanitizing.next(), errorManager);
+            }
         }
         
         // process comment elements
@@ -153,6 +160,40 @@ public class JsParser extends Parser {
     }
     
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
+        if (sanitizing == Sanitize.MISSING_CURLY) {
+            org.netbeans.modules.csl.api.Error error = errorManager.checkCurlyMissing();
+            
+            String source = context.getOriginalSource();
+            int balance = 0;
+            for (int i = 0; i < source.length(); i++) {
+                char current = source.charAt(i);
+                if (current == '{') {
+                    balance++;
+                } else if (current == '}') {
+                    balance--;
+                }
+            }
+            if (balance != 0) {
+                StringBuilder builder = new StringBuilder(source);
+                if (balance < 0) {
+                    while (balance < 0) {
+                        int index = builder.lastIndexOf("}");
+                        if (index < 0) {
+                            break;
+                        }
+                        builder.replace(index, index + 1, " ");
+                        balance++;
+                    }
+                } else if (balance > 0 && error.getStartPosition() >= source.length()) {
+                    while (balance > 0) {
+                        builder.append('}');
+                        balance--;
+                    }
+                }
+                context.setSanitizedSource(builder.toString());
+                return true;
+            }
+        }
         return false;
     }
 
@@ -200,14 +241,25 @@ public class JsParser extends Parser {
         }
 
         public String getSource() {
+            if (sanitizedSource != null) {
+                return sanitizedSource;
+            }
+            return getOriginalSource();
+        }
+
+        public String getOriginalSource() {
             if (source == null) {
                 source = snapshot.getText().toString();
             }
             return source;
         }
-
+        
         public String getSanitizedSource() {
             return sanitizedSource;
+        }
+
+        public void setSanitizedSource(String sanitizedSource) {
+            this.sanitizedSource = sanitizedSource;
         }
         
     }

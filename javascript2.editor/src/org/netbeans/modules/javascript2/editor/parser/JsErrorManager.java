@@ -64,6 +64,19 @@ public class JsErrorManager extends ErrorManager {
         this.fileObject = fileObject;
     }
     
+    public Error checkCurlyMissing() {
+        if (parserErrors == null) {
+            return null;
+        }
+        for (ParserError error : parserErrors) {
+            if (error.message != null
+                    && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
+                return convert(error);
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void error(String message, Source source, int line, int column, long token) {
         LOGGER.log(Level.FINE, "Error {0} [{1}, {2}]", new Object[] {message, line, column});
