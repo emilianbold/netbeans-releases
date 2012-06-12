@@ -55,6 +55,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * HTML browser implementation which uses embedded native browser component.
@@ -62,6 +63,7 @@ import org.openide.util.Lookup;
  * @author S. Aubrecht
  */
 public class HtmlBrowserImpl extends HtmlBrowser.Impl {
+    private static RequestProcessor RP = new RequestProcessor(HtmlBrowserImpl.class);
 
     private WebBrowser browser;
     private final Object LOCK = new Object();
@@ -111,37 +113,47 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl {
             return;
         }
         initialized = true;
-        TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
-        WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
-        NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+        final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
+        final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
+        final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
         if (webkitDebugger == null || debuggerFactory == null) {
             return;
         }
-        transport.attach();
-        webkitDebugger.getDebugger().enable();
-        session = debuggerFactory.createDebuggingSession(webkitDebugger);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                transport.attach();
+                webkitDebugger.getDebugger().enable();
+                session = debuggerFactory.createDebuggingSession(webkitDebugger);
 
-        PageInspector inspector = PageInspector.getDefault();
-        if (inspector != null) {
-            inspector.inspectPage(getLookup());
-        }
+                PageInspector inspector = PageInspector.getDefault();
+                if (inspector != null) {
+                    inspector.inspectPage(getLookup());
+                }
+            }
+        });
     }
-    
+
     private void destroy() {
         if (!initialized) {
             return;
         }
         initialized = false;
-        TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
-        WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
-        NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+        final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
+        final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
+        final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
         if (webkitDebugger == null || debuggerFactory == null) {
             return;
         }
-        debuggerFactory.stopDebuggingSession(session);
-        session = null;
-        webkitDebugger.getDebugger().disable();
-        transport.detach();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                debuggerFactory.stopDebuggingSession(session);
+                session = null;
+                webkitDebugger.getDebugger().disable();
+                transport.detach();
+            }
+        });
     }
     
     @Override
