@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.text.Document;
 import org.apache.maven.artifact.Artifact;
@@ -538,6 +539,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         d.putProperty("version", txtVersion.getText().trim()); //NOI18N
         d.putProperty("package", txtPackage.getText().trim()); //NOI18N
         if (tblAdditionalProps.isVisible()) {
+            if (tblAdditionalProps.isEditing()) {
+                TableCellEditor edito = tblAdditionalProps.getCellEditor();
+                if (edito != null) {
+                    edito.stopCellEditing();
+                }
+            }
             TableModel mdl = tblAdditionalProps.getModel();
             HashMap<String, String> map = new HashMap<String, String>();
             for (int i = 0; i < mdl.getRowCount(); i++) {

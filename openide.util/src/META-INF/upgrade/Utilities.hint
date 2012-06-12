@@ -7,3 +7,13 @@ new java.io.File($u) :: $u instanceof java.net.URI
 =>
 org.openide.util.Utilities.toFile($u)
 ;;
+
+new java.io.File($u.getPath()) :: $u instanceof java.net.URI
+=>
+<!warning='Unsafe File/URI conversion'>
+;;
+
+new java.io.File($u.getPath()) :: $u instanceof java.net.URL
+=>
+<!warning='Unsafe File/URL conversion'>
+;;

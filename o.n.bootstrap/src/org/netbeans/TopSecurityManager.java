@@ -408,7 +408,6 @@ public class TopSecurityManager extends SecurityManager {
         if (n.startsWith("sun.misc")) { // NOI18N
             Exception ex = new Exception("Dangerouns reflection access to " + n + " detected!"); // NOI18N
             Level l = Level.FINE;
-            assert (l = Level.INFO) != null;
             LOG.log(l, null, ex);
         }
         super.checkMemberAccess(clazz, which);
