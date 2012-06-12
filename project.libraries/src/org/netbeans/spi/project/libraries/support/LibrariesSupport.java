@@ -54,10 +54,10 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * SPI Support class.
@@ -111,7 +111,7 @@ public final class LibrariesSupport {
         try {
             File f = new File(path);
             if (f.isAbsolute()) {
-                return f.toURI();
+                return Utilities.toURI(f);
             } else {
                 // create hierarchical relative URI (that is no schema)
                 return new URI(null, null, path.replace('\\', '/'), null);
@@ -132,8 +132,7 @@ public final class LibrariesSupport {
      */
     public static String convertURIToFilePath(URI uri) {
         if (uri.isAbsolute()) {
-            // uri.getPath() starts with extra slath, e.g. "/D:/path/"
-            return new File(uri).getPath();
+            return Utilities.toFile(uri).getPath();
         } else {
             return uri.getPath().replace('/', File.separatorChar);
         }
@@ -176,32 +175,19 @@ public final class LibrariesSupport {
             if (!"file".equals(libraryLocation.getProtocol())) { //NOI18N
                 throw new IllegalArgumentException("not file: protocol - "+libraryLocation.toExternalForm()); //NOI18N
             }
-            File libLocation = new File(URI.create(libraryLocation.toExternalForm()));
-            if (!libLocation.getName().endsWith(".properties")) { //NOI18N
+            if (!libraryLocation.getPath().endsWith(".properties")) { //NOI18N
                 throw new IllegalArgumentException("library location must be a file - "+libraryLocation.toExternalForm()); //NOI18N
             }
-            File libBase = libLocation.getParentFile();
-            /* Do not use URI.resolve because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
-            String jarFolder = null;
-            String libEntryPath = libraryEntry.getPath();
-            int index = libEntryPath.indexOf("!/");
-            if (index != -1) { // NOI18N
-                libEntryPath = libEntryPath.substring(0, index);
-                // use raw path instead because it will be append to URI as is:
-                jarFolder = libraryEntry.getRawPath().substring(libraryEntry.getRawPath().indexOf("!/")+2);
-            }            
-            URI resolvedPath = FileUtil.normalizeFile(new File(libBase, libEntryPath)).toURI();
-            if (jarFolder != null) { // NOI18N
-                return URI.create("jar:"+resolvedPath.toString()+"!/"+jarFolder); // NOI18N
+            URI resolved;
+            try {
+                resolved = libraryLocation.toURI().resolve(libraryEntry);
+            } catch (URISyntaxException x) {
+                throw new AssertionError(x);
+            }
+            if (libraryEntry.getPath().contains("!/")) {
+                return URI.create("jar:" + resolved);
             } else {
-                //If the original was a folder but translated not (non existing file) preserve /
-                final boolean relativeEndsWithSlash = libEntryPath.endsWith("/");     //NOI18N
-                final String suri = resolvedPath.toString();
-                final boolean absoluteEndsWithSlash = suri.endsWith("/");  //NOI18N
-                if (relativeEndsWithSlash && !absoluteEndsWithSlash) {
-                    resolvedPath = URI.create (suri+'/');    //NOI18N
-                }
-                return resolvedPath;
+                return resolved;
             }
         }
     }

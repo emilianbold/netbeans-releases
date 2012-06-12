@@ -308,7 +308,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             return null;
         }
-        URI uri = art.getFile().toURI();
+        URI uri = org.openide.util.Utilities.toURI(art.getFile());
         return FileOwnerQuery.getOwner(uri);
     }   
 
@@ -1190,7 +1190,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     for (Artifact art : context.lookupAll(Artifact.class)) {
                         File f = art.getFile();
                         if (f != null) {
-                            Project p = FileOwnerQuery.getOwner(f.toURI());
+                            Project p = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(f));
                             if (p != null) {
                                 projects.add(p);
                             }

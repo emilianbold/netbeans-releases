@@ -27,6 +27,7 @@
             <tocitem target="php_renaming" text="Rename Refactoring and Instant Rename"/>
             <tocitem target="php_codegen" text="Code Generators"/>
             <tocitem target="def_var_in_comment" text="Defining Variables in Comments"/>
+            <tocitem target="php54" text="PHP 5.4 Support"/>
         </tocitem>
         <tocitem text="Debugging PHP Applications" expand="false">
             <tocitem text="About Debugging PHP Applications" target="php_debug_about"/>

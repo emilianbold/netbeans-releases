@@ -57,6 +57,7 @@ import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -84,14 +85,14 @@ public class BinaryForSourceImpl implements BinaryForSourceQueryImplementation {
                 //Try project sources
                 final FileObject srcDir = project.getSourceDirectory();                
                 if (srcDir != null && srcDir.toURI().equals(key)) {
-                    binRoot = project.getClassesDirectory().toURI().toURL();
+                    binRoot = Utilities.toURI(project.getClassesDirectory()).toURL();
                 }
                 
                 //Try project generated sources
                 if (binRoot == null) {
                     final File genSrcDir = project.getGeneratedClassesDirectory();
-                    if (genSrcDir != null && genSrcDir.toURI().equals(key)) {
-                        binRoot = project.getClassesDirectory().toURI().toURL();
+                    if (genSrcDir != null && Utilities.toURI(genSrcDir).equals(key)) {
+                        binRoot = Utilities.toURI(project.getClassesDirectory()).toURL();
                     }
                 }
                 
@@ -100,12 +101,12 @@ public class BinaryForSourceImpl implements BinaryForSourceQueryImplementation {
                     for (final String testKind : project.supportedTestTypes()) {
                         final FileObject testSrcDir = project.getTestSourceDirectory(testKind);
                         if (testSrcDir != null && testSrcDir.toURI().equals(key)) {
-                            binRoot = project.getTestClassesDirectory(testKind).toURI().toURL();
+                            binRoot = Utilities.toURI(project.getTestClassesDirectory(testKind)).toURL();
                             break;
                         }
                         final File testGenSrcDir = project.getTestGeneratedClassesDirectory(testKind);
-                        if (testGenSrcDir != null && testGenSrcDir.toURI().equals(key)) {
-                            binRoot = project.getTestClassesDirectory(testKind).toURI().toURL();
+                        if (testGenSrcDir != null && Utilities.toURI(testGenSrcDir).equals(key)) {
+                            binRoot = Utilities.toURI(project.getTestClassesDirectory(testKind)).toURL();
                             break;
                         }
                     }

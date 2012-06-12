@@ -82,6 +82,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 
 final class MakeSharableVisualPanel2 extends JPanel {
 
@@ -360,7 +361,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
             File libraryFile = helper.resolveFile(location);
             File prjDir = FileUtil.toFile(helper.getProjectDirectory());
             boolean absoluteLibrary = LibrariesSupport.convertFilePathToURI(location).isAbsolute();
-            LibraryManager newmanager = LibraryManager.forLocation(libraryFile.toURI().toURL());
+            LibraryManager newmanager = LibraryManager.forLocation(Utilities.toURI(libraryFile).toURL());
             LibraryManager oldmanager = LibraryManager.getDefault(); //TODO once we support moving from one place to another, change this
             for (String lib : libraries) {
                 Library library = oldmanager.getLibrary(lib);

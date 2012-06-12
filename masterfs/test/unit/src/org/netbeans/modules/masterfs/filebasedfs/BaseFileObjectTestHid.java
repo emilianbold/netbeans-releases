@@ -705,8 +705,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(A);
         assertNotNull(root.getFileObject("a"));
         assertSame(root.getFileObject("A"), root.getFileObject("a"));
-        assertSame(URLMapper.findFileObject(testa.toURI().toURL()), 
-                URLMapper.findFileObject(testA.toURI().toURL()));
+        assertSame(URLMapper.findFileObject(Utilities.toURI(testa).toURL()),
+                URLMapper.findFileObject(Utilities.toURI(testA).toURL()));
         
         //but 
         root.getChildren();
@@ -860,7 +860,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue(testFile2.exists());
         
         
-        assertEquals(FileUtil.normalizeFile(testFile).toURI().toURL(), FileUtil.normalizeFile(testFile2).toURI().toURL());
+        assertEquals(Utilities.toURI(FileUtil.normalizeFile(testFile)).toURL(), Utilities.toURI(FileUtil.normalizeFile(testFile2)).toURL());
     }   
 
     @RandomlyFails // NB-Core-Build #7927 (from FileBasedFileSystemWithUninitializedExtensionsTest): Didn't receive a FileEvent on the parent.

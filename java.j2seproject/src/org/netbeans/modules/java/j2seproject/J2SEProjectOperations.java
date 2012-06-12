@@ -75,6 +75,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -347,7 +348,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         if (libraryPath != null) {
             File prjRoot = FileUtil.toFile(project.getProjectDirectory());
             libraryFile = PropertyUtils.resolveFile(prjRoot, libraryPath);
-            if (FileOwnerQuery.getOwner(libraryFile.toURI()) == project && 
+            if (FileOwnerQuery.getOwner(Utilities.toURI(libraryFile)) == project &&
                     libraryFile.getAbsolutePath().startsWith(prjRoot.getAbsolutePath())) {
                 //do not update the relative path if within the project..
                 libraryWithinProject = true;

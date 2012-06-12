@@ -67,6 +67,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -261,7 +262,7 @@ public class OutputFileManager extends CachingFileManager {
                 final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
                 if (classFolder != null) {
                     try {
-                        return new File(classFolder.toURI());
+                        return Utilities.toFile(classFolder.toURI());
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -282,7 +283,7 @@ public class OutputFileManager extends CachingFileManager {
                         final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
                         if (classFolder != null) {
                             try {
-                                return new File(classFolder.toURI());
+                                return Utilities.toFile(classFolder.toURI());
                             } catch (URISyntaxException ex) {
                                 Exceptions.printStackTrace(ex);
                             }

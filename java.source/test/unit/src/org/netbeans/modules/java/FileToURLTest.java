@@ -35,6 +35,7 @@ import org.netbeans.junit.NbTestCase;
 import java.io.File;
 import java.net.URI;
 import java.net.MalformedURLException;
+import org.openide.util.Utilities;
 
 /**
  * @author Rastislav Komara (<a href="mailto:moonko@netbeans.orgm">RKo</a>)
@@ -62,7 +63,7 @@ public class FileToURLTest extends NbTestCase {
         }
         URI uri2;
         try {
-            uri2 = URI.create(file.toURI().toURL().toExternalForm());
+            uri2 = URI.create(Utilities.toURI(file).toURL().toExternalForm());
         } catch (Exception e) {
 //            fail(e.getMessage());
             e.printStackTrace(getLog());
@@ -70,7 +71,7 @@ public class FileToURLTest extends NbTestCase {
         }
         URI uri3;
         try {
-            uri3 = file.toURI();
+            uri3 = Utilities.toURI(file);
         } catch (Exception e) {
             //            fail(e.getMessage());
             e.printStackTrace(getLog());

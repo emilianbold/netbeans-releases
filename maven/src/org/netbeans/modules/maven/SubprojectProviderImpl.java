@@ -63,6 +63,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -117,7 +118,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         for (Artifact ar : compileArtifacts) {
             File f = ar.getFile();
             if (f != null) {
-                Project p = MavenFileOwnerQueryImpl.getInstance().getOwner(f.toURI());
+                Project p = MavenFileOwnerQueryImpl.getInstance().getOwner(Utilities.toURI(f));
                 if (p != null) {
                     resultset.add(p);
                 }

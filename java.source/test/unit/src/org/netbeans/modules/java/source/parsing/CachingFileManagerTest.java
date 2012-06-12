@@ -61,6 +61,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -102,7 +103,7 @@ public class CachingFileManagerTest extends NbTestCase {
         } finally {
             out.close();
         }
-        final URL archiveRoot = FileUtil.getArchiveRoot(archiveFile.toURI().toURL());
+        final URL archiveRoot = FileUtil.getArchiveRoot(Utilities.toURI(archiveFile).toURL());
         final URI expectedURI = new URL (archiveRoot.toExternalForm()+"org/me/resources/test.txt").toURI();
         doTestGetFileForInput(ClassPathSupport.createClassPath(archiveRoot),
         Arrays.asList(
