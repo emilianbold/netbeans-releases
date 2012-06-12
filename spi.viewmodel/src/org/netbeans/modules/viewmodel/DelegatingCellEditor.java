@@ -47,6 +47,7 @@ package org.netbeans.modules.viewmodel;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -122,15 +123,16 @@ class DelegatingCellEditor implements TableCellEditor {
             return false;
         }
         Outline outline = (Outline) anEvent.getSource();
-        if (!(anEvent instanceof MouseEvent)) {
-            return false;
+        int row;
+        if (anEvent instanceof MouseEvent) {
+            MouseEvent event = (MouseEvent) anEvent;
+            Point p = event.getPoint();
+            // Locate the editor under the event location
+            //int column = outline.columnAtPoint(p);
+            row = outline.rowAtPoint(p);
+        } else {
+            row = outline.getSelectedRow();
         }
-        MouseEvent event = (MouseEvent) anEvent;
-        Point p = event.getPoint();
-
-        // Locate the editor under the event location
-        //int column = outline.columnAtPoint(p);
-        int row = outline.rowAtPoint(p);
         OutlineModel om = (OutlineModel) outline.getModel();
         Node n = DelegatingCellRenderer.getNodeAt(om, row);
         if (n instanceof TreeModelNode) {
@@ -140,7 +142,7 @@ class DelegatingCellEditor implements TableCellEditor {
                 boolean canEdit = trm.canEditCell(tmn.getObject(), columnID);
                 if (canEdit) {
                     TableCellEditor tce = trm.getCellEditor(tmn.getObject(), columnID);
-                    canEdit = tce.isCellEditable(event);
+                    canEdit = tce.isCellEditable(anEvent);
                     return canEdit;
                 }
             } catch (UnknownTypeException ex) {
