@@ -3166,38 +3166,51 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 return true;
             }
-            return false;
         }
 
-        // orthogonal overlap may be avoided if adding on baseline or center in the other dimension
+        // If adding on baseline or center in the other dimension, it may
+        // influence what should be considered overlapping in that dimension.
+        // 1) The overlap might be irrelevant if the interval's counter part in
+        //    the other dimension is in sequence with the baseline/center group.
+        // 2) Or in contrary, if e.g. shrinking a baseline component out of actual overlap,
+        //    it will stay in the group in the end, so should be considered overlapping.
+        LayoutInterval ortAligned = null;
+        int ortAlignment = -1;
         LayoutDragger.PositionDef otherDimPos = newPositions[dimension^1];
-        if (otherDimPos != null && otherDimPos.snapped
-                && (otherDimPos.alignment == CENTER || otherDimPos.alignment == BASELINE)) {
-            // anticipating addSimplyAligned will be used
-            LayoutInterval ortAligned = otherDimPos.interval;
+        if (otherDimPos != null && otherDimPos.snapped) {
+            ortAlignment = otherDimPos.alignment;
+            if (ortAlignment == CENTER || ortAlignment == BASELINE) {
+                ortAligned = otherDimPos.interval; // i.e. snapped to baseline/center
+            }
+        } else if (dragger.isResizing(dimension^1)) { // resizing withous snap
+            OriginalPosition ortOrigPos = originalPositions[dimension^1];
+            if (ortOrigPos != null) {
+                ortAlignment = ortOrigPos.getAlignment();
+            }
+            if (ortAlignment == CENTER || ortAlignment == BASELINE) {
+                ortAligned = ortOrigPos.getAlignedRep(ortAlignment);
+            }
+        }
+        if (ortAligned != null) {
+            // anticipating addSimplyAligned will be used in the other dimension,
+            // creating/preserving closed group with baseline or center alignment
             if (!ortAligned.isParallel()) {
                 LayoutInterval li = LayoutInterval.getFirstParent(ortAligned, PARALLEL);
-                if (li.getGroupAlignment() == otherDimPos.alignment) {
+                if (li.getGroupAlignment() == ortAlignment) {
                     ortAligned = li;
                 }
             }
-            // first check if the center/baseline components from the
-            // ort. dimension are part of the interval
-            boolean intervalAligned = false;
             Iterator<LayoutInterval> it = LayoutUtils.getComponentIterator(ortAligned);
             while (it.hasNext()) {
                 LayoutInterval li = it.next().getComponent().getLayoutInterval(dimension);
                 if (interval == li || interval.isParentOf(li)) {
-                    intervalAligned = true; // so there is ort. overlap
-                    break;
+                    return true; // so there is overlap (2)
                 }
             }
-            if (!intervalAligned) {
-                LayoutInterval ortInterval = LayoutUtils.getComponentIterator(interval).next()
-                        .getComponent().getLayoutInterval(dimension^1);
-                if (LayoutInterval.getCommonParent(ortAligned, ortInterval).isSequential()) {
-                    return false;
-                }
+            LayoutInterval ortInterval = LayoutUtils.getComponentIterator(interval).next()
+                    .getComponent().getLayoutInterval(dimension^1);
+            if (LayoutInterval.getCommonParent(ortAligned, ortInterval).isSequential()) {
+                return false; // so in sequence with the center/baseline group (1)
             }
         }
 
