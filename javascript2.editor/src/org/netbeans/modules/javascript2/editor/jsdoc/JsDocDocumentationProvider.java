@@ -41,16 +41,15 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import com.oracle.nashorn.ir.Node;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
@@ -63,6 +62,9 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class JsDocDocumentationProvider implements DocumentationProvider {
+
+    // max length to be read for seeking the new line and doc comment
+    private static final int MAX_SCANNED_LINE_LENGTH = 200;
 
     JsParserResult parserResult;
 
@@ -167,7 +169,9 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
             ts.move(offset);
 
             // get to first EOL
-            while (ts.movePrevious() && ts.token().id() != JsTokenId.EOL);
+            while (ts.movePrevious()
+                    && ts.token().id() != JsTokenId.EOL
+                    && offset - ts.offset() < MAX_SCANNED_LINE_LENGTH);
 
             // search for DOC_COMMENT
             while (ts.movePrevious()) {
