@@ -170,7 +170,7 @@ public class JsStructureScanner implements StructureScanner {
                         kind = FOLD_OTHER_CODE_BLOCKS;
                     }
                     stack.add(new FoldingItem(kind, ts.offset()));
-                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
                     FoldingItem fromStack = stack.remove(stack.size() - 1);
                     getRanges(folds, fromStack.kind).add(new OffsetRange(
                             info.getSnapshot().getOriginalOffset(fromStack.start),
