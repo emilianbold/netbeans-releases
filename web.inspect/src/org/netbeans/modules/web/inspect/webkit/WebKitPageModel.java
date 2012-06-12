@@ -86,12 +86,13 @@ public class WebKitPageModel extends PageModel {
      */
     public WebKitPageModel(WebKitDebugging webKit) {
         this.webKit = webKit;
-        initializePage();
         
         // Register DOM domain listener
         domListener = createDOMListener();
         DOM dom = webKit.getDOM();
         dom.addListener(domListener);
+
+        initializePage();
     }
 
     /**
