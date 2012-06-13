@@ -104,7 +104,7 @@ public class ETableColumn extends TableColumn implements Comparable<ETableColumn
     
     /** Header renderer created by createDefaultHeaderRenderer. */
     private TableCellRenderer myHeaderRenderer;
-    private Comparator nestedComparator;
+    Comparator nestedComparator;
     
     /** Creates a new instance of ETableColumn */
     public ETableColumn(ETable table) {

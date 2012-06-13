@@ -161,6 +161,19 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
     }
 
+    public void testDescendingSortingTreeWithNaturallyStringOrderingViaETable () throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
+        etc.setNestedComparator (testComarator);
+        view.getOutline ().setColumnSorted (0, false, 1); // descending order
+        view.expandNode (toExpand200_299);
+
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[299]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
+    }
+
     public void testAscendingSortingTreeWithNaturallyStringOrdering () throws InterruptedException, IllegalAccessException, InvocationTargetException {
         ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
         ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
@@ -179,6 +192,19 @@ public final class OutlineViewTest extends NbTestCase {
         //   ....
         // + [10-index from 100 to 199]
         // + [2-index from 200 to 299]
+        assertEquals ("[1-index from 0 to 99]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[0]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[10]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[11]", view.getOutline ().getValueAt (3, 0).toString ());
+        assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (101, 0).toString ());
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (102, 0).toString ());
+    }
+
+    public void testAscendingSortingTreeWithNaturallyStringOrderingViaETable () throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        view.getOutline ().setColumnSorted (0, true, 1); // ascending order
+        view.expandNode (toExpand0_99);
+
         assertEquals ("[1-index from 0 to 99]", view.getOutline ().getValueAt (0, 0).toString ());
         assertEquals ("[0]", view.getOutline ().getValueAt (1, 0).toString ());
         assertEquals ("[10]", view.getOutline ().getValueAt (2, 0).toString ());
@@ -211,6 +237,19 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
     }
 
+    public void testDescendingSortingTreeWithCustomComparatorViaETable() throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
+        etc.setNestedComparator (testComarator);
+        view.getOutline().setColumnSorted (0, false, 1); // descending order
+        view.expandNode (toExpand200_299);
+
+        assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[299]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
+    }
+
     public void testAscendingSortingTreeWithCustomComparator () throws InterruptedException, IllegalAccessException, InvocationTargetException {
         ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
         ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
@@ -231,6 +270,20 @@ public final class OutlineViewTest extends NbTestCase {
         //   ....
         // + [2-index from 200 to 299]
         // + [10-index from 100 to 199]
+        assertEquals ("[1-index from 0 to 99]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[0]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[1]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[2]", view.getOutline ().getValueAt (3, 0).toString ());
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (101, 0).toString ());
+    }
+    
+    public void testAscendingSortingTreeWithCustomComparatorViaETable() throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
+        etc.setNestedComparator (testComarator);
+        view.getOutline().setColumnSorted (0, true, 1); // ascending order
+        view.expandNode (toExpand0_99);
+
         assertEquals ("[1-index from 0 to 99]", view.getOutline ().getValueAt (0, 0).toString ());
         assertEquals ("[0]", view.getOutline ().getValueAt (1, 0).toString ());
         assertEquals ("[1]", view.getOutline ().getValueAt (2, 0).toString ());
