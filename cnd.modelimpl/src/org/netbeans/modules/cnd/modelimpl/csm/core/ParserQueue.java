@@ -161,7 +161,13 @@ public final class ParserQueue {
             if (this.ppState instanceof APTPreprocHandler.State) {
                 APTPreprocHandler.State oldState = (APTPreprocHandler.State) ppState;
                 this.ppState = new ArrayList<APTPreprocHandler.State>();
-                ((Collection<APTPreprocHandler.State>) this.ppState).add(oldState);
+                if (oldState != FileImpl.DUMMY_STATE && oldState != FileImpl.PARTIAL_REPARSE_STATE) {
+                    ((Collection<APTPreprocHandler.State>) this.ppState).add(oldState);
+                } else {
+                    if (TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
+                        System.err.println("skip adding old dummy state");
+                    }
+                }
             }
             Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) this.ppState;
             for (APTPreprocHandler.State state : ppStates) {

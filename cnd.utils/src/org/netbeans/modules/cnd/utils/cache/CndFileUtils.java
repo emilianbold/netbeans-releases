@@ -672,12 +672,17 @@ public final class CndFileUtils {
         }
 
         private void cleanCachesImpl(String file) {
-            if (TRACE_EXTERNAL_CHANGES) {
-                System.err.println("clean cache for " + file);
+            String absPath = changeStringCaseIfNeeded(getLocalFileSystem(), file);
+            if (isWindows) {
+                absPath = absPath.replace('/', '\\');
             }
-            getFilesMap(getLocalFileSystem()).remove(file);
+            Flags removed = getFilesMap(getLocalFileSystem()).remove(absPath);
+            if (TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("clean cache for %s->%s\n", absPath, removed);
+            }            
             for (CndFileExistSensitiveCache cache : getCaches()) {
                 cache.invalidateFile(file);
+                cache.invalidateFile(absPath);
             }
         }
     }
