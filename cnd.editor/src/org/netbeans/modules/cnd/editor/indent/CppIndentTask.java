@@ -128,9 +128,18 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         if (ts == null) {
             return;
         }
+        int index = ts.index();
         int indent = indentLine(new TokenItem(ts, true), caretOffset);
         if (indent >= 0) {
-            context.modifyIndent(lineOffset, indent);
+            int tokenIndent = -1;
+            if (ts.isValid()) {
+                ts.moveIndex(index);
+                ts.moveNext();
+                tokenIndent = getTokenIndent(moveToFirstLineImportantToken(new TokenItem(ts, false)));
+            }
+            if (indent != tokenIndent) {
+                context.modifyIndent(lineOffset, indent);
+            }
         }
     }
 
