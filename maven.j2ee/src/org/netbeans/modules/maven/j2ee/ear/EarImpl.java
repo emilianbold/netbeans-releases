@@ -718,8 +718,6 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                                 mm.groupId = value;
                             } else if ("artifactId".equals(param.getName())) { //NOI18N
                                 mm.artifactId = value;
-                            } else if ("artifactId".equals(param.getName())) { //NOI18N
-                                mm.artifactId = value;
                             } else if ("classifier".equals(param.getName())) { //NOI18N
                                 mm.classifier = value;
                             } else if ("uri".equals(param.getName())) { //NOI18N
