@@ -58,6 +58,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -111,9 +112,19 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         SourceGroup group = findGroup(ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), fos);
         HashMap<String, String> replaceMap = new HashMap<String, String>();
+        // read environment variables in the IDE and prefix them with "env." just in case someone uses it as variable in the action mappings
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+            replaceMap.put(MavenCommandLineExecutor.ENV_PREFIX + entry.getKey(), entry.getValue());
+        }
+        
+        
         //read global variables defined in the IDE
         Map<String, String> vars = readVariables();
         replaceMap.putAll(vars);
+        
+        //read active configuration properties..
+        Map<String, String> configProps = project.getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration().getProperties();
+        replaceMap.putAll(configProps);
 
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         replaceMap.put(GROUPID, prj.getMavenProject().getGroupId());
