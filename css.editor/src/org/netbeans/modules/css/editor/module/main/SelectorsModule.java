@@ -78,6 +78,8 @@ public class SelectorsModule extends CssEditorModule {
 
     //NOI18N>>>
     private static final Collection<String> PSEUDO_CLASSES = Arrays.asList(new String[]{
+        "not",
+        
         "link", "visited", "hover", "active", "focus", //dynamic
 
         "target",
