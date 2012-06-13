@@ -795,6 +795,9 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                 final String dashedGroupId = groupId.replace( '.', '-'); //NOI18N
                 return dashedGroupId + "-" + artifact.getFile().getName(); //NOI18N
             }
+            if ("no-version".equals(fileNameMapping)) {
+                return artifact.getArtifactId();
+            }
             //TODO it seems the fileNameMapping can also be a class (from ear-maven-plugin's classpath
             // of type FileNameMapping that resolves the name.. we ignore it for now.. not common usecase anyway..
             return artifact.getFile().getName();

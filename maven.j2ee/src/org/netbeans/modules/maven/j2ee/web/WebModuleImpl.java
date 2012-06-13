@@ -291,26 +291,16 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     @Override
     public FileObject getContentDirectory() throws IOException {
-        FileObject fo;
+        FileObject webappFO;
         if (inplace) {
-            fo = getDocumentBase();
+            webappFO = getDocumentBase();
         } else {
-            MavenProject proj = mavenproject().getMavenProject();
-            String loc = PluginPropertyUtils.getPluginProperty(project,
-                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_WAR, //NOI18N
-                "webappDirectory", "war"); //NOI18N        
-            if (loc == null) {
-                String finalName = proj.getBuild().getFinalName();
-                loc = proj.getBuild().getDirectory() + File.separator + finalName;
-            }
-            File fil = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), loc);
-    //        System.out.println("get content=" + fil);
-            fo = FileUtil.toFileObject(fil);
+            webappFO = super.getContentDirectory();
         } 
-        if (fo != null) {
-            fo.refresh();
+        if (webappFO != null) {
+            webappFO.refresh();
         }
-        return fo;
+        return webappFO;
     }
     
     @Override
