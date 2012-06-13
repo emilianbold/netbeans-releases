@@ -41,40 +41,44 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.NamespaceIndexFilter;
+import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.CodeUtils;
-import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.filesystems.FileObject;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Radek Matous
  */
 public class ModelUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(ModelUtils.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(ModelUtils.class);
 
     private ModelUtils() {
     }
@@ -505,5 +509,103 @@ public class ModelUtils {
 
     private static boolean nameKindMatch(Pattern p, String text) {
         return p.matcher(text).matches();
+    }
+
+    @CheckForNull
+    public static FileScope getFileScope(final FileObject fileObject) {
+        return getFileScope(fileObject, 0);
+    }
+
+    /**
+     *
+     * @param fileObject
+     * @param timeout in milliseconds
+     * @return
+     */
+    @CheckForNull
+    public static FileScope getFileScope(final FileObject fileObject, final int timeout) {
+        FileScope result = null;
+        final Future<FileScope> futureResult = RP.submit(new Callable<FileScope>() {
+
+            @Override
+            public FileScope call() throws Exception {
+                final FileScope[] fileScope = new FileScope[1];
+                try {
+                    ParserManager.parse(Collections.singletonList(Source.create(fileObject)), new UserTask() {
+
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Parser.Result parserResult = resultIterator.getParserResult();
+                            if (parserResult instanceof PHPParseResult) {
+                                PHPParseResult phpResult = (PHPParseResult) parserResult;
+                                fileScope[0] = phpResult.getModel().getFileScope();
+                            }
+                        }
+                    });
+                } catch (ParseException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                }
+                return fileScope[0];
+            }
+        });
+        try {
+            result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (TimeoutException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        return result;
+    }
+
+    @CheckForNull
+    public static Model getModel(final Source source) {
+        return getModel(source, 0);
+    }
+
+    /**
+     *
+     * @param source
+     * @param timeout in milliseconds
+     * @return
+     */
+    @CheckForNull
+    public static Model getModel(final Source source, final int timeout) {
+        Model result = null;
+        final Future<Model> futureResult = RP.submit(new Callable<Model>() {
+
+            @Override
+            public Model call() throws Exception {
+                final Model[] model = new Model[1];
+                try {
+                    ParserManager.parse(Collections.singletonList(source), new UserTask() {
+
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Parser.Result parserResult = resultIterator.getParserResult();
+                            if (parserResult instanceof PHPParseResult) {
+                                PHPParseResult phpResult = (PHPParseResult) parserResult;
+                                model[0] = phpResult.getModel();
+                            }
+                        }
+                    });
+                } catch (ParseException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                }
+                return model[0];
+            }
+        });
+        try {
+            result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (TimeoutException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        return result;
     }
 }
