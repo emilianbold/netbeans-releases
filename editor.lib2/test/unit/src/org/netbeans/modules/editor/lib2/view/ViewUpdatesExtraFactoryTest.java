@@ -94,7 +94,8 @@ public class ViewUpdatesExtraFactoryTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 10000000; //super.timeOut();
+        return super.timeOut();
+//        return 10000000;
     }
 
     @Override
@@ -218,6 +219,47 @@ public class ViewUpdatesExtraFactoryTest extends NbTestCase {
         if (!testFactory.isContinueCreationUnset()) {
             TestCase.fail("Expecting continueCreation() called.");
         }
+
+        ViewUpdatesTesting.setTestValues();
+    }
+
+    public void testNullChildren() throws Exception {
+        loggingOn();
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        final DocumentView docView = DocumentView.get(pane);
+        // Insert twice the length of chars that would be otherwise serviced with local views creation
+        int insertCount = ViewBuilder.MAX_CHARS_FOR_CREATE_LOCAL_VIEWS;
+        String insertText = "a\n";
+        for (int i = 0; i <= insertCount; i++) {
+            doc.insertString(0, insertText, null);
+        }
+        int docLen = doc.getLength();
+        int lineCount = doc.getDefaultRootElement().getElementCount();
+
+        docView.op.releaseChildren(false);
+        docView.ensureLayoutValidForInitedChildren();
+        docView.children.ensureParagraphsChildrenAndLayoutValid(docView, 0, lineCount / 2, 0, 0);
+
+        int hlStartOffset = docLen * 1 / 5;
+        int hlStartPIndex = doc.getDefaultRootElement().getElementIndex(hlStartOffset);
+        int hlEndOffset = hlStartOffset * 2;
+        int hlEndPIndex = hlStartPIndex * 2;
+        TestHighlightsViewFactory testFactory = ViewUpdatesTesting.getTestFactory(pane);
+        List<TestHighlight> testHlts = ViewUpdatesTesting.getHighlightsCopy(testFactory);
+        TestHighlight testHlt = TestHighlight.create(
+                ViewUtils.createPosition(doc, hlStartOffset),
+                ViewUtils.createPosition(doc, hlEndOffset),
+                ViewUpdatesTesting.FONT_ATTRS[2]
+        );
+        testHlts.add(testHlt);
+        testFactory.setHighlights(testHlts);
+        testFactory.fireChange(hlStartOffset, hlEndOffset);
+        docView.op.viewsRebuildOrMarkInvalid(); // Manually mark affected children as invalid
+
+        docView.children.ensureParagraphsChildrenAndLayoutValid(docView,
+                hlStartPIndex, hlEndPIndex, 0, 0);
 
         ViewUpdatesTesting.setTestValues();
     }

@@ -512,23 +512,26 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
             }
 
             // Now update layout of all requested children
+            // Note: It is possible that some of the children within <rStartIndex,rEndIndex>
+            // will have null children (or invalid children).
+            // Let's assume that pViews at doc begining will have children
+            // initialized while pViews in the rest of doc view will have pViews with null children.
+            // If certain view factory (e.g. fold view factory) suddenly changes its state
+            // so that it would produce a view where many lines would collapse
+            // into a single view (when asked for view building)
+            // then the resulting number of paragraph views
+            // would decrease drastically and so end of <rStartIndex,rEndIndex>
+            // interval would now fill the pViews that were previously far beyond rEndIndex.
+            // ViewUpdatesExtraFactoryTest.testNullChildren() tests this.
+
             Rectangle2D docViewRect = docView.getAllocation();
             for (int pIndex = startIndex; pIndex < endIndex; pIndex++) {
                 pView = get(pIndex);
                 if (!pView.isChildrenValid()) {
-                    String cacheIntegrity = tlCache.findIntegrityError();
-                    StringBuilder sb = new StringBuilder(200);
-                    sb.append("NULL children of pView[").append(pIndex). // NOI18N
-                            append("] from <").append(startIndex).append(",").append(endIndex). // NOI18N
-                            append("> origEndIndex=").append(origEndIndex).append(", rebuild<"). // NOI18N
-                            append(rStartIndex).append(",").append(rEndIndex).append(">."); // NOI18N
-                    if (cacheIntegrity != null) {
-                            sb.append(">. TLCache integrity: ").append(tlCache.findIntegrityError()); // NOI18N
-                    }
-                    sb.append(" TLCache: ").append(tlCache);
-                    sb.append(" docView:\n"); // NOI18N
-                    docView.appendViewInfo(sb, 4, "", pIndex);
-                    throw new IllegalStateException(sb.toString());
+                    // For null or invalid children stop the layout updating since there will be another
+                    // view rebuild necessary for the area starting with this pView.
+                    updated = true;
+                    break;
                 }
                 if (!pView.isLayoutValid()) {
                     Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);

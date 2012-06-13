@@ -591,6 +591,12 @@ public final class DocumentViewOp
         clearStatusBits(CHILDREN_VALID);
     }
     
+    /**
+     * Release all pViews of the document view due to some global change.
+     * The method does not build the new views directly just marks the current ones as obsolete.
+     *
+     * @param updateFonts whether fonts and colors should be re-read first.
+     */
     public void releaseChildren(final boolean updateFonts) { // It acquires document readlock and VH mutex first
         docView.runReadLockTransaction(new Runnable() {
             @Override
