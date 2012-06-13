@@ -50,20 +50,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.MavenProject;
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
-import org.codehaus.plexus.util.StringInputStream;
-import org.codehaus.plexus.util.StringUtils;
 import java.util.Set;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.util.StringInputStream;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
@@ -86,14 +82,14 @@ import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -747,8 +743,6 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                                 mm.groupId = value;
                             } else if ("artifactId".equals(param.getName())) { //NOI18N
                                 mm.artifactId = value;
-                            } else if ("artifactId".equals(param.getName())) { //NOI18N
-                                mm.artifactId = value;
                             } else if ("classifier".equals(param.getName())) { //NOI18N
                                 mm.classifier = value;
                             } else if ("uri".equals(param.getName())) { //NOI18N
@@ -823,6 +817,9 @@ public class EarImpl implements EarImplementation, EarImplementation2,
             if ("full".equals(fileNameMapping)) { //NOI18N
                 final String dashedGroupId = groupId.replace( '.', '-'); //NOI18N
                 return dashedGroupId + "-" + artifact.getFile().getName(); //NOI18N
+            }
+            if ("no-version".equals(fileNameMapping)) {
+                return artifact.getArtifactId();
             }
             //TODO it seems the fileNameMapping can also be a class (from ear-maven-plugin's classpath
             // of type FileNameMapping that resolves the name.. we ignore it for now.. not common usecase anyway..
