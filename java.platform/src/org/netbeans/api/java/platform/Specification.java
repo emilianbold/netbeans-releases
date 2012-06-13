@@ -67,20 +67,7 @@ public final class Specification {
     public Specification (@NullAllowed String name, @NullAllowed SpecificationVersion version) {
         this (name, version, null, null);
     }
-    
-    /**
-     * Creates new SDK Specification
-     * @param name of the specification e.g J2SE
-     * @param version of the specification e.g. 1.4
-     * @param displayName the display name of the Java SDK e.g. "Java SE".
-     * @since 1.26
-     */
-    public Specification (
-        @NullAllowed final String name,
-        @NullAllowed final SpecificationVersion version,
-        @NullAllowed final String displayName) {
-        this (name, version, displayName, null);
-    }
+        
 
     /**
      * Creates new SDK Specification

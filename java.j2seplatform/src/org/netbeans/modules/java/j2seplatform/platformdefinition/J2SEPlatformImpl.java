@@ -361,7 +361,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
             spec = new Specification (
                 PLATFORM_J2SE,
                 Util.getSpecificationVersion(this),
-                NbBundle.getMessage(J2SEPlatformImpl.class, "TXT_J2SEDisplayName"));
+                NbBundle.getMessage(J2SEPlatformImpl.class, "TXT_J2SEDisplayName"),
+                null);
         }
         return spec;
     }
