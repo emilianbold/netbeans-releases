@@ -406,6 +406,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                         testSources = findTestSources(context, true);
 
                     }
+                    p.setProperty("continue.after.failing.tests", "true");  //NOI18N
                     targetNames = setupTestSingle(p, testSources);
                 } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
                     TestSources testSources = findTestSourcesForSources(context);
@@ -438,6 +439,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                         targetNames = setupRunMain(p, testSources, context, clazz);
                     } else {
                         // fallback to "old" run tests behavior
+                        p.setProperty("continue.after.failing.tests", "true");  //NOI18N
                         targetNames = setupTestSingle(p, testSources);
                     }
                 } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
@@ -463,6 +465,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     p.setProperty("test.class", testClassName(testSources)); // NOI18N
                     p.setProperty("test.type", testSources.testType); // NOI18N
                     p.setProperty("test.methods", testSources.method); // NOI18N
+                    p.setProperty("continue.after.failing.tests", "true");  //NOI18N
                     targetNames = new String[] {"test-method"}; // NOI18N
                 } else if (command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
                     TestSources testSources = findTestMethodSources(context);
@@ -500,7 +503,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     if (command.equals(ActionProvider.COMMAND_REBUILD)) {
                         p.setProperty("do.not.clean.module.config.xml", "true"); // #196192
                     }
-
+                    p.setProperty("continue.after.failing.tests", "true");  //NOI18N
                     targetNames = globalCommands.get(command);
                     if (targetNames == null) {
                         throw new IllegalArgumentException(command);

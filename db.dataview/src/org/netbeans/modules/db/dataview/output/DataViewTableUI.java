@@ -544,7 +544,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                             output.append('\t'); //NOI18N
 
                         }
-                        Object o = getColumnModel().getColumn(column).getHeaderValue();
+                        Object o = getColumnModel().getColumn(column).getIdentifier();
                         output.append(o != null ? o.toString() : ""); //NOI18N
 
                     }

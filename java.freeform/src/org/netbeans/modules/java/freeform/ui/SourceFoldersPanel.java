@@ -96,6 +96,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Wizard panel which lets user select source and test package roots and source level.
@@ -725,8 +726,8 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         FILE: for (File file : files) {
             File sourceLoc = FileUtil.normalizeFile(file);
             String location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
-            Project p, thisProject = isWizard ? null : FileOwnerQuery.getOwner(model.getNBProjectFolder().toURI());
-            if ((p = FileOwnerQuery.getOwner(sourceLoc.toURI())) != null && (thisProject == null || !thisProject.equals(p)) && !isParentOf(model.getNBProjectFolder(), sourceLoc) && !isParentOf(model.getBaseFolder(), sourceLoc)) {
+            Project p, thisProject = isWizard ? null : FileOwnerQuery.getOwner(Utilities.toURI(model.getNBProjectFolder()));
+            if ((p = FileOwnerQuery.getOwner(Utilities.toURI(sourceLoc))) != null && (thisProject == null || !thisProject.equals(p)) && !isParentOf(model.getNBProjectFolder(), sourceLoc) && !isParentOf(model.getBaseFolder(), sourceLoc)) {
                 invalidRoots.add(sourceLoc);
             } else {
                 List<JavaProjectGenerator.SourceFolder> sourceFolders = model.getSourceFolders();
@@ -1110,7 +1111,7 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
                 File f = (File) value;
                 String message = f.getAbsolutePath();
                 if (projectConflict) {
-                    Project p = FileOwnerQuery.getOwner(f.toURI());
+                    Project p = FileOwnerQuery.getOwner(Utilities.toURI(f));
                     if (p!=null) {
                         ProjectInformation pi = ProjectUtils.getInformation(p);
                         String projectName = pi.getDisplayName();

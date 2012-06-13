@@ -687,7 +687,7 @@ implements Cloneable, Stamps.Updater {
                 return this;
             }
         }
-        return new VFile().toURI().toString();
+        return Utilities.toURI(new VFile()).toString();
     }
 
     @Messages({"#NOI18N", "FIND_COVERED_PKGS=findEntries"})

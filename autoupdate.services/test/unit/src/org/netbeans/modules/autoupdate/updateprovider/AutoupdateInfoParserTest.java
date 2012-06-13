@@ -51,6 +51,7 @@ import java.util.Map;
 import org.netbeans.api.autoupdate.DefaultTestCase;
 import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.spi.autoupdate.UpdateItem;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 /**
@@ -70,7 +71,7 @@ public class AutoupdateInfoParserTest extends DefaultTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         URL urlToFile = AutoupdateInfoParserTest.class.getResource ("data/org-yourorghere-depending.nbm");
-        NBM_FILE = new File (urlToFile.toURI ());
+        NBM_FILE = Utilities.toFile(urlToFile.toURI ());
         assertNotNull ("data/org-yourorghere-depending.nbm file must found.", NBM_FILE);
     }
 

@@ -8,6 +8,7 @@ import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -75,7 +76,7 @@ public class UserLibraryParserTest extends NbTestCase {
                 "\t</archive>\n" +
                 "\t<archive sourceattachment=\""+aZip.getPath()+"\" path=\"/tmp/other.jar\">\n" +
                 "\t\t<attributes>\n" +
-                "\t\t\t<attribute value=\""+repo.toURI().toURL()+"\" name=\"javadoc_location\"/>\n" +
+                "\t\t\t<attribute value=\""+Utilities.toURI(repo).toURL()+"\" name=\"javadoc_location\"/>\n" +
                 "\t\t</attributes>\n" +
                 "\t</archive>\n" +
                 "\t<archive sourceattachment=\"/a project name/libs/external/source2.zip\" path=\"/tmp/another.jar\">\n" +
@@ -95,7 +96,7 @@ public class UserLibraryParserTest extends NbTestCase {
         workspace.addUserLibrary(libName, jars, javadoc, sources);
         List<URL> urls = workspace.getJavadocForUserLibrary(libName, new ArrayList<String>());
         assertEquals(3, urls.size());
-        String baseURLPath = getWorkDir().toURI().toURL().toExternalForm();
+        String baseURLPath = Utilities.toURI(getWorkDir()).toURL().toExternalForm();
         assertEquals("jar:"+baseURLPath+"a-project/javadoc1.jar!/path/", urls.get(0).toExternalForm());
         assertEquals(baseURLPath+"repo/", urls.get(1).toExternalForm());
         assertEquals("jar:"+baseURLPath+"repo/libraries/source2.zip!/api/", urls.get(2).toExternalForm());

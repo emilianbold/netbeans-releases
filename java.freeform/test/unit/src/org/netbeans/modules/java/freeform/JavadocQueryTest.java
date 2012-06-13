@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.ant.freeform.TestBase;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Tests Javadoc reporting.
@@ -74,7 +75,7 @@ public class JavadocQueryTest extends TestBase {
     }
     
     private URL asDir(String path) throws Exception {
-        URL u = simple2.helper().resolveFile(path).toURI().toURL();
+        URL u = Utilities.toURI(simple2.helper().resolveFile(path)).toURL();
         String us = u.toExternalForm();
         if (us.endsWith("/")) {
             return u;
@@ -84,7 +85,7 @@ public class JavadocQueryTest extends TestBase {
     }
     
     private URL asJar(String path) throws Exception {
-        return FileUtil.getArchiveRoot(simple2.helper().resolveFile(path).toURI().toURL());
+        return FileUtil.getArchiveRoot(Utilities.toURI(simple2.helper().resolveFile(path)).toURL());
     }
     
     private List<URL> javadocFor(URL binary) {

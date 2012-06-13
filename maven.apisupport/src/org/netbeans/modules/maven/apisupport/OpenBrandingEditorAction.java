@@ -76,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Opens branding editor window for 'branding' sub-project of a Maven app suite.
@@ -219,7 +220,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
             }
             EditableProperties props = new EditableProperties(false);
             try {
-                InputStream is = new URL("jar:" + jar.toURI() + "!/" + localizingBundle).openStream();
+                InputStream is = new URL("jar:" + Utilities.toURI(jar) + "!/" + localizingBundle).openStream();
                 try {
                     props.load(is);
                 } finally {

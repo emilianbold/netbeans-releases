@@ -539,7 +539,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 }
             }
             if ("file".equals(url.getProtocol())) {
-                File f = new File (URI.create(url.toExternalForm()));
+                File f = Utilities.toFile(URI.create(url.toExternalForm()));
                 return f.getAbsolutePath();
             }
             else {
@@ -624,7 +624,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     }
                 }
             }
-            return file.toURI().toURL();
+            return Utilities.toURI(file).toURL();
         }
 
         private synchronized java.util.List<URL> getData () {
@@ -710,7 +710,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 return false;
             }
             try {
-                return FileUtil.isArchiveFile(f.toURI().toURL());
+                return FileUtil.isArchiveFile(Utilities.toURI(f).toURL());
             } catch (MalformedURLException e) {
                 Exceptions.printStackTrace(e);
                 return false;
