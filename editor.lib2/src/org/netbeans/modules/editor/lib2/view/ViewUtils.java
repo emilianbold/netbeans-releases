@@ -183,6 +183,33 @@ public final class ViewUtils {
         return defaultFont;
     }
 
+    /**
+     * Get font or null if attributes do not provide enough info for font composition.
+     *
+     * @param attrs non-null attrs.
+     * @return font or null.
+     */
+    public static Font getFont(AttributeSet attrs) {
+        Font font = null;
+        if (attrs != null) {
+            String fontName = (String) attrs.getAttribute(StyleConstants.FontFamily);
+            Integer fontSizeInteger = (Integer) attrs.getAttribute(StyleConstants.FontSize);
+            if (fontName != null && fontSizeInteger != null) {
+                Boolean bold = (Boolean) attrs.getAttribute(StyleConstants.Bold);
+                Boolean italic = (Boolean) attrs.getAttribute(StyleConstants.Italic);
+                int fontStyle = Font.PLAIN;
+                if (bold != null && bold) {
+                    fontStyle |= Font.BOLD;
+                }
+                if (italic != null && italic) {
+                    fontStyle |= Font.ITALIC;
+                }
+                font = new Font(fontName, fontStyle, fontSizeInteger);
+            }
+        }
+        return font;
+    }
+
     public static String toStringAxis(int axis) {
         return (axis == View.X_AXIS) ? "X" : "Y";
     }

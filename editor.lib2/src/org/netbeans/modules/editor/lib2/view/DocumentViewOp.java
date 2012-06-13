@@ -141,23 +141,7 @@ public final class DocumentViewOp
 
     private static final int AVAILABLE_WIDTH_VALID              = 256;
     
-    /**
-     * Whether the textComponent's font was explicitly set from outside
-     * or whether it was only updated internally by settings.
-     */
-    private static final int CUSTOM_FONT                        = 1024;
-    
-    private static final int CUSTOM_FOREGROUND                  = 2048;
-    
-    private static final int CUSTOM_BACKGROUND                  = 4096;
-    
-    private static final int NON_PRINTABLE_CHARACTERS_VISIBLE   = 8192;
-    
-    private static final int EXPECTED_FONT_NOTIFY               = 16384;
-    
-    private static final int EXPECTED_FOREGROUND_NOTIFY         = 32768;
-    
-    private static final int EXPECTED_BACKGROUND_NOTIFY         = 65536;
+    private static final int NON_PRINTABLE_CHARACTERS_VISIBLE   = 512;
     
     private final DocumentView docView;
 
@@ -206,12 +190,6 @@ public final class DocumentViewOp
     private AttributeSet defaultColoring;
 
     /**
-     * Default font of the view hierarchy determined either from settings or by a custom
-     * textComponent.setFont(). It's propagated into textComponent.getFont().
-     */
-    private Font defaultFont;
-
-    /**
      * Default row height computed as height of the defaultFont.
      */
     private float defaultRowHeight;
@@ -223,18 +201,6 @@ public final class DocumentViewOp
     private float defaultLeading;
 
     private float defaultCharWidth;
-
-    /**
-     * Default foreground color of the view hierarchy determined either from settings or by a custom
-     * textComponent.setForeground(). It's propagated into textComponent.getForeground().
-     */
-    private Color defaultForeground;
-
-    /**
-     * Default background color of the view hierarchy determined either from settings or by a custom
-     * textComponent.setBackground(). It's propagated into textComponent.getBackground().
-     */
-    private Color defaultBackground;
 
     private Color textLimitLineColor;
 
@@ -277,6 +243,9 @@ public final class DocumentViewOp
     private float lineHeightCorrection;
     
     private MouseWheelListener origMouseWheelListener;
+    
+    private int textZoom;
+
     
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
@@ -502,7 +471,9 @@ public final class DocumentViewOp
     
     void parentViewSet() {
         JTextComponent textComponent = docView.getTextComponent();
+        assert (textComponent != null) : "Null textComponent"; // NOI18N
         updateStatusBits(ACCURATE_SPAN, Boolean.TRUE.equals(textComponent.getClientProperty(DocumentView.ACCURATE_SPAN_PROPERTY)));
+        updateTextZoom(textComponent);
         viewUpdates = new ViewUpdates(docView);
         viewUpdates.initFactories();
         textComponent.addPropertyChangeListener(this);
@@ -581,7 +552,7 @@ public final class DocumentViewOp
         return false;
     }
     
-    protected void releaseChildrenNeedsLock() { // It should be called with acquired mutex
+    void releaseChildrenNeedsLock() { // It should be called with acquired mutex
         // Do not set children == null like in super.releaseChildren()
         // Instead mark them as invalid but allow to use them in certain limited cases
         markChildrenInvalid();
@@ -595,16 +566,15 @@ public final class DocumentViewOp
      * Release all pViews of the document view due to some global change.
      * The method does not build the new views directly just marks the current ones as obsolete.
      *
-     * @param updateFonts whether fonts and colors should be re-read first.
+     * @param updateFonts whether font metrics should be recreated.
      */
     public void releaseChildren(final boolean updateFonts) { // It acquires document readlock and VH mutex first
         docView.runReadLockTransaction(new Runnable() {
             @Override
             public void run() {
+                releaseChildrenNeedsLock();
                 if (updateFonts) {
-                    updateDefaultFontAndColors(); // Includes releaseChildren()
-                } else {
-                    releaseChildrenNeedsLock();
+                    updateCharMetrics();
                 }
             }
         });
@@ -738,7 +708,6 @@ public final class DocumentViewOp
             // Called without explicitly acquiring mutex but it's called only when lookup listener is null
             // so it should be acquired.
             updateFontColorSettings(result, false);
-            updateDefaultFontAndColors();
 
             result.addLookupListener(WeakListeners.create(LookupListener.class,
                     lookupListener, result));
@@ -775,12 +744,20 @@ public final class DocumentViewOp
     }
 
     /* private */ void updateFontColorSettings(Lookup.Result<FontColorSettings> result, boolean nonInitialUpdate) {
+        JTextComponent textComponent = docView.getTextComponent();
+        if (textComponent == null) {
+            return;
+        }
+        if (Boolean.TRUE.equals(textComponent.getClientProperty("AsTextField"))) {
+            return;
+        }
         AttributeSet defaultColoringOrig = defaultColoring;
         FontColorSettings fcs = result.allInstances().iterator().next();
         AttributeSet newDefaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
         // Attempt to always hold non-null content of "defaultColoring" variable once it became non-null
         if (newDefaultColoring != null) {
             defaultColoring = newDefaultColoring;
+            renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
         }
         Color textLimitLineColorOrig = textLimitLineColor;
         AttributeSet textLimitLineColoring = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
@@ -790,25 +767,45 @@ public final class DocumentViewOp
         if (textLimitLineColor == null) {
             textLimitLineColor = Color.PINK;
         }
-        boolean releaseChildren = nonInitialUpdate &&
-                (!defaultColoring.equals(defaultColoringOrig));
-        if (releaseChildren) {
-            releaseChildren(true); // update fonts and colors
-        } else {
-            boolean repaint = nonInitialUpdate &&
-                    (textLimitLineColor == null || !textLimitLineColor.equals(textLimitLineColorOrig));
-            if (repaint) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        JTextComponent textComponent = docView.getTextComponent();
-                        if (textComponent != null) {
+        final boolean applyDefaultColoring = (defaultColoring != defaultColoringOrig); // Do not do equals() (for renderingHints)
+        final boolean releaseChildren = nonInitialUpdate && applyDefaultColoring;
+        final boolean repaint = nonInitialUpdate
+                && (textLimitLineColor == null || !textLimitLineColor.equals(textLimitLineColorOrig));
+        if (applyDefaultColoring || releaseChildren || repaint) {
+            ViewUtils.runInEDT(new Runnable() {
+                @Override
+                public void run() {
+                    JTextComponent textComponent = docView.getTextComponent();
+                    if (textComponent != null) {
+                        if (applyDefaultColoring) {
+                            applyDefaultColoring(textComponent);
+                        }
+                        if (releaseChildren) {
+                            releaseChildren(true);
+                        }
+                        if (repaint) {
                             textComponent.repaint();
                         }
                     }
-                });
-                
-            }
+                }
+            });
+
+        }
+    }
+    
+    /*private*/ void applyDefaultColoring(JTextComponent textComponent) { // Called in AWT to possibly apply default coloring from settings
+        AttributeSet coloring = defaultColoring;
+        Font font = ViewUtils.getFont(coloring);
+        if (font != null) {
+            textComponent.setFont(font);
+        }
+        Color foreColor = (Color) coloring.getAttribute(StyleConstants.Foreground);
+        if (foreColor != null) {
+            textComponent.setForeground(foreColor);
+        }
+        Color backColor = (Color) coloring.getAttribute(StyleConstants.Background);
+        if (backColor != null) {
+            textComponent.setBackground(backColor);
         }
     }
     
@@ -840,131 +837,18 @@ public final class DocumentViewOp
         clearStatusBits(AVAILABLE_WIDTH_VALID);
     }
 
-    /*private*/ void updateDefaultFontAndColors() {
-        // This should be called with mutex acquired
-        // Called only with textComponent != null
-        final JTextComponent textComponent = docView.getTextComponent();
-        if (textComponent == null) {
-            return;
-        }
-        Font cFont = textComponent.getFont();
-        Font font = cFont;
-        Color cForeColor = textComponent.getForeground();
-        Color foreColor = cForeColor;
-        Color cBackColor = textComponent.getBackground();
-        Color backColor = cBackColor;
-        boolean change = false;
-        if (defaultColoring != null) {
-            String fontName = (String) defaultColoring.getAttribute(StyleConstants.FontFamily);
-            Integer fontSizeInteger = (Integer) defaultColoring.getAttribute(StyleConstants.FontSize);
-            if (fontName != null && fontSizeInteger != null) {
-                font = ViewUtils.getFont(defaultColoring, null);
-                Integer textZoom = (Integer) textComponent.getClientProperty(DocumentView.TEXT_ZOOM_PROPERTY);
-                if (textZoom != null && textZoom != 0) {
-                    int newSize = Math.max(font.getSize() + textZoom, 2);
-                    font = new Font(font.getFamily(), font.getStyle(), newSize);
-                }
-            }
-            Color c = (Color) defaultColoring.getAttribute(StyleConstants.Foreground);
-            if (c != null) {
-                foreColor = c;
-            }
-            c = (Color) defaultColoring.getAttribute(StyleConstants.Background);
-            if (c != null) {
-                backColor = c;
-            }
-            renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
-        }
-
-        if (!isAnyStatusBit(CUSTOM_FONT)) {
-            if (font != null && !font.equals(defaultFont)) {
-                // Assign defaultFont immediately here since its propagation into textComponent.getFont()
-                // may be posted into EDT and in the meantime the views being built may already use defaultFont variable.
-                // Similarly for defaultForeground and defaultBackground.
-                if (defaultFont != null) {
-                    change = true;
-                }
-                defaultFont = font;
-                updateCharMetrics(); // Update metrics with just updated font
-                if (!font.equals(cFont)) {
-                    ViewUtils.runInEDT(new Runnable() {
-                        @Override
-                        public void run() {
-                            setStatusBits(EXPECTED_FONT_NOTIFY);
-                            try {
-                                textComponent.setFont(defaultFont);
-                            } finally {
-                                clearStatusBits(EXPECTED_FONT_NOTIFY);
-                            }
-                        }
-                    });
-                }
-            }
-        } // Otherwise the font was set in propertyChange()
-
-        if (!isAnyStatusBit(CUSTOM_FOREGROUND)) {
-            if (foreColor != null && !foreColor.equals(defaultForeground)) {
-                if (defaultForeground != null) {
-                    change = true;
-                }
-                defaultForeground = foreColor;
-                if (!foreColor.equals(cForeColor)) {
-                    ViewUtils.runInEDT(new Runnable() {
-                        @Override
-                        public void run() {
-                            setStatusBits(EXPECTED_FOREGROUND_NOTIFY);
-                            try {
-                                textComponent.setForeground(defaultForeground);
-                            } finally {
-                                clearStatusBits(EXPECTED_FOREGROUND_NOTIFY);
-                            }
-                        }
-                    });
-                }
-            }
-        } // Otherwise it's already assigned from propertyChange()
-
-        if (!isAnyStatusBit(CUSTOM_BACKGROUND)) {
-            if (backColor != null && !backColor.equals(defaultBackground)) {
-                if (defaultBackground != null) {
-                    change = true;
-                }
-                defaultBackground = backColor;
-                if (!backColor.equals(cBackColor)) {
-                    ViewUtils.runInEDT(new Runnable() {
-                        @Override
-                        public void run() {
-                            setStatusBits(EXPECTED_BACKGROUND_NOTIFY);
-                            try {
-                                textComponent.setBackground(defaultBackground);
-                            } finally {
-                                clearStatusBits(EXPECTED_BACKGROUND_NOTIFY);
-                            }
-                        }
-                    });
-                }
-            }
-        }
-        if (change) {
-            releaseChildrenNeedsLock();
-            if (ViewHierarchyImpl.SETTINGS_LOG.isLoggable(Level.FINE)) {
-                ViewHierarchyImpl.SETTINGS_LOG.fine(docView.getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
-                        ", fg=" + ViewUtils.toString(defaultForeground) + // NOI18N
-                        ", bg=" + ViewUtils.toString(defaultBackground) + '\n'); // NOI18N
-            }
-        }
-    }
-
     private void updateCharMetrics() { // Update default line height and other params
         checkFontRenderContext(); // Possibly get FRC created; ignore ret value since now actually updating the metrics
         FontRenderContext frc = getFontRenderContext();
-        assert (defaultFont != null) : "Null defaultFont"; // NOI18N
-        if (frc != null) {
+        JTextComponent textComponent = docView.getTextComponent();
+        Font font;
+        if (frc != null && textComponent != null && ((font = textComponent.getFont()) != null)) {
             // Reset all the measurements to adhere just to default font.
             // Possible other fonts in fontInfos get eliminated.
             fontInfos.clear();
-            FontInfo defaultFontInfo = new FontInfo(defaultFont, docView.getTextComponent(), frc, lineHeightCorrection);
-            fontInfos.put(defaultFont, defaultFontInfo);
+            FontInfo defaultFontInfo = new FontInfo(font, textComponent, frc, lineHeightCorrection, textZoom);
+            fontInfos.put(font, defaultFontInfo);
+            fontInfos.put(null, defaultFontInfo); // Alternative way to find default font info
             defaultAscent = defaultFontInfo.ascent;
             defaultDescent = defaultFontInfo.descent;
             defaultLeading = defaultFontInfo.leading;
@@ -996,29 +880,30 @@ public final class DocumentViewOp
         }
     }
     
-    void notifyFontUse(Font font) {
-        if (font == defaultFont || fontInfos.containsKey(font)) { // quick check for ==
-            return;
+    Font getRealFont(Font font) {
+        FontInfo fontInfo = fontInfos.get(font);
+        if (fontInfo == null) {
+            fontInfo = new FontInfo(font, docView.getTextComponent(), getFontRenderContext(), lineHeightCorrection, textZoom);
+            fontInfos.put(font, fontInfo);
+            boolean change = false;
+            if (fontInfo.ascent > defaultAscent) {
+                defaultAscent = fontInfo.ascent;
+                change = true;
+            }
+            if (fontInfo.descent > defaultDescent) {
+                defaultDescent = fontInfo.descent;
+                change = true;
+            }
+            if (fontInfo.leading > defaultLeading) {
+                defaultLeading = fontInfo.leading;
+                change = true;
+            }
+            if (change) {
+                updateRowHeight();
+                releaseChildrenNeedsLock();
+            }
         }
-        FontInfo fontInfo = new FontInfo(font, docView.getTextComponent(), getFontRenderContext(), lineHeightCorrection);
-        fontInfos.put(font, fontInfo);
-        boolean change = false;
-        if (fontInfo.ascent > defaultAscent) {
-            defaultAscent = fontInfo.ascent;
-            change = true;
-        }
-        if (fontInfo.descent > defaultDescent) {
-            defaultDescent = fontInfo.descent;
-            change = true;
-        }
-        if (fontInfo.leading > defaultLeading) {
-            defaultLeading = fontInfo.leading;
-            change = true;
-        }
-        if (change) {
-            updateRowHeight();
-            releaseChildrenNeedsLock();
-        }
+        return fontInfo.realFont;
     }
 
     void markIncomingModification() {
@@ -1050,7 +935,7 @@ public final class DocumentViewOp
     
     boolean isBuildable() {
         JTextComponent textComponent = docView.getTextComponent();
-        return textComponent != null && fontRenderContext != null && defaultFont != null &&
+        return textComponent != null && fontRenderContext != null && fontInfos.size() > 0 &&
                 (lengthyAtomicEdit <= 0) && !isAnyStatusBit(INCOMING_MODIFICATION);
     }
 
@@ -1118,7 +1003,7 @@ public final class DocumentViewOp
     }
 
     public Font getDefaultFont() {
-        return defaultFont;
+        return fontInfos.get(null).realFont;
     }
 
     public float getDefaultRowHeight() {
@@ -1144,7 +1029,7 @@ public final class DocumentViewOp
         checkSettingsInfo();
         FontInfo fontInfo = fontInfos.get(font);
         if (fontInfo == null) { // Should not normally happen
-            fontInfo = fontInfos.get(defaultFont);
+            fontInfo = fontInfos.get(null);
         }
         return fontInfo.underlineAndStrike;
     }
@@ -1174,19 +1059,22 @@ public final class DocumentViewOp
     }
 
     TextLayout getNewlineCharTextLayout() {
-        if (newlineTextLayout == null && defaultFont != null) {
+        if (newlineTextLayout == null) {
+            Font defaultFont = fontInfos.get(null).realFont;
             newlineTextLayout = createTextLayout(String.valueOf(PRINTING_NEWLINE), defaultFont);
         }
         return newlineTextLayout;
     }
 
     TextLayout getTabCharTextLayout(double availableWidth) {
-        if (tabTextLayout == null && defaultFont != null) {
+        if (tabTextLayout == null) {
+            Font defaultFont = fontInfos.get(null).realFont;
             tabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), defaultFont);
         }
         TextLayout ret = tabTextLayout;
         if (tabTextLayout != null && availableWidth > 0 && tabTextLayout.getAdvance() > availableWidth) {
             if (singleCharTabTextLayout == null) {
+                Font defaultFont = fontInfos.get(null).realFont;
                 for (int i = defaultFont.getSize() - 1; i >= 0; i--) {
                     Font font = new Font(defaultFont.getName(), defaultFont.getStyle(), i);
                     singleCharTabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), font);
@@ -1206,7 +1094,8 @@ public final class DocumentViewOp
     }
 
     TextLayout getLineContinuationCharTextLayout() {
-        if (lineContinuationTextLayout == null && defaultFont != null) {
+        if (lineContinuationTextLayout == null) {
+            Font defaultFont = fontInfos.get(null).realFont;
             char lineContinuationChar = LINE_CONTINUATION;
             if (!defaultFont.canDisplay(lineContinuationChar)) {
                 lineContinuationChar = LINE_CONTINUATION_ALTERNATE;
@@ -1219,8 +1108,9 @@ public final class DocumentViewOp
     TextLayout createTextLayout(String text, Font font) {
         checkSettingsInfo();
         if (fontRenderContext != null && font != null) {
+            Font realFont = getRealFont(font);
             ViewStats.incrementTextLayoutCreated(text.length());
-            return new TextLayout(text, font, fontRenderContext);
+            return new TextLayout(text, realFont, fontRenderContext);
         }
         return null;
     }
@@ -1257,33 +1147,12 @@ public final class DocumentViewOp
             } else if ("document".equals(propName)) { // NOI18N
                 
             } else if ("font".equals(propName)) { // NOI18N
-                if (!isAnyStatusBit(EXPECTED_FONT_NOTIFY)) {
-                    Font newFont = textComponent.getFont();
-                    // If new font is null then leave non-null value in defaultFont
-                    if (newFont != null) {
-                        defaultFont = newFont;
-                        setStatusBits(CUSTOM_FONT);
-                        releaseChildren = true;
-                        updateFonts = true;
-                    }
-                }
+                releaseChildren = true;
+                updateFonts = true;
             } else if ("foreground".equals(propName)) { //NOI18N
-                // New value should usually differ from defaultForeground
-                // since defaultForeground propagates into TC.getForeground() in EDT
-                if (!isAnyStatusBit(EXPECTED_FOREGROUND_NOTIFY)) {
-                    defaultForeground = textComponent.getForeground();
-                    setStatusBits(CUSTOM_FOREGROUND);
-                    releaseChildren = true; // Repaint should possibly suffice too
-                    
-                }
+                releaseChildren = true; // Repaint should possibly suffice too
             } else if ("background".equals(propName)) { //NOI18N
-                // New value should usually differ from defaultBackground
-                // since defaultBackground propagates into TC.getBackground() in EDT
-                if (!isAnyStatusBit(EXPECTED_BACKGROUND_NOTIFY)) {
-                    defaultBackground = textComponent.getBackground();
-                    setStatusBits(CUSTOM_BACKGROUND);
-                    releaseChildren = true; // Repaint should possibly suffice too
-                }
+                releaseChildren = true; // Repaint should possibly suffice too
             } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 updateLineWrapType(); // can run without mutex
                 releaseChildren = true;
@@ -1298,6 +1167,7 @@ public final class DocumentViewOp
                     }
                 });
             } else if (DocumentView.TEXT_ZOOM_PROPERTY.equals(propName)) {
+                updateTextZoom(textComponent);
                 releaseChildren = true;
                 updateFonts = true;
             }
@@ -1305,6 +1175,11 @@ public final class DocumentViewOp
         if (releaseChildren) {
             releaseChildren(updateFonts);
         }
+    }
+    
+    private void updateTextZoom(JTextComponent textComponent) {
+        Integer textZoomInteger = (Integer) textComponent.getClientProperty(DocumentView.TEXT_ZOOM_PROPERTY);
+        textZoom = (textZoomInteger != null) ? textZoomInteger : 0;
     }
     
     @Override
@@ -1375,6 +1250,8 @@ public final class DocumentViewOp
     
     private static final class FontInfo {
         
+        final Font realFont;
+        
         final float ascent;
         
         final float descent;
@@ -1394,11 +1271,14 @@ public final class DocumentViewOp
          */
         final float[] underlineAndStrike = new float[4];
         
-        FontInfo(Font font, JTextComponent textComponent, FontRenderContext frc, float lineHeightCorrection) {
+        FontInfo(Font font, JTextComponent textComponent, FontRenderContext frc, float lineHeightCorrection, int textZoom) {
+            realFont = (textZoom != 0)
+                    ? new Font(font.getName(), font.getStyle(), Math.max(font.getSize() + textZoom, 1))
+                    : font;
             char defaultChar = 'A';
             String defaultCharText = String.valueOf(defaultChar);
-            TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, font, frc); // NOI18N
-            TextLayout lineHeightTextLayout = new TextLayout("A_|B", font, frc);
+            TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, realFont, frc); // NOI18N
+            TextLayout lineHeightTextLayout = new TextLayout("A_|B", realFont, frc);
             // Round the ascent to eliminate long mantissa without any visible effect on rendering.
             ascent = lineHeightTextLayout.getAscent() * lineHeightCorrection;
             descent = lineHeightTextLayout.getDescent() * lineHeightCorrection;
@@ -1415,6 +1295,7 @@ public final class DocumentViewOp
             if (LOG.isLoggable(Level.FINE)) {
                 FontMetrics fm = textComponent.getFontMetrics(font);
                 LOG.fine("Font: " + font + "\nSize2D: " + font.getSize2D() + // NOI18N
+                        ", Real-font: " + realFont + "\nSize2D: " + realFont.getSize2D() + // NOI18N
                         ", lineHeightCorrection(applied to subsequent measures)=" + lineHeightCorrection + // NOI18N
                         "\nascent=" + ascent + ", descent=" + descent + // NOI18N
                         ", leading=" + leading + "\nChar-width=" + charWidth + // NOI18N

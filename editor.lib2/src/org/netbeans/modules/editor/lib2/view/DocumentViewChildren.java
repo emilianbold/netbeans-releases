@@ -452,7 +452,6 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         assert (endIndex <= pCount) : "endIndex=" + endIndex + " > pCount=" + pCount; // NOI18N
         int rStartIndex = startIndex; // Rebuild start index
         int rEndIndex = endIndex; // Rebuild end index
-        int origEndIndex = endIndex; // Originally requested end index - for error tracing only
         boolean updated = false;
         TextLayoutCache tlCache = docView.op.getTextLayoutCache();
         if (pCount > 0) {
