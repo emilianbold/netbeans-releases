@@ -398,6 +398,12 @@ public class UtilitiesTest extends NbTestCase {
         }
         String s = Utilities.toURI(getWorkDir()).toString();
         assertTrue(s, s.endsWith("/"));
+        URI jar = Utilities.toURI(new File(getWorkDir(), "some.jar"));
+        URI jarN = jar.resolve("some.jar");
+        assertEquals(jar, jarN);
+        URI jarR = new URI("jar:" + jar + "!/");
+        URI jarNR = new URI("jar:" + jarN + "!/");
+        assertEquals("#214131: equal even when wrapped", jarR, jarNR);
         // XXX test that IllegalArgumentException is thrown where appropriate
     }
     private static void assertFileURI(String file, String uri) throws Exception {
