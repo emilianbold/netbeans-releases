@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -496,7 +497,11 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     String clazzSlash = path.substring(0, path.length() - 5);
                     p.setProperty("fix.class", clazzSlash); // NOI18N
                 } else if (command.equals(JavaProjectConstants.COMMAND_JAVADOC) && !project.supportsJavadoc()) {
-                    promptForPublicPackagesToDocument();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            promptForPublicPackagesToDocument();
+                        }
+                    });
                     return;
                 } else {
                     // XXX consider passing PM.fP(FU.toFO(SuiteUtils.suiteDirectory(project))) instead for a suite component project:
