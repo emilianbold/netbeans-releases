@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="Specification.displayName">
+            <api name="general"/>
+            <summary>Added <code>Specification.getDisplayName</code> returning
+            the user friendly name of the platform specification.</summary>
+            <version major="1" minor="26"/>
+            <date day="13" month="6" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>                
+            <description>
+                Added <code>Specification.getDisplayName</code> returning
+            the user friendly name of the platform specification.
+            </description>
+            <class package="org.netbeans.api.java.platform" name="Specification"/>
+            <issue number="198834"/>
+        </change>
 
         <change id="JavaPlatformManager.defaultPlatform">
             <api name="general"/>
