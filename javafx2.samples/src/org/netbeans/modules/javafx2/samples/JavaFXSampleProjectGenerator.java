@@ -114,7 +114,7 @@ public class JavaFXSampleProjectGenerator {
                     if (projectProps != null) {
                         FileLock lock = projectProps.lock();
                         try {
-                            EditableProperties props = new EditableProperties();
+                            EditableProperties props = new EditableProperties(false);
                             InputStream in = projectProps.getInputStream();
                             try {
                                 props.load(in);
@@ -147,13 +147,13 @@ public class JavaFXSampleProjectGenerator {
 
     private static FileObject createProjectFolder(File projectFolder) throws IOException {
         FileObject projLoc;
-        Stack nameStack = new Stack();
+        Stack<String> nameStack = new Stack<String>();
         while ((projLoc = FileUtil.toFileObject(projectFolder)) == null) {
             nameStack.push(projectFolder.getName());
             projectFolder = projectFolder.getParentFile();
         }
         while (!nameStack.empty()) {
-            projLoc = projLoc.createFolder((String) nameStack.pop());
+            projLoc = projLoc.createFolder(nameStack.pop());
             assert projLoc != null;
         }
         return projLoc;

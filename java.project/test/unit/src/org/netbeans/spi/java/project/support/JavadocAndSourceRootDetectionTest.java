@@ -43,14 +43,21 @@
 package org.netbeans.spi.java.project.support;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -146,10 +153,71 @@ public class JavadocAndSourceRootDetectionTest extends NbTestCase {
         Collections.sort(result,c);
         assertEquals (expected.toString(), result.toString());
     }
+    
+    public void testFindPackageRoot() throws Exception {
+        final String testFileContent =
+            "package org.netbeans.testpackage;\n"+      //NOI18N
+            "public class Test {\n"+                    //NOI18N
+            "}\n";                                      //NOI18N
+        final FileObject workdir = FileUtil.toFileObject(getWorkDir());
+        final FileObject folderRoot = workdir.createFolder("src");  //NOI18N
+        FileObject testFile = TestFileUtils.writeFile(
+            folderRoot,
+            "org/netbeans/testpackage/Test.java",   //NOI18N
+            testFileContent);
+        assertEquals(folderRoot, JavadocAndSourceRootDetection.findPackageRoot(testFile));
+        
+        final FileObject zipRoot1 = createZipFile(
+                workdir,
+                "zipRoot1.zip",                         //NOI18N
+                "org/netbeans/testpackage/Test.java",   //NOI18N
+                testFileContent);
+        testFile = zipRoot1.getFileObject("org/netbeans/testpackage/Test.java");  //NOI18N
+        assertEquals(zipRoot1, JavadocAndSourceRootDetection.findPackageRoot(testFile));
+        
+        final FileObject zipRoot2 = createZipFile(
+                workdir,
+                "zipRoot2.zip",                             //NOI18N
+                "src/org/netbeans/testpackage/Test.java",   //NOI18N
+                testFileContent);
+        testFile = zipRoot2.getFileObject("src/org/netbeans/testpackage/Test.java");  //NOI18N
+        FileObject expected = zipRoot2.getFileObject("src");    //NOI18N
+        assertNotNull(expected);
+        assertEquals(expected, JavadocAndSourceRootDetection.findPackageRoot(testFile));
+    }
 
     private void assertParse(String text, boolean packageInfo, String expectedPackage) {
         Matcher m = (packageInfo ? JavadocAndSourceRootDetection.PACKAGE_INFO : JavadocAndSourceRootDetection.JAVA_FILE).matcher(text);
         assertEquals("Misparse of:\n" + text, expectedPackage, m.matches() ? m.group(1) : null);
+    }
+    
+    private static FileObject createZipFile (
+            @NonNull final FileObject folder,
+            @NonNull final String name,
+            @NonNull final String path,
+            @NonNull final String content) throws IOException {
+        final FileObject zipRoot1 = folder.createData(name);
+        final FileLock lock = zipRoot1.lock();
+        try {
+            final ZipOutputStream zout = new ZipOutputStream(zipRoot1.getOutputStream(lock));  //NOI18N            
+            try {
+                final String[] pathElements = path.split("/");  //NOI18N
+                final StringBuilder currentPath = new StringBuilder();
+                for (String element : pathElements) {
+                    if (currentPath.length() > 0) {
+                        currentPath.append('/');                //NOI18N
+                    }
+                    currentPath.append(element);
+                    zout.putNextEntry(new ZipEntry(currentPath.toString()));
+                }
+                zout.write(content.getBytes(Charset.defaultCharset()));
+            } finally {
+                zout.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+        return FileUtil.getArchiveRoot(zipRoot1);
     }
 
 }

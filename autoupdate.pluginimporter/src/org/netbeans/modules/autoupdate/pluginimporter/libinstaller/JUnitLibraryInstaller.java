@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.autoupdate.pluginimporter.libinstaller;
 
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressHandle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
@@ -62,12 +64,18 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import static org.netbeans.modules.autoupdate.pluginimporter.libinstaller.Bundle.*;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
+import org.openide.awt.Mnemonics;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.autoupdate.pluginimporter.libinstaller.Bundle.*;
 
 /**
  * Defines JUnit 3.x/4.x libraries by downloading their defining modules.
@@ -122,37 +130,32 @@ public class JUnitLibraryInstaller {
         }
         assert ! jUnitLib.getAvailableUpdates().isEmpty() : "Updates found for " + jUnitLib;
         if (jUnitLib.getAvailableUpdates().isEmpty()) {
-            LOG.info("No updates found for " + jUnitLib);
+            LOG.log(Level.INFO, "No updates found for {0}", jUnitLib);
             return ;
         }
         // make install container
         OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
         UpdateElement jUnitElement = jUnitLib.getAvailableUpdates().get(0);
         if (!oc.canBeAdded(jUnitLib, jUnitElement)) {
-            LOG.info("Could not add " + jUnitElement + " to updates");
+            LOG.log(Level.INFO, "Could not add {0} to updates", jUnitElement);
             return ;
         }
         for (UpdateElement req : oc.add(jUnitElement).getRequiredElements()) {
             oc.add(req);
         }
-        if (silent) {
-            try {
-                // download
-                LOG.fine("Try to download " + jUnitElement);
-                ProgressHandle downloadHandle = ProgressHandleFactory.createHandle (download_handle());
-                Validator validator = oc.getSupport().doDownload(downloadHandle, true);
-                // install
-                ProgressHandle validateHandle = ProgressHandleFactory.createHandle (validate_handle());
-                Installer installer = oc.getSupport().doValidate(validator, validateHandle);
-                LOG.fine("Try to install " + jUnitElement);
-                ProgressHandle installHandle = ProgressHandleFactory.createHandle (install_handle());
-                Restarter restarter = oc.getSupport().doInstall(installer, installHandle);
-                assert restarter == null : "Not need to restart while installing " + jUnitLib;
-                LOG.fine("Done " + jUnitElement);
-            } catch (OperationException ex) {
-                LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
+        // Commented so far, better is to do not show any messages to user 
+        // and silently try to installl JUnit to NB installation folder 
+        // and if it was unsuccessful install it into userdir.
+        //if (silent) {
+        try {
+            install(oc, jUnitElement, jUnitLib, false);
+        } catch (OperationException ex) {
+            LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
+            if (OperationException.ERROR_TYPE.WRITE_PERMISSION.equals(ex.getErrorType())) {
+                notifyWarning(oc, jUnitElement, jUnitLib); 
             }
-        } else {
+        }
+        /*} else {
             Confirmation question = new NotifyDescriptor.Confirmation(
                                             download_question(),
                                             download_title(),
@@ -165,9 +168,83 @@ public class JUnitLibraryInstaller {
             } else {
                 LOG.info("user denied JUnit installation");
             }
-        }
+        }*/
+    }
+    
+    private static void install(OperationContainer<InstallSupport> oc, UpdateElement jUnitElement, UpdateUnit jUnitLib, boolean useUserdirAsFallback) throws OperationException {
+        // download
+        LOG.log(Level.FINE, "Try to download {0}", jUnitElement);
+        ProgressHandle downloadHandle = ProgressHandleFactory.createHandle (download_handle());
+        Validator validator = oc.getSupport().doDownload(downloadHandle, true, useUserdirAsFallback);
+        // install
+        ProgressHandle validateHandle = ProgressHandleFactory.createHandle (validate_handle());
+        Installer installer = oc.getSupport().doValidate(validator, validateHandle);
+        LOG.log(Level.FINE, "Try to install {0}", jUnitElement);
+        ProgressHandle installHandle = ProgressHandleFactory.createHandle (install_handle());
+        Restarter restarter = oc.getSupport().doInstall(installer, installHandle);
+        assert restarter == null : "Not need to restart while installing " + jUnitLib;
+        LOG.log(Level.FINE, "Done {0}", jUnitElement);
     }
 
+    @Messages({"writePermission=You don't have permission to install JUnit Library into the installation directory which is recommended.",
+        "showDetails=Show details"})
+    private static void notifyWarning(final OperationContainer<InstallSupport> oc, final UpdateElement jUnitElement, final UpdateUnit jUnitLib) {
+        // lack of privileges for writing
+        ActionListener onMouseClickAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            install(oc, jUnitElement, jUnitLib, true);
+                        } catch (OperationException ex) {
+                            LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
+                        }
+                    }
+                };
+                showWritePermissionDialog(r);
+            }
+        };
+        String title = writePermission();
+        String description = showDetails();
+        NotificationDisplayer.getDefault().notify(title,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/autoupdate/pluginimporter/resources/warning.gif", false), // NOI18N
+                description, onMouseClickAction, NotificationDisplayer.Priority.HIGH);
+    }
+    
+    @Messages({"cancel=Cancel", "installAnyway=Install anyway", "warning=Write permission problem",
+        "writePermissionDetails=<html>You don't have permission to install JUnit Library into the installation directory which is recommened.<br><br>"
+        + "To perform installation into the shared directory, you should run IDE as a user with administrative<br>"
+        + "privilege, or install the JUnit Library into your user directory."})
+    private static void showWritePermissionDialog(Runnable installAnyway) {
+        JButton cancel = new JButton();
+        Mnemonics.setLocalizedText(cancel, cancel());
+        JButton install = new JButton();
+        Mnemonics.setLocalizedText(install, installAnyway());
+        DialogDescriptor descriptor = new DialogDescriptor(
+                new JLabel(writePermissionDetails()),
+                warning(),
+                true, // Modal
+                new JButton[]{install, cancel}, // Option list
+                null, // Default
+                DialogDescriptor.DEFAULT_ALIGN, // Align
+                null, // Help
+                null);
+        
+        descriptor.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
+        descriptor.setClosingOptions(null);
+        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+        if (install.equals(descriptor.getValue())) {
+            // install anyway
+            LOG.info("user install JUnit into userdir anyway");
+            InstallLibraryTask.RP.post(installAnyway);
+        } else {
+            LOG.info("user canceled install JUnit into userdir");
+        }
+        
+    }
+    
     private static Map<String, UpdateUnit> findModules(String... codeNames) {
         Collection<String> names = Arrays.asList(codeNames);
         Map<String, UpdateUnit> res = new HashMap<String, UpdateUnit>();

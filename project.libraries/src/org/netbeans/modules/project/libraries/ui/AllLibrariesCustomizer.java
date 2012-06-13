@@ -47,29 +47,29 @@ package org.netbeans.modules.project.libraries.ui;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
-import org.netbeans.modules.project.libraries.ui.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JPanel;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
+import static org.netbeans.modules.project.libraries.ui.Bundle.*;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
-/**
- *
- */
-class AllLibrariesCustomizer extends javax.swing.JPanel {
+class AllLibrariesCustomizer extends JPanel implements HelpCtx.Provider {
     
     private org.netbeans.modules.project.libraries.ui.LibrariesCustomizer librariesCustomizer;
-    /** Creates new form AllLibrariesCustomizer */
-    public AllLibrariesCustomizer() {
+
+    AllLibrariesCustomizer() {
         initComponents();
         librariesCustomizer = new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer(null);
         placeholder.add(librariesCustomizer);
@@ -79,10 +79,15 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
     public boolean apply() {
         return librariesCustomizer.apply();
     }
+
+    @Override public HelpCtx getHelpCtx() {
+        return librariesCustomizer.getHelpCtx();
+    }
     
+    @Messages("LABEL_Global_Libraries=Global Libraries")
     private void initModel() {
         List<String> items = new ArrayList<String>();
-        items.add(NbBundle.getMessage(AllLibrariesCustomizer.class, "LABEL_Global_Libraries"));
+        items.add(LABEL_Global_Libraries());
         for (LibraryManager man : LibraryManager.getOpenManagers()) {
             if (man.getLocation() == null) {
                 continue;
@@ -112,7 +117,7 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
 
         placeholder.setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setText(java.text.MessageFormat.format(org.openide.util.NbBundle.getMessage(AllLibrariesCustomizer.class, "AllLibrariesCustomizer.jLabel1.text"), new Object[] {})); // NOI18N
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(AllLibrariesCustomizer.class, "AllLibrariesCustomizer.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -143,7 +148,7 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
     private void libraryManagerComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_libraryManagerComboBoxActionPerformed
         int index = libraryManagerComboBox.getSelectedIndex();
         if (index == -1) {
-            return;
+            // do nothing
         } else if (index == 0) {
             librariesCustomizer.setLibraryStorageArea(null);
         } else if (index > 0) {
@@ -151,7 +156,7 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
             try {
                 //#131452 prevent space in path problem when converting to URL.
                 File loc = FileUtil.normalizeFile(new File((String) libraryManagerComboBox.getModel().getSelectedItem()));
-                u = loc.toURI().toURL();
+                u = Utilities.toURI(loc).toURL();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -160,9 +165,9 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
     }//GEN-LAST:event_libraryManagerComboBoxActionPerformed
     
     private LibraryStorageArea findLibraryStorageArea(URL u) {
-        for (ArealLibraryProvider alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
+        for (ArealLibraryProvider<?,?> alp : Lookup.getDefault().lookupAll(ArealLibraryProvider.class)) {
             for (LibraryStorageArea area : LibraryAccessor.getOpenAreas(alp)) {
-                if (u.equals(area.getLocation())) {
+                if (u.toString().equals(area.getLocation().toString())) {
                     return area;
                 }
             }

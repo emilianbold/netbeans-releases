@@ -64,6 +64,7 @@ import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -87,7 +88,7 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
         }
         if ("file".equals(url.getProtocol())) { //NOI18N
             try {
-                File fil = new File(url.toURI());
+                File fil = Utilities.toFile(url.toURI());
                 fil = FileUtil.normalizeFile(fil);
                 Res toReturn = findFor(fil);
                 if (toReturn != null) {
@@ -158,8 +159,8 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
 
     private Res checkRoot(File root, URI source, URI test) {
         return checkRoot(root,
-                         source != null ? FileUtil.normalizeFile(new File(source)) : null,
-                         test != null ? FileUtil.normalizeFile(new File(test)) : null);
+                         source != null ? FileUtil.normalizeFile(Utilities.toFile(source)) : null,
+                         test != null ? FileUtil.normalizeFile(Utilities.toFile(test)) : null);
     }
 
     

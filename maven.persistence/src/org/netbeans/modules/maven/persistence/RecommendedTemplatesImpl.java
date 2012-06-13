@@ -47,6 +47,7 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 @ProjectServiceProvider(service=RecommendedTemplates.class, projectType="org-netbeans-modules-maven")
 public class RecommendedTemplatesImpl implements RecommendedTemplates {
+    @Override
     public String[] getRecommendedTypes() {
         return new String[] {"persistence"};
     }

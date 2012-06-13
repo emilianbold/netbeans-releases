@@ -62,8 +62,9 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.runjar.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /** Browses and allows to choose a project's main class.
  *
@@ -81,11 +82,13 @@ class MainClassChooser extends JPanel {
         initClassesView (sourcesRoots);
     }
     
+    @Messages("LBL_ChooseMainClass_NO_CLASSES_NODE=<No main classes found>")
     private void initClassesView (final FileObject... sourcesRoots) {
         possibleMainClasses = null;
         jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jMainClassList.setListData (getWarmupList ());
         jMainClassList.addListSelectionListener (new ListSelectionListener () {
+            @Override
             public void valueChanged (ListSelectionEvent evt) {
                 if (changeListener != null) {
                     changeListener.stateChanged (new ChangeEvent (evt));
@@ -94,6 +97,7 @@ class MainClassChooser extends JPanel {
         });
         // support for double click to finish dialog with selected class
         jMainClassList.addMouseListener (new MouseListener () {
+            @Override
             public void mouseClicked (MouseEvent e) {
                 if (MouseUtils.isDoubleClick (e)) {
                     if (getSelectedMainClass () != null) {
@@ -103,20 +107,26 @@ class MainClassChooser extends JPanel {
                     }
                 }
             }
+            @Override
             public void mousePressed (MouseEvent e) {}
+            @Override
             public void mouseReleased (MouseEvent e) {}
+            @Override
             public void mouseEntered (MouseEvent e) {}
+            @Override
             public void mouseExited (MouseEvent e) {}
         });
         
         RequestProcessor.getDefault ().post (new Runnable () {
+            @Override
             public void run () {
                 
                 possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
                 if (possibleMainClasses.isEmpty ()) {                    
                     SwingUtilities.invokeLater( new Runnable () {
+                        @Override
                         public void run () {
-                            jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
+                            jMainClassList.setListData (new String[] { LBL_ChooseMainClass_NO_CLASSES_NODE () } ); // NOI18N
                         }
                     });                    
                 } else {
@@ -124,6 +134,7 @@ class MainClassChooser extends JPanel {
                     // #46861, sort name of classes
                     Arrays.sort (arr, new MainClassComparator());
                     SwingUtilities.invokeLater(new Runnable () {
+                        @Override
                         public void run () {
                             jMainClassList.setListData (arr);
                             jMainClassList.setSelectedIndex (0);
@@ -135,8 +146,9 @@ class MainClassChooser extends JPanel {
         
     }
     
+    @Messages("LBL_ChooseMainClass_WARMUP_MESSAGE=Initializing view, please wait ...")
     private Object[] getWarmupList () {        
-          return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; //NOI18N
+          return new Object[] {LBL_ChooseMainClass_WARMUP_MESSAGE ()}; //NOI18N
     }
     
     private boolean isValidMainClassName (Object value) {
@@ -264,9 +276,7 @@ class MainClassChooser extends JPanel {
         @Override
         public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName;
-            if (value instanceof String) {
-                displayName = (String) value;
-            } if (value instanceof ElementHandle) {
+            if (value instanceof ElementHandle) {
                 displayName = ((ElementHandle)value).getQualifiedName();
             } else {
                 displayName = value.toString ();
@@ -277,6 +287,7 @@ class MainClassChooser extends JPanel {
     
     private static class MainClassComparator implements Comparator<ElementHandle> {
             
+        @Override
         public int compare(ElementHandle arg0, ElementHandle arg1) {
             return arg0.getQualifiedName().compareTo(arg1.getQualifiedName());
         }

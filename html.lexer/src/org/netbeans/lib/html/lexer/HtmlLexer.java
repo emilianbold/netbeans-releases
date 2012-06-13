@@ -805,6 +805,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             break;
                         case '/':
                         case '>':
+                        case '<':
                             input.backup(1);
                             lexerState = ISP_TAG_X;
                             break;
@@ -824,14 +825,27 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     break;
 
 
-                case ISI_VAL:
-                    if( !isWS( actChar )
-                    && !(actChar == '/' || actChar == '>' || actChar == '<')) break;  // Consume whole value
+                case ISI_VAL:                    
+                    if(actChar == '/') {
+                        //slash in unquoted value -- may be there but not followed by >. 
+                        //In such case IMO the value should be closed
+                        char next = (char)input.read();
+                        input.backup(1); //backup the next char
+                        if(next != '>') {
+                            //continue lexing the value
+                            break;
+                        }
+                    } else if(!isWS(actChar) && actChar != '>' && actChar != '<') {
+                        break; //continue lexing the attribute value
+                    }
+                    
+                    //finish lexing the value
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
                         return resolveValueToken();
                     }
+                    
                     break;
 
                 case ISI_VAL_QUOT:

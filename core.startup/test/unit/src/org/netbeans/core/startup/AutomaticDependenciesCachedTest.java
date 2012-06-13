@@ -44,9 +44,10 @@
 
 package org.netbeans.core.startup;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -64,14 +65,11 @@ public class AutomaticDependenciesCachedTest extends NbTestCase {
         super(name);
     }
 
-    public static Test suite() {
-        System.setProperty("org.netbeans.core.startup.AutomaticDependencies.level", "FINE");
-        final Logger logger = Logger.getLogger("org.netbeans.core.startup.AutomaticDependencies");
-        Observer o = new Observer(logger);
-        o.setLevel(Level.ALL);
-        logger.setLevel(Level.ALL);
-        logger.addHandler(o);
-        
+    public static Test suite() throws IOException {
+        assertFalse("Not consulted yet", LogConfig.consulted);
+        System.setProperty("java.util.logging.config.class", LogConfig.class.getName());
+        LogManager.getLogManager().readConfiguration();
+        assertTrue("LogConfig class consulted", LogConfig.consulted);
         
         NbTestSuite s = new NbTestSuite();
         
@@ -126,5 +124,18 @@ public class AutomaticDependenciesCachedTest extends NbTestCase {
             logger.addHandler(this);
         }
         
+    }
+    
+    public static final class LogConfig {
+        static boolean consulted;
+        
+        public LogConfig() {
+            consulted = true;
+            final Logger logger = Logger.getLogger("org.netbeans.core.startup.AutomaticDependencies");
+            Observer o = new Observer(logger);
+            o.setLevel(Level.ALL);
+            logger.setLevel(Level.ALL);
+            logger.addHandler(o);
+        }
     }
 }

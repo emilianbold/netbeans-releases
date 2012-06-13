@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -12,11 +12,28 @@ type="text/css">
 <body>
 <h2>C/C++ Project Properties Dialog Box: Debug</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Debug panel displays the tool that will be used for 
-debugging the project, and the threshold of repeated array elements. 
-For more information on the threshold, see "set print repeats" 
-in the documentation for the gdb debugger you are using.
+<p>The Debug panel lets you specify properties that are used whn you debug your 
+project in the IDE. 
 </p>
+<p><b>Debug command.</b> By default, the IDE uses the run command 
+to run your project under the debugger. You can specify a 
+command for the IDE to use for debugging instead of the run 
+command.</p>
+<p><b>Working dir.</b> By default, the IDE uses the run directory 
+as the working directory when debugging your project. You can 
+specify a different working directory for the IDE to use for 
+debugging.</p>
+<p><b>Gdb Init File.</b> By default, the IDE uses the <tt>.gdbinit</tt> 
+file in your home directory. You can specify a different <tt>.gdbinit</tt> 
+file for gdb commands to be executed before the debugging 
+session starts.
+</p>
+<p><b>Source dirs.</b> You can specify directories to be added to the
+beginning of the search path for source files. </p>
+<p><b>Substitute Path.</b> You can map your compile time and debug 
+time file paths if they are different.</p>
+
+
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>

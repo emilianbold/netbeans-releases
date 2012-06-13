@@ -50,6 +50,7 @@ import javax.lang.model.element.*;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
@@ -188,7 +189,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         Problem problem = null;
         Set<FileObject> references = new HashSet<FileObject>();
         List<EncapsulateDesc> descs = new ArrayList<EncapsulateDesc>(refactorings.size());
-        fireProgressListenerStart(ProgressEvent.START, refactorings.size() + 1);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, refactorings.size() + 1);
         for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
             if (cancelRequested.get()) {
                 return null;

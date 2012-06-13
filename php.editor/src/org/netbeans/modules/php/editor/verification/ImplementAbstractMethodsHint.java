@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -49,19 +51,21 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.InterfaceScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -72,6 +76,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
 
     private static final String HINT_ID = "Implement.Abstract.Methods"; //NOI18N
     private static final String ABSTRACT_PREFIX = "abstract "; //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(ImplementAbstractMethodsHint.class.getName());
 
     @Override
     public String getId() {
@@ -129,11 +134,22 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
                 Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(classScope, classScope));
                 LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
                 MethodElement lastMethodElement = null;
-
+                FileObject lastFileObject = null;
+                FileScope fileScope = null;
                 for (MethodElement methodElement : accessibleMethods) {
                     final TypeElement type = methodElement.getType();
                     if ((type.isInterface() || methodElement.isAbstract()) && !methodElement.isFinal()) {
-                        String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody);
+                        FileObject fileObject = methodElement.getFileObject();
+                        if (lastFileObject != fileObject) {
+                            lastFileObject = fileObject;
+                            fileScope = getFileScope(fileObject);
+                        }
+                        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
+                        List typeNameResolvers = new ArrayList<TypeNameResolver>();
+                        typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));
+                        typeNameResolvers.add(TypeNameResolverImpl.forSmartName(classScope, classScope.getOffset()));
+                        TypeNameResolver typeNameResolver = TypeNameResolverImpl.forChainOf(typeNameResolvers);
+                        String skeleton = methodElement.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver);
                         skeleton = skeleton.replace(ABSTRACT_PREFIX, ""); //NOI18N
                         methodSkeletons.add(skeleton);
                         lastMethodElement = methodElement;
@@ -149,6 +165,24 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
             }
         }
         return retval;
+    }
+
+    private FileScope getFileScope(final FileObject fileObject) {
+        final FileScope[] fileScope = new FileScope[1];
+        try {
+            ParserManager.parse(Collections.singletonList(Source.create(fileObject)), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result parserResult = resultIterator.getParserResult();
+                    PHPParseResult phpResult = (PHPParseResult) parserResult;
+                    fileScope[0] = phpResult.getModel().getFileScope();
+                }
+        });
+        } catch (ParseException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        return fileScope[0];
     }
 
     private Set<MethodElement> getInheritedMethods(final ClassScope classScope, final Index index) {

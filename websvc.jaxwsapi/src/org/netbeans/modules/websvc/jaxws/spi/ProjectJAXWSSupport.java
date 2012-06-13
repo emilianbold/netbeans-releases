@@ -53,6 +53,8 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -305,8 +307,11 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                 }
                 FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
                 try {
+                    Properties props = WSUtils.identifyWsimport(antProjectHelper);
                     ExecutorTask wsimportTask =
-                            ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-service-"+finalServiceName},null); //NOI18N
+                            ActionUtils.runTarget(buildImplFo,
+                                    new String[]{"wsimport-service-"+finalServiceName}, //NOI18N
+                                    props); 
                     wsimportTask.waitFinished();
                 } catch (IOException ex) {
                     ErrorManager.getDefault().log(ex.getLocalizedMessage());

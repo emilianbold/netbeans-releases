@@ -73,6 +73,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Utilities;
 
 class NbModuleProviderImpl implements NbModuleProvider {
 
@@ -196,7 +197,7 @@ class NbModuleProviderImpl implements NbModuleProvider {
                 if (layer != null) {
                     File layerXml = new File(getClassesDirectory(), layer);
                     if (layerXml.isFile()) {
-                        otherLayerURLs.add(layerXml.toURI().toURL());
+                        otherLayerURLs.add(Utilities.toURI(layerXml).toURL());
                     }
                 }
                 // TODO cache

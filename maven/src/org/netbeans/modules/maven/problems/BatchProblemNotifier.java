@@ -88,7 +88,7 @@ public class BatchProblemNotifier {
 
     public static void opened(NbMavenProjectImpl p) {
         ProblemReporterImpl pr = p.getProblemReporter();
-        pr.doBaseProblemChecks(p.getOriginalMavenProject());
+        pr.doIDEConfigChecks();
         Set<Artifact> missingArtifacts = pr.getMissingArtifacts();
         if (!missingArtifacts.isEmpty()) {
             Set<File> files = new HashSet<File>();

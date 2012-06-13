@@ -66,10 +66,6 @@ public class DigitalClock extends Application {
 
     private Clock clock;
     
-    public static void main(String[] args) {
-        Application.launch(args);
-    }
-    
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Digital Clock");
@@ -216,5 +212,16 @@ public class DigitalClock extends Application {
                 polygons[i].setEffect(DIGIT_COMBINATIONS[num][i] ? onEffect : offEffect);
             }
         }
+    }
+
+    /**
+     * The main() method is ignored in correctly deployed JavaFX 
+     * application. main() serves only as fallback in case the 
+     * application can not be launched through deployment artifacts,
+     * e.g., in IDEs with limited FX support. NetBeans ignores main().
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        launch(args);
     }
 }

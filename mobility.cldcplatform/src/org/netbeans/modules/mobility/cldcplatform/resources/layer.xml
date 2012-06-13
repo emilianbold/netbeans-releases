@@ -48,12 +48,12 @@ made subject to such option by the copyright holder.
         <folder name="platform">
             <folder name="installers">
                 <file name="j2me_platforms.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.GeneralPlatformInstall,org.netbeans.spi.java.platform.CustomPlatformInstall"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.cldcplatform.wizard.Installer.create"/>
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="j2me_custom_platform.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.GeneralPlatformInstall,org.netbeans.spi.java.platform.CustomPlatformInstall"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.mobility.cldcplatform.customwizard.Installer.create"/>
                     <attr name="position" intvalue="300"/>
                 </file>

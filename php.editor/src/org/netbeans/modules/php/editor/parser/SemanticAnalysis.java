@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -140,7 +141,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
-    private class SemanticHighlightVisitor extends DefaultVisitor {
+    private class SemanticHighlightVisitor extends DefaultTreePathVisitor {
 
         private class ASTNodeColoring {
             public ASTNode identifier;
@@ -240,6 +241,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     }
                 }
             }
+            super.visit(cldec);
         }
 
         @Override
@@ -269,6 +271,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 if (body != null) {
                     needToScan.add(body);
                 }
+            }
+        }
+
+        @Override
+        public void visit(TraitMethodAliasDeclaration node) {
+            if (node.getNewMethodName() != null) {
+                addOffsetRange(node.getNewMethodName(), ColoringAttributes.METHOD_SET);
             }
         }
 
@@ -396,10 +405,20 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(ConstantDeclaration node) {
-            List<Identifier> names = node.getNames();
-            if (!names.isEmpty()) {
-                for (Identifier identifier : names) {
-                    addOffsetRange(identifier, ColoringAttributes.STATIC_FIELD_SET);
+            ASTNode parentNode = null;
+            List<ASTNode> path = getPath();
+            synchronized (path) {
+                if (path != null && path.size() > 1) {
+                    parentNode = path.get(1);
+                }
+            }
+            if (parentNode instanceof ClassDeclaration || parentNode instanceof InterfaceDeclaration
+                    || parentNode instanceof TraitDeclaration) {
+                List<Identifier> names = node.getNames();
+                if (!names.isEmpty()) {
+                    for (Identifier identifier : names) {
+                        addOffsetRange(identifier, ColoringAttributes.STATIC_FIELD_SET);
+                    }
                 }
             }
             super.visit(node);

@@ -86,6 +86,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.openide.modules.Places;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -167,7 +168,7 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
 
         @Override protected URL file() throws IOException {
             File f = new File(RepositorySystem.userMavenConfigurationHome, "archetype-catalog.xml"); //NOI18N
-            return f.isFile() ? f.toURI().toURL() : null;
+            return f.isFile() ? Utilities.toURI(f).toURL() : null;
         }
 
         @Override protected String repository() {
@@ -210,7 +211,7 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
                     
                     if (catalog.exists()) {
                         try {
-                            toRet.addAll(CatalogRepoProvider.getArchetypes(catalog.toURI().toURL(), info.getRepositoryUrl()));
+                            toRet.addAll(CatalogRepoProvider.getArchetypes(Utilities.toURI(catalog).toURL(), info.getRepositoryUrl()));
                         } catch (MalformedURLException ex) {
                             LOG.log(Level.INFO, null, ex);
                         }

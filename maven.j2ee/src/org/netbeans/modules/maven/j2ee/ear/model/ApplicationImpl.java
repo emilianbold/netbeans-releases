@@ -299,6 +299,7 @@ public class ApplicationImpl implements Application {
 //        return null;
 //    }
     
+    @Override
     public String getDefaultDisplayName() {
         return ProjectUtils.getInformation(earProject).getDisplayName();
     }
@@ -308,22 +309,27 @@ public class ApplicationImpl implements Application {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public BigDecimal getVersion() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public SAXParseException getError() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int getStatus() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setModule(int index, Module value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Module getModule(int index) {
         if (index < 0 || index >= getModules().size()) {
             return null;
@@ -331,102 +337,127 @@ public class ApplicationImpl implements Application {
         return getModules().get(index);
     }
     
+    @Override
     public int sizeModule() {
         return getModules().size();
     }
     
+    @Override
     public void setModule(Module[] value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Module[] getModule() {
         return getModules().toArray(new Module[getModules().size()]);
     }
     
+    @Override
     public int addModule(Module value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int removeModule(Module value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Module newModule() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setSecurityRole(int index, SecurityRole value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public SecurityRole getSecurityRole(int index) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int sizeSecurityRole() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setSecurityRole(SecurityRole[] value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public SecurityRole[] getSecurityRole() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int addSecurityRole(SecurityRole value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int removeSecurityRole(SecurityRole value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public SecurityRole newSecurityRole() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setIcon(int index, Icon value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Icon getIcon(int index) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int sizeIcon() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setIcon(Icon[] value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int addIcon(Icon value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public int removeIcon(Icon value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Icon newIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void write(FileObject fo) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void merge(RootInterface root, int mode) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
@@ -435,180 +466,224 @@ public class ApplicationImpl implements Application {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setId(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getId() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Object getValue(String propertyName) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void write(OutputStream os) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setDescription(String locale, String description) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setDescription(String description) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setAllDescriptions(Map descriptions) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getDescription(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getDefaultDescription() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Map getAllDescriptions() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeDescriptionForLocale(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeDescription() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeAllDescriptions() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setDisplayName(String locale, String displayName) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setDisplayName(String displayName) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setAllDisplayNames(Map displayNames) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getDisplayName(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Map getAllDisplayNames() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeDisplayNameForLocale(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeDisplayName() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeAllDisplayNames() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public CommonDDBean createBean(String beanName) throws ClassNotFoundException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public CommonDDBean addBean(String beanName, String[] propertyNames, Object[] propertyValues,
             String keyProperty) throws ClassNotFoundException,
             NameAlreadyUsedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public CommonDDBean addBean(String beanName) throws ClassNotFoundException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public CommonDDBean findBeanByName(String beanName, String propertyName, String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setSmallIcon(String locale, String icon) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setSmallIcon(String icon) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setLargeIcon(String locale, String icon) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setLargeIcon(String icon) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void setIcon(Icon icon) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getSmallIcon(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getSmallIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getLargeIcon(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public String getLargeIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Icon getDefaultIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public Map getAllIcons() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeSmallIcon(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeLargeIcon(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeIcon(String locale) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeSmallIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeLargeIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeIcon() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     
+    @Override
     public void removeAllIcons() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }

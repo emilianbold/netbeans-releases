@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,15 +57,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -258,20 +263,94 @@ public class SourceGroupSupport {
         }
     }
     
-    public static FileObject getFileObjectFromClassName(String qualifiedClassName, Project project) throws IOException {
+    public static ElementHandle<TypeElement> getHandleClassName(String qualifiedClassName, 
+            Project project) throws IOException 
+    {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         FileObject root = restSupport.findSourceRoot();
-        ClasspathInfo cpInfo = ClasspathInfo.create(root);
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        ClassPath sourceCp = provider.findClassPath(root, ClassPath.SOURCE);
+        ClassPath compileCp = provider.findClassPath(root, ClassPath.COMPILE);
+        ClassPath bootCp = provider.findClassPath(root, ClassPath.BOOT);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourceCp);
         ClassIndex ci = cpInfo.getClassIndex();
         int beginIndex = qualifiedClassName.lastIndexOf('.')+1;
         String simple = qualifiedClassName.substring(beginIndex);
         Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
                 simple, ClassIndex.NameKind.SIMPLE_NAME, 
-                Collections.singleton(ClassIndex.SearchScope.SOURCE));
-        for (ElementHandle<TypeElement> handle : handles) {
+                EnumSet.of(ClassIndex.SearchScope.SOURCE, 
+                ClassIndex.SearchScope.DEPENDENCIES));
+        for (final ElementHandle<TypeElement> handle : handles) {
             if (qualifiedClassName.equals(handle.getQualifiedName())) {
-                return SourceUtils.getFile(handle, cpInfo);
+                return handle;
             }
+        }
+        return null;
+    }
+    
+    public static FileObject getFileObjectFromClassName(String qualifiedClassName, 
+            Project project) throws IOException 
+    {
+        final ElementHandle<TypeElement> handle = getHandleClassName(qualifiedClassName,
+                project);
+        if ( handle == null ){
+            return null;
+        }
+        ClassPathProvider provider = project.getLookup().lookup( 
+                ClassPathProvider.class);
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        FileObject root = restSupport.findSourceRoot();
+        ClassPath sourceCp = provider.findClassPath(root, ClassPath.SOURCE);
+        final ClassPath compileCp = provider.findClassPath(root, ClassPath.COMPILE);
+        ClassPath bootCp = provider.findClassPath(root, ClassPath.BOOT);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourceCp);
+        if (qualifiedClassName.equals(handle.getQualifiedName())) {
+            FileObject fo = SourceUtils.getFile(handle, cpInfo);
+            if (fo != null) {
+                return fo;
+            }
+            JavaSource javaSource  = JavaSource.create(cpInfo);
+            final FileObject classFo[] = new FileObject[1];
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run( CompilationController controller )
+                        throws Exception
+                {
+                    TypeElement element = handle.resolve(controller);
+                    if (element == null) {
+                        return;
+                    }
+                    PackageElement pack = controller.getElements()
+                            .getPackageOf(element);
+                    if (pack == null) {
+                        return;
+                    }
+                    String packageName = pack.getQualifiedName().toString();
+                    String fqn = ElementUtilities.getBinaryName(element);
+                    String className = fqn.substring(packageName.length());
+                    if (className.length() > 0 && className.charAt(0) == '.') {
+                        className = className.substring(1);
+                    }
+                    else {
+                        return;
+                    }
+                    int dotIndex = className.indexOf('.');
+                    if (dotIndex != -1) {
+                        className = className.substring(0, dotIndex);
+                    }
+                    if (className == null) {
+                        return;
+                    }
+
+                    String path = packageName.replace('.', '/') + '/'
+                            + className + ".class"; // NOI18N
+                    classFo[0] = compileCp.findResource(path);
+                }
+
+            }, true);
+            return classFo[0];
         }
         return null;
     }

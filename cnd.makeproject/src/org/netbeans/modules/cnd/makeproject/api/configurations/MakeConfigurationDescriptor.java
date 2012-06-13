@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1338,17 +1339,18 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
             Set<Entry<Thread, StackTraceElement[]>> entrySet = Thread.getAllStackTraces().entrySet();
-            ex.printStackTrace();
-            System.err.println("----- Start thread dump on catching IOException-----"); // NOI18N
+            ex.printStackTrace(System.err);
+            StringBuilder buf = new StringBuilder();
+            buf.append("----- Start thread dump on catching IOException-----\n"); // NOI18N
             for (Map.Entry<Thread, StackTraceElement[]> entry : entrySet) {
-                System.err.println(entry.getKey().getName());
+                buf.append(entry.getKey().getName()).append('\n'); // NOI18N
                 for (StackTraceElement element : entry.getValue()) {
-                    System.err.println("\tat " + element.toString()); // NOI18N
+                    buf.append("\tat ").append(element.toString()).append('\n'); // NOI18N
                 }
-                System.err.println();
+                buf.append('\n'); // NOI18N
             }
-            System.err.println("-----End thread dump on catching IOException-----"); // NOI18N
-            //ErrorManager.getDefault().notify(ex);
+            buf.append("-----End thread dump on catching IOException-----\n"); // NOI18N
+            LOGGER.log(Level.INFO, buf.toString());
         }
     }
 

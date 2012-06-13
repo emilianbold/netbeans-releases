@@ -77,6 +77,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.impl.ClassPathPackageAccessor;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -471,9 +472,7 @@ final class ActionFilterNode extends FilterNode {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
                 if (entryId.equals(CommonProjectUtils.getAntPropertyName(item.getReference()))) {
                     i.remove();
-                    if (isLastReference(entryId, props, classPathId)) {
-                        destroyReference(rh, helper, item);
-                    }
+                    ClassPathPackageAccessor.getInstance().removeUnusedReference(item, classPathId, helper, rh);
                     removed = true;
                 }
             }
@@ -487,35 +486,6 @@ final class ActionFilterNode extends FilterNode {
                return null;
            }
        }
-
-        /**
-         * Check whether given property is referenced by other properties.
-         *
-         * @param property property which presence it going to be tested
-         * @param props properties
-         * @param ignoreProperty a property to ignore
-         */
-        private static boolean isLastReference(String property, EditableProperties props, String ignoreProperty) {
-            for (Map.Entry<String,String> entry : props.entrySet()) {
-                if (ignoreProperty.equals(entry.getKey())) {
-                    continue;
-                }
-                if (entry.getValue().contains(property)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private static void destroyReference(ReferenceHelper rh, UpdateHelper uh, ClassPathSupport.Item item) {
-            if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
-                    item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
-                rh.destroyReference(item.getReference());
-                if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-                    item.removeSourceAndJavadoc(uh);
-                }
-            }
-        }
 
     }
 

@@ -1,4 +1,4 @@
-Usages of <b>Test.<init></b> [3 occurrences]
+Usages of <b>Test</b> [3 occurrences]
     RefactoringTest
         SubClass.java
             <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;12:&nbsp;&nbsp;</font><b>super</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>

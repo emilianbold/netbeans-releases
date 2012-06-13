@@ -46,24 +46,34 @@ package org.netbeans.modules.cnd.classview.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.prefs.Preferences;
-import org.openide.windows.*;
-import org.openide.util.HelpCtx;
-import org.netbeans.modules.cnd.classview.resources.I18n;
-import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.actions.CallableSystemAction;
+import org.openide.windows.*;
 
 /**
  * Shows/Hides class view pane
  * @author Vladimir Kvashin
  */
+@ActionID(id = "org.netbeans.modules.cnd.classview.ClassViewAction", category = "View")
+@ActionRegistration(lazy = true, displayName = "#CTL_ClassViewAction", iconBase=ClassViewTopComponent.ICON_PATH)
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "D-9"),
+    @ActionReference(path = "Menu/Window", position = 300)})
 public class ShowHideClassViewAction extends CallableSystemAction {
 
     public ShowHideClassViewAction() {
-        putValue(NAME, I18n.getMessage("CTL_ClassViewAction")); // NOI18N
-        putValue(SHORT_DESCRIPTION, I18n.getMessage("HINT_ClassViewAction")); // NOI18N
+        putValue(NAME, NbBundle.getMessage(ShowHideClassViewAction.class, "CTL_ClassViewAction")); // NOI18N
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(ShowHideClassViewAction.class, "HINT_ClassViewAction")); // NOI18N
     }
 
+    @Override
     public String getName() {
         return (String) getValue(NAME);
     }
@@ -73,6 +83,7 @@ public class ShowHideClassViewAction extends CallableSystemAction {
         performAction();
     }
 
+    @Override
     public void performAction() {
         TopComponent tc = ClassViewTopComponent.findDefault();
         if (!tc.isOpened()) {
@@ -83,6 +94,7 @@ public class ShowHideClassViewAction extends CallableSystemAction {
         tc.requestActive();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }

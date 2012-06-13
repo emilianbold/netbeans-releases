@@ -176,9 +176,15 @@ public class CndPathUtilitities {
                 StringBuilder s = new StringBuilder();
 
                 for (int cnt = bnames.length - match; cnt > 0; cnt--) {
-                    s.append("..").append(File.separator);	// NOI18N
+                    if (s.length()>0) {
+                        s.append(File.separatorChar);
+                    }
+                    s.append("..");	// NOI18N
                 }
                 for (int i = match; i < pnames.length; i++) {
+                    if (pnames[i].isEmpty()) {
+                        continue;
+                    }
                     if (s.length() > 0 && s.charAt(s.length() - 1) != File.separatorChar) {
                         s.append(File.separator);
                     }
@@ -558,7 +564,12 @@ public class CndPathUtilitities {
         } else if (path.charAt(0) == '\\') {
             return true;
         } else if (CharSequenceUtils.indexOf(path, ':') == 1 && isWindows) {
-            return true;
+            if (path.length()==2) {
+                return false;
+            } else if (path.charAt(2) == '\\' || path.charAt(2) == '/') {
+                return true;
+            }
+            return false;
         } else {
             return false;
         }

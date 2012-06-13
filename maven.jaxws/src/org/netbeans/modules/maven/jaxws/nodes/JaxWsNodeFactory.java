@@ -79,6 +79,7 @@ public class JaxWsNodeFactory implements NodeFactory {
     public JaxWsNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project p) {
         assert p != null;
         return new WsNodeList(p);
@@ -130,6 +131,7 @@ public class JaxWsNodeFactory implements NodeFactory {
             nodeList = new AtomicReference<List<String>>();
         }
         
+        @Override
         public List<String> keys() {
             List<String> keys = nodeList.get();
             if ( keys != null && !keys.isEmpty()) {
@@ -141,10 +143,12 @@ public class JaxWsNodeFactory implements NodeFactory {
             return Collections.emptyList();
         }
         
+        @Override
         public synchronized void addChangeListener(ChangeListener l) {
             listeners.add(l);
         }
 //        
+        @Override
         public synchronized void removeChangeListener(ChangeListener l) {
             listeners.remove(l);
         }
@@ -161,6 +165,7 @@ public class JaxWsNodeFactory implements NodeFactory {
             }
         }
         
+        @Override
         public Node node(String key) {
             if (KEY_SERVICES.equals(key)) {
                 //JAXWSLightView view = JAXWSLightView.getJAXWSLightView(project.getProjectDirectory());
@@ -174,6 +179,7 @@ public class JaxWsNodeFactory implements NodeFactory {
             return null;
         }
         
+        @Override
         public void addNotify() {
             if (jaxwsSupport == null) {
                 jaxwsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
@@ -188,6 +194,7 @@ public class JaxWsNodeFactory implements NodeFactory {
             }
         }
         
+        @Override
         public void removeNotify() {
             if (jaxwsSupport != null) {
                 jaxwsSupport.removePropertyChangeListener(WeakListeners.propertyChange(this, jaxwsSupport));
@@ -198,10 +205,12 @@ public class JaxWsNodeFactory implements NodeFactory {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             fireChange();
         }
         
+        @Override
         public void resultChanged(LookupEvent evt) {
             jaxwsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
             if (jaxwsSupport != null) {

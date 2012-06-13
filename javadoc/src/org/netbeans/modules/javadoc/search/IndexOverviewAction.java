@@ -59,6 +59,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -201,6 +202,13 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
             return IndexOverviewAction.this.getHelpCtx();
         }
         
+        public @Override
+        void menuSelectionChanged(boolean isIncluded) {
+            super.menuSelectionChanged(isIncluded);
+            if (isIncluded) {
+                StatusDisplayer.getDefault().setStatusText(loc.toString());
+            }
+        }
     }
 
     private static final class MoreReferencesMenuItem extends JMenuItem implements ActionListener {

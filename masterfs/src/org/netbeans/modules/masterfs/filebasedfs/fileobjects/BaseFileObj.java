@@ -1021,7 +1021,10 @@ public abstract class BaseFileObj extends FileObject {
         return extensions;
     }
 
-    public static FolderObj getExistingFor(File f, FileObjectFactory fbs) {         
+    public static FolderObj getExistingFor(File f, FileObjectFactory fbs) {
+        if (fbs == null) {
+            throw new NullPointerException("No factory for " + f); // NOI18N
+        }
         FileObject retval = fbs.getCachedOnly(f);
         return (FolderObj) ((retval instanceof FolderObj) ? retval : null);
     }

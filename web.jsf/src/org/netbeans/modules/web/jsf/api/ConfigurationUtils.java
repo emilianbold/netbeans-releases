@@ -50,12 +50,15 @@ import java.util.List;
 import java.util.WeakHashMap;
 import java.util.Map;
 import java.lang.ref.WeakReference;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -242,20 +245,4 @@ public class ConfigurationUtils {
         return null;
     }
     
-    /**
-     * Helper method which finds model managed bean element.
-     * @param webModule the web module, wher the managed bean is defined.
-     * @param name Name of the managed bean. 
-     * @return corresponding model element.
-     */
-    public static FacesManagedBean findFacesManagedBean(WebModule webModule, String name){
-        List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
-        for (FacesManagedBean managedBean : beans) {
-            if ( name.equals( managedBean.getManagedBeanName() )){
-                return managedBean;
-            }
-        }
-        return null;
-    }
-        
 }

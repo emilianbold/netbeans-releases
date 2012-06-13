@@ -53,6 +53,8 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -108,14 +110,14 @@ public class JSFWhereUsedPlugin implements RefactoringPlugin{
             if (element instanceof TreePathHandle) {
                 treePathHandle = (TreePathHandle)element;
                 if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
-                    WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-                    if (webModule != null){
+                    Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
+                    if (project != null){
                         CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
                         if (info != null) {
                             Element resElement = treePathHandle.resolveElement(info);
                             TypeElement type = (TypeElement) resElement;
                             String fqnc = type.getQualifiedName().toString();
-                            List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqnc,"");
+                            List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqnc,"");
                             for (Occurrences.OccurrenceItem item : items) {
                                 refactoringElements.add(refactoring, new JSFWhereUsedElement(item));
                             }

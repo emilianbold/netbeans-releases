@@ -63,56 +63,49 @@ public class AntJEE6Suite extends J2eeTestCase {
 
     public static Test suite() {
         // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
-        return NbModuleSuite.create(
-                addServerTests(Server.GLASSFISH,
+        return addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(), JEE6FromDBTest.class,
-                    "testFromDB",
-                    "testDeploy",
-                    "testUndeploy"
-                    ), JEE6CRUDTest.class,
-                    "testRfE", //NOI18N
-                    "testPropAccess", //NOI18N
-                    "testDeploy", //NOI18N
-                    "testCreateRestClient", //NOI18N
-                    "testUndeploy"
-                    ), JEE6PatternsTest.class,
-                    "testSingletonDef", //NOI18N
-                    "testContainerIDef", //NOI18N
-                    "testCcContainerIDef", //NOI18N
-                    "testSingleton1", //NOI18N
-                    "testCcContainerI1", //NOI18N
-                    "testSingleton2", //NOI18N
-                    "testContainerI1", //NOI18N
-                    "testContainerI2", //NOI18N
-                    "testSingleton3", //NOI18N
-                    "testContainerI3", //NOI18N
-                    "testCcContainerI2", //NOI18N
-                    "testCcContainerI3", //NOI18N
-                    "testNodes", //NOI18N
-                    "testDeploy", //NOI18N
-                    "testUndeploy"
-                    ), JEE6RestCStubsTest.class,
-                    "testWizard", //NOI18N
-                    "testCreateSimpleStubs", //NOI18N
-                    "testFromWADL", //NOI18N
-                    "testCloseProject"
-                    ), JEE6RestNodeTest.class,
-                    "testNodesAfterOpen",
-                    "testOpenOnResource",
-                    "testOpenOnMethod",
-                    "testOpenOnLocator",
-                    "testAddMethod",
-                    "testRemoveMethod",
-                    "testCloseProject"
-                    ), RestSamplesTest.class,
-                    "testHelloWorldSample", //NOI18N
-                    "testCustomerDBSample", //NOI18N
-                    "testCustomerDBSpringSample", //NOI18N
-                    "testMessageBoardSample"
-                    ).enableModules(".*").clusters(".*"));
+                "testFromDB",
+                "testDeploy",
+                "testUndeploy"), JEE6CRUDTest.class,
+                "testRfE", //NOI18N
+                "testPropAccess", //NOI18N
+                "testDeploy", //NOI18N
+                "testCreateRestClient", //NOI18N
+                "testUndeploy"), JEE6PatternsTest.class,
+                "testSingletonDef", //NOI18N
+                "testContainerIDef", //NOI18N
+                "testCcContainerIDef", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
+                "testSingleton2", //NOI18N
+                "testContainerI1", //NOI18N
+                "testContainerI2", //NOI18N
+                "testSingleton3", //NOI18N
+                "testContainerI3", //NOI18N
+                "testCcContainerI2", //NOI18N
+                "testCcContainerI3", //NOI18N
+                "testNodes", //NOI18N
+                "testDeploy", //NOI18N
+                "testUndeploy"), JEE6RestCStubsTest.class,
+                "testWizard", //NOI18N
+                "testCreateSimpleStubs", //NOI18N
+                "testFromWADL", //NOI18N
+                "testCloseProject"), JEE6RestNodeTest.class,
+                "testNodesAfterOpen",
+                "testOpenOnResource",
+                "testOpenOnMethod",
+                "testOpenOnLocator",
+                "testAddMethod",
+                "testRemoveMethod",
+                "testCloseProject"), RestSamplesTest.class,
+                "testHelloWorldSample", //NOI18N
+                "testCustomerDBSample", //NOI18N
+                "testCustomerDBSpringSample", //NOI18N
+                "testMessageBoardSample").enableModules(".*").clusters(".*").suite();
     }
 }

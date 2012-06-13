@@ -43,44 +43,46 @@
  */
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AddOverrideAnnotationTest extends TreeRuleTestBase {
+public class AddOverrideAnnotationTest extends NbTestCase {
     
     public AddOverrideAnnotationTest(String testName) {
         super(testName);
     }
     
     public void testAddOverride1() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test extends java.util.ArrayList {public int size() {return 0;}}", 121-48, "0:72-0:76:verifier:Add @Override Annotation");
+        HintTest.create()
+                .input("package test; public class Test extends java.util.ArrayList {public int size() {return 0;}}")
+                .run(AddOverrideAnnotation.class)
+                .assertWarnings("0:72-0:76:verifier:Add @Override Annotation");
     }
 
     public void testAddOverride2() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48);
+        HintTest.create()
+                .input("package test; public class Test implements Runnable {public void run() {}}")
+                .run(AddOverrideAnnotation.class)
+                .assertWarnings();
     }
     
     public void testAddOverride3() throws Exception {
-        setSourceLevel("1.6");
-        performAnalysisTest("test/Test.java", "package test; public class Test implements Runnable {public void run() {}}", 115-48, "0:65-0:68:verifier:Add @Override Annotation");
+        HintTest.create()
+                .input("package test; public class Test implements Runnable {public void run() {}}")
+                .sourceLevel("1.6")
+                .run(AddOverrideAnnotation.class)
+                .assertWarnings("0:65-0:68:verifier:Add @Override Annotation");
     }
     
     public void testAddOverride4() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; public class UUUU {public void () {} private static class W extends UUUU {public void () {}}}", 150-48);
-    }
-    
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        if (!new AddOverrideAnnotation().getTreeKinds().contains(path.getLeaf().getKind()))
-            return null;
-        
-        return new AddOverrideAnnotation().run(info, path);
+        HintTest.create()
+                .input("package test; public class UUUU {public void () {} private static class W extends UUUU {public void () {}}}", false)
+                .run(AddOverrideAnnotation.class)
+                .assertWarnings();
     }
     
 }

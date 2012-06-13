@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
@@ -71,14 +72,18 @@ public class CRUDTest extends RestTestBase {
 
     private static final Logger LOGGER = Logger.getLogger(CRUDTest.class.getName());
 
-    /** Default constructor.
+    /**
+     * Default constructor.
+     *
      * @param testName name of particular test case
      */
     public CRUDTest(String name) {
         super(name, Server.GLASSFISH);
     }
 
-    /** Constructor
+    /**
+     * Constructor
+     *
      * @param testName name of particular test case
      * @param server type of server to be used
      */
@@ -97,8 +102,8 @@ public class CRUDTest extends RestTestBase {
 
     /**
      * Create new web project with entity classes from sample database
-     * (jdbc/sample), create new RESTful web services from created entities
-     * and deploy the project
+     * (jdbc/sample), create new RESTful web services from created entities and
+     * deploy the project
      */
     public void testRfE() {
         if (!getProjectType().isAntBasedProject()) {
@@ -160,10 +165,10 @@ public class CRUDTest extends RestTestBase {
     }
 
     /**
-     * Test creation of RESTful web service from an entity class which
-     * uses property based access. Also tests functionality of the new RESTful
-     * web service from entity classes wizard (buttons, updating model
-     * in the wizard)
+     * Test creation of RESTful web service from an entity class which uses
+     * property based access. Also tests functionality of the new RESTful web
+     * service from entity classes wizard (buttons, updating model in the
+     * wizard)
      */
     public void testPropAccess() throws IOException {
         //copy entity class into a project
@@ -182,7 +187,7 @@ public class CRUDTest extends RestTestBase {
         //Add All >>
         String addAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_AddAll");
         String removeAllLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RemoveAll");
-        
+
         // wait till all classes are loaded into list
         new EventTool().waitNoEvent(2000);
         new JButtonOperator(wo, addAllLabel).push();
@@ -246,16 +251,21 @@ public class CRUDTest extends RestTestBase {
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
+        // "Test RESTful Web Services"
         String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
         Node n = getProjectType().isAntBasedProject() ? getProjectRootNode() : getRestNode();
+        // "Configure RESR Test Client"
         n.performPopupActionNoBlock(testRestActionName);
         String testRestTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.support.Bundle", "TTL_SelectTarget");
-        NbDialogOperator wo = new NbDialogOperator(testRestTitle);
+        NbDialogOperator configureDialogOper = new NbDialogOperator(testRestTitle);
         if (getProjectType().isAntBasedProject()) {
-            wo.ok();
+            configureDialogOper.ok();
+            OutputTabOperator oto = new OutputTabOperator(getProjectName());
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+            oto.waitText("(total time: "); //NOI18N
         } else {
             // cancel for Maven projects because otherwise it opens browser
-            wo.cancel();
+            configureDialogOper.cancel();
         }
     }
 
@@ -294,8 +304,8 @@ public class CRUDTest extends RestTestBase {
     }
 
     /**
-     * Go through given from DB wizard and return WizardOperator from the last panel
-     * of the wizard
+     * Go through given from DB wizard and return WizardOperator from the last
+     * panel of the wizard
      *
      * @param wo wizard to go through
      * @return last step in the wizard
@@ -370,15 +380,16 @@ public class CRUDTest extends RestTestBase {
     }
 
     /**
-     * Creates suite from particular test cases. You can define order of testcases here.
+     * Creates suite from particular test cases. You can define order of
+     * testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
+        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(CRUDTest.class),
                 "testRfE", //NOI18N
                 "testPropAccess", //NOI18N
                 "testDeploy", //NOI18N
                 "testCreateRestClient", //NOI18N
                 "testUndeploy" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                ).enableModules(".*").clusters(".*").suite(); //NOI18N
     }
 }

@@ -51,8 +51,9 @@
 	<mapID target="dd_multiview_security_securityrolesNode" url="web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"/>
 	<mapID target="dd_multiview_servlets_servletNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html"/>
 	<mapID target="dd_multiview_servlets_servletsNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html"/>
-	
+        
         <mapID target="debug_webapp" url="web/debug/debug_webapp.html"/>
+	<mapID target="proj_webfree_debug" url="web/debug/proj_webfree_debug.html" />
 	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html"/>
 	<mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html"/>
 	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html"/>
@@ -179,8 +180,10 @@
 <mapID target="register-cloud" url="web/cloud/register-cloud.html"/>
 <mapID target="develop-locally" url="web/cloud/develop-locally.html"/>
 <mapID target="deploy-cloud" url="web/cloud/deploy-cloud.html"/>
+<mapID target="oracle-cloud-whitelisting" url="web/cloud/whitelisting.html"/>
         
 <!-- Cloud support CSH topics -->
 <mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="web/cloud/csh/add-cloud-provider-oracle.html" />
+<mapID target="org.netbeans.api.server.CommonCloudUIs" url="web/cloud/csh/cloud-providers.html"/>
 </map>
 

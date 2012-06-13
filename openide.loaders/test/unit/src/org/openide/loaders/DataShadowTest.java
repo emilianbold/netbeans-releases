@@ -191,7 +191,7 @@ implements java.net.URLStreamHandlerFactory {
         //If masterfs isn't reachable - second test crucial for URL,File, FileObject conversions
         // not necessary to be able to convert - but at least no IllegalArgumentException is expected
         if ("file".equals(url.getProtocol())) {
-            new File (URI.create(url.toExternalForm()));
+            Utilities.toFile(URI.create(url.toExternalForm()));
         }
     }
     

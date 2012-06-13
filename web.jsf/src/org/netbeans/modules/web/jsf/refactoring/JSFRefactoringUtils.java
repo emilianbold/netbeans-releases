@@ -59,6 +59,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -135,9 +137,9 @@ public class JSFRefactoringUtils {
     
     public static void renamePackage(AbstractRefactoring refactoring, RefactoringElementsBag refactoringElements, 
             FileObject folder, String oldFQPN, String newFQPN, boolean recursive){
-        WebModule webModule = WebModule.getWebModule(folder);
-        if (webModule != null){
-            List <Occurrences.OccurrenceItem> items = Occurrences.getPackageOccurrences(webModule, oldFQPN, newFQPN, recursive);
+        Project project = FileOwnerQuery.getOwner(folder);
+        if (project != null) {
+            List <Occurrences.OccurrenceItem> items = Occurrences.getPackageOccurrences(project, oldFQPN, newFQPN, recursive);
             Modifications modification = new Modifications();
             for (Occurrences.OccurrenceItem item : items) {
                 Modifications.Difference difference = new Modifications.Difference(

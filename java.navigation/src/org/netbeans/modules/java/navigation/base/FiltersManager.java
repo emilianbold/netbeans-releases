@@ -64,6 +64,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
+import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
 
 /** Handles creation and manipulation with boolean state filters. 
@@ -203,15 +204,11 @@ public final class FiltersManager {
             super(BoxLayout.X_AXIS);
             this.filtersDesc = descr;
             // always create swing content in AWT thread
-            if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(new Runnable () {
-                    public void run () {
-                        initPanel();                        
-                    }
-                });
-            } else {
-                initPanel();
-            }
+            Mutex.EVENT.readAccess(new Runnable () {
+                public void run () {
+                    initPanel();                        
+                }
+            });
         }
 
         /** Called only from AWT */

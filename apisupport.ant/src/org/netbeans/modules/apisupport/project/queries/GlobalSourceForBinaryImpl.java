@@ -77,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -132,7 +133,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
             String cnb = name.substring(0, name.length() - 4).replace('-', '.');
             NbPlatform supposedPlaf = null;
             for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
-                String plafS = plaf.getDestDir().toURI().toURL().toExternalForm();
+                String plafS = Utilities.toURI(plaf.getDestDir()).toURL().toExternalForm();
                 Matcher m = Pattern.compile("jar:\\Q" + plafS + "\\E[^/]+/(?:modules|lib|core)/([^/]+)[.]jar!/").matcher(binaryRootS);
                 if (m.matches()) {
                     supposedPlaf = plaf;
@@ -235,7 +236,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
         @Override
         protected String resolveRelativePath(URL sourceRoot) throws IOException {
             // TODO C.P cache root + cnb -> relpath? dig into library wrappers?
-            File srPath = new File(URI.create(sourceRoot.toExternalForm()));
+            File srPath = Utilities.toFile(URI.create(sourceRoot.toExternalForm()));
             File moduleSrc = new File(srPath, "src");    // NOI18N
             if (moduleSrc.exists()) {   // src root is module project root directly
                 return "src/";    // NOI18N

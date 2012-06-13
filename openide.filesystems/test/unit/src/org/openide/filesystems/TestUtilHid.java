@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.openide.util.Utilities;
 
 /**
  * @author  rm111737
@@ -176,7 +177,7 @@ public class TestUtilHid {
 
         XMLFileSystem xfs = new XMLFileSystem  ();
         try {
-            xfs.setXmlUrl(xmlFile.toURI().toURL());
+            xfs.setXmlUrl(Utilities.toURI(xmlFile).toURL());
         } catch (Exception ex) {}
         
         return xfs;

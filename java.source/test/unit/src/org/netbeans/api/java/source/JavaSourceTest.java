@@ -2347,7 +2347,7 @@ public class JavaSourceTest extends NbTestCase {
             if (!f.exists()) {
                 continue;
             }
-            URL url = f.toURI().toURL();
+            URL url = org.openide.util.Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
             }
@@ -2366,7 +2366,7 @@ public class JavaSourceTest extends NbTestCase {
         if (!root.exists()) {
             root.mkdirs();
         }
-        return ClassPathSupport.createClassPath(new URL[] {root.toURI().toURL()});
+        return ClassPathSupport.createClassPath(new URL[] {org.openide.util.Utilities.toURI(root).toURL()});
     }
 
     private FileObject createTestFile (FileObject srcRoot, String relativeName, String content) throws IOException {

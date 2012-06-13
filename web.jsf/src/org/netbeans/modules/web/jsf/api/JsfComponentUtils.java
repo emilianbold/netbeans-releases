@@ -173,7 +173,11 @@ public class JsfComponentUtils {
                     public void run() {
                         try {
                             int position = doc.getText(0, doc.getLength()).indexOf(find);
-                            doc.insertString(position, enhanceBy + "\n", null); //NOI18N
+                            // if element wasn't found - it isn't likely new project with sample index.html page and
+                            // there is probably not wished to have it changed, so don't do it
+                            if (position >= 0) {
+                                doc.insertString(position, enhanceBy + "\n", null); //NOI18N
+                            }
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
                         }

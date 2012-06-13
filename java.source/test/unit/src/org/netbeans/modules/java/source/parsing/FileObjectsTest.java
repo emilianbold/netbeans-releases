@@ -60,6 +60,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -148,7 +149,7 @@ public class FileObjectsTest extends NbTestCase {
            assertFalse("OutputStream should exist for existing file",true);
         }
         File nonExistring = new File (new File(new File (workDir,"test"),"foo"),"nonexisting.java");
-        final javax.tools.FileObject nonExistingFo = FileObjects.nbFileObject(nonExistring.toURI().toURL(), wd);
+        final javax.tools.FileObject nonExistingFo = FileObjects.nbFileObject(Utilities.toURI(nonExistring).toURL(), wd);
         assertEquals ("test.foo.nonexisting",((InferableJavaFileObject)nonExistingFo).inferBinaryName());
         try {
             final InputStream in = nonExistingFo.openInputStream();

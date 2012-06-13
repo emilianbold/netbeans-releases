@@ -223,7 +223,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     public ProjectLibraryArea loadArea(URL location) {
         if (location.getProtocol().equals("file") && location.getPath().endsWith(".properties")) { // NOI18N
             try {
-                return new ProjectLibraryArea(new File(location.toURI()));
+                return new ProjectLibraryArea(Utilities.toFile(location.toURI()));
             } catch (URISyntaxException x) {
                 Exceptions.printStackTrace(x);
             }
@@ -367,7 +367,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 }
             }
         }
-        ProjectLibraryArea pla = loadArea(pli.mainPropertiesFile.toURI().toURL());
+        ProjectLibraryArea pla = loadArea(Utilities.toURI(pli.mainPropertiesFile).toURL());
         if (pla != null) {
         LP lp = getLibraries(pla);
         if (lp.libraries.remove(pli.name) != null) {
@@ -527,7 +527,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         File normalizedFile = FileUtil.normalizeFile(new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}", area.mainPropertiesFile.getParent())));
                         try {
                             URI u = LibrariesSupport.convertFilePathToURI(f);
-                            if (FileUtil.isArchiveFile(normalizedFile.toURI().toURL())) {
+                            if (FileUtil.isArchiveFile(Utilities.toURI(normalizedFile).toURL())) {
                                 u = appendJarFolder(u, jarFolder);
                             } else if (!u.getPath().endsWith("/")) {  // NOI18N
                                 u = new URI(u.toString() + "/");  // NOI18N
@@ -739,7 +739,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             List<URL> resolvedUrls = new ArrayList<URL>(uris.size());
             for (URI u : uris) {
                 try {
-                    resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(mainPropertiesFile.toURI().toURL(), u).toURL());
+                    resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(Utilities.toURI(mainPropertiesFile).toURL(), u).toURL());
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(ProjectLibraryProvider.class.getName()).log(Level.INFO, "#184304: " + u, ex);
                 }
@@ -919,7 +919,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         public URL getLocation() {
             try {
-                return mainPropertiesFile.toURI().toURL();
+                return Utilities.toURI(mainPropertiesFile).toURL();
             } catch (MalformedURLException x) {
                 throw new AssertionError(x);
             }
@@ -1085,7 +1085,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         Definitions defs = findDefinitions(helper);
         if (defs != null) {
             try {
-                return LibraryManager.forLocation(defs.mainPropertiesFile.toURI().toURL());
+                return LibraryManager.forLocation(Utilities.toURI(defs.mainPropertiesFile).toURL());
             } catch (MalformedURLException x) {
                 Exceptions.printStackTrace(x);
             }
@@ -1149,7 +1149,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      */
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
-        final File libBaseFolder = new File(URI.create(location.toExternalForm())).getParentFile();
+        final File libBaseFolder = Utilities.toFile(URI.create(location.toExternalForm())).getParentFile();
         FileObject sharedLibFolder = null;
         final Map<String, List<URI>> content = new HashMap<String, List<URI>>();
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
@@ -1178,7 +1178,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 URI u;
                 FileObject newFO;
                 String name;
-                if (CollocationQuery.areCollocated(libBaseFolder.toURI(), libEntryFO.toURI())) {
+                if (CollocationQuery.areCollocated(Utilities.toURI(libBaseFolder), libEntryFO.toURI())) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
                     newFO = libEntryFO;

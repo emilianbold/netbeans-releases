@@ -510,8 +510,8 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(A);
         assertNotNull(testRoot.getFileObject("a"));
         assertSame(testRoot.getFileObject("A"), testRoot.getFileObject("a"));
-        assertSame(URLMapper.findFileObject(testa.toURI().toURL()), 
-                URLMapper.findFileObject(testA.toURI().toURL()));
+        assertSame(URLMapper.findFileObject(Utilities.toURI(testa).toURL()),
+                URLMapper.findFileObject(Utilities.toURI(testA).toURL()));
         
         //but 
         testRoot.getChildren();

@@ -77,10 +77,12 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
         this.project = project;
     }
 
+    @Override
     public String[] getRegisteredOutputSequences() {
         return DEPGOALS;
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
         if (started) {
             Matcher match = dependency.matcher(line);
@@ -104,13 +106,16 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
         }
     }
     
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         started = false;
     }
     
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
     }
     
@@ -130,10 +135,12 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
             scope = sc;
             project = prj;
         }
+        @Override
         public void outputLineSelected(OutputEvent arg0) {
         }
         
         @Messages({"# {0} - groupId:artifactId", "MSG_Dependency=Dependency {0} added to project''s POM."})
+        @Override
         public void outputLineAction(OutputEvent arg0) {
             ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml")/*NOI18N*/,
                     group, artifact, version, type, scope, null,false);
@@ -141,6 +148,7 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
             DialogDisplayer.getDefault().notify(nd);
         }
         
+        @Override
         public void outputLineCleared(OutputEvent arg0) {
         }
     }

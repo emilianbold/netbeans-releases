@@ -865,7 +865,7 @@ public class PrintASTVisitor implements Visitor {
         XMLPrintNode printNode = new XMLPrintNode(traitsInsteadofStatement, "TraitConflictResolutionDeclaration");
         printNode.addChild("MethodName", traitsInsteadofStatement.getMethodName());
         printNode.addChild("PreferredTraitName", traitsInsteadofStatement.getPreferredTraitName());
-        printNode.addChild("SuppressedTraitName", traitsInsteadofStatement.getSuppressedTraitName());
+        printNode.addChildrenGroup("SuppressedTraitNames", traitsInsteadofStatement.getSuppressedTraitNames());
         printNode.print(this);
     }
 

@@ -226,7 +226,7 @@ public class CsmStatementResolver {
                     }
                 }
                     
-                if (CsmKindUtilities.isFunctionDefinition(fun)) {
+                if (CsmKindUtilities.isLambda(fun)) {
                     CsmFunctionDefinition funDef = (CsmFunctionDefinition)fun;
                     CsmCompoundStatement body = funDef.getBody();
                     if ((!CsmOffsetUtilities.sameOffsets(funDef, body) || body.getStartOffset() != body.getEndOffset()) && CsmOffsetUtilities.isInObject(body, offset)) {

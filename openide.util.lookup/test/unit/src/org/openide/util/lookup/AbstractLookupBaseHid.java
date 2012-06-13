@@ -82,7 +82,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
     /** the lookup to work on */
     protected Lookup instanceLookup;
     /** the lookup created to work with */
-    private Lookup lookup;
+     Lookup lookup;
     /** implementation of methods that can influence the behaviour */
     Impl impl;
     
@@ -141,12 +141,68 @@ public class AbstractLookupBaseHid extends NbTestCase {
         return impl.createLookup (lookup);
     }
     
+    Lookup createMultiLookup(Lookup... all) {
+        if (all.length == 1) {
+            return createMultiLookup(all[0]);
+        } 
+        Lookup[] clone = all.clone();
+        for (int i = 0; i < clone.length; i++) {
+            clone[i] = createLookup(clone[i]);
+        }
+        return new ProxyLookup(clone);
+    }
+    
     /** instances that we register */
     private static Object[] INSTANCES = new Object[] {
         new Integer (10), 
         new Object ()
     };
 
+    public void testSlowIterate() {
+        InstanceContent ic1 = new InstanceContent();
+        Lookup a1 = createInstancesLookup(ic1);
+        InstanceContent ic2 = new InstanceContent();
+        Lookup a2 = createInstancesLookup(ic2);
+        
+        
+        ic1.add(1);
+        ic1.add(2);
+        ic2.add(3);
+        ic2.add(4);
+        
+        Lookup all = createMultiLookup(a1, a2);
+        Lookup.Result<Integer> res = all.lookupResult(Integer.class);
+        
+        
+        final Collection<? extends Integer> fourCol = res.allInstances();
+        Iterator<? extends Integer> four = fourCol.iterator();
+        assertEquals("Four1", Integer.valueOf(1), four.next());
+        assertEquals("Four2", Integer.valueOf(2), four.next());
+        
+        ic1.remove(1);
+
+        final Collection<? extends Integer> threeCol = res.allInstances();
+        Iterator<? extends Integer> three = threeCol.iterator();
+        assertEquals("Three2", Integer.valueOf(2), three.next());
+        assertEquals("Three3", Integer.valueOf(3), three.next());
+        assertEquals("Three4", Integer.valueOf(4), three.next());
+        assertFalse("Three ales", three.hasNext());
+
+        assertEquals("This call computes the whole collection"
+            + "and may be tempted to store the result in caches."
+            + "But it should not, as meanwhile the result has been"
+            + "modified", 
+            "[1, 2, 3, 4]", new ArrayList<Integer>(fourCol).toString());
+        
+        assertEquals("Four3",  Integer.valueOf(3), four.next());
+        assertEquals("Four4",  Integer.valueOf(4), four.next());
+        assertFalse("Ales four", four.hasNext());
+        
+        Collection<? extends Integer> atTheEnd = res.allInstances();
+        assertEquals("Three: " + atTheEnd, 3, atTheEnd.size());
+    }
+    
+    
     public void testAddFirstWithExecutorBeforeLookupAssociationFails() {
         doAddFirstWithExecutorBeforeLookupAssociationFails(false);
     }
@@ -206,6 +262,64 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertEquals("There is One: ", 1, c.size());
         
         assertEquals(Long.valueOf(3L), c.iterator().next().getInstance());
+    }
+    
+    
+    public void testProxyOverProxyLocks() throws Exception {
+        final Collection[] noLocks = { null, null };
+        
+        
+        class IntPair extends AbstractLookup.Pair<Integer> {
+            Integer value = 1;
+            
+            @Override
+            protected boolean instanceOf(Class<?> c) {
+                return c.isAssignableFrom(Integer.class);
+            }
+
+            @Override
+            protected boolean creatorOf(Object obj) {
+                return obj == value;
+            }
+
+            @Override
+            public Integer getInstance() {
+                assertNoLocks();
+                return value;
+            }
+
+            @Override
+            public Class<? extends Integer> getType() {
+                return Integer.class;
+            }
+
+            @Override
+            public String getId() {
+                return value.toString();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return value.toString();
+            }
+            
+            public void assertNoLocks() {
+                for (Object o : noLocks) {
+                    if (o == null) {
+                        continue;
+                    }
+                    assertFalse("Don't hold lock", Thread.holdsLock(o));
+                }
+            }
+        }
+        
+        ic.addPair(new IntPair());
+        
+        noLocks[0] = lookup.lookupAll(Integer.class);
+        
+        assertFalse("Not empty", noLocks[0].isEmpty());
+        
+        assertEquals("One", 1, noLocks[0].size());
     }
     
     /** Test if first is really first.

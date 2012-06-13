@@ -696,7 +696,7 @@ public class SyntaxAnalyzerTest extends TestBase {
         Element endtag = elements.get(1);
 
         assertNotNull(endtag);
-        assertEquals(ElementType.TEXT, endtag.type());
+        assertEquals(ElementType.CLOSE_TAG, endtag.type());
 
     }
 

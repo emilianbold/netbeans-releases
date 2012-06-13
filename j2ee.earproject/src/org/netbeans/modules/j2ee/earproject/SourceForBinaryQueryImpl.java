@@ -113,6 +113,10 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                 if (FileUtil.getArchiveFile(u) != null) {
                     u = FileUtil.getArchiveFile(u);
                 }
+                // #213372:
+                if (u.equals(binaryRoot)) {
+                    continue;
+                }
                 FileObject cpItem = URLMapper.findFileObject(u);
                 if (cpItem == null || cpItem.isFolder()) {
                     continue;

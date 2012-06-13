@@ -76,7 +76,7 @@ public abstract class CloneableOpenSupport extends Object {
     public CloneableOpenSupport(Env env) {
         this.env = env;
 
-        Listener l = new Listener(env);
+        Listener l = new Listener(env, this);
         this.allEditors = l;
 
         // attach property change listener to be informed about loosing validity
@@ -308,12 +308,15 @@ public abstract class CloneableOpenSupport extends Object {
         static final long serialVersionUID = -1934890789745432531L;
 
         /** environment to use as connection to outside world */
-        private Env env;
+        private final Env env;
+        // rerefence to prevent GC of COS created in readResolve() by call to support()
+        private final transient CloneableOpenSupport refCOS;
 
         /** Constructor.
         */
-        public Listener(Env env) {
+        public Listener(Env env, CloneableOpenSupport cos) {
             this.env = env;
+            this.refCOS = cos;
         }
 
         /** Getter for the associated CloneableOpenSupport

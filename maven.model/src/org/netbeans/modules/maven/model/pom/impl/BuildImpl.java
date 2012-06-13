@@ -42,7 +42,6 @@
 package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;	
 import org.netbeans.modules.maven.model.pom.*;
 import org.w3c.dom.Element;

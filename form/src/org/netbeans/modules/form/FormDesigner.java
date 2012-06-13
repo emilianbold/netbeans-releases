@@ -2718,7 +2718,7 @@ public class FormDesigner {
                 code = (horizontal ? (leading ? "l" : "r") : (leading ? "u" : "d")); // NOI18N
             }
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, false));
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, true));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_AlignAction_" + code)); // NOI18N
             setEnabled(false);
         }

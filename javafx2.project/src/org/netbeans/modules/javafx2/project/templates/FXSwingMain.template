@@ -42,7 +42,7 @@ public class ${name} extends JApplet {
                     UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
                 } catch (Exception e) {}
                 
-                JFrame frame = new JFrame("JavaFX 2.0 in Swing");
+                JFrame frame = new JFrame("JavaFX 2 in Swing");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
                 JApplet applet = new ${name}();

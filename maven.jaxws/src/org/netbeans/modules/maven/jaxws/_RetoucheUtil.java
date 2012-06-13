@@ -73,6 +73,7 @@ public final class _RetoucheUtil {
         JavaSource javaSource = JavaSource.forFileObject(classFO);
         final String[] result = new String[1];
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 result[0] = SourceUtils.getPublicTopLevelElement(controller).getQualifiedName().toString();

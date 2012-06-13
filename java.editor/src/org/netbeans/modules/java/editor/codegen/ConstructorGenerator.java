@@ -140,7 +140,7 @@ public class ConstructorGenerator implements CodeGenerator {
             if (!uninitializedFields.isEmpty()) {
                 List<ElementNode.Description> fieldDescriptions = new ArrayList<ElementNode.Description>();
                 for (VariableElement variableElement : uninitializedFields)
-                    fieldDescriptions.add(ElementNode.Description.create(controller, variableElement, null, true, false));
+                    fieldDescriptions.add(ElementNode.Description.create(controller, variableElement, null, true, variableElement.getModifiers().contains(Modifier.FINAL)));
                 fieldsDescription = ElementNode.Description.create(controller, typeElement, fieldDescriptions, false, false);
             }
             if (constructorHandle != null || constructorDescription != null || fieldsDescription != null)
