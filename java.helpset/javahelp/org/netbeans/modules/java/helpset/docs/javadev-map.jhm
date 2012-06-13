@@ -435,8 +435,7 @@
 <mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog.html" />
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
-<!--CSH topic for Inspector window; also appears when pressing ? button in Properties window for Form component-->
-<mapID target="gui.component-inspector" url="gui/csh/gui_inspector_window.html" />
+
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 
 <!--Customize Code dialog box-->

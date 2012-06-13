@@ -294,7 +294,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
     }
 
-    synchronized private void removeAllEventRequests () {
+    synchronized protected void removeAllEventRequests () {
         if (requests.isEmpty()) return;
         VirtualMachine vm = getDebugger().getVirtualMachine();
         if (vm == null) return; 
