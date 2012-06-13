@@ -45,7 +45,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class JsParserError implements Error {
+public class JsParserError implements Error, Comparable<JsParserError> {
 
     private final String displayName;
     private final FileObject file;
@@ -109,5 +109,15 @@ public class JsParserError implements Error {
     public Object[] getParameters() {
         return parameters;
     }
-    
+
+    @Override
+    public int compareTo(JsParserError o) {
+        if (startPosition < o.startPosition) {
+            return -1;
+        }
+        if (startPosition > o.startPosition) {
+            return 1;
+        }
+        return 0;
+    }
 }

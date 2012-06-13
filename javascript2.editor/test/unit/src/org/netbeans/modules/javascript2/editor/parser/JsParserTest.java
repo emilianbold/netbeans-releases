@@ -128,6 +128,29 @@ public class JsParserTest extends JsTestBase {
             1);
     }
     
+    public void testSimpleErrorLine1() throws Exception {
+        parse("var global1 = new Foo.Bar();\n"
+            + "var global2 = new Array();\n"
+            + "if (true) {\n"
+            + "   var global3 = new org.foo.bar.Baz();\n"
+            + "   gl./d /\n"
+            + "}\n"
+            + "\n"
+            + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
+            + "    return true;\n"
+            + "}\n",
+            "var global1 = new Foo.Bar();\n"
+            + "var global2 = new Array();\n"
+            + "if (true) {\n"
+            + "   var global3 = new org.foo.bar.Baz();\n"
+            + "           }\n"
+            + "\n"
+            + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
+            + "    return true;\n"
+            + "}\n",
+            2);
+    }
+    
     private void parse(String original, String expected, int errorCount) throws Exception {
         JsParser parser = new JsParser();
         Document doc = getDocument(original);

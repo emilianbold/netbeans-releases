@@ -103,7 +103,14 @@ public class JsParser extends Parser {
         return result;
     }
     
-    JsParserResult parseContext(Context context, Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
+    JsParserResult parseContext(Context context, Sanitize sanitizing,
+            JsErrorManager errorManager) throws Exception {
+        return parseContext(context, sanitizing, errorManager, true);
+    }
+    
+    private JsParserResult parseContext(Context context, Sanitize sanitizing,
+            JsErrorManager errorManager, boolean copyErrors) throws Exception {
+        
         boolean sanitized = false;
         if ((sanitizing != Sanitize.NONE) && (sanitizing != Sanitize.NEVER)) {
             boolean ok = sanitizeSource(context, sanitizing, errorManager);
@@ -113,17 +120,24 @@ public class JsParser extends Parser {
                 assert context.getSanitizedSource() != null;
             } else {
                 // Try next trick
-                return parseContext(context, sanitizing.next(), errorManager);
+                return parseContext(context, sanitizing.next(), errorManager, false);
             }
         }
         
+        JsErrorManager current = new JsErrorManager(context.getSnapshot().getSource().getFileObject());
         com.oracle.nashorn.ir.FunctionNode node = parseSource(context.getName(),
-                context.getSource(), errorManager);
+                context.getSource(), current);
+
+        if (copyErrors) {
+            errorManager.fill(current);
+        }
+        
         if (sanitizing != Sanitize.NEVER) {
-            if (!sanitized && errorManager.checkCurlyMissing() != null) {
-                return parseContext(context, Sanitize.MISSING_CURLY, errorManager);
-            } if (node == null) {
-                return parseContext(context, sanitizing.next(), errorManager);
+            if (!sanitized && current.checkCurlyMissing() != null) {
+                return parseContext(context, Sanitize.MISSING_CURLY, errorManager, false);
+            // TODO not very clever check
+            } if (node == null || !current.isEmpty()) {
+                return parseContext(context, sanitizing.next(), errorManager, false);
             }
         }
         
@@ -198,7 +212,7 @@ public class JsParser extends Parser {
                 return true;
             }
         } else if (sanitizing == Sanitize.SYNTAX_ERROR_PREVIOUS) {
-            List<org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
@@ -227,6 +241,34 @@ public class JsParser extends Parser {
                             return true;
                         }
                     }
+                }
+            }
+        } else if (sanitizing == Sanitize.ERROR_LINE) {
+            List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            if (!errors.isEmpty()) {
+                org.netbeans.modules.csl.api.Error error = errors.get(0);
+                int offset = error.getStartPosition();
+                if (offset > -1) {
+                    String source = context.getOriginalSource();
+                    int start = offset - 1;
+                    int end = offset;
+                    // fix until new line or }
+                    char c = source.charAt(start);
+                    while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                        c = source.charAt(--start);
+                    }
+                    start++;
+                    if (end < source.length()) {
+                        c = source.charAt(end);
+                        while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                            c = source.charAt(end++);
+                        }
+                    }
+
+                    StringBuilder builder = new StringBuilder(context.getOriginalSource());
+                    erase(builder, start, end);
+                    context.setSanitizedSource(builder.toString());
+                    return true;
                 }
             }
         }

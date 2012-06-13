@@ -56,7 +56,9 @@ public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
     
-    private ArrayList<ParserError> parserErrors = null;
+    private List<ParserError> parserErrors;
+    
+    private List<JsParserError> convertedErrors;
     
     private FileObject fileObject;
     
@@ -98,13 +100,6 @@ public class JsErrorManager extends ErrorManager {
         LOGGER.log(Level.FINE, "Error {0}", message);
         addParserError(new ParserError(message));
     }
-
-    private void addParserError(ParserError error) {
-        if (parserErrors == null) {
-            parserErrors = new ArrayList<ParserError>();
-        }
-        parserErrors.add(error);
-    }
     
     @Override
     public void warning(String message, Source source, int line, int column, long token) {
@@ -121,18 +116,42 @@ public class JsErrorManager extends ErrorManager {
         LOGGER.log(Level.FINE, "Warning {0}", message);
     }
     
-    public List<Error> getErrors() {
-        if (parserErrors == null) {
-            return Collections.EMPTY_LIST;
+    public List<? extends Error> getErrors() {
+        if (convertedErrors == null) {
+            if (parserErrors == null) {
+                convertedErrors = Collections.emptyList();
+            } else {
+                ArrayList<JsParserError> errors = new ArrayList<JsParserError>(parserErrors.size());
+                for (ParserError error : parserErrors) {
+                    errors.add(convert(error));
+                }
+                Collections.sort(errors);
+                convertedErrors = errors;
+            }
         }
-        ArrayList<Error> errors = new ArrayList<Error>(parserErrors.size());
-        for (ParserError error : parserErrors) {
-            errors.add(convert(error));
-        }
-        return errors;
+        return Collections.unmodifiableList(convertedErrors);
     }
     
-    private Error convert(ParserError error) {
+    JsErrorManager fill(JsErrorManager original) {
+        this.fileObject = original.fileObject;
+        if (original.parserErrors != null) {
+            this.parserErrors = new ArrayList<ParserError>(original.parserErrors);
+        } else {
+            this.parserErrors = null;
+        }
+        this.convertedErrors = null;
+        return this;
+    }
+    
+    private void addParserError(ParserError error) {
+        convertedErrors = null;
+        if (parserErrors == null) {
+            parserErrors = new ArrayList<ParserError>();
+        }
+        parserErrors.add(error);
+    }
+    
+    private JsParserError convert(ParserError error) {
         String message = error.message;
         int line = -1;
         int offset = -1;

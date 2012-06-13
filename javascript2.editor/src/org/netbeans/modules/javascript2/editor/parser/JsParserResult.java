@@ -55,7 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class JsParserResult extends ParserResult {
 
     private final FunctionNode root;
-    private List<Error> errors;
+    private List<? extends Error> errors;
     private Model model;
     private Map<Integer, ? extends JsComment> comments;
     
@@ -80,7 +80,7 @@ public class JsParserResult extends ParserResult {
         return root;
     }
 
-    public void setErrors(List<Error> errors) {
+    public void setErrors(List<? extends Error> errors) {
         this.errors = errors;
     }
     
