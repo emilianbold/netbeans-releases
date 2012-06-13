@@ -513,7 +513,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         int pos = path.indexOf(" "); // NOI18N
         while (pos != -1) {                
             f = CndFileUtils.toFileObject(fs, path.substring(0, pos));
-            if (f.isValid()) {
+            if (f != null && f.isValid()) {
                 prj = FileOwnerQuery.getOwner(f);
                 if (prj != null) {
                     break;
@@ -523,7 +523,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         }
         if (prj == null) {
             f = CndFileUtils.toFileObject(fs, path);
-            if (f.isValid()) {
+            if (f != null && f.isValid()) {
                 prj = FileOwnerQuery.getOwner(f);
                 if (prj == null) {
                     return null;
