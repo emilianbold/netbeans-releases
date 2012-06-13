@@ -186,6 +186,10 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
             } else if (Action.DEBUG_TESTSUITE.equals(action)) {
                 cmd = "debug-test"; //NOI18N
                 props.put("test.class", FileUtil.toFile(test).getAbsolutePath()); //NOI18N
+            } else if (Action.RUN_TESTMETHOD.equals(action)) {
+                cmd = "test-single-method"; //NOI18N
+                props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
+                props.put("test.method", config.getMethodName()); //NOI18N
             } else if (Action.DEBUG_TESTMETHOD.equals(action)) {
                 cmd = "debug-test-method"; //NOI18N
                 props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
