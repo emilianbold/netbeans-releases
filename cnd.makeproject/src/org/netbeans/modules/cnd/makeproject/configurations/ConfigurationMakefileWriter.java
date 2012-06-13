@@ -331,7 +331,11 @@ public class ConfigurationMakefileWriter {
                 } else if (line.indexOf("<CNS>") >= 0) { // NOI18N
                     line = line.replaceFirst("<CNS>", configurations.toString()); // NOI18N
                 } else if (line.indexOf("<CN>") >= 0) { // NOI18N
-                    line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
+                    if (projectDescriptor.getConfs().getConf(0) != null) {
+                        line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
+                    } else {
+                        line = line.replaceFirst("<CN>", ""); // NOI18N
+                    }
                 }
                 bw.write(line + "\n"); // NOI18N
             }
