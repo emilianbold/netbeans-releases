@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
         </condition>
         <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
     </target>
-    <target name="-prepare-junit-execution" unless="testng.available">
+    <target name="-prepare-junit-execution" unless="${testng.available}">
         <property name="test.result.dir" location="${java.io.tmpdir}"/>
         <property name="test.result.file"
                   location="${test.result.dir}/TEST-${classname}.xml"/>
@@ -109,7 +109,7 @@ made subject to such option by the copyright holder.
         </macrodef>
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
     </target>
-    <target name="-prepare-testng-execution" if="testng.available">
+    <target name="-prepare-testng-execution" if="${testng.available}">
         <macrodef name="junit-template">
             <element name="test-spec" implicit="yes"/>
             <sequential/>
@@ -130,7 +130,6 @@ made subject to such option by the copyright holder.
                 </condition>
                 <property name="work.dir" value="${basedir}"/>
                 <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
-                    <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <jvmarg line="${run.jvmargs}"/>
                     <jvmarg line="${run.jvmargs.ide}"/>
                     <classpath path="${classpath-translated}" />
