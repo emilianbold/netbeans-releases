@@ -2062,7 +2062,8 @@ final class Central implements ControllerHandler {
             if( m.getKind() == Constants.MODE_KIND_EDITOR 
                     && !"editor".equals(m.getName()) //NOI18N
                     && !m.getOpenedTopComponentsIDs().isEmpty()
-                    && !m.isPermanent() )
+                    && !m.isPermanent()
+                    && m.getState() != Constants.MODE_STATE_SEPARATED )
                 return m;
         }
         return null;
