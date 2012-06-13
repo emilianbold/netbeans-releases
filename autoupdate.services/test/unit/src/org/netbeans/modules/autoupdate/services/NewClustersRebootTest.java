@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.DefaultTestCase;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 public class NewClustersRebootTest extends NbTestCase {
     private Logger LOG;
@@ -106,14 +107,14 @@ public class NewClustersRebootTest extends NbTestCase {
     
     private void invokeNbExecAndCreateCluster(File workDir, StringBuffer sb, String... args) throws Exception {
         URL u = Lookup.class.getProtectionDomain().getCodeSource().getLocation();
-        File f = new File(u.toURI());
+        File f = Utilities.toFile(u.toURI());
         assertTrue("file found: " + f, f.exists());
         File nbexec = org.openide.util.Utilities.isWindows() ? new File(f.getParent(), "nbexec.exe") : new File(f.getParent(), "nbexec");
         assertTrue("nbexec found: " + nbexec, nbexec.exists());
         LOG.log(Level.INFO, "nbexec: {0}", nbexec);
 
         URL tu = NewClustersRebootCallback.class.getProtectionDomain().getCodeSource().getLocation();
-        File testf = new File(tu.toURI());
+        File testf = Utilities.toFile(tu.toURI());
         assertTrue("file found: " + testf, testf.exists());
                 
         LinkedList<String> allArgs = new LinkedList<String>(Arrays.asList(args));

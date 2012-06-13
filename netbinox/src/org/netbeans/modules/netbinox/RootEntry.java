@@ -82,7 +82,7 @@ final class RootEntry extends BundleEntry {
     @Override
     public URL getLocalURL() {
         try {
-            return new URL("jar:" + bundleFile.getBaseFile().toURI().toURL() + "!/");
+            return new URL("jar:" + org.openide.util.Utilities.toURI(bundleFile.getBaseFile()).toURL() + "!/");
         } catch (MalformedURLException ex) {
             throw new IllegalStateException(ex);
         }
@@ -91,7 +91,7 @@ final class RootEntry extends BundleEntry {
     @Override
     public URL getFileURL() {
         try {
-            return bundleFile.getBaseFile().toURI().toURL();
+            return org.openide.util.Utilities.toURI(bundleFile.getBaseFile()).toURL();
         } catch (MalformedURLException ex) {
             throw new IllegalStateException(ex);
         }

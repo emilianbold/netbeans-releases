@@ -3054,7 +3054,11 @@ widthcheck:  {
     public static URI toURI(File f) {
         if (fileToPath != null) {
             try {
-                return (URI) pathToUri.invoke(fileToPath.invoke(f));
+                URI u = (URI) pathToUri.invoke(fileToPath.invoke(f));
+                if (u.toString().startsWith("file:///")) { // #214131 workaround
+                    u = new URI(/* "file" */u.getScheme(), /* null */u.getUserInfo(), /* null (!) */u.getHost(), /* -1 */u.getPort(), /* "/..." */u.getPath(), /* null */u.getQuery(), /* null */u.getFragment());
+                }
+                return u;
             } catch (Exception x) {
                 LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
             }

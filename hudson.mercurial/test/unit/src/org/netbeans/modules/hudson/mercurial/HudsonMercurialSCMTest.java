@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 public class HudsonMercurialSCMTest extends NbTestCase {
@@ -57,19 +58,19 @@ public class HudsonMercurialSCMTest extends NbTestCase {
     public void testGetDefaultPull() throws Exception {
         HudsonMercurialSCM.LOG.setLevel(Level.OFF);
         clearWorkDir();
-        assertNull("no repo", HudsonMercurialSCM.getDefaultPull(getWorkDir().toURI()));
+        assertNull("no repo", HudsonMercurialSCM.getDefaultPull(Utilities.toURI(getWorkDir())));
         assertPullURI("http://host/repo/", "[paths]", "default = http://host/repo/");
         assertPullURI("http://host/repo/", "[paths]", "default = http://host/repo");
         assertPullURI("http://host/repo/", "[paths]", "default-pull = http://host/repo/");
         assertPullURI("http://host/repo/", "[paths]", "default-pull = http://host/repo/", "default = http://host/other/");
-        assertPullURI(getWorkDir().toURI().toString(), "[paths]", "default=" + getWorkDirPath().replace(File.separatorChar, '/'));
-        assertPullURI(getWorkDir().toURI() + "foo/", "[paths]", "default = foo");
-        assertPullURI(getWorkDir().toURI().toString(), "[paths]");
+        assertPullURI(Utilities.toURI(getWorkDir()).toString(), "[paths]", "default=" + getWorkDirPath().replace(File.separatorChar, '/'));
+        assertPullURI(Utilities.toURI(getWorkDir()) + "foo/", "[paths]", "default = foo");
+        assertPullURI(Utilities.toURI(getWorkDir()).toString(), "[paths]");
         assertPullURI("https://host/repo/", "[paths]", "default = https://bob:sEcReT@host/repo/");
         assertPullURI("https://host/repo/", "[paths]", "default = https://bob@host/repo/");
         assertPullURI("ssh://host/repo/", "[paths]", "default = ssh://bob@host/repo");
         assertPullURI(null, "[paths");
-        assertPullURI(getWorkDir().toURI().toString());
+        assertPullURI(Utilities.toURI(getWorkDir()).toString());
     }
 
     private void assertPullURI(String pull, String... hgrc) throws Exception {
@@ -82,7 +83,7 @@ public class HudsonMercurialSCMTest extends NbTestCase {
             }
             TestFileUtils.writeFile(new File(getWorkDir(), ".hg/hgrc"), b.toString());
         }
-        assertEquals(pull != null ? URI.create(pull) : null, HudsonMercurialSCM.getDefaultPull(getWorkDir().toURI()));
+        assertEquals(pull != null ? URI.create(pull) : null, HudsonMercurialSCM.getDefaultPull(Utilities.toURI(getWorkDir())));
     }
 
 }

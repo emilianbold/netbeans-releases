@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace.Variable;
 import org.netbeans.modules.projectimport.eclipse.core.spi.Facets;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -68,7 +69,7 @@ final class ProjectParser {
     public static String parse(File dotProject, Set<String> natures, List<Link> links, Set<Variable> variables) throws IOException {
         Document dotProjectXml;
         try {
-            dotProjectXml = XMLUtil.parse(new InputSource(dotProject.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            dotProjectXml = XMLUtil.parse(new InputSource(Utilities.toURI(dotProject).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(dotProject + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -124,7 +125,7 @@ final class ProjectParser {
         }
         Document doc;
         try {
-            doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            doc = XMLUtil.parse(new InputSource(Utilities.toURI(f).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;

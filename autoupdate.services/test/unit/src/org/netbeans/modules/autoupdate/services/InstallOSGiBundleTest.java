@@ -67,6 +67,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -105,7 +106,7 @@ public class InstallOSGiBundleTest extends NbTestCase {
         res += "</module_updates>\n";
         if (catalogFile == null) {
             catalogFile = File.createTempFile("catalog-", ".xml", tmpDirectory);
-            catalogURL = catalogFile.toURI().toURL();
+            catalogURL = Utilities.toURI(catalogFile).toURL();
         }
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(catalogFile), "UTF-8"));
         pw.write(res);
@@ -179,7 +180,7 @@ public class InstallOSGiBundleTest extends NbTestCase {
         
         generateJar(osgi, new String[0], mf);
         String osgiModuleInfo = "<module codenamebase='" + moduleCNB
-                + "' distribution='" + osgi.toURI().toURL()
+                + "' distribution='" + Utilities.toURI(osgi).toURL()
                 + "' downloadsize='" + osgi.length()
                 + "'>"
                 + "<manifest "

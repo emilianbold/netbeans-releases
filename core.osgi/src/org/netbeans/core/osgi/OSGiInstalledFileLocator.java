@@ -57,6 +57,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -103,7 +104,7 @@ class OSGiInstalledFileLocator extends InstalledFileLocator {
                     }
                     String loc = owner.getLocation();
                     if (loc.startsWith("file:")) {
-                        return new File(URI.create(loc));
+                        return Utilities.toFile(URI.create(loc));
                     }
                 }
                 return null;

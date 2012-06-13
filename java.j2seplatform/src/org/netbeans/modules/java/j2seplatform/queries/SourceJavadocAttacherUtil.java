@@ -169,7 +169,7 @@ public final class SourceJavadocAttacherUtil {
                     public boolean accept(File f) {
                         try {
                             return f.isDirectory() ||
-                                FileUtil.isArchiveFile(f.toURI().toURL());
+                                FileUtil.isArchiveFile(Utilities.toURI(f).toURL());
                         } catch (MalformedURLException ex) {
                             return false;
                         }

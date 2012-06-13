@@ -67,6 +67,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -955,7 +956,7 @@ public class JavaProjectGenerator {
                 for (String output : cu.output) {
                     File f = Util.resolveFile(evaluator, freeformBase, output);
                     try {
-                        if (f.exists() && !FileUtil.isArchiveFile(f.toURI().toURL())) {
+                        if (f.exists() && !FileUtil.isArchiveFile(Utilities.toURI(f).toURL())) {
                             continue;
                         }
                     } catch (MalformedURLException murle) {

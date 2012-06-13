@@ -53,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -139,7 +140,7 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
         Collection installFolders = platform.getInstallFolderURLs();
         if (installFolders.size() > 0) {
             this.platformHome.setForeground(new Color (164,0,0));
-            this.platformHome.setText (new File(URI.create(((URL)installFolders.iterator().next()).toExternalForm())).getAbsolutePath());
+            this.platformHome.setText (Utilities.toFile(URI.create(((URL)installFolders.iterator().next()).toExternalForm())).getAbsolutePath());
         }
         HTMLEditorKit htmlkit = new HTMLEditorKit();                
         StyleSheet css = htmlkit.getStyleSheet();

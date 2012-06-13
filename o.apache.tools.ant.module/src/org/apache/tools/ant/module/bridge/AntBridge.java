@@ -84,6 +84,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 import org.openide.util.io.NullOutputStream;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -398,7 +399,7 @@ public final class AntBridge {
         URL[] cp = new URL[mainClassPath.size()];
         int i = 0;
         for (File entry : mainClassPath) {
-            cp[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */entry.toURI().toURL();
+            cp[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */Utilities.toURI(entry).toURL();
         }
         if (AntSettings.getAntHome() != null) {
             ClassLoader parent = ClassLoader.getSystemClassLoader()/* #152620 */.getParent();
@@ -447,7 +448,7 @@ public final class AntBridge {
     }
     
     private static ClassLoader createAuxClassLoader(File lib, ClassLoader main, ClassLoader moduleLoader) throws IOException {
-        return new AuxClassLoader(moduleLoader, main, lib.toURI().toURL());
+        return new AuxClassLoader(moduleLoader, main, Utilities.toURI(lib).toURL());
     }
     
     /**

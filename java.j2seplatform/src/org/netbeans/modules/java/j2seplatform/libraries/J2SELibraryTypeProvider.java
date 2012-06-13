@@ -75,6 +75,7 @@ import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
 
@@ -213,7 +214,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                     // and it is a file protocol URL, add it.
                     URI uri = URI.create (url.toExternalForm());
                     if (uri != null) {
-                        f = new File (uri);
+                        f = Utilities.toFile(uri);
                     }
                 }
                 if (f != null) {
