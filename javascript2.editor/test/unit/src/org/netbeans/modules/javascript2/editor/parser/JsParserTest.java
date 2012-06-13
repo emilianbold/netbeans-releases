@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.parser.JsParser.Context;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
  *
@@ -100,9 +102,33 @@ public class JsParserTest extends JsTestBase {
             + "}\n}} ");
     }
     
+    public void testSimplePreviousError1() throws Exception {
+        parse("var global1 = new Foo.Bar();\n"
+            + "var global2 = new Array();\n"
+            + "if (true) {\n"
+            + "   var global3 = new org.foo.bar.Baz();\n"
+            + "   gl.\n"
+            + "}\n"
+            + "\n"
+            + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
+            + "    return true;\n"
+            + "}\n",
+            "var global1 = new Foo.Bar();\n"
+            + "var global2 = new Array();\n"
+            + "if (true) {\n"
+            + "   var global3 = new org.foo.bar.Baz();\n"
+            + "   gl \n"
+            + "}\n"
+            + "\n"
+            + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
+            + "    return true;\n"
+            + "}\n");
+    }
+    
     private void parse(String original, String expected) throws Exception {
         JsParser parser = new JsParser();
-        Context context = new JsParser.Context(null , original);
+        Document doc = getDocument(original);
+        Context context = new JsParser.Context("test.js", Source.create(doc).createSnapshot());
         JsErrorManager manager = new JsErrorManager(null);
         parser.parseContext(context, JsParser.Sanitize.NONE, manager);
         assertEquals(expected, context.getSanitizedSource());

@@ -38,11 +38,15 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
@@ -181,7 +185,7 @@ public class JsParser extends Parser {
                         if (index < 0) {
                             break;
                         }
-                        builder.replace(index, index + 1, " ");
+                        erase(builder, index, index + 1);
                         balance++;
                     }
                 } else if (balance > 0 && error.getStartPosition() >= source.length()) {
@@ -192,6 +196,38 @@ public class JsParser extends Parser {
                 }
                 context.setSanitizedSource(builder.toString());
                 return true;
+            }
+        } else if (sanitizing == Sanitize.SYNTAX_ERROR_PREVIOUS) {
+            List<org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            if (!errors.isEmpty()) {
+                org.netbeans.modules.csl.api.Error error = errors.get(0);
+                int offset = error.getStartPosition();
+                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                        context.getSnapshot(), 0);
+                if (ts != null) {
+                    ts.move(offset);
+                    if (ts.moveNext()) {
+                        int start = -1;
+                        while (ts.movePrevious()) {
+                            if (ts.token().id() != JsTokenId.WHITESPACE
+                                    && ts.token().id() != JsTokenId.EOL
+                                    && ts.token().id() != JsTokenId.DOC_COMMENT
+                                    && ts.token().id() != JsTokenId.LINE_COMMENT
+                                    && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
+
+                                start = ts.offset();
+                                break;
+                            }
+                        }
+                        if (start >= 0 && ts.moveNext()) {
+                            int end = ts.offset();
+                            StringBuilder builder = new StringBuilder(context.getOriginalSource());
+                            erase(builder, start, end);
+                            context.setSanitizedSource(builder.toString());
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -212,7 +248,13 @@ public class JsParser extends Parser {
         LOGGER.log(Level.FINE, "Removing changeListener: {0}", changeListener); //NOI18N)
     }
 
-
+    private static void erase(StringBuilder builder, int start, int end) {
+        builder.delete(start, end);
+        for (int i = start; i < end; i++) {
+            builder.insert(i, ' ');
+        }
+    }
+    
     /**
      * Parsing context
      */

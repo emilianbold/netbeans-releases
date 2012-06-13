@@ -77,6 +77,10 @@ public class JsErrorManager extends ErrorManager {
         return null;
     }
     
+    public boolean isEmpty() {
+        return parserErrors == null;
+    }
+    
     @Override
     public void error(String message, Source source, int line, int column, long token) {
         LOGGER.log(Level.FINE, "Error {0} [{1}, {2}]", new Object[] {message, line, column});
