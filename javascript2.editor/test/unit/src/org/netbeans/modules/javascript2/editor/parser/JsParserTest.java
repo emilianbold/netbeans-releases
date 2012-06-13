@@ -76,7 +76,8 @@ public class JsParserTest extends JsTestBase {
             + "\n"
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
-            + "}\n}}");
+            + "}\n}}",
+            1);
     }
     
     public void testSimpleCurly2() throws Exception {
@@ -99,7 +100,8 @@ public class JsParserTest extends JsTestBase {
             + "\n"
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
-            + "}\n}} ");
+            + "}\n}} ",
+            1);
     }
     
     public void testSimplePreviousError1() throws Exception {
@@ -122,15 +124,18 @@ public class JsParserTest extends JsTestBase {
             + "\n"
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
-            + "}\n");
+            + "}\n",
+            1);
     }
     
-    private void parse(String original, String expected) throws Exception {
+    private void parse(String original, String expected, int errorCount) throws Exception {
         JsParser parser = new JsParser();
         Document doc = getDocument(original);
         Context context = new JsParser.Context("test.js", Source.create(doc).createSnapshot());
         JsErrorManager manager = new JsErrorManager(null);
         parser.parseContext(context, JsParser.Sanitize.NONE, manager);
+        
         assertEquals(expected, context.getSanitizedSource());
+        assertEquals(errorCount, manager.getErrors().size());
     }
 }
