@@ -2080,7 +2080,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         };
         private final String progressTitle;
         private final SuspendStatus suspendStatus;
-        private LogContext logCtx;
+        private volatile LogContext logCtx;
         private final Object progressLock = new Object();
         //@GuardedBy("progressLock")
         private ProgressHandle progressHandle = null;
@@ -2701,7 +2701,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     final Context ctx = contexts.get(f);
                     assert ctx != null;
-
+                    
                     final BinaryIndexer indexer = f.createIndexer();
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
@@ -2833,6 +2833,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final boolean scanFiles(URL root, Collection<FileObject> files, boolean forceRefresh, boolean sourceForBinaryRoot) {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
+                LogContext lctx = getLogContext();
                 try {
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                     final Set<Crawler.TimeStampAction> checkTimeStamps = EnumSet.noneOf(Crawler.TimeStampAction.class);
@@ -2847,7 +2848,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Crawler crawler = files.isEmpty() ?
                         new FileObjectCrawler(rootFo, checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
-
+                    if (lctx != null) {
+                        lctx.noteRootScanning(root);
+                    }
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
@@ -2874,6 +2877,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     return false;
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
+                } finally {
+                    if (lctx != null) {
+                        lctx.finishScannedRoot(root);
+                    }
                 }
             }
             return true;
@@ -4366,10 +4373,20 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     new IndexBinaryWorkPool.Function<URL, Boolean>() {
                         @Override
                         public Boolean apply(URL root) {
-                            return scanBinary(
-                                    root,
-                                    binaryIndexers,
-                                    scannedRootsCnt);
+                            LogContext lctx = getLogContext();
+                            if (lctx != null) {
+                                lctx.noteRootScanning(root);
+                            }
+                            try {
+                                return scanBinary(
+                                        root,
+                                        binaryIndexers,
+                                        scannedRootsCnt);
+                            } finally {
+                                if (lctx != null) {
+                                    lctx.finishScannedRoot(root);
+                                }
+                            }
                         }
                     },
                     new Callable<Boolean>() {
