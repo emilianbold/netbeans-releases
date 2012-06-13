@@ -66,7 +66,7 @@ public class JsErrorManager extends ErrorManager {
         this.fileObject = fileObject;
     }
     
-    public Error checkCurlyMissing() {
+    public Error getMissingCurlyError() {
         if (parserErrors == null) {
             return null;
         }

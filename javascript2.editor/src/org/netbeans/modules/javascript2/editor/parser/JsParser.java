@@ -133,7 +133,7 @@ public class JsParser extends Parser {
         }
         
         if (sanitizing != Sanitize.NEVER) {
-            if (!sanitized && current.checkCurlyMissing() != null) {
+            if (!sanitized && current.getMissingCurlyError() != null) {
                 return parseContext(context, Sanitize.MISSING_CURLY, errorManager, false);
             // TODO not very clever check
             } if (node == null || !current.isEmpty()) {
@@ -179,7 +179,7 @@ public class JsParser extends Parser {
     
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
         if (sanitizing == Sanitize.MISSING_CURLY) {
-            org.netbeans.modules.csl.api.Error error = errorManager.checkCurlyMissing();
+            org.netbeans.modules.csl.api.Error error = errorManager.getMissingCurlyError();
             
             String source = context.getOriginalSource();
             int balance = 0;
