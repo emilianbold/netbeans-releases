@@ -43,7 +43,7 @@ package org.netbeans.modules.css.visual;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
+ 
 /**
  *
  * @author marekfukala
