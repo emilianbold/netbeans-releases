@@ -193,11 +193,9 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
             ElementHandle<TypeElement> eh = ElementUtilitiesEx.resolveClassByName(type, src.getClasspathInfo(), false);
             if (eh != null) {
                 SourceClassInfo ci = new JavacClassInfo(eh, src.getClasspathInfo());
-                if (ci == null) {
-                    LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", type);
-                    return;
-                }
                 addTypeMarker(marker, ci, restrictorSet, inclusive, mark);
+            } else {
+                LOGGER.log(Level.FINE, "Couldn''t resolve type: {0}", type);
             }
         }
     }

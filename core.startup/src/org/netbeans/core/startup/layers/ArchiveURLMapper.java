@@ -71,6 +71,7 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=URLMapper.class)
@@ -92,11 +93,11 @@ public class ArchiveURLMapper extends URLMapper {
                         archiveFile = jfs.getJarFile();
                         if (isRoot(archiveFile)) {
                             try {
-                                return new URL("jar:" + archiveFile.toURI() + "!/" +
+                                return new URL("jar:" + Utilities.toURI(archiveFile) + "!/" +
                                     new URI(null, fo.getPath(), null).getRawSchemeSpecificPart() +
                                     (fo.isFolder() && !fo.isRoot() ? "/" : "")); // NOI18N
                             } catch (URISyntaxException syntax) {
-                                return new URL("jar:" + archiveFile.toURI() + "!/" + fo.getPath()
+                                return new URL("jar:" + Utilities.toURI(archiveFile) + "!/" + fo.getPath()
                                         + ((fo.isFolder() && !fo.isRoot()) ? "/" : "")); // NOI18N
                             }
                         }

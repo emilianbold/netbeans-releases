@@ -54,4 +54,8 @@ public interface CsmEnum extends CsmCompoundClassifier {
 
     Collection<CsmEnumerator> getEnumerators();
 
+    /**
+     * @return true if this enum is strontly typed (C++11)
+     */
+    public boolean isStronglyTyped();
 }

@@ -122,7 +122,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }        
         if (type == Type.PACKAGE) {
             if (gui.getTargetName() == null) {
-                setInfoMessage("INFO_JavaTargetChooser_ProvidePackageName");
+                setErrorMessage("INFO_JavaTargetChooser_ProvidePackageName");
                 return false;
             }
             if ( !isValidPackageName( gui.getTargetName() ) ) {
@@ -136,7 +136,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         } else if (type == Type.PKG_INFO) {
             //Change in firing order caused that isValid is called before readSettings completed => no targetName available
             if (gui.getTargetName() == null) {
-                setInfoMessage("INFO_JavaTargetChooser_ProvideClassName");
+                setErrorMessage("INFO_JavaTargetChooser_ProvideClassName");
                 return false;
             }
             assert "package-info".equals( gui.getTargetName() );        //NOI18N
@@ -151,7 +151,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         else {
             if (gui.getTargetName() == null) {
-                setInfoMessage("INFO_JavaTargetChooser_ProvideClassName");
+                setErrorMessage("INFO_JavaTargetChooser_ProvideClassName");
                 return false;
             } 
             else if ( !isValidTypeIdentifier( gui.getTargetName() ) ) {

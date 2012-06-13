@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,9 +46,12 @@ package org.netbeans.updater;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -128,8 +131,23 @@ public final class XMLUtil extends Object {
         // XXX note that this may fail to write out namespaces correctly if the document
         // is created with namespaces and no explicit prefixes; however no code in
         // this package is likely to be doing so
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() { // #208369
+            @Override public ClassLoader run() {
+                return new ClassLoader(ClassLoader.getSystemClassLoader().getParent()) {
+                    @Override public InputStream getResourceAsStream(String name) {
+                        if (name.startsWith("META-INF/services/")) { // NOI18N
+                            return new ByteArrayInputStream(new byte[0]); // JAXP #6723276
+                        }
+                        return super.getResourceAsStream(name);
+                    }
+                };
+            }
+        }));
+        Transformer t = null;
         try {
-            Transformer t = TransformerFactory.newInstance().newTransformer();
+            t = TransformerFactory.newInstance().newTransformer();
+            LOG.info("Use XML Transformer: " + t);
             DocumentType dt = doc.getDoctype();
             if (dt != null) {
                 String pub = dt.getPublicId();
@@ -145,9 +163,11 @@ public final class XMLUtil extends Object {
             Result result = new StreamResult(out);
             t.transform(source, result);
         } catch (Exception e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            throw new IOException("XML Transformer: " + t, e); // NOI18N
         } catch (TransformerFactoryConfigurationError e) {
-            throw (IOException)new IOException(e.toString()).initCause(e);
+            throw new IOException("XML Transformer: " + t, e); // NOI18N
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
 
@@ -156,35 +176,40 @@ public final class XMLUtil extends Object {
      */
     public static EntityResolver createAUResolver() {
         return new EntityResolver() {
+            @Override
             public InputSource resolveEntity(String publicID, String systemID) throws IOException, SAXException {
                 if ("-//NetBeans//DTD Autoupdate Catalog 1.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-1_0.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-1_0.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Module Info 1.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-1_0.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-1_0.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_0.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_0.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Module Info 2.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_0.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_0.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.2//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_2.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_2.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Module Info 2.2//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_2.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_2.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.3//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_3.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_3.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Module Info 2.3//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_3.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_3.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.4//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_4.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_4.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Module Info 2.4//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_4.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_4.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.5//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_5.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_5.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Module Info 2.5//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_5.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_5.dtd").toString()); // NOI18N
                 } else if ("-//NetBeans//DTD Autoupdate Catalog 2.6//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_6.dtd").toString());
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_6.dtd").toString()); // NOI18N
+                } else if ("-//NetBeans//DTD Autoupdate Catalog 2.7//EN".equals(publicID)) { // NOI18N
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-catalog-2_7.dtd").toString()); // NOI18N
+                } else if ("-//NetBeans//DTD Autoupdate Module Info 2.7//EN".equals(publicID)) { // NOI18N
+                    return new InputSource(XMLUtil.class.getResource("resources/autoupdate-info-2_7.dtd").toString()); // NOI18N
                 } else {
-                    if (systemID.endsWith(".dtd")) {
+                    if (systemID.endsWith(".dtd")) { // NOI18N
                         return new InputSource(new ByteArrayInputStream(new byte[0]));
                     }
                     URL u = new URL(systemID);

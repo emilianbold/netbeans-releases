@@ -62,6 +62,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Utilities;
 
 /**
  * Utility methods for cluster-related tasks.
@@ -183,7 +184,7 @@ public final class ClusterUtils {
             File cd = evaluateClusterPathEntry(path, root, eval, nbPlatformRoot);
             boolean isPlaf = cd.getParentFile().equals(nbPlatformRoot);
             Project prj = null;
-            Project _prj = FileOwnerQuery.getOwner(cd.toURI());
+            Project _prj = FileOwnerQuery.getOwner(Utilities.toURI(cd));
             if (_prj != null) {
                 // Must be actual cluster output of a suite or standalone module to qualify. See also: #168804, #180475
                 SuiteProvider prov = _prj.getLookup().lookup(SuiteProvider.class);

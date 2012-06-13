@@ -74,7 +74,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
@@ -245,6 +248,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         @Override
         public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
             if (MakeOptions.getInstance().isFixUnresolvedInclude()) {
+                Collection<CharSequence> res;
                 for(NativeProject np : NativeProjectRegistry.getDefault().getOpenProjects()) {
                     if (np == project) {
                         Lookup.Provider p = np.getProject();
@@ -259,42 +263,65 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                             if (i >= 0) {
                                 name = fileName.substring(i+1);
                             }
-                            Collection<CharSequence> res = projectSearchBase.get(CharSequences.create(name));
+                            res = projectSearchBase.get(CharSequences.create(name));
                             if (res != null && res.size() > 0) {
                                 return res;
                             }
-                            boolean isDoSearch = false;
                             MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration((Project)p);
+                            ExecutionEnvironment env;
                             if (conf != null){
-                                if (conf.getDevelopmentHost().isLocalhost()) {
-                                    isDoSearch = true;
-                                } else {
-                                    if (Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "true"))) {
-                                        isDoSearch = ConnectionManager.getInstance().isConnectedTo(conf.getDevelopmentHost().getExecutionEnvironment());
-                                    }
-                                }
+                                env = conf.getDevelopmentHost().getExecutionEnvironment();
+                            } else {
+                                env = ExecutionEnvironmentFactory.getLocal();
                             }
-                            if (!packageSearch.isEmpty() && isDoSearch) {
-                                for (UserOptionsProvider userOptionsProvider : packageSearch) {
-                                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch((Project)p);
-                                    if (search != null) {
-                                        res = search.searchFile(project, fileName);
-                                        if(res != null) {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
+                            res = defaultSearch(project, fileName, env);
                             if (res != null && res.size() > 0) {
                                 return res;
                             }
+                            return Collections.<CharSequence>emptyList();
                         }
                     }
+                }
+                // Standalone project
+                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(project.getFileSystem());
+                if (env == null) {
+                    env = ExecutionEnvironmentFactory.getLocal();
+                }
+                res = defaultSearch(project, fileName, env);
+                if (res != null && res.size() > 0) {
+                    return res;
                 }
             }
             return Collections.<CharSequence>emptyList();
         }
 
+        private Collection<CharSequence> defaultSearch(NativeProject project, String fileName, ExecutionEnvironment env) {
+            Collection<CharSequence> res = null;
+            if (env == null) {
+                env = ExecutionEnvironmentFactory.getLocal();
+            }
+            boolean isDoSearch = false;
+            if (env.isLocal()) {
+                isDoSearch = true;
+            } else {
+                if (Boolean.valueOf(System.getProperty("cnd.pkg.search.enabled", "true"))) {
+                    isDoSearch = ConnectionManager.getInstance().isConnectedTo(env);
+                }
+            }
+            if (!packageSearch.isEmpty() && isDoSearch) {
+                for (UserOptionsProvider userOptionsProvider : packageSearch) {
+                    NativeFileSearch search = userOptionsProvider.getPackageFileSearch(env);
+                    if (search != null) {
+                        res = search.searchFile(project, fileName);
+                        if(res != null) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+        
         private ConcurrentMap<CharSequence,List<CharSequence>> computeProjectFiles(Lookup.Provider project) {
             ConcurrentMap<CharSequence,List<CharSequence>> result = new ConcurrentHashMap<CharSequence,List<CharSequence>>();
             ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);

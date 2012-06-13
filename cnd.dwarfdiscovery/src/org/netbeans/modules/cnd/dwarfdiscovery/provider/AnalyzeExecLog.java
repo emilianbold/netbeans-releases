@@ -447,9 +447,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
             } else {
                 compiler = tool;
             }
-            if (compiler.equals("cc") || compiler.equals("gcc")) { //NOI18N
+            if (compiler.equals("cc") || compiler.equals("gcc") || compiler.equals("clang")) { //NOI18N
                 language = LanguageKind.C;
-            } else if (compiler.equals("CC") || compiler.equals("g++") || compiler.equals("c++")) { //NOI18N
+            } else if (compiler.equals("CC") || compiler.equals("g++") || compiler.equals("c++") || compiler.equals("clang++")) { //NOI18N
                 language = LanguageKind.CPP;
             } else if (compiler.equals("ffortran") || compiler.equals("f77") || compiler.equals("f90") || compiler.equals("f95") || //NOI18N
                        compiler.equals("gfortran") || compiler.equals("g77") || compiler.equals("g90") || compiler.equals("g95")) { //NOI18N

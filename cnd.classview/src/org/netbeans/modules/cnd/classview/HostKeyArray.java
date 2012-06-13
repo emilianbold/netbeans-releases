@@ -152,6 +152,8 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
             return new SortedName(1,d.getName(),0);
         } else if( d.getKind() == CsmDeclaration.Kind.ENUM ) {
             return new SortedName(1,d.getName(),1);
+        } else if (d.getKind() == CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) {
+            return new SortedName(1, d.getName(), 1);
         } else if( d.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
             return new SortedName(1,d.getName(),2);
         } else if( d.getKind() == CsmDeclaration.Kind.VARIABLE ) {

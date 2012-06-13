@@ -1109,7 +1109,7 @@ public class ClientJavaSourceHelper {
                 contextRoot = contextRoot.substring(1);
             }
         }
-        String applicationPath = "resources"; //NOI18N
+        String applicationPath = "webresources"; //NOI18N
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
             try {

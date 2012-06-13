@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.bookmarks.ui;
 
 import java.beans.PropertyVetoException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,10 +50,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -104,7 +107,8 @@ public final class BookmarksNodeTree {
                 if (projectBookmarks.containsAnyBookmarks()) {
                     FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
                     ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
-                    Project prj = projectBookmarks.getProject();
+                    URI prjURI = projectBookmarks.getProjectURI();
+                    Project prj = BookmarkUtils.findProject(prjURI);
                     LogicalViewProvider lvp = (prj != null) ? prj.getLookup().lookup(LogicalViewProvider.class) : null;
                     Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
                     if (prjNode == null) {
@@ -259,7 +263,8 @@ public final class BookmarksNodeTree {
         
         ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
             this.projectBookmarks = projectBookmarks;
-            Project prj = projectBookmarks.getProject();
+            URI prjURI = projectBookmarks.getProjectURI();
+            Project prj = BookmarkUtils.findProject(prjURI);
             projectDisplayName = (prj != null)
                     ? ProjectUtils.getInformation(prj).getDisplayName()
                     : NbBundle.getMessage (BookmarksView.class, "LBL_NullProjectDisplayName");
@@ -272,15 +277,17 @@ public final class BookmarksNodeTree {
 
         @Override
         protected Node[] createNodes(FileObject fo) {
+            Node foNode;
             try {
                 DataObject dob = DataObject.find(fo);
-                Node node = dob.getNodeDelegate().cloneNode();
-                URL url = fo.toURL();
-                FileBookmarks urlBookmarks = projectBookmarks.get(url);
-                return new Node[] { new FilterNode(node, new FileBookmarksChildren(urlBookmarks, fo)) };
+                foNode = dob.getNodeDelegate().cloneNode();
             } catch (DataObjectNotFoundException ex) {
-                throw new IllegalStateException(); // TODO generic node for FO
+                foNode = new AbstractNode(Children.LEAF);
+                foNode.setDisplayName(fo.getNameExt());
             }
+            URL url = fo.toURL();
+            FileBookmarks urlBookmarks = projectBookmarks.get(url);
+            return new Node[]{new FilterNode(foNode, new FileBookmarksChildren(urlBookmarks, fo))};
         }
 
     }

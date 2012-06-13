@@ -67,6 +67,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
@@ -142,6 +143,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private final boolean isNetbeans;
 
     private final Object REFRESH_LOCK = new Object();
+    private final Semaphore querySemaphore = new Semaphore(1);
+    private boolean populated = false;
         
     public QueryController(BugzillaRepository repository, BugzillaQuery query, String urlParameters, boolean urlDef) {
         this(repository, query, urlParameters, false, true);
@@ -241,6 +244,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         if(query.isSaved()) {
             setAsSaved();
         }
+        
+        querySemaphore.acquireUninterruptibly();
+        Bugzilla.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
+        
         if(urlDef) {
             panel.switchQueryFields(false);
             panel.urlTextField.setText(urlParameters);
@@ -429,7 +436,14 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                         final boolean autoRefresh = BugzillaConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
                         panel.refreshCheckBox.setSelected(autoRefresh);
                     }
+                    
+                    populated = true;
+                    Bugzilla.LOG.log(Level.FINE, "populated query {0}", query.getDisplayName()); // NOI18N
+                    
                 } finally {
+                    querySemaphore.release();
+                    Bugzilla.LOG.log(Level.FINE, "released lock on query {0}", query.getDisplayName()); // NOI18N
+                    
                     if(Bugzilla.LOG.isLoggable(Level.FINE)) {
                         Bugzilla.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
                     }
@@ -1130,6 +1144,21 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         public void run() {
             startQuery();
             try {
+                Bugzilla.LOG.log(Level.FINE, "waiting until lock releases in query {0}", query.getDisplayName()); // NOI18N
+                long t = System.currentTimeMillis();
+                try {
+                    querySemaphore.acquire();
+                } catch (InterruptedException ex) {
+                    Bugzilla.LOG.log(Level.INFO, "interuped while trying to lock query", ex); // NOI18N
+                    return;
+                } 
+                querySemaphore.release();
+                Bugzilla.LOG.log(Level.FINE, "lock aquired for query {0} after {1}", new Object[]{query.getDisplayName(), System.currentTimeMillis() - t}); // NOI18N
+                if(!populated) {
+                    Bugzilla.LOG.log(Level.WARNING, "Skipping refresh of query {0} because isn''t populated.", query.getDisplayName()); // NOI18N
+                    // something went wrong during populate - skip execute
+                    return;
+                }
                 executeQuery();
             } finally {
                 finnishQuery();

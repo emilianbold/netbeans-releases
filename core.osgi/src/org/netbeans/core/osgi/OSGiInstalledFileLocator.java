@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
@@ -95,6 +96,18 @@ class OSGiInstalledFileLocator extends InstalledFileLocator {
                 }
             }
         } else {
+            if (codeNameBase != null && relativePath.equals("modules/" + codeNameBase.replace('.', '-') + ".jar")) {
+                for (Bundle owner : context.getBundles()) {
+                    if (!owner.getSymbolicName().equals(codeNameBase)) {
+                        continue;
+                    }
+                    String loc = owner.getLocation();
+                    if (loc.startsWith("file:")) {
+                        return new File(URI.create(loc));
+                    }
+                }
+                return null;
+            }
             String storage = context.getProperty(Constants.FRAMEWORK_STORAGE);
             if (storage == null) {
                 return null;

@@ -41,40 +41,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javadoc.hints;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+//package org.netbeans.modules.javadoc.hints;
+//
+//import java.util.ArrayList;
+//import java.util.List;
+//import org.netbeans.spi.editor.hints.ChangeInfo;
+//import org.netbeans.spi.editor.hints.Fix;
+//import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Pokorsky
  */
-final class FixAll implements Fix {
-        
-        private List<GenerateJavadocFix> allJavadocFixes = new ArrayList<GenerateJavadocFix>();
-        
-        public void addFix(GenerateJavadocFix f) {
-            allJavadocFixes.add(f);
-        }
-        
-        public boolean isReady() {
-            return allJavadocFixes.size() > 1;
-        }
-        
-        public String getText() {
-            return NbBundle.getMessage(FixAll.class, "FIX_ALL_HINT"); // NOI18N
-        }
-        
-        public ChangeInfo implement() {
-            for (GenerateJavadocFix javadocFix : allJavadocFixes) {
-                javadocFix.implement(false);
-            }
-            
-            return null;
-        }
-        
-}
+//final class FixAll implements Fix {
+//        
+//        private List<GenerateJavadocFix> allJavadocFixes = new ArrayList<GenerateJavadocFix>();
+//        
+//        public void addFix(GenerateJavadocFix f) {
+//            allJavadocFixes.add(f);
+//        }
+//        
+//        public boolean isReady() {
+//            return allJavadocFixes.size() > 1;
+//        }
+//        
+//        public String getText() {
+//            return NbBundle.getMessage(FixAll.class, "FIX_ALL_HINT"); // NOI18N
+//        }
+//        
+//        public ChangeInfo implement() {
+//            for (GenerateJavadocFix javadocFix : allJavadocFixes) {
+//                javadocFix.implement(false);
+//            }
+//            
+//            return null;
+//        }
+//        
+//}

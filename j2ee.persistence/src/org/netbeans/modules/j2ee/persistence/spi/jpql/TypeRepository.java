@@ -122,20 +122,22 @@ public class TypeRepository implements ITypeRepository {
     private void fillTypeElement(final String fqn){
         Sources sources=ProjectUtils.getSources(project);
         SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        SourceGroup firstGroup=groups[0];
-        FileObject fo=firstGroup.getRootFolder();
-        ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
-        JavaSource javaSource = JavaSource.create(classpathInfo);
-        try {
-            javaSource.runModificationTask(new Task<WorkingCopy>() {
-                @Override
-                public void run(WorkingCopy wc) throws Exception {
-                    TypeElement te = wc.getElements().getTypeElement(fqn);
-                    if(te != null)types.put(fqn, new Type(TypeRepository.this, te));
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if(groups != null && groups.length>0){
+            SourceGroup firstGroup=groups[0];
+            FileObject fo=firstGroup.getRootFolder();
+            ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
+            JavaSource javaSource = JavaSource.create(classpathInfo);
+            try {
+                javaSource.runModificationTask(new Task<WorkingCopy>() {
+                    @Override
+                    public void run(WorkingCopy wc) throws Exception {
+                        TypeElement te = wc.getElements().getTypeElement(fqn);
+                        if(te != null)types.put(fqn, new Type(TypeRepository.this, te));
+                    }
+                });
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
     private void fillTypeElement(Class<?> type){

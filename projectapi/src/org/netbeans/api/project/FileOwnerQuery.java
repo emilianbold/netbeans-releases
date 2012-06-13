@@ -60,6 +60,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Utilities;
 
 /**
  * Find the project which owns a file.
@@ -104,7 +105,7 @@ public class FileOwnerQuery {
             Project p = q.getOwner(file);
             if (p != null) {
                 LOG.log(Level.FINE, "getOwner({0}) -> {1} @{2} from {3}", new Object[] {file, p, p.hashCode(), q});
-                return p;
+                return p == UNOWNED ? null : p;
             }
         }
         LOG.log(Level.FINE, "getOwner({0}) -> nil", file);
@@ -135,7 +136,7 @@ public class FileOwnerQuery {
                 try {
                     URL u = new URL(schemaPart);
                     // XXX bad to ever use new File(URL.getPath()):
-                    uri = new File(u.getPath()).toURI();
+                    uri = Utilities.toURI(new File(u.getPath()));
                 } catch (MalformedURLException ex2) {
                     ex2.printStackTrace();
                     assert false : schemaPart;
@@ -150,7 +151,7 @@ public class FileOwnerQuery {
             Project p = q.getOwner(uri);
             if (p != null) {
                 LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {uri, p, q});
-                return p;
+                return p == UNOWNED ? null : p;
             }
         }
         LOG.log(Level.FINE, "getOwner({0}) -> nil", uri);
@@ -164,6 +165,31 @@ public class FileOwnerQuery {
     static void reset() {
         SimpleFileOwnerQueryImplementation.reset();
     }
+    
+    /**
+     * Pseudoproject indicating just that a directory is definitely unowned. May
+     * be returned by either {@code getOwner} overload of
+     * {@link FileOwnerQueryImplementation}, in which case null is returned from
+     * either {@code getOwner} overload here. May also be passed to either
+     * {@code markExternalOwner} overload, in which case the standard directory
+     * search will be pruned at this point with no result.
+     *
+     * @since 1.46
+     */
+    public static final Project UNOWNED = new Project() {
+        @Override
+        public FileObject getProjectDirectory() {
+            return FileUtil.createMemoryFileSystem().getRoot();
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+        @Override public String toString() {
+            return "UNOWNED";
+        }
+    };
     
     /**
      * Simplest algorithm for marking external file owners, which just keeps
@@ -188,6 +214,7 @@ public class FileOwnerQuery {
      * @param owner a project which should be considered to own that folder tree
      *              (any prior marked external owner is overridden),
      *              or null to cancel external ownership for this folder root
+     *              or {@link #UNOWNED} if the directory is known definitely to be unowned
      * @param algorithm an algorithm to use for retaining this information;
      *                  currently may only be {@link #EXTERNAL_ALGORITHM_TRANSIENT}
      * @throws IllegalArgumentException if the root or owner is null, if an unsupported

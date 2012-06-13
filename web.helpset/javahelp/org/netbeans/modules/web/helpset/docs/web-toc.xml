@@ -104,6 +104,7 @@
             <tocitem text="Registering a Cloud Account in NetBeans IDE" target="register-cloud"/>
             <tocitem text="Developing Cloud Applications Locally" target="develop-locally"/>
             <tocitem text="Deploying Web Applications to the Cloud" target="deploy-cloud"/>
+            <tocitem text="Whitelisting in Oracle Cloud" target="oracle-cloud-whitelisting"/>
         </tocitem>
         <tocitem text="Debugging and Testing Web Applications">
             <tocitem text="About Debugging and Testing Web Applications" target="about_debug" />
@@ -111,6 +112,7 @@
             <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
             <tocitem text="Debugging a Web Application" target="debug_webapp" />
             <tocitem text="Profiling a Web Application" target="about_profilewebapp" />
+            <tocitem text="Creating a Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
         </tocitem>
         <tocitem text="Web Application Frameworks">
             <tocitem text="About Web Application Frameworks" target="about_framework" />

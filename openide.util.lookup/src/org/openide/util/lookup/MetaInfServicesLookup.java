@@ -147,13 +147,17 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 search(type, toAdd);
             }
         }
+        HashSet<R> listeners = null;
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
                 LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
                 arr.addAll(toAdd);
-                setPairs(arr, getRP());
+                listeners = setPairsAndCollectListeners(arr);
             }
+        }
+        if (listeners != null) {
+            notifyIn(getRP(), listeners);
         }
     }
     
@@ -482,8 +486,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                                    // 2 instances of the same class
                     Class<?> c = ((Class<?>) o);
                     try {
-                        o = null;
-                        o = CACHE.findInstance(c, o);
+                        o = CACHE.findInstance(c);
 
                         if (o == null) {
                             o = SharedClassObjectBridge.newInstance(c);

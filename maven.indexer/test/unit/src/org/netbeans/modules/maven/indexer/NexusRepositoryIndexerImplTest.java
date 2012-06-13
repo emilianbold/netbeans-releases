@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.indexer;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.index.ArtifactInfo;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;

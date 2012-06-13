@@ -82,30 +82,51 @@ public final class UiUtils {
     private static boolean lookAndFeelInitialized = false;
     private static LookAndFeelType lookAndFeelType = null;
     
-    public static void showMessageDialog(
+    public static boolean showMessageDialog(
             final String message,
             final String title,
             final MessageType messageType) {
         initLAF();
         
+        boolean exitInstaller = false;
+        
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
-                int intMessageType = JOptionPane.INFORMATION_MESSAGE;
-                if (messageType == MessageType.WARNING) {
-                    intMessageType = JOptionPane.WARNING_MESSAGE;
-                } else if (messageType == MessageType.ERROR) {
-                    intMessageType = JOptionPane.ERROR_MESSAGE;
-                } else if (messageType == MessageType.CRITICAL) {
-                    intMessageType = JOptionPane.ERROR_MESSAGE;
-                }
+                int intMessageType = JOptionPane.INFORMATION_MESSAGE;                               
+                
                 LogManager.logIndent("... show message dialog");
                 LogManager.log("title: "+ title);
-                LogManager.log("message: " + message);                
-                JOptionPane.showMessageDialog(
-                        null,
-                        message,
-                        title,
-                        intMessageType);
+                LogManager.log("message: " + message);
+                
+                if (messageType == MessageType.WARNING) {
+                    intMessageType = JOptionPane.WARNING_MESSAGE;                
+                } else if (messageType == MessageType.CRITICAL) {
+                    intMessageType = JOptionPane.ERROR_MESSAGE;
+                    exitInstaller = true;
+                }
+                
+                if (messageType == MessageType.ERROR) {                    
+                    int result = JOptionPane.showOptionDialog(null,
+                                        message,
+                                        title,
+                                        JOptionPane.YES_NO_OPTION,
+                                        JOptionPane.ERROR_MESSAGE,
+                                        null,
+                                        null,
+                                        JOptionPane.YES_OPTION);
+                    if (result == JOptionPane.NO_OPTION) {
+                        exitInstaller = true;
+                        LogManager.logUnindent("... user selected: NO");                        
+                    } else {
+                        LogManager.logUnindent("... user selected: YES");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, 
+                            message, 
+                            title, 
+                            intMessageType);
+                }
+                
                 LogManager.logUnindent("... dialog closed");
                 break;
             case SILENT:
@@ -113,6 +134,8 @@ public final class UiUtils {
                 System.err.println(message);
                 break;
         }
+        
+        return exitInstaller;
     }
     /**
      * 

@@ -60,6 +60,7 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -169,7 +170,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         for (int i = 0; i < pieces.length; i++) {
             try {
                 // XXX would be cleaner to take a File[] if that is what these all are anyway!
-                final URL entry = FileUtil.urlForArchiveOrDir(new File(pieces[i]));
+                final URL entry = FileUtil.urlForArchiveOrDir(Utilities.toFile(pieces[i]));
                 if (entry != null) {
                     result.add(new FilteringPathResourceImplementation() {
                         @Override public boolean includes(URL root, String resource) {

@@ -83,11 +83,13 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
             buttonGroup1.add(rbIgnore);
             checkIgnoreEnablement();
             comServer.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     checkIgnoreEnablement();
                 }
             });
             rbIgnore.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                     printIgnoreWarning();
                 }

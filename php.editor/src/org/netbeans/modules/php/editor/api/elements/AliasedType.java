@@ -86,6 +86,11 @@ public class AliasedType extends AliasedElement implements TypeElement {
     }
 
     @Override
+    public boolean isTraited() {
+        return getRealType().isTraited();
+    }
+
+    @Override
     public Collection<QualifiedName> getFQSuperInterfaceNames() {
         return Collections.<QualifiedName>emptyList();
     }

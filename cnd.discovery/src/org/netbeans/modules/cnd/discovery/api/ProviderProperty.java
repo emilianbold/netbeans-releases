@@ -84,6 +84,7 @@ public interface ProviderProperty {
         Folder,
         Folders,
         String,
-        Boolean
+        Boolean,
+        Object
     }
 }

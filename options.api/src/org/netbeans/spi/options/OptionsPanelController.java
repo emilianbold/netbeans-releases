@@ -316,25 +316,4 @@ public abstract class OptionsPanelController {
         int position() default Integer.MAX_VALUE;
     }
 
-    /* XXX consider using annotations on:
-o.n.m.uml.propertysupport                 OptionsDialog/UMLOptionsCategory.instance
-o.n.m.websvc.axis2                        OptionsDialog/o-n-m-websvc-axis2-options-Axis2OptionsCategory.instance
-o.n.m.python.options                      OptionsDialog/o-n-m-python-options-OptionsOptionsCategory.instance
-o.n.bluej                                 OptionsDialog/Advanced/BlueJ.instance
-o.n.m.collab.ui                           OptionsDialog/Advanced/Collab.instance
-o.n.m.form                                OptionsDialog/Advanced/FormEditor.instance
-o.n.m.jconsole                            OptionsDialog/Advanced/JConsole.instance
-o.n.m.ruby.project                        OptionsDialog/Advanced/RubyOptions.instance
-o.n.m.autosave                            OptionsDialog/Advanced/o-n-m-autosave-AutoSaveAdvancedOption.instance
-o.n.m.debugger.jpda.ui                    OptionsDialog/Advanced/o-n-m-debugger-jpda-ui-options-JavaDebuggerAdvancedOption.instance
-o.n.m.genericnavigator                    OptionsDialog/Advanced/o-n-m-genericnavigator-GenericNavigatorOptionsAdvancedOption.instance
-o.n.m.groovy.support                      OptionsDialog/Advanced/o-n-m-groovy-support-api-GroovySettings.instance
-o.n.m.javacard.project                    OptionsDialog/Advanced/o-n-m-javacard-options-javacardAdvancedOption.instance
-o.n.m.mobility.svgcore                    OptionsDialog/Advanced/o-n-m-mobility-svgcore-options-SvgcoreAdvancedOption.instance
-o.n.m.perspective                         OptionsDialog/Advanced/o-n-m-perspective-options-PerspectiveAdvancedOption.instance
-o.n.m.tasklist.usertasks                  OptionsDialog/Advanced/o-n-m-tasklist-usertasks-Options.instance
-o.n.m.visualweb.designer.jsf              OptionsDialog/Advanced/o-n-m-visualweb-designer-jsf-JsfDesignerAdvancedOptions.instance
-o.n.m.vmd.componentssupport               OptionsDialog/Advanced/o-n-m-vmd-componentssupport-options-ComponentssupportAdvancedOption.instance
-     */
-
 }

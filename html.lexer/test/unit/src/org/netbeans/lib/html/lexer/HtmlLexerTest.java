@@ -312,6 +312,24 @@ public class HtmlLexerTest extends NbTestCase {
         checkTokens("<?xml", "<?xml|XML_PI");
     }
 
+     //Bug 213332 - IllegalStateException: A bug #212445 just happended for source text " scrollbar-arrow-color:"black"; } </STYLE> <TITLE>Cyprus :: Larnaca</TITLE></HEAD> <BOD". Please report a new bug or r 
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=213332
+    public void testIssue213332() {
+        checkTokens("<style type=text/>", 
+                "<|TAG_OPEN_SYMBOL", "style|TAG_OPEN", " |WS", "type|ARGUMENT", "=|OPERATOR", "text|VALUE", "/>|TAG_CLOSE_SYMBOL");
+        
+        checkTokens("<style type=text/css>", 
+                "<|TAG_OPEN_SYMBOL", "style|TAG_OPEN", " |WS", "type|ARGUMENT", "=|OPERATOR", "text/css|VALUE", ">|TAG_CLOSE_SYMBOL");
+    }
+    
+    public void testIssue213332_2() {
+        checkTokens("<div align= </div>",
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "align|ARGUMENT", "=|OPERATOR", " |WS", 
+                "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+    }
+    
+    //--------------------------------------------------------------------------
+    
     private void checkTokens(String text, String... descriptions) {
         TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
         TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());

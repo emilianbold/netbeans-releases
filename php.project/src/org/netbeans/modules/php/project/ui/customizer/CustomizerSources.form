@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
@@ -24,50 +24,43 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="projectFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="sourceFolderLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="webRootLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="encodingLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="phpVersionLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="projectFolderTextField" alignment="0" max="32767" attributes="0"/>
+                      <Component id="sourceFolderTextField" alignment="0" max="32767" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="testFolderTextField" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="testFolderButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="webRootTextField" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="webRootButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="encodingComboBox" alignment="0" max="32767" attributes="0"/>
+                      <Component id="phpVersionComboBox" alignment="0" max="32767" attributes="0"/>
+                      <Component id="phpVersionInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <Component id="copyFilesPanel" alignment="1" max="32767" attributes="0"/>
+          </Group>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="sourceFolderLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="webRootLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="encodingLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="phpVersionLabel" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectFolderTextField" alignment="0" pref="237" max="32767" attributes="0"/>
-                          <Component id="sourceFolderTextField" alignment="0" pref="237" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="testFolderTextField" pref="129" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="testFolderButton" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="webRootTextField" pref="129" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="webRootButton" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="encodingComboBox" alignment="0" pref="237" max="32767" attributes="0"/>
-                          <Component id="phpVersionComboBox" alignment="0" pref="237" max="32767" attributes="0"/>
-                          <Component id="phpVersionInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Component id="copyFilesPanel" alignment="1" pref="353" max="32767" attributes="0"/>
+                  <Component id="aspTagsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="testFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="shortTagsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="aspTagsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="testFolderLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="shortTagsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -199,9 +192,6 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="testFolderTextField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/customizer/Bundle.properties" key="CustomizerSources.testFolderTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

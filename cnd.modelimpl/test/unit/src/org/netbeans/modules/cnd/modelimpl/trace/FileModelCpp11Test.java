@@ -77,5 +77,8 @@ public class FileModelCpp11Test extends TraceModelTestBase {
     public void testCpp11() throws Exception {
         performTest("cpp11.cpp");
     }
-    
+
+    public void testClassMemberFwdEnums() throws Exception {
+        performTest("classMemberFwdEnum.cpp");
+    }
 }

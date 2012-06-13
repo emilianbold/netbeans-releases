@@ -118,6 +118,7 @@ public class JPDAStart implements Runnable {
         return (String)lock[0];
     }
     
+    @Override
     public void run() {
         synchronized (lock) {
             
@@ -177,6 +178,7 @@ public class JPDAStart implements Runnable {
                 final ListeningConnector flc = lc;
                 RP.post(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             JPDADebugger.startListening(flc, args,
@@ -220,6 +222,7 @@ public class JPDAStart implements Runnable {
             this.breakpoint = breakpoint;
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent e) {
             if (JPDADebugger.PROP_STATE.equals(e.getPropertyName())) {
                 int state = ((Integer) e.getNewValue()).intValue();
@@ -238,7 +241,6 @@ public class JPDAStart implements Runnable {
                     dispose();
                 }
             }
-            return;
         }
         
         private void dispose() {
@@ -256,6 +258,7 @@ public class JPDAStart implements Runnable {
             }
         }
         
+        @Override
         public void engineAdded(DebuggerEngine engine) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) {

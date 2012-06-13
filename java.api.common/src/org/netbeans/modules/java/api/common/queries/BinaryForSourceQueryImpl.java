@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -114,7 +115,7 @@ final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementati
             }
             String buildGeneratedDirS = eval.getProperty("build.generated.sources.dir");
             if (buildGeneratedDirS != null) { // #105645
-                String parent = helper.resolveFile(buildGeneratedDirS).toURI().toString();
+                String parent = Utilities.toURI(helper.resolveFile(buildGeneratedDirS)).toString();
                 if (sourceRoot.toString().startsWith(parent)) {
                     result = new R(sourceProps);
                     cache.put(sourceRoot, result);

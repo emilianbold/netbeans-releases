@@ -175,11 +175,15 @@ public final class VCSContext {
         List<VCSFileProxy> unversionedFiles = new ArrayList<VCSFileProxy>(rootFiles.size());
         Set<VersioningSystem> projectOwners = new HashSet<VersioningSystem>(2);
         for (VCSFileProxy root : rootFiles) {
-            VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(root);
-            if (owner == null) {
-                unversionedFiles.add(root);
+            if(root != null) {
+                VCSSystemProvider.VersioningSystem owner = VersioningManager.getInstance().getOwner(root);
+                if (owner == null) {
+                    unversionedFiles.add(root);
+                } else {
+                    projectOwners.add(owner);
+                }
             } else {
-                projectOwners.add(owner);
+                LOG.warning("trying to add a null root to context"); // NOI18N
             }
         }
         if(projectOwners.isEmpty()) {
@@ -365,8 +369,12 @@ public final class VCSContext {
         if (folders.size() > 0) {
             for (Iterator j = folders.iterator(); j.hasNext();) {
                 NonRecursiveFolder nonRecursiveFolder = (NonRecursiveFolder) j.next();
-                VCSFileProxy file = Utils.createFlatFileProxy(nonRecursiveFolder.getFolder());
-                nodeFiles.add(file);
+                VCSFileProxy proxy = Utils.createFlatFileProxy(nonRecursiveFolder.getFolder());
+                if(proxy != null) {
+                    nodeFiles.add(proxy);
+                } else {
+                    LOG.log(Level.WARNING, "null VCSFileProxy for non recursive folder FileObject {0}", nonRecursiveFolder.getFolder()); // NOI18N
+                }
             }
         } else {
             Collection<? extends FileObject> fileObjects = node.getLookup().lookup(new Lookup.Template<FileObject>(FileObject.class)).allInstances();
@@ -389,7 +397,12 @@ public final class VCSContext {
     private static Collection<VCSFileProxy> toFileCollection(Collection<? extends FileObject> fileObjects) {
         Set<VCSFileProxy> files = new HashSet<VCSFileProxy>(fileObjects.size()*4/3+1);
         for (FileObject fo : fileObjects) {
-            files.add(VCSFileProxy.createFileProxy(fo));
+            VCSFileProxy proxy = VCSFileProxy.createFileProxy(fo);
+            if(proxy != null) {
+                files.add(proxy);
+            } else {
+                LOG.log(Level.WARNING, "null VCSFileProxy for FileObject {0}", fo); // NOI18N
+            }
         }
         files.remove(null);
         return files;
@@ -470,8 +483,13 @@ public final class VCSContext {
     private static void addSiblings(Set<VCSFileProxy> files, VCSFileProxy exclusion, FileFilter filter) {
         if (exclusion.getParentFile() == null) return;  // roots have no siblings
         VCSFileProxy [] siblings = exclusion.getParentFile().listFiles();
-        for (VCSFileProxy sibling : siblings) {
-            if (filter.accept(sibling)) files.add(sibling);
+        if(siblings != null) {
+            for (VCSFileProxy sibling : siblings) {
+                if (filter.accept(sibling)) files.add(sibling);
+            }
+        } else {
+            // see issue #213289, but how is this possible?
+            LOG.log(Level.WARNING, "no children found for {0}", exclusion.getParentFile()); // NOI18N
         }
         files.remove(exclusion);
     }

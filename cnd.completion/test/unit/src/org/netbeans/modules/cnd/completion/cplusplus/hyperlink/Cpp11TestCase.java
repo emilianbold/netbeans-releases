@@ -102,11 +102,40 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
     public void testBug210291() throws Exception {
         // Bug 210291 - Unresolved ids in instantiations
         performTest("bug210291.cpp", 13, 59, "bug210291.cpp", 8, 5);
-    }    
-    
-//    public void testBug210303() throws Exception {
-//        // Bug 210303 - Unresolved instantiation
-//        performTest("bug210303.cpp", 18, 11, "bug210303.cpp", 11, 9);
-//    }
+    }
+
+    public void testExtEnumDefition212843() throws Exception {
+        // #212843 - external enum declaration can not resolve initializer constants
+        performTest("iz212843.cpp", 5, 42, "iz212843.cpp", 2, 12);
+        performTest("iz212843.cpp", 6, 16, "iz212843.cpp", 10, 5);
+        performTest("iz212843.cpp", 7, 21, "iz212843.cpp", 14, 5);
+        performTest("iz212843.cpp", 10, 16, "iz212843.cpp", 6, 9);
+        performTest("iz212843.cpp", 11, 25, "iz212843.cpp", 5, 16);
+        performTest("iz212843.cpp", 14, 21, "iz212843.cpp", 7, 9);
+        performTest("iz212843.cpp", 14, 37, "iz212843.cpp", 2, 12);
+        performTest("iz212843.cpp", 14, 46, "iz212843.cpp", 5, 16);
+        performTest("iz212843.cpp", 14, 55, "iz212843.cpp", 5, 26);
+    }
+
+    public void testExtMemberEnumEnumerators212124() throws Exception {
+        // #212124 - C++11 enum forwards
+        // correctly resolve externally defined class member forward enums' enumerators
+        performTest("iz212124.cpp", 18, 55, "iz212124.cpp", 15, 46);
+        performTest("iz212124.cpp", 19, 55, "iz212124.cpp", 15, 67);
+        performTest("iz212124.cpp", 20, 55, "iz212124.cpp", 15, 88);
+        
+        performTest("iz212124.cpp", 22, 55, "iz212124.cpp", 16, 46);
+        performTest("iz212124.cpp", 23, 55, "iz212124.cpp", 16, 67);
+        performTest("iz212124.cpp", 24, 55, "iz212124.cpp", 16, 88);
+
+        performTest("iz212124.cpp", 25, 45, "iz212124.cpp", 16, 46);
+        performTest("iz212124.cpp", 26, 45, "iz212124.cpp", 16, 67);
+        performTest("iz212124.cpp", 27, 45, "iz212124.cpp", 16, 88);
+    }
+
+    public void testBug210303() throws Exception {
+        // Bug 210303 - Unresolved instantiation
+        performTest("bug210303.cpp", 18, 11, "bug210303.cpp", 11, 9);
+    }
     
 }

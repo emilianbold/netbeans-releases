@@ -46,12 +46,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.OpenTaskAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
@@ -116,12 +117,22 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
 
     @Override
     protected Action getDefaultAction() {
-        return new OpenTaskAction(task);
+        return new OpenTaskAction(this);
     }
 
     @Override
     public Action[] getPopupActions() {
-        List<Action> actions = Actions.getTaskPopupActions(this);
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        TaskNode[] taskNodes = new TaskNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof TaskNode) {
+                taskNodes[i] = (TaskNode) treeListNode;
+            } else {
+                return null;
+            }
+        }
+        List<Action> actions = Actions.getTaskPopupActions(taskNodes);
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -183,20 +194,37 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
 
     @Override
     public int compareTo(TaskNode toCompare) {
+        //compare status
         int statusCompare = task.getStatus().compareTo(toCompare.task.getStatus());
         if (statusCompare != 0) {
             return statusCompare;
-        } else {
-            int id = Integer.parseInt(task.getID());
-            int idOther = Integer.parseInt(toCompare.task.getID());
-            if (id < idOther) {
-                return 1;
-            } else if (id > idOther) {
-                return -1;
-            } else {
-                return 0;
-            }
         }
+
+        //compare ID
+        int id = 0;
+        boolean isIdNumeric = true;
+        try {
+            id = Integer.parseInt(task.getID());
+        } catch (NumberFormatException numberFormatException) {
+            isIdNumeric = false;
+        }
+        int idOther = 0;
+        boolean isIdOtherNumberic = true;
+        try {
+            idOther = Integer.parseInt(toCompare.task.getID());
+        } catch (NumberFormatException numberFormatException) {
+            isIdOtherNumberic = false;
+        }
+        if (isIdNumeric && isIdOtherNumberic) {
+            return compareNumericId(id, idOther);
+        } else if (isIdNumeric) {
+            return -1;
+        } else if (isIdOtherNumberic) {
+            return 1;
+        } else {
+            return compareComplexId(task.getID(), toCompare.task.getID());
+        }
+        
     }
 
     @Override
@@ -209,5 +237,37 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
             fireContentChanged();
         }
+    }
+
+    private int compareNumericId(int id, int idOther) {
+        if (id < idOther) {
+            return 1;
+        } else if (id > idOther) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    private int compareComplexId(String id1, String id2) {
+        int deviderIndex1 = id1.lastIndexOf("-"); //NOI18
+        int deviderIndex2 = id2.lastIndexOf("-"); //NOI18
+        if (deviderIndex1 == -1 || deviderIndex2 == -1) {
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format");
+            return 0;
+        }
+        String prefix1 = id1.subSequence(0, deviderIndex1).toString();
+        String suffix1 = id1.substring(deviderIndex1+1);
+
+        String prefix2 = id2.subSequence(0, deviderIndex1).toString();
+        String suffix2 = id2.substring(deviderIndex1+1);
+
+        //compare prefix, alphabetically
+        int comparePrefix = prefix1.compareTo(prefix2);
+        if (comparePrefix != 0) {
+            return comparePrefix;
+        }
+        //compare number suffix
+        return compareNumericId(Integer.parseInt(suffix1), Integer.parseInt(suffix2));
     }
 }

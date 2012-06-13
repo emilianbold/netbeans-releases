@@ -94,7 +94,12 @@ public final class FileObjectFactory {
     }
 
     private FileObjectFactory(final FileInfo fInfo) {
+        this(fInfo, null);
+    }
+    
+    private FileObjectFactory(FileInfo fInfo, Object msg) {
         final BaseFileObj realRoot = create(fInfo);
+        assert realRoot != null : "No fo for " + fInfo + " queried for " + msg;
         root = realRoot;
     }
     
@@ -115,7 +120,7 @@ public final class FileObjectFactory {
                 synchronized (FileObjectFactory.AllFactories) {
                     retVal = FileObjectFactory.AllFactories.get(rootFile);
                     if (retVal == null) {
-                        retVal = new FileObjectFactory(rootFile);
+                        retVal = new FileObjectFactory(new FileInfo(rootFile), file);
                         FileObjectFactory.AllFactories.put(rootFile, retVal);
                     }
                 }

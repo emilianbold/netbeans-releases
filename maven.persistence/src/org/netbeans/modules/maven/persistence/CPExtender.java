@@ -73,15 +73,18 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         this.project = project;
     }
     
+    @Override
     protected SourceGroup[] getExtensibleSourceGroups() {
         //the default one privides them.
         return new SourceGroup[0];
     }
 
+    @Override
     protected String[] getExtensibleClassPathTypes(SourceGroup arg0) {
         return new String[0];
     }
 
+    @Override
     protected boolean addLibraries(Library[] libs, SourceGroup arg1, String arg2) throws IOException,
                                                                                          UnsupportedOperationException {
         boolean added = false;
@@ -91,28 +94,33 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         return added;
     }
 
+    @Override
     protected boolean removeLibraries(Library[] arg0, SourceGroup arg1,
                                       String arg2) throws IOException,
                                                           UnsupportedOperationException {
         return false;
     }
 
+    @Override
     protected boolean addRoots(URL[] arg0, SourceGroup arg1, String arg2) throws IOException,
                                                                                  UnsupportedOperationException {
         return false;
     }
 
+    @Override
     protected boolean removeRoots(URL[] arg0, SourceGroup arg1, String arg2) throws IOException,
                                                                                     UnsupportedOperationException {
         return false;
     }
 
+    @Override
     protected boolean addAntArtifacts(AntArtifact[] arg0, URI[] arg1,
                                       SourceGroup arg2, String arg3) throws IOException,
                                                                             UnsupportedOperationException {
         return false;
     }
 
+    @Override
     protected boolean removeAntArtifacts(AntArtifact[] arg0, URI[] arg1,
                                          SourceGroup arg2, String arg3) throws IOException,
                                                                                UnsupportedOperationException {

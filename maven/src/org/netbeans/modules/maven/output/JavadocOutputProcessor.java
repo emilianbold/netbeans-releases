@@ -46,7 +46,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.openide.awt.HtmlBrowser;

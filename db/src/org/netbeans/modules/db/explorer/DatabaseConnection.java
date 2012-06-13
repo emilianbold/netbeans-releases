@@ -1032,6 +1032,10 @@ public final class DatabaseConnection implements DBConnection {
     }
 
     public void selectInExplorer() {
+        selectInExplorer(true);
+    }
+
+    public void selectInExplorer(final boolean activateTopComponent) {
         TopComponent servicesTab = null;
         ExplorerManager explorer = null;
         for (TopComponent component : TopComponent.getRegistry().getOpened()) {
@@ -1071,7 +1075,9 @@ public final class DatabaseConnection implements DBConnection {
         try {
             if (connectionNode != null) {
                 explorer.setSelectedNodes(new Node[] { connectionNode });
-                servicesTab.requestActive();
+                if (activateTopComponent) {
+                    servicesTab.requestActive();
+                }
             }
         } catch (PropertyVetoException e) {
             Exceptions.printStackTrace(e);

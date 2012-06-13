@@ -101,7 +101,7 @@ public class TreeList extends JList {
 
     public TreeList(TreeListModel model) {
         super(model);
-        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         setFixedCellHeight(ROW_HEIGHT + 2);
         setCellRenderer(renderer);
         setBackground(ColorManager.getDefault().getDefaultBackground());
@@ -196,13 +196,52 @@ public class TreeList extends JList {
      */
     void showPopupMenuAt(int rowIndex, Point location) {
         TreeListNode node = (TreeListNode) getModel().getElementAt(rowIndex);
+        boolean popupForSelected = false;
+        if (getSelectionMode() != ListSelectionModel.SINGLE_SELECTION) {
+            popupForSelected = isPopupForSelected(node);
+        }
+        if (popupForSelected) {
+            if (!isPopupEnabled()) {
+                return;
+            }
+        } else {
+            setSelectedIndex(rowIndex);
+        }
         Action[] actions = node.getPopupActions();
+
         if (null == actions || actions.length == 0) {
             return;
         }
-        setSelectedIndex(rowIndex);
         JPopupMenu popup = Utilities.actionsToPopup(actions, this);
         popup.show(this, location.x, location.y);
+    }
+
+    /**
+     * Determines if popup was called for one of the selected nodes
+     */
+    private boolean isPopupForSelected(TreeListNode node) {
+        Object[] selectedValues = getSelectedValues();
+        for (int i = 0; i < selectedValues.length; i++) {
+            Object selectedNode = selectedValues[i];
+            if (selectedNode.equals(node)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if popup menu is available for the selected nodes
+     */
+    private boolean isPopupEnabled() {
+        Object[] selectedValues = getSelectedValues();
+        Class<? extends Object> aClass = selectedValues[0].getClass();
+        for (Object treeListNode : selectedValues) {
+            if (treeListNode.getClass() != aClass) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -256,7 +295,14 @@ public class TreeList extends JList {
             }
             TreeListNode node = (TreeListNode) value;
             int rowHeight = list.getFixedCellHeight();
-            int rowWidth = list.getVisibleRect().width - 30;
+            int rowWidth = list.getVisibleRect().width;
+            int dropIndex = -1;
+            DropLocation dropLocation = list.getDropLocation();
+            if (dropLocation != null && !dropLocation.isInsert()) {
+                dropIndex = dropLocation.getIndex();
+            }
+            boolean isDropTarget = dropIndex == index;
+            isSelected = isSelected || isDropTarget;
             Color background = isSelected ? list.getSelectionBackground() : list.getBackground();
             Color foreground = isSelected ? list.getSelectionForeground() : list.getForeground();
 

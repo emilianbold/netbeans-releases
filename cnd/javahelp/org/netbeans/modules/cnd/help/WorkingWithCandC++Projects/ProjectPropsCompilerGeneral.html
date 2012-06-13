@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -29,15 +29,19 @@ Absolute or Relative path.</p>
     field or the button to open the Preprocessor Definitions dialog box to add definitions.
     </p>
 
+<p><b>Use Linker Libraries.</b> Use libraries defined in the Linker Configuration. If the 
+checkbox ix selected, include paths and user-defined macros for each library are 
+added using the <tt>pkg-config</tt> command.
+</p>
+
     <p><b>Development Mode.</b> Select a mode to determine the set of compiler optimizations that will be used
         when the project is compiled.</p>
 
     <p><b>Warning Level.</b> Select the level of detail for warnings issued by the compiler.</p>
     <p><b>Architecture.</b> Select 32-bit or 64-bit architecture for the binary.</p>
     <p><b>Strip Symbols.</b> Select the checkbox to remove symbol tables from the binary.</p>
-    <p><b>Multithreading Level.</b> Select the type of multithreading, if any, used by the project.</p>
-    <p><b>Library Level.</b> Select an option to specify which standard libraries are included.</p>
-
+<p><b>C Standard.</b> Specifies whether project sources should be treated as containing C89 code or C99 code.</p>     
+<p><b>C++ Standard.</b> Specifies whether project sources should be treated as containing C++98 code or C++11 code.</p>    <p><b>Library Level.</b> Select an option to specify which standard libraries are included.</p><p><b>Multithreading Level.</b> Select the type of multithreading, if any, used by the project.</p>
     <p><b>Standards Evolution.</b> If your project is written to older C/C++ standards, or relies on
         newer non-ISO-compliant options, you might need to select a standards option.
         </p>

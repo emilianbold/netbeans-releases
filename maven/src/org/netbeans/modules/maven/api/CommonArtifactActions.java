@@ -53,7 +53,8 @@ import org.netbeans.modules.maven.actions.scm.CheckoutAction;
 import org.netbeans.modules.maven.actions.usages.FindArtifactUsages;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.api.Bundle.*;
 
 /**
  *
@@ -106,10 +107,11 @@ public class CommonArtifactActions {
         private Artifact artifact;
         private List<ArtifactRepository> repos;
 
+        @Messages("ACT_View_Details=View Artifact Details")
         ShowArtifactAction(Artifact art, List<ArtifactRepository> repos) {
             this.artifact = art;
             this.repos = repos;
-            putValue(NAME, NbBundle.getMessage(ShowArtifactAction.class, "ACT_View_Details"));
+            putValue(NAME, ACT_View_Details());
         }
 
         @Override

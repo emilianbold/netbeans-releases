@@ -60,6 +60,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  * Defines Javadoc locations for built modules with built javadoc.
@@ -134,7 +135,7 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
         URL jar = FileUtil.getArchiveFile(binaryRoot);
         if (jar == null)
             return null;    // not a class-path-extension
-        File binaryRootF = new File(URI.create(jar.toExternalForm()));
+        File binaryRootF = Utilities.toFile(URI.create(jar.toExternalForm()));
         // XXX this will only work for modules following regular naming conventions:
         String n = binaryRootF.getName();
         if (!n.endsWith(".jar")) { // NOI18N

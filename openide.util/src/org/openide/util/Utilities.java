@@ -3022,6 +3022,80 @@ widthcheck:  {
         new AsyncInitSupport(comp4Init, initJob);
     }
 
+    /** JDK 7 */
+    private static Method fileToPath, pathToUri, pathsGet, pathToFile;
+    static {
+        try {
+            fileToPath = File.class.getMethod("toPath");
+        } catch (NoSuchMethodException x) {
+            // fine, JDK 6
+        }
+        if (fileToPath != null) {
+            try {
+                Class<?> path = Class.forName("java.nio.file.Path");
+                pathToUri = path.getMethod("toUri");
+                pathsGet = Class.forName("java.nio.file.Paths").getMethod("get", URI.class);
+                pathToFile = path.getMethod("toFile");
+            } catch (Exception x) {
+                throw new ExceptionInInitializerError(x);
+            }
+        }
+    }
+
+    /**
+     * Converts a file to a URI while being safe for UNC paths.
+     * Unlike {@link File#toURI} the result works with {@link URI#normalize()}
+     * and {@link URI#resolve(URI)}.
+     * @param f a file
+     * @return a {@code file}-protocol URI which may use the host field
+     * @see java.nio.file.Path.toUri
+     * @since 8.25
+     */
+    public static URI toURI(File f) {
+        if (fileToPath != null) {
+            try {
+                return (URI) pathToUri.invoke(fileToPath.invoke(f));
+            } catch (Exception x) {
+                LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
+            }
+        }
+        String path = f.getAbsolutePath();
+        if (path.startsWith("\\\\")) { // UNC
+            if (!path.endsWith("\\") && f.isDirectory()) {
+                path += "\\";
+            }
+            try {
+                return new URI("file", null, path.replace('\\', '/'), null);
+            } catch (URISyntaxException x) {
+                LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
+            }
+        }
+        return f.toURI();
+    }
+
+    /**
+     * Converts a URI to a file while being safe for UNC paths.
+     * Unlike {@link File#File(URI)} UNC URIs with a host field are accepted.
+     * @param u a {@code file}-protocol URI which may use the host field
+     * @return a file
+     * @see java.nio.file.Paths.get(java.net.URI)
+     * @since 8.25
+     */
+    public static File toFile(URI u) throws IllegalArgumentException {
+        if (pathsGet != null) {
+            try {
+                return (File) pathToFile.invoke(pathsGet.invoke(null, u));
+            } catch (Exception x) {
+                LOG.log(Level.FINE, "could not convert " + u + " to File", x);
+            }
+        }
+        String host = u.getHost();
+        if (host != null && !host.isEmpty() && "file".equals(u.getScheme())) {
+            return new File("\\\\" + host + u.getPath().replace('/', '\\'));
+        }
+        return new File(u);
+    }
+
     /**
      * Convert a file to a matching <code>file:</code> URL.
      * @param f a file (absolute only)
@@ -3030,7 +3104,7 @@ widthcheck:  {
      * @see #toFile
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=29711">Issue #29711</a>
      * @since 3.26
-     * @deprecated Use {@link File#toURI} and {@link URI#toURL} instead under JDK 1.4.
+     * @deprecated Use {@link #toURI} and {@link URI#toURL} instead under JDK 1.4.
      *             ({@link File#toURL} is buggy in JDK 1.3 and the bugs are not fixed in JDK 1.4.)
      */
     @Deprecated
@@ -3043,7 +3117,7 @@ widthcheck:  {
             throw new IllegalArgumentException("Relative path: " + f); // NOI18N
         }
 
-        URI uri = f.toURI();
+        URI uri = toURI(f);
 
         return uri.toURL();
     }
@@ -3059,7 +3133,7 @@ widthcheck:  {
      * @see #toURL
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=29711">Issue #29711</a>
      * @since 3.26
-     * @deprecated Use {@link URI#URI(String)} and {@link File#File(URI)} instead under JDK 1.4.
+     * @deprecated Use {@link URL#toURI} and {@link #toFile(URI)} instead under JDK 1.4.
      *             (There was no proper equivalent under JDK 1.3.)
      */
     @Deprecated
@@ -3069,9 +3143,9 @@ widthcheck:  {
         }
 
         try {
-            URI uri = new URI(u.toExternalForm());
+            URI uri = u.toURI();
 
-            return new File(uri);
+            return toFile(uri);
         } catch (URISyntaxException use) {
             // malformed URL
             return null;

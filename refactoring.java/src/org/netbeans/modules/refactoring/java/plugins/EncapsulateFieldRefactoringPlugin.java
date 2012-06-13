@@ -188,11 +188,19 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                         getname,
                         getter.getReturnType().toString());
                 p = createProblem(p, false, msg);
+            } else if(RefactoringUtils.isWeakerAccess(refactoring.getMethodModifiers(), getter.getModifiers())) {
+                String msg = NbBundle.getMessage(
+                        EncapsulateFieldRefactoringPlugin.class,
+                        "ERR_EncapsulateAccessGetter",
+                        getname,
+                        getter.getEnclosingElement().getSimpleName());
+                p = createProblem(p, false, msg);
             }
             if (getter.getEnclosingElement() == field.getEnclosingElement()) {
                 currentGetter = ElementHandle.create(getter);
             }
         }
+        p = overridingHasWeakerAccess(p, javac, clazz, getname, "ERR_EncapsulateAccessOverGetter", Collections.<VariableElement>emptyList());
 
         if (setname != null) {
             setter = findMethod(javac, clazz, setname, Collections.singletonList((VariableElement) field), true);
@@ -201,11 +209,19 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         if (setter != null) {
             if (TypeKind.VOID != setter.getReturnType().getKind()) {
                 p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongSetter", setname, setter.getReturnType()));
+            } else if(RefactoringUtils.isWeakerAccess(refactoring.getMethodModifiers(), setter.getModifiers())) {
+                String msg = NbBundle.getMessage(
+                        EncapsulateFieldRefactoringPlugin.class,
+                        "ERR_EncapsulateAccessSetter",
+                        setname,
+                        setter.getEnclosingElement().getSimpleName());
+                p = createProblem(p, false, msg);
             }
             if (setter.getEnclosingElement() == field.getEnclosingElement()) {
                 currentSetter = ElementHandle.create(setter);
             }
         }
+        p = overridingHasWeakerAccess(p, javac, clazz, setname, "ERR_EncapsulateAccessOverSetter", Collections.<VariableElement>emptyList());
         return p;
     }
 
@@ -307,6 +323,37 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
             c = (TypeElement) ((DeclaredType) superType).asElement();
         }
+    }
+    
+    private Problem overridingHasWeakerAccess(Problem p, CompilationController javac, TypeElement clazz, String name, String msgKey, List<? extends VariableElement> params) {
+        if (name == null || name.length() == 0) {
+            return null;
+        }
+
+        final ClassIndex classIndex = javac.getClasspathInfo().getClassIndex();
+        Set<ElementHandle<TypeElement>> elements = classIndex.getElements(ElementHandle.create(clazz), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
+        final Set<Modifier> methodModifiers = refactoring.getMethodModifiers();
+        
+        for (ElementHandle<TypeElement> elementHandle : elements) {
+            TypeElement c = elementHandle.resolve(javac);
+
+            for (Element elm : c.getEnclosedElements()) {
+                if (ElementKind.METHOD == elm.getKind()) {
+                    ExecutableElement m = (ExecutableElement) elm;
+                    if (name.contentEquals(m.getSimpleName())
+                            && compareParams(params, m.getParameters())
+                            && RefactoringUtils.isWeakerAccess(elm.getModifiers(), methodModifiers)) {
+                        String msg = NbBundle.getMessage(
+                        EncapsulateFieldRefactoringPlugin.class,
+                        msgKey,
+                        name,
+                        elm.getEnclosingElement().getSimpleName());
+                        return createProblem(p, false, msg);
+                    }
+                }
+            }
+        }
+        return p;
     }
 
     /**
@@ -699,7 +746,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 EncapsulateDesc desc = fields.get(el);
                 if (desc != null) {
                     resolveFieldDeclaration(node, desc);
-                    return null;
+                    return node;
                 }
             }
             return scan(node.getInitializer(), field);

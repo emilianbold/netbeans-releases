@@ -122,26 +122,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
         ((AbstractDocument) context.getDocument()).readLock();
         try {
             if (!sequences.isEmpty()) {
-                // Check special tokens
                 TokenSequence<?> seq = sequences.get(sequences.size() - 1);
-                seq.move(originOffset);
-                if (seq.moveNext()) {
-                    if (seq.token().id() == JavaTokenId.STRING_LITERAL) {
-                        int offset = BracesMatcherSupport.matchChar(
-                            context.getDocument(), 
-                            backward ? originOffset : originOffset + 1, 
-                            backward ? seq.offset() : seq.offset() + seq.token().length(), 
-                            originChar,
-                            matchingChar);
-                        if (offset != -1) {
-                            return new int [] { offset, offset + 1 };
-                        } else {
-                            return null;
-                        }
-                    }
-                }
-
-                // We are in plain java
 
                 TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
                 List<TokenSequence<?>> list;
@@ -150,10 +131,56 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
                 } else {
                     list = th.tokenSequenceList(seq.languagePath(), originOffset + 1, context.getDocument().getLength());
                 }
+                int counter = 0;
+
+                seq.move(originOffset);
+                if (seq.moveNext()) {
+                    if (seq.token().id() == JavaTokenId.STRING_LITERAL) {
+                        for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
+                            TokenSequence<?> sq = tsi.getSequence();
+                            if (sq.token().id() == JavaTokenId.STRING_LITERAL) {
+                                CharSequence text = sq.token().text();
+                                if (backward) {
+                                    // check the character at the left from the caret
+                                    int bound = originOffset - sq.offset();
+                                    if (bound >= 0)
+                                        bound = Math.min(text.length() - 1, bound);
+                                    for(int i = bound - 1; i > 0; i--) {
+                                        if (originChar == text.charAt(i)) {
+                                            counter++;
+                                        } else if (matchingChar == text.charAt(i)) {
+                                            if (counter == 0) {
+                                                return new int [] {sq.offset() + i, sq.offset() + i + 1};
+                                            } else {
+                                                counter--;
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // check the character at the right from the caret
+                                    int bound = originOffset - sq.offset() + 1;
+                                    if (bound < 0 || bound > text.length())
+                                        bound = 1;
+                                    for(int i = bound; i < text.length() - 1; i++) {
+                                        if (originChar == text.charAt(i)) {
+                                            counter++;
+                                        } else if (matchingChar == text.charAt(i)) {
+                                            if (counter == 0) {
+                                                return new int [] {sq.offset() + i, sq.offset() + i + 1};
+                                            } else {
+                                                counter--;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        return null;                        
+                    }
+                }
 
                 JavaTokenId originId = getTokenId(originChar);
                 JavaTokenId lookingForId = getTokenId(matchingChar);
-                int counter = 0;
 
                 for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
                     TokenSequence<?> sq = tsi.getSequence();

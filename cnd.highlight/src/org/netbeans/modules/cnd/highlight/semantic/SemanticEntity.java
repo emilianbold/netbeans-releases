@@ -42,20 +42,20 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.List;
 import javax.swing.text.AttributeSet;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 
 /**
  *
  * @author Sergey Grinev
  */
-public interface SemanticEntity extends NamedEntity {
-    List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
-    ReferenceCollector getCollector();
-    void updateFontColors(FontColorProvider provider);
-    public AttributeSet getAttributes(CsmOffsetable obj, String mimeType);
+public abstract class SemanticEntity extends NamedOption {
+    public abstract List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
+    public abstract ReferenceCollector getCollector();
+    public abstract void updateFontColors(FontColorProvider provider);
+    public abstract AttributeSet getAttributes(CsmOffsetable obj, String mimeType);
 }
