@@ -119,7 +119,7 @@ public class MavenProjectNode extends AbstractNode {
     }
 
     public @Override String getName() {
-        return project.getProjectDirectory().getPath();
+        return project.getProjectDirectory().toURI().toString();
     }
 
     @Override
