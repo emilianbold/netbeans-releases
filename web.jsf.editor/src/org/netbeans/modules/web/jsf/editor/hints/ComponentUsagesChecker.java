@@ -95,7 +95,7 @@ public class ComponentUsagesChecker extends HintsProvider {
         //find all usages of composite components tags for this page
         Map<String, Library> declaredLibraries = LibraryUtils.getDeclaredLibraries(result);
 
-        String documentContent = null;
+        CharSequence documentContent = null;
         
         //now we have all  declared component libraries
         //lets get their parse trees and check the content
@@ -109,29 +109,9 @@ public class ComponentUsagesChecker extends HintsProvider {
 
             //get the document snapshot content if not created yet
             if (documentContent == null) {
-                final Document doc = snapshot.getSource().getDocument(true);
-                if (doc == null) {
-                    //should happen only if the underlying FileObject has been invalidated
-                    return;
-                }
-
-                final AtomicReference<String> docTextRef = new AtomicReference<String>();
-                doc.render(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            docTextRef.set(doc.getText(0, doc.getLength()));
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-                documentContent = docTextRef.get(); //may be null if BLE happens (which is unlikely)
-
+                documentContent = getSourceText(snapshot.getSource());
             }
-            
-            final String docText = documentContent;
+            final CharSequence docText = documentContent;
 
             ElementUtils.visitChildren(root, new ElementVisitor() {
 
@@ -143,7 +123,7 @@ public class ComponentUsagesChecker extends HintsProvider {
                         if (component == null) {
                             //error, the component doesn't exist in the library
                             Hint hint = new Hint(DEFAULT_ERROR_RULE,
-                                    NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName()),
+                                    NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_CC_COMPONENT", lib.getDisplayName(), tagName),
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     JsfUtils.createOffsetRange(snapshot, docText, node.from(), node.to()),
                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
@@ -186,7 +166,7 @@ public class ComponentUsagesChecker extends HintsProvider {
 					    !"xmlns".equals(nodeAttrName.toLowerCase(Locale.ENGLISH))) {
                                         //unknown attribute
                                         Hint hint = new Hint(DEFAULT_WARNING_RULE,
-                                                    NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
+                                                    NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name(), tag.getName()),
                                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                                     JsfUtils.createOffsetRange(snapshot, docText, nodeAttr.from(), nodeAttr.to()),
                                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
