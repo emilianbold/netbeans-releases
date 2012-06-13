@@ -130,7 +130,6 @@ class LayoutFeeder implements LayoutConstants {
             if (dragger.isResizing(dim)) {
                 LayoutInterval resizingComp = compIntervals[0];
                 LayoutInterval parent = resizingComp.getParent();
-                int resizingEdge = dragger.getResizingEdge(dim);
                 int origAlignment = resizingComp.getRawAlignment();
                 LayoutDragger.PositionDef newPos = dragger.getPositions()[dim];
                 int alignedEdge = originalPos.getAlignment();
@@ -144,7 +143,7 @@ class LayoutFeeder implements LayoutConstants {
                     resizingComp.setAlignment(newPos.alignment^1); // to influence checkResizing, will be restored to origAlignment
                 }
                 newPositions[dim] = newPos;
-                becomeResizing[dim] = checkResizing(resizingComp, resizingEdge, newPos, dim);
+                becomeResizing[dim] = checkResizing(resizingComp, dragger, dim);
                 resizingComp.setAlignment(origAlignment);
                 if (layoutModel.isChangeRecording()) {
                     undoMarks[dim] = new ArrayList();
@@ -579,8 +578,9 @@ class LayoutFeeder implements LayoutConstants {
      * There's also checkResizing2 called later for situations this method can't detect.
      * @return true if the interval should be made resizing
      */
-    private static Boolean checkResizing(LayoutInterval interval, int resizingEdge,
-                                         LayoutDragger.PositionDef newPos, int dim) {
+    private static Boolean checkResizing(LayoutInterval interval, LayoutDragger dragger, int dim) {
+        LayoutDragger.PositionDef newPos = dragger.getPositions()[dim];
+        int resizingEdge = dragger.getResizingEdge(dim);
         int fixedEdge = resizingEdge^1;
         Boolean resizing = null;
 
@@ -599,7 +599,9 @@ class LayoutFeeder implements LayoutConstants {
                         resizingEdge : // whole component tied to resizing edge
                         LayoutInterval.getEffectiveAlignmentInParent(newPos.interval, parent, newPos.nextTo ? fixedEdge : resizingEdge);
             }
-            if (align1 == resizingEdge && LayoutInterval.wantResize(interval.getParent())) {
+            if ((align1 == resizingEdge && LayoutInterval.wantResize(interval.getParent()))
+                || (newPos.nextTo && newPos.interval == LayoutInterval.getNeighbor(interval, resizingEdge, true, true, false)
+                    && dragger.getMovingSpace().size(dim) <= dragger.getSizes()[dim].getOriginalSize())) {
                 resizing = Boolean.FALSE;
             } else if (align1 != align2
                     && (align1 == LEADING || align1 == TRAILING) && (align2 == LEADING || align2 == TRAILING)
@@ -1487,11 +1489,19 @@ class LayoutFeeder implements LayoutConstants {
                     }
                 }
             } else { // both positions defined
-                if (dragger.isResizing(dimension) && LayoutInterval.wantResize(addingInterval)) {
-                    aligned = true;
+                if (dragger.isResizing(dimension)) {
+                    if (LayoutInterval.wantResize(addingInterval)) {
+                        aligned = true;
+                    } else if (dragger.getResizingEdge(dimension) == i
+                            && originalPosition != null && !originalPosition.atFixedPosition(i)
+                            && originalGap != null && LayoutInterval.canResize(originalGap)) {
+                        aligned = false;
+                    } else {
+                        aligned = iiDesc.fixedPosition || (originalPosition != null && originalPosition.atFixedPosition(i));
+                    }
                 } else {
                     aligned = iiDesc.fixedPosition
-                           || (dragger.isResizing() && originalPosition != null && originalPosition.atFixedPosition(i));
+                            || (dragger.isResizing() && originalPosition != null && originalPosition.atFixedPosition(i));
                 }
             }
 
