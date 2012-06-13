@@ -44,30 +44,12 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.io.*;
+import java.net.*;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Map.Entry;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,26 +58,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Map.Entry;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import org.netbeans.modules.glassfish.spi.AppDesc;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import javax.net.ssl.*;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
-import org.netbeans.modules.glassfish.spi.ResourceDesc;
-import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.CommandFactory;
-import org.netbeans.modules.glassfish.spi.Utils;
-import org.netbeans.modules.glassfish.spi.WSDesc;
+import org.netbeans.modules.glassfish.spi.*;
 
 
 /**
@@ -239,22 +207,25 @@ public class CommandRunner extends BasicTask<OperationState> {
         Map<String, List<AppDesc>> result = Collections.emptyMap();
         try {
             Map<String, List<String>> apps = Collections.emptyMap();
-            Commands.ListComponentsCommand cmd
-                    = new Commands.ListComponentsCommand(
-                    container,Util.computeTarget(instance.getProperties()));
-            OperationState state = inner.execute(cmd).get();
-            if (state == OperationState.COMPLETED) {
-                apps = cmd.getApplicationMap();
+            Command command = new CommandListComponents(
+                    Util.computeTarget(instance.getProperties()));
+            Future<ResultMap<String, List<String>>> future = 
+                    ServerAdmin.<ResultMap<String,
+                    List<String>>>exec(instance, command, null);
+            ResultMap<String, List<String>> resultMap = future.get();
+            TaskState state = resultMap.getState();
+            if (state == TaskState.COMPLETED) {
+                apps = resultMap.getValue();
             }
             if (null == apps || apps.isEmpty()) {
                 return result;
             }
             ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand("applications.application.*"); // NOI18N
-            state = inner.execute(getCmd).get();
-            if (state == OperationState.COMPLETED) {
+            OperationState operationState = inner.execute(getCmd).get();
+            if (operationState == OperationState.COMPLETED) {
                 ServerCommand.GetPropertyCommand getRefs = new ServerCommand.GetPropertyCommand("servers.server.*.application-ref.*"); // NOI18N
-                state = inner.execute(getRefs).get();
-                if (OperationState.COMPLETED == state) {
+                operationState = inner.execute(getRefs).get();
+                if (OperationState.COMPLETED == operationState) {
                     result = processApplications(apps, getCmd.getData(),getRefs.getData());
                 }
             }
