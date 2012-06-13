@@ -122,6 +122,14 @@ made subject to such option by the copyright holder.
     <fontcolor name="string-escape-invalid" waveUnderlined="CE7B00" default="string">
         <font style="bold" />
     </fontcolor>
+    
+    <!-- JavaCharacterTokenId categories -->
+    <fontcolor name="character-escape" default="character">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="character-escape-invalid" default="character">
+        <font style="italic" />
+    </fontcolor>
    
     <!-- JavadocTokenId categories -->
     <fontcolor name="javadoc-tag" default="comment">

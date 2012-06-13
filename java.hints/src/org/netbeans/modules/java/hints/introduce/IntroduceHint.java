@@ -1554,7 +1554,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                             if (replaceAll) {
                                 for (TreePath p : duplicates) {
-                                    parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                                    if (variableRewrite) {
+                                        removeFromParent(parameter, p);
+                                    } else {
+                                        parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                                    }
                                 }
                             }
                             break;
@@ -1707,7 +1711,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     if (replaceAll) {
                         for (TreePath p : SourceUtils.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
-                            parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                            if (variableRewrite) {
+                                removeFromParent(parameter, p);
+                            } else {
+                                parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                            }
                             Scope occurenceScope = parameter.getTrees().getScope(p);
                             if(parameter.getTreeUtilities().isStaticContext(occurenceScope))
                                 isAnyOccurenceStatic = true;
