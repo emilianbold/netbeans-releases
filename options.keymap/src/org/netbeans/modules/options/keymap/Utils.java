@@ -82,7 +82,7 @@ class Utils {
     
     static {
         if (Utilities.isMac()) {
-            STRING_META = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
+            STRING_META = KeyEvent.getKeyText(KeyEvent.VK_META).concat("+");
             STRING_ALT = KeyEvent.getKeyText(KeyEvent.VK_ALT).concat("+");
         } else {
             STRING_META = EMACS_META;
