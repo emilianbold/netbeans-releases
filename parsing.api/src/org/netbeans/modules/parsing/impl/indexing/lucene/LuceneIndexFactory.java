@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
@@ -50,6 +49,7 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -58,7 +58,6 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 import org.openide.util.Parameters;
 
 /**
@@ -131,8 +130,7 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
     private URL getIndexFolder (@NonNull final FileObject indexFolder) throws IOException {
         assert indexFolder != null;
         final String indexVersion = Integer.toString(VERSION);
-        final File luceneIndexFolder = new File (FileUtil.toFile(indexFolder),indexVersion);
-        URL result = Utilities.toURI(luceneIndexFolder).toURL();
+        URL result = Util.resolveFile(FileUtil.toFile(indexFolder), indexVersion, Boolean.TRUE);
         final String surl = result.toExternalForm();
         if (surl.charAt(surl.length()-1) != '/') {       //NOI18N
             result = new URL(surl+'/');  //NOI18N
