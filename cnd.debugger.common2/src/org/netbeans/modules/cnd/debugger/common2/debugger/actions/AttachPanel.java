@@ -599,7 +599,6 @@ public final class AttachPanel extends TopComponent {
 
             if (path != null) {
                 executable = path.toString();
-                executableProjectPanel.setExecutablePath(getHostName(), executable);
 //                executablePickList.addElement(executable);
 //                executableProjectPanel.setExecutablePaths(
 //                        executablePickList.getElementsDisplayName());
