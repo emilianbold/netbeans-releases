@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
@@ -73,7 +74,7 @@ public class JsParser extends Parser {
         long startTime = System.currentTimeMillis();
         try {
             JsErrorManager errorManager = new JsErrorManager(snapshot.getSource().getFileObject());
-            lastResult = parseSource(snapshot, Sanitize.NONE, errorManager);
+            lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
             LOGGER.log (Level.INFO, "Exception during parsing: {0}", ex);
@@ -84,7 +85,9 @@ public class JsParser extends Parser {
         LOGGER.log(Level.FINE, "Parsing took: {0} ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
     }
 
-    private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
+    private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
+            Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
+        
         long startTime = System.nanoTime();
         String scriptName;
         if (snapshot.getSource().getFileObject() != null) {
@@ -92,8 +95,10 @@ public class JsParser extends Parser {
         } else {
             scriptName = "javascript.js"; // NOI18N
         }
-
-        JsParserResult result = parseContext(new Context(scriptName, snapshot),
+        
+        int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
+        
+        JsParserResult result = parseContext(new Context(scriptName, snapshot, caretOffset),
                 sanitizing, errorManager);
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -248,33 +253,41 @@ public class JsParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                if (offset > -1) {
-                    String source = context.getOriginalSource();
-                    int start = offset - 1;
-                    int end = offset;
-                    // fix until new line or }
-                    char c = source.charAt(start);
-                    while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') {
-                        c = source.charAt(--start);
-                    }
-                    start++;
-                    if (end < source.length()) {
-                        c = source.charAt(end);
-                        while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
-                            c = source.charAt(end++);
-                        }
-                    }
-
-                    StringBuilder builder = new StringBuilder(context.getOriginalSource());
-                    erase(builder, start, end);
-                    context.setSanitizedSource(builder.toString());
-                    return true;
-                }
+                sanitizeLine(context, offset);
             }
+        } else if (sanitizing == Sanitize.EDITED_LINE) {
+            int offset = context.getCaretOffset();
+            sanitizeLine(context, offset);
         }
         return false;
     }
 
+    private boolean sanitizeLine(Context context, int offset) {
+        if (offset > -1) {
+            String source = context.getOriginalSource();
+            int start = offset - 1;
+            int end = offset;
+            // fix until new line or }
+            char c = source.charAt(start);
+            while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                c = source.charAt(--start);
+            }
+            start++;
+            if (end < source.length()) {
+                c = source.charAt(end);
+                while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                    c = source.charAt(end++);
+                }
+            }
+
+            StringBuilder builder = new StringBuilder(context.getOriginalSource());
+            erase(builder, start, end);
+            context.setSanitizedSource(builder.toString());
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     public Result getResult(Task task) throws ParseException {
         return lastResult;
@@ -306,17 +319,15 @@ public class JsParser extends Parser {
         
         private final Snapshot snapshot;
 
+        private final int caretOffset;
+        
         private String source;
         private String sanitizedSource;
 
-        public Context(String name, Snapshot snapshot) {
+        public Context(String name, Snapshot snapshot, int caretOffset) {
             this.name = name;
             this.snapshot = snapshot;
-        }
-        
-        public Context(String name, String source) {
-            this(name, (Snapshot) null);
-            this.source = source;
+            this.caretOffset = caretOffset;
         }
 
         public String getName() {
@@ -325,6 +336,10 @@ public class JsParser extends Parser {
 
         public Snapshot getSnapshot() {
             return snapshot;
+        }
+
+        public int getCaretOffset() {
+            return caretOffset;
         }
 
         public String getSource() {

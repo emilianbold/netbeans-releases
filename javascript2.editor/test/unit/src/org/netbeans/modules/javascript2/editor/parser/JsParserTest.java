@@ -154,7 +154,7 @@ public class JsParserTest extends JsTestBase {
     private void parse(String original, String expected, int errorCount) throws Exception {
         JsParser parser = new JsParser();
         Document doc = getDocument(original);
-        Context context = new JsParser.Context("test.js", Source.create(doc).createSnapshot());
+        Context context = new JsParser.Context("test.js", Source.create(doc).createSnapshot(), -1);
         JsErrorManager manager = new JsErrorManager(null);
         parser.parseContext(context, JsParser.Sanitize.NONE, manager);
         
