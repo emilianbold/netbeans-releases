@@ -599,6 +599,8 @@ public final class AttachPanel extends TopComponent {
 
             if (path != null) {
                 executable = path.toString();
+                // convert to world
+                executable = psData.getFileMapper().engineToWorld(executable);
 //                executablePickList.addElement(executable);
 //                executableProjectPanel.setExecutablePaths(
 //                        executablePickList.getElementsDisplayName());
