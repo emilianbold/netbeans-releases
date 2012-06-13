@@ -44,10 +44,7 @@
 
 package org.netbeans.api.project;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Utilities;
 
 /**
  * Find the project which owns a file.
@@ -114,37 +110,22 @@ public class FileOwnerQuery {
 
     /**
      * Find the project, if any, which "owns" the given URI.
-     * @param uri the uri to the file (generally on disk); must be absolute and not opaque
+     * @param uri the URI to the file (generally on disk); must be absolute and not opaque (though {@code jar}-protocol URIs are unwrapped as a convenience)
      * @return a project which contains it, or null if there is no known project containing it
      * @throws IllegalArgumentException if the URI is relative or opaque
      */
     public static Project getOwner(URI uri) {
-        if (uri.isOpaque() && "jar".equalsIgnoreCase(uri.getScheme())) {    //NOI18N
-            // XXX the following is bogus; should use FileUtil methods
-            String schemaPart = uri.getSchemeSpecificPart();
-            int index = schemaPart.lastIndexOf ('!');                       //NOI18N
-            if (index>0) {
-                schemaPart = schemaPart.substring(0,index);
-            }
-            // XXX: schemaPart can contains spaces. create File first and 
-            // then convert it to URI.
+        if ("jar".equals(uri.getScheme())) {
             try {
-                //#85137 - # character in uri path seems to cause problems, because it's not escaped. test added.
-                schemaPart = schemaPart.replace("#", "%23");
-                uri = new URI(schemaPart);
-            } catch (URISyntaxException ex) {
-                try {
-                    URL u = new URL(schemaPart);
-                    // XXX bad to ever use new File(URL.getPath()):
-                    uri = Utilities.toURI(new File(u.getPath()));
-                } catch (MalformedURLException ex2) {
-                    ex2.printStackTrace();
-                    assert false : schemaPart;
-                    return null;
+                URL jar = FileUtil.getArchiveFile(uri.toURL());
+                if (jar != null) {
+                    uri = jar.toURI();
                 }
+            } catch (Exception x) {
+                LOG.log(Level.INFO, null, x);
             }
         }
-        else if (!uri.isAbsolute() || uri.isOpaque()) {
+        if (!uri.isAbsolute() || uri.isOpaque()) {
             throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
         }
         for (FileOwnerQueryImplementation q : getInstances()) {
