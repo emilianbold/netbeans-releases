@@ -150,7 +150,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 while (tk.hasMoreTokens()) {
                     File f = new File (tk.nextToken());
                     try {
-                        this.installFolders.add (f.toURI().toURL());
+                        this.installFolders.add (Utilities.toURI(f).toURL());
                     } catch (MalformedURLException mue) {
                         LOG.log(Level.INFO, null, mue);
                     }

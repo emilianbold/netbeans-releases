@@ -56,6 +56,7 @@ import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.openide.util.URLStreamHandlerRegistration;
+import org.openide.util.Utilities;
 
 /**
  * Resolves URLs from a Maven repository using the online embedder.
@@ -97,7 +98,7 @@ public class MavenProtocolHandler extends URLStreamHandler {
             throw new IOException("failed to download " + stuff);
         }
         Logger.getLogger(MavenProtocolHandler.class.getName()).log(Level.FINE, "resolved {0} -> {1}", new Object[] {stuff, f});
-        return f.toURI().toURL().openConnection();
+        return Utilities.toURI(f).toURL().openConnection();
     }
 
 }

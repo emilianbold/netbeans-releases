@@ -101,7 +101,7 @@ final class NetbinoxLoader extends DefaultClassLoader {
             File file;
             if (cp.startsWith("file:")) { // NOI18N
                 try {
-                    file = new File(new URI(cp));
+                    file = org.openide.util.Utilities.toFile(new URI(cp));
                 } catch (URISyntaxException ex) {
                     NetbinoxFactory.LOG.log(Level.SEVERE, "Cannot convert to file: " + cp, ex); // NOI18N
                     return null;

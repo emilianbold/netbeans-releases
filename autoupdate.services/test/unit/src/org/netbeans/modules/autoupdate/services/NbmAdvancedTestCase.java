@@ -60,6 +60,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -217,7 +218,7 @@ public class NbmAdvancedTestCase extends NbTestCase {
         OutputStream os = new FileOutputStream (res);
         os.write (s.getBytes ());
         os.close ();
-        return res.toURI().toURL ();
+        return Utilities.toURI(res).toURL ();
     }
     
     @SuppressWarnings("unchecked")

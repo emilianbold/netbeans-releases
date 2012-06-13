@@ -63,6 +63,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Provides access to an eclipse workspace.
@@ -376,7 +377,7 @@ public final class Workspace {
             for (String jar : jars) {
                 try {
                     File f = new File(jar);
-                    URL url = f.toURI().toURL();
+                    URL url = Utilities.toURI(f).toURL();
                     if (f.isFile()) {
                         url = FileUtil.getArchiveRoot(url);
                     }
@@ -394,7 +395,7 @@ public final class Workspace {
     private URL convertPathToURL(String path, List<String> importProblems, String libName) {
         try {
             File f = new File(path);
-            URL u = f.toURI().toURL();
+            URL u = Utilities.toURI(f).toURL();
             boolean isFolder;
             if (f.exists()) {
                 isFolder = f.isDirectory();

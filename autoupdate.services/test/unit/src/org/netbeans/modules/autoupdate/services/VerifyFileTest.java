@@ -73,7 +73,7 @@ public class VerifyFileTest extends NbTestCase {
     protected void setUp() throws Exception {
         URL urlToKS = TestUtils.class.getResource("data/foo.jks");
         assertNotNull(urlToKS);
-        File ksFile = new File(urlToKS.toURI());
+        File ksFile = org.openide.util.Utilities.toFile(urlToKS.toURI());
         assertTrue(ksFile.exists());
         ks = getKeyStore(ksFile, "password");
     }
@@ -81,7 +81,7 @@ public class VerifyFileTest extends NbTestCase {
     private String doVerification(String path) throws URISyntaxException, IOException, KeyStoreException {
         URL urlToFile = TestUtils.class.getResource(path);
         assertNotNull(urlToFile);
-        File jar = new File(urlToFile.toURI());
+        File jar = org.openide.util.Utilities.toFile(urlToFile.toURI());
         assertTrue(jar.exists());
         Collection<Certificate> nbmCertificates = Utilities.getNbmCertificates(jar);
         Collection<Certificate> trustedCertificates = Utilities.getCertificates(ks);

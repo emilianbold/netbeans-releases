@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author  David Konecny
@@ -165,7 +166,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         
         assert prjFolder != null;
         
-        if ((p = FileOwnerQuery.getOwner(prjFolder.toURI())) != null && prjFolder.equals(FileUtil.toFile(p.getProjectDirectory()))) {
+        if ((p = FileOwnerQuery.getOwner(Utilities.toURI(prjFolder))) != null && prjFolder.equals(FileUtil.toFile(p.getProjectDirectory()))) {
             ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
             String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
             return new String[] { MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),  //NOI18N
@@ -176,7 +177,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         
         assert prjLocation != null;
         
-        if ((p = FileOwnerQuery.getOwner(prjLocation.toURI())) != null && prjLocation.equals(FileUtil.toFile(p.getProjectDirectory()))) {
+        if ((p = FileOwnerQuery.getOwner(Utilities.toURI(prjLocation))) != null && prjLocation.equals(FileUtil.toFile(p.getProjectDirectory()))) {
             ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);
             String displayName = (pi == null ? "" : pi.getDisplayName());   //NOI18N
             return new String[] { MessageFormat.format(org.openide.util.NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),  //NOI18N

@@ -80,6 +80,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -659,7 +660,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project does not have ClassPathProvider", cpp);
         ClassPath cp = cpp.findClassPath(FileUtil.toFileObject(src), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
-        assertEquals("Classpath root does not match", "jar:"+lib1.toURI().toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
+        assertEquals("Classpath root does not match", "jar:"+Utilities.toURI(lib1).toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
         cp = cpp.findClassPath(FileUtil.toFileObject(src).getParent(), ClassPath.COMPILE);
         assertEquals("There is no classpath for this file", null, cp);
         
@@ -698,12 +699,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertEquals("There must be two compilation units", 2, cus.size());
         cp = cpp.findClassPath(FileUtil.toFileObject(src), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
-        assertEquals("Classpath root does not match", "jar:"+lib1.toURI().toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
+        assertEquals("Classpath root does not match", "jar:"+Utilities.toURI(lib1).toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
         cp = cpp.findClassPath(FileUtil.toFileObject(src).getParent(), ClassPath.COMPILE);
         assertEquals("There is no classpath for this file", null, cp);
         cp = cpp.findClassPath(FileUtil.toFileObject(test), ClassPath.COMPILE);
         assertEquals("Project must have one classpath root", 1, cp.getRoots().length);
-        assertEquals("Classpath root does not match", "jar:"+lib2.toURI().toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
+        assertEquals("Classpath root does not match", "jar:"+Utilities.toURI(lib2).toURL()+"!/", (cp.getRoots()[0]).getURL().toExternalForm());
         
         ProjectManager.getDefault().saveAllProjects();
     }
