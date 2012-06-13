@@ -44,15 +44,19 @@
 
 package org.netbeans.api.java.platform;
 
+import java.util.Locale;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.modules.SpecificationVersion;
 
 /** Specification of the Java SDK
  */
 public final class Specification {
 
-    private String name;
-    private SpecificationVersion version;
-    private Profile[] profiles;
+    private final String name;
+    private final SpecificationVersion version;
+    private final Profile[] profiles;
+    private final String displayName;
 
 
     /**
@@ -60,8 +64,22 @@ public final class Specification {
      * @param name of the specification e.g J2SE
      * @param version of the specification e.g. 1.4
      */
-    public Specification (String name, SpecificationVersion version) {
-        this (name, version, null);
+    public Specification (@NullAllowed String name, @NullAllowed SpecificationVersion version) {
+        this (name, version, null, null);
+    }
+    
+    /**
+     * Creates new SDK Specification
+     * @param name of the specification e.g J2SE
+     * @param version of the specification e.g. 1.4
+     * @param displayName the display name of the Java SDK e.g. "Java SE".
+     * @since 1.26
+     */
+    public Specification (
+        @NullAllowed final String name,
+        @NullAllowed final SpecificationVersion version,
+        @NullAllowed final String displayName) {
+        this (name, version, displayName, null);
     }
 
     /**
@@ -70,9 +88,29 @@ public final class Specification {
      * @param version of the specification e.g. 1.4
      * @param profiles of the Java SDK
      */
-    public Specification (String name, SpecificationVersion version, Profile[] profiles) {
+    public Specification (
+        @NullAllowed final String name,
+        @NullAllowed final SpecificationVersion version,
+        @NullAllowed final Profile[] profiles) {
+        this(name, version, null, profiles);
+    }
+    
+    /**
+     * Creates new SDK Specification
+     * @param name of the specification e.g J2SE
+     * @param version of the specification e.g. 1.4
+     * @param displayName the display name of the Java SDK e.g. "Java SE".
+     * @param profiles of the Java SDK
+     * @since 1.26
+     */
+    public Specification (
+        @NullAllowed final String name,
+        @NullAllowed final SpecificationVersion version,
+        @NullAllowed final String displayName,
+        @NullAllowed final Profile[] profiles) {
         this.name = name;
         this.version = version;
+        this.displayName = displayName;
         this.profiles = profiles;
     }
 
@@ -99,7 +137,27 @@ public final class Specification {
     public final Profile[] getProfiles () {
         return this.profiles;
     }
+    
+    /**
+     * Returns the display name of the Java SDK.
+     * While the {@link Specification#getName()} is used as a system name
+     * the {@link Specification#getDisplayName()} is used while presenting the
+     * Java SDK to the user.
+     * @return the user friendly name, e.g. "Java SE" for "j2se" SDK.
+     * @since 1.26
+     */
+    @NonNull
+    public String getDisplayName() {
+        if (displayName != null) {
+            return displayName;
+        }
+        final String defaultName = getName();
+        return defaultName == null ?
+            "": //NOI18N
+            defaultName.toUpperCase(Locale.ENGLISH);
+    }
 
+    @Override
     public int hashCode () {
         int hc = 0;
         if (this.name != null)
@@ -109,6 +167,7 @@ public final class Specification {
         return hc;
     }
 
+    @Override
     public boolean equals (Object other) {
         if (other instanceof Specification) {
             Specification os = (Specification) other;
@@ -126,6 +185,7 @@ public final class Specification {
             return false;
     }
 
+    @Override
     public String toString () {
         String str = this.name == null ? "" : this.name + " "; // NOI18N
         str += this.version == null ? "" : this.version + " "; // NOI18N

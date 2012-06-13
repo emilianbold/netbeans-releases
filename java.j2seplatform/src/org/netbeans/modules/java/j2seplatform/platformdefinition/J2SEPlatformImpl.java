@@ -74,6 +74,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -357,7 +358,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
     @Override
     public Specification getSpecification() {
         if (spec == null) {
-            spec = new Specification (PLATFORM_J2SE, Util.getSpecificationVersion(this)); //NOI18N
+            spec = new Specification (
+                PLATFORM_J2SE,
+                Util.getSpecificationVersion(this),
+                NbBundle.getMessage(J2SEPlatformImpl.class, "TXT_J2SEDisplayName"));
         }
         return spec;
     }
