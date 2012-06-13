@@ -561,6 +561,10 @@ public class FormEditor {
                     dataLossError = true;
             }
 
+            if (dataLossError && !(t instanceof PersistenceException)) {
+                Logger.getLogger("").log(Level.INFO, t.getLocalizedMessage(), t); // NOI18N
+            }
+
             if (checkNonFatalLoadingErrors && persistManager != null) {
                 // creating report about problems while loading components, 
                 // setting props of components, ...
