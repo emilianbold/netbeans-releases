@@ -2522,7 +2522,7 @@ final class Central implements ControllerHandler {
         int dockIndex = model.getModeTopComponentPreviousIndex(source, tcID);
         int modeKind = mode.getKind();
         
-        if ((dockTo == null) || !model.getModes().contains(dockTo)) {
+        if ((dockTo == null) || !model.getModes().contains(dockTo) || dockTo.getState() == Constants.MODE_STATE_SEPARATED) {
             // mode to dock to back isn't valid anymore, try constraints
             SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tcID);
             if (constraints != null) {
