@@ -427,7 +427,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             int from = comments[i];
             int to = comments[++i];
 
-            if (from <= offset && to > offset && (commentEnd == null || offset < (to - commentEnd.length()))) { //end offset exclusive
+            if (from <= offset && to > offset && (commentEnd == null || offset <= (to - commentEnd.length()))) { //end offset exclusive
                 return new int[]{from, to};
             }
         }
@@ -441,7 +441,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         int lastCommentStartIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentStartDelimiter(), offset);
         int lastCommentEndIndex = CharSequenceUtilities.lastIndexOf(text, commentHandler.getCommentEndDelimiter(), offset);
 
-        return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1);
+        return lastCommentStartIndex > -1 && (lastCommentStartIndex > lastCommentEndIndex || lastCommentEndIndex == -1 || lastCommentEndIndex == offset);
 
     }
 
@@ -613,7 +613,7 @@ public class ToggleBlockCommentAction extends BaseAction {
     private boolean allComments(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
         final int lineCommentStringLen = lineCommentString.length();
         for (int offset = startOffset; lineCount > 0; lineCount--) {
-            int firstNonWhitePos = offset == startOffset ? offset : Utilities.getRowFirstNonWhite(doc, offset);
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
             if (firstNonWhitePos == -1) {
                 return false;
             }
@@ -643,7 +643,7 @@ public class ToggleBlockCommentAction extends BaseAction {
         final int lineCommentStringLen = lineCommentString.length();
         for (int offset = startOffset; lineCount > 0; lineCount--) {
             // Get the first non-whitespace char on the current line
-            int firstNonWhitePos = offset == startOffset ? offset : Utilities.getRowFirstNonWhite(doc, offset);
+            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
 
             // If there is any, check wheter it's the line-comment-chars and remove them
             if (firstNonWhitePos != -1) {

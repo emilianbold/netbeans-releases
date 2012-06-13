@@ -61,6 +61,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 // XXX may also need displayName field (any default? or only in SimpleAntArtifact?)
 
@@ -199,7 +200,7 @@ public abstract class AntArtifact {
         URL artifact;
         try {
             // XXX this should probably use something in PropertyUtils?
-            artifact = getScriptLocation().toURI().resolve(artifactLocation).normalize().toURL();
+            artifact = Utilities.toURI(getScriptLocation()).resolve(artifactLocation).normalize().toURL();
         } catch (MalformedURLException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
@@ -254,7 +255,7 @@ public abstract class AntArtifact {
      * @return the associated project, or null if there is none or it could not be located
      */
     public Project getProject() {
-        return FileOwnerQuery.getOwner(getScriptLocation().toURI());
+        return FileOwnerQuery.getOwner(Utilities.toURI(getScriptLocation()));
     }
 
     /**

@@ -187,6 +187,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     private static final String CONTENT_TYPE_DIFF = "text/x-diff"; //NOI18N
+    private final JPanel searchContainer;
+    private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -208,11 +210,15 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         actionsEnabled = ss2.isEditable();
         diffMarkprovider = new EditableDiffMarkProvider();        
 
+        view = new JPanel(new BorderLayout(0, 0));
+        searchContainer = new JPanel();
+        searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
+        view.add(searchContainer, BorderLayout.PAGE_END);
         if (enhancedView) {
-            view = jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+            view.add(jTabbedPane = new JTabbedPane(JTabbedPane.TOP), BorderLayout.CENTER);
         } else {
             jTabbedPane = null;
-            view = jSplitPane1;
+            view.add(jSplitPane1, BorderLayout.CENTER);
         }
         initComponents ();
 
@@ -227,6 +233,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         jSplitPane1.putClientProperty("PersistenceType", "Never"); // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
         jSplitPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
+        view.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
+        view.putClientProperty("PersistenceType", "Never"); // NOI18N
+        view.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
+        view.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
         initializeTabPane(ss1, ss2);
         
         setSourceTitle(fileLabel1, title1);
@@ -334,10 +344,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private void initializeTabPane (StreamSource ss1, StreamSource ss2) {
         if (jTabbedPane != null) {
-            jTabbedPane.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title", ss1.getName(), ss2.getName())); // NOI18N
-            jTabbedPane.putClientProperty("PersistenceType", "Never"); // NOI18N
-            jTabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yName"));  // NOI18N
-            jTabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
             jTabbedPane.addTab(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "EditableDiffView.viewGraphical.title"), jSplitPane1); //NOI18N
             jTabbedPane.addTab(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "EditableDiffView.viewTextual.title"), textualPanel); //NOI18N
             jTabbedPane.addChangeListener(this);
@@ -506,6 +512,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         } else {
             setDifferenceIndex(location);
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     ignoredUpdateEvents = true;
                     showCurrentDifference();
@@ -519,6 +526,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
+    @Override
     public JComponent getJComponent() {
         return view;
     }
@@ -546,6 +554,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (modifiedDocument != null) modifiedDocument.removeDocumentListener(this);
     }
     
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         expandFolds();
@@ -576,6 +585,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         editableDocument.addDocumentListener(this);
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         removeDocumentListeners();
@@ -584,27 +594,33 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         initColors();
         diffChanged();  // trigger re-calculation of hightlights in case diff stays the same
         refreshDiff(20);
     }
     
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         refreshDiff(50);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         refreshDiff(50);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         refreshDiff(50);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (jTabbedPane == e.getSource()) {
             setDifferenceIndex(-1);
@@ -618,7 +634,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
     
     JComponent getMyDivider() {
-        return spui.divider.getDivider();
+        return spui.splitPaneDivider.getDivider();
     }
 
     DiffContentPanel getEditorPane1() {
@@ -629,7 +645,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return jEditorPane2;
     }
 
-    public DiffViewManager getManager() {
+    DiffViewManager getManager() {
         return manager;
     }
 
@@ -639,6 +655,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private void replace(final StyledDocument doc, final int start, final int length, final String text) {
         NbDocument.runAtomic(doc, new Runnable() {
+            @Override    
             public void run() {
                 try {
                     doc.remove(start, length);
@@ -719,15 +736,16 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     class DiffSplitPaneUI extends BasicSplitPaneUI {
 
-        final DiffSplitPaneDivider divider;
+        final DiffSplitPaneDivider splitPaneDivider;
 
         public DiffSplitPaneUI(JSplitPane splitPane) {
             this.splitPane = splitPane;
-            divider = new DiffSplitPaneDivider(this, EditableDiffView.this);
+            splitPaneDivider = new DiffSplitPaneDivider(this, EditableDiffView.this);
         }
 
+        @Override
         public BasicSplitPaneDivider createDefaultDivider() {
-            return divider;
+            return splitPaneDivider;
         }
     }
     
@@ -735,10 +753,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return jEditorPane1.requestFocusInWindow();
     }
 
+    @Override
     public JComponent getComponent() {
         return view;
     }
 
+    @Override
     public int getDifferenceCount() {
         int retval = diffs.length;
         if (jTabbedPane != null && jTabbedPane.getSelectedComponent() == textualPanel) {
@@ -747,14 +767,17 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return retval;
     }
 
+    @Override
     public boolean canSetCurrentDifference() {
         return jTabbedPane == null || jTabbedPane.getSelectedComponent() != textualPanel;
     }
 
+    @Override
     public void setCurrentDifference(int diffNo) throws UnsupportedOperationException {
         setLocation(null, DiffController.LocationType.DifferenceIndex, diffNo);
     }
 
+    @Override
     public int getCurrentDifference() {
         int retval = getDifferenceIndex();
         if (!canSetCurrentDifference()) {
@@ -793,6 +816,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         setDifferenceIndex(cd);
     }
     
+    @Override
     public JToolBar getToolBar() {
         return null;
     }
@@ -804,14 +828,34 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
         Difference diff = diffs[index];
         
-        int off1, off2;
+        int offFirstStart, offSecondStart, offCurrent, offSecondEnd;
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
-            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getEditorPane().getDocument(), diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
-            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getEditorPane().getDocument(), diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
-
-            jEditorPane1.getEditorPane().setCaretPosition(off1);
-            jEditorPane2.getEditorPane().setCaretPosition(off2);
+            StyledDocument doc1 = (StyledDocument) jEditorPane1.getEditorPane().getDocument();
+            StyledDocument doc2 = (StyledDocument) jEditorPane2.getEditorPane().getDocument();
+            
+            offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
+            offFirstStart = org.openide.text.NbDocument.findLineOffset(doc1, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
+            offSecondStart = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
+           
+            if(diff.getSecondEnd() > diff.getSecondStart()) {
+                offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondEnd() > 0 ? diff.getSecondEnd() - 1 : 0);
+            } else {
+                int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
+                if(diff.getSecondStart() < lastLine) {
+                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() + 1);
+                } else {
+                    offSecondEnd = doc2.getLength();
+                }
+            }
+            
+            jEditorPane1.getEditorPane().setCaretPosition(offFirstStart);
+            if(offCurrent < offSecondStart || offCurrent > offSecondEnd) {
+                // it could be somebody is editing right now,
+                // so set the caret on the diferences first lines first column only in case
+                // it isn't already somrwhere in the line 
+                jEditorPane2.getEditorPane().setCaretPosition(offSecondStart);
+            }
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
@@ -866,6 +910,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             textualEditorPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yName"));  // NOI18N
             textualEditorPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
             textualPanel.add(new JScrollPane(textualEditorPane));
+            textualEditorPane.putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+            jEditorPane1.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+            jEditorPane2.getEditorPane().putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
         }        
         
         jSplitPane1.setLeftComponent(filePanel1);
@@ -889,6 +936,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         final FoldHierarchy fh = FoldHierarchy.get(pane);
         FoldUtilities.expandAll(fh);
         FoldHierarchyListener list = new FoldHierarchyListener() {
+            @Override
             public void foldHierarchyChanged(FoldHierarchyEvent evt) {
                 FoldUtilities.expandAll(fh);
             }
@@ -920,6 +968,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         final JScrollBar scrollBarH2 = jEditorPane2.getScrollPane().getHorizontalScrollBar();
 
         scrollBarH1.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
+            @Override
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarH1.getValue();
                 if (value == horizontalScroll1ChangedValue) return;
@@ -934,6 +983,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         });
         scrollBarH2.getModel().addChangeListener(new javax.swing.event.ChangeListener()  {
+            @Override
             public void stateChanged(javax.swing.event.ChangeEvent e) {
                 int value = scrollBarH2.getValue();
                 if (value == horizontalScroll2ChangedValue) return;
@@ -969,8 +1019,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private void addChangeListeners() {
         // using rather weak listeners, repeated ancestorRemoved/ancestorAdded creates and attaches number of new listeners and consumes memory
         PropertyChangeListener list = new java.beans.PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         diffChanged();
                         initGlobalSizes();
@@ -984,8 +1036,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         propertyChangeListeners.put(jEditorPane1.getEditorPane(), list);
         jEditorPane1.getEditorPane().addPropertyChangeListener("font", WeakListeners.propertyChange(list, jEditorPane1.getEditorPane())); //NOI18N
         list = new java.beans.PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         diffChanged();
                         initGlobalSizes();
@@ -1317,9 +1371,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return null;
     }
 
+    @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     refreshEditableDocument();
                 }
@@ -1352,6 +1408,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     public class RefreshDiffTask implements Runnable {
 
+        @Override
         public void run() {
             synchronized (RefreshDiffTask.this) {
                 final Difference[] differences = computeDiff();
@@ -1359,6 +1416,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     textualRefreshTask.refresh();
                 }
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         diffs = differences;
                         if (diffs != NO_DIFFERENCES) {
@@ -1384,6 +1442,26 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
 
         private Difference[] computeDiff() {
+            
+            if(editableDocument != null && "true".equals(System.getProperty("org.netbeans.modules.diff.forceFORefresh", "false"))) { // NOI18N
+                // refresh fo before computing the diff, external changes might not have been recognized in some setups
+                // see also issue #210834
+                DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
+                if (dao != null) {
+                    Set<FileObject> files = dao.files();
+                    if(files != null) {
+                        for (FileObject fo : files) {
+                            LOG.log(Level.FINE, "refreshing FileOBject {0}", fo); // NOI18N
+                            fo.refresh();
+                        }
+                    } else {
+                        LOG.log(Level.FINE, "no FileObjects to refresh for {0}", dao); // NOI18N
+                    }
+                } else {
+                    LOG.log(Level.FINE, "no DataObject to refresh"); // NOI18N
+                }
+            }
+            
             if (!secondSourceAvailable || !firstSourceAvailable) {
                 return NO_DIFFERENCES;
             }
@@ -1413,6 +1491,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private Reader getReader (final Document doc) {
         final Reader[] reader = new Reader[1];
         doc.render(new Runnable() {
+            @Override
             public void run() {
                 try {
                     reader[0] = new StringReader(doc.getText(0, doc.getLength()));
@@ -1482,6 +1561,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             marks = getMarksForDifferences();
         }
 
+        @Override
         public List<Mark> getMarks() {
             return marks;
         }
@@ -1494,12 +1574,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         private List<Mark> getMarksForDifferences() {
             if (diffs == null) return Collections.emptyList();
-            List<Mark> marks = new ArrayList<Mark>(diffs.length);
+            List<Mark> retMarks = new ArrayList<Mark>(diffs.length);
             for (int i = 0; i < diffs.length; i++) {
                 Difference difference = diffs[i];
-                marks.add(new DiffMark(difference, getColor(difference)));
+                retMarks.add(new DiffMark(difference, getColor(difference)));
             }
-            return marks;
+            return retMarks;
         }
     }
 }

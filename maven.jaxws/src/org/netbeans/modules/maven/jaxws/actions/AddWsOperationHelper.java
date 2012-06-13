@@ -196,6 +196,7 @@ public class AddWsOperationHelper {
         handle.start(100);
         final String[] seiClass = new String[1];
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 MethodTree method = MethodModelSupport.createMethodTree(workingCopy, methodModel);

@@ -53,6 +53,7 @@ import java.lang.annotation.Target;
  * If the help set specifies a search view, the search indexer will also be run;
  * all {@code *.html} and {@code *.htm} in the package containing the help set, and its subpackages, will be indexed.
  * @since org.netbeans.modules.javahelp/1 2.20
+ * @see <a href="@TOP@/apichanges.html#HelpSetRegistration">how to convert to this annotation</a>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.PACKAGE)

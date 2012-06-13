@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Printing a Breakpoint Message</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Printing a Breakpoint Message</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Print Text property of a breakpoint specifies the text to print in the <a href="CSH/debug_output.html">Debugger Console</a> tab of the Output window when the breakpoint is reached. You can set this property in the New Breakpoint dialog box or in the breakpoint's customizer. </p>
+<p>For Java breakpoints, the Print Text property can contain seven standard tags and a special notation for printing the value of an expression, (for example, <tt>{=i + j}</tt>). The values of all tags are evaluated within the current context. Some tags can be used for specific breakpoint types only, and some tags have different meanings in different situations. </p>
+<p>The following table lists the tags and the breakpoint types. A plus sign (+) or text in a cell indicates that you can use the tag for that breakpoint type. A minus sign (-) indicates that the tag does not apply to that breakpoint type.</p>
+<table border="1" cellpadding="2" cellspacing="0">
+	<tr>
+		<th valign="bottom" rowspan="2">Tag</th>
+		<th valign="top" align="center" colspan="6">Breakpoint Type</th>
+	</tr>
+	<tr valign="top">
+		<th>Line</th>
+		<th>Method</th>
+		<th>Exception</th>
+		<th>Thread</th>
+		<th>Class</th>
+		<th>Field</th>
+	</tr>
+	<tr valign="top">
+		<td>{className}</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+		<td>-</td>
+		<td>+</td>
+		<td>+</td>
+	</tr>
+	<tr valign="top">
+		<td>{lineNumber}</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+		<td>-</td>
+		<td>+</td>
+		<td>+</td>
+	</tr>
+	<tr valign="top">
+		<td>{methodName}</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+		<td>-</td>
+		<td>+</td>
+		<td>+</td>
+	</tr>
+	<tr valign="top">
+		<td>{threadName}</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+		<td>+</td>
+	</tr>
+	<tr valign="top">
+		<td>{variableValue}</td>
+		<td>-</td>
+		<td>-</td>
+		<td>The value of the exception</td>
+		<td>-</td>
+		<td>-</td>
+		<td>The value of the variable</td>
+	</tr>
+	<tr valign="top">
+		<td>{variableType}</td>
+		<td>-</td>
+		<td>-</td>
+		<td>The name of the exception</td>
+		<td>-</td>
+		<td>-</td>
+		<td>The type of the field</td>
+	</tr>
+	<tr valign="top">
+		<td>{action}</td>
+		<td>-</td>
+		<td>-</td>
+		<td>-</td>
+		<td>-</td>
+		<td>Prepared or Unload</td>
+		<td>Modification or Access</td>
+	</tr>
+	<tr valign="top">
+		<td>{=&quot;<i>expression</i>&quot;}</td>
+		<td>+</td>
+		<td>+</td>
+		<td>-</td>
+		<td>-</td>
+		<td>-</td>
+		<td>+</td>
+	</tr>
+</table>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="breakpoint_php.html">PHP Breakpoints in NetBeans IDE</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

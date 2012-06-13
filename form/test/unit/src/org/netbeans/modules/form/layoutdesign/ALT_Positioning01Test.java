@@ -241,9 +241,14 @@ public class ALT_Positioning01Test extends LayoutTestCase {
     }
 
     // Add a new button left of jTextField1 so that it does not overlap jLabel3
-    // in vertical dimension; no snapping. A new sequence with explicit trailing
-    // alignment should be created for horizontal placement (with fixed trailing
-    // gap following the button).
+    // in vertical dimension; no snapping.
+    // In horizontal dimension a new sequence with explicit trailing alignment
+    // should be created (with fixed trailing gap following the button).
+    // In vertical dimension the button should be put on a closed row with
+    // jTextField1, as a result of preference of creating rows in vertical dimension.
+    // (In previous version it used to be added in sequence with jLabel3 - but that
+    // should happen only if the button is added horizontally closer to it,
+    // which is not the case here, the button is added closer to jTextField1.)
     public void doChanges1() {
         lc = new LayoutComponent("jButton2", false);
         // > START ADDING

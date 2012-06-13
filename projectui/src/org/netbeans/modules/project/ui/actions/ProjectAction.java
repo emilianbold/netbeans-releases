@@ -108,7 +108,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         super(icon, lookup, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         if ( command != null ) {
-            ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
+            ShortcutManager.INSTANCE.registerAction(command, this);
         }
         this.performer = performer;
         this.namePattern = namePattern;
@@ -122,7 +122,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         super.putValue( key, value );
         
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
+            ShortcutManager.INSTANCE.registerShortcut(command, value);
         }
         
     }
@@ -210,6 +210,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
                             if (mainProvider != null) {
                                 ProjectConfiguration actualConfig = actualProvider.getActiveConfiguration(); // XXX PM.mutex?
                                 ProjectConfiguration mainConfig = mainProvider.getActiveConfiguration(); // ditto
+                                if (actualConfig != null && mainConfig != null) {
                                 String labelActual = actualConfig.getDisplayName();
                                 if (!labelActual.equals(mainConfig.getDisplayName())) {
                                     try {
@@ -220,6 +221,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
                                     } catch (CharConversionException x) {
                                         // ignore
                                     }
+                                }
                                 }
                             }
                         }

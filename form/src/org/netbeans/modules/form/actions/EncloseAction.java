@@ -267,7 +267,7 @@ public class EncloseAction extends NodeAction {
                                 String msg = NbBundle.getMessage(EncloseAction.class, "MSG_EncloseInNotEmpty"); // NOI18N
                                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
                             } else {
-                                RADVisualContainer newCont = (RADVisualContainer)newComp;
+                                final RADVisualContainer newCont = (RADVisualContainer)newComp;
 
                                 // This also added the container's layout component to
                                 // layout model (and registered undo edit). But we want
@@ -287,8 +287,16 @@ public class EncloseAction extends NodeAction {
                                 }
                                 success = creator.addComponents(components, newCont); // this does not affect layout model
                                 if (success) {
-                                    FormEditor.getFormDesigner(formModel).getLayoutDesigner()
-                                        .encloseInContainer(compIds, newCont.getId());
+                                    final FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
+                                    formDesigner.getLayoutDesigner().encloseInContainer(compIds, newCont.getId());
+                                    // "components" would get normally selected as last added,
+                                    // but we rather want to select the new container
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            formDesigner.setSelectedComponent(newCont);
+                                        }
+                                    });
                                 } else {
                                     String msg = NbBundle.getMessage(EncloseAction.class, "MSG_EncloseInFailed"); // NOI18N
                                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg)); 

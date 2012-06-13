@@ -280,9 +280,10 @@ final class RepositoryRevision {
                 public String getPath() {
                     if(path == null) {
                         try {
-                            return SvnUtils.getRelativePath(selectionRoot);
+                            path = SvnUtils.getRelativePath(selectionRoot);
                         } catch (SVNClientException ex) {
-                            Subversion.LOG.log(Level.WARNING, selectionRoot.getAbsolutePath(), ex);
+                            Subversion.LOG.log(Level.INFO, selectionRoot.getAbsolutePath(), ex);
+                            path = "/"; //NOI18B
                         }
                     }
                     return path;

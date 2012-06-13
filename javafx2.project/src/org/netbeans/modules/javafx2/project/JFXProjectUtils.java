@@ -268,7 +268,8 @@ public final class JFXProjectUtils {
     }
 
      /**
-     * Checks if the project is a JavaFX preloader project
+     * Checks if the project is a JavaFX preloader project. Note that in pre-7.2 NB
+     * preloader type had been used for fx-in-swing as workaround, hence the logic below
      * @param prj the project to check
      * @return true if project is JavaFX preloader
      */
@@ -278,7 +279,8 @@ public final class JFXProjectUtils {
             return false;
         }
         return JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))
-                && JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER));
+                && JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER))
+                && !JFXProjectProperties.isTrue(ep.evaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
     }
 
     /**

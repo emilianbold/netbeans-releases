@@ -775,10 +775,10 @@ public class MakeOSGi extends Task {
     }
 
     /**
-     * List of packages guaranteed to be in the Java platform;
-     * taken from JDK 6 Javadoc package-list after removing java.* packages.
-     * Note that Felix's default.properties actually includes a few more packages
-     * (such as org.w3c.dom.ranges) which can be found in src.zip but are not documented.
+     * List of packages guaranteed to be in the Java platform.
+     * Taken from Felix's default.properties@1347814#jre-1.6 but same as JDK 6's package-list.
+     * FELIX-2572 updated this to not include some packages actually in the JRE
+     * (rt.jar and src.zip); can cause problems in some cases (cf. bug #210325 comment #11).
      */
     private static final Set<String> JAVA_PLATFORM_PACKAGES = new TreeSet<String>(Arrays.asList(
         "javax.accessibility",

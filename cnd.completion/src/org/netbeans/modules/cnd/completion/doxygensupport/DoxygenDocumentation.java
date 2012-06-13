@@ -73,7 +73,9 @@ public class DoxygenDocumentation {
     private static final String[] formatItalic = new String[]{"<i>", "</i>"}; // NOI18N
 
     static String doxygen2HTML(String doxygen, CppTokenId kind) {
-        doxygen = doxygen.substring(3, doxygen.length() - 2);
+        if(doxygen.length() >= 5) {
+            doxygen = doxygen.substring(3, doxygen.length() - 2);
+        }
         doxygen = STRIP_STARS.matcher(doxygen).replaceAll("");
         doxygen = doxygen.trim();
         if (kind == CppTokenId.BLOCK_COMMENT) {

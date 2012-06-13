@@ -86,19 +86,4 @@ public final class MakeProjectOptions {
     public static MakeProjectOptions.PathMode getPathMode() {
         return MakeOptions.getInstance().getPathMode();
     }
-
-    public static boolean getBooleanProperty(String name) {
-        final MakeOptions instance = MakeOptions.getInstance();
-        return instance.getBooleanProperty(instance.findEntity(name));
-    }
-
-    public static abstract class MakeOptionNamedEntity {
-        public abstract String getName();
-
-        public abstract String getDisplayName();
-
-        public abstract String getDescription();
-
-        public abstract boolean isEnabledByDefault();
-    }
 }

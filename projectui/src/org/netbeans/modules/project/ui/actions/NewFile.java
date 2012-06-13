@@ -79,7 +79,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
@@ -97,6 +96,7 @@ import org.openide.util.actions.Presenter.Popup;
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
     private static final RequestProcessor RP = new RequestProcessor(NewFile.class);
+    private static final RequestProcessor INSTANTIATE_RP = new RequestProcessor(NewFile.class.getName() + ".INSTANTIATE_RP", 5);
     private static final Logger LOG = Logger.getLogger(NewFile.class.getName());
 
     private JMenu subMenu;
@@ -107,7 +107,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     @Messages("LBL_NewFileAction_Tooltip=New File...")
     public NewFile( Lookup context ) {
-        super((String) null, LBL_NewFileAction_Name(), ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newFile.png", false), context);
+        super((String) null, LBL_NewFileAction_Name(), null, context);
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newFile.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, LBL_NewFileAction_Tooltip());
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
@@ -164,7 +164,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             wd.setTargetFolder( preselectedFolder );
         }
 
-        RP.post(new Runnable() {
+        INSTANTIATE_RP.post(new Runnable() {
             @Override public void run() {
         try {
             Set resultSet = template == null ? wd.instantiate () : wd.instantiate( template );

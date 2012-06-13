@@ -5,32 +5,62 @@
 -->
 <html>
     <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Issue Tracking: Using JIRA</title>
+        <title>Issue Tracking: Create Issue Tracker Dialog Box: JIRA</title>
         <link rel="StyleSheet" href="../../ide.css" type="text/css">
     </head>
     
     <body>
-        <h2>Issue Tracking: Using JIRA</h2>
+        <h2>Issue Tracking: Create Issue Tracker Dialog Box: JIRA</h2>
         
         <p><small><a href="#seealso">See Also</a></small></p>
         
-            <p>
-            To enable integrated support for JIRA issue trackers, you first need to
+        <p>The Create Issue Tracker dialog box enables you to specify the connection
+        details for an issue tracker.
+        After you create a tracker, a node for the tracker appears under the
+        Issue Tracker node in the Services window and you can view, submit and resolve issues
+        in the IDE.</p>
+        
+        <p>You see this dialog box when you right-click the Issue Trackers node in the
+        Services window and choose Create Issue Tracker and select JIRA in the Connector dropdown list.
+        </p>
+        
+        <p><strong>Note.</strong></p>
+        <ul class="note">
+            <li>To enable integrated support for JIRA issue trackers in the IDE you need to
+            install the JIRA plugin.
+            You can click Download JIRA plugin in the Create Issue Tracker dialog box to 
             install the JIRA plugin from the NetBeans Update Center.
-            After you install the JIRA plugin, you can work with issues from within the IDE.</p>
-
+            You will need to restart the IDE to complete installation of the plugin.
             <p>If the JIRA plugin is not installed and you try to view or work with issues
             that are tracked using JIRA, the IDE will prompt you to use the Plugins manager to
-            install the JIRA plugin.</p>
+            install the JIRA plugin.</p></li>
+            <li>If you do not want to install the plugin you can work directly with JIRA issues in your browser.
+            You can find the location of the JIRA issue tracker in the details window of the project.</li>
+        </ul>
 
-            <p><strong>Note.</strong></p>
-            <ul class="note">
-                <li>If you do not want to install the plugin, you can work directly with JIRA issues
-                    in your browser.
-                You can find the location of the JIRA issue tracker in the details window of the project.</li>
-            </ul>
+        
+        <p>To register a JIRA issue tracker, specify the following properties.</p>
+    <ul>
+        <li><strong>Connector.</strong> Select JIRA from the dropdown list.</li>
+        <li><strong>Name.</strong> The name of the tracker as it will be displayed in the IDE under the
+            Issue Tracking node in the Services window.
+            The name will also be listed in the drop down menu when you open the Find Issues tab from
+            the Services window.</li>
+        <li><strong>Issue Tracker URL.</strong> Specify the URL for the tracker.</li>
+        <li><strong>Username.</strong> Specify the username that is registered with the issue tracker.</li>
+        <li><strong>Password.</strong> Specify the username that is registered with the issue tracker.</li>
+        <li><strong>Use HTTP Authentication.</strong> Select if the issue tracker requires authentication.
+            If selected, you need to specify the username and password.
+            Click Validate to connect to the tracker and check that the authentication details are correct.</li>
+        <li><strong>Enable Local Usernames.</strong> When selected,
+            the IDE uses the user name (e.g., without <tt>@mydomain.com</tt>) instead of an email address when submitting issues.
+            <p>When authorizing and identifying users, some issue trackers are configured to use a registered user name as the user id
+            and some are configured to use an email address.
+            Select this option when the issue tracker is configured to use a user name.</p>
+            </li>
+    </ul>
 
-            <p>To install the JIRA plugin using the Plugins Manager:</p>
+            <p>Perform the following steps to install the JIRA plugin using the Plugins Manager.</p>
 
             <ol>
                 <li>Open the Plugins manager by choosing Tools &gt; Plugins from the main menu.</li>

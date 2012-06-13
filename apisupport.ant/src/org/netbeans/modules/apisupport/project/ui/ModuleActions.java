@@ -76,7 +76,6 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import static org.netbeans.modules.apisupport.project.ui.Bundle.*;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
-import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
@@ -87,6 +86,7 @@ import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -507,7 +507,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                     }
                 }
                 try {
-                    setRunArgsIde(project, SingleModuleProperties.getInstance(project), command, p);
+                    setRunArgsIde(project, project.evaluator(), command, p);
                     task =
                     ActionUtils.runTarget(findBuildXml(project), targetNames, p);
                 } catch (IOException e) {
@@ -580,9 +580,10 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         return new String[] {"profile-test-single-nb"}; // NOI18N
     }
 
-    static void setRunArgsIde(Project project, ModuleProperties modprops, String command, Properties p) {
+    static void setRunArgsIde(Project project, PropertyEvaluator eval, String command, Properties p) {
         StringBuilder runArgsIde = new StringBuilder();
         StartupExtender.StartMode mode;
+        boolean isOsgi = command.equals("profile-osgi");
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
             mode = StartupExtender.StartMode.NORMAL;
         } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
@@ -605,11 +606,11 @@ public final class ModuleActions implements ActionProvider, ExecProject {
                             StartupExtender.StartMode.TEST_DEBUG).contains(mode) || 
                           command.equals(COMMAND_PROFILE_SINGLE));
         if (mode != null) {
-            JavaPlatform plaf = modprops.getJavaPlatform();
+            JavaPlatform plaf = ModuleProperties.getJavaPlatform(eval);
             Lookup context = Lookups.fixed(project, plaf != null ? plaf : JavaPlatformManager.getDefault().getDefaultPlatform());
             for (StartupExtender group : StartupExtender.getExtenders(context, mode)) {
                 for (String arg : group.getArguments()) {
-                    runArgsIde.append(isTest ? "" : "-J").append(arg).append(' ');
+                    runArgsIde.append((isTest | isOsgi) ? "" : "-J").append(arg).append(' ');
                 }
             }
         }

@@ -581,10 +581,12 @@ public class SvnUtils {
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
         File lastManaged = file;
+        SVNClientException e = null;
         while (isManaged(file)) {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {
+                e = null;
                 info = getInfoFromWorkingCopy(client, file, true);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
@@ -593,6 +595,7 @@ public class SvnUtils {
                         WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
+                        e = ex;
                     }
                 }
             }
@@ -615,10 +618,10 @@ public class SvnUtils {
 
         }
         if(repositoryURL == null && fileIsManaged) {
+            if (e != null) {
+                throw e;
+            }
             Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] { lastManaged });
-            // The file is managed but we haven't found the repository URL in it's metadata -
-            // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
-            // get the URL from the server, it's just that it could be quite a performance killer.
             if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
             } else {
@@ -660,9 +663,10 @@ public class SvnUtils {
         }
         boolean fileIsManaged = false;
         File lastManaged = file;
+        SVNClientException e = null;
         while (isManaged(file)) {
             fileIsManaged = true;
-
+            e = null;
             try {
                 // it works with 1.3 workdirs and our .svn parser
                 ISVNStatus status = getSingleStatus(client, file);
@@ -679,6 +683,7 @@ public class SvnUtils {
                         WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
                         SvnClientExceptionHandler.notifyException(ex, false, false);
+                        e = ex;
                     }
                 }
             }
@@ -714,10 +719,10 @@ public class SvnUtils {
 
         }
         if(fileURL == null && fileIsManaged) {
+            if (e != null) {
+                throw e;
+            }
             Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] { lastManaged });
-            // The file is managed but we haven't found the URL in it's metadata -
-            // this looks like the WC was created with a client < 1.3.0. I wouldn't mind for myself and
-            // get the URL from the server, it's just that it could be quite a performance killer.
             if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
             } else {

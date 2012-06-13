@@ -270,6 +270,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         logic = null;
     }
            
+    @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         
         renderer.setBackground( selected ? dr.getBackgroundSelectionColor() : dr.getBackgroundNonSelectionColor() );

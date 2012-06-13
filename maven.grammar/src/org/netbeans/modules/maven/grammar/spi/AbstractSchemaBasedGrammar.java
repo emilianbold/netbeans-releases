@@ -160,6 +160,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     protected final org.jdom.Element findTypeContent(final String type, org.jdom.Element docRoot) {
         @SuppressWarnings("unchecked")
         List<org.jdom.Element> lst = docRoot.getContent(new Filter() {
+            @Override
             public boolean matches(Object match) {
                 if (match instanceof org.jdom.Element) {
                     org.jdom.Element el = (org.jdom.Element)match;
@@ -197,6 +198,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         public DefinitionContentElementFilter() {
         }
         
+        @Override
         public boolean matches(Object obj) {
             boolean toReturn = super.matches(obj);
             if (toReturn) {
@@ -212,6 +214,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         
     }
       
+    @Override
     public Component getCustomizer(HintContext nodeCtx) {
         return null;
     }
@@ -221,11 +224,13 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param ctx the hint context node
      * @return an array of properties for this context
      */
+    @Override
     public Property[] getProperties(HintContext nodeCtx) {
         return new Property[0];
     }
 
     
+    @Override
     public boolean hasCustomizer(HintContext nodeCtx) {
         return false;
     }
@@ -235,6 +240,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @return <code>true</code> there is no known result
      *         <code>false</code> grammar does not allow here a result
      */
+    @Override
     public boolean isAllowed(Enumeration en) {
         return true;
     }
@@ -259,6 +265,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ATTRIBUTE_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.
      */
+    @Override
     public Enumeration<GrammarResult> queryAttributes(HintContext ownerElementCtx) {
         return Enumerations.<GrammarResult>empty();
     }
@@ -269,6 +276,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param parentNodeCtx context for which default is queried
      * @return default value or <code>null</code>
      */
+    @Override
     public GrammarResult queryDefault(HintContext parentNodeCtx) {
         return null;
     }
@@ -282,6 +290,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes.
      *         Every list member represents one possibility.
      */
+    @Override
     public Enumeration<GrammarResult> queryElements(HintContext virtualElementCtx) {
         String start = virtualElementCtx.getCurrentPrefix();
         
@@ -338,6 +347,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
      */
+    @Override
     public Enumeration<GrammarResult> queryEntities(String prefix) {
         return Enumerations.<GrammarResult>empty();
     }
@@ -347,6 +357,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param prefix prefix filter
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */
+    @Override
     public Enumeration<GrammarResult> queryNotations(String prefix) {
         return Enumerations.<GrammarResult>empty();
     }
@@ -356,6 +367,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
      * @param virtualTextCtx
      * @return
      */
+    @Override
     public Enumeration<GrammarResult> queryValues(HintContext virtualTextCtx) {
         Node parentNode = virtualTextCtx.getParentNode();
         List<String> parentNames = new ArrayList<String>();
@@ -417,6 +429,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         private String desc;
         private Icon icon;
         
+        @Override
         public Icon getIcon(int kind) {
             return icon;
         }
@@ -428,6 +441,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         /**
          * @output provide additional information simplifiing decision
          */
+        @Override
         public String getDescription() {
             return desc;
         }
@@ -447,6 +461,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         /**
          * @output name that is presented to user
          */
+        @Override
         public String getDisplayName() {
             return getNodeName();
         }
@@ -457,6 +472,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
          * be completed in empty element form i.e. <code>&lt;ement/></code>.
          * @since 6th Aug 2004
          */
+        @Override
         public boolean isEmptyElement() {
             return false;
         }
@@ -477,6 +493,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/grammar/element.png", false)); //NOI18N
         }
         
+        @Override
         public short getNodeType() {
             return Node.ELEMENT_NODE;
         }
@@ -531,6 +548,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/grammar/value.png", false)); //NOI18N
         }
         
+        @Override
         public short getNodeType() {
             return Node.TEXT_NODE;
         }
@@ -564,6 +582,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             list = listimpl;
         }
         
+        @Override
         public short getNodeType() {
             return Node.ELEMENT_NODE;
         }

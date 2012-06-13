@@ -87,4 +87,13 @@ public class SelectorsModuleTest extends CssModuleTestBase {
         checkCC("div.aclass:ac| ", arr("active"), Match.CONTAINS);
         
     }
+    
+    public void testNotPseudoClass() throws ParseException {
+        checkCC(".aclass:| ", arr("not"), Match.CONTAINS);
+        checkCC(".aclass:no| ", arr("not"), Match.CONTAINS);
+        
+        checkCC("div.aclass:| ", arr("not"), Match.CONTAINS);
+        checkCC("div.aclass:n| ", arr("not"), Match.CONTAINS);
+        
+    }
 }

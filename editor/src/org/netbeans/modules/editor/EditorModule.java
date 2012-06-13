@@ -126,7 +126,6 @@ public class EditorModule extends ModuleInstall {
     }
     private PropertyChangeListener searchSelectedPatternListener;
     private PropertyChangeListener editorHistoryChangeListener;
-    private PropertyChangeListener topComponentRegistryListener;
 
     /** Module installed again. */
     public @Override void restored () {
@@ -376,11 +375,6 @@ public class EditorModule extends ModuleInstall {
                     }
                 }
                 
-                // Remove listening on top component registry
-                if (topComponentRegistryListener != null) {
-                    TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
-                    topComponentRegistryListener = null;
-                }
             }
         });
     }

@@ -163,7 +163,7 @@ public class SceneSerializer {
 
     }
 
-    private final static void writeToFile(final Document document, final FileObject file ){
+    private static synchronized void writeToFile(final Document document, final FileObject file) {
         try {
             FileSystem fs = file.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
@@ -267,7 +267,7 @@ public class SceneSerializer {
         map.setNamedItem(attribute);
     }
 
-    private static Node getRootNode(FileObject file) {
+    private static synchronized Node getRootNode(FileObject file) {
         InputStream is = null;
         try {
             is = file.getInputStream();

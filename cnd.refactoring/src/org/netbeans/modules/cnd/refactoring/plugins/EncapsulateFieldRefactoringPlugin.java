@@ -76,6 +76,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.FormattingSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
@@ -223,7 +225,9 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         CharSequence declText = FormattingSupport.getFormattedText(CsmUtilities.openDocument(declInsert.ces), declInsert.dot, text);
         String descr = NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, bundle, mtdName); // NOI8N
         String prefix = "\n"; // NOI18N
-        if (kind == DeclarationGenerator.Kind.EXTERNAL_DEFINITION || kind == DeclarationGenerator.Kind.INLINE_DEFINITION) {
+        if (kind == DeclarationGenerator.Kind.EXTERNAL_DEFINITION || 
+                kind == DeclarationGenerator.Kind.INLINE_DEFINITION ||
+                kind == DeclarationGenerator.Kind.INLINE_DEFINITION_MAKRED_INLINE) {
             prefix = "\n\n";// NOI18N
         }
         Difference declDiff = new Difference(Difference.Kind.INSERT, declInsert.start, declInsert.end, bundle, prefix + declText, descr); // NOI18N
@@ -604,7 +608,15 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             CsmClass enclosing = refactoring.getEnclosingClass();
             InsertInfo[] insertPositons = GeneratorUtils.getInsertPositons(null, enclosing, insPt);
             if (csmFile.equals(classDeclarationFile)) {
-                DeclarationGenerator.Kind declKind = refactoring.isMethodInline() ? DeclarationGenerator.Kind.INLINE_DEFINITION : DeclarationGenerator.Kind.DECLARATION;
+                DeclarationGenerator.Kind declKind;
+                if (refactoring.isMethodInline()) {
+                    declKind = DeclarationGenerator.Kind.INLINE_DEFINITION;
+                    if (CodeStyle.getDefault(CodeStyle.Language.CPP).getUseInlineKeyword()) {
+                        declKind = DeclarationGenerator.Kind.INLINE_DEFINITION_MAKRED_INLINE;
+                    }
+                } else {
+                    declKind = DeclarationGenerator.Kind.DECLARATION;
+                }
                 // create declaration
                 InsertInfo declInsert = insertPositons[0];
                 if (getterName != null && refactoring.getDefaultGetter() == null) {

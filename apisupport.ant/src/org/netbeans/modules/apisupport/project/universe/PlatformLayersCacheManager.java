@@ -83,6 +83,7 @@ import org.openide.modules.Places;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -507,7 +508,7 @@ public class PlatformLayersCacheManager {
             }
             List<URL> urll = new ArrayList<URL>(2);
             try {
-                URI juri = jar.toURI();
+                URI juri = Utilities.toURI(jar);
                 if (layer != null) {
                     urll.add(new URL("jar:" + juri + "!/" + layer));
 

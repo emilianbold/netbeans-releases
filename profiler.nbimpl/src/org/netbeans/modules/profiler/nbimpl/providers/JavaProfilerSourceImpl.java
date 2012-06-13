@@ -618,8 +618,6 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
                         TypeMirror jclassMirror = cc.getTypes().erasure(element.asType());
                         TypeElement jclass = (TypeElement)cc.getTypes().asElement(jclassMirror);
                         resolvedClass[0] = new JavacClassInfo(ElementHandle.create(jclass), cc);
-                        return;
-
                     }
 
 
@@ -627,7 +625,6 @@ public class JavaProfilerSourceImpl implements AbstractJavaProfilerSource {
             }, true);
         } catch (IOException ioex) {
             ProfilerLogger.log(ioex);
-            ioex.printStackTrace();
 
             return null;
         }

@@ -139,7 +139,7 @@ public class IDEValidation extends JellyTestCase {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDECommitValidationTest.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
-        .failOnException(Level.INFO)
+        .failOnException(Level.WARNING)
         .failOnMessage(Level.SEVERE);
         
         CountingSecurityManager.initWrites();

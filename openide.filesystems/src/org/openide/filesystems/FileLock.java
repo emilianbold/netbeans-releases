@@ -62,7 +62,7 @@ import java.util.logging.Level;
 * @version 0.16, Jun 5, 1997
 *
 */
-public class FileLock extends Object {
+public class FileLock { // XXX JDK 7: implements AutoCloseable
     // ========================= NONE file lock =====================================
 
     /** Constant that can be used in filesystems that do not support locking.

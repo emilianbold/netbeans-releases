@@ -64,7 +64,7 @@ public class TestEntryTest extends TestBase {
         assertNotNull("TestEntry for aisupport/project tests",entry);
         assertNotNull("Nbroot wasn't found.", entry.getNBRoot());
         URL srcDir = entry.getSrcDir();
-        assertEquals(new File(nbRootFile(),"apisupport.project/test/unit/src").toURI().toURL(),srcDir);
+        assertEquals(Utilities.toURI(new File(nbRootFile(),"apisupport.project/test/unit/src")).toURL(),srcDir);
     }
     
     public void testGetSourcesFromExternalModule() throws IOException {
@@ -73,7 +73,7 @@ public class TestEntryTest extends TestBase {
         assertNotNull("TestEntry for suite tests",entry);
         assertNull("Nbroot was found.", entry.getNBRoot());
         URL srcDir = entry.getSrcDir();
-        assertEquals(resolveEEPFile("/suite4/module1/test/unit/src").toURI().toURL().toExternalForm(),srcDir.toExternalForm());
+        assertEquals(Utilities.toURI(resolveEEPFile("/suite4/module1/test/unit/src")).toURL().toExternalForm(),srcDir.toExternalForm());
     }
 
     public void testNullsOnShortUNCPath144758() throws IOException {

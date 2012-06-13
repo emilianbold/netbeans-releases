@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
@@ -252,6 +253,12 @@ public final class Resolver3 implements Resolver {
                 if (resovedClassifier == null){
                     break;
                 }
+            } else if (CsmKindUtilities.isEnumForwardDeclaration(orig)) {
+                CsmEnumForwardDeclaration fd = (CsmEnumForwardDeclaration) orig;
+                resovedClassifier = fd.getCsmEnum();
+                if (resovedClassifier == null) {
+                    break;
+                } 
             } else if (CsmKindUtilities.isTypedef(orig)) {
                 CsmType t = ((CsmTypedef)orig).getType();
                 resovedClassifier = t.getClassifier();
@@ -259,8 +266,8 @@ public final class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
-            } else if (ForwardClass.isForwardClass(orig)) {
-                // try to find another class
+            } else if (ForwardClass.isForwardClass(orig) || ForwardEnum.isForwardEnum(orig)) {
+                // try to find another classifier
                 resovedClassifier = findClassifierUsedInFile(orig.getQualifiedName());
             } else {
                 break;
@@ -288,7 +295,9 @@ public final class Resolver3 implements Resolver {
             Collection<CsmOffsetableDeclaration> col;
             if (ns instanceof NamespaceImpl) {
                 col = ((NamespaceImpl)ns).getDeclarationsRange(fqn,
-                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF, Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION, Kind.CLASS_FORWARD_DECLARATION});
+                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF,
+                            Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION,
+                            Kind.CLASS_FORWARD_DECLARATION, Kind.ENUM_FORWARD_DECLARATION});
 
             } else {
                 col = ns.getDeclarations();

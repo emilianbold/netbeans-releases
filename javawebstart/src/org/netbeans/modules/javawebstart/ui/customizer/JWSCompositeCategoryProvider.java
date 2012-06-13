@@ -61,6 +61,8 @@ import org.openide.util.NbBundle;
 public class JWSCompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CAT_WEBSTART = "WebStart"; // NOI18N
+    
+    private static JWSProjectProperties jwsProps = null;
 
     public JWSCompositeCategoryProvider() {}
     
@@ -72,13 +74,13 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             fxOverride = JWSProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")); //NOI18N
         }
+        jwsProps = JWSProjectProperties.getInstancePerSession(context, CAT_WEBSTART);
         return fxOverride ? null : ProjectCustomizer.Category.create(CAT_WEBSTART,
                     NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart"), null); //NOI18N
     }
     
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        JWSProjectProperties jwsProps = JWSProjectProperties.getInstance(context);
         return new JWSCustomizerPanel(jwsProps);
     }
 

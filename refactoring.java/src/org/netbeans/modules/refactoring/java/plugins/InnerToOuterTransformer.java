@@ -568,16 +568,6 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
         }
         
-        if (inner.getKind() == ElementKind.ENUM) {
-            for (Tree member:newInnerClass.getMembers()) {
-                if (member.getKind() == Tree.Kind.METHOD) {
-                    MethodTree m = (MethodTree) member;
-                    if (m.getReturnType()==null) {
-                        rewrite(m.getBody(),make.removeBlockStatement(m.getBody(), 0));
-                    }
-                }
-            }
-        }
         if(innerClass != newInnerClass) {
             genUtils.copyComments(innerClass, newInnerClass, true);
             genUtils.copyComments(innerClass, newInnerClass, false);

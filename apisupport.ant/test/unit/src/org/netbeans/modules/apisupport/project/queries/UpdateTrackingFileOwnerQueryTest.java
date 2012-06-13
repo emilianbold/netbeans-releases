@@ -52,6 +52,7 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Test that project association by module inclusion list works.
@@ -100,7 +101,7 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
             assertEquals("correct owner by FileObject of " + file, p, FileOwnerQuery.getOwner(fileFO));
         }
         assertEquals("correct owner by URI of " + file, p, FileOwnerQuery.getOwner(
-                PropertyUtils.resolveFile(nbRootFile(), file).toURI()));
+                Utilities.toURI(PropertyUtils.resolveFile(nbRootFile(), file))));
     }
     
 }

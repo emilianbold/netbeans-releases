@@ -110,6 +110,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
         trRef.setModel(new DefaultTreeModel(new DefaultMutableTreeNode()));
 
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 if (!isSingle) {
                     rootnode = DependencyTreeFactory.createDependencyTree(project, EmbedderFactory.getOnlineEmbedder(), Artifact.SCOPE_TEST);
@@ -124,22 +125,27 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
             }            
         });
         trTrans.addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent e) {
                 printSpaceMessage();
             }
 
+            @Override
             public void focusLost(FocusEvent e) {
                 printSpaceMessage();
             }
 
         });
         trTrans.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
             public void valueChanged(TreeSelectionEvent e) {
                 printSpaceMessage();
             }
         });
         trTrans.addKeyListener(new KeyListener() {
+            @Override
            public void keyTyped(KeyEvent e) {}
+            @Override
             public void keyPressed(KeyEvent e) {
                 if (KeyEvent.VK_SPACE == e.getKeyCode()) {
                     TreePath path = trTrans.getSelectionPath();
@@ -154,6 +160,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
 
                 }
             }
+            @Override
             public void keyReleased(KeyEvent e) {}
         });
     }
@@ -328,6 +335,7 @@ public class ExcludeDependencyPanel extends javax.swing.JPanel {
 
     private class Listener implements ChangeListener {
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             CheckNode trans = change2Trans.get(this);
             List<CheckNode> refs = change2Refs.get(this);

@@ -74,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -174,9 +175,9 @@ public abstract class GeneratorTestBase extends ClassIndexTestCase {
         URL url = null;
         try {
             if (isArchiveFile(f)) {
-                url = FileUtil.getArchiveRoot(f.toURI().toURL());
+                url = FileUtil.getArchiveRoot(Utilities.toURI(f).toURL());
             } else {
-                url = f.toURI().toURL();
+                url = Utilities.toURI(f).toURL();
                 String surl = url.toExternalForm();
                 if (!surl.endsWith("/")) {
                     url = new URL(surl+"/");

@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  * @author  Marian Petras
  */
 @ActionID(id = "org.netbeans.modules.search.ReplaceInFilesAction", category = "Edit")
-@ActionRegistration(lazy = false, displayName = "#LBL_Action_ReplaceInFiles")
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_ReplaceInProjects")
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "DS-H"),
     @ActionReference(path = "Menu/Edit", position = 2500)
@@ -90,10 +90,8 @@ public class ReplaceInFilesAction extends FindInFilesAction {
     
     @Override
     public String getName() {
-        String key = Utils.hasProjectSearchScope()
-                     ? "LBL_Action_ReplaceInProjects"                   //NOI18N
-                     : "LBL_Action_ReplaceInFiles";                     //NOI18N
-        return NbBundle.getMessage(getClass(), key);
+        return NbBundle.getMessage(getClass(),
+                "LBL_Action_ReplaceInProjects"); //NOI18N
     }
 
     @Override

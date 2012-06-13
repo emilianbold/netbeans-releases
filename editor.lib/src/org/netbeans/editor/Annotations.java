@@ -1105,8 +1105,10 @@ public class Annotations implements DocumentListener {
             AnnotationType type;
             AnnotationType.CombinationMember[] combs;
             
-            for (Iterator<String> it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
-                type = AnnotationTypes.getTypes().getType(it.next());
+            AnnotationTypes types = AnnotationTypes.getTypes();
+            for (Iterator<String> it = types.getAnnotationTypeNames(); it.hasNext(); ) {
+                String typeName = it.next();
+                type = types.getType(typeName);
                 if (type == null)
                     continue;
                 combs = type.getCombinations();
@@ -1333,7 +1335,7 @@ public class Annotations implements DocumentListener {
      * annotations which are representd by this combined annotation. The only
      * added functionality is for tooltip text and annotation type.
      */
-    private static final class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
+    static final class AnnotationCombination extends AnnotationDesc implements Lookup.Provider {
         
         /** Delegate annotaiton */
         private AnnotationDesc delegate;

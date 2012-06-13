@@ -931,7 +931,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                     Integer prior = definitionCountById.get(id);
                     definitionCountById.put(id, prior == null ? 1 : prior + 1);
-                } else if (!d.getPrimaryFile().hasExt("shadow")) {
+                } else if (!d.getPrimaryFile().hasExt("shadow") && !d.getPrimaryFile().hasExt("removed")) {
                     warnings.add("Anomalous file " + d);
                 } // else #172453: BrokenDataShadow, OK
             }

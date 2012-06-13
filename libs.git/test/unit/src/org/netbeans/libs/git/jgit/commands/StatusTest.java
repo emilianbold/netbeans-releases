@@ -535,49 +535,6 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, nested, f2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
     }
     
-    public void testStatusMixedLineEndings () throws Exception {
-        if (isWindows()) {
-            // tested on linux
-            return;
-        }
-        StoredConfig cfg = repository.getConfig();
-        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "false");
-        cfg.save();
-        File f = new File(workDir, "f");
-        String content = "";
-        for (int i = 0; i < 10000; ++i) {
-            content += i + "\r\n";
-        }
-        write(f, content);
-        File[] files = new File[] { f };
-        GitClient client = getClient(workDir);
-        client.add(files, NULL_PROGRESS_MONITOR);
-        client.commit(files, "commit", null, null, NULL_PROGRESS_MONITOR);
-        
-        Map<File, GitStatus> statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
-        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
-        org.eclipse.jgit.api.StatusCommand cmd = new Git(repository).status();
-        org.eclipse.jgit.api.Status status = cmd.call();
-        assertEquals(0, status.getModified().size());
-        
-        // lets turn autocrlf on
-        cfg = repository.getConfig();
-        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
-        cfg.save();
-        
-        // it should be up to date again
-        // JGit does not work either:
-        cmd = new Git(repository).status();
-        status = cmd.call();
-        assertEquals(1, status.getModified().size());
-        
-        // what about us?
-        statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
-        assertEquals(1, statuses.size());
-        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
-    }
-
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);

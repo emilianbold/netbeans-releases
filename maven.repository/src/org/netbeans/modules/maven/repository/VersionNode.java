@@ -176,6 +176,7 @@ public class VersionNode extends AbstractNode {
         Transferable deflt = super.clipboardCopy();
         ExTransferable enriched = ExTransferable.create(deflt);
         ExTransferable.Single ex = new ExTransferable.Single(DataFlavor.stringFlavor) {
+            @Override
             protected Object getData() {
                 return "<dependency>\n" + //NOI18N
                         "  <groupId>" + record.getGroupId() + "</groupId>\n" + //NOI18N
@@ -254,6 +255,7 @@ public class VersionNode extends AbstractNode {
             putValue(NAME, NbBundle.getMessage(VersionNode.class, "ACT_View_Details"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ArtifactViewer.showArtifactViewer(info);
         }
@@ -294,6 +296,11 @@ public class VersionNode extends AbstractNode {
                         // maven embedder code might want to retry applying mirrors on it.
                         online.resolve(art, Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(info.getRepositoryUrl(), info.getId())), online.getLocalRepository());
                     } catch (ThreadDeath d) {
+                        return;
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                         return;
                     } catch (AbstractArtifactResolutionException x) {
                         return;

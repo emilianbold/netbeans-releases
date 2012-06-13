@@ -43,10 +43,6 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
-import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
@@ -54,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,18 +64,20 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -130,9 +129,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         lstDirlist.setCellRenderer(new MyCellRenderer());
         cbDevHost.setRenderer(new MyDevHostListCellRenderer());
 
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            setOpaque(false);
-        }
         // clean up previous caches
         tcm.clear();
         HelpCtx.setHelpIDString(ToolsPanel.this, helpContext); // NOI18N

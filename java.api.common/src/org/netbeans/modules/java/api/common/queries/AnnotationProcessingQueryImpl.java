@@ -69,6 +69,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -174,7 +175,7 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
                 File output = helper.resolveFile(prop);
 
                 try {
-                    return output.toURI().toURL();
+                    return Utilities.toURI(output).toURL();
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(AnnotationProcessingQueryImpl.class.getName()).log(Level.FINE, null, ex);
                     return  null;

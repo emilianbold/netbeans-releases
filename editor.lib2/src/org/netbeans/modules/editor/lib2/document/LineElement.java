@@ -24,6 +24,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Element;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
+import javax.swing.text.SimpleAttributeSet;
 
 /**
  * Line element implementation.
@@ -101,7 +102,8 @@ public final class LineElement implements Element, Position {
 
     @Override
     public AttributeSet getAttributes() {
-        return (attributes instanceof AttributeSet) ? (AttributeSet) attributes : null;
+        // Do not return null since Swing's view factories assume that this is non-null.
+        return (attributes instanceof AttributeSet) ? (AttributeSet) attributes : SimpleAttributeSet.EMPTY;
     }
     
     public void setAttributes(AttributeSet attributes) {

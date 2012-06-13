@@ -192,14 +192,16 @@ public final class ApiGenScript extends PhpProgram {
 
     @Override
     public ExternalProcessBuilder getProcessBuilder() {
-        if (getProgram().endsWith(".php")) { // NOI18N
-            // run *.php file via php interpreter
-            try {
-                return PhpInterpreter.getDefault().getProcessBuilder()
-                        .addArgument(getProgram());
-            } catch (InvalidPhpProgramException ex) {
-                // ignored
-            }
+        // XXX
+        if (getProgram().endsWith(".bat")) { // NOI18N
+            return super.getProcessBuilder();
+        }
+        // run file via php interpreter
+        try {
+            return PhpInterpreter.getDefault().getProcessBuilder()
+                    .addArgument(getProgram());
+        } catch (InvalidPhpProgramException ex) {
+            // ignored
         }
         return super.getProcessBuilder();
     }

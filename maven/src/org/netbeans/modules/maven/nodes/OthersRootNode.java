@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.nodes;
 
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -57,6 +56,8 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.maven.LogicalViewProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -65,7 +66,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
@@ -79,10 +80,11 @@ class OthersRootNode extends AnnotatedAbstractNode {
     private static final String SHOW_AS_PACKAGES = "show.as.packages"; //NOI18N
     private static final String PREF_RESOURCES_UI = "org/netbeans/modules/maven/resources/ui"; //NOI18N
     
+    @Messages({"LBL_Other_Test_Sources=Other Test Sources", "LBL_Other_Sources=Other Sources"})
     OthersRootNode(NbMavenProjectImpl mavproject, boolean testResource, FileObject fo) {
         super(new OthersRootChildren(mavproject, testResource), Lookups.fixed(fo, DataFolder.findFolder(fo), new ChildDelegateFind()));
         setName(testResource ? "OtherTestRoots" : "OtherRoots"); //NOI18N
-        setDisplayName(testResource ? org.openide.util.NbBundle.getMessage(OthersRootNode.class, "LBL_Other_Test_Sources") : org.openide.util.NbBundle.getMessage(OthersRootNode.class, "LBL_Other_Sources"));
+        setDisplayName(testResource ? LBL_Other_Test_Sources() : LBL_Other_Sources());
         // can do so, since we depend on it..
 //        setIconBase("org/mevenide/netbeans/project/resources/defaultFolder"); //NOI18N
         file = fo;
@@ -160,11 +162,13 @@ class OthersRootNode extends AnnotatedAbstractNode {
     @SuppressWarnings("serial")
     private class ShowAsPackagesAction extends AbstractAction implements Presenter.Popup {
 
+        @Messages("LBL_ShowAsPackages=Show Resources as Packages")
         public ShowAsPackagesAction() {
-            String s = NbBundle.getMessage(DependenciesNode.class, "LBL_ShowAsPackages");
+            String s = LBL_ShowAsPackages();
             putValue(Action.NAME, s);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             boolean b = showAsPackages();
             Preferences prefs = NbPreferences.root().node(PREF_RESOURCES_UI); //NOI18N
@@ -177,6 +181,7 @@ class OthersRootNode extends AnnotatedAbstractNode {
             ((OthersRootChildren)getChildren()).doRefresh();
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             JCheckBoxMenuItem mi = new JCheckBoxMenuItem(this);
             mi.setSelected(showAsPackages());
@@ -186,6 +191,7 @@ class OthersRootNode extends AnnotatedAbstractNode {
     }
 
     static class ChildDelegateFind implements LogicalViewProviderImpl.FindDelegate {
+        @Override
         public Node[] getDelegates(Node current) {
             return current.getChildren().getNodes(true);
         }

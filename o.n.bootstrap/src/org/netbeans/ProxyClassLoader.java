@@ -518,7 +518,7 @@ public class ProxyClassLoader extends ClassLoader {
                 if (pkg != null) break;
             }
             if (pkg == null) {
-                // Cannot access either Package.getSystemPackage nor ClassLoader.getPackage
+                // Cannot access either Package.getSystemPackages nor ClassLoader.getPackage
                 // from here, so do the best we can though it will cause unnecessary
                 // duplication of the package cache (PCL.packages vs. CL.packages):
                 pkg = super.getPackage(name);

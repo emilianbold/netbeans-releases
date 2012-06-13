@@ -94,6 +94,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  * Test writing changes to layers.
@@ -133,7 +134,7 @@ public class LayerUtilsTest extends LayerTestBase {
 
     private FileSystem createCachedFS(LayerCacheManager m, File xf) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        m.store(null, Collections.singletonList(xf.toURI().toURL()), os);
+        m.store(null, Collections.singletonList(Utilities.toURI(xf).toURL()), os);
         return m.load(null, ByteBuffer.wrap(os.toByteArray()).order(ByteOrder.LITTLE_ENDIAN));
     }
 
@@ -150,7 +151,7 @@ public class LayerUtilsTest extends LayerTestBase {
             assertFalse(cf.exists());
             assertTrue(cf.createNewFile());
             OutputStream os = new BufferedOutputStream(new FileOutputStream(cf));
-            URL url = xf.getName().endsWith(".jar") ? new URL("jar:" + xf.toURI() + "!/" + LAYER_PATH_IN_JAR) : xf.toURI().toURL();
+            URL url = xf.getName().endsWith(".jar") ? new URL("jar:" + Utilities.toURI(xf) + "!/" + LAYER_PATH_IN_JAR) : Utilities.toURI(xf).toURL();
             urll.set(0, url);
             m.store(null, urll, os);
             os.close();
@@ -190,8 +191,8 @@ public class LayerUtilsTest extends LayerTestBase {
                 new File(getDataDir(), "layers/a-layer.xml")
                 ));
 
-        FileSystem xfs0 = new XMLFileSystem(files.get(0).toURI().toURL());
-        FileSystem xfs1 = new XMLFileSystem(files.get(1).toURI().toURL());
+        FileSystem xfs0 = new XMLFileSystem(Utilities.toURI(files.get(0)).toURL());
+        FileSystem xfs1 = new XMLFileSystem(Utilities.toURI(files.get(1)).toURL());
         FileSystem mfs = new MultiFileSystem(xfs0, xfs1);
         assertNotNull(xfs1.findResource("Menu/A Folder"));
         assertNotNull(mfs.findResource("Menu/File"));
@@ -233,7 +234,7 @@ public class LayerUtilsTest extends LayerTestBase {
         File la = new File(getDataDir(), "layers/a-layer.xml");
 
         FileSystem cfs = createCachedFS(m, lb);
-        FileSystem xfs = new XMLFileSystem(la.toURI().toURL());
+        FileSystem xfs = new XMLFileSystem(Utilities.toURI(la).toURL());
         FileSystem mfs = new MultiFileSystem(cfs, xfs);
         assertNotNull(mfs.findResource("Menu/File"));
         assertNotNull(mfs.findResource("Menu/A Folder"));
@@ -317,7 +318,7 @@ public class LayerUtilsTest extends LayerTestBase {
 
         List<URL> urls = new ArrayList<URL>(NUM_LAYERS);
         for (File f : files) {
-            urls.add(f.toURI().toURL());
+            urls.add(Utilities.toURI(f).toURL());
         }
         XMLFileSystem[] xfss = new XMLFileSystem[NUM_LAYERS];
 
@@ -351,7 +352,7 @@ public class LayerUtilsTest extends LayerTestBase {
 
         List<URL> urls = new ArrayList<URL>(NUM_LAYERS);
         for (File f : files) {
-            urls.add(new URL("jar:" + f.toURI() + "!/" + LAYER_PATH_IN_JAR));
+            urls.add(new URL("jar:" + Utilities.toURI(f) + "!/" + LAYER_PATH_IN_JAR));
         }
         XMLFileSystem[] xfss = new XMLFileSystem[NUM_LAYERS];
 
@@ -548,7 +549,7 @@ public class LayerUtilsTest extends LayerTestBase {
         cmf.add(cmf.createLayerEntry("link-to-localized.shadow", null, null, null, Collections.singletonMap("originalFile", "test-module2-localized-action.instance")));
         File dummyDir = new File(getWorkDir(), "dummy");
         dummyDir.mkdir();
-        cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.singletonMap("originalFile", dummyDir.toURI().toURL())));
+        cmf.add(cmf.createLayerEntry("link-to-url.shadow", null, null, null, Collections.singletonMap("originalFile", Utilities.toURI(dummyDir).toURL())));
         cmf.run();
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
 

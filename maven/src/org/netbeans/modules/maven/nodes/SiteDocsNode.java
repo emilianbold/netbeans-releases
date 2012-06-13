@@ -56,7 +56,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 
 /**
@@ -80,9 +81,10 @@ class SiteDocsNode extends FilterNode {
     
    
     @Override
+    @Messages("LBL_Site_Pages=Project Site")
     public String getDisplayName() {
         if (isTopLevelNode) {
-            String s = NbBundle.getMessage(SiteDocsNode.class, "LBL_Site_Pages");
+            String s = LBL_Site_Pages();
             DataObject dob = getOriginal().getLookup().lookup(DataObject.class);
             FileObject file = dob.getPrimaryFile();
             try {
@@ -109,7 +111,7 @@ class SiteDocsNode extends FilterNode {
              if (stat instanceof FileSystem.HtmlStatus) {
                  FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
 
-                String s = NbBundle.getMessage(SiteDocsNode.class, "LBL_Site_Pages");
+                String s = LBL_Site_Pages();
                  String result = hstat.annotateNameHtml (
                      s, Collections.singleton(file));
 
@@ -125,6 +127,7 @@ class SiteDocsNode extends FilterNode {
     }        
     
     @Override
+    @Messages({"BTN_Generate_Site=Generate Site", "BTN_Deploy_Site=Deploy Site"})
     public javax.swing.Action[] getActions(boolean param) {
         if (isTopLevelNode) {
             ActionProviderImpl impl = project.getLookup().lookup(ActionProviderImpl.class);
@@ -133,10 +136,10 @@ class SiteDocsNode extends FilterNode {
             toReturn[1] = null;
             NetbeansActionMapping mapp = new NetbeansActionMapping();
             mapp.addGoal("site"); //NOI18N
-            toReturn[2] = impl.createCustomMavenAction(org.openide.util.NbBundle.getMessage(SiteDocsNode.class, "BTN_Generate_Site"), mapp, true);
+            toReturn[2] = impl.createCustomMavenAction(BTN_Generate_Site(), mapp, true);
             mapp = new NetbeansActionMapping();
             mapp.addGoal("site:deploy"); //NOI18N
-            toReturn[3] = impl.createCustomMavenAction(org.openide.util.NbBundle.getMessage(SiteDocsNode.class, "BTN_Deploy_Site"), mapp, false);
+            toReturn[3] = impl.createCustomMavenAction(BTN_Deploy_Site(), mapp, false);
             return toReturn;
         } else {
             return super.getActions(param);

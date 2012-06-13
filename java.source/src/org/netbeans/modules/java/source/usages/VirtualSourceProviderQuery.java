@@ -63,6 +63,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -133,7 +134,7 @@ public final class VirtualSourceProviderQuery {
                    l = p.second;
                }
                try {
-                   final File file = new File(indexable.getURL().toURI());
+                   final File file = Utilities.toFile(indexable.getURL().toURI());
                    l.add(file);
                    file2indexables.put(file, indexable);
                } catch (URISyntaxException use) {
@@ -190,7 +191,7 @@ public final class VirtualSourceProviderQuery {
             assert root != null;
             assert file2indexables != null;
             this.root = root;
-            String _rootURL = root.toURI().toURL().toString();
+            String _rootURL = Utilities.toURI(root).toURL().toString();
             if (!_rootURL.endsWith("/")) {   //NOI18N
                 _rootURL = _rootURL + '/';    //NOI18N
             }

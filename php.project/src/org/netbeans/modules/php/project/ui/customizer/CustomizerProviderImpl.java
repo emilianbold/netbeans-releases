@@ -83,6 +83,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
     public void showCustomizer(final String preselectedCategory) {
+        if (project.isSourcesDirectoryInvalid()) {
+            // metadata corrupted
+            project.warnInvalidSourcesDirectory();
+            return;
+        }
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
