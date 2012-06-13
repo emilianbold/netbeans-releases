@@ -199,6 +199,8 @@ public class ShorterPaths extends Task {
                         pw.println(name.replaceFirst("^test-(unit|qa-functional)-sys-prop\\.", "test-sys-prop.") + "=" + outProp);
                     } else if (name.startsWith("test.config")) {
                         pw.println(name + "=" + properties.get(name));
+                    } else if ("requires.nb.javac".equals(name)) {
+                        pw.println(name + "=" + properties.get(name));
                     }
                 }
                 pw.println("extra.test.libs=" + externalLibBuf.toString());

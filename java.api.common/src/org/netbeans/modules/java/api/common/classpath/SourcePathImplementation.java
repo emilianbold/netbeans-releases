@@ -69,6 +69,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -146,8 +147,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     if (matcher == null) {
                         matcher = new PathMatcher(
                                 evaluator.getProperty(ProjectProperties.INCLUDES),
-                                evaluator.getProperty(ProjectProperties.EXCLUDES),
-                                new File(URI.create(root.toExternalForm())));
+                                evaluator.getProperty(ProjectProperties.EXCLUDES), Utilities.toFile(URI.create(root.toExternalForm())));
                     }
                     return matcher.matches(resource, true);
                 }
@@ -192,7 +192,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                             if (root.equals(apSourcesDir)) {
                                 continue;
                             }
-                            result.add(ClassPathSupport.createResource(root.toURI().toURL()));
+                            result.add(ClassPathSupport.createResource(Utilities.toURI(root).toURL()));
                         }
                     }
                 }

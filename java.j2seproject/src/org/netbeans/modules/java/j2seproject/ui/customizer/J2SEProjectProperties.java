@@ -540,7 +540,8 @@ public class J2SEProjectProperties {
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
         
-        if(!isFXProject()) {
+        final boolean isFXProject = isFXProject();
+        if(!isFXProject) {
             storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
             EditableProperties ep = updateHelper.getProperties("nbproject/private/config.properties");
             if (activeConfig == null) {
@@ -571,7 +572,13 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
         //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, J2SEProject.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
+        PlatformUiSupport.storePlatform (
+                projectProperties,
+                updateHelper,
+                J2SEProject.PROJECT_CONFIGURATION_NAMESPACE,
+                PLATFORM_MODEL.getSelectedItem(),
+                JAVAC_SOURCE_MODEL.getSelectedItem(),
+                !isFXProject);
                                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N

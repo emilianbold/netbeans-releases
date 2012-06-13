@@ -65,6 +65,7 @@ public class DefaultMatcher extends AbstractMatcher {
      * array of searchable application/x-<em>suffix</em> MIME-type suffixes
      */
     private static final Collection<String> searchableXMimeTypes;
+    private static final Collection<String> searchableExtensions;
 
     static {
         searchableXMimeTypes = new HashSet<String>(17);
@@ -80,6 +81,10 @@ public class DefaultMatcher extends AbstractMatcher {
         searchableXMimeTypes.add("tex");                                //NOI18N
         searchableXMimeTypes.add("texinfo");                            //NOI18N
         searchableXMimeTypes.add("troff");                              //NOI18N
+
+        searchableExtensions = new HashSet<String>(); //TODO make configurable
+        searchableExtensions.add("txt");                                //NOI18N
+        searchableExtensions.add("log");                                //NOI18N
     }
     private AbstractMatcher realMatcher;
     private boolean trivial;
@@ -135,8 +140,8 @@ public class DefaultMatcher extends AbstractMatcher {
         String mimeType = fileObj.getMIMEType();
 
         if (mimeType.equals("content/unknown")) {                       //NOI18N
-            if (fileObj.getExt().equalsIgnoreCase("txt")) { // TODO remove
-                mimeType = "text/plain";
+            if (searchableExtensions.contains(fileObj.getExt().toLowerCase())) {
+                return true;
             } else {
                 return fileObj.getSize() <= MAX_UNRECOGNIZED_FILE_SIZE;
             }

@@ -46,7 +46,10 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
+import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
@@ -77,6 +80,7 @@ public class J2SEProjectGenerator {
                 setManifest(manifestFile).
                 setLibrariesDefinitionFile(librariesDefinition).
                 setSourceLevel(defaultSourceLevel).
+                setJavaPlatform(getPlatform()).
                 build();
     }
 
@@ -96,7 +100,13 @@ public class J2SEProjectGenerator {
                 setLibrariesDefinitionFile(librariesDefinition).
                 setBuildXmlName(buildXmlName).
                 setSourceLevel(defaultSourceLevel).
+                setJavaPlatform(getPlatform()).
                 build();
+    }
+    
+    private static JavaPlatform getPlatform() {
+        return PreferredProjectPlatform.getPreferredPlatform(
+            JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getName());
     }
                     
     //------------ Used by unit tests -------------------

@@ -86,7 +86,8 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     private final String description;
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
-    private static final String PRIMEFACES_SPECIFIC_CLASS = "org.primefaces.application.PrimeResource"; //NOI18N
+    private static final String PRIMEFACES_SPECIFIC_PRIME_RESOURCE = "org.primefaces.application.PrimeResource"; //NOI18N
+    private static final String PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER = "org.primefaces.application.PrimeResourceHandler"; //NOI18N
     private static final String PREFERENCES_NODE = "primefaces"; //NOI18N
     private static final String POM_PROPERTIES_PATH = "META-INF/maven/org.primefaces/primefaces/pom.properties"; //NOI18N
 
@@ -160,7 +161,14 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     @Override
     public boolean isInWebModule(WebModule webModule) {
         ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-        return classpath.findResource(PRIMEFACES_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+        return hasPrimeFacesResource(classpath);
+    }
+
+    private boolean hasPrimeFacesResource(ClassPath classPath) {
+        // PRIMEFACES_SPECIFIC_PRIME_RESOURCE - PF 3.2- backward compatibility
+        // PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER - PF 3.3+
+        return classPath.findResource(PRIMEFACES_SPECIFIC_PRIME_RESOURCE.replace('.', '/') + ".class") != null //NOI18N
+                || classPath.findResource(PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER.replace('.', '/') + ".class") != null; //NOI18N
     }
 
     @Override
@@ -213,7 +221,8 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
      */
     public static boolean isValidPrimefacesLibrary(List<URL> libraryContent) {
         try {
-            return Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_CLASS);
+            return Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_PRIME_RESOURCE)
+                    || Util.containsClass(libraryContent, PRIMEFACES_SPECIFIC_PRIME_RESOURCE_HANDLER);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return false;

@@ -39,9 +39,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsfapi.spi;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -60,6 +63,10 @@ import org.openide.util.Lookup;
 public abstract class JsfSupportProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JsfSupportProvider.class.getName());
+    //note: JsfSupport DOES hold a strong reference to the Project (which is not really 
+    //necessary, may be got from FEQ all the time) so I cannot hold the JsfSupport strongly
+    //in the WeakHashMap - it would never GC due to the strong ref in this GC root.
+    private static final Map<Project, Reference<JsfSupport>> CACHE = new WeakHashMap<Project, Reference<JsfSupport>>();
 
     public static JsfSupport get(Source source) {
         FileObject fo = source.getFileObject();
@@ -72,50 +79,41 @@ public abstract class JsfSupportProvider {
 
     public static JsfSupport get(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
-        if(project == null) {
+        if (project == null) {
             return null;
         }
         return get(project);
 
     }
-    
+
     public static synchronized JsfSupport get(Project project) {
-        JsfSupportHandle handle = project.getLookup().lookup(JsfSupportHandle.class);
-        if(handle == null) {
-            LOGGER.log(Level.FINE, "{0} does not have an instance of JsfSupportHandle in its lookup.", project);
-            return null;
+        Reference<JsfSupport> support_ref = CACHE.get(project);
+        if (support_ref != null) {
+            JsfSupport support = support_ref.get();
+            if (support != null) {
+                //use the cached one...
+                return support;
+            }
         }
 
-        if (!handle.isEnabled()) {
-            LOGGER.log(Level.FINE, "{0} does have an instance of JsfSupportHandle in its lookup, but it's disabled by the JsfSupportHandle implementation.", project);
+        //...or create new one and put to the cache
+        JsfSupportProvider provider = Lookup.getDefault().lookup(JsfSupportProvider.class);
+        if (provider == null) {
+            LOGGER.warning("There's no instance of JsfSupportProvider registered in the global lookup!"); //NOI18N
             return null;
         }
-
-        JsfSupport instance = handle.get();
-        if(instance == null) {
-            //not support for this project yet
-            //lets a ask the providers' to create one
-            JsfSupportProvider provider = Lookup.getDefault().lookup(JsfSupportProvider.class);
-            if(provider == null) {
-                LOGGER.warning("There's no instance of JsfSupportProvider registered in the global lookup!"); //NOI18N
-                return null;
-            }
-
-            instance = provider.getSupport(project);
-            if(instance == null) {
-                LOGGER.warning(
-                        String.format("The implementation %s of JsfSupportProvider returned no JsfSupport instance for project %s", //NOI18N
-                        provider.getClass().getName(),
-                        getProjectDisplayName(project)));
-                return null;
-            }
-
-            //and finally remember the created instance for the project
-            handle.install(instance);
+        JsfSupport support = provider.getSupport(project);
+        if (support == null) {
+            LOGGER.warning(
+                    String.format("The implementation %s of JsfSupportProvider returned no JsfSupport instance for project %s", //NOI18N
+                    provider.getClass().getName(),
+                    getProjectDisplayName(project)));
+            return null;
+        }
+        CACHE.put(project, new WeakReference<JsfSupport>(support));
         
-        }
+        return support;
 
-        return instance;
     }
 
     private static String getProjectDisplayName(Project project) {
@@ -123,5 +121,4 @@ public abstract class JsfSupportProvider {
     }
 
     public abstract JsfSupport getSupport(Project project);
-
 }

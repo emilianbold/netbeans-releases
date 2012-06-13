@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
-import java.util.*;
-
 /**
  *
  * @author mkleint

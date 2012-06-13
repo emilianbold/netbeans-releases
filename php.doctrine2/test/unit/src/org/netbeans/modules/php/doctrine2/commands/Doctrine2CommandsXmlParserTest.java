@@ -98,4 +98,14 @@ public class Doctrine2CommandsXmlParserTest extends NbTestCase {
         assertEquals("orm:validate-schema", command.getCommand());
     }
 
+    public void testIssue213542() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "commands-issue213542.xml")));
+
+        List<Doctrine2CommandVO> commands = new ArrayList<Doctrine2CommandVO>();
+        Doctrine2CommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(19, commands.size());
+    }
+
 }

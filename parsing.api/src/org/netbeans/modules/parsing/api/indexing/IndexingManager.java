@@ -55,7 +55,6 @@ import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
 /**
@@ -367,13 +366,6 @@ public final class IndexingManager {
      * @since 1.24
      */
     public void refreshAllIndices(boolean fullRescan, boolean wait, File... filesOrFolders) {
-        boolean ae = false;
-        assert ae = true;
-        if (ae) {
-            for (final File file : filesOrFolders) {
-                assert file.equals(FileUtil.normalizeFile(file)) : String.format("File: %s is not normalized.", file.toString());   //NOI18N
-            }
-        }
         refreshAll(fullRescan, wait, false, (Object []) filesOrFolders);
     }
 

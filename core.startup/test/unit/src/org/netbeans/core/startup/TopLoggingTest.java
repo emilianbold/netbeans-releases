@@ -287,17 +287,9 @@ public class TopLoggingTest extends NbTestCase {
 
 
         File log2 = new File(new File(new File(getWorkDir(), "var"), "log"), "messages.log.1");
-        assertFalse("Currently we rotate just one file: " + log2, log2.canRead());
+        assertTrue("Currently we rotate just after each 1 meg: " + log2, log2.canRead());
 
         TopLogging.close();
-        // simulate new start
-        TopLogging.flush(true);
-
-        TopLogging.initialize();
-
-        assertTrue("2 Log file exists: " + log, log.canRead());
-        assertTrue("Restarrt creates new log file: " + log2, log2.canRead());
-
     }
 
     public void testFileRotationByDefault() throws Exception {

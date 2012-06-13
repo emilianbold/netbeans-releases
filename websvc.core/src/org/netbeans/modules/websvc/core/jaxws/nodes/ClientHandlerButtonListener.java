@@ -64,6 +64,7 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 
 import javax.lang.model.element.TypeElement;
@@ -94,6 +95,7 @@ import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModelFactory;
 import org.netbeans.modules.websvc.api.jaxws.bindings.DefinitionsBindings;
 import org.netbeans.modules.websvc.api.jaxws.bindings.GlobalBindings;
 import org.netbeans.modules.websvc.spi.support.MessageHandlerPanel;
+import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -440,9 +442,11 @@ public class ClientHandlerButtonListener implements ActionListener {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
             try {
                 String name = client.getName();
+                JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+                Properties props = WSUtils.identifyWsimport(support.getAntProjectHelper());
                 ExecutorTask wsimportTask =
                         ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-client-clean-" + name, "wsimport-client-" + name}, null); //NOI18N
+                        new String[]{"wsimport-client-clean-" + name, "wsimport-client-" + name}, props); //NOI18N
                 wsimportTask.waitFinished();
             } catch (IOException ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());

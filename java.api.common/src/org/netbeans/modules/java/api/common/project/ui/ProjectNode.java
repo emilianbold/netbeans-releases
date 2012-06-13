@@ -77,6 +77,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 
 
@@ -235,7 +236,7 @@ class ProjectNode extends AbstractNode {
             File scriptLocation = this.antArtifact.getScriptLocation();            
             Set<URL> urls = new HashSet<URL>();
             try {
-                URL artifactURL = scriptLocation.toURI().resolve(this.artifactLocation).normalize().toURL();
+                URL artifactURL = Utilities.toURI(scriptLocation).resolve(this.artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {
                     artifactURL = FileUtil.getArchiveRoot(artifactURL);
                 }

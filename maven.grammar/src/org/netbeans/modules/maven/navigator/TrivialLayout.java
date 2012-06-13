@@ -55,14 +55,17 @@ import java.awt.*;
  * copied from java.navigation by mkleint
  */
 final class TrivialLayout implements LayoutManager {
+    @Override
     public void addLayoutComponent (String name, Component comp) {
         //do nothing
     }
 
+    @Override
     public void removeLayoutComponent (Component comp) {
         //do nothing
     }
 
+    @Override
     public void layoutContainer (Container parent) {
         if ( parent instanceof TapPanel ) {
             layoutTapPanel ( (TapPanel) parent );
@@ -99,6 +102,7 @@ final class TrivialLayout implements LayoutManager {
     }
 
 
+    @Override
     public Dimension minimumLayoutSize (Container parent) {
         Dimension result = new Dimension ( 20, 10 );
         Component[] c = parent.getComponents ();
@@ -111,6 +115,7 @@ final class TrivialLayout implements LayoutManager {
         return result;
     }
 
+    @Override
     public Dimension preferredLayoutSize (Container parent) {
         return minimumLayoutSize ( parent );
     }

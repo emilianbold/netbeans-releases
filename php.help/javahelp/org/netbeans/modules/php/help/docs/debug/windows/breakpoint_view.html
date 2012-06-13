@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Breakpoints Window</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Breakpoints Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Breakpoints window lists all the breakpoints that you set in your projects.
+You can open the Breakpoints window by choosing Window &gt; Debugging &gt; Breakpoints. 
+If you open the Breakpoints window when a debugging session is running, 
+it closes automatically when you end the debugging session. If you open the 
+window when no debugging session is running, it stays open until you close it.</p>
+<p>By default, each entry contains a short text description of the breakpoint 
+and a checkbox indicating whether the breakpoint is enabled or disabled. 
+You can enable or disable a breakpoint directly in the Breakpoints window by selecting or deselecting the checkbox.</p>
+
+<h3>Icons</h3>
+<p>The icon to the left of the breakpoint summary indicates the type of the breakpoint. </p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Icon</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr>
+		<td align="center"><img src="../images/Breakpoint.gif" alt="Line breakpoint"></td>
+		<td>Breakpoint set on a specific line</td>
+	</tr>
+	
+        <tr>
+		<td align="center"><img src="../images/Breakpoint_broken.png" alt="Invalid breakpoint icon group"></td>
+		<td>Invalid line breakpoint.</td>
+	</tr>
+        
+        <tr>
+		<td align="center"><img src="../images/DisabledBreakpoint.gif" alt="Disabled breakpoint icon group"></td>
+		<td>Disabled breakpoint.</td>
+	</tr>
+        
+    </table>
+
+<h3>Actions</h3>
+<p>The pop-up menu in the Breakpoints window includes the following items.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Menu Item</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr valign="top">
+		<td>Go to Source</td>
+		<td>Finds the location of the selected breakpoint in the source code.</td>
+	</tr>
+	<tr valign="top">
+              <td>Disable</td>
+              <td>Turns off the selected breakpoint, but preserves an entry for it in this window.</td>
+        </tr>
+	<tr valign="top">
+		<td>Move Into Group</td>
+		<td>You can organize breakpoints into groups so that you can enable, disable, and delete the breakpoints as a group. 
+                    You can select one or multiple breakpoints and then choose this option to create or add the breakpoints to a group.
+                    The group name is displayed as an expandable node in the Breakpoints window in the Custom Group view.
+                    You can also choose to display custom groups in the Nested view. </td>
+	</tr>
+	<tr valign="top">
+      <td>New Breakpoint </td>
+      <td>Creates a new breakpoint. </td>
+  </tr>
+	<tr valign="top">
+      <td>Enable All </td>
+      <td>Enables all the breakpoints in this window. </td>
+  </tr>
+	<tr valign="top">
+      <td>Disable All</td>
+      <td>Disables all the breakpoints in this window. </td>
+  </tr>
+  <tr valign="top">
+      <td>Delete</td>
+      <td>Deletes the selected breakpoint(s).
+        <ul class="warning">
+          <li>If you choose this option, the breakpoint(s) is deleted immediately. There is no confirmation dialog box. </li>
+      </ul></td>
+  </tr>
+	<tr valign="top">
+      <td>Delete All</td>
+      <td>Deletes all the breakpoints in this window.
+        <ul class="warning">
+          <li>If you choose this option, all breakpoints are deleted immediately. There is no confirmation dialog box. </li>
+      </ul></td>
+  </tr>
+	
+</table>
+
+<h3>Grouping Breakpoints</h3>
+
+<p>You can modify how breakpoints are organized in the Breakpoints window by clicking the Breakpoint Groups button
+    (&nbsp;<img src="../images/BreakpointGroups_options_16.png" alt="Select breakpoints group">&nbsp;)
+    and selecting a grouping strategy from the popup window.
+    If you choose Nested you can specify the specific groups and the order of the groups that are displayed.</p>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+        <dd><a href="../breakpoint_php.html">PHP Breakpoints</a></dd>
+        <dd><a href="debug_window.html">Debugger Windows</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

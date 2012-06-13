@@ -89,6 +89,7 @@
 				<file title="EditingSourceFiles.html"/>
 				<file title="ErrorHighlighting.html"/>
 				<file title="FindingUsages.html"/>
+				<file title="FindinProject.html"/>
 				<file title="FindUsagesDialog.html"/>
 				<file title="GoToDeclaration.html"/>
 				<file title="GoToFunction.html"/>
@@ -362,10 +363,10 @@
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
 				<file title="RemoteDevelopment.html"/>
-				<file title="RemoteDevelopmentManaging.html"/>
 				<file title="RemoteDevelopmentConfigureHost.html"/>
 				<file title="RemoteDevelopmentFileSharing.html"/>
 				<file title="RemoteDevelopmentHostProperties.html"/>
+				<file title="RemoteDevelopmentManaging.html"/>
 				<file title="RemoteDevelopmentProjects.html"/>
 				<file title="RemoteDevelopmentTerminal.html"/>
 				<file title="RunningCorC++Project.html"/>

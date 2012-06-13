@@ -50,7 +50,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.api.customizer.support.Bundle.*;
 
 /**
  *
@@ -137,7 +137,7 @@ public abstract class TextComponentUpdater implements DocumentListener, Ancestor
             field.setSelectionStart(0);
 //            field.setBackground(INHERITED);
             label.setFont(label.getFont().deriveFont(Font.PLAIN));
-            component.setToolTipText(NbBundle.getMessage(TextComponentUpdater.class, "MSG_Value_Inherited"));
+            component.setToolTipText(MSG_Value_Inherited());
             inherited = true;
         } else {
             field.setText("");//NOI18N

@@ -271,7 +271,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         Set<FileObject> a = new HashSet<FileObject>();
         a.addAll(getSuperTypesFiles(refactoring.getSourceType()));
         a.add(RefactoringUtils.getFileObject(treePathHandle));
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         TransformTask task = new TransformTask(new PullUpTransformer(refactoring), treePathHandle);
         Problem problem = createAndAddElements(a, task, refactoringElements, refactoring, cpInfo);
         fireProgressListenerStop();

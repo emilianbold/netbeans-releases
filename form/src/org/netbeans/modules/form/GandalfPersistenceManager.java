@@ -2004,8 +2004,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @throws PersistenceException with explanation for the user.
      */
     private void swingappEncountered() throws PersistenceException {
-        String msg = FormUtils.getBundleString("MSG_ERR_SwingAppEncountered"); // NOI18N
-        throw new PersistenceException(msg);
+        if (!swingappAvailable()) {
+            String msg = FormUtils.getBundleString("MSG_ERR_SwingAppEncountered"); // NOI18N
+            throw new PersistenceException(msg);
+        }
+    }
+
+    private static boolean swingappAvailable() {
+        return Lookup.getDefault().lookup(ResourceService.class) != null;
     }
 
     private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property)
@@ -3032,15 +3038,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }                    
                 }
-                if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)) {
-                    if (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value) {
-                        // Swing Application Framework support has been discontinued
-                        // => changing the setting to I18N. It is just a fallback
-                        // in case the resourcing was not used at all. If it was used
-                        // then we refuse to open the form (this is implemented
-                        // on another place in this class).
-                        formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
-                    }
+                if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)
+                        && (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value)
+                        && !swingappAvailable()) {
+                    // Swing Application Framework support has been discontinued
+                    // => changing the setting to I18N. It is just a fallback
+                    // in case the resourcing was not used at all. If it was used
+                    // then we refuse to open the form (this is implemented
+                    // on another place in this class).
+                    formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                 }
             } else {
                 // we have a valid name / value pair

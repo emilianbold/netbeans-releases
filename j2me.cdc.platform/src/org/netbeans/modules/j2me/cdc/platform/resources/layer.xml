@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
         <folder name="platform">
             <folder name="installers">
                 <file name="semc_cdc1.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.GeneralPlatformInstall,org.netbeans.spi.java.platform.PlatformInstall"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2me.cdc.platform.CDCInstallImpl.create"/>
                     <attr name="position" intvalue="400"/>
                 </file>

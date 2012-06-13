@@ -647,7 +647,7 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
                 }
                 addButton( curButton );
             } else {
-                add( isAqua ? new AquaButtonPanel(curButton) : curButton );
+                addButton( curButton );
             }
         }
 

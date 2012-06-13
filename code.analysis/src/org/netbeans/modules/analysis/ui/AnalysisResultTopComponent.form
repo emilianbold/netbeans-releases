@@ -167,10 +167,10 @@
           <SubComponents>
             <Component class="javax.swing.JTextPane" name="descriptionPanel">
               <Properties>
+                <Property name="editable" type="boolean" value="false"/>
                 <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/analysis/ui/Bundle.properties" key="AnalysisResultTopComponent.descriptionPanel.contentType" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
-                <Property name="editable" type="boolean" value="false"/>
               </Properties>
             </Component>
           </SubComponents>

@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -788,7 +789,7 @@ public class AppClientProjectGenerator {
                                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String finalPlatformName = platformName;
                                 if (finalPlatformName == null) {
-                                    finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
+                                    finalPlatformName = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName()).getDisplayName();
                                 }
 
                                 // #89131: these levels are not actually distinct from 1.5.

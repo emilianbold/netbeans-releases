@@ -47,7 +47,8 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
 
 /**
  *
@@ -57,10 +58,11 @@ import org.openide.util.NbBundle;
 public class ActionMappingsPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
     @Override
+    @Messages("TIT_Action_Mappings=Actions")
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle2.PANEL_MAPPING, 
-                NbBundle.getMessage(ActionMappingsPanelProvider.class, "TIT_Action_Mappings"), 
+                TIT_Action_Mappings(), 
                 null);
     }
     

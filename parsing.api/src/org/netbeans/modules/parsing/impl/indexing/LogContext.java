@@ -37,6 +37,10 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
@@ -45,11 +49,11 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -200,10 +204,10 @@ import org.openide.util.RequestProcessor;
     
     // various path/root informaation, which was the reason for indexing.
     private Set<String>  filePathsChanged = Collections.emptySet();
-    private Set<ClassPath>  classPathsChanged = Collections.emptySet();
+    private Set<String>  classPathsChanged = Collections.emptySet();
     private Set<URL>        rootsChanged = Collections.emptySet();
     private Set<URL> filesChanged = Collections.emptySet();
-    private Set<FileObject> fileObjsChanged = Collections.emptySet();
+    private Set<URI> fileObjsChanged = Collections.emptySet();
     
     /**
      * Source roots, which have been scanned so far in this LogContext
@@ -267,9 +271,11 @@ import org.openide.util.RequestProcessor;
             return this;
         }
         if (classPathsChanged.isEmpty()) {
-            classPathsChanged = new HashSet<ClassPath>(paths.size());
+            classPathsChanged = new HashSet<String>(paths.size());
         }
-        classPathsChanged.addAll(paths);
+        for (ClassPath cp : paths) {
+            classPathsChanged.add(cp.toString());
+        }
         return this;
     }
     
@@ -306,9 +312,11 @@ import org.openide.util.RequestProcessor;
             return this;
         }
         if (fileObjsChanged.isEmpty()) {
-            fileObjsChanged = new HashSet<FileObject>(files.size());
+            fileObjsChanged = new HashSet<URI>(files.size());
         }
-        fileObjsChanged.addAll(files);
+        for (FileObject file : files) {
+            fileObjsChanged.add(file.toURI());
+        }
         return this;
     }
 
@@ -379,8 +387,20 @@ import org.openide.util.RequestProcessor;
         if (!this.filesChanged.isEmpty()) {
             sb.append("Changed files(URL): ").append(filesChanged.toString().replace(",", "\n\t")).append("\n");
         }
-        if (!this.fileObjsChanged.isEmpty()) {
-            sb.append("Changed files(FO): ").append(fileObjsChanged.toString().replace(",", "\n\t")).append("\n");
+        
+        if (!this.fileObjsChanged.isEmpty()) {            
+            sb.append("Changed files(FO): ");
+            for (URI uri : this.fileObjsChanged) {
+                String name;
+                try {
+                    final File f = Utilities.toFile(uri);
+                    name = f.getAbsolutePath();
+                } catch (IllegalArgumentException iae) {
+                    name = uri.toString();
+                }
+                sb.append(name).append("\n\t");
+            }
+            sb.append("\n");
         }
         if (!this.filePathsChanged.isEmpty()) {
             sb.append("Changed files(Str): ").append(filePathsChanged.toString().replace(",", "\n\t")).append("\n");

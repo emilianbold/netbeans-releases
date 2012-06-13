@@ -112,6 +112,7 @@ import java.awt.peer.TextAreaPeer;
 import java.awt.peer.TextFieldPeer;
 import java.awt.peer.WindowPeer;
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -378,6 +379,32 @@ public class UtilitiesTest extends NbTestCase {
         } finally {
             done.release();
         }
+    }
+
+    public void testFileURI() throws Exception {
+        if (Utilities.isWindows()) {
+            assertFileURI("C:\\some\\path #1", "file:/C:/some/path%20%231");
+            assertEquals(new File("C:\\some\\path"), Utilities.toFile(new URI("file:/C:/some/path")));
+            assertEquals(new File("C:\\some\\path"), Utilities.toFile(new URI("file:///C:/some/path")));
+            assertEquals(new File("C:\\some\\path"), Utilities.toFile(new URI("file:/C:/some/path/")));
+            assertFileURI("\\\\server\\share\\path", "file://server/share/path");
+            assertEquals(new File("\\\\server\\share\\path"), Utilities.toFile(new URI("file:////server/share/path")));
+            assertEquals(new File("\\\\server\\share\\path #1"), Utilities.toFile(new URI("file:////server/share/path%20%231")));
+        } else {
+            assertFileURI("/some/path #1", "file:/some/path%20%231");
+            assertEquals(new File("/some/path"), Utilities.toFile(new URI("file:/some/path")));
+            assertEquals(new File("/some/path"), Utilities.toFile(new URI("file:///some/path")));
+            assertEquals(new File("/some/path"), Utilities.toFile(new URI("file:/some/path/")));
+        }
+        String s = Utilities.toURI(getWorkDir()).toString();
+        assertTrue(s, s.endsWith("/"));
+        // XXX test that IllegalArgumentException is thrown where appropriate
+    }
+    private static void assertFileURI(String file, String uri) throws Exception {
+        URI u = new URI(uri);
+        File f = new File(file);
+        assertEquals(u, Utilities.toURI(f));
+        assertEquals(f, Utilities.toFile(u));
     }
 
     private static class CustomToolkitComponent extends Component {

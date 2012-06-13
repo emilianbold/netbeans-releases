@@ -66,7 +66,7 @@ public class FileInfoTest extends NbTestCase {
             // filename, expected root
             {"\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt", "\\\\computerName\\sharedFolder"},
             {"\\\\computerName\\sharedFolder", "\\\\computerName\\sharedFolder"},
-            {"\\\\computerName", "\\\\"},
+            {"\\\\computerName", "\\\\computerName"},
             {"\\\\", "\\\\"},
             {"D:\\a\\b\\c\\a.txt", "D:\\"},
             {"D:\\a.txt", "D:\\"},

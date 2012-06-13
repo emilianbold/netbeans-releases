@@ -46,7 +46,8 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -56,10 +57,11 @@ import org.openide.util.NbBundle;
 public class BasicPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
     @Override
+    @Messages("TIT_Basic=General")
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle2.PANEL_BASIC, 
-                NbBundle.getMessage(BasicPanelProvider.class, "TIT_Basic"), 
+                TIT_Basic(), 
                 null);
     }
     

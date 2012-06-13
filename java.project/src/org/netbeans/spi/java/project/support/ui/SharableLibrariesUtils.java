@@ -88,6 +88,7 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  * Utility methods related to sharable libraries UI.
@@ -470,7 +471,7 @@ public final class SharableLibrariesUtils {
             assert loc != null;
             File mainPropertiesFile = helper.resolveFile(loc);
             try {
-                LibraryManager man = LibraryManager.forLocation(mainPropertiesFile.toURI().toURL());
+                LibraryManager man = LibraryManager.forLocation(Utilities.toURI(mainPropertiesFile).toURL());
                 Map<String, List<URI>> volumes = new HashMap<String, List<URI>>();
                 LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(library.getType());
                 assert provider != null;
@@ -492,13 +493,13 @@ public final class SharableLibrariesUtils {
                                 String str = PropertyUtils.relativizeFile(mainPropertiesFile.getParentFile(), path);
                                 if (str == null) {
                                     // the relative path cannot be established, different drives?
-                                    uri = path.toURI();
+                                    uri = Utilities.toURI(path);
                                 } else {
                                     uri = LibrariesSupport.convertFilePathToURI(str);
                                 }
                             } else {
                                 File path = FileUtil.toFile(fo);
-                                uri = path.toURI();
+                                uri = Utilities.toURI(path);
                             }
                             if (FileUtil.isArchiveFile(fo)) {
                                 uri = appendJarFolder(uri, jarFolder);

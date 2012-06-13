@@ -57,6 +57,7 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  * Test functionality of URLMapper.
@@ -76,7 +77,7 @@ public class URLMapperTest extends NbTestCase {
         lfs.setRootDirectory(getWorkDir());
         Repository.getDefault().addFileSystem(lfs);
         
-        URL uPlus = plus.toURI().toURL();
+        URL uPlus = Utilities.toURI(plus).toURL();
         FileObject fo = URLMapper.findFileObject(uPlus);
         assertNotNull("File object found", fo);
         assertEquals("plus+plus", fo.getNameExt());
@@ -116,7 +117,7 @@ public class URLMapperTest extends NbTestCase {
         FileObject rootFO = jfs.getRoot();
         FileObject textFO = jfs.findResource(textPath);
         assertNotNull("JAR contains a/b.txt", textFO);
-        String rootS = "jar:" + jar.toURI() + "!/";
+        String rootS = "jar:" + Utilities.toURI(jar) + "!/";
         URL rootU = new URL(rootS);
         URL textU = new URL(rootS + textPath);
         assertEquals("correct FO -> URL for root", rootU, URLMapper.findURL(rootFO, URLMapper.EXTERNAL));

@@ -95,6 +95,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
             openEditor();
         } else {
             SwingUtilities.invokeLater(new Runnable(){
+                @Override
                 public void run(){
                     openEditor();
                 }
@@ -160,6 +161,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
             this.editors = editors;
         }
 
+        @Override
         public void windowClosing(WindowEvent e) {
             for (WSEditor editor : editors) {
                 editor.cancel(node);

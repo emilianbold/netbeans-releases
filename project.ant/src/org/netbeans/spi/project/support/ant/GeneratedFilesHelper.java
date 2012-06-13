@@ -327,7 +327,7 @@ public final class GeneratedFilesHelper {
                                 File projectXmlF = FileUtil.toFile(projectXml);
                                 assert projectXmlF != null;
                                 StreamSource projectXmlSource = new StreamSource(
-                                    new ByteArrayInputStream(projectXmlData), projectXmlF.toURI().toString());
+                                    new ByteArrayInputStream(projectXmlData), Utilities.toURI(projectXmlF).toString());
                                 ByteArrayOutputStream result = new ByteArrayOutputStream();
                                 t.transform(projectXmlSource, new StreamResult(result));
                                 if (BUILD_IMPL_XML_PATH.equals(path)) {
@@ -622,7 +622,11 @@ public final class GeneratedFilesHelper {
                         String[] split = oldCrcAndV.split("@", 2); // NOI18N
                         if (!crc.equals(split[0])) {
                             SpecificationVersion newV = stylesheetVersion(stylesheet);
-                            if (newV == null || newV.compareTo(new SpecificationVersion(split[1])) >= 0) {
+                            try {
+                                if (newV == null || newV.compareTo(new SpecificationVersion(split[1])) >= 0) {
+                                    flags |= FLAG_OLD_STYLESHEET;
+                                }
+                            } catch (NumberFormatException x) { // #212443
                                 flags |= FLAG_OLD_STYLESHEET;
                             }
                         }

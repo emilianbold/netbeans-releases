@@ -97,6 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -513,7 +514,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     File root = FileUtilities.resolveFilePath(base, add);
                     if (root != null) {
                         try {
-                            URL url = root.toURI().toURL();
+                            URL url = Utilities.toURI(root).toURL();
                             if (FileUtil.isArchiveFile(url)) {
                                 url = FileUtil.getArchiveRoot(url);
                             }

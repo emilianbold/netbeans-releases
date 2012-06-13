@@ -57,6 +57,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
 
@@ -92,7 +93,7 @@ public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourc
             File f = helper.resolveFile(val);
             if (! f.exists()) {
                 // #143633: need not to exist, ensure proper URI ending with a slash
-                URI u = f.toURI();
+                URI u = Utilities.toURI(f);
                 String path = u.getPath();
                 if (! path.endsWith("/"))
                     path = path.concat("/");
@@ -105,7 +106,7 @@ public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourc
                 }
             }
 
-            return new URL[] {f.toURI().toURL()};
+            return new URL[] {Utilities.toURI(f).toURL()};
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
         }

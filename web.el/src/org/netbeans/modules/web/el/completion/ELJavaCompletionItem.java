@@ -123,7 +123,7 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public String getName() {
-        return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElementSimpleName, true);
+        return elementName != null ? elementName : RefactoringUtil.getPropertyName(javaElementSimpleName, false);
     }
         
     @Override

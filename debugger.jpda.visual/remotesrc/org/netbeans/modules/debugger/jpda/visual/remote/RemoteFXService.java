@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.visual.remote;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  *
@@ -49,6 +51,9 @@ import java.lang.reflect.Field;
  */
 public class RemoteFXService {
 //    final private static Logger LOGGER = Logger.getAnonymousLogger();
+    
+    private static Method runLater, isFxThread;
+    private static volatile boolean fxAccess = false;
     
     static {
         try {
@@ -76,20 +81,18 @@ public class RemoteFXService {
         } catch (ClassNotFoundException e) {
             // throw away
         }
+        
+        try {
+            Class platformClz = Class.forName("javafx.application.Platform");
+            runLater = platformClz.getMethod("runLater", new Class[]{Runnable.class});
+            isFxThread = platformClz.getMethod("isFxApplicationThread", new Class[0]);
+        } catch (ClassNotFoundException e) {
+        } catch (NoSuchMethodException e) {
+        } catch (SecurityException e) {
+        }
     }
     
-    final private static Thread accessThread = new Thread(new Runnable() {
-        public void run() {
-            while (!Thread.interrupted()) {
-                access();
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }, "FX Access Thread (Visual Debugger)"); // NOI18N
+    final private static Thread accessThread = new Thread(new FXAccessLoop(), "FX Access Thread (Visual Debugger)"); // NOI18N
     
     public static void startAccessLoop() {
         accessThread.setDaemon(true);
@@ -97,5 +100,44 @@ public class RemoteFXService {
         accessThread.start();
     }
     
-    private static void access() {};
+    private static void access() {
+        // A breakpoint is submitted on this method.
+        // When fxAccess field is set to true, this breakpoint is hit in FX application thread
+        // and methods can be executed via debugger.
+    };
+    
+    private static class FXAccessLoop implements Runnable {
+        public void run() {
+            if (isFxThread == null || runLater == null) {
+                System.err.println("JavaFX VisualDebugger: Leaving FXAccessLoop");
+            }
+            
+            try {
+                if (((Boolean) isFxThread.invoke(null, new Object[0])).booleanValue()) {
+                    access();
+                    return;
+                }
+                while (!Thread.interrupted()) {
+                    if (fxAccess) {
+                        runLater.invoke(null, new Object[]{this});
+                        fxAccess = false;
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                System.err.println("JavaFX VisualDebugger: Leaving FXAccessLoop");
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+                System.err.println("JavaFX VisualDebugger: Leaving FXAccessLoop");
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                System.err.println("JavaFX VisualDebugger: Leaving FXAccessLoop");
+            }
+        }
+    }
 }

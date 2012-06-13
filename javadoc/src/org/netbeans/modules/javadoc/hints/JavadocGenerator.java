@@ -84,17 +84,17 @@ public final class JavadocGenerator {
     
     public String generateComment(TypeElement clazz, CompilationInfo javac) {
         StringBuilder builder = new StringBuilder(
-                "/**\n" + // NOI18N
+//                "/**\n" + // NOI18N
                 "\n" // NOI18N
                 );
         
         if (clazz.getNestingKind() == NestingKind.TOP_LEVEL) {
-            builder.append("@author " + author + "\n"); // NOI18N
+            builder.append("@author ").append(author).append("\n"); // NOI18N
         }
         
         if (SourceVersion.RELEASE_5.compareTo(srcVersion) <= 0) {
             for (TypeParameterElement param : clazz.getTypeParameters()) {
-                builder.append("@param <" + param.getSimpleName().toString() + "> \n"); // NOI18N
+                builder.append("@param <").append(param.getSimpleName().toString()).append("> \n"); // NOI18N
             }
         }
         
@@ -103,14 +103,14 @@ public final class JavadocGenerator {
             builder.append("@deprecated\n"); // NOI18N
         }
         
-        builder.append("*/\n"); // NOI18N
+//        builder.append("*/\n"); // NOI18N
 
         return builder.toString();
     }
     
     public String generateComment(ExecutableElement method, CompilationInfo javac) {
         StringBuilder builder = new StringBuilder(
-                "/**\n" + // NOI18N
+//                "/**\n" + // NOI18N
                 "\n" // NOI18N
                 );
         
@@ -153,14 +153,14 @@ public final class JavadocGenerator {
             builder.append("@deprecated\n"); // NOI18N
         }
 
-        builder.append("*/\n"); // NOI18N
+//        builder.append("*/\n"); // NOI18N
         
         return builder.toString();
     }
     
     public String generateComment(VariableElement field, CompilationInfo javac) {
         StringBuilder builder = new StringBuilder(
-                "/**\n" + // NOI18N
+//                "/**\n" + // NOI18N
                 "\n" // NOI18N
                 );
         
@@ -170,7 +170,7 @@ public final class JavadocGenerator {
         }
         
 
-        builder.append("*/\n"); // NOI18N
+//        builder.append("*/\n"); // NOI18N
         
         return builder.toString();
     }
@@ -195,7 +195,10 @@ public final class JavadocGenerator {
     }
     
     public String generateInheritComment() {
-        return "/** {@inheritDoc} */"; //NOI18N
+        return
+//                "/** " +
+                "{@inheritDoc}"; //NOI18N
+//                + " */"
     }
     
     /**

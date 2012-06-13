@@ -45,7 +45,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -60,8 +63,8 @@ import org.openide.util.Exceptions;
  */
 public class JsfIndex {
 
-    public static JsfIndex create(WebModule wm) {
-        return new JsfIndex(wm);
+    public static JsfIndex create(FileObject baseFile) {
+        return new JsfIndex(baseFile);
     }
     private final FileObject[] sourceRoots;
     private final FileObject[] binaryRoots;
@@ -69,16 +72,16 @@ public class JsfIndex {
     private final FileObject base;
 
     /** Creates a new instance of JsfIndex */
-    private JsfIndex(WebModule wm) {
-        this.base = wm.getDocumentBase();
+    private JsfIndex(FileObject baseFile) {
+        this.base = baseFile;
         
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
         Collection<FileObject> roots = new HashSet<FileObject>();
-        ClassPath compileCp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        ClassPath compileCp = ClassPath.getClassPath(base, ClassPath.COMPILE);
         if(compileCp != null) {
             roots.addAll(Arrays.asList(compileCp.getRoots()));
         }
-        ClassPath executeCp = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE);
+        ClassPath executeCp = ClassPath.getClassPath(base, ClassPath.EXECUTE);
         if(executeCp != null) {
             roots.addAll(Arrays.asList(executeCp.getRoots()));
         }
@@ -168,13 +171,50 @@ public class JsfIndex {
             return null;
         }
     }
-
+    
+    public Map<FileObject, CompositeComponentModel> getCompositeComponentModels(String libraryName) {
+        //try both indexes, the embedding one first
+        Map<FileObject, CompositeComponentModel> models = new HashMap<FileObject, CompositeComponentModel>();
+        try {
+            models.putAll(getCompositeComponentModels(createEmbeddingIndex(), libraryName));
+            models.putAll(getCompositeComponentModels(createBinaryIndex(), libraryName));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return models;
+    }
+    
+    private Map<FileObject, CompositeComponentModel> getCompositeComponentModels(QuerySupport index, String libraryName) {
+        Map<FileObject, CompositeComponentModel> modelsMap = new HashMap<FileObject, CompositeComponentModel>();
+        try {
+            Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT,
+                    CompositeComponentModel.LIBRARY_NAME_KEY,
+                    CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
+                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY,
+                    CompositeComponentModel.INTERFACE_FACETS,
+                    CompositeComponentModel.INTERFACE_DESCRIPTION_KEY);
+            for (IndexResult result : results) {
+                FileObject file = result.getFile(); //expensive? use result.getRelativePath?
+                if (file != null) {
+                    CompositeComponentModel model = (CompositeComponentModel) JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class).loadFromIndex(result);
+                    modelsMap.put(file, model);
+                }
+            }
+            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return modelsMap;
+    }
+    
     private CompositeComponentModel getCompositeComponentModel(QuerySupport index, String libraryName, String componentName) {
         try {
             Collection<? extends IndexResult> results = index.query(CompositeComponentModel.LIBRARY_NAME_KEY, libraryName, QuerySupport.Kind.EXACT,
                     CompositeComponentModel.LIBRARY_NAME_KEY,
                     CompositeComponentModel.INTERFACE_ATTRIBUTES_KEY,
-                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY);
+                    CompositeComponentModel.HAS_IMPLEMENTATION_KEY,
+                    CompositeComponentModel.INTERFACE_FACETS,
+                    CompositeComponentModel.INTERFACE_DESCRIPTION_KEY);
             for (IndexResult result : results) {
                 FileObject file = result.getFile(); //expensive? use result.getRelativePath?
                 if (file != null) {

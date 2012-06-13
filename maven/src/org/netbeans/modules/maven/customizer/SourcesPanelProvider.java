@@ -47,10 +47,10 @@ import javax.swing.JComponent;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -61,10 +61,11 @@ import org.openide.util.NbBundle.Messages;
 public class SourcesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
     @Override
+    @Messages("TIT_Sources=Sources")
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle2.PANEL_SOURCES, 
-                NbBundle.getMessage(SourcesPanelProvider.class, "TIT_Sources"), 
+                TIT_Sources(), 
                 null);
     }
     

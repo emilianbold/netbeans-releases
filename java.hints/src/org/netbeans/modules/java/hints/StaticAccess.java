@@ -30,21 +30,16 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -52,36 +47,28 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jaroslav tulach
  */
-public class StaticAccess extends AbstractHint {
+@Hint(displayName="#MSG_StaticAccessName", description="#HINT_StaticAccess", category="general", id="org.netbeans.modules.java.hints.StaticAccess", suppressWarnings=StaticAccess.SUPPRESS_WARNINGS_KEY)
+public class StaticAccess {
     
-    private static final String SUPPRESS_WARNINGS_KEY = "static-access";
+    static final String SUPPRESS_WARNINGS_KEY = "static-access";
     
-    private transient volatile boolean stop;
-    /** Creates a new instance of StaticAccess */
-    public StaticAccess() {
-        super( true, true, AbstractHint.HintSeverity.WARNING, SUPPRESS_WARNINGS_KEY);
-    }
-    
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.MEMBER_SELECT);
-    }
-
-    protected List<Fix> computeFixes(CompilationInfo info, TreePath treePath, int[] bounds, int[] kind, String[] simpleName) {
+    protected static Fix computeFixes(CompilationInfo info, TreePath treePath, int[] bounds, int[] kind, String[] simpleName) {
         if (treePath.getLeaf().getKind() != Kind.MEMBER_SELECT) {
             return null;
         }
@@ -135,12 +122,6 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         
-        int[] span = info.getTreeUtilities().findNameSpan(mst);
-        
-        if (span == null || span[0] == (-1) || span[1] == (-1)) {
-            return null;
-        }
-        
         if (used.getKind().isField()) {
             kind[0] = 0;
         } else {
@@ -153,17 +134,10 @@ public class StaticAccess extends AbstractHint {
         
         simpleName[0] = used.getSimpleName().toString();
         
-        List<Fix> fixes = new ArrayList<Fix>(2);
-        fixes.add(new FixImpl(info, expr, type).toEditorFix());
-        fixes.addAll(FixFactory.createSuppressWarnings(info, treePath, SUPPRESS_WARNINGS_KEY));
-
-
-        bounds[0] = span[0];
-        bounds[1] = span[1];
-        return fixes;
+        return new FixImpl(info, expr, type).toEditorFix();
     }
     
-    private boolean isError(Element e) {
+    private static boolean isError(Element e) {
         if (e == null) {
             return true;
         }
@@ -177,53 +151,27 @@ public class StaticAccess extends AbstractHint {
         return type == null || type.getKind() == TypeKind.ERROR;
     }
     
-    public List<ErrorDescription> run(CompilationInfo compilationInfo,
-                                      TreePath treePath) {
-        stop = false;
+    @TriggerTreeKind(Kind.MEMBER_SELECT)
+    public static List<ErrorDescription> run(HintContext ctx) {
+        CompilationInfo compilationInfo = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         int[] span = new int[2];
         int[] kind = new int[1];
         String[] simpleName = new String[1];
-        List<Fix> fixes = computeFixes(compilationInfo, treePath, span, kind, simpleName);
-        if (fixes == null) {
+        Fix fix = computeFixes(compilationInfo, treePath, span, kind, simpleName);
+        if (fix == null) {
             return null;
         }
 
-        ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-            getSeverity().toEditorSeverity(),
+        ErrorDescription ed = ErrorDescriptionFactory.forName(
+            ctx,
+            ctx.getPath(),
             NbBundle.getMessage(StaticAccess.class, "MSG_StaticAccess", kind[0], simpleName[0]), // NOI18N
-            fixes,
-            compilationInfo.getFileObject(),
-            span[0],
-            span[1] // NOI18N
+            fix
         );
 
         return Collections.singletonList(ed);
     }
-
-    public String getId() {
-        return getClass().getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(DoubleCheck.class, "MSG_StaticAccessName"); // NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(DoubleCheck.class, "HINT_StaticAccess"); // NOI18N
-    }
-
-    public void cancel() {
-        stop = true;
-    }
-    
-    public Preferences getPreferences() {
-        return null;
-    }
-    
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return null;
-    }    
 
     static final class FixImpl extends JavaFix {
         private final ElementHandle<TypeElement> desiredType;

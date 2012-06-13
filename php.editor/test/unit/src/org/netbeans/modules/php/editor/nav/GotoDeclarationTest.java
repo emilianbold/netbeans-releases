@@ -856,6 +856,46 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "$this->do^Something();", "public function ^doSomething() //so");
     }
 
+    public void testIssue213133_01() throws Exception {
+        checkDeclaration(getTestPath(), "echo $test->{Te^st::$CHECK};", "class ^Test {");
+    }
+
+    public void testIssue213133_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo $test->{Test::$CH^ECK};", "    public static $^CHECK = \"check\";");
+    }
+
+    public void testIssue213584_01() throws Exception {
+        checkDeclaration(getTestPath(), "use A^A, BB, CC, DD {", "trait ^AA {");
+    }
+
+    public void testIssue213584_02() throws Exception {
+        checkDeclaration(getTestPath(), "use AA, B^B, CC, DD {", "trait ^BB {");
+    }
+
+    public void testIssue213584_03() throws Exception {
+        checkDeclaration(getTestPath(), "use AA, BB, C^C, DD {", "trait ^CC {");
+    }
+
+    public void testIssue213584_04() throws Exception {
+        checkDeclaration(getTestPath(), "use AA, BB, CC, D^D {", "trait ^DD {");
+    }
+
+    public void testIssue213584_05() throws Exception {
+        checkDeclaration(getTestPath(), "C^C::bar insteadof AA, BB;", "trait ^CC {");
+    }
+
+    public void testIssue213584_06() throws Exception {
+        checkDeclaration(getTestPath(), "CC::bar insteadof A^A, BB;", "trait ^AA {");
+    }
+
+    public void testIssue213584_07() throws Exception {
+        checkDeclaration(getTestPath(), "CC::bar insteadof AA, B^B;", "trait ^BB {");
+    }
+
+    public void testIssue213584_08() throws Exception {
+        checkDeclaration(getTestPath(), "D^D::bar as foo;", "trait ^DD {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

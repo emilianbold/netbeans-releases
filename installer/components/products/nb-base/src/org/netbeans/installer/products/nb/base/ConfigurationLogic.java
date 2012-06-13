@@ -776,7 +776,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         JavaInfo javaInfo = JavaUtils.getInfo(jdkHome);
         
         if (SystemUtils.isWindows()) {
-            if (javaInfo.getArch().endsWith("64")) {
+            if (javaInfo != null && javaInfo.getArch().endsWith("64")) {
                 return EXECUTABLE_WINDOWS_64;
             } else {
                 return EXECUTABLE_WINDOWS;

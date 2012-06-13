@@ -94,6 +94,10 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
+import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -221,10 +225,18 @@ public class CommonUtilities {
      * Close Memory Toolbar.
      */
     public static void closeMemoryToolbar(){
-        // View|Toolbars|Memory
-        closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
-                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
-                "Memory");
+        // View|Toolbars|Memory        
+        try {  // workaround for Issue #213828
+            FileObject fo = FileUtil.getConfigFile("Toolbars/Memory");
+            if (fo!=null) {
+                fo.delete();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }        
+//        closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
+//                Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
+//                "Memory");
         maximizeWholeNetbeansWindow();
     }
     

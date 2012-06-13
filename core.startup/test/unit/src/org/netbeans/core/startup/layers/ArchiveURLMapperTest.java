@@ -61,6 +61,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -95,7 +96,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         out.putNextEntry(entry);
         out.write (RESOURCE.getBytes());
         out.close();
-        return jarFile.toURI().toURL();
+        return Utilities.toURI(jarFile).toURL();
     }
     
     public void testURLMapper () throws Exception {
@@ -132,7 +133,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         assertTrue ("".equals(rootFo.getPath()));
         assertTrue (rootFo.getFileSystem() instanceof JarFileSystem);
         File jarFile = ((JarFileSystem)rootFo.getFileSystem()).getJarFile();
-        assertTrue (jarFileURL.equals(jarFile.toURI().toURL()));
+        assertTrue (jarFileURL.equals(Utilities.toURI(jarFile).toURL()));
     }
     
     public void testFunnyZipEntryNames() throws Exception { // #181671
@@ -145,7 +146,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         jos.write("content".getBytes());
         jos.close();
         
-        FileObject docxFO = URLMapper.findFileObject(docx.toURI().toURL());
+        FileObject docxFO = URLMapper.findFileObject(Utilities.toURI(docx).toURL());
         assertNotNull(docxFO);
         assertTrue(FileUtil.isArchiveFile(docxFO));
         
@@ -182,7 +183,7 @@ public class ArchiveURLMapperTest extends NbTestCase {
         jos.putNextEntry(entry);
         jos.write(baos.toByteArray());
         jos.close();
-        FileObject metaJarFO = URLMapper.findFileObject(metaJar.toURI().toURL());
+        FileObject metaJarFO = URLMapper.findFileObject(Utilities.toURI(metaJar).toURL());
         assertNotNull(metaJarFO);
         assertTrue(FileUtil.isArchiveFile(metaJarFO));
         FileObject metaRoot = FileUtil.getArchiveRoot(metaJarFO);
@@ -253,14 +254,14 @@ public class ArchiveURLMapperTest extends NbTestCase {
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(jar));
         jos.putNextEntry(new ZipEntry("has spaces"));
         jos.close();
-        URL source = new URL("jar:" + jar.toURI().toURL() + "!/has%20spaces");
+        URL source = new URL("jar:" + Utilities.toURI(jar).toURL() + "!/has%20spaces");
         source.toURI();
         FileObject file = URLMapper.findFileObject(source);
         assertNotNull(file);
         assertEquals(source, URLMapper.findURL(file, URLMapper.INTERNAL));
         assertEquals(0, source.openConnection().getContentLength());
         ProxyURLStreamHandlerFactory.register();
-        assertEquals(0, new URL("jar:" + jar.toURI().toURL() + "!/has%20spaces").openConnection().getContentLength());
+        assertEquals(0, new URL("jar:" + Utilities.toURI(jar).toURL() + "!/has%20spaces").openConnection().getContentLength());
     }
 
 }

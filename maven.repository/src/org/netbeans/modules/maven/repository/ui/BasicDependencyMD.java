@@ -69,27 +69,33 @@ public class BasicDependencyMD implements MultiViewDescription, Serializable {
     }
 
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Messages("TAB_Dependencies=Classpath")
+    @Override
     public String getDisplayName() {
         return TAB_Dependencies();
     }
 
+    @Override
     public Image getIcon() {
         return ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public String preferredID() {
         return ArtifactViewer.HINT_DEPENDENCIES;
     }
 
+    @Override
     public MultiViewElement createElement() {
         return new DependencyPanel(lookup);
     }
@@ -97,6 +103,7 @@ public class BasicDependencyMD implements MultiViewDescription, Serializable {
     @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=300)
     public static class Factory implements ArtifactViewerPanelProvider {
 
+        @Override
         public MultiViewDescription createPanel(Lookup content) {
             return new BasicDependencyMD(content);
         }

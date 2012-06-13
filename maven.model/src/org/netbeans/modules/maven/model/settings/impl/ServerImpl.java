@@ -42,7 +42,6 @@
 package org.netbeans.modules.maven.model.settings.impl;
 
 import org.netbeans.modules.maven.model.settings.Configuration;
-import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.Server;
 import org.netbeans.modules.maven.model.settings.SettingsComponent;
 import org.netbeans.modules.maven.model.settings.SettingsComponentVisitor;

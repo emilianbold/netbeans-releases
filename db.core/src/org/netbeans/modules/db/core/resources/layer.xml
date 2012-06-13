@@ -54,9 +54,11 @@ made subject to such option by the copyright holder.
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.db.sql.loader.SQLDataObject"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-sql"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="org-netbeans-modules-db-sql-loader-SQLDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.core.Bundle"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
                 </folder>
                 <folder name="Actions">

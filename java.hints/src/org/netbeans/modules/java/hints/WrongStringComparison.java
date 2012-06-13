@@ -40,10 +40,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JComponent;
@@ -53,12 +49,17 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Pattern;
-import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.WrongStringComparison.WrongStringComparisonCustomizerProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.CustomizerProvider;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -66,32 +67,23 @@ import org.openide.util.NbBundle;
  * Hint catching comparsion of Strings with <code>==</code> or <code>!=</code>
  * @author phrebejk
  */
-public class WrongStringComparison extends AbstractHint {
+@Hint(id="Wrong_String_Comparison", displayName="#LBL_WrongStringComparison", description="#DSC_WrongStringComparison", category="general", customizerProvider=WrongStringComparisonCustomizerProvider.class)
+public class WrongStringComparison {
 
-    private static final String TERNARY_NULL_CHECK = "ternary-null-check"; // NOI18N
-    private static final String STRING_LITERALS_FIRST = "string-literals-first"; //NOI18N
+            static final String TERNARY_NULL_CHECK = "ternary-null-check"; // NOI18N
+            static final String STRING_LITERALS_FIRST = "string-literals-first"; //NOI18N
     private static final String STRING_TYPE = "java.lang.String";  // NOI18N
-    private static final Set<Tree.Kind> TREE_KINDS = 
-            EnumSet.<Tree.Kind>of( Tree.Kind.EQUAL_TO, Tree.Kind.NOT_EQUAL_TO );
 
-    private AtomicBoolean cancel = new AtomicBoolean();
-    
-    public WrongStringComparison() {
-        super(true, true, AbstractHint.HintSeverity.WARNING);
-    }
-
-    public Set<Kind> getTreeKinds() {
-        return TREE_KINDS;
-    }
-
-    public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
-        cancel.set(false);
-        
+    @TriggerPatterns({
+        @TriggerPattern(value="$left == $right", constraints={@ConstraintVariableType(variable="$left", type=STRING_TYPE),
+                                                              @ConstraintVariableType(variable="$right", type=STRING_TYPE)}),
+        @TriggerPattern(value="$left != $right", constraints={@ConstraintVariableType(variable="$left", type=STRING_TYPE),
+                                                              @ConstraintVariableType(variable="$right", type=STRING_TYPE)})
+    })
+    public static ErrorDescription run(HintContext ctx) {
+        CompilationInfo info = ctx.getInfo();
+        TreePath treePath = ctx.getPath();
         Tree t = treePath.getLeaf();
-        
-        if (!getTreeKinds().contains(t.getKind())) {
-            return null;
-        }
         
         BinaryTree bt = (BinaryTree) t;
         
@@ -106,7 +98,7 @@ public class WrongStringComparison extends AbstractHint {
              STRING_TYPE.equals(leftType.toString()) && 
              STRING_TYPE.equals(rightType.toString())) {
             
-            if (checkInsideGeneratedEquals(info, treePath, left.getLeaf(), right.getLeaf())) {
+            if (checkInsideGeneratedEquals(ctx, treePath, left.getLeaf(), right.getLeaf())) {
                 return null;
             }
 
@@ -116,52 +108,29 @@ public class WrongStringComparison extends AbstractHint {
             boolean reverseOperands = false;
             if (bt.getLeftOperand().getKind() != Tree.Kind.STRING_LITERAL) {
                 if (bt.getRightOperand().getKind() == Tree.Kind.STRING_LITERAL) {
-                    if (getStringLiteralsFirst()) {
+                    if (getStringLiteralsFirst(ctx.getPreferences())) {
                         reverseOperands = true;
                     } else {
                         fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.NULL_CHECK).toEditorFix());
                     }
                 } else {
-                    fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck())).toEditorFix());
+                    fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck(ctx.getPreferences()))).toEditorFix());
                 }
             }
             fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.reverseOperands(reverseOperands)).toEditorFix());
-            return Collections.<ErrorDescription>singletonList(
-                ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(), 
-                    getDisplayName(), 
-                    Collections.unmodifiableList(fixes),
-                    info.getFileObject(),
-                    (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t),
-                    (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t)) );
+            return ErrorDescriptionFactory.forTree(
+                      ctx,
+                      t,
+                      NbBundle.getMessage(WrongStringComparison.class, "LBL_WrongStringComparison"), 
+                      fixes.toArray(new Fix[0]));
 
         }
         
         return null;
     }
 
-    public void cancel() {
-        cancel.set(true);
-    }
-    
-    public String getId() {
-        return "Wrong_String_Comparison"; // NOI18N
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(WrongStringComparison.class, "LBL_WrongStringComparison"); // NOI18N
-    }
-
-    public String getDescription() {
-        return NbBundle.getMessage(WrongStringComparison.class, "DSC_WrongStringComparison"); // NOI18N
-    }
-
-    @Override
-    public JComponent getCustomizer(Preferences node) {
-        return new WrongStringComparisonCustomizer(node);
-    }
-
-    private boolean checkInsideGeneratedEquals(CompilationInfo info, TreePath treePath, Tree left, Tree right) {
+    private static boolean checkInsideGeneratedEquals(HintContext ctx, TreePath treePath, Tree left, Tree right) {
+        CompilationInfo info = ctx.getInfo();
         TreePath sourcePathParent = treePath.getParentPath();
 
         if (sourcePathParent.getLeaf().getKind() != Kind.CONDITIONAL_AND) { //performance
@@ -187,15 +156,7 @@ public class WrongStringComparison extends AbstractHint {
 
         TreePath originalPath = new TreePath(sourcePathParent.getParentPath(), original);
 
-        return Matcher.create(info).setCancel(cancel).setSearchRoot(originalPath).setTreeTopSearch().match(Pattern.createSimplePattern(correctPath)).iterator().hasNext();
-    }
-
-    boolean getTernaryNullCheck() {
-        return getTernaryNullCheck(getPreferences(null));
-    }
-
-    boolean getStringLiteralsFirst() {
-        return getStringLiteralsFirst(getPreferences(null));
+        return Matcher.create(info)./*XXX: setCancel(cancel).*/setSearchRoot(originalPath).setTreeTopSearch().match(Pattern.createSimplePattern(correctPath)).iterator().hasNext();
     }
 
     static boolean getTernaryNullCheck(Preferences p) {
@@ -312,4 +273,12 @@ public class WrongStringComparison extends AbstractHint {
 
     }
 
+    public static final class WrongStringComparisonCustomizerProvider implements CustomizerProvider {
+
+        @Override
+        public JComponent getCustomizer(Preferences prefs) {
+            return new WrongStringComparisonCustomizer(prefs);
+        }
+        
+    }
 }

@@ -1032,6 +1032,78 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "$this->do^Something();", true);
     }
 
+    public void testIssue213133_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Te^st {", true);
+    }
+
+    public void testIssue213133_02() throws Exception {
+        checkOccurrences(getTestPath(), "echo $test->{Te^st::$CHECK};", true);
+    }
+
+    public void testIssue213133_03() throws Exception {
+        checkOccurrences(getTestPath(), "echo Te^st::$CHECK;", true);
+    }
+
+    public void testIssue213133_04() throws Exception {
+        checkOccurrences(getTestPath(), "public static $CH^ECK = \"check\";", true);
+    }
+
+    public void testIssue213133_05() throws Exception {
+        checkOccurrences(getTestPath(), "echo $test->{Test::$CH^ECK};", true);
+    }
+
+    public void testIssue213133_06() throws Exception {
+        checkOccurrences(getTestPath(), "echo Test::$CH^ECK;", true);
+    }
+
+    public void testIssue213584_01() throws Exception {
+        checkOccurrences(getTestPath(), "trait A^A {", true);
+    }
+
+    public void testIssue213584_02() throws Exception {
+        checkOccurrences(getTestPath(), "trait B^B {", true);
+    }
+
+    public void testIssue213584_03() throws Exception {
+        checkOccurrences(getTestPath(), "trait C^C {", true);
+    }
+
+    public void testIssue213584_04() throws Exception {
+        checkOccurrences(getTestPath(), "trait D^D {", true);
+    }
+
+    public void testIssue213584_05() throws Exception {
+        checkOccurrences(getTestPath(), "use A^A, BB, CC, DD {", true);
+    }
+
+    public void testIssue213584_06() throws Exception {
+        checkOccurrences(getTestPath(), "use AA, B^B, CC, DD {", true);
+    }
+
+    public void testIssue213584_07() throws Exception {
+        checkOccurrences(getTestPath(), "use AA, BB, C^C, DD {", true);
+    }
+
+    public void testIssue213584_08() throws Exception {
+        checkOccurrences(getTestPath(), "use AA, BB, CC, D^D {", true);
+    }
+
+    public void testIssue213584_09() throws Exception {
+        checkOccurrences(getTestPath(), "C^C::bar insteadof AA, BB;", true);
+    }
+
+    public void testIssue213584_10() throws Exception {
+        checkOccurrences(getTestPath(), "CC::bar insteadof A^A, BB;", true);
+    }
+
+    public void testIssue213584_11() throws Exception {
+        checkOccurrences(getTestPath(), "CC::bar insteadof AA, B^B;", true);
+    }
+
+    public void testIssue213584_12() throws Exception {
+        checkOccurrences(getTestPath(), "D^D::bar as foo;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

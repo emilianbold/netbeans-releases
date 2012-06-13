@@ -182,6 +182,7 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
                 for( OccurrenceItem foundPlace : foundPlaces ) {
                     HibernateRefactoringElement elem = new HibernateRefactoringElement(mFileObj,
                             className,
+                            foundPlace.getMatching(),
                             foundPlace.getLocation(),
                             foundPlace.getText());
                     refactoringElements.add(query, elem);

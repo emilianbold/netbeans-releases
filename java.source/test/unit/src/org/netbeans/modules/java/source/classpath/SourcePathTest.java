@@ -57,6 +57,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -82,8 +83,8 @@ public class SourcePathTest extends ClassIndexTestCase {
         
         final ClassPathImplementation baseImpl = ClassPathSupport.createClassPathImplementation(
             Arrays.asList(new PathResourceImplementation[] {
-                ClassPathSupport.createResource(r1.toURI().toURL()),
-                ClassPathSupport.createResource(r2.toURI().toURL())
+                ClassPathSupport.createResource(Utilities.toURI(r1).toURL()),
+                ClassPathSupport.createResource(Utilities.toURI(r2).toURL())
             }));
         final ClassPath base = ClassPathFactory.createClassPath(baseImpl);
         
