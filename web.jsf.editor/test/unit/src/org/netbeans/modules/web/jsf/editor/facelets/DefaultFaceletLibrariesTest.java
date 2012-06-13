@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.util.EnumSet;
 import java.util.Map;
 import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
@@ -78,7 +79,7 @@ public class DefaultFaceletLibrariesTest extends TestBaseForTestProject {
         assertNotNull(descriptors);
 
         //test if all default libraries have been found and are correct
-        for(DefaultLibraryInfo dli : DefaultLibraryInfo.values()) {
+        for(DefaultLibraryInfo dli : EnumSet.complementOf(EnumSet.of(DefaultLibraryInfo.PRIMEFACES))) {
             FaceletsLibraryDescriptor descr = descriptors.get(dli.getNamespace());
             assertNotNull(descr);
 

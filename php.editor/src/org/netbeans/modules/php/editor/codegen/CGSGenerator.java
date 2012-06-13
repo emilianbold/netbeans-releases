@@ -56,9 +56,13 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Lookup;
@@ -359,10 +363,11 @@ public class CGSGenerator implements CodeGenerator {
                 for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
                     if (methodProperty.isSelected()) {
                         MethodElement method = methodProperty.getMethod();
+                        TypeNameResolver typeNameResolver = method.getParameters().isEmpty() ? TypeNameResolverImpl.forNull() : CodegenUtils.createSmarterTypeNameResolver(method, ModelUtils.getModel(Source.create(component.getDocument()), 300), component.getCaretPosition());
                         if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
-                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody).replace("abstract ", "")); //NOI18N;
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
                         } else {
-                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody).replace("abstract ", "")); //NOI18N;
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
                         }
                         inheritedMethods.append(NEW_LINE);
                     }
