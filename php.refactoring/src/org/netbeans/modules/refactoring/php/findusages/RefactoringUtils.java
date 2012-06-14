@@ -63,11 +63,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.*;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -77,24 +73,20 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.xml.XMLUtil;
 
@@ -126,11 +118,11 @@ public class RefactoringUtils {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
-        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        Object obj = dob.getLookup().lookup(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;
         }
-        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        obj = dob.getLookup().lookup(org.openide.cookies.EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;
         }
@@ -276,7 +268,7 @@ public class RefactoringUtils {
     public static String getPackageName(URL url) {
         File f = null;
         try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
+            f = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
         } catch (URISyntaxException uRISyntaxException) {
             throw new IllegalArgumentException("Cannot create package name for url " + url);
         }
@@ -311,12 +303,12 @@ public class RefactoringUtils {
             if (result != null) {
                 return result;
             }
-            File f = new File(url.toURI());
+            File f = Utilities.toFile(url.toURI());
 
             result = FileUtil.createFolder(f);
             return result;
         } catch (URISyntaxException ex) {
-            throw (IOException) new IOException().initCause(ex);
+            throw new IOException(ex);
         }
     }
 
@@ -481,7 +473,7 @@ public class RefactoringUtils {
             FileObject result;
 
             if (psp != null) {
-                result = psp.resolveFile(info.getSnapshot().getSource().getFileObject().getParent(), name);
+                result = PhpSourcePath.resolveFile(info.getSnapshot().getSource().getFileObject().getParent(), name);
             } else {
                 result = info.getSnapshot().getSource().getFileObject().getParent().getFileObject(name);
             }
