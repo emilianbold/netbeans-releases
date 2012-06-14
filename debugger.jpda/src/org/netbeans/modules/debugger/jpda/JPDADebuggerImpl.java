@@ -1560,7 +1560,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     JPDAThread t = allThreads.get(i);
                     int status = t.getState();
                     if (status == JPDAThread.STATE_ZOMBIE || status == JPDAThread.STATE_UNKNOWN ||
-                        t.getName().contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN)) {
+                        t.getName().contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN) && !t.isSuspended()) {
                         if (!modifiableAllThreads) {
                             allThreads = new ArrayList<JPDAThread>(allThreads);
                             modifiableAllThreads = true;
