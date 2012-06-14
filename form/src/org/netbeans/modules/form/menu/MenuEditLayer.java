@@ -1455,7 +1455,7 @@ public class MenuEditLayer extends JPanel {
             if(rad != null) {
                 Object o = formDesigner.getComponent(rad);
                 JComponent c = (o instanceof JComponent) ? (JComponent)o : null;
-                if(c != null && isTopLevelMenu(c)) {
+                if(c != null && isTopLevelMenu(c) && rad instanceof RADVisualComponent) {
                     if(e.getClickCount() > 1) {
                         isEditing = true;
                         configureEditedComponent(c);
