@@ -167,11 +167,10 @@ public class JsParser extends Parser {
     private com.oracle.nashorn.ir.FunctionNode parseSource(String name, String text, JsErrorManager errorManager) throws Exception {
         com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, text);
         com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
-        options.process(new String[]{
-            "--parse-only=true",
-            "--empty-statements=true",
-            //"--print-parse=true",
-            "--debug-lines=false"});
+        options.process(new String[] {
+            "--parse-only=true", // NOI18N
+            "--empty-statements=true", // NOI18N
+            "--debug-lines=false"}); // NOI18N
 
         errorManager.setLimit(0);
         com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
@@ -190,9 +189,9 @@ public class JsParser extends Parser {
                 int balance = 0;
                 for (int i = 0; i < source.length(); i++) {
                     char current = source.charAt(i);
-                    if (current == '{') {
+                    if (current == '{') { // NOI18N
                         balance++;
-                    } else if (current == '}') {
+                    } else if (current == '}') { // NOI18N
                         balance--;
                     }
                 }
@@ -200,7 +199,7 @@ public class JsParser extends Parser {
                     StringBuilder builder = new StringBuilder(source);
                     if (balance < 0) {
                         while (balance < 0) {
-                            int index = builder.lastIndexOf("}");
+                            int index = builder.lastIndexOf("}"); // NOI18N
                             if (index < 0) {
                                 break;
                             }
@@ -209,11 +208,12 @@ public class JsParser extends Parser {
                         }
                     } else if (balance > 0 && error.getStartPosition() >= source.length()) {
                         while (balance > 0) {
-                            builder.append('}');
+                            builder.append('}'); // NOI18N
                             balance--;
                         }
                     }
                     context.setSanitizedSource(builder.toString());
+                    context.setSanitization(sanitizing);
                     return true;
                 }
             }
@@ -233,6 +233,7 @@ public class JsParser extends Parser {
                             StringBuilder builder = new StringBuilder(context.getOriginalSource());
                             erase(builder, start, end);
                             context.setSanitizedSource(builder.toString());
+                            context.setSanitization(sanitizing);
                             return true;
                         }
                     }
@@ -265,6 +266,7 @@ public class JsParser extends Parser {
                             StringBuilder builder = new StringBuilder(context.getOriginalSource());
                             erase(builder, start, end);
                             context.setSanitizedSource(builder.toString());
+                            context.setSanitization(sanitizing);
                             return true;
                         }
                     }
@@ -275,29 +277,29 @@ public class JsParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                sanitizeLine(context, offset);
+                sanitizeLine(sanitizing, context, offset);
             }
         } else if (sanitizing == Sanitize.EDITED_LINE) {
             int offset = context.getCaretOffset();
-            sanitizeLine(context, offset);
+            sanitizeLine(sanitizing, context, offset);
         }
         return false;
     }
 
-    private boolean sanitizeLine(Context context, int offset) {
+    private boolean sanitizeLine(Sanitize sanitizing, Context context, int offset) {
         if (offset > -1) {
             String source = context.getOriginalSource();
             int start = offset - 1;
             int end = offset;
             // fix until new line or }
             char c = source.charAt(start);
-            while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') {
+            while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
                 c = source.charAt(--start);
             }
             start++;
             if (end < source.length()) {
                 c = source.charAt(end);
-                while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') {
+                while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
                     c = source.charAt(end++);
                 }
             }
@@ -305,6 +307,7 @@ public class JsParser extends Parser {
             StringBuilder builder = new StringBuilder(context.getOriginalSource());
             erase(builder, start, end);
             context.setSanitizedSource(builder.toString());
+            context.setSanitization(sanitizing);
             return true;
         }
         return false;
@@ -344,7 +347,10 @@ public class JsParser extends Parser {
         private final int caretOffset;
         
         private String source;
+
         private String sanitizedSource;
+
+        private Sanitize sanitization;
 
         public Context(String name, Snapshot snapshot, int caretOffset) {
             this.name = name;
@@ -385,7 +391,15 @@ public class JsParser extends Parser {
         public void setSanitizedSource(String sanitizedSource) {
             this.sanitizedSource = sanitizedSource;
         }
-        
+
+        public Sanitize getSanitization() {
+            return sanitization;
+        }
+
+        public void setSanitization(Sanitize sanitization) {
+            this.sanitization = sanitization;
+        }
+
     }
 
     /** Attempts to sanitize the input buffer */

@@ -77,7 +77,8 @@ public class JsParserTest extends JsTestBase {
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
             + "}\n}}",
-            1);
+            1,
+            JsParser.Sanitize.MISSING_CURLY);
     }
     
     public void testSimpleCurly2() throws Exception {
@@ -101,7 +102,8 @@ public class JsParserTest extends JsTestBase {
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
             + "}\n}} ",
-            1);
+            1,
+            JsParser.Sanitize.MISSING_CURLY);
     }
     
     public void testSimpleCurrentError1() throws Exception {
@@ -117,7 +119,8 @@ public class JsParserTest extends JsTestBase {
             + "a = 0x1 \n"
             + "\n"
             + "var global3 = 7\n",
-            1);
+            1,
+            JsParser.Sanitize.SYNTAX_ERROR_CURRENT);
     }
     
     public void testSimplePreviousError1() throws Exception {
@@ -141,7 +144,8 @@ public class JsParserTest extends JsTestBase {
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
             + "}\n",
-            1);
+            1,
+            JsParser.Sanitize.SYNTAX_ERROR_PREVIOUS);
     }
     
     public void testSimpleErrorLine1() throws Exception {
@@ -164,10 +168,13 @@ public class JsParserTest extends JsTestBase {
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
             + "}\n",
-            2);
+            2,
+            JsParser.Sanitize.ERROR_LINE);
     }
     
-    private void parse(String original, String expected, int errorCount) throws Exception {
+    private void parse(String original, String expected, int errorCount,
+            JsParser.Sanitize sanitization) throws Exception {
+
         JsParser parser = new JsParser();
         Document doc = getDocument(original);
         Context context = new JsParser.Context("test.js", Source.create(doc).createSnapshot(), -1);
@@ -176,5 +183,6 @@ public class JsParserTest extends JsTestBase {
         
         assertEquals(expected, context.getSanitizedSource());
         assertEquals(errorCount, manager.getErrors().size());
+        assertEquals(sanitization, context.getSanitization());
     }
 }
