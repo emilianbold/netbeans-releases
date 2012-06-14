@@ -49,6 +49,7 @@ import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -71,7 +72,7 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl {
         for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(fil.toURI());
+                lst.add(Utilities.toURI(fil));
             } else {
               //NOPMD   //null means dependencies were not resolved..
             } 

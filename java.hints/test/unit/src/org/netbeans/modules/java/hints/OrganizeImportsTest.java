@@ -39,27 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.actions;
+package org.netbeans.modules.java.hints;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
-import org.openide.util.NbBundle;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
- * @author jpeska
+ * @author lahvac
  */
-public class CreateTaskAction extends RepositoryAction {
-
-    public CreateTaskAction(RepositoryNode... repositoryNodes) {
-        super(NbBundle.getMessage(Actions.class, "CTL_CreateTask"), repositoryNodes); //NOI18N
+public class OrganizeImportsTest extends NbTestCase {
+    
+    public OrganizeImportsTest(String name) {
+        super(name);
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-            Util.createNewIssue(repositoryNode.getRepository());
-        }
+    
+    public void testSimple() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.List;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     List l = new ArrayList();\n" +
+                       "}\n")
+                .run(OrganizeImports.class)
+                .findWarning("1:0-1:22:verifier:MSG_OragnizeImports")
+                .applyFix()
+                .assertOutput("package test;\n" +
+                              "import java.util.ArrayList;\n" +
+                              "import java.util.List;\n" +
+                              "public class Test {\n" +
+                              "     List l = new ArrayList();\n" +
+                              "}\n");
     }
 }

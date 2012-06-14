@@ -78,10 +78,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.api.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
 /**
  * an instance resides in project lookup, allows to get notified on project and 
@@ -143,27 +143,27 @@ public final class NbMavenProject {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
-            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+            fireChange(Utilities.toURI(FileUtil.toFile(fe.getFile())));
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+            fireChange(Utilities.toURI(FileUtil.toFile(fe.getFile())));
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+            fireChange(Utilities.toURI(FileUtil.toFile(fe.getFile())));
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+            fireChange(Utilities.toURI(FileUtil.toFile(fe.getFile())));
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            fireChange(FileUtil.toFile(fe.getFile()).toURI());
+            fireChange(Utilities.toURI(FileUtil.toFile(fe.getFile())));
         }
 
         @Override
@@ -339,7 +339,7 @@ public final class NbMavenProject {
     public void addWatchedPath(URI uri) {
         //#110599
         boolean addListener = false;
-        File fil = new File(uri);
+        File fil = Utilities.toFile(uri);
         synchronized (files) {
             if (!files.contains(fil)) {
                 addListener = true;
@@ -477,7 +477,7 @@ public final class NbMavenProject {
     public void removeWatchedPath(URI uri) {
         //#110599
         boolean removeListener = false;
-        File fil = new File(uri);
+        File fil = Utilities.toFile(uri);
         synchronized (files) {
             boolean rem = files.remove(fil);
             if (rem && !files.contains(fil)) {

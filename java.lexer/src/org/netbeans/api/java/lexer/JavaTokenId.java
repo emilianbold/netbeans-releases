@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.java.lexer.JavaCharacterTokenId;
 import org.netbeans.lib.java.lexer.JavaLexer;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -260,7 +261,7 @@ public enum JavaTokenId implements TokenId {
                     return LanguageEmbedding.create(JavaStringTokenId.language(), 1,
                             (token.partType() == PartType.COMPLETE) ? 1 : 0);
                 case CHAR_LITERAL:
-                    return LanguageEmbedding.create(JavaStringTokenId.language(), 1,
+                    return LanguageEmbedding.create(JavaCharacterTokenId.language(), 1,
                             (token.partType() == PartType.COMPLETE) ? 1 : 0);
             }
             return null; // No embedding

@@ -52,6 +52,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -110,7 +111,7 @@ public class SiteOutputProcessor implements OutputProcessor {
             File html = new File(FileUtil.toFile(prj.getProjectDirectory()), "target/site/index.html");
             if (html.isFile()) {
                 try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(html.toURI().toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(html).toURL());
                 } catch (MalformedURLException x) {
                     assert false : x;
                 }

@@ -89,6 +89,12 @@ public final class IsOverriddenAnnotationAction extends AbstractAction {
     public IsOverriddenAnnotationAction() {
         putValue(NAME, NbBundle.getMessage(IsOverriddenAnnotationAction.class,
                                           "CTL_IsOverriddenAnnotationAction")); //NOI18N
+        putValue("supported-annotation-types", new String[] {
+            "org-netbeans-modules-editor-annotations-is_overridden",
+            "org-netbeans-modules-editor-annotations-has_implementations",
+            "org-netbeans-modules-editor-annotations-implements",
+            "org-netbeans-modules-editor-annotations-overrides"
+        });
         setEnabled(true);
     }
     

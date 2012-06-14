@@ -181,13 +181,15 @@ public class CustomizeEmptySpaceAction extends CookieAction {
     private static LayoutDesigner.EditableGap[] getEditableGaps(RADVisualComponent metacomp, boolean onlySingleGap) {
         if (metacomp != null) {
             FormDesigner formDesigner = FormEditor.getFormDesigner(metacomp.getFormModel());
-            LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
-            if (formDesigner.isInDesigner(metacomp) && layoutDesigner != null) {
-                LayoutDesigner.EditableGap[] editableGaps = layoutDesigner.getEditableGaps();
-                if (editableGaps != null) {
-                    boolean oneGap = (editableGaps.length == 1);
-                    if (oneGap || (!onlySingleGap && metacomp != formDesigner.getTopDesignComponent())) {
-                        return editableGaps;
+            if (formDesigner != null) {
+                LayoutDesigner layoutDesigner = formDesigner.getLayoutDesigner();
+                if (formDesigner.isInDesigner(metacomp) && layoutDesigner != null) {
+                    LayoutDesigner.EditableGap[] editableGaps = layoutDesigner.getEditableGaps();
+                    if (editableGaps != null) {
+                        boolean oneGap = (editableGaps.length == 1);
+                        if (oneGap || (!onlySingleGap && metacomp != formDesigner.getTopDesignComponent())) {
+                            return editableGaps;
+                        }
                     }
                 }
             }

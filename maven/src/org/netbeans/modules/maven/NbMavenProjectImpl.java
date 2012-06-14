@@ -100,6 +100,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -435,30 +436,36 @@ public final class NbMavenProjectImpl implements Project {
     public URI[] getGeneratedSourceRoots(boolean test) {
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), test ? "target/generated-test-sources" : "target/generated-sources"); //NOI18N
         Set<URI> uris = new HashSet<URI>();
-        File[] roots = new File(uri).listFiles();
+        File[] roots = Utilities.toFile(uri).listFiles();
         if (roots != null) {
             for (File root : roots) {
+                if (!VisibilityQuery.getDefault().isVisible(root)) { //#214002
+                   continue;
+                }
                 if (!test && root.getName().startsWith("test-")) {
                     continue;
                 }
                 File[] kids = root.listFiles();
                 if (kids != null && /* #190626 */kids.length > 0) {
-                    uris.add(root.toURI());
+                    uris.add(Utilities.toURI(root));
                 } else {
-                    watcher.addWatchedPath(root.toURI());
+                    watcher.addWatchedPath(Utilities.toURI(root));
                 }
             }
         }
         if (test) { // MCOMPILER-167
-            roots = new File(FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources")).listFiles();
+            roots = Utilities.toFile(FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources")).listFiles();
             if (roots != null) {
                 for (File root : roots) {
+                    if (!VisibilityQuery.getDefault().isVisible(root)) { //#214002
+                       continue;
+                    }                    
                     if (root.getName().startsWith("test-")) {
                         File[] kids = root.listFiles();
                         if (kids != null && kids.length > 0) {
-                            uris.add(root.toURI());
+                            uris.add(Utilities.toURI(root));
                         } else {
-                            watcher.addWatchedPath(root.toURI());
+                            watcher.addWatchedPath(Utilities.toURI(root));
                         }
                     }
                 }
@@ -536,7 +543,7 @@ public final class NbMavenProjectImpl implements Project {
     public File[] getOtherRoots(boolean test) {
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), test ? "src/test" : "src/main"); //NOI18N
         Set<File> toRet = new HashSet<File>();
-        File fil = new File(uri);
+        File fil = Utilities.toFile(uri);
         if (fil.exists()) {
             File[] fls = fil.listFiles(new FilenameFilter() {
 
@@ -563,7 +570,7 @@ public final class NbMavenProjectImpl implements Project {
         }
         URI[] res = getResources(test);
         for (URI rs : res) {
-            File fl = new File(rs);
+            File fl = Utilities.toFile(rs);
             //in node view we need only the existing ones, if anything else needs all,
             // a new method is probably necessary..
             if (fl.exists()) {

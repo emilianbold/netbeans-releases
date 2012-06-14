@@ -139,14 +139,14 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
         lib = new DefaultLibraryImplementation("j2se", new String[]{"classpath", "javadoc"});
         lib.setName(libName);
         List<URL> l = new ArrayList<URL>();
-        URL u = cp.toURI().toURL();
+        URL u = Utilities.toURI(cp).toURL();
         if (cp.getPath().endsWith(".jar")) {
             u = FileUtil.getArchiveRoot(u);
         }
         l.add(u);
         lib.setContent("classpath", l);
         l = new ArrayList<URL>();
-        u = javadoc.toURI().toURL();
+        u = Utilities.toURI(javadoc).toURL();
         if (javadoc.getPath().endsWith(".jar")) {
             u = FileUtil.getArchiveRoot(u);
         }
@@ -161,16 +161,16 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
         
         // library1: test that folder with javadoc is found for the jar
         File f = new File(getBase()+"/library1/library1.jar");
-        URL u = f.toURI().normalize().toURL();
+        URL u = Utilities.toURI(f).normalize().toURL();
         u = FileUtil.getArchiveRoot(u);
         URL urls[] = JavadocForBinaryQuery.findJavadoc(u).getRoots();
         assertEquals(1, urls.length);
-        String base = new File(getBase()).toURI().toString();
+        String base = Utilities.toURI(new File(getBase())).toString();
         assertEquals(base+"library1/javadoc1/", urls[0].toExternalForm());
         
         // library2: test that jar with javadoc is found for the class from library jar
         f = new File(getBase()+"/library2/library2.jar");
-        String us = f.toURI().normalize().toString();
+        String us = Utilities.toURI(f).normalize().toString();
         us = "jar:" + us + "!/";
         u = new URL(us);
         urls = JavadocForBinaryQuery.findJavadoc(u).getRoots();
@@ -179,7 +179,7 @@ public class JavadocForBinaryQueryLibraryImplTest extends NbTestCase {
         
         // library2: test that folder with javadoc is found for the classpath root from the library
         f = new File(getBase()+"/library3/library3");
-        u = f.toURI().normalize().toURL();
+        u = Utilities.toURI(f).normalize().toURL();
         urls = JavadocForBinaryQuery.findJavadoc(u).getRoots();
         assertEquals(1, urls.length);
         assertEquals(base+"library3/javadoc3/", urls[0].toExternalForm());

@@ -1707,8 +1707,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 FileEntry includedEntry = entry.getValue();
                 for (PreprocessorStatePair pair : includedEntry.getStatePairs()) {
-                    CndUtils.assertTrue(pair.state.isValid());
-                    CndUtils.assertTrue(pair.pcState != FilePreprocessorConditionState.PARSING);
+                    CndUtils.assertTrueInConsole(pair.state.isValid(), "invalid state in ", includedEntry.getStatePairs());
+                    CndUtils.assertTrueInConsole(pair.pcState != FilePreprocessorConditionState.PARSING, "parsing state in ", includedEntry.getStatePairs());
                     ComparisonResult comResult = fillStatesToKeepBasedOnPCState(pair.pcState, libCurrentPairs, new ArrayList<PreprocessorStatePair>());
                     if (comResult != ComparisonResult.DISCARD) {
                         StartEntry se = APTHandlersSupport.extractStartEntry(pair.state);
@@ -1721,7 +1721,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Set<FileImpl> res = new HashSet<FileImpl>(filesToReparseLibs.size());
         for (CharSequence path : filesToReparseLibs) {
             FileImpl file = getFile(path, true);
-            CndUtils.assertTrue(file != null, "no fileImpl for " + path);
+            CndUtils.assertTrueInConsole(file != null, "no fileImpl for ", path);
             if (file != null) {
                 res.add(file);
             }

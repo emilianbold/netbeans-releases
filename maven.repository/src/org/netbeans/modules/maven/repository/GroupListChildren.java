@@ -43,7 +43,6 @@ package org.netbeans.modules.maven.repository;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;

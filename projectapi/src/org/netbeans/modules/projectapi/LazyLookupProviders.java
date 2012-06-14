@@ -85,6 +85,7 @@ public class LazyLookupProviders {
             public Lookup createAdditionalLookup(final Lookup lkp) {
                 return new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
+                    final ThreadLocal<Boolean> insideBeforeLookup = new ThreadLocal<Boolean>(); // #212862
                     @Override protected void beforeLookup(Template<?> template) {
                         safeToLoad();
                         synchronized (this) {
@@ -93,6 +94,10 @@ public class LazyLookupProviders {
                             }
                         }
                         Class<?> service = template.getType();
+                        if (Boolean.TRUE.equals(insideBeforeLookup.get())) {
+                            return;
+                        }
+                        insideBeforeLookup.set(true);
                         try {
                             Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
                             if (!service.isInstance(instance)) {
@@ -112,6 +117,8 @@ public class LazyLookupProviders {
                         } catch (Exception x) {
                             Exceptions.attachMessage(x, "while loading from " + attrs);
                             Exceptions.printStackTrace(x);
+                        } finally {
+                            insideBeforeLookup.set(false);
                         }
                     }
                     private void safeToLoad() {

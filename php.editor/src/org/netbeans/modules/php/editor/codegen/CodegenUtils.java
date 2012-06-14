@@ -39,27 +39,50 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tasks.ui.actions;
+package org.netbeans.modules.php.editor.codegen;
 
-import java.awt.event.ActionEvent;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
-import org.openide.util.NbBundle;
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
+import org.netbeans.modules.php.editor.model.*;
 
 /**
  *
- * @author jpeska
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class OpenTaskAction extends TaskAction {
+public class CodegenUtils {
 
-    public OpenTaskAction(TaskNode... taskNodes) {
-        super(NbBundle.getMessage(DeactivateTaskAction.class, "CTL_Open"), taskNodes); //NOI18N
+    private CodegenUtils() {
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        for (TaskNode taskNode : getTaskNodes()) {
-            Util.openIssue(taskNode.getTask().getRepository(), taskNode.getTask().getID());
+    /**
+     * Creates chain of resolvers in this order: forFullyQualifiedName and forSmartName.
+     *
+     * @param originalElement element, where fully qualified name resolver is applied.
+     * @param currentModel model, where smart name resolver is applied.
+     * @param caretOffset offset in current model, where action was invoked.
+     * @return 
+     */
+    public static TypeNameResolver createSmarterTypeNameResolver(final PhpElement originalElement, final Model currentModel, final int caretOffset) {
+        TypeNameResolver result = TypeNameResolverImpl.forNull();
+        final List<TypeNameResolver> typeNameResolvers = new LinkedList<TypeNameResolver>();
+        if (originalElement != null) {
+            FileScope fileScope = ModelUtils.getFileScope(originalElement.getFileObject(), 300);
+            NamespaceScope namespaceScope = (fileScope != null) ? ModelUtils.getNamespaceScope(fileScope, originalElement.getOffset()) : null;
+            if (namespaceScope != null) {
+                typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, originalElement.getOffset()));
+                if (currentModel != null) {
+                    VariableScope variableScope = currentModel.getVariableScope(caretOffset);
+                    if (variableScope != null) {
+                        typeNameResolvers.add(TypeNameResolverImpl.forSmartName(variableScope, caretOffset));
+                    }
+                }
+                result = TypeNameResolverImpl.forChainOf(typeNameResolvers);
+            }
         }
+        return result;
     }
+
 }

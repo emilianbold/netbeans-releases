@@ -279,6 +279,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if (baseResName == null) {
+            return null;     //if the selectedFO is not within the classpath
+        }
         String srcResName = getSrcResName(baseResName, fileObj.getExt());
         if (srcResName == null) {
             return null;     //if the selectedFO is not a test class (by name)

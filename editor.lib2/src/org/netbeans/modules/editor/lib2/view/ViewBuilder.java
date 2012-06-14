@@ -77,7 +77,7 @@ final class ViewBuilder {
     /**
      * Maximum number of scanned characters for which the view building will produce local views.
      */
-    private static final int MAX_CHARS_FOR_CREATE_LOCAL_VIEWS = 2000;
+    /*private*/ static final int MAX_CHARS_FOR_CREATE_LOCAL_VIEWS = 2000;
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewBuilder.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewBuilder.class.getName());

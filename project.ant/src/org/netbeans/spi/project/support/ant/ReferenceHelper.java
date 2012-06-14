@@ -83,6 +83,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -239,7 +240,7 @@ public final class ReferenceHelper {
                     try {
                         scriptLocation = new URI(null, null, rel, null);
                     } catch (URISyntaxException ex) {
-                        scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
+                        scriptLocation = Utilities.toURI(forProjDir).relativize(Utilities.toURI(scriptFile));
                     }
                     ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName(), artifact.getID());
                 } else {
@@ -270,7 +271,7 @@ public final class ReferenceHelper {
                 URI artFile = location;
                 String refPath;
                 if (artFile.isAbsolute()) {
-                    refPath = new File(artFile).getAbsolutePath();
+                    refPath = Utilities.toFile(artFile).getAbsolutePath();
                     propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
                 } else {
                     refPath = "${" + forProjPathProp + "}/" + artFile.getPath(); // NOI18N
@@ -1523,7 +1524,7 @@ public final class ReferenceHelper {
                 FileUtil.toFile(p.getProjectDirectory()));
         if (libFile != null) {
             try {
-                return LibraryManager.forLocation(libFile.toURI().toURL());
+                return LibraryManager.forLocation(Utilities.toURI(libFile).toURL());
             } catch (MalformedURLException e) {
                 // ok, no project manager
                 Logger.getLogger(ReferenceHelper.class.getName()).info(
@@ -1556,7 +1557,7 @@ public final class ReferenceHelper {
             return lib;
         }
         File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
-        return copyLibrary(lib, mainPropertiesFile.toURI().toURL());
+        return copyLibrary(lib, Utilities.toURI(mainPropertiesFile).toURL());
     }
         
     /**

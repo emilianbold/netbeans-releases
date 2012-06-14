@@ -974,7 +974,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final File parentFile = FileUtil.toFile(newFile.getParent());
                     if (parentFile != null) {
                         try {
-                            URL oldBinaryRoot = new File (parentFile, oldNameExt).toURI().toURL();
+                            URL oldBinaryRoot = org.openide.util.Utilities.toURI(new File (parentFile, oldNameExt)).toURL();
                             eventQueue.record(
                                     FileEventLog.FileOp.DELETE,
                                     oldBinaryRoot,
@@ -2080,7 +2080,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         };
         private final String progressTitle;
         private final SuspendStatus suspendStatus;
-        private LogContext logCtx;
+        private volatile LogContext logCtx;
         private final Object progressLock = new Object();
         //@GuardedBy("progressLock")
         private ProgressHandle progressHandle = null;
@@ -2701,7 +2701,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     final Context ctx = contexts.get(f);
                     assert ctx != null;
-
+                    
                     final BinaryIndexer indexer = f.createIndexer();
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
@@ -2833,6 +2833,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final boolean scanFiles(URL root, Collection<FileObject> files, boolean forceRefresh, boolean sourceForBinaryRoot) {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null) {
+                LogContext lctx = getLogContext();
                 try {
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                     final Set<Crawler.TimeStampAction> checkTimeStamps = EnumSet.noneOf(Crawler.TimeStampAction.class);
@@ -2847,7 +2848,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Crawler crawler = files.isEmpty() ?
                         new FileObjectCrawler(rootFo, checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), checkTimeStamps, entry, getShuttdownRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
-
+                    if (lctx != null) {
+                        lctx.noteRootScanning(root);
+                    }
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
@@ -2874,6 +2877,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     return false;
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
+                } finally {
+                    if (lctx != null) {
+                        lctx.finishScannedRoot(root);
+                    }
                 }
             }
             return true;
@@ -4366,10 +4373,20 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     new IndexBinaryWorkPool.Function<URL, Boolean>() {
                         @Override
                         public Boolean apply(URL root) {
-                            return scanBinary(
-                                    root,
-                                    binaryIndexers,
-                                    scannedRootsCnt);
+                            LogContext lctx = getLogContext();
+                            if (lctx != null) {
+                                lctx.noteRootScanning(root);
+                            }
+                            try {
+                                return scanBinary(
+                                        root,
+                                        binaryIndexers,
+                                        scannedRootsCnt);
+                            } finally {
+                                if (lctx != null) {
+                                    lctx.finishScannedRoot(root);
+                                }
+                            }
                         }
                     },
                     new Callable<Boolean>() {
@@ -4713,7 +4730,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         if (packedIndex != null ) {
                             unpack(packedIndex, downloadFolder);
                             packedIndex.delete();
-                            if (patchDownloadedIndex(root,downloadFolder.toURI().toURL())) {
+                            if (patchDownloadedIndex(root,org.openide.util.Utilities.toURI(downloadFolder).toURL())) {
                                 final FileObject df = CacheFolder.getDataFolder(root);
                                 assert df != null;
                                 final File dataFolder = FileUtil.toFile(df);
@@ -5588,7 +5605,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (sourcesListener != null) {
                     if (!sourceRoots.containsKey(root) && root.getProtocol().equals("file")) { //NOI18N
                         try {
-                            File f = new File(root.toURI());
+                            File f = org.openide.util.Utilities.toFile(root.toURI());
                             safeAddRecursiveListener(sourcesListener, f, entry);
                             sourceRoots.put(root, f);
                         } catch (URISyntaxException use) {
@@ -5604,7 +5621,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         try {
                             URI uri = archiveUrl != null ? archiveUrl.toURI() : root.toURI();
                             if (uri.getScheme().equals("file")) { //NOI18N
-                                f = new File(uri);
+                                f = org.openide.util.Utilities.toFile(uri);
                             }
                         } catch (URISyntaxException use) {
                             LOGGER.log(Level.INFO, "Can't convert " + root + " to java.io.File; archiveUrl=" + archiveUrl, use); //NOI18N
@@ -5665,7 +5682,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             @Override
                             public boolean accept(@NonNull final File pathname) {
                                 try {
-                                    return entry.includes(pathname.toURI().toURL());
+                                    return entry.includes(org.openide.util.Utilities.toURI(pathname).toURL());
                                 } catch (MalformedURLException ex) {
                                     Exceptions.printStackTrace(ex);
                                     return true;

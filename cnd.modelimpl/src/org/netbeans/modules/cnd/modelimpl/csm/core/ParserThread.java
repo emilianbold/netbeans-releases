@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -116,12 +117,12 @@ public final class ParserThread implements Runnable {
                         for (APTPreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
-                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states " + states; //NOI18N
+                                    CndUtils.assertTrueInConsole(states.size() == 1, "Dummy state sould never be mixed with normal states \n", states); //NOI18N
                                     preprocHandlers = FileImpl.DUMMY_HANDLERS;
                                     parseCase = ": ONE FILE Reparsing "; // NOI18N
                                     break;
                                 } else if (state == FileImpl.PARTIAL_REPARSE_STATE) {
-                                    assert states.size() == 1 : "reparse Dummy state sould never be mixed with normal states \n" + states; //NOI18N
+                                    CndUtils.assertTrueInConsole(states.size() == 1, "reparse Dummy state sould never be mixed with normal states \n", states); //NOI18N
                                     preprocHandlers = FileImpl.PARTIAL_REPARSE_HANDLERS;
                                     parseCase = ": PARTIAL Reparsing "; // NOI18N
                                     break;

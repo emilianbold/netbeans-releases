@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
         <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
             <istrue value="${requires.nb.javac}"/>
         </condition>
-        <condition property="test.bootclasspath.prepend.args" value="-Xbootclasspath/p:${bootclasspath.prepend}">
+        <condition property="test.bootclasspath.prepend.args" value="-Xbootclasspath/p:&quot;${bootclasspath.prepend}&quot;">
             <isset property="bootclasspath.prepend"/>
         </condition>
         <property name="test.bootclasspath.prepend.args" value=""/>

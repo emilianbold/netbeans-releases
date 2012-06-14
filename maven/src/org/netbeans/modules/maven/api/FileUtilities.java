@@ -77,7 +77,7 @@ public final class FileUtilities {
         if (uri == null) {
             return null;
         }
-        File fil = FileUtil.normalizeFile(new File(uri));
+        File fil = FileUtil.normalizeFile(Utilities.toFile(uri));
         return FileUtil.toFileObject(fil);
     }
     
@@ -103,7 +103,7 @@ public final class FileUtilities {
         if (str != null) {
             File fil = new File(str);
             fil = FileUtil.normalizeFile(fil);
-            return fil.toURI();
+            return Utilities.toURI(fil);
         }
         return null;
     }
@@ -157,7 +157,7 @@ public final class FileUtilities {
        pth = pth.replaceFirst("^\\./", ""); //NOI18N
        pth = pth.replaceFirst("^\\.\\\\", ""); //NOI18N
        File src = FileUtilities.resolveFilePath(root, pth);
-       return FileUtil.normalizeFile(src).toURI();
+       return Utilities.toURI(FileUtil.normalizeFile(src));
    }
     
    public static URI getDirURI(@NonNull FileObject root, @NonNull String path) {
@@ -233,7 +233,7 @@ public final class FileUtilities {
             }
             b.append("../"); // NOI18N
         }
-        URI u = base.toURI().relativize(file.toURI());
+        URI u = Utilities.toURI(base).relativize(Utilities.toURI(file));
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {

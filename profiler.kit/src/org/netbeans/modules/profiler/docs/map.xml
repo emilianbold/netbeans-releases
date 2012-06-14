@@ -116,6 +116,7 @@ made subject to such option by the copyright holder.
         <mapID target="PerformIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_5_performint.html"/>
         <mapID target="ReviewAdditionalStepsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_6_reviewadd.html"/>
         <mapID target="RemoteAttachSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_2_remote.html"/>
+        <mapID target="PIDSelectPanel.HelpCtx" url="helppages/csh/csh_attachwiz_selectprocess.html"/>
 
         <!-- CSH topics for Live Results windows -->
         <mapID target="LiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_liveresults.html"/>

@@ -167,6 +167,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
             return NbBundle.getMessage(OverrideDependencyManagementError.class, "TEXT_OverrideDependencyFix");
         }
         
+        @Override
         public void run() {
             dependency.setVersion(null);
         }

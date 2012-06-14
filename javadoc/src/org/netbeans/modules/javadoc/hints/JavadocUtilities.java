@@ -645,6 +645,27 @@ public class JavadocUtilities {
             return null;
         }
         
+        public int resolveIndex(Doc doc) {
+            Tag[] tags = doc.tags();
+            if (this.index < tags.length &&
+                    this.name.equals(tags[this.index].name()) &&
+                    this.text.equals(tags[this.index].text())) {
+                return this.index;
+            }
+            
+            // javadoc was changed
+            for (int i = 0; i < tags.length; i++) {
+                Tag tag = tags[i];
+                if (this.name.equals(tag.name()) &&
+                        this.text.equals(tag.text())) {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+        
+        
         @Override
         public String toString() {
             return super.toString() + "[index: " + this.index + // NOI18N

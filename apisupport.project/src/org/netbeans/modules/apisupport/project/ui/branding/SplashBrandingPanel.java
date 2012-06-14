@@ -61,6 +61,7 @@ import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.spi.BrandingSupport.BrandedFile;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <em>Splash branding parameters</em> panel in branding editor.
@@ -524,7 +525,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             try {
-                splashSource = file.toURI().toURL();
+                splashSource = Utilities.toURI(file).toURL();
                 Image oldImage = splashImage.image;
                 splashImage.setSplashImageIcon(splashSource);
                 Image newImage = splashImage.image;

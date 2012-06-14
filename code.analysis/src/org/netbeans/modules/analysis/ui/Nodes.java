@@ -145,6 +145,9 @@ public class Nodes {
                         @Override public String getHtmlDisplayName() {
                             return typeHtmlDisplayName;
                         }
+                        @Override public Action[] getActions(boolean context) {
+                            return new Action[0];
+                        }
                     };
 
                     warningTypNodes.add(typeNode);
@@ -169,6 +172,9 @@ public class Nodes {
                     }
                     @Override public String getHtmlDisplayName() {
                         return categoryHtmlDisplayName;
+                    }
+                    @Override public Action[] getActions(boolean context) {
+                        return new Action[0];
                     }
                 };
 

@@ -82,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 public class ImportZIP extends JPanel {
 
@@ -224,7 +225,7 @@ public class ImportZIP extends JPanel {
             return false;
         }
         try {
-            if (!FileUtil.isArchiveFile(zip.toURI().toURL())) {
+            if (!FileUtil.isArchiveFile(Utilities.toURI(zip).toURL())) {
                 notifications.setErrorMessage(ERR_not_zip(zip));
                 return false;
             }

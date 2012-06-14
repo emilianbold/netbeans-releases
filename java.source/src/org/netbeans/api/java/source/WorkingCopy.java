@@ -108,6 +108,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
@@ -559,6 +560,22 @@ public class WorkingCopy extends CompilationController {
                         classes.add((ClassTree) t);
                     }
                 }
+            } else if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT && parent2Rewrites.get(path).size() == 1) {
+                //short-circuit import-only changes:
+                CompilationUnitTree origCUT = (CompilationUnitTree) path.getLeaf();
+                Tree nue = parent2Rewrites.get(path).get(origCUT);
+
+                if (nue != null && nue.getKind() == Kind.COMPILATION_UNIT) {
+                    CompilationUnitTree nueCUT = (CompilationUnitTree) nue;
+
+                    if (   Utilities.compareObjects(origCUT.getPackageAnnotations(), nueCUT.getPackageAnnotations())
+                        && Utilities.compareObjects(origCUT.getPackageName(), nueCUT.getPackageName())
+                        && Utilities.compareObjects(origCUT.getTypeDecls(), nueCUT.getTypeDecls())) {
+                        fillImports = false;
+                        diffs.addAll(CasualDiff.diff(getContext(), diffContext, origCUT.getImports(), nueCUT.getImports(), userInfo, tree2Tag, tag2Span, oldTrees));
+                        continue;
+                    }
+                }
             }
 
             Collections.reverse(classes);
@@ -696,7 +713,7 @@ public class WorkingCopy extends CompilationController {
             return scratchFolder.createData("out", "java");
         }
 
-        File pack = new File(sourceFile.toUri()).getParentFile();
+        File pack = Utilities.toFile(sourceFile.toUri()).getParentFile();
 
         while (FileUtil.toFileObject(pack) == null) {
             pack = pack.getParentFile();

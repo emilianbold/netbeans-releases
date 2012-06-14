@@ -155,7 +155,7 @@ public class StandardLoggerTest extends NbTestCase {
         session.sendMessageLogged(makeAntEvent(realSession, "c:\\temp\\bar:27: really malformed", AntEvent.LOG_WARN, null, null, null));
         */
         session.sendMessageLogged(makeAntEvent(realSession, top + ":1: some problem", AntEvent.LOG_WARN, null, null, null));
-        session.sendMessageLogged(makeAntEvent(realSession, top.toURI() + ":1:10:2:5: same problem", AntEvent.LOG_WARN, null, null, null));
+        session.sendMessageLogged(makeAntEvent(realSession, Utilities.toURI(top) + ":1:10:2:5: same problem", AntEvent.LOG_WARN, null, null, null));
         session.sendMessageLogged(makeAntEvent(realSession, "make: Entering directory `" + dir1 + "'", AntEvent.LOG_INFO, null, null, null));
         session.sendMessageLogged(makeAntEvent(realSession, "middle:2:3: some other problem", AntEvent.LOG_WARN, null, null, null));
         session.sendMessageLogged(makeAntEvent(realSession, "../top: yet another problem", AntEvent.LOG_WARN, null, null, null));
@@ -174,16 +174,16 @@ public class StandardLoggerTest extends NbTestCase {
             new Message("c:\\temp\\foo: malformed", true, new MockHyperlink("c:\\temp\\foo", "malformed", -1, -1, -1, -1)),
             new Message("c:\\temp\\bar:27: really malformed", true, new MockHyperlink("c:\\temp\\bar", "really malformed", 27, -1, -1, -1)),
              */
-            new Message(top + ":1: some problem", true, new MockHyperlink(top.toURI().toString(), "some problem", 1, -1, -1, -1)),
-            new Message(top.toURI() + ":1:10:2:5: same problem", true, new MockHyperlink(top.toURI().toString(), "same problem", 1, 10, 2, 5)),
+            new Message(top + ":1: some problem", true, new MockHyperlink(Utilities.toURI(top).toString(), "some problem", 1, -1, -1, -1)),
+            new Message(Utilities.toURI(top) + ":1:10:2:5: same problem", true, new MockHyperlink(Utilities.toURI(top).toString(), "same problem", 1, 10, 2, 5)),
             new Message("make: Entering directory `" + dir1 + "'", false, null),
-            new Message("middle:2:3: some other problem", true, new MockHyperlink(middle.toURI().toString(), "some other problem", 2, 3, -1, -1)),
-            new Message("../top: yet another problem", true, new MockHyperlink(top.toURI().toString(), "yet another problem", -1, -1, -1, -1)),
+            new Message("middle:2:3: some other problem", true, new MockHyperlink(Utilities.toURI(middle).toString(), "some other problem", 2, 3, -1, -1)),
+            new Message("../top: yet another problem", true, new MockHyperlink(Utilities.toURI(top).toString(), "yet another problem", -1, -1, -1, -1)),
             new Message("make: Entering directory `" + dir2 + "'", false, null),
-            new Message("bottom: something new", true, new MockHyperlink(bottom.toURI().toString(), "something new", -1, -1, -1, -1)),
-            new Message("\"../middle\", line 12: warning: statement is stupid", true, new MockHyperlink(middle.toURI().toString(), "warning: statement is stupid", 12, -1, -1, -1)),
+            new Message("bottom: something new", true, new MockHyperlink(Utilities.toURI(bottom).toString(), "something new", -1, -1, -1, -1)),
+            new Message("\"../middle\", line 12: warning: statement is stupid", true, new MockHyperlink(Utilities.toURI(middle).toString(), "warning: statement is stupid", 12, -1, -1, -1)),
             new Message("make: Leaving directory `" + dir2 + "'", false, null),
-            new Message("middle: back here", true, new MockHyperlink(middle.toURI().toString(), "back here", -1, -1, -1, -1)),
+            new Message("middle: back here", true, new MockHyperlink(Utilities.toURI(middle).toString(), "back here", -1, -1, -1, -1)),
             new Message("make: Leaving directory `" + dir1 + "'", false, null),
             new Message(NbBundle.getMessage(StandardLogger.class, "FMT_finished_target_printed", 0, 1), false, null));
         assertEquals("correct text printed", expectedMessages.toString(), session.messages.toString());

@@ -77,7 +77,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.Profile;
 import org.codehaus.plexus.util.FileUtils;
-import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
@@ -107,9 +106,6 @@ import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.actions.EditAction;
-import org.openide.actions.FindAction;
-import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -312,7 +308,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
             return null;
         }
-        URI uri = art.getFile().toURI();
+        URI uri = org.openide.util.Utilities.toURI(art.getFile());
         return FileOwnerQuery.getOwner(uri);
     }   
 
@@ -1194,7 +1190,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     for (Artifact art : context.lookupAll(Artifact.class)) {
                         File f = art.getFile();
                         if (f != null) {
-                            Project p = FileOwnerQuery.getOwner(f.toURI());
+                            Project p = FileOwnerQuery.getOwner(org.openide.util.Utilities.toURI(f));
                             if (p != null) {
                                 projects.add(p);
                             }

@@ -68,58 +68,72 @@ public class WebImpl implements Web {
         this.contextRoot = contextRoot;
     }
 
+    @Override
     public void setWebUri(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getWebUri() {
         return webUri;
     }
 
+    @Override
     public void setWebUriId(String value) throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getWebUriId() throws VersionNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setContextRoot(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getContextRoot() {
         return contextRoot;
     }
 
+    @Override
     public void setContextRootId(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getContextRootId() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setId(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getId() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public Object getValue(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void write(OutputStream os) throws IOException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }

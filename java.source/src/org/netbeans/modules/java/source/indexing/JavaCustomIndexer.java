@@ -241,7 +241,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                             round++;
                         } else {
                             toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                            for (CompileTuple ct : compileResult.aptGenerated) {
+                            final SPIAccessor accessor = SPIAccessor.getInstance();
+                            for (javax.tools.FileObject fo : compileResult.aptGenerated) {
+                                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
+                                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
+                                CompileTuple ct = new CompileTuple(pfo, i, false, true, true);
                                 toCompileRound.add(ct);
                                 toCompile.add(ct);
                             }
@@ -347,7 +351,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             return Collections.<CompileTuple>emptySet();
         }
         try {
-            final File root = new File (URI.create(rootURL.toString()));
+            final File root = Utilities.toFile(URI.create(rootURL.toString()));
             return VirtualSourceProviderQuery.translate(virtualSources, root);
         } catch (IllegalArgumentException e) {
             //Called on non local fs => not supported, log and ignore.
@@ -360,7 +364,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
-                File file = new File(indexable.getURL().toURI().getPath());
+                File file = Utilities.toFile(indexable.getURL().toURI());
                 return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
@@ -426,7 +430,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String fileName : readRSFile(file)) {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
-                            sourceRelativeURLPairs.add(Pair.of(fileName,f.toURI().toURL()));
+                            sourceRelativeURLPairs.add(Pair.of(fileName,Utilities.toURI(f).toURL()));
                         }
                         fmTx.delete(f);
                     }
@@ -576,16 +580,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             @NonNull final Context context,
             @NonNull JavaParsingContext javaContext,
             @NonNull final CompileTuple source,
-            @NonNull final Set<CompileTuple> aptGenerated) throws IOException {
+            @NonNull final Set<javax.tools.FileObject> aptGenerated) throws IOException {
         boolean ret = false;
         final Set<javax.tools.FileObject> genSources = javaContext.getProcessorGeneratedFiles().getGeneratedSources(source.indexable.getURL());
         if (genSources != null) {
-            final SPIAccessor accessor = SPIAccessor.getInstance();
-            for (javax.tools.FileObject fo : genSources) {
-                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
-                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
-                ret |= aptGenerated.add(new CompileTuple(pfo, i, false, true, true));
-            }
+            ret |= aptGenerated.addAll(genSources);
         }
         return ret;
     }

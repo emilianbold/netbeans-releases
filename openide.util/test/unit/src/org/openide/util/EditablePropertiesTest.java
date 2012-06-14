@@ -388,7 +388,7 @@ public class EditablePropertiesTest extends NbTestCase {
     
     private String filenameOfTestProperties() {
         // #50987: never use URL.path for this purpose...
-        return new File(URI.create(EditablePropertiesTest.class.getResource("data/test.properties").toExternalForm())).getAbsolutePath();
+        return Utilities.toFile(URI.create(EditablePropertiesTest.class.getResource("data/test.properties").toExternalForm())).getAbsolutePath();
     }
     
     private EditableProperties loadTestProperties() throws IOException {

@@ -653,13 +653,16 @@ public class ETable extends JTable {
                         isHidden = true;
                     }
                 }
-                if (!isHidden && oi < colModel.getColumnCount()) {
+                if (oi < colModel.getColumnCount()) {
                     TableColumn tc = colModel.getColumn(oi++);
-                    newColumns[i].setPreferredWidth(tc.getPreferredWidth());
-                    newColumns[i].setWidth(tc.getWidth());
+                    if (!isHidden) {
+                        newColumns[i].setPreferredWidth(tc.getPreferredWidth());
+                        newColumns[i].setWidth(tc.getWidth());
+                    }
                     if (sortable && tc instanceof ETableColumn && newColumns[i] instanceof ETableColumn) {
                         ETableColumn etc = (ETableColumn) tc;
                         ETableColumn enc = (ETableColumn) newColumns[i];
+                        enc.nestedComparator = etc.nestedComparator;
                         if (enc.isSortingAllowed()) {
                             columnSorting[i] = new Sorting(etc.isAscending(), etc.getSortRank());
                         }

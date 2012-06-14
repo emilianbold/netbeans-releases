@@ -64,6 +64,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents Eclipse project structure.
@@ -451,7 +452,7 @@ public final class EclipseProject implements Comparable {
             if (s != null) {
                 if (returnURL) {
                     try {
-                        s = new File(s).toURI().toURL().toExternalForm();
+                        s = Utilities.toURI(new File(s)).toURL().toExternalForm();
                         if (jarPath != null) {
                             s = "jar:"+s+jarPath;
                         }
@@ -499,7 +500,7 @@ public final class EclipseProject implements Comparable {
                     return u.toExternalForm();
                 }
             } else {
-                File f = new File(u.toURI());
+                File f = Utilities.toFile(u.toURI());
                 String path = f.getPath();
                 if (jarPath != null) {
                     path += jarPath;

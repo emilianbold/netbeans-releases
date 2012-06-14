@@ -56,7 +56,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  * Token ids for java string language
- * (embedded in java string or character literals).
+ * (embedded in java string).
  *
  * @author Miloslav Metelka
  * @version 1.00
@@ -105,7 +105,7 @@ public enum JavaStringTokenId implements TokenId {
 
         @Override
         protected Lexer<JavaStringTokenId> createLexer(LexerRestartInfo<JavaStringTokenId> info) {
-            return new JavaStringLexer(info);
+            return new JavaStringLexer<JavaStringTokenId>(info, true);
         }
 
         @Override

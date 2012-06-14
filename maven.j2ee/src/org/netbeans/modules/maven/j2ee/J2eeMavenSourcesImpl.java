@@ -115,6 +115,7 @@ public class J2eeMavenSourcesImpl implements Sources {
                 fireChange();
             } else {
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         fireChange();
                     }

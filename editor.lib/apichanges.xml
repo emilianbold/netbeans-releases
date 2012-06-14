@@ -107,6 +107,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="clickable-annotations">
+            <summary>Clickable annotations in the editor glyph gutter</summary>
+            <version major="3" minor="24"/>
+            <date day="12" month="5" year="2012"/>
+            <author login="jlahoda"/>
+            <compatibility binary="compatible" semantic="incompatible" modification="yes"/>
+            <description>
+                <p>
+                    <code>Editors/.../GlyphGutterActions</code> can now specify on which annotations they need to be invoked. Supported annotation value (set using 
+                    <code>putValue</code>):
+                </p>
+                <dl>
+                    <dt>default-action</dt>
+                    <dd>if true, this action will be invoked when the free space is clicked</dd>
+                    <dt>default-action-excluded-annotation-types</dt>
+                    <dd>an array containing annotation types. When any of the annotations on the current line has any of these type, this action will not be invoked when the free space is clicked. (See below for combined annotations unrolling.)</dd>
+                    <dt>supported-annotation-types</dt>
+                    <dd>an array containing annotation types. When an annotation is clicked, the first action that contains its type in the supported-annotation-types attribute is invoked.</dd>
+                </dl>
+            </description>
+            <issue number="105746"/>
+        </change>
+        
         <change id="typing-hooks-replace">
             <summary>Replace is done before insert and fix inserting empty text</summary>
             <version major="3" minor="21"/>

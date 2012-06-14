@@ -171,6 +171,7 @@ public class MavenProjectRestSupport extends WebRestSupport {
         return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
     }
     
+    @Override
     public String getContextRootURL() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         String serverInstanceID = provider.getServerInstanceID();

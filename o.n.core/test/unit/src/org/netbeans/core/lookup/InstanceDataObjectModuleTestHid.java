@@ -121,28 +121,6 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         ERR.log("setup finished");
     }
     
-    protected static File toFile (java.net.URL url) throws java.io.IOException {
-        File f = new File (url.getPath ());
-        if (f.exists ()) {
-            return f;
-        }
-        
-        String n = url.getPath ();
-        int indx = n.lastIndexOf ('/');
-        if (indx != -1) {
-            n = n.substring (indx + 1);
-        }
-        n = n + url.getPath ().hashCode ();
-        
-        f = File.createTempFile (n, ".jar");
-        java.io.FileOutputStream out = new java.io.FileOutputStream (f);
-        org.openide.filesystems.FileUtil.copy (url.openStream (), out);
-        out.close ();
-        f.deleteOnExit ();
-        
-        return f;
-    }
-    
     protected @Override void tearDown() throws Exception {
         ERR.log("going to teardown");
         try {

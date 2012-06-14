@@ -92,6 +92,7 @@ import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Handles adding, removing, reordering of source roots.
  *
@@ -110,7 +111,7 @@ public final class SourceRootsUi {
         URL[] rootURLs = roots.getRootURLs();
         Object[][] data = new Object[rootURLs.length] [2];
         for (int i=0; i< rootURLs.length; i++) {
-            data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));            
+            data[i][0] = Utilities.toFile(URI.create (rootURLs[i].toExternalForm()));
             data[i][1] = roots.getRootDisplayName(rootLabels[i], rootProps[i]);
         }
         return new SourceRootsModel(data);
@@ -382,7 +383,7 @@ out:            for( int i = 0; i < files.length; i++ ) {
                     rootsFromRelatedSourceRoots.add (normalizedFile);
                     continue;
                 }
-                if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
+                if ((p=FileOwnerQuery.getOwner(Utilities.toURI(normalizedFile)))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
                     final Sources sources = p.getLookup().lookup(Sources.class);
                     if (sources == null) {
                         rootsFromOtherProjects.add (normalizedFile);
@@ -622,7 +623,7 @@ out:            for( int i = 0; i < files.length; i++ ) {
                 File f = (File) value;
                 String message = f.getAbsolutePath();
                 if (projectConflict) {
-                    Project p = FileOwnerQuery.getOwner(f.toURI());
+                    Project p = FileOwnerQuery.getOwner(Utilities.toURI(f));
                     if (p!=null) {
                         ProjectInformation pi = ProjectUtils.getInformation(p);
                         String projectName = pi.getDisplayName();

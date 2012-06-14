@@ -56,7 +56,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 

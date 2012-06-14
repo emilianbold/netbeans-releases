@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 

@@ -779,7 +779,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 if (TraceFlags.DYNAMIC_TESTS_TRACE) {
                     for (int i = 0; i < newData.size(); i++) {
                         PreprocessorStatePair first = newData.get(i);
-                        for (int j = i; j < newData.size(); j++) {
+                        for (int j = i + 1; j < newData.size(); j++) {
                             PreprocessorStatePair second = newData.get(j);
                             if (first.pcState == FilePreprocessorConditionState.PARSING
                                     || second.pcState == FilePreprocessorConditionState.PARSING) {

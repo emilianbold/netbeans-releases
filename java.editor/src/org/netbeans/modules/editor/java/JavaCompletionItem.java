@@ -1675,14 +1675,24 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                     }
                     final int length = len;
+                    final StringBuilder sb = new StringBuilder();
+                    if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
+                        sb.append(' '); //NOI18N
+                    sb.append('('); //NOI18N
                     doc.runAtomic (new Runnable () {
                         public void run () {
                         try {
                             Position pos = doc.createPosition(offset);
                             Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                            if (length > 0)
-                                doc.remove(pos.getOffset(), length);
-                            doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
+                            String textToReplace = doc.getText(pos.getOffset(), length);
+                            if (textToReplace.contentEquals(getInsertPrefix() + sb.toString())) {
+                                c.setCaretPosition(c.getCaretPosition() + sb.length());                            
+                                sb.delete(0, sb.length());
+                            } else {
+                                if (length > 0)
+                                    doc.remove(pos.getOffset(), length);
+                                doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
+                            }
                             int caretPos = pos.getOffset();
                             if (semiPosition != null) {
                                 doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
@@ -1721,12 +1731,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                     CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                     if (ctm != null) {
-                        final StringBuilder sb = new StringBuilder();
-                        boolean guessArgs = Utilities.guessMethodArguments();
-                        if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
-                        sb.append(' '); //NOI18N
-                        sb.append('('); //NOI18N
                         if (text.length() > 1) {
+                            boolean guessArgs = Utilities.guessMethodArguments();
                             for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                                 ParamDesc paramDesc = it.next();
                                 sb.append("${"); //NOI18N
@@ -1757,7 +1763,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.insert(0, assignToVarText);
                             c.setCaretPosition(startPos.getOffset());
                         }
-                        ctm.createTemporary(sb.toString()).insert(c);
+                        if (sb.length() > 0)
+                            ctm.createTemporary(sb.toString()).insert(c);
                         Completion.get().showToolTip();
                     }
                 }

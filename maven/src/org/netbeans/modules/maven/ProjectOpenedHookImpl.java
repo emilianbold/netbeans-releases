@@ -92,6 +92,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * openhook implementation, register global classpath and also
@@ -241,10 +242,10 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         // the project root.
         uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(true)));
-        URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
-        File rootDir = new File(rootUri);
+        URI rootUri = Utilities.toURI(FileUtil.toFile(project.getProjectDirectory()));
+        File rootDir = Utilities.toFile(rootUri);
         for (URI uri : uris) {
-            if (FileUtilities.getRelativePath(rootDir, new File(uri)) == null) {
+            if (FileUtilities.getRelativePath(rootDir, Utilities.toFile(uri)) == null) {
                 toRet.add(uri);
             }
         }
@@ -449,7 +450,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
         } else {
             try {
-                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, version, basedir.toURI().toURL());
+                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, version, Utilities.toURI(basedir).toURL());
             } catch (MalformedURLException x) {
                 LOGGER.log(Level.FINE, null, x);
             }

@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.geom.Area;
 import java.util.*;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * This class computes various data from the actual visual state of the real
@@ -69,8 +70,7 @@ public class VisualState implements LayoutConstants {
 
     private static final int PROXIMITY = 32;
 
-    // TODO internationalize
-    private static final String[] PADDING_DISPLAY_NAMES = { "default small", "default medium", "indent", "default large" };
+    private static String[] PADDING_DISPLAY_NAMES;
 
     static class GapInfo {
         LayoutInterval gap;
@@ -877,12 +877,11 @@ public class VisualState implements LayoutConstants {
         gapInfo.paintRect = null;
         gapInfo.overlappingComponents = (container != null) ? computeOverlappingComponents(gapInfo, container) : null;
 
-        StringBuilder desc = new StringBuilder();
-        // TODO internationalize
-        desc.append(dimension == HORIZONTAL ? "Horizontal":"Vertical");
-        desc.append(" ");
-        desc.append(resizing ? "resizable":"fixed");
-        desc.append(" gap: ");
+        // format description of the gap
+        StringBuilder fmtKey = new StringBuilder();
+        fmtKey.append(dimension == HORIZONTAL ? "FMT_GAP_DESCRIPTION_H" : "FMT_GAP_DESCRIPTION_V"); // NOI18N
+        fmtKey.append(resizing ? "R" : "F"); // NOI18N
+        List<String> sizeParam = new ArrayList<String>(2);
         prefSize = gap.getPreferredSize();
         if (prefSize == NOT_EXPLICITLY_DEFINED) {
             PaddingType pt = gap.getPaddingType();
@@ -891,17 +890,19 @@ public class VisualState implements LayoutConstants {
                     && (neighbors[TRAILING] != null || LayoutInterval.getNeighbor(gap, TRAILING, true, true, false) != null)) {
                 pt = PaddingType.RELATED;
             }
-            desc.append(getDefaultGapDisplayName(pt));
+            sizeParam.add(getDefaultGapDisplayName(pt));
             if (resizing && gap.getDiffToDefaultSize() != 0) {
-                desc.append(" / " + wholeSize);
+                fmtKey.append("2"); // NOI18N
+                sizeParam.add(Integer.toString(wholeSize));
             }
         } else {
-            desc.append(prefSize);
+            sizeParam.add(Integer.toString(prefSize));
             if (resizing && prefSize != wholeSize) {
-                desc.append(" / " + wholeSize);
+                fmtKey.append("2"); // NOI18N
+                sizeParam.add(Integer.toString(wholeSize));
             }
         }
-        gapInfo.description = desc.toString();
+        gapInfo.description = NbBundle.getMessage(VisualState.class, fmtKey.toString(), sizeParam.toArray());
 
         return gapInfo;
     }
@@ -965,7 +966,17 @@ public class VisualState implements LayoutConstants {
     }
 
     static String getDefaultGapDisplayName(PaddingType pt) {
-        return pt != null ? PADDING_DISPLAY_NAMES[pt.ordinal()] : "default"; // TODO internationalize
+        if (PADDING_DISPLAY_NAMES == null) {
+            ResourceBundle bundle = NbBundle.getBundle(VisualState.class);
+            PADDING_DISPLAY_NAMES = new String[] {
+                bundle.getString("DEFAULT_GAP_SMALL"), // NOI18N
+                bundle.getString("DEFAULT_GAP_MEDIUM"), // NOI18N
+                bundle.getString("INDENT_GAP"), // NOI18N
+                bundle.getString("DEFAULT_GAP_LARGE"), // NOI18N
+                bundle.getString("DEFAULT_GAP_UNSPECIFIED") // NOI18N
+            };
+        }
+        return PADDING_DISPLAY_NAMES[pt != null ? pt.ordinal() : 4];
     }
 
     static List<LayoutComponent> getComponentsInRegion(LayoutComponent container, LayoutRegion space) {

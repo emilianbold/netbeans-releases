@@ -132,6 +132,8 @@ public abstract class BaseNode extends AbstractNode {
     private final HashMap<String, Object> propMap = new HashMap<String, Object>();
 
     public boolean isRemoved = false;
+    private volatile boolean refreshing = false;
+    private volatile boolean firePropChangeAfterRefresh= false;
 
 
     /**
@@ -181,8 +183,28 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     public synchronized void refresh() {
+        refreshing = true;
         nodeRegistry.refresh();
         update();
+        if (firePropChangeAfterRefresh) {
+            firePropertySetsChange(null, null);
+            firePropChangeAfterRefresh = false;
+        }
+        refreshing = false;
+    }
+
+    /**
+     * Get current property sets. If the node is being refreshed at the moment,
+     * return an empty array. Workaround for #207306.
+     */
+    @Override
+    public PropertySet[] getPropertySets() {
+        if (!refreshing) {
+            return super.getPropertySets();
+        } else {
+            firePropChangeAfterRefresh = true;
+            return new PropertySet[0];
+        }
     }
 
     /**

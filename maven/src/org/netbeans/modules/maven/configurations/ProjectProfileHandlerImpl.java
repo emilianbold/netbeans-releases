@@ -43,16 +43,11 @@
 package org.netbeans.modules.maven.configurations;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
-import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;

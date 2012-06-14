@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -137,11 +138,17 @@ import org.openide.util.RequestProcessor;
         return sb.toString();
     }
     
+    private synchronized void freeze() {
+        this.frozen = true;
+        this.timeCutOff = System.currentTimeMillis();
+    }
+    
     void log() {
         log(true);
     }
 
     void log(boolean cancel) {
+        freeze();
         final LogRecord r = new LogRecord(Level.INFO, 
                 cancel ? LOG_MESSAGE : LOG_EXCEEDS_RATE); //NOI18N
         r.setParameters(new Object[]{this});
@@ -211,48 +218,77 @@ import org.openide.util.RequestProcessor;
     /**
      * Source roots, which have been scanned so far in this LogContext
      */
-    private List<URL>   scannedSourceRoots = new LinkedList<URL>();
+    private Map<URL, Long>   scannedSourceRoots = new LinkedHashMap<URL, Long>();
     
     /**
      * Time spent in scanning source roots listed in {@link #scannedSourceRoots}
      */
     private long        totalScanningTime;
     
+    private long        timeCutOff;
+    
     /**
      * The current source root being scanned
      */
-    private URL         currentSourceRoot;
-    
-    /**
-     * System.currentTimeMillis of the current root's scanning start
-     */
-    private long        currentRootStartTime;
+    private Map<Thread, RootInfo>    allCurrentRoots = new HashMap<Thread, RootInfo>();
     
     /**
      * The scanned root, possibly null.
      */
     private URL root;
     
+    /**
+     * If frozen becomes true, LogContext stops updating data.
+     */
+    private boolean frozen;
+    
     private Map<String, Long>   totalIndexerTime = new HashMap<String, Long>();
     
+    private class RootInfo {
+        private URL     url;
+        private long    startTime;
+
+        public RootInfo(URL url, long startTime) {
+            this.url = url;
+            this.startTime = startTime;
+        }
+        
+        public String toString() {
+            return "< root = " + url.toString() + ", spent = " + (timeCutOff - startTime) + " >";
+        }
+    }
+    
     public synchronized void noteRootScanning(URL currentRoot) {
-        assert currentSourceRoot == null;
-        currentRootStartTime = System.currentTimeMillis();
-        currentSourceRoot = currentRoot;
+        if (frozen) {
+            return;
+        }
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        assert ri == null;
+        allCurrentRoots.put(Thread.currentThread(), new RootInfo(
+                    currentRoot,
+                    System.currentTimeMillis()
+        ));
     }
     
     public synchronized void finishScannedRoot(URL scannedRoot) {
-        if (!scannedRoot.equals(currentSourceRoot)) {
+        if (frozen) {
+            return;
+        }
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null || !scannedRoot.equals(ri.url)) {
             return;
         }
         long time = System.currentTimeMillis();
-        totalScanningTime += time - currentRootStartTime;
-        scannedSourceRoots.add(scannedRoot);
-        
-        currentSourceRoot = null;
+        long diff = time - ri.startTime;
+        totalScanningTime += diff;
+        scannedSourceRoots.put(scannedRoot, diff);
+        allCurrentRoots.remove(Thread.currentThread());
     }
     
     public synchronized void addIndexerTime(String fName, long addTime) {
+        if (frozen) {
+            return;
+        }
         Long t = totalIndexerTime.get(fName);
         if (t == null) {
             t = Long.valueOf(0);
@@ -356,11 +392,9 @@ import org.openide.util.RequestProcessor;
             sb.append("\nNOT executed");
         }
         sb.append("\nScanned roots: ").append(scannedSourceRoots).
-                append(", time: ").append(totalScanningTime);
+                append("\n, total time: ").append(totalScanningTime);
         
-        long t = System.currentTimeMillis();
-        sb.append("\nCurrent root: ").append(currentSourceRoot).
-                append(", time spent so far: ").append(t - currentRootStartTime);
+        sb.append("\nCurrent root(s): ").append(allCurrentRoots.values());
         
         sb.append("\nTime spent in indexers:");
         List<String> iNames = new ArrayList<String>(totalIndexerTime.keySet());
@@ -392,7 +426,7 @@ import org.openide.util.RequestProcessor;
             for (URI uri : this.fileObjsChanged) {
                 String name;
                 try {
-                    final File f = new File(uri);
+                    final File f = Utilities.toFile(uri);
                     name = f.getAbsolutePath();
                 } catch (IllegalArgumentException iae) {
                     name = uri.toString();

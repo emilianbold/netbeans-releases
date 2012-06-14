@@ -105,6 +105,7 @@ import static org.netbeans.api.java.project.runner.JavaRunner.*;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -484,7 +485,7 @@ out:                for (FileObject root : exec.getRoots()) {
                         continue;
                     }
 
-                    BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL());
+                    BuildArtifactMapperImpl.clean(Utilities.toURI(sourceFile).toURL());
                 }
             }
         }

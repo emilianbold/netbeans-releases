@@ -1270,7 +1270,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (parent != metacont)
                         return null; // components in different containers
                 } else {
-                    if (resizeType != 0 && isNewLayoutRootSelection(false)) {
+                    if ((resizeType & INBOUND_RESIZING) != 0 && isNewLayoutRootSelection(false)) {
                         metacont = (RADVisualContainer) metacomp;
                     } else if (metacont == null || !formDesigner.isInDesigner(metacont)) {
                         return null; // out of visible tree

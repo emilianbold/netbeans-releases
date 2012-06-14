@@ -50,6 +50,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -83,14 +84,14 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
                 if (art.getClassifier() != null) {
                     assemblies.add(0, fil);
                 } else {
-                    lst.add(fil.toURI());
+                    lst.add(Utilities.toURI(fil));
                 }
             } else {
               //NOPMD   //null means dependencies were not resolved..
             } 
         }
         for (File ass : assemblies) {
-            lst.add(ass.toURI());
+            lst.add(Utilities.toURI(ass));
         }
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);

@@ -1256,9 +1256,7 @@ abstract public class CsmCompletionQuery {
                                 if (cls == null) {
                                     cls = lastType.getClassifier();
                                 }
-                                if (cls == null || CsmKindUtilities.isBuiltIn(cls)) {
-                                    res.add(lastType);
-                                } else {
+                                if (cls != null) {
                                     res.add(cls);
                                 }
                             } else { // not source-help
@@ -1311,7 +1309,12 @@ abstract public class CsmCompletionQuery {
                             List res;
                             if (openingSource) {
                                 res = new ArrayList();
-                                res.add(lastType.getClassifier());
+                                if (cls == null) {
+                                    cls = lastType.getClassifier();
+                                } 
+                                if (cls != null) {
+                                    res.add(cls);
+                                }
                             } else { // not source-help
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
