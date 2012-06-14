@@ -53,13 +53,15 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
-import org.openide.util.NbBundle;
+import static org.netbeans.modules.hudson.ui.actions.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -84,18 +86,21 @@ public class ShowBuildConsole extends AbstractAction implements Runnable {
         this(module.getBuild().getJob(), module.getUrl(), module.getBuildDisplayName());
     }
 
+    @Messages("ShowBuildConsole.label=Show Console")
     private ShowBuildConsole(HudsonJob job, String url, String displayName) {
         this.job = job;
         this.url = url;
         this.displayName = displayName;
-        putValue(NAME, NbBundle.getMessage(ShowBuildConsole.class, "ShowBuildConsole.label"));
+        putValue(NAME, ShowBuildConsole_label());
     }
 
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         new RequestProcessor(url + "console").post(this); // NOI18N
     }
 
-    public void run() {
+    @SuppressWarnings("OS_OPEN_STREAM")
+    @java.lang.SuppressWarnings("SleepWhileInLoop")
+    @Override public void run() {
         Hyperlinker hyperlinker = new Hyperlinker(job);
         LOG.log(Level.FINE, "{0} started", url);
         InputOutput io = IOProvider.getDefault().getIO(displayName, new Action[] {/* XXX abort build button? */});
