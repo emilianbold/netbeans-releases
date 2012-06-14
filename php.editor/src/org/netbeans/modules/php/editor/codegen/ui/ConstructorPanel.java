@@ -56,6 +56,7 @@ import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
+import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
 import org.netbeans.modules.php.editor.codegen.Property;
 import org.openide.util.NbBundle;
@@ -97,24 +98,28 @@ public class ConstructorPanel extends JPanel {
         switch (genType) {
             case CONSTRUCTOR:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_CONSTRUCTOR");    //NOI18N
-                customizeMethodGeneration = false;
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    if (!way.equals(CGSGenerator.GenWay.WITH_UNDERSCORE)) {
+                        model.addElement(new ModelElement(way.getSimpleDescription() + ": " + way.getConstructorExample(name), way));
+                    }
+                }
                 break;
             case GETTER:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS");    //NOI18N
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name));
+                    model.addElement(new ModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(name), way));
                 }
                 break;
             case SETTER:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS");    //NOI18N
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getSetterExample(name));
+                    model.addElement(new ModelElement(way.getSimpleDescription() + ": " + way.getSetterExample(name), way));
                 }
                 break;
             case GETTER_AND_SETTER:
                 panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS");    //NOI18N
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name) + ", " + way.getSetterExample(name));
+                    model.addElement(new ModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(name) + ", " + way.getSetterExample(name), way));
                 }
                 break;
             case METHODS:
@@ -129,11 +134,13 @@ public class ConstructorPanel extends JPanel {
             cbMethodGeneration.setModel(model);
             int index = 0;
             if (cgsInfo.getHowToGenerate() != null) {
-                for (CGSGenerator.GenWay genWay : CGSGenerator.GenWay.values()) {
-                    if (genWay.equals(cgsInfo.getHowToGenerate())) {
+                for (int i = 0; i < model.getSize(); i++) {
+                    Object modelElement = model.getElementAt(index);
+                    assert modelElement instanceof ModelElement;
+                    if (cgsInfo.getHowToGenerate().equals(((ModelElement) modelElement).getGenWay())) {
                         break;
                     }
-                    index++;
+                    index = i;
                 }
             }
             cbMethodGeneration.setSelectedIndex(index);
@@ -169,6 +176,26 @@ public class ConstructorPanel extends JPanel {
     }
 
     protected void initTree(JTree tree) {
+    }
+
+    private static class ModelElement {
+        private final String description;
+        private final GenWay genWay;
+
+        public ModelElement(final String description, final CGSGenerator.GenWay genWay) {
+            this.description = description;
+            this.genWay = genWay;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+
+        public GenWay getGenWay() {
+            return genWay;
+        }
+
     }
 
 
@@ -277,8 +304,9 @@ public class ConstructorPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMethodGenerationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMethodGenerationActionPerformed
-        int selectedIndex = cbMethodGeneration.getSelectedIndex();
-        cgsInfo.setHowToGenerate(CGSGenerator.GenWay.values()[selectedIndex]);
+        Object selectedItem = cbMethodGeneration.getSelectedItem();
+        assert selectedItem instanceof ModelElement;
+        cgsInfo.setHowToGenerate(((ModelElement) selectedItem).getGenWay());
     }//GEN-LAST:event_cbMethodGenerationActionPerformed
 
     private void cbGenerateDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGenerateDocActionPerformed
