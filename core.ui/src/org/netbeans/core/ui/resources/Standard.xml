@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="File" />
     <Toolbar name="Clipboard" visible="false"/>
     <Toolbar name="UndoRedo" />
-    <Toolbar name="Memory"/>
+    <Toolbar name="Memory" visible="false"/>
   </Row>
 
 </Configuration>

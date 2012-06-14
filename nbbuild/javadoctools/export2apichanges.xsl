@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
 
             <center>
                 <h1>NetBeans API Changes since Last Release</h1>
-                <h3>Current Development Version</h3>
+                <h3>Version 7.2</h3>
                 <xsl:if test="$date" >
                     <xsl:value-of select="$date" />
                     <p/>
