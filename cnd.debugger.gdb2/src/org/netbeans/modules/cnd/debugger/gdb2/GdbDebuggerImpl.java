@@ -2425,7 +2425,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         MITList results = miRecord.results();
         
         parent.setNumChild(results.getConstValue(MI_NUMCHILD));
-        parent.setHasMore(!results.getConstValue("has_more").equals("0")); // NOI18N
+        parent.setHasMore(results.getConstValue(GdbVariable.HAS_MORE));
         
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
 
@@ -2748,11 +2748,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 			      String expr,
 			      final int level) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("-var-list-children --all-values \"").append(expr).append("\" ").append(parent.getChildrenRequestedCount()).append(" "); // NOI18N
-        parent.stepChildrenRequestedCount();
-        sb.append(parent.getChildrenRequestedCount());
-        String cmdString = sb.toString();
+        String cmdString = peculiarity.listChildrenCommand(expr, parent.getChildrenRequestedCount(), parent.incrementChildrenRequestedCount());
         MiCommandImpl cmd = new MiCommandImpl(cmdString) {
             @Override
             protected void onDone(MIRecord record) {
