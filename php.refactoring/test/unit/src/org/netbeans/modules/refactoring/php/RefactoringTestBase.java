@@ -41,16 +41,77 @@
  */
 package org.netbeans.modules.refactoring.php;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.index.PHPIndex;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class RefactoringTestBase extends CslTestBase {
+public abstract class RefactoringTestBase extends CslTestBase {
 
     public RefactoringTestBase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
+        TestLanguageProvider.register(HTMLTokenId.language());
+        PHPIndex.setClusterUrl("file:/bogus");
+    }
+
+    protected String getTestPath() {
+        return getTestFolderPath() + "/index.php";
+    }
+
+    protected String getTestFolderPath() {
+        return "testfiles/" + getTestFolderPathSuffix();
+    }
+
+    protected abstract String getTestFolderPathSuffix();
+
+    protected String getTestName() {
+        String name = getName();
+        int indexOf = name.indexOf("_");
+        if (indexOf != -1) {
+            name = name.substring(0, indexOf);
+        }
+        return name;
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))
+            })
+        );
+    }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new PHPLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return FileUtils.PHP_MIME_TYPE;
     }
 
 }

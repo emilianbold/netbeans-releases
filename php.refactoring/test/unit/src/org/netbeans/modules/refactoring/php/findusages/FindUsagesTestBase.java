@@ -41,16 +41,79 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.refactoring.php.RefactoringTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class FindUsagesTestBase extends RefactoringTestBase {
+public abstract class FindUsagesTestBase extends RefactoringTestBase {
 
     public FindUsagesTestBase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected String getTestFolderPathSuffix() {
+        return "findusages/" + getTestName();
+    }
+
+    protected void findUsages(final String caretLine) throws Exception {
+        final String exactFileName = getTestPath();
+        final String result = getTestResult(exactFileName, caretLine);
+        assertDescriptionMatches(exactFileName, result, true, ".findUsages");
+    }
+
+    private String getTestResult(final String exactFileName, final String caretLine) throws Exception {
+        FileObject testFile = getTestFile(exactFileName);
+        Source testSource = getTestSource(testFile);
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+        final String[] result = new String[1];
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+
+            @Override
+            public void run(final ResultIterator resultIterator) throws Exception {
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
+                assertTrue(r instanceof PHPParseResult);
+                PHPParseResult phpResult = (PHPParseResult)r;
+                StringBuilder sb = new StringBuilder();
+                WhereUsedSupport wus = WhereUsedSupport.getInstance(phpResult, caretOffset);
+                for (FileObject fileObject : wus.getRelevantFiles()) {
+                    wus.collectUsages(fileObject);
+                }
+                WhereUsedSupport.Results results = wus.getResults();
+                for (WhereUsedElement whereUsedElement : results.getResultElements()) {
+                    sb.append("Display text: ");
+                    sb.append(whereUsedElement.getDisplayText());
+                    sb.append("\n");
+                    sb.append("File name: ");
+                    sb.append(whereUsedElement.getFile().getNameExt());
+                    sb.append("\n");
+                    sb.append("Name: ");
+                    sb.append(whereUsedElement.getName());
+                    sb.append("\n");
+                    sb.append("Position: ");
+                    sb.append("BEGIN: ").append(whereUsedElement.getPosition().getBegin().getOffset()).append(" END: ").append(whereUsedElement.getPosition().getEnd().getOffset());
+                    sb.append("\n\n");
+                }
+                result[0] = sb.toString().trim();
+            }
+        });
+        return result[0];
     }
 
 }

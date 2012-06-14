@@ -51,4 +51,16 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         super(testName);
     }
 
+    public void testIssue213974_01() throws Exception {
+        findUsages("echo Kitchen::$aStatic^Field;");
+    }
+
+    public void testIssue213974_02() throws Exception {
+        findUsages("echo Kitchen::getDefault^Size();");
+    }
+
+    public void testIssue213974_03() throws Exception {
+        findUsages("echo Kitchen::SI^ZE;");
+    }
+
 }
