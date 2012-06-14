@@ -17,6 +17,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="ide.welcome" url="getstart/welcome.html" />
 <mapID target="pending" url="pending.html" />
 <mapID target="tbd" url="tbd.html" />
+<mapID target="help_on_exit_dialog" url="files/csh/files_saveonexit_db.html" />
 
 
 <!--begin Projects section-->
@@ -173,6 +174,8 @@ Other names may be trademarks of their respective owners.
 
 <!-- Navigator window :-->
 <mapID target="navigator.java" url="editing/csh/nav_window.html" />
+<!-- Bookmarks window :-->
+<mapID target="bookmarks_window_csh" url="editing/csh/bookmarks_window.html" />
 
 <!--Task List window -->
 <mapID target="org.netbeans.modules.tasklist.docscan.SourceTasksView" url="files/tasklist-csh.html" />
@@ -509,6 +512,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- Issue tracking csh topics-->
 <mapID target="org.netbeans.modules.bugzilla.repository.RepositoryController" url="collab/csh/issues_create_tracker.html" />
+<mapID target="org.netbeans.modules.bugzilla.repository.BugzillaRepositoryController" url="collab/csh/issues_create_tracker.html" />
 <mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="collab/csh/issues_select_keyword.html" />
 <mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="collab/csh/issues_html_response.html" />
 <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="collab/csh/issues_save_query.html" />
@@ -520,6 +524,7 @@ Other names may be trademarks of their respective owners.
 
 <!-- Issue tracking csh topic for JIRA plugin in kenai dashboar -->
 <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
+<mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater$JiraProxyController" url="collab/csh/issues_jiraplugin.html" />
 
 <!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
 <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />

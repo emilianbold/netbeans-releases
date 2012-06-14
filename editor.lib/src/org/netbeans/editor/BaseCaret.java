@@ -55,6 +55,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.datatransfer.Clipboard;
@@ -102,7 +103,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.fold.Fold;
@@ -119,10 +119,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
-import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
+import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.*;
-import org.openide.awt.MouseUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -341,6 +340,14 @@ AtomicLockListener, FoldHierarchyListener {
      * on the selected lines.
      */
     private List<Position> rsRegions;
+
+    /**
+     * Used for showing the default cursor instead of the text cursor when the
+     * mouse is over a block of selected text.
+     * This field is used to prevent repeated calls to component.setCursor()
+     * with the same cursor.
+     */
+    private boolean showingTextCursor = true;
     
     public BaseCaret() {
         listenerImpl = new ListenerImpl();
@@ -1643,6 +1650,42 @@ AtomicLockListener, FoldHierarchyListener {
     // MouseMotionListener methods
     @Override
     public void mouseMoved(MouseEvent evt) {
+        if (mouseState == MouseState.DEFAULT) {
+            boolean textCursor = true;
+            int position = component.viewToModel(evt.getPoint());
+            if (RectangularSelectionUtils.isRectangularSelection(component)) {
+                List<Position> positions = RectangularSelectionUtils.regionsCopy(component);
+                for (int i = 0; textCursor && i < positions.size(); i += 2) {
+                    int a = positions.get(i).getOffset();
+                    int b = positions.get(i + 1).getOffset();
+                    if (a == b) {
+                        continue;
+                    }
+
+                    textCursor &= !(position >= a && position <= b || position >= b && position <= a);
+                }
+            } else {
+                // stream selection
+                if (getDot() == getMark()) {
+                    // empty selection
+                    textCursor = true;
+                } else {
+                    int dot = getDot();
+                    int mark = getMark();
+                    if (position >= dot && position <= mark || position >= mark && position <= dot) {
+                        textCursor = false;
+                    } else {
+                        textCursor = true;
+                    }
+                }
+            }
+
+            if (textCursor != showingTextCursor) {
+                int cursorType = textCursor ? Cursor.TEXT_CURSOR : Cursor.DEFAULT_CURSOR;
+                component.setCursor(Cursor.getPredefinedCursor(cursorType));
+                showingTextCursor = textCursor;
+            }
+        }
     }
 
     @Override

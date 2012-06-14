@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,23 +90,11 @@ public class DBReadWriteHelper {
                 }
             }
             case Types.DATE: {
-                try {
-                    Date ddata = rs.getDate(index);
-                    if (rs.wasNull()) {
-                        return null;
-                    } else {
-                        return ddata;
-                    }
-                } catch (SQLException e) {
-                    if (e.getMessage() != null
-                            && e.getMessage().endsWith(
-                            "not be represented as java.sql.Date")) { //NOI18N
-                        // mysql zero date value, see #183440
-                        return "0000-00-00";                            //NOI18N
-                    } else {
-                        Exceptions.printStackTrace(e);
-                        return null;
-                    }
+                Date ddata = rs.getDate(index);
+                if (rs.wasNull()) {
+                    return null;
+                } else {
+                    return ddata;
                 }
             }
             case Types.TIMESTAMP:
@@ -340,14 +327,18 @@ public class DBReadWriteHelper {
                     ps.setDouble(index, numberObj.doubleValue());
                     break;
 
-                case Types.DECIMAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
-                    ps.setDouble(index, numberObj.doubleValue());
+                case Types.BIGINT:
+                    numberObj = (valueObj instanceof Number)
+                            ? (Number) valueObj
+                            : new Long(valueObj.toString());
+                    ps.setLong(index, numberObj.longValue());
                     break;
 
-                case Types.BIGINT:
                 case Types.NUMERIC:
-                    BigDecimal bigDec = new BigDecimal(valueObj.toString());
+                case Types.DECIMAL:
+                    BigDecimal bigDec = (valueObj instanceof BigDecimal)
+                            ? (BigDecimal) valueObj
+                            : new BigDecimal(valueObj.toString());
                     ps.setBigDecimal(index, bigDec);
                     break;
 
@@ -389,11 +380,7 @@ public class DBReadWriteHelper {
                     break;
 
                 case Types.DATE:
-                    if ("0000-00-00".equals(valueObj)) { //NOI18N
-                        ps.setString(index, (String) valueObj); // #183440
-                    } else {
-                        ps.setDate(index, DateType.convert(valueObj));
-                    }
+                    ps.setDate(index, DateType.convert(valueObj));
                     break;
 
                 case Types.TIME:
@@ -408,7 +395,7 @@ public class DBReadWriteHelper {
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
                 case Types.BLOB:
-                    ps.setBinaryStream(index, ((Blob) valueObj).getBinaryStream());
+                    ps.setBinaryStream(index, ((Blob) valueObj).getBinaryStream(), (int) ((Blob) valueObj).length());
                     break;
 
                 case Types.CHAR:
@@ -423,7 +410,7 @@ public class DBReadWriteHelper {
                 case -16:
                 case Types.CLOB:
                 case 2011: /*NCLOB */
-                    ps.setCharacterStream(index, ((Clob) valueObj).getCharacterStream());
+                    ps.setCharacterStream(index, ((Clob) valueObj).getCharacterStream(), (int) ((Clob) valueObj).length());
                     break;
 
                 default:

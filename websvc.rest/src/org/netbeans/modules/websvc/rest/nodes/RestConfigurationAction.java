@@ -90,6 +90,9 @@ public class RestConfigurationAction extends NodeAction  {
             return false;
         }
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
         Profile profile = webModule.getJ2eeProfile();
         if (Profile.JAVA_EE_6_WEB.equals(profile) 
                 || Profile.JAVA_EE_6_FULL.equals(profile))

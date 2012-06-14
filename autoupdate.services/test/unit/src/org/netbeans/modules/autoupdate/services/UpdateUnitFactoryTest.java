@@ -62,6 +62,7 @@ import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -88,7 +89,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         }
         p.refresh (true);
         URL urlToFile = AutoupdateInfoParserTest.class.getResource ("data/org-yourorghere-depending.nbm");
-        NBM_FILE = new File (urlToFile.toURI ());
+        NBM_FILE = Utilities.toFile(urlToFile.toURI ());
         assertNotNull ("data/org-yourorghere-depending.nbm file must found.", NBM_FILE);
     }
     

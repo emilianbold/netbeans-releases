@@ -276,9 +276,9 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                     try {
                         long lastParsedTime = fileImpl.getLastParsedTime();
-                        APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
+                        APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
                         if (apt != null) {
-                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlersForParse();
                             if (handlers.isEmpty()) {
                                 DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
                                 return Collections.<CsmReference>emptyList();
@@ -326,7 +326,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
             try {
-                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage());
+                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
 
                 GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
                 TokenStream ts = guardWalker.getTokenStream();

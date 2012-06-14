@@ -45,13 +45,16 @@ import groovy.lang.GroovyClassLoader;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -68,14 +71,34 @@ public final class ClassNodeCache {
     private static final ThreadLocal<ClassNodeCache> instance = 
             new ThreadLocal<ClassNodeCache>();
     
+    private static final int DEFAULT_NON_EXISTENT_CACHE_SIZE = 10000;
+    private static final int NON_EXISTENT_CACHE_SIZE = Integer.getInteger(
+            "groovy.editor.ClassNodeCache.nonExistent.size",
+            DEFAULT_NON_EXISTENT_CACHE_SIZE);
+    
     private final Map<CharSequence,ClassNode> cache;
+    private final Map<CharSequence,Void> nonExistent;
     private Reference<JavaSource> resolver;
     private Reference<GroovyClassLoader> transformationLoaderRef;
+    private Reference<GroovyClassLoader> resolveLoaderRef;
     private long invocationCount;
     private long hitCount;
     
     private ClassNodeCache() {
         this.cache = new HashMap<CharSequence, ClassNode>();
+        this.nonExistent = new LinkedHashMap<CharSequence, Void>() {
+            @Override
+            protected boolean removeEldestEntry(Entry<CharSequence, Void> eldest) {
+                if (size() > NON_EXISTENT_CACHE_SIZE) {
+                    LOG.log(
+                        Level.FINE,
+                        "Non existent cache full, removing : {0}",    //NOI18N
+                        eldest.getKey());
+                    return true;
+                }
+                return false;
+            }
+        };
         LOG.fine("ClassNodeCache created");     //NOI18N
     }
     
@@ -100,14 +123,42 @@ public final class ClassNodeCache {
         return result;
     }
     
+    public boolean isNonExistent (@NonNull final CharSequence name) {
+        final boolean res = nonExistent.containsKey(name);
+        if (LOG.isLoggable(Level.FINER)) {
+            invocationCount++;
+            if (res) {
+                hitCount++;
+            } else {
+                LOG.log(
+                    Level.FINEST,
+                    "No binding for: {0}",   //NOI18N
+                    name);
+            }
+            LOG.log(
+                Level.FINER,
+                "Hit ratio: {0}%",  //NOI18N
+                (double)hitCount/invocationCount*100);
+        }
+        return res;
+    }
+    
     public void put (
         @NonNull final CharSequence name,
-        @NonNull final ClassNode node) {
-        LOG.log(
-            Level.FINE,
-            "Added binding for: {0}",    //NOI18N
-            name);
-        cache.put(name,node);
+        @NullAllowed final ClassNode node) {
+        if (node != null) {
+            LOG.log(
+                Level.FINE,
+                "Added binding for: {0}",    //NOI18N
+                name);
+            cache.put(name,node);
+        } else {
+            LOG.log(
+                Level.FINE,
+                "Added nonexistent class: {0}",    //NOI18N
+                name);
+            nonExistent.put(name, null);
+        }
     }
     
     public boolean containsKey(@NonNull final CharSequence name) {
@@ -156,6 +207,21 @@ public final class ClassNodeCache {
             transformationLoaderRef = new SoftReference<GroovyClassLoader>(transformationLoader);
         }
         return transformationLoader;
+    }
+    
+    public GroovyClassLoader createResolveLoader(
+            @NonNull final ClassPath allResources,
+            @NonNull final CompilerConfiguration configuration) {
+        GroovyClassLoader resolveLoader = resolveLoaderRef == null ? null : resolveLoaderRef.get();
+        if (resolveLoader == null) {
+            LOG.log(Level.FINE,"Resolver ClassLoader created.");  //NOI18N
+            resolveLoader = new GroovyParser.ParsingClassLoader(
+                    allResources,
+                    configuration,
+                    this);
+            resolveLoaderRef = new SoftReference<GroovyClassLoader>(resolveLoader);
+        }
+        return resolveLoader;
     }
     
     @NonNull

@@ -148,8 +148,10 @@ public final class FileReferencesContext extends CsmProgressAdapter {
             }
         }
         for(CsmEnum e : enums) {
-            for(CsmEnumerator i : e.getEnumerators()) {
-                hotSpotEnumerators.put(i.getName().toString(), i);
+            if (!e.isStronglyTyped()) {
+                for(CsmEnumerator i : e.getEnumerators()) {
+                    hotSpotEnumerators.put(i.getName().toString(), i);
+                }
             }
         }
     }

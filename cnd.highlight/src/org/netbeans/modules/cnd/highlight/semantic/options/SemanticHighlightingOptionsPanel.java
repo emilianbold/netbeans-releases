@@ -52,14 +52,10 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JCheckBox;
 import javax.swing.LayoutStyle;
-import javax.swing.UIManager;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.modelutil.NamedEntity;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticEntitiesProvider;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticEntity;
-import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -73,11 +69,6 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         initMnemonics();
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
-        // background color fixup
-        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-            jPanel1.setOpaque(false);
-            setOpaque(false);
-        }
     }
 
     // for OptionsPanelSupport
@@ -88,7 +79,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         SemanticHighlightingOptions.instance().setKeepMarks(cbKeepMarks.isSelected());
 
         for (Entity e : entities) {
-            NamedEntityOptions.instance().setEnabled(e.se, e.cb.isSelected());
+            NamedOption.getAccessor().setBoolean(e.se.getName(), e.cb.isSelected());
         }
         SemanticHighlightingOptions.instance().propertyChange(null);
         isChanged = false;
@@ -99,7 +90,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbKeepMarks.setSelected(SemanticHighlightingOptions.instance().getKeepMarks());
 
         for (Entity e : entities) {
-            e.cb.setSelected(NamedEntityOptions.instance().isEnabled(e.se));
+            e.cb.setSelected(NamedOption.getAccessor().getBoolean(e.se.getName()));
         }
         
         updateValidation();
@@ -135,10 +126,10 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     private static class Entity {
 
-        public final NamedEntity se;
+        public final NamedOption se;
         public final JCheckBox cb;
 
-        public Entity(NamedEntity se, JCheckBox cb) {
+        public Entity(NamedOption se, JCheckBox cb) {
             this.se = se;
             this.cb = cb;
         }
@@ -146,52 +137,20 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     private List<Entity> entities = new ArrayList<Entity>();
     JCheckBox cbMacros;
     
-    private void addEntity(NamedEntity ne) {
+    private void addEntity(NamedOption ne) {
         JCheckBox cb = new JCheckBox();
-        String mnemonic = getString("Show-" + ne.getName() + "-mnemonic");
-        if (mnemonic.length() > 0) {
-            cb.setMnemonic(mnemonic.charAt(0)); //NOI18N
+        Mnemonics.setLocalizedText(cb, ne.getDisplayName());
+        if (ne.getDescription() != null) {
+            cb.setToolTipText(ne.getDescription());
         }
-        cb.getAccessibleContext().setAccessibleDescription(getString("Show-" + ne.getName() + "-AD")); //NOI18N
-        cb.setText(getString("Show-" + ne.getName())); //NOI18N
-        cb.setToolTipText(getString("Show-" + ne.getName() + "-AD")); //NOI18N
         cb.setOpaque(false);
         entities.add(new Entity(ne, cb));
     }
 
     private void initGeneratedComponents() {
-        for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
-            addEntity(se);
+        for(NamedOption ee : Lookups.forPath(NamedOption.HIGHLIGTING_CATEGORY).lookupAll(NamedOption.class)) {
+            addEntity(ee);
         }
-        for (CsmErrorProvider ee : Lookup.getDefault().lookupResult(CsmErrorProvider.class).allInstances()) {
-            if (!ee.hasHintControlPanel()) {
-                addEntity(ee);
-            }
-        }
-
-        addEntity(new NamedEntity(){
-            @Override
-            public String getName() {
-                return "reparse-on-document-changed"; //NOI18N
-            }
-            @Override
-            public boolean isEnabledByDefault() {
-                return true;
-            }
-        });
-
-        NamedEntity overridesEntity = new NamedEntity() {
-            @Override
-            public String getName() {
-                return "overrides-annotations"; //NOI18N
-            }
-            @Override
-            public boolean isEnabledByDefault() {
-                return true;
-            }
-        };
-        addEntity(overridesEntity);
-
         GroupLayout layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(layout);
 

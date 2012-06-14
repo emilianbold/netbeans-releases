@@ -47,6 +47,7 @@ import java.util.Set;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
+import org.netbeans.modules.profiler.ProfilerTopComponent;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -64,7 +65,7 @@ import org.openide.windows.TopComponent;
         "ProfilingPointReport_NoMemoryString=Memory profiling not supported by this profiling point.", // NOI18N
         "ProfilingPointReport_NoCurrentString=Current profiling mode not supported by this profiling point." // NOI18N
     })
-public abstract class ProfilingPointReport extends TopComponent {
+public abstract class ProfilingPointReport extends ProfilerTopComponent {
     private static final String HELP_CTX_KEY = "ProfilingPointReport.HelpCtx"; // NOI18N
     private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     

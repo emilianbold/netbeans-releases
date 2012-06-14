@@ -60,7 +60,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -83,62 +82,8 @@ import org.openide.util.lookup.ServiceProviders;
  * is no longer used and is now deprecated.
  */
 public class Repository implements Serializable {
-
-    private static final Logger LOG = Logger.getLogger(Repository.class.getName());
+    /** @GuardedBy(Repository.class) */
     private static Repository repository;
-    static void reset() {
-        repository = null;
-    }
-
-    private static final AtomicReference<Object> ADD_FS = new AtomicReference<Object>();
-    static {
-        ADD_FS.set(ADD_FS);
-    }
-    private static synchronized final boolean addFileSystemDelayed(FileSystem fs) {
-        return !ADD_FS.compareAndSet(ADD_FS, fs);
-    }
-
-
-    /** Initializes the context and errManager
-     */
-    private static void initialize() {
-        Lookup lkp = Lookup.getDefault();
-
-        Repository r;
-        synchronized (Repository.class) {
-            r = repository;
-        }
-
-        if (r == null) {
-            Repository registeredRepository = lkp.lookup(Repository.class);
-            Repository realRepository = assignRepository(registeredRepository);
-
-
-            FileSystem fs = (FileSystem)ADD_FS.getAndSet(null);
-            if (fs != null) {
-                addFS(realRepository, fs);
-            }
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    private static void addFS(Repository r, FileSystem fs) {
-        r.addFileSystem(fs);
-    }
-
-    /**
-     * @param rep may be null
-     */
-    private static synchronized Repository assignRepository(Repository rep) {
-        repository = rep;
-
-        if (repository == null) {
-            // if not provided use default one
-            repository = new Repository(new MainFS());
-        }
-
-        return repository;
-    }
     
     /** Contributes to content of {@link #getDefaultFileSystem() system file system} 
      * (which influences structure under {@link FileUtil#getConfigRoot()}). The
@@ -313,7 +258,7 @@ public class Repository implements Serializable {
 
     /** list of filesystems (FileSystem) */
     private ArrayList<FileSystem> fileSystems;
-    private transient ArrayList<FileSystem> fileSystemsClone;
+    private transient List<FileSystem> fileSystemsClone = Collections.emptyList();
 
     /** the system filesystem */
     private FileSystem system;
@@ -380,6 +325,17 @@ public class Repository implements Serializable {
         this.system = def;
         init();
     }
+    
+    /** Initialazes the pool.
+    */
+    private void init() {
+        // empties the pool
+        fileSystems = new ArrayList<FileSystem>();
+        names = new Hashtable<String, FileSystem>();
+        if (addFileSystemDelayed(system)) {
+            addFileSystem(system);
+        }
+    }
 
     /** Access method to get default instance of repository in the system.
      * The instance is either taken as a result of
@@ -389,18 +345,79 @@ public class Repository implements Serializable {
      * @return default repository for the system
      */
     public static Repository getDefault() {
-        initialize();
-        return repository;
+        Lookup lkp = Lookup.getDefault();
+
+        synchronized (Repository.class) {
+            if (repository != null) {
+                return repository;
+            }
+        }
+
+        Repository newRepo = lkp.lookup(Repository.class);
+        if (newRepo == null) {
+            // if not provided use default one
+            newRepo = new Repository(new MainFS());
+        }
+        synchronized (newRepo) {
+            FileSystem fs = (FileSystem) ADD_FS.getAndSet(null);
+            if (fs != null) {
+                newRepo.addFileSystemImpl(fs);
+            }
+        }
+
+        synchronized (Repository.class) {
+            if (repository == null) {
+                repository = newRepo;
+            }
+            return repository;
+        }
+    }
+    static synchronized void reset() {
+        repository = null;
+    }
+    private static final AtomicReference<Object> ADD_FS = new AtomicReference<Object>(Repository.class);
+    private static boolean addFileSystemDelayed(FileSystem fs) {
+        return !ADD_FS.compareAndSet(Repository.class, fs);
     }
 
-    /** Initialazes the pool.
-    */
-    private void init() {
-        // empties the pool
-        fileSystems = new ArrayList<FileSystem>();
-        names = new Hashtable<String, FileSystem>();
-        if (addFileSystemDelayed(system)) {
-            addFileSystem(system);
+    private boolean addFileSystemImpl(FileSystem fs) {
+        Thread.holdsLock(this);
+
+        // if the filesystem is not assigned yet
+        if (!fs.assigned && !fileSystems.contains(fs)) {
+            // new filesystem
+            fs.setRepository(this);
+            fileSystems.add(fs);
+            fileSystemsClone = new ArrayList<FileSystem>(fileSystems);
+
+            String systemName = fs.getSystemName();
+
+            boolean isReg = names.get(systemName) == null;
+
+            if (isReg && !systemName.equals("")) { // NOI18N
+
+                // filesystem with the same name is not there => then it is valid
+                names.put(systemName, fs);
+                fs.setValid(true);
+            } else {
+                // there is another filesystem with the same name => it is invalid
+                fs.setValid(false);
+            }
+
+            // mark the filesystem as being assigned
+            fs.assigned = true;
+
+            // mark as a listener on changes in the filesystem
+            fs.addPropertyChangeListener(propListener);
+            fs.addVetoableChangeListener(vetoListener);
+
+            // notify filesystem itself that it has been added
+            fs.addNotify();
+
+            // fire info about new filesystem
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -427,46 +444,10 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final void addFileSystem(FileSystem fs) {
-
-        boolean fireIt = false;
-
+        boolean fireIt;
         synchronized (this) {
-            // if the filesystem is not assigned yet
-            if (!fs.assigned && !fileSystems.contains(fs)) {
-                // new filesystem
-                fs.setRepository(this);
-                fileSystems.add(fs);
-                fileSystemsClone = new ArrayList<FileSystem>(fileSystems);
-
-                String systemName = fs.getSystemName();
-
-                boolean isReg = names.get(systemName) == null;
-
-                if (isReg && !systemName.equals("")) { // NOI18N
-
-                    // filesystem with the same name is not there => then it is valid
-                    names.put(systemName, fs);
-                    fs.setValid(true);
-                } else {
-                    // there is another filesystem with the same name => it is invalid
-                    fs.setValid(false);
-                }
-
-                // mark the filesystem as being assigned
-                fs.assigned = true;
-
-                // mark as a listener on changes in the filesystem
-                fs.addPropertyChangeListener(propListener);
-                fs.addVetoableChangeListener(vetoListener);
-
-                // notify filesystem itself that it has been added
-                fs.addNotify();
-
-                // fire info about new filesystem
-                fireIt = true;
-            }
+            fireIt = addFileSystemImpl(fs);
         }
-
         // postponed firing after synchronized  block to prevent deadlock
         if (fireIt) {
             fireFileSystem(fs, true);
@@ -581,9 +562,7 @@ public class Repository implements Serializable {
     */
     @Deprecated
     public final Enumeration<? extends FileSystem> getFileSystems() {
-        ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
-
-        return java.util.Collections.enumeration(tempFileSystems);
+        return Collections.enumeration(fileSystemsClone);
     }
 
     /** Returns enumeration of all filesystems.
@@ -602,7 +581,7 @@ public class Repository implements Serializable {
      */
     @Deprecated
     public final FileSystem[] toArray() {
-        ArrayList<FileSystem> tempFileSystems = fileSystemsClone;
+        List<FileSystem> tempFileSystems = fileSystemsClone;
 
         FileSystem[] fss = new FileSystem[tempFileSystems.size()];
         tempFileSystems.toArray(fss);

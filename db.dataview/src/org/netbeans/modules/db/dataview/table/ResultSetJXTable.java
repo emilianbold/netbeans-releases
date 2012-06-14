@@ -209,6 +209,20 @@ public class ResultSetJXTable extends JXTableDecorator {
                 column.setPreferredWidth(columnWidthList.get(i));
             }
             table.getTableHeader().setColumnModel(cModel);
+            for (int i = 0, I = getRSColumnCount(); i < I; i++) {
+                DBColumn col = getDBColumn(i);
+                TableColumn tc = cModel.getColumn(i);
+                StringBuilder sb = new StringBuilder();
+                sb.append("<html>");                                    //NOI18N
+                if (col.getDisplayName() != null) {
+                    sb.append(DataViewUtils.escapeHTML(
+                            col.getDisplayName().toString()));
+                }
+                sb.append("</html>");                                  // NOI18N
+                tc.setHeaderValue(sb.toString());
+                tc.setIdentifier(col.getDisplayName() == null
+                        ? "COL_" + i : col.getDisplayName());           //NOI18N
+            }
         } catch (Exception e) {
             mLogger.log(Level.INFO, "Failed to set the size of the table headers" + e, e);
         }
@@ -240,13 +254,8 @@ public class ResultSetJXTable extends JXTableDecorator {
         DefaultTableModel dtm = getDefaultTableModel();
         for (int i = 0, I = getRSColumnCount(); i < I; i++) {
             DBColumn col = getDBColumn(i);
-            StringBuilder sb = new StringBuilder();
-            sb.append("<html>"); // NOI18N
-            if (col.getDisplayName() != null) {
-                 sb.append(DataViewUtils.escapeHTML(col.getDisplayName().toString()));
-            }
-            sb.append("</html>"); // NOI18N
-            dtm.addColumn(sb.toString());
+            dtm.addColumn(col.getDisplayName() != null
+                    ? col.getDisplayName() : "COL_" + i);               //NOI18N
         }
 
         for (Object[] row : rows) {

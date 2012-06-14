@@ -1275,6 +1275,7 @@ public class Actions {
         protected void updateButtonIcon() {
             Object i = null;
             Object obj = action.getValue("noIconInMenu"); //NOI18N
+            Object base = action.getValue("iconBase"); // NOI18N
 
             if (Boolean.TRUE.equals(obj)) {
                 //button.setIcon(nonNullIcon(null));
@@ -1284,19 +1285,21 @@ public class Actions {
             if (action instanceof SystemAction) {
                 SystemAction sa = (SystemAction) action;
                 i = sa.getIcon(useTextIcons());
-                button.setIcon((Icon) i);
-                button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
-            } else {
-                i = action.getValue(Action.SMALL_ICON);
-                if (i instanceof Icon) {
+                if( i != null ) {
                     button.setIcon((Icon) i);
                     button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
-                } else {
-                    //button.setIcon(nonNullIcon(null));
+                }
+            } else {
+                if (base == null) {
+                    i = action.getValue(Action.SMALL_ICON);
+                    if (i instanceof Icon) {
+                        button.setIcon((Icon) i);
+                        button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) i));
+                    } else {
+                        //button.setIcon(nonNullIcon(null));
+                    }
                 }
             }
-
-            Object base = action.getValue("iconBase"); // NOI18N
 
             if (base instanceof String) {
                 String b = (String) base;

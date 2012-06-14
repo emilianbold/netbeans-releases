@@ -46,6 +46,8 @@ package org.netbeans.modules.java.platform;
 
 import java.lang.ref.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.java.platform.CustomPlatformInstall;
 import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 
@@ -60,15 +62,17 @@ import org.openide.util.lookup.Lookups;
  * @author Svata Dedic
  */
 public class InstallerRegistry {
-    static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers"; // NOI18N
     
-    static Reference<InstallerRegistry> defaultInstance = new WeakReference<InstallerRegistry>(null);
+    private static final String INSTALLER_REGISTRY_FOLDER = "org-netbeans-api-java/platform/installers"; // NOI18N    
+    private static Reference<InstallerRegistry> defaultInstance = new WeakReference<InstallerRegistry>(null);
+    private static final Logger LOG = Logger.getLogger(InstallerRegistry.class.getName());
     
     private final Lookup lookup;
-    private List<GeneralPlatformInstall> platformInstalls;      //Used by unit test
+    private final List<GeneralPlatformInstall> platformInstalls;      //Used by unit test
     
     InstallerRegistry() {
         this.lookup = Lookups.forPath(INSTALLER_REGISTRY_FOLDER);
+        this.platformInstalls = null;
     }
     
     /**
@@ -100,7 +104,14 @@ public class InstallerRegistry {
         else {
             this.lookup.lookupAll(CustomPlatformInstall.class);
             this.lookup.lookupAll(PlatformInstall.class);
-            return Collections.unmodifiableList(new ArrayList<GeneralPlatformInstall>(this.lookup.lookupAll(GeneralPlatformInstall.class)));
+            final List<GeneralPlatformInstall> installs =
+                Collections.unmodifiableList(new ArrayList<GeneralPlatformInstall>(
+                    this.lookup.lookupAll(GeneralPlatformInstall.class)));
+            LOG.log(
+                Level.FINE,
+                "Installers: {0}",  //NOI18N
+                installs);
+            return installs;
         }
     }
     

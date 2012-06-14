@@ -327,7 +327,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        fireProgressListenerStart(ProgressEvent.START, -1);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, -1);
 
         Set<FileObject> relevantFiles = getRelevantFiles();
         Problem p = null;

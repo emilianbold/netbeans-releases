@@ -134,7 +134,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
                                     );
                                 }
                             }
-                            NetbinoxFactory.LOG.log(Level.WARNING, "Cannot open file {0}", bf);
+                            NetbinoxFactory.LOG.log(Level.WARNING, "Cannot open bundle delegate {0}", bf);
                             if (!bf.isFile() || !bf.canRead()) {
                                 delegate = EmptyBundleFile.EMPTY;
                                 return false;
@@ -145,7 +145,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
                     }
                 };
             } catch (IOException ex) {
-                NetbinoxFactory.LOG.log(Level.FINE, "Error creating delegate for {0}", getBaseFile());
+                NetbinoxFactory.LOG.log(Level.WARNING, "Error creating delegate for {0}", getBaseFile());
                 delegate = EmptyBundleFile.EMPTY;
             }
         }

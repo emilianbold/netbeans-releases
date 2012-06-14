@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -74,6 +76,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProjectStorageProvider.class)
 public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
+    private static final Logger LOG = Logger.getLogger(ProjectStorageProviderImpl.class.getName());
+    
     private static final String ATTACH_SETTINGS_FILENAME = "attach"; //NOI18N
     private static final String SETTINGS_FOR_ATTR = "settingsFor"; //NOI18N
 
@@ -133,7 +137,7 @@ public final class ProjectStorageProviderImpl extends ProjectStorageProvider {
                     try {
                         bos.close();
                     } catch (IOException ex) {
-                        // ignore
+                        LOG.log(Level.WARNING, null, ex);
                     }
                 }
             }

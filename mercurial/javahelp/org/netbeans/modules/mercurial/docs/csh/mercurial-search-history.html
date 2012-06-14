@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 1997, 2012, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Mercurial: Search History</title>
+        <link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Mercurial: Search History</h2>
+        
+        <p>The Mercurial History window enables you to search the history of changes of the relevant file(s) on branch and date. It also supports diff to a previous revision, backing out a revision from the repository, and view of a revision.</p>
+        
+        <p>You can access the Mercurial History window by selecting a versioned file (for example, from the Projects or Files window) and choosing either Team &gt; (Mercurial &gt;) Search History from the main menu or Mercurial &gt; Search History from the right-click menu.</p>
+        
+		<p>This topic introduces the following Mercurial History window features:</p>
+		<dl>
+  <dd><a href="#toolbar">Toolbar</a></dd>
+  <dd><a href="#summary">Summary View</a></dd>
+  <dd><a href="#diff">Diff View</a></dd>
+  <dd><a href="#search">Search Options</a></dd>
+  
+</dl>
+        
+    <h3><a name="toolbar">Toolbar</a></h3>
+<p>The history toolbar is at the top of the Mercurial History window.</p>
+<p>The following table lists  components for the commands that are available in the Mercurial History  toolbar for the currently displayed project or file.</p> 
+<table border="1" cellpadding="5">
+            <tr>
+                <td align="right"><strong>Go to Previous Difference</strong> (<img src="../images/diff-prev.png" 
+                        alt="previous difference button">)</td>  
+				<td>Highlights the previous difference found between versions.</td>  
+			</tr> 
+			<tr>
+                <td align="right"><strong>Go to Next Difference</strong> (<img src="../images/diff-next.png" 
+                        alt="next difference button">)  </td>  
+				<td>Highlights the next difference found between versions.</td>  
+			</tr> 
+			<tr>
+                <td align="right"><strong>Show All Change Paths</strong> (check-box)  </td>  
+				<td>Displays all files in a changeset. </td>  
+			</tr>   
+			<tr>
+                <td align="right"><strong>Filter</strong> (drop-down list) <strong>contains</strong></td>  
+				<td>Displays only those revisions that match the criteria you specified for the selected filter (No Filter, Revision, Message, or User).</td>  
+			</tr>  
+	</table> 
+	
+	<h3><a name="summary">Summary View</a></h3>
+	<p>The Summary view displays a list containing the details of the results matching the specified search criteria. Each row corresponds to a revision obtained from the repository. </p>
+	<ul class="note">
+	               <li>If your search criteria specified a revision, all files contained therein are displayed beneath the revision heading.</li>
+				   <li>You can call the following commands from the list directly on revisions:
+					 <ul>
+					        <li><b>Diff Revision</b>. Compares your currently selected file with the previous revision. </li>
+							<li><b>Backout Revision</b>. Adds a new revision to the current branch that reverts your previous change.</li>
+					</ul>
+	  </li>
+	</ul>
+	<h3><a name="diff">Diff View</a></h3>
+<p>The Diff Viewer is divided into two panes: </p>
+	<ul>
+	<li><a name="upper"></a><b>Upper pane.</b> Contains a table that enables you to view a summary of a file's evolution by the date and time stamps. A stamp is applied whenever a file is saved in the IDE or committed to the Mercurial repository. <br> 
+	  The table features the following columns and components:
+		<ul>
+		<li><b>Nodes.</b> Displays the revision label for a file tracked in the Mercurial repository. The revisions can be sorted by clicking the Nodes column header.</li>
+		   <li><b>Time.</b> Displays the creation date and time of the revision in the history. The file revisions are listed according to the date, with the most current version displayed on top. They can be sorted by clicking the Time column header.</li>
+		   
+		   <li><b>User.</b> Displays the name of the person who created and  authored the revision. The users can be sorted by clicking the User column header.</li>
+		   <li><b>Message.</b> Lists any message associated with the file. The messages can be sorted by clicking the Message column header. 	  
+		
+			  <ul class="note">
+				   <li>You can call commands from the table directly on revisions using the right-click menu:
+					 <ul>
+					        <li><b>Backout</b>. Adds a new revision to the current branch that reverts your previous change.</li>
+							<li><b>Revert to</b>. Reverts your current file to the specified version.</li>
+							<li><b>Show only rows where</b>.  Filters revisions in accordance with the filter specified (Time/User/Message ==, Time/User/Message &lt;&gt;, Time/User/Message &gt;, Time/User/Message &lt;, Time/User/Message &gt;=, Time/User/Message &lt;=, No Filter). Available in the Time, User, and Message columns.</li>
+				     </ul>
+				   </li>
+		  </ul>
+	</li>
+	
+	</ul>
+	
+ <ul class="note">
+			   <li>Multiple selection of any two revisions in the table displays them compared in the Diff Viewer in the <a href="#lower">lower pane</a>.</li>
+ </ul>
+</li>
+
+<li><a name="lower"></a><b>Lower pane.</b> Enables you to compare revisions of a file in the following two modes:
+	 <ul>
+	<li><b>Graphical.</b> Displays the differences between the files being compared  side by side using color coding. 
+	
+		  <p>The Diff Viewer provides the following UI components:</p>
+			
+			<table border="1" cellpadding="5">
+				<tr>
+					<td align="right"><strong>Blue</strong> 
+						( <span style="background-color:#b8cfe5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+					<td>Indicates lines that have been changed since the earlier revision.</td>
+				</tr>
+				<tr>
+					<td align="right"><strong>Green</strong> 
+						( <span style="background-color:#b4ffb4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+					<td>Indicates lines that have been added since the earlier revision.</td>
+				</tr>
+				<tr>
+					<td align="right"><strong>Red</strong> 
+						( <span style="background-color:#ffa0b4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> )</td>
+					<td>Indicates lines that have been removed since the earlier revision.</td>                
+				</tr>
+			</table>
+			
+					
+			
+	   </li>  
+	<li><b>Textual.</b> Displays the collection of differences between the compared files in text.</li>
+</ul>
+	
+	<p>You can adjust the size of the  Diff Viewer panes by dragging the divider between them. </p>
+		
+    </li>
+</ul>
+
+<h3><a name="search">Search Options</a></h3>
+<p>You can use the following criteria to search for files or folders:</p>
+<ul>
+<li><b>Branch</b>. Enter the name of a branch to search for the revisions of files committed within this branch. Click the Select button to choose a branch from the list of available branches in the repository in the Select Branch in Repository dialog box.</li>
+<li><b>Limit</b>. Enter a positive integer to limit the number of  revisions from the top of the repository to be displayed in the Mercurial History window.</li>
+<li><b>Show merges</b>. Select to display merge changes between repository revisions and your local working copy.</li>
+<li><b>From</b>. Enter a revision or date of a revision to search for the revisions of file(s) committed after that revision or date.</li>
+<li><b>To</b>. Enter a revision or date of a revision to search for the revisions of file(s) committed before that revision or date.</li>
+</ul>
+<p>When you click the Search button, revisions meeting the specified criteria are displayed in Mercurial History window. </p>
+<p>You can view search results in the following two views:</p>
+<ul>
+<li><a href="#summary">Summary View</a></li>
+<li><a href="#diff">Diff View</a></li></ul>
+	         
+	<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd><a href="../mercurial-about.html">About Mercurial Support</a></dd>                        
+	    <dd><a href="../mercurial-quickref.html">Mercurial Tasks: Quick Reference</a></dd>
+	</dl>
+ 
+	<hr>
+	<small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

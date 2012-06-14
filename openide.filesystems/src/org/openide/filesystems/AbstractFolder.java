@@ -690,14 +690,12 @@ abstract class AbstractFolder extends FileObject {
     * @param reuseChildren a flag reuse children?
     */
     protected final void refresh(String added, String removed, boolean reuseChildren) {
-        if (reuseChildren && (removed != null)) {
-            String[] nc = new String[children.length];
-            System.arraycopy(children, 0, nc, 0, children.length);
-
+        String[] prev = children;
+        if (reuseChildren && removed != null && prev != null) {
+            String[] nc = prev.clone();
             for (int i = nc.length; --i >= 0;) {
                 if (removed.equals(nc[i])) {
                     nc[i] = null;
-
                     break;
                 }
             }

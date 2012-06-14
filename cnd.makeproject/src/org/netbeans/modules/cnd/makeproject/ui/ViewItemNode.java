@@ -235,6 +235,8 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     newActions.add(NodeActionFactory.createDeleteAction());
                 } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                     newActions.add(SystemAction.get(PropertiesItemAction.class));
+                } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
+                    // skip
                 } else {
                     newActions.add(oldActions[i]);
                 }
@@ -265,6 +267,8 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                 } else if (key != null && key.equals("delete")) { // NOI18N
                     newActions.add(SystemAction.get(RemoveItemAction.class));
                     newActions.add(NodeActionFactory.createDeleteAction());
+                } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
+                    // skip
                 } else {
                     newActions.add(oldActions[i]);
                 }

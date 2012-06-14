@@ -42,20 +42,14 @@
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class WrongStringComparisonTest extends TreeRuleTestBase {
+public class WrongStringComparisonTest extends NbTestCase {
 
     private WrongStringComparison wsc;
 
@@ -65,161 +59,166 @@ public class WrongStringComparisonTest extends TreeRuleTestBase {
     }
 
     public void testSimple() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        String t = null;" +
-                            "        if (s =|= t);" +
-                            "    }" +
-                            "}",
-                            "0:114-0:120:verifier:Comparing Strings using == or !=");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        String t = null;" +
+                       "        if (s == t);" +
+                       "    }" +
+                       "}")
+                .run(WrongStringComparison.class)
+                .assertWarnings("0:114-0:120:verifier:Comparing Strings using == or !=");
     }
     
     public void testDisableWhenCorrectlyCheckedAsIn111441() throws Exception {
-        String code = "package test;" +
-                      "public class Test {" +
-                      "    private String s;" +
-                      "    private void test() {" +
-                      "        Test t = null;" +
-                      "        boolean b = this.s !";
-        
-        String codeAfter = "= t.s && (this.s == null || !this.s.equals(t.s));" +
-                           "    }" +
-                           "}";
-        performAnalysisTest("test/Test.java", code + codeAfter, code.length());
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        Test t = null;" +
+                       "        boolean b = this.s != t.s && (this.s == null || !this.s.equals(t.s));" +
+                       "    }" +
+                       "}")
+                .run(WrongStringComparison.class)
+                .assertWarnings();
     }
 
     public void testFixWithTernaryNullCheck() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        String t = null;" +
-                            "        if (s =|= t);" +
-                            "    }" +
-                            "}",
-                            "0:114-0:120:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals() with null check (ternary)]",
-                            "package test;public class Test { private String s; private void test() { String t = null; if (s == null ? t == null : s.equals(t)); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        String t = null;" +
+                       "        if (s == t);" +
+                       "    }" +
+                       "}")
+                .run(WrongStringComparison.class)
+                .findWarning("0:114-0:120:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals() with null check (ternary)]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { String t = null; if (s == null ? t == null : s.equals(t)); }}");
     }
 
     public void testFixWithoutNullCheck() throws Exception {
-        WrongStringComparison.setTernaryNullCheck(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        String t = null;" +
-                            "        if (s =|= t);" +
-                            "    }" +
-                            "}",
-                            "0:114-0:120:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals()]",
-                            "package test;public class Test { private String s; private void test() { String t = null; if (s.equals(t)); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        String t = null;" +
+                       "        if (s == t);" +
+                       "    }" +
+                       "}")
+                .preference(WrongStringComparison.TERNARY_NULL_CHECK, false)
+                .run(WrongStringComparison.class)
+                .findWarning("0:114-0:120:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals()]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { String t = null; if (s.equals(t)); }}");
     }
 
     public void testFixWithNullCheck() throws Exception {
-        WrongStringComparison.setTernaryNullCheck(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        String t = null;" +
-                            "        if (s =|= t);" +
-                            "    }" +
-                            "}",
-                            "0:114-0:120:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals() with null check]",
-                            "package test;public class Test { private String s; private void test() { String t = null; if ((s == null && t == null) || (s != null && s.equals(t))); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        String t = null;" +
+                       "        if (s == t);" +
+                       "    }" +
+                       "}")
+                .preference(WrongStringComparison.TERNARY_NULL_CHECK, false)
+                .run(WrongStringComparison.class)
+                .findWarning("0:114-0:120:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals() with null check]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { String t = null; if ((s == null && t == null) || (s != null && s.equals(t))); }}");
     }
 
     public void testFixWithStringLiteralFirst() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        if (\"\" =|= s);" +
-                            "    }" +
-                            "}",
-                            "0:90-0:97:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals()]",
-                            "package test;public class Test { private String s; private void test() { if (\"\".equals(s)); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        if (\"\" == s);" +
+                       "    }" +
+                       "}")
+                .run(WrongStringComparison.class)
+                .findWarning("0:90-0:97:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals()]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { if (\"\".equals(s)); }}");
     }
 
     public void testFixWithStringLiteralSecondReverseOperands() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        if (s =|= \"\");" +
-                            "    }" +
-                            "}",
-                            "0:90-0:97:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals() and reverse operands]",
-                            "package test;public class Test { private String s; private void test() { if (\"\".equals(s)); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        if (s == \"\");" +
+                       "    }" +
+                       "}")
+                .run(WrongStringComparison.class)
+                .findWarning("0:90-0:97:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals() and reverse operands]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { if (\"\".equals(s)); }}");
     }
 
     public void testFixWithStringLiteralSecondNullCheck() throws Exception {
-        WrongStringComparison.setStringLiteralsFirst(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        if (s =|= \"\");" +
-                            "    }" +
-                            "}",
-                            "0:90-0:97:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals() with null check]",
-                            "package test;public class Test { private String s; private void test() { if (s != null && s.equals(\"\")); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        if (s == \"\");" +
+                       "    }" +
+                       "}")
+                .preference(WrongStringComparison.STRING_LITERALS_FIRST, false)
+                .run(WrongStringComparison.class)
+                .findWarning("0:90-0:97:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals() with null check]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { if (s != null && s.equals(\"\")); }}");
     }
 
     public void testFixWithStringLiteralSecondNoNullCheck() throws Exception {
-        WrongStringComparison.setStringLiteralsFirst(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private String s;" +
-                            "    private void test() {" +
-                            "        if (s =|= \"\");" +
-                            "    }" +
-                            "}",
-                            "0:90-0:97:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals()]",
-                            "package test;public class Test { private String s; private void test() { if (s.equals(\"\")); }}");
+        HintTest.create()
+                .input("package test;" +
+                       "public class Test {" +
+                       "    private String s;" +
+                       "    private void test() {" +
+                       "        if (s == \"\");" +
+                       "    }" +
+                       "}")
+                .preference(WrongStringComparison.STRING_LITERALS_FIRST, false)
+                .run(WrongStringComparison.class)
+                .findWarning("0:90-0:97:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals()]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private String s; private void test() { if (s.equals(\"\")); }}");
     }
 
     public void testFixWithTwoStringLiterals() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "public class Test {" +
-                            "    private void test() {" +
-                            "        if (\"\" =|= \"\");" +
-                            "    }" +
-                            "}",
-                            "0:69-0:77:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals()]",
-                            "package test;public class Test { private void test() { if (\"\".equals(\"\")); }}");
+        HintTest.create()
+                .input("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "    private void test() {" +
+                       "        if (\"\" == \"\");" +
+                       "    }" +
+                       "}")
+                .run(WrongStringComparison.class)
+                .findWarning("0:69-0:77:verifier:Comparing Strings using == or !=")
+                .applyFix("[WrongStringComparisonFix:Use equals()]")
+                .assertCompilable()
+                .assertOutput("package test;public class Test { private void test() { if (\"\".equals(\"\")); }}");
     }
 
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        return wsc.run(info, path);
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
-    static {
-        NbBundle.setBranding("test");
-    }
 }

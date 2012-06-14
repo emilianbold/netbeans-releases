@@ -74,6 +74,7 @@ public class DependencyExcludeNodeVisitor implements DependencyNodeVisitor {
         return allPaths;
     }
 
+    @Override
     public boolean visit(DependencyNode node) {
         if (root == null) {
             root = node;
@@ -96,6 +97,7 @@ public class DependencyExcludeNodeVisitor implements DependencyNodeVisitor {
         return true;
     }
 
+    @Override
     public boolean endVisit(DependencyNode node) {
         if (root == node) {
             root = null;

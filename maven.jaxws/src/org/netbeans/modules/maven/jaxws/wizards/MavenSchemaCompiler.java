@@ -87,6 +87,7 @@ public class MavenSchemaCompiler implements SchemaCompiler {
     public void compileSchema(final WizardDescriptor wiz) {
         final String schemaName = (String) wiz.getProperty(JAXBWizModuleConstants.SCHEMA_NAME);
         ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            @Override
             public void performOperation(POMModel model) {
                 org.netbeans.modules.maven.model.pom.Plugin plugin = addJaxb2Plugin(model); //NOI18N
                 String packageName =

@@ -106,6 +106,7 @@ public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebMo
     @Override
     public DeployOnSaveClassInterceptor getDeployOnSaveClassInterceptor() {
         return new DeployOnSaveClassInterceptor() {
+            @Override
             public ArtifactListener.Artifact convert(ArtifactListener.Artifact original) {
                 NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
                 FileObject targetClasses = FileUtil.toFileObject(prj.getOutputDirectory(false));

@@ -1380,8 +1380,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 FileWriter w = new FileWriter(f);
                 w.write(redir.toString());
                 w.close();
-                LOG.log(Level.FINE, "uploadLogs, temporary url = {0}", f.toURI()); // NOI18N
-                return f.toURI().toURL();
+                LOG.log(Level.FINE, "uploadLogs, temporary url = {0}", Utilities.toURI(f)); // NOI18N
+                return Utilities.toURI(f).toURL();
             }
         } else {
             return null;
@@ -1417,6 +1417,8 @@ public class Installer extends ModuleInstall implements Runnable {
             return heapDumpFile;
         }
         LOG.log(Level.INFO, "heap dump was not created at {0}", heapDumpPath);
+        LOG.log(Level.INFO, "heapdump file: exists():{0}, canRead():{1}, length:{2}",new Object[] 
+                {heapDumpFile.exists(), heapDumpFile.canRead(), heapDumpFile.length()});
         return null;
     }
     
@@ -1643,7 +1645,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.FINE, "doShow, parsing buttons: {0}", Arrays.toString(dd.getOptions())); // NOI18N
                     alterMessage(dd);
                     is.close();
-                    url = tmp.toURI().toURL();
+                    url = Utilities.toURI(tmp).toURL();
                 } catch (InterruptedException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (InvocationTargetException ex) {
@@ -2226,7 +2228,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 tabs.setPreferredSize(panel.getPreferredSize());
                 File messagesLog = getMessagesLog();
                 try {
-                    JEditorPane pane = new JEditorPane(messagesLog.toURI().toURL());
+                    JEditorPane pane = new JEditorPane(Utilities.toURI(messagesLog).toURL());
                     pane.setEditable(false);
                     pane.setPreferredSize(panel.getPreferredSize());
                     tabs.addTab(org.openide.util.NbBundle.getMessage(Installer.class, "IDE_LOG_TAB_TITLE"), new JScrollPane(pane));

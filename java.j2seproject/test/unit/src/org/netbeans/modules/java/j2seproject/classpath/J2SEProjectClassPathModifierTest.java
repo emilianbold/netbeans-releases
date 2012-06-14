@@ -77,6 +77,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.openide.util.test.MockLookup;
@@ -164,7 +165,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertEquals(1,cpRoots.length);
         URI projectURI = URI.create(output.getProject().getProjectDirectory().toURL().toExternalForm());
         URI expected = projectURI.resolve(output.getArtifactLocations()[0]);
-        assertEquals(expected,this.helper.resolveFile(cpRoots[0]).toURI());
+        assertEquals(expected,Utilities.toURI(this.helper.resolveFile(cpRoots[0])));
         ProjectClassPathModifier.removeAntArtifacts(new AntArtifact[] {output}, new URI[] {output.getArtifactLocations()[0]},this.src, ClassPath.COMPILE);
         cp = this.eval.getProperty("javac.classpath");
         assertNotNull (cp);
@@ -202,7 +203,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #3223; javac.classpath="" after addition
     public void testProjectLibrary() throws Exception {
         assertEquals(Collections.emptyList(), getPrjLibRefs());
-        URL base = getWorkDir().toURI().toURL();
+        URL base = Utilities.toURI(getWorkDir()).toURL();
         helper.setLibrariesLocation(".."+File.separatorChar+"defs.properties");
         Library lib = LibraryManager.forLocation(new URL(base, "defs.properties")).createLibrary("j2se", "test",
                 Collections.singletonMap("classpath", Collections.singletonList(new URL(base, "stuff/"))));

@@ -43,198 +43,99 @@
  */
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Pokorsky
  */
-final class GenerateJavadocFix implements Fix {
-    
+final class GenerateJavadocFix extends JavaFix {
+
     private static final int NOPOS = -2; // XXX copied from jackpot; should be in api
     private String name;
-    private final ElementHandle handle;
-    private final FileObject file;
-    private Position position;
     private final SourceVersion spec;
 
-    GenerateJavadocFix(String name, ElementHandle handle, FileObject file, SourceVersion spec) {
+    public GenerateJavadocFix(String name, TreePathHandle handle, SourceVersion spec) {
+        super(handle);
         this.name = name;
-        this.handle = handle;
-        this.file = file;
         this.spec = spec;
     }
 
+    @Override
     public String getText() {
         return NbBundle.getMessage(GenerateJavadocFix.class, "MISSING_JAVADOC_HINT", name); // NOI18N
     }
 
-    public ChangeInfo implement() {
-        return implement(true);
-    }
-
-    public ChangeInfo implement(final boolean open) {
-        final String[] javadocForDocument = new String[1];
-        final Document[] docs = new Document[1];
-        final JavadocGenerator gen = new JavadocGenerator(spec);
-        gen.updateSettings(file);
-        JavaSource js = JavaSource.forFileObject(file);
-        try {
-            js.runModificationTask(new CancellableTask<WorkingCopy>() {
-                public void cancel() {
-                }
-
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    Element elm = handle.resolve(wc);
-                    Tree t = null;
-                    if (elm != null) {
-                        t = wc.getTrees().getTree(elm);
-                    }
-                    if (t != null) {
-                        String javadocTxt = gen.generateComment(elm, wc);
-//                        Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, 0, javadocTxt);
-//                        wc.getTreeMaker().addComment(t, javadoc, true);
-
-                        // XXX workaround until the generator start to do its job
-                        javadocForDocument[0] = javadocTxt;
-                        docs[0] = wc.getDocument();
-                        if (docs[0] == null) {
-                            return;
-                        }
-                        position = docs[0].createPosition((int) wc.getTrees().getSourcePositions().getStartPosition(wc.getCompilationUnit(), t));
-                    }
-                }
-
-            }).commit();
-
-        } catch (IOException ex) {
-            Logger.getLogger(GenerateJavadocFix.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-        }
-
-        if (docs[0] == null) {
-            // nothing to do
-            return null;
-        }
-
-        // XXX #90302; follows workaround until the generator starts to do its job
-        final Indent indent = Indent.get(docs[0]);
-        final Reformat reformat = Reformat.get(docs[0]);
-        try {
-            indent.lock();
-            reformat.lock();
-            NbDocument.runAtomicAsUser((StyledDocument) docs[0], new Runnable() {
-                public void run() {
-                    try {
-                        String iJavadoc = javadocForDocument[0];
-                        int begin = position.getOffset();
-                        Position[] reformatSpan = null;
-                        if (makeJavadocAloneOnLine(docs[0], begin)) {
-                            // #124114
-                            iJavadoc = '\n' + iJavadoc;
-                            int[] span = findReformatSpan(docs[0], begin);
-                            reformatSpan = new Position[] {
-                                docs[0].createPosition(span[0]),
-                                docs[0].createPosition(span[1])};
-                        }
-                        docs[0].insertString(begin, iJavadoc, null);
-                        // move the caret to proper position
-                        int offset = iJavadoc.indexOf("/**"); // NOI18N
-                        offset = iJavadoc.indexOf("\n", offset + 1);
-                        offset = iJavadoc.indexOf("\n", offset + 1);
-                        Position openPos = docs[0].createPosition(begin + offset);
-                        indent.reindent(begin, begin + iJavadoc.length() + 1);
-                        if (reformatSpan != null) {
-                            reformat.reformat(reformatSpan[0].getOffset(), reformatSpan[1].getOffset());
-                        }
-                        if (open) {
-                            JavadocUtilities.open(file, openPos.getOffset());
-                        }
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-        } catch (BadLocationException ex) {
-            Logger.getLogger(GenerateJavadocFix.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
-        } finally {
-            reformat.unlock();
-            indent.unlock();
-        }
-        return null;
-    }
-    
-    private static boolean makeJavadocAloneOnLine(Document doc, int javadocBegin) throws BadLocationException {
-        CharSequence txt = (CharSequence) doc.getProperty(CharSequence.class);
-        if (txt == null) {
-            txt = doc.getText(0, javadocBegin);
-        }
+    @Override
+    protected void performRewrite(TransformationContext ctx) throws Exception {
+        WorkingCopy wc = ctx.getWorkingCopy();
+        TreePath path = ctx.getPath();
+        Element elm = wc.getTrees().getElement(path);
         
-        if (javadocBegin - 1 >= txt.length()) {
-            return false;
+        Tree t = null;
+        if (elm != null) {
+            t = wc.getTrees().getTree(elm);
         }
-        
-        for (int i = javadocBegin - 1; i >= 0; i--) {
-            char c = txt.charAt(i);
-            if (Character.isWhitespace(c)) {
-                if (c == '\n') {
-                    // before javadocBegin are only white spaces
+        if (t != null) {
+            final JavadocGenerator gen = new JavadocGenerator(spec);
+            
+            String javadocTxt = gen.generateComment(elm, wc);
+            Comment javadoc = Comment.create(Comment.Style.JAVADOC, NOPOS, NOPOS, NOPOS, javadocTxt);
+            final TreeMaker make = wc.getTreeMaker();
+            
+            Tree newTree;
+            switch(t.getKind()) {
+                case ANNOTATION_TYPE: {
+                    ClassTree old = (ClassTree) t;
+                    newTree = make.AnnotationType(old.getModifiers(), old.getSimpleName(), old.getMembers());
                     break;
-                } else {
-                    continue;
                 }
-            } else {
-                return true;
+                case CLASS: {
+                    ClassTree old = (ClassTree) t;
+                    newTree = make.Class(old.getModifiers(), old.getSimpleName(), old.getTypeParameters(), old.getExtendsClause(), old.getImplementsClause(), old.getMembers());
+                    break;
+                }
+                case ENUM: {
+                    ClassTree old = (ClassTree) t;
+                    newTree = make.Enum(old.getModifiers(), old.getSimpleName(), old.getImplementsClause(), old.getMembers());
+                    break;
+                }
+                case INTERFACE: {
+                    ClassTree old = (ClassTree) t;
+                    newTree = make.Interface(old.getModifiers(), old.getSimpleName(), old.getTypeParameters(), old.getImplementsClause(), old.getMembers());
+                    break;
+                }
+                case METHOD: {
+                    MethodTree old = (MethodTree) t;
+                    newTree = make.Method(old.getModifiers(), old.getName(), old.getReturnType(), old.getTypeParameters(), old.getParameters(), old.getThrows(), old.getBody(), (ExpressionTree) old.getDefaultValue());
+                    break;
+                }
+                case VARIABLE: {
+                    VariableTree old = (VariableTree) t;
+                    newTree = make.Variable(old.getModifiers(), old.getName(), old.getType(), old.getInitializer());
+                    break;
+                }
+                default:
+                    newTree = null;
+            }
+
+            if(newTree != null) {
+                make.addComment(newTree, javadoc, true);
+                wc.rewrite(t, newTree);
             }
         }
-        
-        return false;
     }
-    
-    private static int[] findReformatSpan(Document doc, int javadocBegin) throws BadLocationException {
-        int[] span = {javadocBegin, javadocBegin};
-        CharSequence txt = (CharSequence) doc.getProperty(CharSequence.class);
-        if (txt == null) {
-            txt = doc.getText(0, doc.getLength());
-        }
-        
-        for (; span[0] > 0; span[0]--) {
-            char c = txt.charAt(span[0]);
-            if (c == '\n') {
-                break;
-            }
-        }
-        
-        for (; span[1] < txt.length() - 1; span[1]++) {
-            char c = txt.charAt(span[1]);
-            if (c == '\n') {
-                break;
-            }
-        }
-        
-        return span;
-    }
-    
 }

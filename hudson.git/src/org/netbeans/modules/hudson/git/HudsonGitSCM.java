@@ -85,7 +85,7 @@ public class HudsonGitSCM implements HudsonSCM {
         if (!new File(folder, ".git").isDirectory()) {
             return null;
         }
-        final URI origin = getRemoteOrigin(folder.toURI(), null);
+        final URI origin = getRemoteOrigin(org.openide.util.Utilities.toURI(folder), null);
         final String replacement = origin != null ? roReplacement(origin.toString()) : folder.getAbsolutePath();
         return new Configuration() {
             @Override public void configure(Document doc) {

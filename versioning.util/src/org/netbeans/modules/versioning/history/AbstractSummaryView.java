@@ -53,6 +53,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
@@ -720,7 +721,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                         break;
                     }
                 }
-                if (idx == -1) return;
+                if (idx == resultsList.getModel().getSize()) return;
                 Rectangle rect = resultsList.getCellBounds(idx, idx);
                 menu.show(resultsList, p.x + rect.x, p.y + rect.y);
             }

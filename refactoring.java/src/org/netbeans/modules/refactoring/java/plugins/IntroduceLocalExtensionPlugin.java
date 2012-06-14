@@ -145,7 +145,7 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         final IntroduceLocalExtensionTransformer transformer = new IntroduceLocalExtensionTransformer(refactoring);
         TransformTask transform = new TransformTask(transformer, treePathHandle);
         Problem problem = createAndAddElements(a, transform, refactoringElements, refactoring);

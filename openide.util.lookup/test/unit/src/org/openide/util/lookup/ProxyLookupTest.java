@@ -73,7 +73,12 @@ implements AbstractLookupBaseHid.Impl {
      * @return a lookup to use
      */
     public Lookup createLookup (Lookup lookup) {
-        return new ProxyLookup (new Lookup[] { lookup });
+        return createMultiLookup(lookup);
+    }
+
+    @Override
+    Lookup createMultiLookup(Lookup... all) {
+        return new ProxyLookup (all);
     }
     
     public Lookup createInstancesLookup (InstanceContent ic) {

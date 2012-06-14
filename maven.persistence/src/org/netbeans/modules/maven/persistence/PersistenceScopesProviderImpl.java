@@ -78,6 +78,7 @@ public class PersistenceScopesProviderImpl implements PersistenceScopesProvider,
      * property access to the persistence scopes
      * @return the PersistenceScopes instance of the current project
      */
+    @Override
     public PersistenceScopes getPersistenceScopes()
     {
         if (checked.compareAndSet(false, true)) {
@@ -111,6 +112,7 @@ public class PersistenceScopesProviderImpl implements PersistenceScopesProvider,
      * watches for creation and deletion of the persistence.xml file
      * @param evt the change event to process
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
         if (MavenPersistenceProvider.PROP_PERSISTENCE.equals(evt.getPropertyName()))

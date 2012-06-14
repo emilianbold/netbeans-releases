@@ -67,6 +67,7 @@ public final class CreateFieldFix implements Fix {
     private TypeMirrorHandle proposedType;
     private ClasspathInfo cpInfo;
     private Set<Modifier> modifiers;
+    private final boolean remote;
     
     private String name;
     private String inFQN;
@@ -82,6 +83,7 @@ public final class CreateFieldFix implements Fix {
             proposedType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
         }
         this.proposedType = TypeMirrorHandle.create(proposedType);
+        this.remote = !org.openide.util.Utilities.compareObjects(info.getFileObject(), targetFile);
     }
     
     public String getText() {
@@ -124,7 +126,13 @@ public final class CreateFieldFix implements Fix {
             }
         });
         
-        return Utilities.commitAndComputeChangeInfo(targetFile, diff, null);
+        ChangeInfo ci = Utilities.commitAndComputeChangeInfo(targetFile, diff, null);
+        
+        if (remote) {
+            return ci;
+        } else {
+            return null;
+        }
     }
     
     String toDebugString(CompilationInfo info) {

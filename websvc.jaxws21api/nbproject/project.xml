@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jaxws22/api/jsr181-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws22/api/jsr250-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/api/javax.annotation.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws22/api/saaj-api.jar</runtime-relative-path>

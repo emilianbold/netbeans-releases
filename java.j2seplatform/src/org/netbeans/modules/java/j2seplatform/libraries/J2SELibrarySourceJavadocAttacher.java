@@ -57,6 +57,7 @@ import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -98,7 +99,7 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                 boolean success = false;
                 try {
                     final URL areaLocation = lm.getLocation();
-                    final File baseFolder = areaLocation == null ? null : new File(areaLocation.toURI()).getParentFile();
+                    final File baseFolder = areaLocation == null ? null : Utilities.toFile(areaLocation.toURI()).getParentFile();
                     final List<? extends URI> selected;
                     if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_SRC) {
                         selected = SourceJavadocAttacherUtil.selectSources(

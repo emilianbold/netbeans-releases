@@ -55,6 +55,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -78,7 +79,7 @@ public class TestUtilitiesTest extends NbTestCase {
         sourceDir.mkdirs();        
         boot = TestUtilities.createBootClassPath ();
         compile = ClassPathSupport.createClassPath(new URL[0]);
-        source = ClassPathSupport.createClassPath(new URL[]{sourceDir.toURI().toURL()});
+        source = ClassPathSupport.createClassPath(new URL[]{Utilities.toURI(sourceDir).toURL()});
         TestUtilities.setCacheFolder(cache);
         IndexingManager.getDefault().refreshIndexAndWait(sourceDir.toURL(), null);
         assertTrue(TestUtilities.waitScanFinished(10, TimeUnit.SECONDS));

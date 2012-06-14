@@ -1095,14 +1095,18 @@ public class RADComponent {
     static final boolean SUPPRESS_PROPERTY_TABS = Boolean.getBoolean(
             "nb.form.suppressTabs"); // NOI18N
 
+    /**
+     * Attribute for specifying an alternative display name of the property set.
+     */
+    private static final String ALTERNATE_PS_NAME = "PS_AlternateDisplayName"; // NOI18N
+
     protected synchronized void createPropertySets(List<Node.PropertySet> propSets) {
         if (beanProperties1 == null)
             createBeanProperties();
 
         ResourceBundle bundle = FormUtils.getBundle();
 
-        Node.PropertySet ps;        
-        propSets.add(new Node.PropertySet(
+        Node.PropertySet ps = new Node.PropertySet(
                 "properties", // NOI18N
                 bundle.getString("CTL_PropertiesTab"), // NOI18N
                 bundle.getString("CTL_PropertiesTabHint")) // NOI18N
@@ -1111,7 +1115,9 @@ public class RADComponent {
             public Node.Property[] getProperties() {
                 return getBeanProperties1();
             }
-        });
+        };
+        ps.setValue(ALTERNATE_PS_NAME, bundle.getString("CTL_AlternatePropertiesTab")); // NOI18N
+        propSets.add(ps);
 
         if (SUPPRESS_PROPERTY_TABS) {
             return;
@@ -1136,7 +1142,7 @@ public class RADComponent {
             }
         
             if (beanProperties2.length > 0) {
-                propSets.add(new Node.PropertySet(
+                ps = new Node.PropertySet(
                         "properties2", // NOI18N
                         bundle.getString("CTL_Properties2Tab"), // NOI18N
                         bundle.getString("CTL_Properties2TabHint")) // NOI18N
@@ -1145,7 +1151,9 @@ public class RADComponent {
                     public Node.Property[] getProperties() {
                         return getBeanProperties2();
                     }
-                });
+                };
+                ps.setValue(ALTERNATE_PS_NAME, bundle.getString("CTL_AlternateProperties2Tab")); // NOI18N
+                propSets.add(ps);
             }
 
             if (getAllBindingProperties().length > 0) {

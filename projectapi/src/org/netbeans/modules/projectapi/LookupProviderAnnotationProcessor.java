@@ -63,6 +63,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
@@ -199,7 +201,18 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
                 }
                 List<TypeMirror> r = new ArrayList<TypeMirror>();
                 for (Object item : (List<?>) attr.getValue().getValue()) {
-                    r.add((TypeMirror) ((AnnotationValue) item).getValue());
+                    TypeMirror type = (TypeMirror) ((AnnotationValue) item).getValue();
+                    Types typeUtils = processingEnv.getTypeUtils();
+                    for (TypeMirror otherType : r) {
+                        for (boolean swap : new boolean[] {false, true}) {
+                            TypeMirror t1 = swap ? type : otherType;
+                            TypeMirror t2 = swap ? otherType : type;
+                            if (typeUtils.isSubtype(t1, t2)) {
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "registering under both " + typeUtils.asElement(t2).getSimpleName() + " and its subtype " + typeUtils.asElement(t1).getSimpleName() + " will not work if LookupMerger<" + typeUtils.asElement(t2).getSimpleName() + "> is used (#205151)", e, ann, attr.getValue());
+                            }
+                        }
+                    }
+                    r.add(type);
                 }
                 return r;
             }

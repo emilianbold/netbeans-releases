@@ -60,6 +60,7 @@ public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
     public JaxWsClientCreatorProvider() {
     }
     
+    @Override
     public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
         if (JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory()) != null) {
             return new JaxWsClientCreator(project, wiz);

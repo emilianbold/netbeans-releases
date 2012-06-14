@@ -72,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 /**
@@ -219,7 +220,7 @@ public final class LayerHandle {
             }
             if (generated != null && generated.isFile()) {
                 try {
-                    layers.add(new XMLFileSystem(generated.toURI().toString()));
+                    layers.add(new XMLFileSystem(Utilities.toURI(generated).toString()));
                 } catch (SAXException x) {
                     Logger.getLogger(DualLayers.class.getName()).log(Level.INFO, "could not load " + generated, x);
                 }

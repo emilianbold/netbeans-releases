@@ -2568,6 +2568,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         }
 
                         int offset;
+                        
+                        // Pane's document may differ - see #204980
+                        Document paneDoc = ePane.getDocument();
+                        if (paneDoc instanceof StyledDocument && paneDoc != doc) {
+                            if (ERR.isLoggable(Level.FINE)) {
+                                ERR.fine("paneDoc=" + paneDoc + "\n !=\ndoc=" + doc); // NOI18N
+                            }
+                            doc = (StyledDocument) paneDoc;
+                        }
 
                         javax.swing.text.Element el = NbDocument.findLineRootElement(doc);
                         el = el.getElement(el.getElementIndex(pos.getOffset()));

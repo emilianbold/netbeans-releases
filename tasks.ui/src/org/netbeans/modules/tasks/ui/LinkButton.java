@@ -43,7 +43,11 @@ package org.netbeans.modules.tasks.ui;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Image;
+import java.awt.font.TextAttribute;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultButtonModel;
@@ -164,7 +168,11 @@ public class LinkButton extends JButton {
             setEnabled(false);
             setForeground(ColorManager.getDefault().getDisabledColor());
         }
-        setFont(UIManager.getFont("Tree.font"));//NOI18N
+        Font font = UIManager.getFont("Tree.font");//NOI18N
+        Map<TextAttribute, Object> map = new HashMap<TextAttribute, Object>();
+        map.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
+        font = font.deriveFont(map);
+        setFont(font);
     }
 
     private static class Model extends DefaultButtonModel {

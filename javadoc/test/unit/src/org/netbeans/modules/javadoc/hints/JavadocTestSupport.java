@@ -145,7 +145,7 @@ public abstract class JavadocTestSupport extends NbTestCase {
     }
     
     protected void doFixTest(String code, String expectation, TreePath tpath, boolean createJD) throws Exception {
-        Analyzer an = new Analyzer(info, doc, tpath, Severity.WARNING, HintSeverity.WARNING, createJD, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, tpath, Severity.WARNING, createJD, Access.PRIVATE);
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         assertFalse("none error found", errs.isEmpty());
@@ -167,11 +167,15 @@ public abstract class JavadocTestSupport extends NbTestCase {
         doFixTest(code, expectation, tpath);
     }
     
-    protected void doFirstMemberFixTest(String code, String expectation) throws Exception {
+    protected void doMemberFixTest(String code, String expectation) throws java.lang.Exception {
+        doMemberFixTest(code, expectation, 1);
+    }
+
+    protected void doMemberFixTest(String code, String expectation, int position) throws Exception {
         prepareTest(code);
         
         ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
-        Tree mt = ct.getMembers().get(1); // skip constructor
+        Tree mt = ct.getMembers().get(position); // skip constructor
         TreePath tpath = new TreePath(new TreePath(new TreePath(info.getCompilationUnit()), ct), mt);
         
         doFixTest(code, expectation, tpath);

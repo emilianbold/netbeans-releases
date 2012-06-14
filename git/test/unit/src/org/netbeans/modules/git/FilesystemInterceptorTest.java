@@ -55,6 +55,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.MockServices;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
@@ -400,6 +401,44 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         // test
         assertFalse(folder.exists());
         assertEquals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
+    }
+    
+    public void testDeleteVersionedFolder_NoMetadata() throws Exception {
+        // init
+        File folder = new File(repositoryLocation, "folder1");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        file.createNewFile();
+        add();
+        commit();
+        getCache().refreshAllRoots(Collections.singleton(file));
+        assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(file).getStatus());
+
+        // delete
+        Utils.deleteRecursively(new File(repositoryLocation, ".git"));
+        delete(folder);
+        
+        // test
+        assertFalse(folder.exists());
+    }
+    
+    public void testDeleteVersionedFolder_NoMetadata_FO() throws Exception {
+        // init
+        File folder = new File(repositoryLocation, "folder1");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        file.createNewFile();
+        add();
+        commit();
+        getCache().refreshAllRoots(Collections.singleton(file));
+        assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(file).getStatus());
+
+        // delete
+        Utils.deleteRecursively(new File(repositoryLocation, ".git"));
+        deleteFO(folder);
+        
+        // test
+        assertFalse(folder.exists());
     }
 
     public void testDeleteNotVersionedFolder() throws Exception {
@@ -3262,6 +3301,17 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     private void delete(File file) throws IOException {
         DataObject dao = DataObject.find(FileUtil.toFileObject(file));
         dao.delete();
+    }
+    
+    private void deleteFO (File toDelete) throws DataObjectNotFoundException, IOException {
+        FileObject fo = FileUtil.toFileObject(toDelete);
+        assertNotNull(fo);
+        FileLock lock = fo.lock();
+        try {
+            fo.delete(lock);
+        } finally {
+            lock.releaseLock();
+        }
     }
 
     private String getName(File f) {

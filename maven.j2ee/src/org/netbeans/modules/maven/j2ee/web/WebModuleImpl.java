@@ -45,35 +45,32 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
-import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
-import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
+import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
-import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
+import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -291,26 +288,16 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     @Override
     public FileObject getContentDirectory() throws IOException {
-        FileObject fo;
+        FileObject webappFO;
         if (inplace) {
-            fo = getDocumentBase();
+            webappFO = getDocumentBase();
         } else {
-            MavenProject proj = mavenproject().getMavenProject();
-            String loc = PluginPropertyUtils.getPluginProperty(project,
-                Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_WAR, //NOI18N
-                "webappDirectory", "war"); //NOI18N        
-            if (loc == null) {
-                String finalName = proj.getBuild().getFinalName();
-                loc = proj.getBuild().getDirectory() + File.separator + finalName;
-            }
-            File fil = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), loc);
-    //        System.out.println("get content=" + fil);
-            fo = FileUtil.toFileObject(fil);
+            webappFO = super.getContentDirectory();
         } 
-        if (fo != null) {
-            fo.refresh();
+        if (webappFO != null) {
+            webappFO.refresh();
         }
-        return fo;
+        return webappFO;
     }
     
     @Override

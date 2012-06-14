@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
@@ -255,7 +256,7 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
                     if (e.getLocalName().equals(EL_SOURCE_OUTPUT)) {
                         try {
                             final String path = eval.evaluate(XMLUtil.findText(e));
-                            result.add(helper.resolveFile(path).toURI().toURL());
+                            result.add(Utilities.toURI(helper.resolveFile(path)).toURL());
                         } catch (MalformedURLException ex) {
                             Exceptions.printStackTrace(ex);
                         }

@@ -256,7 +256,7 @@ public class BuildZipDistributionTest extends TestBase {
     private void run(File nbexec, String... args) throws Exception {
 
         URL tu = MainCallback.class.getProtectionDomain().getCodeSource().getLocation();
-        File testf = new File(tu.toURI());
+        File testf = Utilities.toFile(tu.toURI());
         assertTrue("file found: " + testf, testf.exists());
         
         LinkedList<String> allArgs = new LinkedList<String>(Arrays.asList(args));

@@ -64,6 +64,7 @@ import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -115,7 +116,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
         assertFalse(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(getWorkDir().toURI().toURL());
+        res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
         assertTrue(res.preferSources());        
@@ -135,7 +136,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
         assertTrue(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(getWorkDir().toURI().toURL());
+        res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
         assertTrue(res.preferSources());        
@@ -158,7 +159,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
         assertFalse(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(getWorkDir().toURI().toURL());
+        res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
         assertTrue(res.preferSources());        
@@ -181,7 +182,7 @@ public class SourceForBinaryQueryTest extends NbTestCase {
         assertEquals(Collections.singletonList(sr2), Arrays.asList(res.getRoots()));
         assertTrue(res.preferSources());
         
-        res = SourceForBinaryQuery.findSourceRoots2(getWorkDir().toURI().toURL());
+        res = SourceForBinaryQuery.findSourceRoots2(Utilities.toURI(getWorkDir()).toURL());
         assertNotNull(res);
         assertEquals(0, res.getRoots().length);
         assertTrue(res.preferSources());                

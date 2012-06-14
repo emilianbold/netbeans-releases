@@ -603,27 +603,27 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     @Override
-    public void setParent(View parent) {
+    public void setParent(final View parent) {
         if (parent != null) {
             Container container = parent.getContainer();
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
-            JTextComponent tc = (JTextComponent) container;
+            final JTextComponent tc = (JTextComponent) container;
             pMutex = (PriorityMutex) tc.getClientProperty(MUTEX_CLIENT_PROPERTY);
             if (pMutex == null) {
                 pMutex = new PriorityMutex();
                 tc.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
-            if (lock()) {
-                try {
-                    super.setParent(parent);
+
+            runReadLockTransaction(new Runnable() {
+                @Override
+                public void run() {
+                    DocumentView.super.setParent(parent);
                     textComponent = tc;
                     op.parentViewSet();
                     updateStartEndOffsets();
-                } finally {
-                    unlock();
                 }
-            }
+            });
 
         } else { // Setting null parent
             // Set the textComponent to null under mutex
@@ -654,10 +654,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         Position endPos = getExtraEndPosition();
         Document doc = getDocument();
         startOffset = (startPos != null) ? startPos.getOffset() : 0;
+        Position docEndPos;
         endOffset = Math.max(startOffset,
                 (endPos != null)
                     ? endPos.getOffset()
-                    : ((doc != null) ? doc.getEndPosition().getOffset() : 0));
+                    : ((doc != null && (docEndPos = doc.getEndPosition()) != null)
+                        ? docEndPos.getOffset()
+                        : 0));
     }
     
     @Override
@@ -934,6 +937,10 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         }
     }
     
+    boolean isDocumentLocked() {
+        return DocumentUtilities.isReadLocked(getDocument());
+    }
+    
     void checkMutexAcquiredIfLogging() {
         if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkLocked();
@@ -997,12 +1004,15 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                     // Check TextLayoutCache correctness - all PVs with non-null children
                     // should be present in the cache
                     TextLayoutCache tlCache = op.getTextLayoutCache();
-                    for (int i = 0; i < viewCount; i++) {
-                        ParagraphView pView = getParagraphView(i);
-                        boolean inCache = tlCache.contains(pView);
-                        if (!pView.isChildrenNull() != inCache) {
-                            err = "Invalid TLCaching for pView[" + i + "]: inCache=" + inCache; // NOI18N
-                            break;
+                    err = tlCache.findIntegrityError();
+                    if (err == null) {
+                        for (int i = 0; i < viewCount; i++) {
+                            ParagraphView pView = getParagraphView(i);
+                            boolean inCache = tlCache.contains(pView);
+                            if (!pView.isChildrenNull() != inCache) {
+                                err = "Invalid TLCaching for pView[" + i + "]: inCache=" + inCache; // NOI18N
+                                break;
+                            }
                         }
                     }
                 }

@@ -82,7 +82,8 @@ public final class PlatformInfo {
         try {
             hostinfo = HostInfoUtils.getHostInfo(execEnv);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace(System.err);
+//            Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
             // doesn't make sense to log - user cancelled operation (most likely, login) explicitely
         }

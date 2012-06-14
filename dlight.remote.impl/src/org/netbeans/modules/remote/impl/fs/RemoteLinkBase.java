@@ -370,4 +370,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         return fo;
     }
+    
+    @Override
+    protected byte[] getMagic() {
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null) {
+            return delegate.getMagic();
+        }
+        return null;
+    }
 }

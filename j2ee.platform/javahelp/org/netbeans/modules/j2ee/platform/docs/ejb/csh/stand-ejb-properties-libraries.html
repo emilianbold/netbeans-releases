@@ -46,7 +46,7 @@ each library. The simplest case is to have the libraries copied to that folder.
 You can also refer to the libraries in their existing location 
 (with a relative path or an absolute path). If you have specified an existing folder, 
 you also have the option of using copies of libraries that are already in that folder 
-instead of the copies that are contained in the IDE's Library Manager.</p>
+instead of the copies that are contained in the IDE's Ant Library Manager.</p>
 
 <p>Each standard EJB module project maintains a separate classpath for compilation, 
   compiling tests, and running tests. Use the buttons on the right of the dialog 
@@ -57,7 +57,7 @@ any of the following: </p>
     files and other resources.</li>
   <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_libraries.html">Library</a>. 
     </b>A collection of JAR files, source code, and Javadoc that has been registered 
-    in the Library Manager.</li>
+    in the Ant Library Manager.</li>
     <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Project</a>.</b> The build output, source 
     files, and Javadoc files of another IDE project.</li>
 </ul>
@@ -72,11 +72,11 @@ any of the following: </p>
     the JAR files that are on the classpath of the EJB module in the application EAR file.
     Deselect the Package checkbox for each classpath item that you want to exclude from the EAR file.
   </li>
-  <li>If a JAR file is registered in the Library Manager and has attached source 
+  <li>If a JAR file is registered in the Ant Library Manager and has attached source 
     code and Javadoc documentation, you can just add the JAR file to the classpath 
     and the IDE finds the Javadoc documentation and source code automatically. 
     You should use the Add Library button if you want to add a library that contains 
-    several JAR files. Adding a library that is managed in the Library Manager 
+    several JAR files. Adding a library that is managed in the Ant Library Manager 
     also makes it easier for other developers with which you share the project 
     to fix broken references to Javadoc documentation and source code.</li>
   <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">

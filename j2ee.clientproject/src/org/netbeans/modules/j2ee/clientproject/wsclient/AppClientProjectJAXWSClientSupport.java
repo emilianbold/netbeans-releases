@@ -71,7 +71,7 @@ public class AppClientProjectJAXWSClientSupport extends ProjectJAXWSClientSuppor
      * Creates a new instance of AppClientProjectJAXWSClientSupport
      */
     public AppClientProjectJAXWSClientSupport(AppClientProject project, AntProjectHelper antProjectHelper) {
-        super(project);
+        super(project, antProjectHelper);
         this.project=project;
     }
 

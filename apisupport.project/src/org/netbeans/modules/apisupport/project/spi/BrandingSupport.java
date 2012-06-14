@@ -416,7 +416,7 @@ public abstract class BrandingSupport {
     private void loadBrandedFiles(final BrandableModule mEntry,
             final File file) throws IOException {
         String entryPath = PropertyUtils.relativizeFile(getModuleEntryDirectory(mEntry),file);
-        BrandedFile bf = new BrandedFile(mEntry, file.toURI().toURL(), entryPath);
+        BrandedFile bf = new BrandedFile(mEntry, Utilities.toURI(file).toURL(), entryPath);
         brandedFiles.add(bf);
     }
     
@@ -565,7 +565,7 @@ public abstract class BrandingSupport {
             this.moduleEntry = moduleEntry;
             this.entryPath = entry;
             if (source == null) {
-                brandingSource = moduleEntry.getJarLocation().toURI().toURL();
+                brandingSource = Utilities.toURI(moduleEntry.getJarLocation()).toURL();
                 brandingSource =  new URL("jar:" + brandingSource + "!/" + entryPath); // NOI18N
             } else {
                 brandingSource = source;

@@ -50,8 +50,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -179,7 +179,7 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
             return null;
         }
         initDelegates();
-        fireProgressListenerStart(ProgressEvent.START, 3);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, 3);
         Problem p = null;
         if (getterDelegate != null) {
             p = JavaPluginUtils.chainProblems(p, getterDelegate.prepare(reb.getSession()));

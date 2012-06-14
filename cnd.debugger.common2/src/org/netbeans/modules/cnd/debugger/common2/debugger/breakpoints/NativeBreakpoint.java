@@ -189,7 +189,7 @@ public abstract class NativeBreakpoint
 	new ArrayList<DebuggerAnnotation>();
     private int visitedAnnotationId = 0;	// to support GoToSource
 
-    private int flags = 0;
+    private final int flags;
 
     static final int RESTORED = (1<<0);
 
@@ -201,15 +201,15 @@ public abstract class NativeBreakpoint
 	return (flags & RESTORED) == RESTORED;
     }
 
-    public boolean isToplevel() {
+    public final boolean isToplevel() {
 	return (flags & TOPLEVEL) == TOPLEVEL;
     }
 
-    public boolean isMidlevel() {
+    public final boolean isMidlevel() {
 	return (flags & MIDBREAKPOINT) == MIDBREAKPOINT;
     }
 
-    public boolean isSubBreakpoint() {
+    public final boolean isSubBreakpoint() {
 	return (flags & SUBBREAKPOINT) == SUBBREAKPOINT;
     }
 
@@ -418,7 +418,7 @@ public abstract class NativeBreakpoint
 	*/
     }
 
-    private ArrayList<NativeBreakpoint> children;
+    private final ArrayList<NativeBreakpoint> children;
 
     private NativeBreakpoint parent;
 

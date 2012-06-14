@@ -52,6 +52,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author marekfukala
  */
+@Deprecated
 public class JsfSupportHandle {
 
     private JsfSupport instance;

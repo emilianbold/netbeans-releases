@@ -68,6 +68,7 @@ import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -92,7 +93,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
         BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
-        assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
+        assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
         a.finish();
 
@@ -132,7 +133,7 @@ public class BinaryAnalyserTest extends NbTestCase {
 
         setLowMemory(true);
         assertEquals(Result.FINISHED, 
-                a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
+                a.start(FileUtil.getArchiveRoot(Utilities.toURI(binaryAnalyzerDataDir).toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
         a.finish();
 

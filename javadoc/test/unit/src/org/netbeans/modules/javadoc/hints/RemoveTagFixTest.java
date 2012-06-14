@@ -51,7 +51,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveReturnTagFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -73,7 +73,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
     
     public void testRemoveReturnTagFixInLine() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /** @return bla */\n" +
@@ -90,7 +90,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveReturnTagFixHeaderLine() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /** @return bla\n" +
@@ -109,7 +109,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveReturnTagFixTailLine() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -130,7 +130,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveReturnTagAfterParamFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -152,7 +152,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveMultilineReturnTagAfterParamFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -175,7 +175,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveThrowsTagFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -197,7 +197,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveParamTagFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -219,7 +219,7 @@ public class RemoveTagFixTest extends JavadocTestSupport {
     }
 
     public void testRemoveParamTagFix_124353() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
