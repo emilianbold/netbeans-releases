@@ -46,7 +46,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.dnd.DnDConstants;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -67,10 +66,11 @@ import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.w3c.dom.Document;
 
 /**
  * Panel that displays DOM tree of the inspected page.
@@ -88,8 +88,6 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     private JLabel noDomLabel;
     /** Page model used by this panel. */
     private PageModel pageModel;
-    /** Context actions (actions shown when the panel/view is right-clicked) of this panel. */
-    private Action[] contextActions;
     /** Determines whether we are just updating view from the model. */
     private boolean updatingView = false;
 
@@ -107,8 +105,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         if (pageModel != null) {
             pageModel.addPropertyChangeListener(createModelListener());
             manager.addPropertyChangeListener(createSelectedNodesListener());
-            update(true);
-            updateHighlight();
+            update();
         }
     }
 
@@ -198,10 +195,10 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
      * Highlighted (visualizer) nodes.
      * This collection is for rendering purposes only.
      */
-    final List highlightedTreeNodes = new ArrayList();
+    private final List highlightedTreeNodes = new ArrayList();
 
     /**
-     * Forces update of the set of highlighted nodes.
+     * Updates the set of highlighted nodes.
      */
     final void updateHighlight() {
         synchronized (highlightedTreeNodes) {
@@ -210,8 +207,8 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                 TreeNode visualizer = Visualizer.findVisualizer(node);
                 highlightedTreeNodes.add(visualizer);
             }
-            treeView.repaint();
         }
+        treeView.repaint();
     }
 
     /**
@@ -241,7 +238,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
                 JLabel component;
-                if (!selected && highlightedTreeNodes.contains(value)) {
+                if (!selected && isHighlighted(value)) {
                     component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
                     component.setBackground(hoverColor);
                     component.setOpaque(true);
@@ -269,27 +266,18 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     /**
      * Updates the content of the panel. It fetches the current data
      * from the model and updates the view accordingly.
-     * 
-     * @param rebuild determines if the view should be rebuilt completely
-     * or whether it should attempt to keep the current expand/collapse state
-     * of the nodes displayed currently.
      */
-    private void update(final boolean rebuild) {
+    private void update() {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                // Make sure that the document node is created
-                pageModel.getDocumentNode();
+                final Node node = pageModel.getDocumentNode();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        update(rebuild, null);
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-//                                updateSelectionFromModel(false);
-                            }
-                        });
+                        update(node);
+                        updateSelection();
+                        updateHighlight();
                     }
                 });
             }
@@ -299,33 +287,21 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     /**
      * Updates the content of the panel.
      * 
-     * @param rebuild determines if the view should be rebuilt completely
-     * or whether it should attempt to keep the current expand/collapse state
-     * of the nodes displayed currently.
-     * @param document new DOM that should be shown in the panel.
+     * @param documentNode node that should be shown in the panel (can be {@code null}).
      */
-    private void update(boolean rebuild, Document document) {
+    private void update(Node documentNode) {
+        assert EventQueue.isDispatchThread();
+
         updatingView  = true;
         try {
-//            if (document == null) {
-//                Node root = new AbstractNode(Children.LEAF);
-//                replace(treeView, noDomLabel);
-//                manager.setRootContext(root);
-//            } else {
-                manager.setRootContext(pageModel.getDocumentNode());
-//                Element documentElement = document.getDocumentElement();
-//                if (rebuild) {
-//                    ElementNode root = new ElementNode();
-//                    root.setElement(documentElement);
-//                    manager.setRootContext(new FakeRootNode(root, getContextActions()));
-//                } else {
-//                    // Trying to keep the selected nodes and expanded branches in the tree view
-//                    FakeRootNode fakeRoot = (FakeRootNode)manager.getRootContext();
-//                    ElementNode oldRoot = (ElementNode)fakeRoot.getRealRoot();
-//                    oldRoot.setElement(documentElement);
-//                }
+            if (documentNode == null) {
+                Node root = new AbstractNode(Children.LEAF);
+                replace(treeView, noDomLabel);
+                manager.setRootContext(root);
+            } else {
+                manager.setRootContext(documentNode);
                 replace(noDomLabel, treeView);
-//            }
+            }
         } finally {
             updatingView = false;
         }
@@ -347,36 +323,6 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
-     * Returns context actions, i.e., the actions that are shown when
-     * the tree view is right-clicked.
-     * 
-     * @return context actions.
-     */
-    private Action[] getContextActions() {
-        if (contextActions == null) {
-            contextActions = new Action[] {
-                createRefreshAction()
-            };
-        }
-        return contextActions;
-    }
-
-    /**
-     * Creates an action that refreshes the content of this panel.
-     * 
-     * @return action that refreshes the content of this panel.
-     */
-    private Action createRefreshAction() {
-        String name = NbBundle.getMessage(DomPanel.class, "DomPanel.refreshAction"); // NOI18N
-        return new AbstractAction(name) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                update(false);
-            }
-        };
-    }
-
-    /**
      * Creates {@code PageModel} listener.
      * 
      * @return {@code PageModel} listener.
@@ -387,79 +333,40 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
-                    List<? extends Node> nodes = pageModel.getSelectedNodes();
-                    final Node[] selection = nodes.toArray(new Node[nodes.size()]);
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatingView = true;
-                            try {
-                                manager.setSelectedNodes(selection);
-                            } catch (PropertyVetoException pvex) {
-                                Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
-                            } finally {
-                                updatingView = false;
-                            }
-                        }
-                    });
+                    updateSelection();
                 } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateHighlight();
-                        }
-                    });
+                    updateHighlight();
                 } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
-                    update(true);
+                    update();
                 }
             }
         };
     }
 
-//    /**
-//     * Updates selection in this view from the model.
-//     * 
-//     * @param triggeredByModel determines whether this selection update
-//     * was triggered by selection change in the model.
-//     */
-//    private void updateSelectionFromModel(boolean triggeredByModel) {
-//        Collection<ElementHandle> selection = pageModel.getSelectedElements();
-//        final List<Node> nodeSelection = new ArrayList<Node>();
-//        for (ElementHandle handle : selection) {
-//            Node root = manager.getRootContext();
-//            if (root instanceof FakeRootNode) {
-//                root = ((FakeRootNode)root).getRealRoot();
-//            }
-//            if (root instanceof ElementNode) {
-//                ElementNode node = ((ElementNode)root).locate(handle);
-//                if (node == null) {
-//                    if (triggeredByModel) {
-//                        // Selected node not found => try to refresh the view
-//                        // from the model to get the missing node
-//                        update(false);
-//                        // No need to continue, selection will be updated
-//                        // as a result of DOM tree update
-//                        return;
-//                    }
-//                } else {
-//                    nodeSelection.add(node);
-//                }
-//            }
-//        }
-//        EventQueue.invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                updatingView = true;
-//                try {
-//                    manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
-//                } catch (PropertyVetoException pvex) {
-//                    Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
-//                } finally {
-//                    updatingView = false;
-//                }
-//            }
-//        });
-//    }
+    /**
+     * Updates the set of selected nodes.
+     */
+    private void updateSelection() {
+        if (EventQueue.isDispatchThread()) {
+            List<? extends Node> nodes = pageModel.getSelectedNodes();
+            Node[] selection = nodes.toArray(new Node[nodes.size()]);
+            updatingView = true;
+            try {
+                manager.setSelectedNodes(selection);
+            } catch (PropertyVetoException pvex) {
+                Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
+            } finally {
+                updatingView = false;
+            }
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateSelection();
+                }
+            });
+        }
+    }
 
     /**
      * Creates a listener for selected nodes.
