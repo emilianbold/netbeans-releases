@@ -105,8 +105,11 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
     private ModifiableOpenTag currentOpenTag;
     private ModifiableCloseTag currentCloseTag;
+    
+    private CharSequence sourceCode;
 
     public ParseTreeBuilder(CharSequence sourceCode) {
+        this.sourceCode = sourceCode;
         factory = new ElementsFactory(sourceCode);
         root = factory.createRoot();
     }
@@ -545,9 +548,24 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
+            
+            //check the name offset
+            if(attrInfo.nameOffset == -1 || attrInfo.nameOffset < node.from()) {
+                continue; //bad name offset
+            }
+            
+            //note: attrInfo.equalSignOffset and attrInfo.valueOffset can be null
+            //for attribute w/o a value
+            
             String attributeName = attributes.getLocalName(i);
             int attributeNameLength = attributeName.length();
             
+            //check attribute name length
+            int attrNameEndOffset = attrInfo.nameOffset + attributeNameLength;
+            if(attrNameEndOffset > sourceCode.length()) {
+                continue; //bad attribute
+            }
+                    
             int attributeValueLength;
             if(attrInfo.valueOffset == -1) {
                 //no value
@@ -591,7 +609,8 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
     private static class AttrInfo {
 
-        public int nameOffset, equalSignOffset;;
+        public int nameOffset = -1;
+        public int equalSignOffset = -1;
         public int valueOffset = -1;
         
         public ValueQuotation valueQuotationType;
