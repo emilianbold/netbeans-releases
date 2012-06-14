@@ -179,4 +179,44 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("$f->pub^Field;");
     }
 
+    public void testMethods_01() throws Exception {
+        findUsages("public static function st^Method() {}");
+    }
+
+    public void testMethods_02() throws Exception {
+        findUsages("public function in^Method() {}");
+    }
+
+    public void testMethods_03() throws Exception {
+        findUsages("Foo::st^Method();");
+    }
+
+    public void testMethods_04() throws Exception {
+        findUsages("$f->in^Method();");
+    }
+
+    public void testMethods_05() throws Exception {
+        findUsages("$retFoo = $this->ret^Foo();");
+    }
+
+    public void testMethods_06() throws Exception {
+        findUsages("$retFoo->in^Method();");
+    }
+
+    public void testMethods_07() throws Exception {
+        findUsages("$retFoo2 = $this->ret^Foo2();");
+    }
+
+    public void testMethods_08() throws Exception {
+        findUsages("$retFoo2->in^Method();");
+    }
+
+    public void testMethods_09() throws Exception {
+        findUsages("private function ret^Foo() {");
+    }
+
+    public void testMethods_10() throws Exception {
+        findUsages("private function ret^Foo2() {");
+    }
+
 }
