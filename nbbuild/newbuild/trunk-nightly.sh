@@ -96,7 +96,8 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}
-    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
+    cp -rp $DIST/ml/*  $DIST_SERVER2/${BUILD_ID}
+    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
     rm $DIST_SERVER2/latest.old
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest
