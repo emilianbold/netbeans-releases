@@ -1418,6 +1418,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         return resolved;
                     }
                 }
+                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember tdMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                        return resolved;
+                    }
+                }
             }
             return resolved;
         }
@@ -1587,6 +1594,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         return resolved;
                     }
                 }
+                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember tdMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                        return resolved;
+                    }
+                }                
             }
             return resolved;
         }
