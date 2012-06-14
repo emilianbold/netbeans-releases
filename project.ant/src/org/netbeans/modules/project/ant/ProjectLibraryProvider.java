@@ -647,13 +647,16 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
         final Collection<String> result = new ArrayList<String>();
         for (int i=0; i< entries.length; i++) {
-            if (("http".equals(entries[i]) || "https".equals(entries[i])) &&  //NOI18N
-                (i+1) < entries.length &&
-                entries[i+1].startsWith("//")) {  //NOI18N
-                    result.add(String.format("%s:%s",entries[i],entries[++i])); //NOI18N
-            } else {
-                result.add(entries[i]);
+            if (i < entries.length - 1 && entries[i].matches("https?")) {
+                // #212877: Definitions.getProperties already converted to \, so have entries=["http", "\\server\path\"]
+                String schemeSpecificPart = entries[i + 1].replace('\\', '/');
+                if (schemeSpecificPart.startsWith("//")) {
+                    result.add(entries[i] + ':' + schemeSpecificPart);
+                    i++;
+                    continue;
+                }
             }
+            result.add(entries[i]);
         }
         return result.toArray(new String[result.size()]);
     }
