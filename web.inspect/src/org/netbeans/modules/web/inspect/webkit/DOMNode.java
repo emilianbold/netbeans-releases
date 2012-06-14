@@ -109,7 +109,7 @@ public class DOMNode extends AbstractNode {
         }
         Node.Attribute classAttr = node.getAttribute("class"); // NOI18
         if (classAttr != null) {
-            StringTokenizer st = new StringTokenizer(classAttr.getValue(), ","); // NOI18N
+            StringTokenizer st = new StringTokenizer(classAttr.getValue());
             while (st.hasMoreTokens()) {
                 String token = st.nextToken();
                 selector.append('.').append(token.trim());
