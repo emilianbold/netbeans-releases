@@ -124,7 +124,7 @@ public class ElementsFactory {
     static abstract class TagElement implements Named, ModifiableElement {
 
         //32-64
-        private CharSequence source;
+        protected CharSequence source;
         //32
         //element start
         private int startOffset;
@@ -801,6 +801,7 @@ public class ElementsFactory {
 
         public Root(CharSequence source, String namespace) {
             super(source, 0, source.length(), (byte) 0);
+            
             this.namespace = namespace;
         }
 
@@ -809,6 +810,12 @@ public class ElementsFactory {
             return ROOT;
         }
 
+        //must be overridden since the TagElement class uses 'from' - 'to' diff in short value,
+        @Override
+        public int to() {
+            return source.length();
+        }
+        
         @Override
         public ElementType type() {
             return ElementType.ROOT;

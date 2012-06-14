@@ -44,27 +44,29 @@ package org.netbeans.modules.php.editor.codegen;
 import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -83,20 +85,103 @@ public class CGSGenerator implements CodeGenerator {
     private static final String PARAM_NAME = "${PARAM_NAME}";
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}";  //NOI18N
+    private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
 
     public enum GenType {
-        CONSTRUCTOR,
-        GETTER,
-        SETTER,
-        GETTER_AND_SETTER,
-        METHODS;
+        CONSTRUCTOR() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_CONSTRUCTOR"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    if (!way.equals(CGSGenerator.GenWay.WITH_UNDERSCORE)) {
+                        result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getConstructorExample(propertyName), way));
+                    }
+                }
+                return result;
+            }
+
+        },
+        GETTER() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName), way));
+                }
+                return result;
+            }
+
+        },
+        SETTER() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getSetterExample(propertyName), way));
+                }
+                return result;
+            }
+
+        },
+        GETTER_AND_SETTER() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName) + ", " + way.getSetterExample(propertyName), way));
+                }
+                return result;
+            }
+
+        },
+        METHODS() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_METHODS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                return new DefaultComboBoxModel();
+            }
+
+        };
+
+        public abstract String getPanelTitle();
+        public abstract ComboBoxModel getModel(final String propertyName);
     }
 
     public enum GenWay {
-        AS_JAVA(NbBundle.getMessage(CGSGenerator.class, "JAVA_STYLE"), START_OF_GETTER + UP_FIRST_LETTER_PROPERTY, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY), //NOI18N
-        WITH_UNDERSCORE(NbBundle.getMessage(CGSGenerator.class, "ADD_UNDERSCORE"), START_OF_GETTER + "_" + PROPERTY, START_OF_SETTER + "_" + PROPERTY), //NOI18N
-        WITHOUT_UNDERSCORE(NbBundle.getMessage(CGSGenerator.class, "REMOVE_UNDERSCORE"), START_OF_GETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE);    //NOI18N
+        AS_JAVA(NbBundle.getMessage(CGSGenerator.class, "JAVA_STYLE"), "__construct($" + PROPERTY + ")", START_OF_GETTER + UP_FIRST_LETTER_PROPERTY, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY), //NOI18N
+        WITH_UNDERSCORE(NbBundle.getMessage(CGSGenerator.class, "ADD_UNDERSCORE"), "__construct($" + PROPERTY + ")", START_OF_GETTER + "_" + PROPERTY, START_OF_SETTER + "_" + PROPERTY), //NOI18N
+        WITHOUT_UNDERSCORE(NbBundle.getMessage(CGSGenerator.class, "REMOVE_UNDERSCORE"), "__construct($" + PROPERTY_WITHOUT_UNDERSCORE + ")", START_OF_GETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE);    //NOI18N
 
+        private String constructorTemplate;
         private String getterTemplate;
         private String setterTemplate;
         /**
@@ -104,10 +189,15 @@ public class CGSGenerator implements CodeGenerator {
          */
         private String simpleDescription;
 
-        private GenWay(String simpleDescription, String getterTemplate, String setterTemplate) {
+        private GenWay(String simpleDescription, String constructorTemplate, String getterTemplate, String setterTemplate) {
+            this.constructorTemplate = constructorTemplate;
             this.getterTemplate = getterTemplate;
             this.setterTemplate = setterTemplate;
             this.simpleDescription = simpleDescription;
+        }
+
+        public String getConstructorTemplate() {
+            return constructorTemplate;
         }
 
         public String getGetterTemplate() {
@@ -120,6 +210,10 @@ public class CGSGenerator implements CodeGenerator {
 
         public String getSimpleDescription() {
             return simpleDescription;
+        }
+
+        public String getConstructorExample(String property) {
+            return createExample(getConstructorTemplate(), property);
         }
 
         public String getGetterExample(String property) {
@@ -140,6 +234,9 @@ public class CGSGenerator implements CodeGenerator {
             }
             if (template.contains(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE)) {
                 example = example.replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, upFirstLetterWithoutUnderscore(property));
+            }
+            if (template.contains(PROPERTY_WITHOUT_UNDERSCORE)) {
+                example = example.replace(PROPERTY_WITHOUT_UNDERSCORE, withoutUnderscore(property));
             }
             return example;
         }
