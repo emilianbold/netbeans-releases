@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.codegen;
 import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -86,11 +88,92 @@ public class CGSGenerator implements CodeGenerator {
     private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
 
     public enum GenType {
-        CONSTRUCTOR,
-        GETTER,
-        SETTER,
-        GETTER_AND_SETTER,
-        METHODS;
+        CONSTRUCTOR() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_CONSTRUCTOR"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    if (!way.equals(CGSGenerator.GenWay.WITH_UNDERSCORE)) {
+                        result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getConstructorExample(propertyName), way));
+                    }
+                }
+                return result;
+            }
+
+        },
+        GETTER() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName), way));
+                }
+                return result;
+            }
+
+        },
+        SETTER() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getSetterExample(propertyName), way));
+                }
+                return result;
+            }
+
+        },
+        GETTER_AND_SETTER() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                final DefaultComboBoxModel result = new DefaultComboBoxModel();
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName) + ", " + way.getSetterExample(propertyName), way));
+                }
+                return result;
+            }
+
+        },
+        METHODS() {
+
+            @Override
+            public String getPanelTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_METHODS"); //NOI18N
+            }
+
+            @Override
+            public ComboBoxModel getModel(final String propertyName) {
+                return new DefaultComboBoxModel();
+            }
+
+        };
+
+        public abstract String getPanelTitle();
+        public abstract ComboBoxModel getModel(final String propertyName);
     }
 
     public enum GenWay {
