@@ -148,84 +148,74 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     }
 
     public static WhereUsedElement create(String name, FileObject fo,  OffsetRange range, Icon icon) {
+        WhereUsedElement result = null;
         int start = range.getStart();
         int end = range.getEnd();
-
-        int sta = start;
-        int en = start; // ! Same line as start
-        String content = null;
-
         try {
-            BaseDocument bdoc = null;
             DataObject od = DataObject.find(fo);
             EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
-
             if (ec != null) {
-                bdoc = (BaseDocument) ec.openDocument();
-            } else {
-                return null;
-            }
-            // I should be able to just call tree.getInfo().getText() to get cached
-            // copy - but since I'm playing fast and loose with compilationinfos
-            // for for example find subclasses (using a singly dummy FileInfo) I need
-            // to read it here instead
-            content = bdoc.getText(0, bdoc.getLength());
-            sta = Utilities.getRowFirstNonWhite(bdoc, start);
+                BaseDocument bdoc = (BaseDocument) ec.openDocument();
+                // I should be able to just call tree.getInfo().getText() to get cached
+                // copy - but since I'm playing fast and loose with compilationinfos
+                // for for example find subclasses (using a singly dummy FileInfo) I need
+                // to read it here instead
+                String content = bdoc.getText(0, bdoc.getLength());
+                int sta = Utilities.getRowFirstNonWhite(bdoc, start);
 
-            if (sta == -1) {
-                sta = Utilities.getRowStart(bdoc, start);
-            }
-
-            en = Utilities.getRowLastNonWhite(bdoc, start);
-
-            if (en == -1) {
-                en = Utilities.getRowEnd(bdoc, start);
-            } else {
-                // Last nonwhite - left side of the last char, not inclusive
-                en++;
-            }
-
-            // Sometimes the node we get from the AST is for the whole block
-            // (e.g. such as the whole class), not the argument node. This happens
-            // for example in Find Subclasses out of the index. In this case
-            if (end > en) {
-                end = start + name.length();
-
-                if (end > bdoc.getLength()) {
-                    end = bdoc.getLength();
+                if (sta == -1) {
+                    sta = Utilities.getRowStart(bdoc, start);
                 }
-            }
+
+                int en = Utilities.getRowLastNonWhite(bdoc, start);
+
+                if (en == -1) {
+                    en = Utilities.getRowEnd(bdoc, start);
+                } else {
+                    // Last nonwhite - left side of the last char, not inclusive
+                    en++;
+                }
+
+                // Sometimes the node we get from the AST is for the whole block
+                // (e.g. such as the whole class), not the argument node. This happens
+                // for example in Find Subclasses out of the index. In this case
+                if (end > en) {
+                    end = start + name.length();
+
+                    if (end > bdoc.getLength()) {
+                        end = bdoc.getLength();
+                    }
+                }
 
 
-            StringBuilder sb = new StringBuilder();
-            if (end < sta) {
-                // XXX Shouldn't happen, but I still have AST offset errors
-                sta = end;
-            }
-            if (start < sta) {
-                // XXX Shouldn't happen, but I still have AST offset errors
-                start = sta;
-            }
-            if (en < end) {
-                // XXX Shouldn't happen, but I still have AST offset errors
-                en = end;
-            }
-            sb.append(RefactoringUtils.getHtml(content.subSequence(sta, start).toString()));
-            sb.append("<b>"); // NOI18N
-            sb.append(content.subSequence(start, end));
-            sb.append("</b>"); // NOI18N
-            sb.append(RefactoringUtils.getHtml(content.subSequence(end, en).toString()));
+                StringBuilder sb = new StringBuilder();
+                if (end < sta) {
+                    // XXX Shouldn't happen, but I still have AST offset errors
+                    sta = end;
+                }
+                if (start < sta) {
+                    // XXX Shouldn't happen, but I still have AST offset errors
+                    start = sta;
+                }
+                if (en < end) {
+                    // XXX Shouldn't happen, but I still have AST offset errors
+                    en = end;
+                }
+                sb.append(RefactoringUtils.getHtml(content.subSequence(sta, start).toString()));
+                sb.append("<b>"); // NOI18N
+                sb.append(content.subSequence(start, end));
+                sb.append("</b>"); // NOI18N
+                sb.append(RefactoringUtils.getHtml(content.subSequence(end, en).toString()));
 
-            CloneableEditorSupport ces = RefactoringUtils.findCloneableEditorSupport(fo);
-            PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
-            PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
-            PositionBounds bounds = new PositionBounds(ref1, ref2);
+                CloneableEditorSupport ces = RefactoringUtils.findCloneableEditorSupport(fo);
+                PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
+                PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
+                PositionBounds bounds = new PositionBounds(ref1, ref2);
 
-            return new WhereUsedElement(bounds, sb.toString().trim(), fo, name,
-                    new OffsetRange(start, end), icon);
+                result = new WhereUsedElement(bounds, sb.toString().trim(), fo, name, new OffsetRange(start, end), icon);
+            }
         } catch (UserQuestionException ex) {
             LOGGER.log(Level.INFO, "Was not possible to obtain document for " + fo.getPath(), ex); //NOI18N
-            return null;
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         } catch (DataObjectNotFoundException ex) {
@@ -233,7 +223,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return null;
+        return result;
     }
 
     /**
