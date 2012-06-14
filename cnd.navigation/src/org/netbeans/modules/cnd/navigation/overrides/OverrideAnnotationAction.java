@@ -86,6 +86,7 @@ public class OverrideAnnotationAction extends AbstractAction {
             "org-netbeans-modules-editor-annotations-overrides", // NOI18N
             "org-netbeans-modules-cnd-navigation-specializes", // NOI18N
             "org-netbeans-modules-cnd-navigation-is_specialized", // NOI18N
+            "org-netbeans-modules-editor-annotations-override-is-overridden-combined", //NOI18N
             "org-netbeans-modules-cnd-navigation-extended_specializes", // NOI18N
             "org-netbeans-modules-cnd-navigation-extended_is_specialized" // NOI18N
         });
