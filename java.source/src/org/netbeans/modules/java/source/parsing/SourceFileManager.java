@@ -81,7 +81,7 @@ public class SourceFileManager implements JavaFileManager {
     }
 
     @Override
-    public List<JavaFileObject> list(final Location l, final String packageName, final Set<JavaFileObject.Kind> kinds, final boolean recursive) {
+    public Iterable<JavaFileObject> list(final Location l, final String packageName, final Set<JavaFileObject.Kind> kinds, final boolean recursive) {
         //Todo: Caching of results, needs listening on FS
         List<JavaFileObject> result = new ArrayList<JavaFileObject> ();
         String _name = packageName.replace('.','/');    //NOI18N

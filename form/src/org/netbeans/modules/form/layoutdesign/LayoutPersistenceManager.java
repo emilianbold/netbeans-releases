@@ -521,6 +521,13 @@ class LayoutPersistenceManager implements LayoutConstants {
             layoutModel.addComponent(layoutComponent, layoutContainer, -1);
         }
         LayoutInterval interval = layoutComponent.getLayoutInterval(dimension);
+        if (interval.getParent() != null) { // try to workaround error of a component more than once in the layout (bug 149608, 118562)
+            System.err.println("WARNING: Component " + name + " found more than once in the " // NOI18N
+                    + (dimension == HORIZONTAL ? "horizontal":"vertical") // NOI18N
+                    + " layout definition. Removing superfluous occurrences."); // NOI18N
+            layoutModel.setCorrected();
+            return;
+        }
         interval.setAlignment(alignment);
         if (linkSizeId != null) {
             layoutModel.addComponentToLinkSizedGroup(integerFromNode(linkSizeId), layoutComponent.getId(), dimension);

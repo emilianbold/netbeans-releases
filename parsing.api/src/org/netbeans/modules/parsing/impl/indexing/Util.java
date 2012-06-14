@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -145,18 +146,19 @@ public final class Util {
      * about the target.
      * @return
      * @throws MalformedURLException 
+     * @throws IllegalStateException when file ends with '/'
      */
     public static URL resolveUrl(
             @NonNull final URL root,
             @NonNull final String relativePath,
-            @NullAllowed Boolean isDirectory) throws MalformedURLException {
+            @NullAllowed final Boolean isDirectory) throws MalformedURLException, IllegalStateException {
         try {
             if ("file".equals(root.getProtocol())) { //NOI18N
-                if (isDirectory == Boolean.FALSE && relativePath.charAt(relativePath.length()-1) == File.separatorChar) {
-                    //issue #213032: AE Happenes when I try to delete a file named "\" (without quotes)
-                    isDirectory = null;
+                if (isDirectory == Boolean.FALSE &&
+                    (relativePath.isEmpty() || relativePath.charAt(relativePath.length()-1) == '/')) {  //NOI18N
+                    throw new IllegalStateException(
+                        MessageFormat.format("relativePath: {0}", relativePath));   //NOI18N
                 }
-                final Boolean isDirectoryFin = isDirectory;
                 // Performance optimization for File.toURI() which calls this method
                 // and the original implementation calls into native method
                 return Utilities.toURI(new File(Utilities.toFile(root.toURI()), relativePath) {
@@ -172,9 +174,9 @@ public final class Util {
                                                             
                     @Override
                     public boolean isDirectory() {
-                        return isDirectoryFin == null ?
+                        return isDirectory == null ?
                             super.isDirectory() :
-                            isDirectoryFin;
+                            isDirectory;
                     }
                 }).toURL();
             } else {
@@ -185,6 +187,48 @@ public final class Util {
             mue.initCause(use);
             throw mue;
         }
+    }
+
+    /**
+     * Resolves URL within a file root.
+     * @param root the root to resolve the path in.
+     * @param relativePath the relative path under the root.
+     * @param isDirectory true if the relativePath is known to point to directory,
+     * false if the relativePath is known to point to file, null if nothing is known
+     * about the target.
+     * @return
+     * @throws MalformedURLException
+     * @throws IllegalStateException when file ends with '/' or {@link File#separatorChar}
+     */
+    public static URL resolveFile(
+        @NonNull final File file,
+        @NonNull final String relativePath,
+        @NullAllowed final Boolean isDirectory) throws MalformedURLException {
+        if (isDirectory == Boolean.FALSE &&
+            (relativePath.isEmpty() ||
+             relativePath.charAt(relativePath.length()-1) == '/' ||    //NOI18N
+             relativePath.charAt(relativePath.length()-1) == File.separatorChar)) {
+            throw new IllegalStateException(
+                MessageFormat.format("relativePath: {0}", relativePath));   //NOI18N
+        }
+        // Performance optimization for File.toURI() which calls this method
+        // and the original implementation calls into native method
+        return Utilities.toURI(new File(file, relativePath) {
+            @Override
+            public File getAbsoluteFile() {
+                if (isAbsolute()) {
+                    return this;
+                } else {
+                    return super.getAbsoluteFile();
+                }
+            }
+            @Override
+            public boolean isDirectory() {
+                return isDirectory == null ?
+                    super.isDirectory() :
+                    isDirectory;
+            }
+        }).toURL();
     }
 
     public static boolean containsAny(Collection<? extends String> searchIn, Collection<? extends String> searchFor) {

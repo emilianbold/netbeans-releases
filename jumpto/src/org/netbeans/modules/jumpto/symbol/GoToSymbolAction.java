@@ -54,9 +54,6 @@ import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.ErrorManager;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -67,9 +64,6 @@ import org.openide.windows.TopComponent;
  * @author Petr Hrebejk
  * @author Tomas Zezula
  */
-@ActionID(id ="org.netbeans.modules.jumpto.symbol.GoToSymbol", category = "Edit")
-@ActionRegistration(iconInMenu = false, displayName = "#TXT_GoToSymbol")
-@ActionReference(position = 151, name = "VariablesCustomizerAction", path = "Menu/GoTo")
 public class GoToSymbolAction extends AbstractAction {
     
     static final Logger LOGGER = Logger.getLogger(GoToSymbolAction.class.getName()); // Used from the panel as well

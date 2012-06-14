@@ -2013,5 +2013,9 @@ final class LayoutDragger implements LayoutConstants {
             }
             return gapSize;
         }
+
+        int getOriginalSize() {
+            return originalSize;
+        }
     }
 }

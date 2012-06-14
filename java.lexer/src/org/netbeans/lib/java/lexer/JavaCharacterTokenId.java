@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.java.lexer;
+package org.netbeans.lib.java.lexer;
 
+import org.netbeans.api.java.lexer.*;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
@@ -55,36 +56,35 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token ids for java string language
- * (embedded in java string).
+ * Token ids for java character language
+ * (embedded in java character literals).
  *
- * @author Miloslav Metelka
- * @version 1.00
- */
-public enum JavaStringTokenId implements TokenId {
 
-    TEXT("string"), //NOI18N
-    BACKSPACE("string-escape"), //NOI18N
-    FORM_FEED("string-escape"), //NOI18N
-    NEWLINE("string-escape"), //NOI18N
-    CR("string-escape"), //NOI18N
-    TAB("string-escape"), //NOI18N
-    SINGLE_QUOTE("string-escape"), //NOI18N
-    DOUBLE_QUOTE("string-escape"), //NOI18N
-    BACKSLASH("string-escape"), //NOI18N
-    OCTAL_ESCAPE("string-escape"), //NOI18N
-    OCTAL_ESCAPE_INVALID("string-escape-invalid"), //NOI18N
-    UNICODE_ESCAPE("string-escape"), //NOI18N
-    UNICODE_ESCAPE_INVALID("string-escape-invalid"), //NOI18N
-    ESCAPE_SEQUENCE_INVALID("string-escape-invalid"); //NOI18N
+ */
+public enum JavaCharacterTokenId implements TokenId {
+
+    TEXT("character"), //NOI18N
+    BACKSPACE("character-escape"), //NOI18N
+    FORM_FEED("character-escape"), //NOI18N
+    NEWLINE("character-escape"), //NOI18N
+    CR("character-escape"), //NOI18N
+    TAB("character-escape"), //NOI18N
+    SINGLE_QUOTE("character-escape"), //NOI18N
+    DOUBLE_QUOTE("character-escape"), //NOI18N
+    BACKSLASH("character-escape"), //NOI18N
+    OCTAL_ESCAPE("character-escape"), //NOI18N
+    OCTAL_ESCAPE_INVALID("character-escape-invalid"), //NOI18N
+    UNICODE_ESCAPE("character-escape"), //NOI18N
+    UNICODE_ESCAPE_INVALID("character-escape-invalid"), //NOI18N
+    ESCAPE_SEQUENCE_INVALID("character-escape-invalid"); //NOI18N
 
     private final String primaryCategory;
 
-    JavaStringTokenId() {
+    JavaCharacterTokenId() {
         this(null);
     }
 
-    JavaStringTokenId(String primaryCategory) {
+    JavaCharacterTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
@@ -92,29 +92,29 @@ public enum JavaStringTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<JavaStringTokenId> language = new LanguageHierarchy<JavaStringTokenId>() {
+    private static final Language<JavaCharacterTokenId> language = new LanguageHierarchy<JavaCharacterTokenId>() {
         @Override
-        protected Collection<JavaStringTokenId> createTokenIds() {
-            return EnumSet.allOf(JavaStringTokenId.class);
+        protected Collection<JavaCharacterTokenId> createTokenIds() {
+            return EnumSet.allOf(JavaCharacterTokenId.class);
         }
         
         @Override
-        protected Map<String, Collection<JavaStringTokenId>> createTokenCategories() {
+        protected Map<String, Collection<JavaCharacterTokenId>> createTokenCategories() {
             return null; // no extra categories
         }
 
         @Override
-        protected Lexer<JavaStringTokenId> createLexer(LexerRestartInfo<JavaStringTokenId> info) {
-            return new JavaStringLexer<JavaStringTokenId>(info, true);
+        protected Lexer<JavaCharacterTokenId> createLexer(LexerRestartInfo<JavaCharacterTokenId> info) {
+            return new JavaStringLexer<JavaCharacterTokenId>(info, false);
         }
 
         @Override
         protected String mimeType() {
-            return "text/x-java-string"; //NOI18N
+            return "text/x-java-character"; //NOI18N
         }
     }.language();
 
-    public static Language<JavaStringTokenId> language() {
+    public static Language<JavaCharacterTokenId> language() {
         return language;
     }
 

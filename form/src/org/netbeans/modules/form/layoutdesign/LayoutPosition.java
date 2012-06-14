@@ -118,6 +118,15 @@ public class LayoutPosition implements LayoutConstants {
             return definedAlignment == CENTER || definedAlignment == BASELINE || discontinuousClosedAlignment;
         }
 
+        LayoutInterval getAlignedRep(int alignment) {
+            InParallel parallel = (alignment == LEADING || alignment == TRAILING || alignment == CENTER || alignment == BASELINE)
+                                    && inParallel != null ? inParallel[alignment] : null;
+            if (parallel != null) {
+                return parallel.componentNeighbor;
+            }
+            return null;
+        }
+
         LayoutRegion getGroupSpace() {
             return groupSpace;
         }

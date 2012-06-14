@@ -42,11 +42,17 @@
 package org.netbeans.modules.analysis.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
@@ -67,6 +73,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -126,6 +133,8 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         HTMLEditorKit hek = new HTMLEditorKit();
         StyleSheet styleSheet = (hek).getStyleSheet();
 
+        //same as in netbeans.css:
+        styleSheet.addRule("body { font-family: Verdana, \"Verdana CE\",  Arial, \"Arial CE\", \"Lucida Grande CE\", lucida, \"Helvetica CE\", sans-serif; }");
         styleSheet.addRule("h1 { font-weight: bold; font-size: 100% }");
         hek.setStyleSheet(styleSheet);
         descriptionPanel.setEditorKit(hek);
@@ -159,51 +168,20 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        refreshButton = new javax.swing.JButton();
-        nextError = new javax.swing.JButton();
-        previousError = new javax.swing.JButton();
         jSplitPane1 = new javax.swing.JSplitPane();
         btvHolder = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         descriptionPanel = new javax.swing.JTextPane();
+        jToolBar1 = new javax.swing.JToolBar();
+        refreshButton = new javax.swing.JButton();
+        previousError = new javax.swing.JButton();
+        nextError = new javax.swing.JButton();
         byCategory = new javax.swing.JToggleButton();
 
-        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/refresh.png"))); // NOI18N
-        refreshButton.setToolTipText(org.openide.util.NbBundle.getBundle(AnalysisResultTopComponent.class).getString("AnalysisResultTopComponent.refreshButton.toolTipText")); // NOI18N
-        refreshButton.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        refreshButton.setContentAreaFilled(false);
-        refreshButton.setMaximumSize(new java.awt.Dimension(24, 24));
-        refreshButton.setMinimumSize(new java.awt.Dimension(24, 24));
-        refreshButton.setPreferredSize(new java.awt.Dimension(24, 24));
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
-
-        nextError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/nextmatch.png"))); // NOI18N
-        nextError.setToolTipText(org.openide.util.NbBundle.getBundle(AnalysisResultTopComponent.class).getString("AnalysisResultTopComponent.nextError.toolTipText")); // NOI18N
-        nextError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        nextError.setContentAreaFilled(false);
-        nextError.setMaximumSize(new java.awt.Dimension(24, 24));
-        nextError.setMinimumSize(new java.awt.Dimension(24, 24));
-        nextError.setPreferredSize(new java.awt.Dimension(24, 24));
-        nextError.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nextErrorActionPerformed(evt);
-            }
-        });
-
-        previousError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/prevmatch.png"))); // NOI18N
-        previousError.setToolTipText(org.openide.util.NbBundle.getBundle(AnalysisResultTopComponent.class).getString("AnalysisResultTopComponent.previousError.toolTipText")); // NOI18N
-        previousError.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        previousError.setContentAreaFilled(false);
-        previousError.setMaximumSize(new java.awt.Dimension(24, 24));
-        previousError.setMinimumSize(new java.awt.Dimension(24, 24));
-        previousError.setPreferredSize(new java.awt.Dimension(24, 24));
-        previousError.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                previousErrorActionPerformed(evt);
+        jSplitPane1.setBorder(null);
+        jSplitPane1.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                jSplitPane1ComponentResized(evt);
             }
         });
 
@@ -211,59 +189,106 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         btvHolder.setLayout(btvHolderLayout);
         btvHolderLayout.setHorizontalGroup(
             btvHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 376, Short.MAX_VALUE)
+            .addGap(0, 369, Short.MAX_VALUE)
         );
         btvHolderLayout.setVerticalGroup(
             btvHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 298, Short.MAX_VALUE)
+            .addGap(0, 300, Short.MAX_VALUE)
         );
 
         jSplitPane1.setLeftComponent(btvHolder);
 
-        descriptionPanel.setContentType(org.openide.util.NbBundle.getMessage(AnalysisResultTopComponent.class, "AnalysisResultTopComponent.descriptionPanel.contentType")); // NOI18N
+        jScrollPane1.setBorder(null);
+
         descriptionPanel.setEditable(false);
+        descriptionPanel.setContentType(org.openide.util.NbBundle.getMessage(AnalysisResultTopComponent.class, "AnalysisResultTopComponent.descriptionPanel.contentType")); // NOI18N
         jScrollPane1.setViewportView(descriptionPanel);
 
         jSplitPane1.setRightComponent(jScrollPane1);
 
+        jToolBar1.setBorder(new VariableRightBorder());
+        jToolBar1.setFloatable(false);
+        jToolBar1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        jToolBar1.setRollover(true);
+
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/refresh.png"))); // NOI18N
+        refreshButton.setToolTipText(org.openide.util.NbBundle.getBundle(AnalysisResultTopComponent.class).getString("AnalysisResultTopComponent.refreshButton.toolTipText")); // NOI18N
+        refreshButton.setBorderPainted(false);
+        refreshButton.setFocusable(false);
+        refreshButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refreshButton.setMaximumSize(new java.awt.Dimension(24, 24));
+        refreshButton.setMinimumSize(new java.awt.Dimension(24, 24));
+        refreshButton.setPreferredSize(new java.awt.Dimension(24, 24));
+        refreshButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(refreshButton);
+
+        previousError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/prevmatch.png"))); // NOI18N
+        previousError.setToolTipText(org.openide.util.NbBundle.getBundle(AnalysisResultTopComponent.class).getString("AnalysisResultTopComponent.previousError.toolTipText")); // NOI18N
+        previousError.setBorderPainted(false);
+        previousError.setFocusable(false);
+        previousError.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        previousError.setMaximumSize(new java.awt.Dimension(24, 24));
+        previousError.setMinimumSize(new java.awt.Dimension(24, 24));
+        previousError.setPreferredSize(new java.awt.Dimension(24, 24));
+        previousError.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        previousError.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                previousErrorActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(previousError);
+
+        nextError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/nextmatch.png"))); // NOI18N
+        nextError.setToolTipText(org.openide.util.NbBundle.getBundle(AnalysisResultTopComponent.class).getString("AnalysisResultTopComponent.nextError.toolTipText")); // NOI18N
+        nextError.setBorderPainted(false);
+        nextError.setFocusable(false);
+        nextError.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        nextError.setMaximumSize(new java.awt.Dimension(24, 24));
+        nextError.setMinimumSize(new java.awt.Dimension(24, 24));
+        nextError.setPreferredSize(new java.awt.Dimension(24, 24));
+        nextError.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        nextError.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nextErrorActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(nextError);
+
         byCategory.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/analysis/ui/resources/categorize.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(byCategory, org.openide.util.NbBundle.getMessage(AnalysisResultTopComponent.class, "AnalysisResultTopComponent.byCategory.text")); // NOI18N
-        byCategory.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        byCategory.setContentAreaFilled(false);
+        byCategory.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisResultTopComponent.class, "BTN_Categorize")); // NOI18N
+        byCategory.setBorderPainted(false);
+        byCategory.setFocusable(false);
+        byCategory.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         byCategory.setMaximumSize(new java.awt.Dimension(24, 24));
         byCategory.setMinimumSize(new java.awt.Dimension(24, 24));
         byCategory.setPreferredSize(new java.awt.Dimension(24, 24));
+        byCategory.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         byCategory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 byCategoryActionPerformed(evt);
             }
         });
+        jToolBar1.add(byCategory);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(previousError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(nextError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(byCategory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE))
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1, 1, 1)
-                .addComponent(previousError, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1, 1, 1)
-                .addComponent(nextError, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(byCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addComponent(jSplitPane1)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -281,7 +306,12 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
     private void byCategoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_byCategoryActionPerformed
         manager.setRootContext(Nodes.constructSemiLogicalView(analysisResult, byCategory.isSelected()));
+        updatePrevNextButtonsForNewRootContext();
     }//GEN-LAST:event_byCategoryActionPerformed
+
+    private void jSplitPane1ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jSplitPane1ComponentResized
+        jSplitPane1.setDividerLocation(0.5);
+    }//GEN-LAST:event_jSplitPane1ComponentResized
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btvHolder;
@@ -289,6 +319,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     private javax.swing.JTextPane descriptionPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JButton nextError;
     private javax.swing.JButton previousError;
     private javax.swing.JButton refreshButton;
@@ -337,10 +368,19 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
             btv.expandAll();
         }
         refreshButton.setEnabled(context != Lookup.EMPTY);
+        updatePrevNextButtonsForNewRootContext();
+    }
+    
+    private void updatePrevNextButtonsForNewRootContext() {
         descriptionPanel.setText(null);
         nodesForNext = null;
+        seenNodes = null;
         empty = analysisResult.provider2Hints.isEmpty();
         fireActionEnabledChange();
+        
+        if (!empty && !byCategory.isSelected() && nextAction.isEnabled()) {
+            nextAction.actionPerformed(null);
+        }
     }
 
     void fireActionEnabledChange() {
@@ -371,7 +411,39 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         return result;
     }
 
+    private class VariableRightBorder implements Border {
 
+        public VariableRightBorder() {
+        }
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Color old = g.getColor();
+            g.setColor(getColor());
+            g.drawLine(x + width - 1, y, x + width - 1, y + height);
+            g.setColor(old);
+        }
+
+        public Color getColor() {
+            if (Utilities.isMac()) {
+                Color c1 = UIManager.getColor("controlShadow");
+                Color c2 = UIManager.getColor("control");
+                return new Color((c1.getRed() + c2.getRed()) / 2,
+                        (c1.getGreen() + c2.getGreen()) / 2,
+                        (c1.getBlue() + c2.getBlue()) / 2);
+            } else {
+                return UIManager.getColor("controlShadow");
+            }
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 0, 2);
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
+        }
+    }
+    
     private class PCLImpl implements PropertyChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {

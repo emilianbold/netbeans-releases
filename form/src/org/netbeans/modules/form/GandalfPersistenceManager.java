@@ -48,6 +48,8 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -233,8 +235,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
     
     private void annotateException(Throwable t, int severity, String localizedMessage) {
-        ErrorManager.getDefault().annotate(t, severity, null, localizedMessage, null, null);
-        
         if (errorMessages == null) {
             errorMessages = new HashMap<Throwable, String>();
         }
@@ -460,10 +460,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             new Object[] { javaFile.getName(),
                                            substClass.getName(),
                                            declaredSuperclassName != null ?
-                                             declaredSuperclassName : "<unknown class>" }); // NOI18N
-                        System.err.println(msg);
-                        if (formBaseClassEx != null)
-                            formBaseClassEx.printStackTrace();
+                                           declaredSuperclassName : "<unknown class>" }); // NOI18N
+                        if (formBaseClassEx != null) {
+                            Logger.getLogger("").log(Level.INFO, msg, formBaseClassEx); // NOI18N
+                        } else {
+                            Logger.getLogger("").log(Level.INFO, msg);
+                        }
                     }
                 }
                 catch (Exception ex) { // should not happen for the substitute types
@@ -2519,7 +2521,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Class clazz = null;
         Throwable t = null;
         try {
-            clazz = PersistenceObjectRegistry.loadClass(className, formFile);
+            clazz = getClassFromString(className);
         }
         catch (Exception ex) {
             t = ex;

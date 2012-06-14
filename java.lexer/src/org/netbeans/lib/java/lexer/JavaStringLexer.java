@@ -46,6 +46,7 @@ package org.netbeans.lib.java.lexer;
 
 import org.netbeans.api.java.lexer.JavaStringTokenId;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -58,55 +59,57 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @version 1.00
  */
 
-public class JavaStringLexer implements Lexer<JavaStringTokenId> {
+public class JavaStringLexer<T extends TokenId> implements Lexer<T> {
 
     private static final int EOF = LexerInput.EOF;
 
     private LexerInput input;
     
-    private TokenFactory<JavaStringTokenId> tokenFactory;
+    private TokenFactory<T> tokenFactory;
+    private boolean isJavaStringTokenId;
     
-    public JavaStringLexer(LexerRestartInfo<JavaStringTokenId> info) {
+    public JavaStringLexer(LexerRestartInfo<T> info, boolean isJavaStringTokenId) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
+        this.isJavaStringTokenId = isJavaStringTokenId;
         assert (info.state() == null); // passed argument always null
     }
-    
+   
     public Object state() {
         return null;
     }
     
-    public Token<JavaStringTokenId> nextToken() {
+    public Token<T> nextToken() {
         while(true) {
             int ch = input.read();
             switch (ch) {
                 case EOF:
                     if (input.readLength() > 0)
-                        return token(JavaStringTokenId.TEXT);
+                        return token((T) (isStringTokenId() ? JavaStringTokenId.TEXT : JavaCharacterTokenId.TEXT));
                     else
                         return null;
                 case '\\': //NOI18N
                     if (input.readLength() > 1) {// already read some text
                         input.backup(1);
-                        return tokenFactory.createToken(JavaStringTokenId.TEXT, input.readLength());
+                        return tokenFactory.createToken((T) (isStringTokenId() ? JavaStringTokenId.TEXT : JavaCharacterTokenId.TEXT), input.readLength());
                     }
                     switch (ch = input.read()) {
                         case 'b': //NOI18N
-                            return token(JavaStringTokenId.BACKSPACE);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.BACKSPACE : JavaCharacterTokenId.BACKSPACE));
                         case 'f': //NOI18N
-                            return token(JavaStringTokenId.FORM_FEED);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.FORM_FEED : JavaCharacterTokenId.FORM_FEED));
                         case 'n': //NOI18N
-                            return token(JavaStringTokenId.NEWLINE);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.NEWLINE : JavaCharacterTokenId.NEWLINE));
                         case 'r': //NOI18N
-                            return token(JavaStringTokenId.CR);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.CR : JavaCharacterTokenId.CR));
                         case 't': //NOI18N
-                            return token(JavaStringTokenId.TAB);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.TAB : JavaCharacterTokenId.TAB));
                         case '\'': //NOI18N
-                            return token(JavaStringTokenId.SINGLE_QUOTE);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.SINGLE_QUOTE : JavaCharacterTokenId.SINGLE_QUOTE));
                         case '"': //NOI18N
-                            return token(JavaStringTokenId.DOUBLE_QUOTE);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.DOUBLE_QUOTE : JavaCharacterTokenId.DOUBLE_QUOTE));
                         case '\\': //NOI18N
-                            return token(JavaStringTokenId.BACKSLASH);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.BACKSLASH : JavaCharacterTokenId.BACKSLASH));
                         case 'u': //NOI18N
                             while ('u' == (ch = input.read())) {}; //NOI18N
                             
@@ -115,11 +118,11 @@ public class JavaStringLexer implements Lexer<JavaStringTokenId> {
                                 
                                 if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'f')) { //NOI18N
                                     input.backup(1);
-                                    return token(JavaStringTokenId.UNICODE_ESCAPE_INVALID);
+                                    return token((T) (isStringTokenId() ? JavaStringTokenId.UNICODE_ESCAPE_INVALID : JavaCharacterTokenId.UNICODE_ESCAPE_INVALID));
                                 }
                              
                                 if (i == 3) { // four digits checked, valid sequence
-                                    return token(JavaStringTokenId.UNICODE_ESCAPE);
+                                    return token((T) (isStringTokenId() ? JavaStringTokenId.UNICODE_ESCAPE : JavaCharacterTokenId.UNICODE_ESCAPE));
                                 }
                                 
                                 ch = input.read();
@@ -132,25 +135,29 @@ public class JavaStringLexer implements Lexer<JavaStringTokenId> {
                                     switch (input.read()) {
                                         case '0': case '1': case '2': case '3': //NOI18N
                                         case '4': case '5': case '6': case '7': //NOI18N
-                                            return token(JavaStringTokenId.OCTAL_ESCAPE);
+                                            return token((T) (isStringTokenId() ? JavaStringTokenId.OCTAL_ESCAPE : JavaCharacterTokenId.OCTAL_ESCAPE));
                                     }
                                     input.backup(1);
-                                    return token(JavaStringTokenId.OCTAL_ESCAPE_INVALID);
+                                    return token((T) (isStringTokenId() ? JavaStringTokenId.OCTAL_ESCAPE_INVALID : JavaCharacterTokenId.OCTAL_ESCAPE_INVALID));
                             }
                             input.backup(1);
-                            return token(JavaStringTokenId.OCTAL_ESCAPE_INVALID);
+                            return token((T) (isStringTokenId() ? JavaStringTokenId.OCTAL_ESCAPE_INVALID : JavaCharacterTokenId.OCTAL_ESCAPE_INVALID));
                     }
                     input.backup(1);
-                    return token(JavaStringTokenId.ESCAPE_SEQUENCE_INVALID);
+                    return token((T) (isStringTokenId() ? JavaStringTokenId.ESCAPE_SEQUENCE_INVALID : JavaCharacterTokenId.ESCAPE_SEQUENCE_INVALID));
             } // end of switch (ch)
         } // end of while(true)
     }
 
-    private Token<JavaStringTokenId> token(JavaStringTokenId id) {
+    private Token<T> token(T id) {
         return tokenFactory.createToken(id);
     }
 
     public void release() {
+    }
+
+    private boolean isStringTokenId() {
+        return isJavaStringTokenId;
     }
 
 }

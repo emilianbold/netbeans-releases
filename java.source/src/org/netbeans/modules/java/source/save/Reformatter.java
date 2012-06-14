@@ -3791,7 +3791,7 @@ public class Reformatter implements ReformatTask {
                                                     } else {
                                                         pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, indentString + SPACE);
                                                     }
-                                                    col = indent;
+                                                    col = getCol(indentString + SPACE);
                                                 }
                                             } else { 
                                                 if (currWSPos < 0) {
