@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.webkit.debugging;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,10 @@ public class TransportHelper {
     
     public String getConnectionName() {
         return impl.getConnectionName();
+    }
+    
+    public URL getConnectionURL() {
+        return impl.getConnectionURL();
     }
     
     public void sendCommand(Command command) {
