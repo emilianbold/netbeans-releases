@@ -506,16 +506,10 @@ public class BuildArtifactMapperImpl {
 
     private static void copyRecursively(File source, File target) throws IOException {
         if (source.isDirectory()) {
-            if (!target.exists()) {
-                if (!target.mkdirs()) {
-                    throw new IOException("Cannot create folder: " + target.getAbsolutePath());
-                }
-            } else {
-                if (!target.isDirectory()) {
-                    throw new IOException("Cannot create folder: " + target.getAbsolutePath() + ", already exists as a file.");
-                }
+            if (target.exists() && !target.isDirectory()) {
+                throw new IOException("Cannot create folder: " + target.getAbsolutePath() + ", already exists as a file.");
             }
-            
+
             File[] listed = source.listFiles();
             
             if (listed == null) {
