@@ -268,11 +268,15 @@ NetBeans.processDebuggerCommandMessage = function(message) {
 }
 
 NetBeans.sendDebuggingResponse = function(tabId, response) {
-    this.sendMessage({
-        message: 'debugger_command_response',
-        tabId: tabId,
-        response : response
-    });
+    /*if (response.method === "Debugger.paused" && response.params.reason === "DOM") {
+        this.logDOMEvent(tabId);
+    } else*/ {
+        this.sendMessage({
+            message: 'debugger_command_response',
+            tabId: tabId,
+            response : response
+        });
+    }
 }
 
 

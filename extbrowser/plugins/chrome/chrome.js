@@ -72,7 +72,7 @@ NetBeans.browserDetachDebugger = function(tabId) {
 
 NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
-        console.log('send ['+tabId+","+id+","+method+","+params);
+        console.log('send ['+tabId+","+id+","+method+","+JSON.stringify(params));
     }
     chrome.debugger.sendCommand({tabId : tabId}, method, params, 
         function(result) {
@@ -118,3 +118,72 @@ chrome.windows.getAll({populate: true}, function(windows) {
         }
     }    
 });
+
+
+/////// EXPERIMENT:
+//NetBeans.logDOMEvent = function(tabId) {
+//
+////    NetBeans.resumeDebugger(tabId);
+////    if (true) {
+////        return;
+////    }
+//
+//    if (NetBeans.DEBUG) {
+//        console.log('logDOMEvent - DOM.getDocument');
+//    }
+//    chrome.debugger.sendCommand({tabId : tabId}, "DOM.getDocument", {}, 
+//        function(result) {
+//            if (chrome.extension.lastError) {
+//                console.log('logDOMEvent failed in DOM.getDocument: ' + chrome.extension.lastError);
+//            } else {
+//                if (NetBeans.DEBUG) {
+//                    console.log('logDOMEvent - DOM.getDocument - nodeId='+result.root.nodeId);
+//                }
+//                NetBeans.getDocument(tabId, result.root.nodeId);
+//            }
+//        });
+//        
+//}
+//
+//NetBeans.getDocument = function(tabId, nodeId) {
+//    if (NetBeans.DEBUG) {
+//        console.log('getDocument - DOM.getOuterHTML');
+//    }
+//    chrome.debugger.sendCommand({tabId : tabId}, "DOM.getOuterHTML", {nodeId:nodeId}, 
+//        function(result) {
+//            if (chrome.extension.lastError) {
+//                console.log('getDocument failed in DOM.getOuterHTML: ' + chrome.extension.lastError);
+//            } else {
+//                NetBeans.ignoreNextResume = true;
+//                chrome.debugger.sendCommand({tabId : tabId}, "Debugger.resume", {}, 
+//                    function(result) {
+//                        if (chrome.extension.lastError) {
+//                            console.log('getDocument failed in Debugger.resume: ' + chrome.extension.lastError);
+//                        }
+//                    });
+//                if (NetBeans.DEBUG) {
+//                    //console.log('getDocument - DOM.getOuterHTML='+JSON.stringify(result.outerHTML));
+//                }
+//            }
+//        });
+//}
+//
+//NetBeans.resumeDebugger = function(tabId) {
+//    NetBeans.ignoreNextResume = true;
+//    chrome.debugger.sendCommand({tabId : tabId}, "Debugger.resume", {}, 
+//        function(result) {
+//            if (chrome.extension.lastError) {
+//                console.log('getDocument failed in Debugger.resume: ' + chrome.extension.lastError);
+//            }
+//        });
+//}
+//
+//chrome.debugger.onEvent.addListener(function(source, method, params) {
+//    if (NetBeans.ignoreNextResume && "Debugger.resumed" === method) {
+//        NetBeans.ignoreNextResume = false;
+//        return;
+//    }
+//    NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
+//}); 
+
+
