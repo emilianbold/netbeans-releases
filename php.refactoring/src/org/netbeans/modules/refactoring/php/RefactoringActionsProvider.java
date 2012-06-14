@@ -50,7 +50,6 @@ import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI;
 import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
-import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
 import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI;
