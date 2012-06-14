@@ -103,4 +103,40 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("B^ar::fnc as aliased;");
     }
 
+    public void testClasses_01() throws Exception {
+        findUsages("class F^oo {");
+    }
+
+    public void testClasses_02() throws Exception {
+        findUsages("use A\\Fo^o;");
+    }
+
+    public void testClasses_03() throws Exception {
+        findUsages("class B^ar extends Foo {");
+    }
+
+    public void testClasses_04() throws Exception {
+        findUsages("class Bar extends F^oo {");
+    }
+
+    public void testClasses_05() throws Exception {
+        findUsages("use A\\F^oo;");
+    }
+
+    public void testClasses_06() throws Exception {
+        findUsages("class B^az {");
+    }
+
+    public void testClasses_07() throws Exception {
+        findUsages("F^oo::stMethod();");
+    }
+
+    public void testClasses_08() throws Exception {
+        findUsages("F^oo::$stField;");
+    }
+
+    public void testClasses_09() throws Exception {
+        findUsages("F^oo::CON;");
+    }
+
 }
