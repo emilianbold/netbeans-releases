@@ -44,18 +44,17 @@
 package org.netbeans.modules.refactoring.php;
 
 import java.util.Collection;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI;
 import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
-import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
 import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI;
+import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -79,7 +78,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     private FileObject getFileObject(Lookup lookup) {
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         Node n = (nodes.size() == 1) ? nodes.iterator().next() : null;
-        DataObject dob = (n != null) ? n.getCookie(DataObject.class) : null;
+        DataObject dob = (n != null) ? n.getLookup().lookup(DataObject.class) : null;
         return (dob != null) ? dob.getPrimaryFile() : null;
     }
 
