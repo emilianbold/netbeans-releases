@@ -119,6 +119,7 @@ public abstract class AnnotatedAbstractNode extends AbstractNode implements File
         fireOpenedIconChange();
     }
 
+    @Override
     public void run() {
         boolean fireIcon;
         boolean fireName;
@@ -137,6 +138,7 @@ public abstract class AnnotatedAbstractNode extends AbstractNode implements File
         }
     }
 
+    @Override
     public void annotationChanged(FileStatusEvent event) {
         if (task == null) {
             task = RP.create(this);

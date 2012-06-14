@@ -47,9 +47,25 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="lCollapseByDefault" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbFoldMethods" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbFoldInnerClasses" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbFoldImports" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbFoldJavadocComments" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbFoldInitialComments" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbFoldTags" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="lUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lCollapseByDefault" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="lRemoveTrailingWhitespace" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -61,28 +77,6 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="155" pref="155" max="155" attributes="0"/>
                               <Component id="cbCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-                              <Component id="cbFoldImports" linkSize="1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="cbFoldTags" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-                              <Component id="cbFoldInnerClasses" linkSize="1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="cbFoldInitialComments" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-                              <Component id="cbFoldMethods" linkSize="1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="cbFoldJavadocComments" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="155" pref="155" max="155" attributes="0"/>
-                              <Component id="cbUseCodeFolding" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -111,9 +105,9 @@
                   <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lUseCodeFolding" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbUseCodeFolding" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="cbUseCodeFolding" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lUseCodeFolding" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

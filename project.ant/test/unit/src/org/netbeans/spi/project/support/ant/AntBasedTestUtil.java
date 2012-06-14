@@ -83,6 +83,7 @@ import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -326,7 +327,7 @@ public class AntBasedTestUtil {
         if (!f.isFile()) {
             return null;
         }
-        return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+        return XMLUtil.parse(new InputSource(Utilities.toURI(f).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
     }
     
     /**

@@ -75,6 +75,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
      * @param pkg
      * @return
      */
+    @Override
     public Boolean isPubliclyAccessible(FileObject pkg) {
         FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(prj.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory());
         if (srcdir != null) {

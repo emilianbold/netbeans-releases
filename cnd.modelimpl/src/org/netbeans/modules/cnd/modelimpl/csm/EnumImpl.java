@@ -48,6 +48,7 @@ import java.util.* ;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -62,17 +63,19 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * Implements CsmEnum
  * @author Vladimir Kvashin
  */
-public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
-    
+public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
+    private final boolean stronglyTyped;
     private final List<CsmUID<CsmEnumerator>> enumerators;
     
     private EnumImpl(AST ast, NameHolder name, CsmFile file) {
         super(name, file, ast);
+        this.stronglyTyped = isStronglyTypedEnum(ast);
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
 
-    private EnumImpl(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
+    protected EnumImpl(CharSequence name, String qName, boolean stronglyTyped, CsmFile file, int startOffset, int endOffset) {
         super(name, qName, file, startOffset, endOffset);
+        this.stronglyTyped = stronglyTyped;
         enumerators = new ArrayList<CsmUID<CsmEnumerator>>();
     }
     
@@ -95,11 +98,25 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     void init2(CsmScope scope, AST ast, final CsmFile file, FileContent fileContent, boolean register) {
 	initScope(scope);
         temporaryRepositoryRegistration(register, this);
+        initEnumDefinition(scope);
         initEnumeratorList(ast, file, fileContent, register);
         if (register) {
             register(scope, true);
         }
     }    
+
+    private void initEnumDefinition(CsmScope scope) {
+        ClassImpl.MemberForwardDeclaration mfd = findMemberForwardDeclaration(scope);
+        if (mfd instanceof ClassImpl.EnumMemberForwardDeclaration && CsmKindUtilities.isEnum(this)) {
+            ClassImpl.EnumMemberForwardDeclaration fd = (ClassImpl.EnumMemberForwardDeclaration) mfd;
+            fd.setCsmEnum((CsmEnum) this);
+            CsmClass containingClass = fd.getContainingClass();
+            if (containingClass != null) {
+                // this is our real scope, not current namespace
+                initScope(containingClass);
+            }
+        }
+    }
 
     void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
         EnumeratorImpl ei = EnumeratorImpl.create(this, name, startOffset, endOffset, register);
@@ -111,7 +128,16 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
         enumerators.add(uid);
     }
-    
+
+    @Override
+    public String toString() {
+        if (stronglyTyped) {
+            return "[Strongly Typed]" + super.toString(); // NOI18N
+        } else {
+            return super.toString();
+        }
+    }
+
     public final void fixFakeRender(FileContent fileContent, AST ast, boolean localClass) {
         initEnumeratorList(ast, fileContent.getFile(), fileContent, !localClass);
     }
@@ -150,7 +176,12 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             }
         }
     }
-    
+
+    @Override
+    public boolean isStronglyTyped() {
+        return stronglyTyped;
+    }
+
     @Override
     public Collection<CsmEnumerator> getEnumerators() {
         Collection<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
@@ -179,6 +210,31 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         Utils.disposeAll(enumers);
         RepositoryUtils.remove(enumerators);
     }
+
+    static boolean isStronglyTypedEnum(AST ast) {
+        assert ast.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION ||
+               ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION ||
+                ast.getType() == CPPTokenTypes.LITERAL_enum : ast;
+        if (ast.getType() == CPPTokenTypes.CSM_ENUM_DECLARATION ||
+            ast.getType() == CPPTokenTypes.CSM_ENUM_FWD_DECLARATION) {
+            ast = ast.getFirstChild();
+        }
+        while (ast.getType() != CPPTokenTypes.LITERAL_enum) {
+            ast = ast.getNextSibling();
+        }
+        assert ast.getType() == CPPTokenTypes.LITERAL_enum : ast;
+        if (ast.getType() == CPPTokenTypes.LITERAL_enum) {
+            AST nextSibling = ast.getNextSibling();
+            if (nextSibling != null) {
+                switch (nextSibling.getType()) {
+                    case CPPTokenTypes.LITERAL_struct:
+                    case CPPTokenTypes.LITERAL_class:
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
     
     public static class EnumBuilder implements CsmObjectBuilder {
         
@@ -187,6 +243,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         private CsmFile file;
         private int startOffset;
         private int endOffset;
+        private boolean stronglyTyped = false;
         private final FileContent fileContent;
         public EnumBuilder(FileContent fileContent) {
             this.fileContent = fileContent;
@@ -203,7 +260,11 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         public void setFile(CsmFile file) {
             this.file = file;
         }
-        
+
+        public void setStronglyTyped() {
+            this.stronglyTyped = true;
+        }
+
         public void setEndOffset(int endOffset) {
             this.endOffset = endOffset;
         }
@@ -219,7 +280,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         public EnumImpl create(boolean register) {
             if(name != null) {
                 NameHolder nameHolder = NameHolder.createName(name);
-                EnumImpl impl = new EnumImpl(name, qName, file, startOffset, endOffset);
+                EnumImpl impl = new EnumImpl(name, qName, stronglyTyped, file, startOffset, endOffset);
     //            impl.init(scope, ast, file, register);
                 nameHolder.addReference(fileContent, impl);
                 OffsetableDeclarationBase.temporaryRepositoryRegistration(register, impl);
@@ -233,7 +294,6 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             }
             return null;
         }
-    
     }
     
 ////////////////////////////////////////////////////////////////////////////
@@ -242,11 +302,13 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
+        output.writeBoolean(stronglyTyped);
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, false);
     }
     
     public EnumImpl(RepositoryDataInput input) throws IOException {
         super(input);
+        this.stronglyTyped = input.readBoolean();
         int collSize = input.readInt();
         if (collSize < 0) {
             enumerators = new ArrayList<CsmUID<CsmEnumerator>>(0);

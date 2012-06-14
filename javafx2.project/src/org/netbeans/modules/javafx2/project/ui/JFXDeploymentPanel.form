@@ -368,7 +368,7 @@
               <ResourceString bundle="org/netbeans/modules/javafx2/project/ui/Bundle.properties" key="JFXDeploymentPanel.labelSigningMessage.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[170, 14]"/>
+              <Dimension value="[200, 14]"/>
             </Property>
           </Properties>
           <Constraints>
@@ -435,7 +435,7 @@
               <ResourceString bundle="org/netbeans/modules/javafx2/project/ui/Bundle.properties" key="JFXDeploymentPanel.labelCustomJSMessage.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[170, 14]"/>
+              <Dimension value="[200, 14]"/>
             </Property>
           </Properties>
           <Constraints>
@@ -502,7 +502,7 @@
               <ResourceString bundle="org/netbeans/modules/javafx2/project/ui/Bundle.properties" key="JFXDeploymentPanel.labelDownloadModeMessage.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[170, 14]"/>
+              <Dimension value="[200, 14]"/>
             </Property>
           </Properties>
           <Constraints>

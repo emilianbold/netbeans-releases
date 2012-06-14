@@ -70,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * @author mkleint
@@ -126,7 +127,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                         continue;
                     }
                     URI uri = FileUtilities.getDirURI(project.getProjectDirectory(), dir);
-                    File file = new File(uri);
+                    File file = Utilities.toFile(uri);
                     if (!old.contains(file) && added.add(file)) { // if a given file is there multiple times, we get assertion back from FileUtil. there can be only one listener+file tuple
                         FileUtil.addFileChangeListener(this, file);
                     }
@@ -387,7 +388,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 continue;
             }
             URI uri = FileUtilities.getDirURI(prj.getProjectDirectory(), dir);
-            FileObject fo = FileUtil.toFileObject(new File(uri));
+            FileObject fo = FileUtil.toFileObject(Utilities.toFile(uri));
             if (fo != null && FileUtil.isParentOf(fo, child)) {
                 String path = FileUtil.getRelativePath(fo, child);
                 //now check includes and excludes

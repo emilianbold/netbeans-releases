@@ -81,6 +81,7 @@ import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Tests imports matching and its correct adding/removing. Just generator
@@ -712,7 +713,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "\n" +
             "public abstract class Test implements Entry, Map {\n" +
             "}\n";
-        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, getWorkDir().toURI().toURL());
+        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, Utilities.toURI(getWorkDir()).toURL());
         try {
             ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
             JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
@@ -755,7 +756,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "public abstract class Entry implements Map.Entry, Map {\n" +
             "}\n";
 
-        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, getWorkDir().toURI().toURL());
+        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, Utilities.toURI(getWorkDir()).toURL());
         try {
             ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
             JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));

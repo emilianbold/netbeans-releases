@@ -143,6 +143,7 @@ final class JUnitOutputReader {
     enum State {DEFAULT, SUITE_STARTED, TESTCASE_STARTED, SUITE_FINISHED, TESTCASE_ISSUE};
 
     private State state = State.DEFAULT;
+    private String testSuite;
 
     /** Creates a new instance of JUnitOutputReader */
     JUnitOutputReader(final AntSession session,
@@ -298,7 +299,13 @@ final class JUnitOutputReader {
         if (msg == null) {
             return;
         }
-
+        if(msg.startsWith(TESTSUITE_PREFIX) && state == State.DEFAULT) {
+            testSuite = msg;
+        }
+        if(msg.startsWith(TESTSUITE_PREFIX) && !msg.equals(testSuite) && state != State.SUITE_FINISHED) {
+            // previous testsuite finished abnormally and state was not set correctly
+            state = State.SUITE_FINISHED;
+        }
         switch (state){
             case TESTCASE_ISSUE:
             case SUITE_FINISHED:{

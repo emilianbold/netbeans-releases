@@ -510,6 +510,9 @@ public class LayoutPainter implements LayoutConstants {
             }
             if (comp.isLayoutContainer()) {
                 Collection<GapInfo> gaps = visualState.getContainerGaps(comp);
+                if (gaps == null) {
+                    continue; // bug #213936: moved container might be not built yet
+                }
                 for (GapInfo gapInfo : gaps) {
                     if (!newGaps && gapInfo.paintRect != null) {
                         break; // everything is cached and up-to-date

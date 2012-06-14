@@ -61,6 +61,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.text.Line;
 
@@ -118,6 +120,8 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
 import org.openide.DialogDisplayer;
@@ -335,9 +339,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         profileBridge.setup(gdi);
 	if (!connectExisting) {
 	    int flags = 0;
-	    if (Log.Startup.nopty)
+	    if (Log.Startup.nopty) {
 		flags |= Executor.NOPTY;
-	    executor = Executor.getDefault(Catalog.get("Gdb"), getHost(), flags); // NOI18N
+            }
+	    executor = Executor.getDefault(
+                    Catalog.get("Gdb"),  // NOI18N
+                    getHost(), 
+                    flags, 
+                    new ChangeListener() {
+                        @Override
+                        public void stateChanged(ChangeEvent e) {
+                            if (e instanceof NativeProcessChangeEvent) {
+                                if (((NativeProcessChangeEvent) e).state == NativeProcess.State.FINISHED) {
+                                    if (!postedKill) {
+                                        NativeDebuggerManager.warning(// In order to avoid catching the exception from exitValue()
+                                                Catalog.format(
+                                                "MSG_GdbUnexpectedlyStopped", // NOI18N
+                                                executor.getExitValue()));
+                                        kill();
+                                    }
+                                }
+                            }
+                        }
+            });
 	}
 
 	final String additionalArgv[] = null; // gdi.getAdditionalArgv();
@@ -2401,6 +2425,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         MITList results = miRecord.results();
         
         parent.setNumChild(results.getConstValue(MI_NUMCHILD));
+        parent.setHasMore(!results.getConstValue("has_more").equals("0")); // NOI18N
         
         MITList children_list = (MITList) results.valueOf("children"); // NOI18N
 
@@ -2719,11 +2744,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /*
      * this MI call would create MI Vars for each child automatically by gdb
      */
-    void getMIChildren(final GdbVariable parent,
+    void getMoreMIChildren(final GdbVariable parent,
 			      String expr,
 			      final int level) {
 
-        String cmdString = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
+        StringBuilder sb = new StringBuilder();
+        sb.append("-var-list-children --all-values \"").append(expr).append("\" ").append(parent.getChildrenRequestedCount()).append(" "); // NOI18N
+        parent.stepChildrenRequestedCount();
+        sb.append(parent.getChildrenRequestedCount());
+        String cmdString = sb.toString();
         MiCommandImpl cmd = new MiCommandImpl(cmdString) {
             @Override
             protected void onDone(MIRecord record) {
@@ -2733,6 +2762,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         };
         cmd.dontReportError();
         gdb.sendCommand(cmd);
+    }
+    
+    void getMIChildren(final GdbVariable parent,
+			      String expr,
+			      final int level) {
+        parent.resetChildrenRequestedCount();
+        getMoreMIChildren(parent, expr, level);
     }
 
     private void createMIVar(final GdbVariable v, boolean expandMacros) {
@@ -3025,7 +3061,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
             MIValue frameValue = (results != null) ? results.valueOf("frame") : null; // NOI18N
-
+            MITList frameTuple;
+            MITList stack;
+            boolean visited = false;
 	    // Mac 10.4 gdb provides no "frame" attribute
 
             // For the scenario that stack view is closed and local view
@@ -3037,23 +3075,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
 	    if (srcResults != null) {
-                MITList stack = srcResults.valueOf("stack").asList(); // NOI18N
+                stack = srcResults.valueOf("stack").asList(); // NOI18N
 		if (false) {
 		    // We have information about what src location we're
 		    // stopped in.
-		    MITList frameTuple = null;
 		    if (frameValue != null)
 			frameTuple = frameValue.asTuple();
 		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size(), breakpoint);
 
 		} else {
                     frameValue = ((MIResult)stack.asList().get(0)).value();
-		    MITList frameTuple = frameValue.asTuple();
+		    frameTuple = frameValue.asTuple();
 		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
                 }
                 
-                MITList frameTuple = null;
-                boolean visited = false;
                 // find the first frame with source info if dis was not requested
                 for (MITListItem stf : stack.asList()) {
                     frameTuple = ((MIResult)stf).value().asTuple();
@@ -3062,12 +3097,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     }
                     visited = true;
                 }
-		setVisitedLocation(MILocation.make(this, frameTuple, null, visited, stack.size(), breakpoint));
-                
+		
                 state().isUpAllowed = !homeLoc.bottomframe();
                 state().isDownAllowed = !homeLoc.topframe();
                 setStack(srcRecord);
-	    }
+	    } else {
+                frameTuple = frameValue.asTuple();
+                stack = null;
+            }
+            
+            setVisitedLocation(MILocation.make(this, frameTuple, null, visited, (stack == null ? 0 :stack.size()), breakpoint));
 
 //            if (get_frames || get_locals) {
 //                showStackFrames();
@@ -3276,7 +3315,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             new MiCommandImpl("-stack-list-frames") { // NOI18N
                 @Override
                 protected void onDone(MIRecord record) {
-                    genericStoppedWithSrc(stopRecord, record);
+                        genericStoppedWithSrc(stopRecord, record);
                     finish();
                 }
                 @Override

@@ -21,10 +21,10 @@
               <Group type="parallel" groupAlignment="leading" attributes="0">
                   <Group type="sequential" attributes="0">
                       <Component id="jScrollPane1" min="$pref" pref="309" max="$pref" attributes="0"/>
-                      <EmptySpace type="separate" max="$pref" attributes="1024"/>
-                      <Component id="jPanel1" pref="0" max="Short.MAX_VALUE" attributes="1536"/>
+                      <EmptySpace type="separate" max="Short.MAX_VALUE" attributes="1024"/>
+                      <Component id="jPanel1" min="$pref" pref="183" max="$pref" attributes="1024"/>
                   </Group>
-                  <Component id="jScrollPane2" pref="510" max="Short.MAX_VALUE" attributes="0"/>
+                  <Component id="jScrollPane2" max="Short.MAX_VALUE" attributes="512"/>
               </Group>
               <EmptySpace max="$pref" attributes="4"/>
           </Group>

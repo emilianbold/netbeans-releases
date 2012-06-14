@@ -61,7 +61,6 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
@@ -213,12 +212,7 @@ public class BootCPNodeFactory implements NodeFactory {
                 return root.getNameExt();
             }
             @Override public String getDisplayName() {
-                File f = null;
-                try {
-                    f = FileUtil.archiveOrDirForURL(root.getURL());
-                } catch (FileStateInvalidException x) {
-                    // ignore
-                }
+                File f =  FileUtil.archiveOrDirForURL(root.toURL());
                 if (f != null) {
                     return f.getName();
                 } else {

@@ -70,7 +70,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -99,7 +99,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
             return null;
         }
-        File binaryRootF = new File(URI.create(jar.toExternalForm()));
+        File binaryRootF = Utilities.toFile(URI.create(jar.toExternalForm()));
         // XXX this will only work for modules following regular naming conventions:
         String n = binaryRootF.getName();
         if (!n.endsWith(".jar")) { // NOI18N
@@ -146,7 +146,8 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             if (module != null) {
                 String cnb = module.getCodeNameBase();
     //  TODO C.P scan external clusters? Doesn't seem necessary, javadoc is built from source on the fly for clusters with sources
-                for (NbPlatform plaf : NbPlatform.getPlatformsOrNot()) {
+                NbPlatform plaf = module.getPlatform(false);
+                if (plaf != null) {
                     Util.err.log("Platform in " + plaf.getDestDir() + " claimed to have Javadoc roots "
                             + Arrays.asList(plaf.getJavadocRoots()));
                     Result r = findByDashedCNB(cnb.replace('.', '-'), plaf.getJavadocRoots(), false);

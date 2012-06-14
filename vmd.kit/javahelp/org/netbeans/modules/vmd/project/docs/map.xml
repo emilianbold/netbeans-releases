@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+        <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog" url="games/games_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.analyzer.AnalyzerEditorView" url="mvd/mvd_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.flow.FlowEditorView" url="mvd/mvd_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.screen.ScreenEditorView" url="mvd/mvd_about.html"/> 
+        <mapID target="org.netbeans.modules.vmd.game.GameEditorView" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewSceneDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameAnimatedTileDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewSequenceDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.nbdialog.SelectImageForLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog.java" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.nbdialog.SpriteDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameSceneDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.BasicModuleConfWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.JavaMELibsWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.DescriptorsWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.SelectLibraryWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.NameAndLocationWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentDescriptorWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentProducerWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentFinalWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.options.ComponentssupportOptionsPanelController" url="ui/mvd_debugview.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.wizard.MIDPTargetChooserPanel" url="ui/wizard_vdfname.html"/>
+	<mapID target="me.mvd_quickref" url="mvd/mvd_quickref.html"/>
+	<mapID target="me.mvd_about" url="mvd/mvd_about.html"/>
+	<mapID target="me.mvd_working" url="mvd/mvd_working.html"/>
+	<mapID target="j2me.designer.flow " url="ui/mvd_flowdesigner.html"/>
+	<mapID target="j2me.designer.palette" url="ui/mvd_componentpallette.html"/>
+	<mapID target="j2me.designer.palette_manager " url="ui/mvd_componentpallettemanager.html"/>
+	<mapID target="j2me.designer.screen" url="ui/mvd_screendesigner.html"/>
+	<mapID target="j2me.designer.inspector " url="ui/mvd_inspector.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.palette.wizard.SelectProjectPanel" url="ui/wizard_addcomponent_selectproject.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.palette.wizard.SelectClassesPanel" url="ui/wizard_addcomponent_selectclasses.html"/>
+	<mapID target="j2me.designer.property.CommandAction" url="ui/mvd_actioneditor.html"/>
+	<mapID target="me.mvd_addcustomcomponent" url="mvd/mvd_addcustomcomponent.html"/>
+	<mapID target="me.mvd_stringeditor" url="ui/mvd_stringeditor.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.editors.UpgradePanel" url="ui/dialog_upgradeinformation.html"/>
+</map>

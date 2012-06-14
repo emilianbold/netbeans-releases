@@ -107,6 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="FOQ.UNOWNED">
+            <api name="general"/>
+            <summary>New constant UNOWNED in FileOwnerQuery to mark a folder as definitely not owned by any project.</summary>
+            <version major="1" minor="46"/>
+            <date day="30" month="5" year="2012"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Introducing constant <code>FileOwnerQuery.UNOWNED</code>, a pseudoproject indicating just that a directory is definitely unowned. May
+                     be returned by either 
+                     <code>FileOwnerQueryImplementation.getOwner</code>, in which case null is returned from
+                     <code>FileOwnerQuery.getOwner</code>. May also be passed to either
+                    <code>FileOwnerQuery.markExternalOwner</code> overload, in which case the standard directory search will be pruned at this point with no result. 
+                </p>
+            </description>
+            <class package="org.netbeans.api.project" name="FileOwnerQuery"/>
+            <issue number="212015"/>
+        </change>
         <change id="Profiler.Actions">
             <api name="general"/>
             <summary>Profiler actions are an integral part of the project infrastructure - just like the debugger actions</summary>

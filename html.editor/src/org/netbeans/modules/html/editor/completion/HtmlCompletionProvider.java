@@ -48,6 +48,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -58,6 +60,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -66,6 +69,7 @@ import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -79,6 +83,7 @@ import org.openide.util.NbBundle;
  */
 public class HtmlCompletionProvider implements CompletionProvider {
 
+    private static final Logger LOG = Logger.getLogger(HtmlCompletionProvider.class.getName());
     private final AtomicBoolean AUTO_QUERY = new AtomicBoolean();
 
     @Override
@@ -198,6 +203,12 @@ public class HtmlCompletionProvider implements CompletionProvider {
             return text.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
         }
     }
+    
+    private static boolean assertsEnabled;
+    static {
+        assertsEnabled = false;
+        assert assertsEnabled = true;
+    }
 
     public static class DocQuery extends AbstractQuery {
 
@@ -216,9 +227,34 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     //based on the explicit documentation opening request
                     //(not ivoked by selecting a completion item in the list)
                     HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset, false).query();
-                    if (result != null && result.getItems().size() > 0) {
-                        item = result.getItems().iterator().next();
+                    if (result == null) {
+                        // Query method returned no CompletionResult.
+                        return;
                     }
+                        try {
+                            int rowEnd = Utilities.getRowEnd((BaseDocument)doc, caretOffset);
+                            final String documentText = doc.getText(result.getAnchor(), rowEnd - result.getAnchor());
+
+                            // Go through result items and select completionItem 
+                            // with same tag document cursor is on.
+                            for (CompletionItem completionItem : result.getItems()) {
+                                if (LexerUtils.startsWith(documentText, completionItem.getInsertPrefix(), true, false)) {
+                                    if(item == null) {
+                                        item = completionItem;
+                                        if(!assertsEnabled) {
+                                            break; //be quick in production, the list of items can be really long
+                                        }
+                                    } else {
+                                        // only warning
+                                        LOG.log(Level.WARNING, 
+                                                "More than one CompletionItem found with InsertPrefix {0}, item.insertPrefix={1}", 
+                                                new Object[]{completionItem.getInsertPrefix(), item.getInsertPrefix()});
+                                    }
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                 } catch (ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }

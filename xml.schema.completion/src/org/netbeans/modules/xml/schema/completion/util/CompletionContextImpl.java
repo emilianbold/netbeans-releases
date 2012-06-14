@@ -91,6 +91,7 @@ public class CompletionContextImpl extends CompletionContext {
     public static final String PREFIX                   = "ns"; //NOI18N
     public static final String XSI_SCHEMALOCATION       = "schemaLocation"; //NOI18N
     public static final String XSI_NONS_SCHEMALOCATION  = "noNamespaceSchemaLocation"; //NOI18N
+    private static final String XSD_TARGET_NAMESPACE = "targetNamespace"; // NOI18N
 
     private static final Logger _logger = Logger.getLogger(CompletionContextImpl.class.getName());
 
@@ -109,6 +110,7 @@ public class CompletionContextImpl extends CompletionContext {
      * Tags on the path from root to the context element (the one the CC tries to fill)
      */
     private List<Tag> elementsFromRoot;
+    private Map<String, String>  schemaLocationMap = new HashMap<String, String>();
     private String schemaLocation;
     private String noNamespaceSchemaLocation;
     private String defaultNamespace;
@@ -126,6 +128,10 @@ public class CompletionContextImpl extends CompletionContext {
     private CompletionModel noNamespaceModel;
     private transient List<String> existingAttributes;
     private boolean specialCompletion;
+    /**
+     * HACK: target namespace for XML schemas. See defect #212972
+     */
+    private String targetNamespace;
 
     /**
      * Creates a new instance of CompletionQueryHelper
@@ -200,11 +206,11 @@ public class CompletionContextImpl extends CompletionContext {
     public List<URI> getSchemas() {
         List<URI> uris = new ArrayList<URI>();
         if(schemaLocation != null) {
-            CompletionUtil.loadSchemaURIs(schemaLocation, uris, false);
+            CompletionUtil.loadSchemaURIs(schemaLocation, uris, schemaLocationMap);
             return uris;
         }
         if(noNamespaceSchemaLocation != null) {
-            CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, true);
+            CompletionUtil.loadSchemaURIs(noNamespaceSchemaLocation, uris, null);
             return uris;
         }                        
         return uris;
@@ -302,7 +308,12 @@ public class CompletionContextImpl extends CompletionContext {
                 equals(XSI_NONS_SCHEMALOCATION)) {
             noNamespaceSchemaLocation = value.trim();
             return;
-        }            
+        }  
+        if (CompletionUtil.getLocalNameFromTag(attrName).
+                equals(XSD_TARGET_NAMESPACE)) {
+            targetNamespace = value.trim();
+            return;
+        }
 
         if(! attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))
             return;            
@@ -947,6 +958,14 @@ public class CompletionContextImpl extends CompletionContext {
             try {
                 if (nsModelMap.containsKey(temp)) {
                     // ignore, was added from specific location
+                    continue;
+                }
+                if (schemaLocationMap.get(temp) != null) {
+                    // ignore; already processed by default provider from schemaLocation attribute
+                    continue;
+                }
+                if (temp.equals(targetNamespace)) {
+                    // ignore: the NS is a targetNamespace defined by this schema
                     continue;
                 }
                 CompletionModel cm = DefaultModelProvider.getCompletionModel(new java.net.URI(temp), true, this);

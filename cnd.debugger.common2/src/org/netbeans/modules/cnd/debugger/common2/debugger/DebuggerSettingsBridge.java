@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.util.Map;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -67,6 +66,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.Pathmap;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointBag;
+import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 
 
 /**
@@ -257,7 +257,10 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
         if (!debugExecutable.isEmpty()) {
             return currentSettings.dbgProfile().getArgsFlat();
         } else {
-            return currentSettings.runProfile().getArgsFlat();
+            return ProjectActionEvent.getRunCommandAsString(
+                    currentSettings.runProfile().getArgsFlat(), 
+                    (MakeConfiguration) currentDbgProfile().getConfiguration(), 
+                    NativeDebuggerImpl.getPathMapFromConfig(currentDbgProfile().getConfiguration()));
         }
     }
     

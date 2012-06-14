@@ -64,6 +64,7 @@ public class ParentVersionErrorCustomizer extends javax.swing.JPanel {
         cbSnapshots.setSelected(preferences.getBoolean(ParentVersionError.PROP_SNAPSHOT, false));
         enableSnapshots();
         ActionListener al = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 preferences.putBoolean(ParentVersionError.PROP_SOURCES, rbSources.isSelected());
                 enableSnapshots();
@@ -72,6 +73,7 @@ public class ParentVersionErrorCustomizer extends javax.swing.JPanel {
         rbSources.addActionListener(al);
         rbLatest.addActionListener(al);
         cbSnapshots.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 preferences.putBoolean(ParentVersionError.PROP_SNAPSHOT, cbSnapshots.isSelected());
             }

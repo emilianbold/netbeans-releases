@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Using the Debugging Window</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Using the Debugging Window</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p>The Debugging window opens in the left pane of the IDE and displays a
+list of the threads in the current debugging session.
+The Debugging window enables you to suspend and resume threads and view the sequence of calls made 
+during the execution of the current thread. 
+You can right-click threads and calls in the Debugging window to open a popup menu to perform actions on the item.
+You can use the toolbar at the bottom of the window to modify the displayed threads. </p>
+<p>By default, the Debugging window opens automatically whenever you start a debugging session.
+You can open the Debugging window at any time by choosing Window &gt; Debugging &gt; Debugging (Alt -Shift-9). </p>
+
+    
+    <p><strong>Debugging window icons</strong></p>
+    <p>The following table describes the icons that represent the thread states in the Debugging window.</p>
+    <table border="1" cellpadding="5" cellspacing="0">
+            <tr align="left" valign="top">
+                    <th scope="col">Icons</th>
+                    <th scope="col">Description</th>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/thread_running_16.png" alt="Running thread"></td>
+                    <td>Indicates a thread that is running </td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/thread_at_line_bpkt_16.png" alt="Thread suspended by breakpoint"></td>
+                    <td>Indicates a thread suspended by hitting a breakpoint</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/thread_suspended_16.png" alt="Suspended Thread"></td>
+                    <td>Indicates a suspended thread</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/thread_group_running_16.png" alt="Running Thread Group"></td>
+                    <td>Indicates a thread group where all threads are running</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/thread_group_suspended_16.png" alt="Suspended Thread Group"></td>
+                    <td>Indicates a thread group where all threads are suspended</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/thread_group_mixed_16.png" alt="Mixed Thread Group"></td>
+                    <td>Indicates a thread group with running and suspended threads</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/call_stack_16.png" alt="Call Stack Frame"></td>
+                    <td>Indicates a call stack frame</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/CallStackFrameGroup.gif" alt="Call Stack Frame"></td>
+                    <td>Indicates a call stack frame group</td>
+            </tr>
+        </table>
+
+<p>For more, see <a href="debug_threads.html">Debugging Threads in the IDE</a>.</p>
+
+<p>You can right-click a thread or call to open a pop-up menu where you can choose the following actions:</p>
+    <ul>
+        <li><strong>Make Current.</strong>
+        Makes the selected thread the current thread. This command is equivalent to double-clicking the thread.
+        For more, see <a href="debug_threads.html">Debugging Threads in the IDE</a>.</li>
+        <li><strong>Go to Source.</strong>
+        Shows the source code for the newest frame on the selected thread's stack.</li>
+        <li><strong>Pop to Here.</strong>
+        Makes the call the top call on the call stack, clearing the calls above it on the stack. 
+        For more, see <a href="debug_callstack.html#pop">Popping a Call From the Call Stack</a>.</li>
+        <li><strong>Copy Stack.</strong>
+        Capture a textual representation of the call stack and copy to the clipboard.</li>
+    </ul>
+
+
+
+
+
+
+<h3>Using the Debugging window toolbar</h3>
+<p>You can use the toolbar at the bottom of the Debugging window to modify how threads and calls are displayed.
+The following table describes the buttons for modifying the list of displayed threads.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Button</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr>
+		<td align="center"><img src="images/thread_group_mixed_16.png" alt="Show thread groups"></td>
+		<td>Show thread groups</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="images/show_suspend_table_option_16.png" alt="Show suspend/resume table"></td>
+		<td>Shows or hides the controls for suspending and resuming threads.</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="images/show_system_threads_option_16.png" alt="Show system threads"></td>
+		<td>Show system threads</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="images/show_suspended_threads_option_16.png" alt="Show suspended and current threads only"></td>
+		<td>Show suspended and current threads only</td>
+	</tr>
+	<tr>
+		<td align="center"><img src="images/monitor_acquired_16.png" alt="Show monitors"></td>
+		<td>Show monitors</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="images/show_fqn_option_16.png" alt="Show qualified names"></td>
+		<td>Show qualified names</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="images/suspend_property_sort_order_16.png" alt="Sort by suspended/resumed state"></td>
+		<td>Sort by suspended/resumed state</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="images/alphabetic_sort_order_16.png" alt="Suspended thread"></td>
+		<td>Sort by name</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="images/natural_sort_order_16.png" alt="Suspended thread"></td>
+		<td>Sort by default</td>
+	</tr>
+</table>
+
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_threads.html">Debugging Threads in the IDE</a></dd>
+    <dd><a href="debug_callstack.html">Using the Call Stack</a></dd>
+    <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
+</dl>
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.form.palette;
 
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
@@ -58,6 +59,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -122,7 +124,10 @@ class BoxFillerInitializer implements PaletteItem.ComponentInitializer {
                 NbBundle.getMessage(BoxFillerInitializer.class, titleKey),
                 true,
                 null);
-        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        // setting the help id on the panel after creating the dialog will avoid the help button
+        HelpCtx.setHelpIDString(panel, "f1_gui_filler_html"); // NOI18N
+        dialog.setVisible(true);
         return (dd.getValue() == DialogDescriptor.OK_OPTION);
     }
 
@@ -136,8 +141,8 @@ class BoxFillerInitializer implements PaletteItem.ComponentInitializer {
             Logger.getLogger(BoxFillerInitializer.class.getName()).log(Level.INFO, itex.getMessage(), itex);
         }
     }
-    
-    private class WidthHeightPanel extends JPanel {
+
+    private static class WidthHeightPanel extends JPanel {
         private JSpinner widthField;
         private JSpinner heightField;
         
@@ -188,7 +193,6 @@ class BoxFillerInitializer implements PaletteItem.ComponentInitializer {
         int getFillerHeight() {
             return (Integer)heightField.getValue();
         }
-        
     }
 
 }

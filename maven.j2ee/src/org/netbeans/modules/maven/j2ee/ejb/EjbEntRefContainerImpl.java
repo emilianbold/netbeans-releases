@@ -112,6 +112,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
 
+            @Override
             public String run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
             }
@@ -135,6 +136,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         final boolean[] write = new boolean[]{false};
         String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
 
+            @Override
             public String run(EjbJarMetadata metadata) {
                 String refName = null;
                 Ejb model = metadata.findByEjbClass(referencingClass);
@@ -184,6 +186,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
                     ejbProject.getProjectDirectory().getFileObject("pom.xml"),//NOI18N
                     Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
 
+                @Override
                 public void performOperation(POMModel model) {
                     //add as dependency
                     Dependency d = ModelUtils.checkModelDependency(model, grId, artId, true);
@@ -237,6 +240,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         final boolean[] write = new boolean[]{false};
         String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
 
+            @Override
             public String run(EjbJarMetadata metadata) throws IOException {
                 Ejb ejb = metadata.findByEjbClass(referencingClass);
                 if (ejb == null) {
@@ -276,6 +280,7 @@ public final class EjbEntRefContainerImpl implements EnterpriseReferenceContaine
         final boolean[] write = new boolean[]{false};
         String resourceName = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
 
+            @Override
             public String run(EjbJarMetadata metadata) {
                 Ejb ejb = metadata.findByEjbClass(referencingClass);
                 if (ejb == null) {

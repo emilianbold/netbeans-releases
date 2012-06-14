@@ -141,6 +141,14 @@ made subject to such option by the copyright holder.
     <fontcolor name="html-tag" default="comment">
         <font style="bold" />
     </fontcolor>
+    
+     <!-- JavaCharacterTokenId categories -->
+    <fontcolor name="character-escape" default="character">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="character-escape-invalid" default="character">
+        <font style="italic" />
+    </fontcolor>
 
 <!-- XXX: should java module really define these colorings ??
 

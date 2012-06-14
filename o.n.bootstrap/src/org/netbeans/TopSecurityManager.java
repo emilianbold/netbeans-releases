@@ -66,6 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LoggingPermission;
 import org.openide.util.Lookup;
+import org.openide.util.WeakSet;
 
 /** NetBeans security manager implementation.
 * @author Ales Novak, Jesse Glick
@@ -402,6 +403,38 @@ public class TopSecurityManager extends SecurityManager {
         checkConnect(s, port);
     }
 
+    private final Set<Class> warnedSunMisc = new WeakSet<Class>();
+    @Override
+    public void checkMemberAccess(Class<?> clazz, int which) {
+        final String n = clazz.getName();
+        if (n.startsWith("sun.misc")) { // NOI18N
+            Class<?> caller = null;
+            Class[] arr = getClassContext();
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] == TopSecurityManager.class) {
+                    continue;
+                }
+                if (arr[i] != Class.class) {
+                    caller = arr[i];
+                    break;
+                }
+            }
+            final String msg = "Dangerous reflection access to " + n + " by " + caller + " detected!";
+            Level l = Level.FINE;
+            assert (l = Level.INFO) != null;
+            if (!warnedSunMisc.add(caller)) {
+                LOG.log(l, msg);
+                return; 
+            }
+            Exception ex = new Exception(msg); // NOI18N
+            LOG.log(l, null, ex);
+        }
+        super.checkMemberAccess(clazz, which);
+    }
+    
+    
+
+    
     public @Override void checkPermission(Permission perm) {
 //        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);

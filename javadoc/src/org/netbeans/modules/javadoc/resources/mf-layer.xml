@@ -93,9 +93,9 @@ made subject to such option by the copyright holder.
             <folder name="hints">
                 <folder name="javadoc">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javadoc.hints.Bundle"/>
-                    <file name="CreateJavadoc.instance">
+<!--                    <file name="CreateJavadoc.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.JavadocHintProvider.createCreateJavadoc"/>
-                    </file>
+                    </file>-->
                     <file name="ErrorInJavadoc.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javadoc.hints.JavadocHintProvider.createErrorInJavadoc"/>
                     </file>

@@ -65,6 +65,13 @@ import java.beans.PropertyChangeEvent;
 import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,6 +95,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.editor.AnnotationType.CombinationMember;
+import org.netbeans.editor.Annotations.AnnotationCombination;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib2.view.*;
 import org.openide.util.ImageUtilities;
@@ -874,32 +883,97 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                     annos.activateNextAnnotation(line);
                 } else {
                     Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions(eui.getComponent());
-                    if (actions != null && actions.length >0) {
-                        Action a = actions[0]; //TODO - create GUI chooser
-                        if (a!=null && a.isEnabled()){
-                            int currentLine = -1;
-                            int line = getLineFromMouseEvent(e);
-                            if (line == -1) return;
-                            BaseDocument document = eui.getDocument();
-                            try {
-                                currentLine = Utilities.getLineOffset(document, eui.getComponent().getCaret().getDot());
-                            } catch (BadLocationException ex) {
-                                return;
-                            }
-                            if (line != currentLine) {
-                                int offset = Utilities.getRowStartFromLineOffset(document, line);
-                                JumpList.checkAddEntry();
-                                eui.getComponent().getCaret().setDot(offset);
-                            }
-                            e.consume();
-                            a.actionPerformed(new ActionEvent(eui.getComponent(), 0, ""));
-                            repaint();
+                    if (actions == null && actions.length == 0) {
+                        Toolkit.getDefaultToolkit().beep();
+                        return;
+                    }
+                    int currentLine = -1;
+                    int line = getLineFromMouseEvent(e);
+                    if (line == -1) {
+                        Toolkit.getDefaultToolkit().beep();
+                        return;
+                    }
+                    Action toInvoke = null;
+                    Action defaultAction = null;
+                    AnnotationDesc active = annos.getActiveAnnotation(line);
+                    if (active == null || !isMouseOverGlyph(e)) {
+                        Collection<AnnotationDesc> base = new HashSet<AnnotationDesc>();
+                        if (active != null) {
+                            base.add(active);
                         }
+                        AnnotationDesc[] passive = annos.getPasiveAnnotations(line);
+                        if (passive != null) {
+                            base.addAll(Arrays.asList(passive));
+                        }
+                        Collection<String> annotationTypes = computeAnnotationTypesToAnalyze(base);
+                        for (Action a : actions) {
+                            Object defAction = a.getValue("default-action");
+                            if (toInvoke == null && defAction != null && ((Boolean) defAction)) {
+                                Object supportedAnnotationTypes = a.getValue("default-action-excluded-annotation-types");
+                                if (supportedAnnotationTypes == null || !(supportedAnnotationTypes instanceof String[]) || Collections.disjoint(Arrays.asList((String[]) supportedAnnotationTypes), annotationTypes)) {
+                                    toInvoke = a;
+                                }
+                            }
+                            if (defaultAction == null && isLegacyAction(a)) {
+                                defaultAction = a;
+                            }
+                        }
+                    } else {
+                        Collection<String> annotationTypes = computeAnnotationTypesToAnalyze(Arrays.asList(active));
+                        for (Action a : actions) {
+                            Object supportedAnnotationTypes = a.getValue("supported-annotation-types");
+                            if (supportedAnnotationTypes instanceof String[]) {
+                                if (toInvoke == null && !Collections.disjoint(Arrays.asList((String[]) supportedAnnotationTypes), annotationTypes)) {
+                                    toInvoke = a;
+                                }
+                                if (defaultAction == null && isLegacyAction(a)) {
+                                    defaultAction = a;
+                                }
+                            }
+                        }
+                    }
+                    toInvoke = toInvoke != null ? toInvoke : defaultAction;
+                    if (toInvoke != null && toInvoke.isEnabled()){
+                        BaseDocument document = eui.getDocument();
+                        try {
+                            currentLine = Utilities.getLineOffset(document, eui.getComponent().getCaret().getDot());
+                        } catch (BadLocationException ex) {
+                            return;
+                        }
+                        if (line != currentLine) {
+                            int offset = Utilities.getRowStartFromLineOffset(document, line);
+                            JumpList.checkAddEntry();
+                            eui.getComponent().getCaret().setDot(offset);
+                        }
+                        e.consume();
+                        toInvoke.actionPerformed(new ActionEvent(eui.getComponent(), 0, ""));
+                        repaint();
                     } else {
                         Toolkit.getDefaultToolkit().beep();
                     }
                 }
             }
+        }
+        
+        private boolean isLegacyAction(Action a) {
+            return a.getValue("default-action") == null && a.getValue("supported-annotation-types") == null;
+        }
+        
+        private Collection<String> computeAnnotationTypesToAnalyze(Collection<AnnotationDesc> startAt) {
+            Collection<String> annotationTypes = new HashSet<String>();
+            List<AnnotationDesc> combinationsToAnalyze = new LinkedList<AnnotationDesc>(startAt);
+            
+            while (!combinationsToAnalyze.isEmpty()) {
+                AnnotationDesc desc = combinationsToAnalyze.remove(0);
+                
+                annotationTypes.add(desc.getAnnotationType());
+                
+                if (!(desc instanceof AnnotationCombination)) continue;
+                
+                combinationsToAnalyze.addAll(((AnnotationCombination) desc).getCombinedAnnotations());
+            }
+            
+            return annotationTypes;
         }
 
         private void showPopup(MouseEvent e) {

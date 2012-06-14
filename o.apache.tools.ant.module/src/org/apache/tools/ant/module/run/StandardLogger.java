@@ -540,7 +540,7 @@ public final class StandardLogger extends AntLogger {
         File file;
         if (path.startsWith("file:")) {
             try {
-                file = new File(new URI(path));
+                file = Utilities.toFile(new URI(path));
             } catch (URISyntaxException e) {
                 ERR.log(Level.FINE, "invalid URI, skipping", e);
                 return new PartiallyLinkedLine(line);
@@ -591,7 +591,7 @@ public final class StandardLogger extends AntLogger {
         ERR.log(Level.FINE, "Hyperlink: {0} [{1}:{2}:{3}:{4}]: {5}", new Object[] {file, line1, col1, line2, col2, message});
         try {
             return new PartiallyLinkedLine(
-                    session.createStandardHyperlink(file.toURI().toURL(), message, line1, col1, line2, col2),
+                    session.createStandardHyperlink(Utilities.toURI(file).toURL(), message, line1, col1, line2, col2),
                     line, m.group(1), m.group(7));
         } catch (MalformedURLException e) {
             assert false : e;

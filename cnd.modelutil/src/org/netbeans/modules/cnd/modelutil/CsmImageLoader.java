@@ -158,6 +158,8 @@ public class CsmImageLoader implements CsmImageName {
             return USING;
         } else if (CsmKindUtilities.isUsingDeclaration(o)) {
             return USING_DECLARATION;
+        } else if (CsmKindUtilities.isEnumForwardDeclaration(o)) {
+            return ENUMERATION_FWD;
         } else if (CsmKindUtilities.isClassForwardDeclaration(o)) {
             CsmClass cls = ((CsmClassForwardDeclaration)o).getCsmClass();
             if (cls != null && cls.getKind() == CsmDeclaration.Kind.CLASS) {

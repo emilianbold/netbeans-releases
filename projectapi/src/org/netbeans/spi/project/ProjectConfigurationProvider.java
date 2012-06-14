@@ -47,6 +47,7 @@ package org.netbeans.spi.project;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * Provider of configurations for a project.
@@ -86,7 +87,7 @@ public interface ProjectConfigurationProvider<C extends ProjectConfiguration> {
      * <p>Should be called within {@link org.netbeans.api.project.ProjectManager#mutex read access}.
      * @return the active configuration for this project (should be a member of {@link #getConfigurations}, or null only if that is empty)
      */
-    C getActiveConfiguration();
+    @CheckForNull C getActiveConfiguration();
 
     /**
      * Sets the active configuration.

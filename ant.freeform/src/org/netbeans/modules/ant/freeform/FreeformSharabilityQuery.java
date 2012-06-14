@@ -57,6 +57,7 @@ import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -84,7 +85,7 @@ public class FreeformSharabilityQuery implements SharabilityQueryImplementation2
     }
     
     @Override public Sharability getSharability(URI uri) {
-        File file = new File(uri);
+        File file = Utilities.toFile(uri);
 	String absolutePath = file.getAbsolutePath();
 	
 	if (absolutePath.equals(nbproject)) {

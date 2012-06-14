@@ -315,10 +315,27 @@ made subject to such option by the copyright holder.
         </ant>
     </target>
 
-    <target name="profile" depends="netbeans,-hide-excluded-modules,-jdk-presetdef-nbprofiledirect">
+    <target name="-profile-check" if="netbeans.home">
+        <condition property="profiler.configured">
+            <or>
+                <contains string="${run.args.ide}" substring="-agentpath:" casesensitive="true"/>
+                <contains string="${run.args.ide}" substring="-javaagent:" casesensitive="true"/>
+            </or>
+        </condition>
+    </target>
+
+    <target name="-do-profile" depends="netbeans,-hide-excluded-modules,-jdk-presetdef-nbprofiledirect">
         <ant antfile="${harness.dir}/run.xml" target="profile">
             <reference refid="cluster.path.id"/>
         </ant>
+    </target>
+    <target name="-try-profile" depends="-profile-check" if="profiler.configured">
+        <antcall target="-do-profile"/>
+    </target>
+
+    <target name="profile">
+        <ant antfile="${harness.dir}/run.xml" target="-profile-check"/>
+        <antcall target="-try-profile"/>
     </target>
 
     <target name="debug" depends="netbeans,-hide-excluded-modules,-jdk-presetdef-nbjpdastart">

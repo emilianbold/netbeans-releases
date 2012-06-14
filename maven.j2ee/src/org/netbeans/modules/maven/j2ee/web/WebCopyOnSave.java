@@ -278,7 +278,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
                 // project was built
                 FileObject toDelete = webBuildBase.getFileObject(path);
                 if (toDelete != null) {
-                    File fil = FileUtil.toFile(toDelete);
+                    File fil = FileUtil.normalizeFile(FileUtil.toFile(toDelete));
                     toDelete.delete();
                     fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
                 }
@@ -307,7 +307,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
                         return;
                     }
                     FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
-                    File fil = FileUtil.toFile(destFile);
+                    File fil = FileUtil.normalizeFile(FileUtil.toFile(destFile));
                     copySrcToDest(fo, destFile);
                     fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
                 }

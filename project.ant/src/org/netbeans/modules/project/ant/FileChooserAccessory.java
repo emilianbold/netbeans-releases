@@ -51,15 +51,15 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.ButtonModel;
 import javax.swing.JFileChooser;
+import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.queries.CollocationQuery;
+import static org.netbeans.modules.project.ant.Bundle.*;
 import org.netbeans.modules.project.ant.VariablesModel.Variable;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
@@ -67,18 +67,17 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
 /**
  * Accessory allowing to choose how file is referenced from a project - relative
  * or absolute.
- * 
- * <p>The panel is used from two different places - FileChooser and 
- * RelativizeFilePathCustomizer.
- * 
+ * @see FileChooser
  * @author David Konecny
  */
-public class FileChooserAccessory extends javax.swing.JPanel
+public final class FileChooserAccessory extends javax.swing.JPanel
         implements ActionListener, PropertyChangeListener {
 
     private File baseFolder;
@@ -86,22 +85,10 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private boolean copyAllowed;
     private JFileChooser chooser;
     private List<String> copiedRelativeFiles = null;
-    /** In RelativizeFilePathCustomizer scenario this property holds preselected file */
-    private File useThisFileInsteadOfOneFromChooser = null;
     private VariablesModel varModel;
     private boolean enableVariableBasedSelection = false;
 
     private boolean userSelection = false;
-    /**
-     * Constructor for usage from RelativizeFilePathCustomizer.
-     */
-    public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, File selectedFile) {
-        this(null, baseFolder, sharedLibrariesFolder, copyAllowed);
-        useThisFileInsteadOfOneFromChooser = selectedFile;
-        enableAccessory(true);
-        update(Collections.singletonList(useThisFileInsteadOfOneFromChooser));
-        enableVariableBasedSelection(enableVariableBasedSelection);
-    }
 
     /**
      * Constructor for usage from FileChooser.
@@ -159,6 +146,12 @@ public class FileChooserAccessory extends javax.swing.JPanel
         }
     }
 
+    @Messages({
+        "# {0} - sharable library location", "FileChooserAccessory.warning1=Files can be only copied to the sharable libraries location ({0}) or its subfolder(s).",
+        "# {0} - folder location to be created", "FileChooserAccessory.warning2=Are you sure you want to create folder {0} ?",
+        "FileChooserAccessory.warning3=Some of the files already exist in destination directory. Are you sure you want to override them?",
+        "FileChooserAccessory.warning4=Some of the selected files are folders. Are you sure you want to copy the folder and all its subfolders recursively?"
+    })
     public boolean canApprove() {
         if (!isCopy()) {
             return true;
@@ -166,9 +159,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         File f = FileUtil.normalizeFile(new File(copyTo.getText()));
         if (!f.getPath().equals(sharedLibrariesFolder.getPath()) &&
                 !(f.getPath()).startsWith(sharedLibrariesFolder.getPath()+File.separatorChar)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    MessageFormat.format(NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.warning1"), // NOI18N
-                    new Object[] {sharedLibrariesFolder.getPath()})));
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(FileChooserAccessory_warning1(sharedLibrariesFolder.getPath())));
 
             return false;
         }
@@ -177,24 +168,20 @@ public class FileChooserAccessory extends javax.swing.JPanel
             for (File file : files) {
                 File testFile = new File(f, file.getName());
                 if (testFile.exists()) {
-                    if (NotifyDescriptor.YES_OPTION != DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.warning3")))) {
+                    if (NotifyDescriptor.YES_OPTION != DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(FileChooserAccessory_warning3()))) {
                         return false;
                     }
                     break;
                 }
             }
         } else {
-            if (NotifyDescriptor.YES_OPTION != DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                    MessageFormat.format(NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.warning2"), // NOI18N
-                    new Object[] {f.getPath()})))) {
+            if (NotifyDescriptor.YES_OPTION != DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(FileChooserAccessory_warning2(f.getPath())))) {
                 return false;
             }
         }
         for (File file : files) {
             if (file.isDirectory()) {
-                if (NotifyDescriptor.YES_OPTION != DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.warning4")))) { // NOI18N
+                if (NotifyDescriptor.YES_OPTION != DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(FileChooserAccessory_warning4()))) {
                     return false;
                 }
                 break;
@@ -237,9 +224,6 @@ public class FileChooserAccessory extends javax.swing.JPanel
     }
 
     private File[] getSelectedFiles() {
-        if (useThisFileInsteadOfOneFromChooser != null) {
-            return new File[]{ FileUtil.normalizeFile(useThisFileInsteadOfOneFromChooser) };
-        }
         File files[];
         if (chooser.isMultiSelectionEnabled()) {
             files = chooser.getSelectedFiles();
@@ -270,11 +254,11 @@ public class FileChooserAccessory extends javax.swing.JPanel
         return rbCopy.isEnabled() && rbCopy.isSelected();
     }
 
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         copyTo.setEditable(e.getSource() == rbCopy);
     }
 
-    public void propertyChange(PropertyChangeEvent e) {
+    @Override public void propertyChange(PropertyChangeEvent e) {
         if (!(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(e.getPropertyName()) ||
                 JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals(e.getPropertyName()))) {
             return;
@@ -284,6 +268,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         update(Arrays.asList(files));
     }
 
+    @Messages("FileChooserAccessory.noSuitableVariable=<no suitable variable>")
     private void update(List<File> files) {
         StringBuilder absolute = new StringBuilder();
         StringBuilder relative = new StringBuilder();
@@ -322,7 +307,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
         absolutePath.setToolTipText(absolute.toString());
 
         if (variable.length() == 0) {
-            variable.append(NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.noSuitableVariable")); // NOI18N
+            variable.append(FileChooserAccessory_noSuitableVariable());
         }
         variablePath.setText(variable.toString());
         variablePath.setCaretPosition(0);
@@ -347,9 +332,9 @@ public class FileChooserAccessory extends javax.swing.JPanel
     }
 
     private boolean areVarRelated(Collection<File> files){
-        VariablesModel varModel = getVariablesModel();
+        VariablesModel model = getVariablesModel();
         for(File file: files){
-            if (varModel.getRelativePath(file, true) == null){
+            if (model.getRelativePath(file, true) == null){
                 return false;
             }
         }
@@ -359,7 +344,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
 
     private boolean areCollocated(File base, Collection<File> files){
         for(File file: files){
-            if (!CollocationQuery.areCollocated(base.toURI(), file.toURI())) {
+            if (!CollocationQuery.areCollocated(Utilities.toURI(base), Utilities.toURI(file))) {
                 return false;
             }
         }
@@ -402,12 +387,13 @@ public class FileChooserAccessory extends javax.swing.JPanel
         return fs;
     }
 
+    @Messages({"# {0} - file location", "FileChooserAccessory_no_such_file=Cannot copy nonexistent path {0} to libraries folder."})
     private void copyFiles(List<File> files, FileObject newRoot) throws IOException {
         List<File> fs = new ArrayList<File>();
         for (File file : files) {
             FileObject fo = FileUtil.toFileObject(file);
             if (fo == null) {
-                throw new FileNotFoundException(file.toString());
+                throw Exceptions.attachLocalizedMessage(new FileNotFoundException(file.toString()), FileChooserAccessory_no_such_file(file));
             }
             FileObject newFO;
             if (fo.isFolder()) {
@@ -426,8 +412,7 @@ public class FileChooserAccessory extends javax.swing.JPanel
 
     public static FileObject copyFolderRecursively(final FileObject sourceFolder, final FileObject destination) throws IOException {
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
-
-            public void run() throws IOException {
+            @Override public void run() throws IOException {
                 assert sourceFolder.isFolder() : sourceFolder;
                 assert destination.isFolder() : destination;
                 FileObject destinationSubFolder = destination.getFileObject(sourceFolder.getName());

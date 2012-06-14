@@ -71,6 +71,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 import org.openide.xml.XMLUtil;
@@ -156,7 +157,7 @@ public class ReferenceHelperTest extends NbTestCase {
         super.setUp();
         ClassLoader l = ReferenceHelper.class.getClassLoader();
         MockLookup.setLookup(
-            Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI())),
+            Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(Utilities.toURI(getWorkDir()))),
             Lookups.singleton(l),
             Lookups.exclude(Lookups.metaInfServices(l), CollocationQueryImplementation.class));
         scratch = TestUtil.makeScratchDir(this);
@@ -1095,11 +1096,11 @@ public class ReferenceHelperTest extends NbTestCase {
         assertProjectLibraryManagers(null);
         File fooJar = new File(getWorkDir(), "foo.jar");
         File f = new File(getWorkDir(), "libs.properties");
-        URL loc = f.toURI().toURL();
+        URL loc = Utilities.toURI(f).toURL();
         LibraryManager mgr = LibraryManager.forLocation(loc);
         assertEquals(loc, mgr.getLocation());
         Library fooLib = mgr.createLibrary("j2se", "foo",
-                Collections.singletonMap("classpath", Arrays.asList(new URL("jar:" + fooJar.toURI() + "!/"))));
+                Collections.singletonMap("classpath", Arrays.asList(new URL("jar:" + Utilities.toURI(fooJar) + "!/"))));
         assertEquals(mgr, fooLib.getManager());
         try {
             r.createLibraryReference(fooLib, "classpath");
@@ -1120,7 +1121,7 @@ public class ReferenceHelperTest extends NbTestCase {
         File barDir = new File(getWorkDir(), "bar");
         barDir.mkdirs();
         String barref = r.createLibraryReference(mgr.createLibrary("j2se", "bar",
-                Collections.singletonMap("classpath", Arrays.asList(barDir.toURI().toURL()))), "classpath");
+                Collections.singletonMap("classpath", Arrays.asList(Utilities.toURI(barDir).toURL()))), "classpath");
         assertEquals("${libs.bar.classpath}", barref);
         assertEquals(barDir.getAbsolutePath(), pev.evaluate(barref).replace('/', File.separatorChar));
         EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

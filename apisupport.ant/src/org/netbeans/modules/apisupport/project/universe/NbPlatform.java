@@ -86,6 +86,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
 /**
  * Represents one NetBeans platform, i.e. installation of the NB platform or IDE
@@ -657,7 +658,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         File loc = getDestDir();
         if (loc.getName().equals("netbeans") && loc.getParentFile().getName().equals("nbbuild")) { // NOI18N
             try {
-                defaultSourceRoots = new URL[] {loc.getParentFile().getParentFile().toURI().toURL()};
+                defaultSourceRoots = new URL[] {Utilities.toURI(loc.getParentFile().getParentFile()).toURL()};
             } catch (MalformedURLException e) {
                 assert false : e;
             }
@@ -799,10 +800,12 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             if (nbbuild != null && nbbuild.getName().equals("nbbuild")) {
                 File root = nbbuild.getParentFile();
                 if (root != null) {
+                    LOG.log(Level.FINE, "creating module list for nb.org: {0}", root);
                     return ModuleList.findOrCreateModuleListFromNetBeansOrgSources(root);
                 }
             }
         }
+        LOG.log(Level.FINE, "creating binary module list: {0}", nbdestdir);
         return ModuleList.findOrCreateModuleListFromBinaries(nbdestdir);
     }
 
@@ -962,7 +965,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     }
     
     public @Override String toString() {
-        return "NbPlatform[" + getID() + ":" + getDestDir() + ";sources=" + Arrays.asList(getSourceRoots()) + ";javadoc=" + Arrays.asList(getJavadocRoots()) + "]"; // NOI18N;
+        return "NbPlatform[" + getID() + ":" + getDestDir() + "]";
     }
     
     /**

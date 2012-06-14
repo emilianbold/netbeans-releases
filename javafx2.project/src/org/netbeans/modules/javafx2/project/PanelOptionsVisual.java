@@ -605,15 +605,28 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         this.panel.fireChangeEvent();
 }//GEN-LAST:event_createMainCheckBoxItemStateChanged
 
+    private void setBottomPanelAreaVisible(boolean visible) {
+        cbSharable.setVisible(visible);
+        lblLibFolder.setVisible(visible);
+        jPanel1.setVisible(visible);
+        txtLibFolder.setVisible(visible);
+        btnLibFolder.setVisible(visible);
+        lblHint.setVisible(visible);
+        createMainCheckBox.setVisible(visible);
+        mainClassTextField.setVisible(visible);
+    }
+
     @Override
     boolean valid(WizardDescriptor settings) {
         if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+            setBottomPanelAreaVisible(false);
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, detectPlatformTaskPerformed ?
                     NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform") : // NOI18N
                     NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.creatingDefaultFXPlatform") ); // NOI18N
             return false;
         }
-        
+        setBottomPanelAreaVisible(true);
+
         if (cbSharable.isSelected()) {
             String location = txtLibFolder.getText();
             if (projectLocation != null) {

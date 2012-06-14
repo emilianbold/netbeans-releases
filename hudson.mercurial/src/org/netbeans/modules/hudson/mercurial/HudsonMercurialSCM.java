@@ -84,13 +84,13 @@ public class HudsonMercurialSCM implements HudsonSCM {
     @Messages({"# {0} - repository location", "warning.local_repo={0} will only be accessible from a Hudson server on the same machine."})
     public Configuration forFolder(File folder) {
         // XXX could also permit projects as subdirs of Hg repos (lacking SPI currently)
-        final URI source = getDefaultPull(folder.toURI());
+        final URI source = getDefaultPull(org.openide.util.Utilities.toURI(folder));
         if (source == null) {
             return null;
         }
         final String repo;
         if ("file".equals(source.getScheme())) { // NOI18N
-            repo = new File(source).getAbsolutePath();
+            repo = org.openide.util.Utilities.toFile(source).getAbsolutePath();
         } else {
             repo = source.toString();
         }
@@ -261,7 +261,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
         }
         if (defaultPull.startsWith("/") || defaultPull.startsWith("\\")) { // NOI18N
             LOG.log(Level.FINE, "{0} looks like a local file location", defaultPull);
-            return new File(defaultPull).toURI();
+            return org.openide.util.Utilities.toURI(new File(defaultPull));
         } else {
             String defaultPullNoPassword = defaultPull.replaceFirst("//[^/]+(:[^/]+)?@", "//");
             try {

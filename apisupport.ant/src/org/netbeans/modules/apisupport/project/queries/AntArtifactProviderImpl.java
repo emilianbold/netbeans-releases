@@ -55,6 +55,7 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Utilities;
 
 /**
  * Provide the module JAR as an exported artifact that other projects could import.
@@ -104,7 +105,7 @@ public final class AntArtifactProviderImpl implements AntArtifactProvider {
                     throw new AssertionError(e);
                 }
             } else {
-                return new URI[] {jar.toURI()};
+                return new URI[] {Utilities.toURI(jar)};
             }
             // XXX should it add in class path extensions?
         }

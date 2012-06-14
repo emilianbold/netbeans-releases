@@ -561,6 +561,10 @@ public class FormEditor {
                     dataLossError = true;
             }
 
+            if (dataLossError && !(t instanceof PersistenceException)) {
+                Logger.getLogger("").log(Level.INFO, t.getLocalizedMessage(), t); // NOI18N
+            }
+
             if (checkNonFatalLoadingErrors && persistManager != null) {
                 // creating report about problems while loading components, 
                 // setting props of components, ...
@@ -735,6 +739,7 @@ public class FormEditor {
                 if (events == null)
                     return;
 
+                boolean justAfterLoading = false;
                 boolean modifying = false;
                 Set<ComponentContainer> changedContainers = events.length > 0 ?
                                           new HashSet<ComponentContainer>() : null;
@@ -791,6 +796,8 @@ public class FormEditor {
                             compsToSelect.add(ev.getComponent());
                             compsToSelect.remove(ev.getContainer());
                         }
+                    } else if (type == FormModelEvent.FORM_LOADED) {
+                        justAfterLoading = true;
                     }
                 }
 
@@ -806,7 +813,9 @@ public class FormEditor {
                     }
                 }
 
-                if (modifying)  { // mark the form document modified explicitly
+                if (modifying && (!justAfterLoading || formModel.isCompoundEditInProgress())) {
+                    // mark the form document modified explicitly, but not if modified
+                    // as a result of correction during form loading (not to open as modified)
                     getEditorSupport().markModified();
                     checkFormVersionUpgrade();
                 }

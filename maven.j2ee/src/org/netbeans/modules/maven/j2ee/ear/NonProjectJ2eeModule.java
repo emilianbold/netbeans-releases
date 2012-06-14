@@ -86,11 +86,13 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         moduleVersion = modVer;
     }
     
+    @Override
     public String getModuleVersion() {
 //        System.out.println("NPJM: get Version=" + moduleVersion);
         return moduleVersion;
     }
     
+    @Override
     public J2eeModule.Type getModuleType() {
         String type = artifact.getType();
 //        System.out.println("NPJM: get type=" + type);
@@ -107,6 +109,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         return J2eeModule.Type.CAR;
     }
     
+    @Override
     public String getUrl() {
         //TODO url should be probably based on application.xml??
         String ret = url == null ? artifact.getFile().getName() : url;
@@ -114,17 +117,20 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         return ret;
     }
     
+    @Override
     public FileObject getArchive() throws IOException {
 //        System.out.println("NPJM: get archive=" + artifact.getFile());
         return FileUtil.toFileObject(FileUtil.normalizeFile(artifact.getFile()));
     }
     
+    @Override
     public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
 //        System.out.println("NPJM: get archive content..");
         FileObject fo = getArchive();
         return new ContentIterator(FileUtil.getArchiveRoot(fo));
     }
     
+    @Override
     public FileObject getContentDirectory() throws IOException {
         return null;
     }
@@ -186,10 +192,12 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         return null;
     }
 
+    @Override
     public File getResourceDirectory() {
         return  null;
     }
 
+    @Override
     public File getDeploymentConfigurationFile(String name) {
 //       if (name == null) {
 //            return null;
@@ -203,10 +211,12 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         return null;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener arg0) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener arg0) {
 //        throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -227,6 +237,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         return ejbJarMetadataModel;
     }
 
+    @Override
     public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
         if (type == EjbJarMetadata.class) {
             @SuppressWarnings("unchecked") // NOI18N
@@ -282,10 +293,12 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
             this.root = f;
         }
         
+        @Override
         public boolean hasNext() {
             return ! ch.isEmpty();
         }
         
+        @Override
         public J2eeModule.RootedEntry next() {
             FileObject f = ch.get(0);
             ch.remove(0);
@@ -299,6 +312,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
             return new FSRootRE(root, f);
         }
         
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -314,10 +328,12 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
             root = rt;
         }
         
+        @Override
         public FileObject getFileObject() {
             return f;
         }
         
+        @Override
         public String getRelativePath() {
             return FileUtil.getRelativePath(root, f);
         }

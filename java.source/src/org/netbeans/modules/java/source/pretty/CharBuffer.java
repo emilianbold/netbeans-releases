@@ -295,4 +295,7 @@ public final class CharBuffer {
 
         return true;
     }
+    public int getCol() {
+        return col;
+    }
 }

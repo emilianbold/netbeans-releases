@@ -170,7 +170,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.24</specification-version>
+                        <specification-version>2.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -372,7 +372,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.13</specification-version>
+                        <specification-version>8.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -419,6 +419,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.javeleon.netbeans</friend>
+                <!-- sven reimers -->
                 <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.nbheaven.sqe.core.maven3</friend>
                 <friend>org.netbeans.modules.apisupport.installer.maven</friend>
@@ -444,6 +445,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.spring</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
+                <!-- radim kubacki -->
+                <friend>org.netbeans.modules.android.maven</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>

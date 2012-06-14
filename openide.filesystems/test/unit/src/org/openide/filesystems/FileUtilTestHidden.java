@@ -182,7 +182,7 @@ public class FileUtilTestHidden extends TestBaseHid {
     }
 
     public void testIsArchiveFile() throws Exception {
-        final String base = getWorkDir().toURI().toURL().toExternalForm();
+        final String base = Utilities.toURI(getWorkDir()).toURL().toExternalForm();
         URL url = new URL(base + "test.jar");    //NOI18N
         assertTrue("test.jar has to be an archive", FileUtil.isArchiveFile(url));  //NOI18N
         url = new URL(base + ".hidden.jar");   //NOI18N

@@ -71,6 +71,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 public class SourcePathImplementationTest extends NbTestCase {
@@ -175,12 +176,12 @@ public class SourcePathImplementationTest extends NbTestCase {
         src2.mkdir();
         AntProjectHelper h = J2SEProjectGenerator.createProject(new File(getWorkDir(), "prj"), "test", new File[] {src1, src2}, new File[0], null, null, null);
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
-        FileOwnerQuery.markExternalOwner(src1.toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(Utilities.toURI(src1), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         ClassPath cp = ClassPath.getClassPath(FileUtil.toFileObject(src1), ClassPath.SOURCE);
         assertNotNull(cp);        
         assertEquals(2, cp.getRoots().length);
         ClassPath.Entry cpe2 = cp.entries().get(1);
-        assertEquals(src2.toURI().toURL(), cpe2.getURL());
+        assertEquals(Utilities.toURI(src2).toURL(), cpe2.getURL());
         assertTrue(cpe2.includes("stuff/"));
         assertTrue(cpe2.includes("whatever/"));
         class L implements PropertyChangeListener {

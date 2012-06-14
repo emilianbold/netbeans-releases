@@ -95,7 +95,7 @@ public class AWTTaskTest extends NbTestCase {
             }
         }
         R run = new R();
-        AWTTask at = new AWTTask(run);
+        AWTTask at = new AWTTask(run, null);
         assertFalse("Does not finish", at.waitFinished(1000));
         b.goOn(at);
         assertEquals("Executed once", 1, run.run);
@@ -130,7 +130,7 @@ public class AWTTaskTest extends NbTestCase {
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        waitFor[0] = new AWTTask(snd);
+                        waitFor[0] = new AWTTask(snd, null);
                     }
                 }).waitFinished();
                 
@@ -148,10 +148,10 @@ public class AWTTaskTest extends NbTestCase {
             }
         }
         CntAndWait first = new CntAndWait();
-        new AWTTask(first).waitFinished();
+        new AWTTask(first, null).waitFinished();
         assertEquals("Main invoked", 1, first.cnt);
         Cnt third = new Cnt();
-        new AWTTask(third).waitFinished();
+        new AWTTask(third, null).waitFinished();
         assertEquals("Invoked once 3rd", 1, third.cnt);
         assertEquals("Invoked once inner", 1, first.snd.cnt);
     }

@@ -221,5 +221,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 211983 - NumberFormatException: For input string: "1U"
         performTest("bug211983.cpp", 10, 7, "bug211983.cpp", 5, 5);
     }
+
+    public void testBug213282() throws Exception {
+        // Bug 213282 - template meta programming makes code completion slow
+        performTest("bug213282.cpp", 60, 10, "bug213282.cpp", 29, 5);
+    }
     
 }

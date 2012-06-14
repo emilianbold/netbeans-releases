@@ -80,6 +80,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -341,7 +342,7 @@ public class SourceFileObject implements DocumentProvider, PrefetchableJavaFileO
     public @Override String toString () {
         final URI uri = toUri();
         try {
-            final File file = new File (uri);
+            final File file = Utilities.toFile(uri);
             return file.getAbsolutePath();
         } catch (IllegalArgumentException iae) {
             return uri.toString();

@@ -72,12 +72,30 @@ import org.openide.util.RequestProcessor;
  */
 public class ToggleMethodFieldBreakpointAction extends AbstractAction {//implements PropertyChangeListener {
     
+    private static final String[] BREAKPOINT_ANNOTATION_TYPES = new String[] {
+        "Breakpoint_broken",
+        "Breakpoint",
+        "CondBreakpoint_broken",
+        "CondBreakpoint",
+        "DisabledBreakpoint",
+        "DisabledCondBreakpoint",
+        "ClassBreakpoint",
+        "DisabledClassBreakpoint",
+        "DisabledFieldBreakpoint",
+        "DisabledMethodBreakpoint",
+        "FieldBreakpoint",
+        "MethodBreakpoint",
+    };
+    
     private Object action;
     private RequestProcessor postponedToggleRP;
 
     public ToggleMethodFieldBreakpointAction () {
         //EditorContextBridge.addPropertyChangeListener (this);
         setEnabled (true);
+        putValue("default-action", true);
+        putValue("supported-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
+        putValue("default-action-excluded-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
     }
     
     public Object getAction () {

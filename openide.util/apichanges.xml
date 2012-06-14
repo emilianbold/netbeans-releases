@@ -51,6 +51,27 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="File.URI">
+        <api name="util"/>
+        <summary>UNC-safe File / URI interconversion</summary>
+        <version major="8" minor="25"/>
+        <date year="2012" month="6" day="11"/>
+        <author login="jglick"/>
+        <compatibility addition="yes">
+            <p>
+                Use the Jackpot-format upgrade hint.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                <code>Utilities</code> gets new methods <code>toURI(File)</code>
+                and <code>toFile(URI)</code> which offer the UNC safety of NIO.2
+                even on JDK 6.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="213562"/>
+    </change>
     <change id="exit-code">
         <api name="util"/>
         <summary>Exit with status code</summary>

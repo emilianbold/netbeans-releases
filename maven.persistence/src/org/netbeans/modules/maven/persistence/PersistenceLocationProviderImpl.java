@@ -83,6 +83,7 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
      * @return FileObject representing the location (eg. parent folder) 
      * of the persistence.xml file
      */
+    @Override
     public FileObject getLocation() {
         return location;
     }
@@ -94,6 +95,7 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
      * of the persistence.xml file
      * @throws java.io.IOException if location can not be created
      */
+    @Override
     public FileObject createLocation() throws IOException {
         FileObject retVal = null;
 
@@ -154,6 +156,7 @@ public class PersistenceLocationProviderImpl implements PersistenceLocationProvi
      * watches for creation and deletion of the persistence.xml file
      * @param evt the change event to process
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (MavenPersistenceProvider.PROP_PERSISTENCE.equals(evt.getPropertyName())) {
             persistenceXml = findPersistenceXml();

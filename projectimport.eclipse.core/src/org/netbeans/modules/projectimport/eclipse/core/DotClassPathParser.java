@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -71,7 +72,7 @@ final class DotClassPathParser {
     public static DotClassPath parse(File dotClasspath, List<Link> links) throws IOException {
         Document dotClasspathXml;
         try {
-            dotClasspathXml = XMLUtil.parse(new InputSource(dotClasspath.toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            dotClasspathXml = XMLUtil.parse(new InputSource(Utilities.toURI(dotClasspath).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(dotClasspath + ": " + e.toString()).initCause(e); //NOI18N
             throw ioe;

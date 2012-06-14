@@ -66,7 +66,7 @@ abstract class ListRemoteObjectsCommand extends TransportCommand {
     }
 
     @Override
-    protected final void run () throws GitException {
+    protected final void runTransportCommand () throws GitException {
         Transport t = null;
         FetchConnection conn = null;
         try {

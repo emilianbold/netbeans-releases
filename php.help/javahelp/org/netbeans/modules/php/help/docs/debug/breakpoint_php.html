@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>PHP Breakpoints in the IDE</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>PHP Breakpoints in the IDE</h2>
+<p>
+<small><a href="#seealso">See Also</a></small></p>
+<p> A breakpoint is a flag in the source code that tells the debugger to stop
+	execution of the program. When your program stops on a breakpoint, you can
+	perform actions like examining the value of variables and single-stepping through your program. </p>
+<h3>Setting Breakpoints</h3>
+<p>Set a breakpoint for a line in your PHP code. To set a breakpoint, left-click the left margin or
+line number of the line. To remove the breakpoint, left-click the breakpoint icon.</p>
+<p>The Source Editor indicates a line breakpoint by highlighting the line at which the
+	breakpoint is set in red and placing an annotation in the left margin. The
+	following table describes the debugging annotations.</p>
+<ul class="note">
+    <li>Users of other language support in NetBeans IDE may be familiar with other types of
+    breakpoints. However PHP projects only have line breakpoints at this time.</li>
+</ul>
+
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th align="left" scope="col"><b>Annotation</b></th>
+<th align="left" scope="col"><b>Description</b></th>
+</tr>
+<tr><td><img src="images/Breakpoint.gif" alt="Breakpoint icon"></td><td>Breakpoint</td></tr>
+<tr><td><img src="images/DisabledBreakpoint.gif" alt="Disabled breakpoint icon group"></td><td>Disabled breakpoint</td></tr>
+<tr><td><img src="images/Breakpoint_broken.png" alt="Invalid breakpoint icon group"></td><td>Invalid breakpoint</td></tr>
+<tr><td><img src="images/PC.gif" alt="Program counter icon"></td><td>Program counter</td></tr>
+<tr>
+    <td><img src="images/Breakpoint_PC.gif" alt="Program counter and one breakpoint icon" width="16" height="16"></td>
+    <td>Program counter and one breakpoint</td></tr>
+<tr><td><img src="images/CallSite.gif" alt="Call site"></td><td>The call site or place in the source code from which
+the current call on the call stack was made</td></tr>
+<tr><td><img src="images/other_threads_suspended.png" alt="Running thread"></td><td>Suspended threads</td></tr>
+<tr><td><img src="images/other_threads_breakpoint.png" alt="Thread suspended by breakpoint"></td><td>Thread suspended by hitting a breakpoint</td></tr>
+</table>
+
+<p>You can view and organize all IDE breakpoints by choosing Windows  &gt; Debugging  &gt; Breakpoints
+(Alt-Shift-5).</p>
+<h3>Organizing Breakpoints Into a Group</h3>
+<p>The <a href="windows/breakpoint_view.html">Breakpoints window</a> lists all of the breakpoints defined for all of your
+	 IDE projects. If you have numerous breakpoints set in the IDE, it is useful
+	 to organize these breakpoints into groups. Once your breakpoints are placed
+	into groups, you can enable, disable, and delete them as a single
+	unit. </p>
+
+
+<p> <b>To add a breakpoint to a custom group:</b> </p>
+<ol>
+  <li>Choose Windows  &gt; Debugging &gt; Breakpoints (Alt-Shift-5) to open the Breakpoints window.</li>
+  <li>Right-click the breakpoint and choose Move Into Group and select a custom group from the list.
+      <ul class="note">
+        <li>To create a custom group, right-click the breakpoint and choose Move Into Group &gt; New
+        and type the name of the new group in the dialog box.</li>
+      </ul>
+  </li>
+</ol>
+
+
+
+<p><b>To remove a breakpoint from a custom group:</b></p>
+<ul>
+  <li>In the Breakpoints window, right-click the breakpoint and choose Move Into Group &gt; &lt;Default&gt;.</li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    
+    <dd><a href="debug_about.html">About Debugging Java Applications</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

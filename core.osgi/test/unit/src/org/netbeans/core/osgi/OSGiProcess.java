@@ -64,6 +64,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.nbbuild.MakeOSGi;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
@@ -243,7 +244,7 @@ class OSGiProcess {
         f.start();
         List<Bundle> installed = new ArrayList<Bundle>();
         for (File bundle : bundles.listFiles()) {
-            installed.add(f.getBundleContext().installBundle(bundle.toURI().toString()));
+            installed.add(f.getBundleContext().installBundle(Utilities.toURI(bundle).toString()));
         }
         Collections.sort(installed, new Comparator<Bundle>() {
             public @Override int compare(Bundle b1, Bundle b2) {

@@ -55,7 +55,6 @@ import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
@@ -70,10 +69,6 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
         this( command, null, namePattern, icon, lookup );
     }
     
-    public FileAction( String command, String namePattern, String iconResource, Lookup lookup ) {
-        this( command, namePattern, ImageUtilities.loadImageIcon(iconResource, false), lookup );
-    }
-    
     public FileAction( FileActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
         this( null, performer, namePattern, icon, lookup );
     }
@@ -86,7 +81,7 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
         
         this.command = command;
         if ( command != null ) {
-            ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
+            ShortcutManager.INSTANCE.registerAction(command, this);
         }
         this.performer = performer;
         this.namePattern = namePattern;
@@ -100,7 +95,7 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
         super.putValue( key, value );
         
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
+            ShortcutManager.INSTANCE.registerShortcut(command, value);
         }   
     }
     

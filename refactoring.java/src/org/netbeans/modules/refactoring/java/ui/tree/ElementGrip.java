@@ -85,18 +85,23 @@ public final class ElementGrip {
         if (elm != null) {
             if (elm.getKind() == ElementKind.CLASS && elm.getSimpleName().length() == 0) {
                 this.toString = ((TypeElement) elm).asType().toString();
+                this.icon = ElementIcons.getElementIcon(elm.getKind(), elm.getModifiers());
+            } else if(elm.getKind() == ElementKind.ENUM 
+                    && elm.getSimpleName().length() == 0
+                    && elm.getEnclosingElement() != null) {
+                final Element enclosingElement = elm.getEnclosingElement();
+                this.toString = enclosingElement.getSimpleName().toString();
+                this.icon = ElementIcons.getElementIcon(enclosingElement.getKind(), enclosingElement.getModifiers());
             } else {
                 // workaround for issue 171692
                 this.toString = elm.getKind() != ElementKind.CONSTRUCTOR
                         ? elm.getSimpleName().toString()
                         : elm.getEnclosingElement().getSimpleName().toString();
+                this.icon = ElementIcons.getElementIcon(elm.getKind(), elm.getModifiers());
 //            this.toString = ElementHeaders.getHeader(treePath, info, ElementHeaders.NAME);
             }
         }
         this.fileObject = info.getFileObject();
-        if (elm != null) {
-            this.icon = ElementIcons.getElementIcon(elm.getKind(), elm.getModifiers());
-        }
     }
     
     public Icon getIcon() {

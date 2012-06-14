@@ -45,9 +45,10 @@ package org.netbeans.modules.maven.configurations;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import static org.netbeans.modules.maven.configurations.Bundle.*;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -57,10 +58,11 @@ import org.openide.util.NbBundle;
 public class ConfigurationsPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     @Override
+    @Messages("TIT_Configurations=Configurations")
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 ModelHandle2.PANEL_CONFIGURATION, 
-                NbBundle.getMessage(ConfigurationsPanelProvider.class, "TIT_Configurations"), 
+                TIT_Configurations(), 
                 null);
     }
     

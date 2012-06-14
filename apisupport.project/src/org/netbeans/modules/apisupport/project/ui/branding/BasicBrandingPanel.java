@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents <em>Application</em> panel in branding editor.
@@ -324,7 +325,7 @@ final class BasicBrandingPanel extends AbstractBrandingPanel  {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             try {
-                res = file.toURI().toURL();
+                res = Utilities.toURI(file).toURL();
                 preview.setImage(new ImageIcon(res));
                 setModified();
             } catch (MalformedURLException ex) {

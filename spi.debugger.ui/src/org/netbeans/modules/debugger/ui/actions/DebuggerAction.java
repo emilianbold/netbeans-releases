@@ -278,9 +278,21 @@ public class DebuggerAction extends AbstractAction {
         return action;
     }
     
+    private static final String[] BREAKPOINT_ANNOTATION_TYPES = new String[] {
+        "Breakpoint_broken",
+        "Breakpoint",
+        "CondBreakpoint_broken",
+        "CondBreakpoint",
+        "DisabledBreakpoint",
+        "DisabledCondBreakpoint"
+    };
+    
     public static DebuggerAction createToggleBreakpointAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
         action.putValue (Action.NAME, "CTL_Toggle_breakpoint");
+        action.putValue("default-action", true);
+        action.putValue("supported-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
+        action.putValue("default-action-excluded-annotation-types", BREAKPOINT_ANNOTATION_TYPES);
         return action;
     }
 

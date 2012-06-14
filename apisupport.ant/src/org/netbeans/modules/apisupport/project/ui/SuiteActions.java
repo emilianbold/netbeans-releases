@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -442,7 +441,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
             targetNames = new String[] {command};
         }
 
-        ModuleActions.setRunArgsIde(project, new SuiteProperties(project, project.getHelper(), project.getEvaluator(), Collections.<NbModuleProject>emptySet()), command, p);
+        ModuleActions.setRunArgsIde(project, project.getEvaluator(), command, p);
         
         return ActionUtils.runTarget(findBuildXml(project), targetNames, p);
     }

@@ -231,9 +231,13 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     public void testCaseSensitiveFolderRename() throws Exception {
         FileObject parent = root.getFileObject("testdir/mountdir10");
         List<FileObject> arr = Arrays.asList(parent.getChildren());
-        FileLock lock = parent.lock();
         final String up = parent.getName().toUpperCase();
-        parent.rename(lock, up, null);
+        FileLock lock = parent.lock();
+        try {
+            parent.rename(lock, up, null);
+        } finally {
+            lock.releaseLock();
+        }
         assertEquals("Capital name", up, parent.getNameExt());
         File real = FileUtil.toFile(parent);
         assertNotNull("Real file exists", real);
@@ -279,7 +283,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
 
         accessMonitor = new StatFiles();
         FileLock lock = fo.lock();
-        FileObject newFolder = fo.move(lock, where, fo.getNameExt(), null);
+        FileObject newFolder;
+        try {
+            newFolder = fo.move(lock, where, fo.getNameExt(), null);
+        } finally {
+            lock.releaseLock();
+        }
         assertEquals("Subfolder", where, newFolder.getParent());
 
         assertNotNull("Folder found", newFolder.getFileObject("kid"));
@@ -696,8 +705,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertNotNull(A);
         assertNotNull(root.getFileObject("a"));
         assertSame(root.getFileObject("A"), root.getFileObject("a"));
-        assertSame(URLMapper.findFileObject(testa.toURI().toURL()), 
-                URLMapper.findFileObject(testA.toURI().toURL()));
+        assertSame(URLMapper.findFileObject(Utilities.toURI(testa).toURL()),
+                URLMapper.findFileObject(Utilities.toURI(testA).toURL()));
         
         //but 
         root.getChildren();
@@ -851,7 +860,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue(testFile2.exists());
         
         
-        assertEquals(FileUtil.normalizeFile(testFile).toURI().toURL(), FileUtil.normalizeFile(testFile2).toURI().toURL());
+        assertEquals(Utilities.toURI(FileUtil.normalizeFile(testFile)).toURL(), Utilities.toURI(FileUtil.normalizeFile(testFile2)).toURL());
     }   
 
     @RandomlyFails // NB-Core-Build #7927 (from FileBasedFileSystemWithUninitializedExtensionsTest): Didn't receive a FileEvent on the parent.
