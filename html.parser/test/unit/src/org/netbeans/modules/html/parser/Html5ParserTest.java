@@ -1080,7 +1080,7 @@ public class Html5ParserTest extends NbTestCase {
     //Bug 211792 
     //http://netbeans.org/bugzilla/show_bug.cgi?id=211792
     public void testIssue211792() throws ParseException {
-        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
         
         String code = "<a href=\"\"</p>";
         //             01234567 8 901234
@@ -1212,6 +1212,23 @@ public class Html5ParserTest extends NbTestCase {
                     ElementUtils.dumpTree(root);
                     throw ae;
                 }
+                
+                //validate attributes
+                for(Attribute a : openTag.attributes()) {
+                    assertNotNull(a);
+                    assertNotNull(a.name());
+                    assertTrue(a.nameOffset() > openTag.from());
+                    
+                    if(a.value() != null) {
+                        assertTrue(a.valueOffset() > a.nameOffset() + a.name().length());
+                        
+                        if(!(a.valueOffset() < root.to())) {
+                            System.out.println("error");
+                        }
+                        assertTrue(a.valueOffset() < root.to());
+                    }
+                }
+                
             }
         };
 
