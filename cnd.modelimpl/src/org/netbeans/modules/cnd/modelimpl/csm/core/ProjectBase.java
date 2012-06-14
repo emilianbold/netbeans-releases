@@ -1707,10 +1707,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 FileEntry includedEntry = entry.getValue();
                 for (PreprocessorStatePair pair : includedEntry.getStatePairs()) {
-                    CndUtils.assertTrueInConsole(pair.state.isValid(), "invalid state in ", includedEntry.getStatePairs());
-                    CndUtils.assertTrueInConsole(pair.pcState != FilePreprocessorConditionState.PARSING, "parsing state in ", includedEntry.getStatePairs());
-                    ComparisonResult comResult = fillStatesToKeepBasedOnPCState(pair.pcState, libCurrentPairs, new ArrayList<PreprocessorStatePair>());
-                    if (comResult != ComparisonResult.DISCARD) {
+                    boolean addToReparse = false;
+                    if (!pair.state.isValid() || pair.pcState == FilePreprocessorConditionState.PARSING) {
+                        addToReparse = true;
+                    }
+                    if (!addToReparse) {
+                        ComparisonResult comResult = fillStatesToKeepBasedOnPCState(pair.pcState, libCurrentPairs, new ArrayList<PreprocessorStatePair>());
+                        addToReparse = (comResult != ComparisonResult.DISCARD);
+                    }
+                    if (addToReparse) {
                         StartEntry se = APTHandlersSupport.extractStartEntry(pair.state);
                         filesToReparseLibs.add(se.getStartFile());
                         includedEntry.invalidateStates();
