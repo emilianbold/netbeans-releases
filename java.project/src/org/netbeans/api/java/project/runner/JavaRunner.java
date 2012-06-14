@@ -43,6 +43,8 @@
 package org.netbeans.api.java.project.runner;
 
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -307,13 +309,17 @@ public final class JavaRunner {
         Parameters.notNull("command", command);
         Parameters.notNull("properties", properties);
         
-        for (JavaRunnerImplementation i : Lookup.getDefault().lookupAll(JavaRunnerImplementation.class)) {
+        final Collection<? extends JavaRunnerImplementation> runners = Lookup.getDefault().lookupAll(JavaRunnerImplementation.class);
+        for (JavaRunnerImplementation i : runners) {
             if (i.isSupported(command, properties)) {
                 return i.execute(command, properties);
             }
         }
 
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(MessageFormat.format(
+            "command: {0}, JavaRunner impls: {1}",  //NOI18N
+            command,
+            runners));
     }
 
 }

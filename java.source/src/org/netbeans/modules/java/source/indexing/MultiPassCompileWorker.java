@@ -109,8 +109,7 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
         }
         if (toProcess.isEmpty()) {
-            return new ParsingOutput(
-                    true,
+            return ParsingOutput.success(
                     previous.file2FQNs,
                     previous.addedTypes,
                     previous.createdFiles,
@@ -152,7 +151,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     } else {
                         state |= MEMORY_LOW;
                     }
-                    System.gc();
+                    mem.free();
                     continue;
                 }
                 if (active == null) {
@@ -196,7 +195,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     } else {
                         state |= MEMORY_LOW;
                     }
-                    System.gc();
+                    mem.free();
                     continue;
                 }
                 Iterable<? extends TypeElement> types;
@@ -252,7 +251,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     } else {
                         state |= MEMORY_LOW;
                     }
-                    System.gc();
+                    mem.free();
                     continue;
                 }
                 jt.analyze(types);
@@ -275,7 +274,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     } else {
                         state |= MEMORY_LOW;
                     }
-                    System.gc();
+                    mem.free();
                     continue;
                 }
                 javaContext.getFQNs().set(types, active.indexable.getURL());
@@ -335,7 +334,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
                 //No platform - log & mark files as errornous
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -352,7 +351,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
-                return new ParsingOutput(false, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
             } catch (CancelAbort ca) {
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                     JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
@@ -391,10 +390,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                 }
             }
         }
-        if ((state & MEMORY_LOW) != 0) {
-            JavaIndex.LOG.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(context.getRoot())); // NOI18N
-        }
-        return new ParsingOutput((state & MEMORY_LOW) == 0, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+        return (state & MEMORY_LOW) == 0?
+            ParsingOutput.success(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated):
+            ParsingOutput.lowMemory(previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti, Set<File> alreadyCreated) throws IOException {

@@ -305,6 +305,14 @@ public class PhpStructureScanner implements StructureScanner {
         }
 
         @Override
+        public void visit(UseTraitStatement node) {
+            super.visit(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
+        }
+
+        @Override
         public void visit(ForEachStatement node) {
             super.visit(node);
             if (node.getStatement() != null) {

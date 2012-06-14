@@ -174,7 +174,7 @@ public class CndUtils {
 
     public static void assertTrue(boolean value, String message) {
         if (isDebugMode() && !value) {
-            LOG.log(Level.SEVERE, message, lastAssertion = new Exception(message));
+            severe(message);
         }
     }
 
@@ -208,6 +208,10 @@ public class CndUtils {
 
     public static Exception getLastAssertion() {
         return lastAssertion;
+    }
+
+    public static void clearLastAssertion() {
+        lastAssertion = null;
     }
 
     public static void assertAbsolutePathInConsole(String path) {

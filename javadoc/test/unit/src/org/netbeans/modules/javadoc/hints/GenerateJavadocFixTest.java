@@ -57,7 +57,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
     }
     
     public void testGenerateMethodJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
@@ -70,7 +70,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
-                "     * \n" +
+                "     *\n" +
                 "     * @param <T>\n" +
                 "     * @param param1\n" +
                 "     * @param param2\n" +
@@ -100,7 +100,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
-                "     * \n" +
+                "     *\n" +
                 "     * @param <T>\n" +
                 "     * @param param1\n" +
                 "     * @param param2\n" +
@@ -124,7 +124,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 
                 "package test;\n" +
                 "/**\n" +
-                " * \n" +
+                " *\n" +
                 " * @author Alois\n" +
                 " * @param <P>\n" +
                 " * @param <Q>\n" +
@@ -135,7 +135,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
     }
     
     public void testGenerateFieldJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    @Deprecated\n" +
@@ -145,7 +145,7 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
-                "     * \n" +
+                "     *\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
                 "    @Deprecated\n" +
@@ -153,8 +153,28 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "}\n");        
     }
     
+    public void testGenerateFieldGroupJavadoc() throws Exception { //#213499
+        doMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    @Deprecated\n" +
+                "    int leden, unor;\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "class Zima {\n" +
+                "    @Deprecated\n" +
+                "    int leden,\n" +
+                "    /**\n" +
+                "     *\n" +
+                "     * @deprecated\n" +
+                "     */\n" +
+                "    unor;\n" +
+                "}\n", 2);        
+    }
+    
     public void testGenerateEnumConstantJavadoc_124114() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "enum Zima {LEDEN, UNOR}\n",
                 
@@ -163,7 +183,20 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "    /**\n" +
                 "     *\n" +
                 "     */\n" +
-                "    LEDEN, UNOR}\n");        
+                "    LEDEN, UNOR}\n");
+    }
+    
+    public void testGenerateEnumConstantJavadoc_124114b() throws Exception {
+        doMemberFixTest(
+                "package test;\n" +
+                "enum Zima {LEDEN, UNOR}\n",
+                
+                "package test;\n" +
+                "enum Zima {LEDEN,\n" +
+                "    /**\n" +
+                "     *\n" +
+                "     */\n" +
+                "    UNOR}\n", 2);
     }
 
 }

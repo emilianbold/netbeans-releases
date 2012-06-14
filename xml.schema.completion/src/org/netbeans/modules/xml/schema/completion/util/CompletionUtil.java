@@ -181,24 +181,25 @@ public class CompletionUtil {
      * attributes of the doc-root. For schemaLocation, uses the 2nd token, where as
      * for the later, uses every token.
      */
-    public static void loadSchemaURIs(String schemaLocation, List<URI> uris, boolean noNS) {
+    public static void loadSchemaURIs(String schemaLocation, List<URI> uris, Map<String, String> schemaLocationMap) {
         StringTokenizer st = new StringTokenizer(
                 schemaLocation.replaceAll("\n", " "), " "); //NOI18N
         while(st.hasMoreTokens()) {
             URI uri = null;
             try {
                 String token1 = st.nextToken().trim();
-                if(noNS) {
+                if(schemaLocationMap == null) {
                     uri = URI.create(token1); //every token is a schema
                     if(uri != null)
                         uris.add(uri);
                     continue;
                 }
                 if(st.hasMoreTokens()) {
-                    String token2 = st.nextToken().trim();
+                        String token2 = st.nextToken().trim();
                         uri = URI.create(token2); //every 2nd token is a schema
                         if(uri != null)
                             uris.add(uri);
+                        schemaLocationMap.put(token1, token2);
                 }
             } catch (Exception ex) {
                 continue;

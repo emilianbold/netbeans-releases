@@ -9,7 +9,7 @@
                       <Component id="jButton4" max="Short.MAX_VALUE" attributes="1"/>
                       <Component id="jButton3" max="Short.MAX_VALUE" attributes="1"/>
                   </Group>
-                  <Component id="jButton1" alignment="leading" pref="110" max="Short.MAX_VALUE" attributes="1025"/>
+                  <Component id="jButton1" pref="110" max="Short.MAX_VALUE" attributes="1025"/>
                   <Component id="jButton2" alignment="leading" max="Short.MAX_VALUE" attributes="1537"/>
               </Group>
               <EmptySpace pref="198" max="Short.MAX_VALUE" attributes="4"/>

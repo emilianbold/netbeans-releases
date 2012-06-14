@@ -93,6 +93,7 @@ public class JaxWsClientCreator implements ClientCreator {
         this.wiz = wiz;
     }
 
+    @Override
     public void createClient() throws IOException {
         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
         String wsdlUrl = (String)wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_URL);
@@ -128,6 +129,7 @@ public class JaxWsClientCreator implements ClientCreator {
 
                 final String wsdlLocation = wsdlUrl;
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         if (!isJaxWsLibrary) {
                             try {

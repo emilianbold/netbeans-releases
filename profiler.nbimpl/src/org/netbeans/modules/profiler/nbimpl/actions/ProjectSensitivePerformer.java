@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
@@ -59,6 +61,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jaroslav Bachorik <jaroslav.bachorik@oracle.com>
  */
 public class ProjectSensitivePerformer implements ProjectActionPerformer {
+    private static final Logger LOG = Logger.getLogger(ProjectSensitivePerformer.class.getName());
+    
     final private String command;
     
     public ProjectSensitivePerformer(String command) {
@@ -79,7 +83,7 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
                 return  ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
             }
         } catch (IllegalArgumentException e) {
-            // no provider responds to the command
+            LOG.log(Level.WARNING, null, e);
         }
         return false;
     }

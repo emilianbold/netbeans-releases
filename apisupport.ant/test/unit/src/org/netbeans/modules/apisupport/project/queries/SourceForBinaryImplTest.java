@@ -62,6 +62,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Test functionality of SourceForBinaryImpl.
@@ -141,7 +142,7 @@ public class SourceForBinaryImplTest extends TestBase {
         File srcF = PropertyUtils.resolveFile(nbRootFile(), srcS);
         FileObject src = FileUtil.toFileObject(srcF);
         assertNotNull("have " + srcF, src);
-        URL u = FileUtil.getArchiveRoot(jarF.toURI().toURL());
+        URL u = FileUtil.getArchiveRoot(Utilities.toURI(jarF).toURL());
         assertEquals("right results for " + u,
             Collections.singletonList(src),
             trimGenerated(Arrays.asList(SourceForBinaryQuery.findSourceRoots(u).getRoots())));

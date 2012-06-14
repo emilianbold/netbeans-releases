@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.form.palette;
 
+import java.awt.Dialog;
 import javax.lang.model.SourceVersion;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.form.FormUtils;
+import javax.swing.GroupLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.netbeans.modules.form.RADComponent;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,15 +65,19 @@ class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
 
     @Override
     public boolean prepare(PaletteItem item, FileObject classPathRep) {
-        NotifyDescriptor.InputLine desc = new NotifyDescriptor.InputLine(
-            NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_Choose_Bean"), // NOI18N
-            NbBundle.getMessage(ChooseBeanInitializer.class, "TITLE_Choose_Bean")); // NOI18N
+        ChooseBeanPanel panel = new ChooseBeanPanel();
+        DialogDescriptor dd = new DialogDescriptor(panel,
+                NbBundle.getMessage(ChooseBeanInitializer.class, "TITLE_Choose_Bean")); // NOI18N
+        dd.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        // setting the help id on the panel after creating the dialog will avoid the help button
+        HelpCtx.setHelpIDString(panel, "f1_gui_choose_bean_html"); // NOI18N
         boolean invalidInput;
         do {
             invalidInput = false;
-            DialogDisplayer.getDefault().notify(desc);
-            if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
-                String className = desc.getInputText();
+            dialog.setVisible(true);
+            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+                String className = panel.getEnteredName();
                 if (!SourceVersion.isName(className)) {
                     invalidInput = true;
                     DialogDisplayer.getDefault().notify(
@@ -87,5 +96,26 @@ class ChooseBeanInitializer implements PaletteItem.ComponentInitializer {
 
     @Override
     public void initializeComponent(RADComponent metacomp) {
+    }
+
+    private static class ChooseBeanPanel extends JPanel {
+        private JTextField nameField;
+
+        ChooseBeanPanel() {
+            JLabel nameLabel = new JLabel(NbBundle.getMessage(ChooseBeanInitializer.class, "MSG_Choose_Bean")); // NOI18N
+            nameField = new JTextField(25);
+            GroupLayout layout = new GroupLayout(this);
+            layout.setAutoCreateContainerGaps(true);
+            layout.setAutoCreateGaps(true);
+            setLayout(layout);
+            layout.setHorizontalGroup(layout.createSequentialGroup()
+                    .addComponent(nameLabel).addComponent(nameField));
+            layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(nameLabel).addComponent(nameField));
+        }
+
+        String getEnteredName() {
+            return nameField.getText();
+        }
     }
 }

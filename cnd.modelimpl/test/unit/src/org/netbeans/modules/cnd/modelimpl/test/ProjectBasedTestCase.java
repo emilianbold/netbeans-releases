@@ -50,9 +50,14 @@ import java.util.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Exceptions;
 
 /**
  * IMPORTANT NOTE:
@@ -138,10 +143,15 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 //        return AcceptorFactory.JAVA_IDENTIFIER;
 //    }
 
+    protected boolean needRepository() {
+        return false;
+    }
+    
     @Override
     protected void setUp() throws Exception {
+        CndUtils.clearLastAssertion();
         super.setUp();
-        System.setProperty("cnd.modelimpl.persistent", "false");           
+        System.setProperty("cnd.modelimpl.persistent", needRepository() ? "true" : "false");
         //initDocumentSettings();
         super.clearWorkDir();
         
@@ -205,6 +215,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         sysIncludes.clear();
         usrIncludes.clear();
         projectDependencies.clear();
+        assertTrue("unexpected exception " + CndUtils.getLastAssertion(), CndUtils.getLastAssertion() == null);
     }
 
     @Override
@@ -227,8 +238,8 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     protected CsmProject getProject(String name) {
         CsmProject out = null;
         for (TestModelHelper testModelHelper : projectHelpers.values()) {
-            CsmProject project = testModelHelper.getProject();
-            if (name.contentEquals(project.getName())) {
+            if (name.contentEquals(testModelHelper.getProjectName())) {
+                CsmProject project = testModelHelper.getProject();
                 assertTrue("two projects with the same name " + name + " " + out + " and " + project, out == null);
                 out = project;
                 // do not break to allow initialization of all names in TestModelHelpers
@@ -245,17 +256,30 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         return null;
     }
 
-    protected void reopenProject(String name) {
+    protected void reopenProject(String name, boolean waitParse) {
         for (TestModelHelper testModelHelper : projectHelpers.values()) {
             if (name.contentEquals(testModelHelper.getProjectName())) {
-                testModelHelper.getProject();
+                testModelHelper.reopenProject();
+                if (waitParse) {
+                    waitAllProjectsParsed();
+                }
                 return;
             }
         }
     }
 
-    protected void reparseProject(CsmProject project) {
-        ModelImplTest.reparseProject(project);
+    protected void reparseAllProjects() {
+        Collection<CsmProject> projects = getModel().projects();
+        int expectedNrProjects = projects.size();
+        getModel().scheduleReparse(projects);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        projects = getModel().projects();
+        assertEquals("projects " + projects, expectedNrProjects, projects.size());
+        waitAllProjectsParsed();
     }
 
     protected void closeProject(String name) {
@@ -281,5 +305,24 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             return Collections.emptyList();
         }
         return dependentProjects;
+    }
+
+    protected void dumpModel() {
+        for (CsmProject prj : getModel().projects()) {
+            new CsmTracer(System.err).dumpModel(prj);
+            for (CsmProject lib : prj.getLibraries()) {
+                new CsmTracer(System.err).dumpModel(lib);
+            }
+        }
+        LibraryManager.getInstance().dumpInfo(new PrintWriter(System.err), true);
+    }
+
+    protected void waitAllProjectsParsed() {
+        sleep(1000);
+        Collection<CsmProject> projects;
+        projects = getModel().projects();
+        for (CsmProject csmProject : projects) {
+            TraceModelBase.waitProjectParsed(((ProjectBase) csmProject), true);
+        }
     }
 }

@@ -101,11 +101,4 @@ public class ModelImplTest extends ModelImplBaseTestCase {
         CsmProject project = file.getProject();
         fireFileChanged(project, fileObject);
     }
-
-    public static void reparseProject(CsmProject firstPrj) {
-        if (firstPrj instanceof ProjectBase) {
-            ((ProjectBase)firstPrj).scheduleReparse();
-            TraceModelBase.waitProjectParsed(((ProjectBase)firstPrj), true);
-        }
-    }
 }

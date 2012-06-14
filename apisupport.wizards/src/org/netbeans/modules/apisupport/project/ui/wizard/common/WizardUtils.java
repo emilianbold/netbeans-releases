@@ -242,7 +242,7 @@ public class WizardUtils {
      */
     public static Dimension getIconDimension(final File icon) {
         try {
-            ImageIcon imc = new ImageIcon(icon.toURI().toURL());
+            ImageIcon imc = new ImageIcon(Utilities.toURI(icon).toURL());
             return new Dimension(imc.getIconWidth(), imc.getIconHeight());
         } catch (MalformedURLException ex) {
             ErrorManager.getDefault().notify(ex);

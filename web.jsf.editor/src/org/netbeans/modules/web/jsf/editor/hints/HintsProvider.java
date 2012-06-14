@@ -45,10 +45,17 @@ package org.netbeans.modules.web.jsf.editor.hints;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,10 +63,25 @@ import org.netbeans.modules.csl.api.RuleContext;
  */
 public abstract class HintsProvider {
     
-    protected boolean requiresDocument() {
-        return true;
-    }
+    /**
+     * Gets the actual Source's (document/file) source code.
+     */
+    protected CharSequence getSourceText(Source source) {
+        final AtomicReference<CharSequence> sourceTextRef = new AtomicReference<CharSequence>();
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
 
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    sourceTextRef.set(resultIterator.getSnapshot().getText());
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return sourceTextRef.get();
+    }
+    
     public abstract List<Hint> compute(RuleContext context);
 
     protected static ErrorRule DEFAULT_ERROR_RULE = new Rule(HintSeverity.ERROR, true);

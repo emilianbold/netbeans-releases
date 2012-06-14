@@ -76,14 +76,14 @@ public final class CndTestMethodNode extends TestMethodNode {
     @Override
     public Action getPreferredAction() {
         // the location to jump from the node
-        String testLocation = getTestLocation(testcase, project);
+        String testLocation = getTestLocation(testcase, getProject());
         String stackTrace = getTestCaseLineFromStackTrace(testcase);
         String jumpToLocation = stackTrace != null
                 ? stackTrace
                 : testLocation;
 
         return jumpToLocation == null
-                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(CndTestMethodNode.class, "LBL_GoToSource"), false)
+                ? new JumpToTestAction(testcase, getProject(), NbBundle.getMessage(CndTestMethodNode.class, "LBL_GoToSource"), false)
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
     
@@ -152,8 +152,8 @@ public final class CndTestMethodNode extends TestMethodNode {
         List<Action> actions = new ArrayList<Action>();
         actions.add(getPreferredAction());
         actions.add(new DiffViewAction(testcase));
-        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(CndTestMethodNode.class, "LBL_RerunTest"), false));
-        actions.add(new RunTestMethodAction(testcase, project, NbBundle.getMessage(CndTestMethodNode.class, "LBL_DebugTest"), true));
+        actions.add(new RunTestMethodAction(testcase, getProject(), NbBundle.getMessage(CndTestMethodNode.class, "LBL_RerunTest"), false));
+        actions.add(new RunTestMethodAction(testcase, getProject(), NbBundle.getMessage(CndTestMethodNode.class, "LBL_DebugTest"), true));
 //        actions.add(new DisplayOutputForNodeAction(testcase.getOutput(), testcase.getSession()));
         return actions.toArray(new Action[actions.size()]);
     }

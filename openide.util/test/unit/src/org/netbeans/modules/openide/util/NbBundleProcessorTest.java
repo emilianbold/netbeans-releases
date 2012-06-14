@@ -54,6 +54,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.test.TestFileUtils;
 import static org.netbeans.modules.openide.util.Bundle.*;
+import org.openide.util.Utilities;
 
 @Messages("k3=value #3")
 public class NbBundleProcessorTest extends NbTestCase {
@@ -103,7 +104,7 @@ public class NbBundleProcessorTest extends NbTestCase {
                 "public static final Object X = new Object() {public String toString() {return Bundle.k();}};",
                 "}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v", l.loadClass("p.C").getField("X").get(null).toString());
     }
 
@@ -138,7 +139,7 @@ public class NbBundleProcessorTest extends NbTestCase {
     public void testPackageKeys() throws Exception {
         AnnotationProcessorTestUtils.makeSource(src, "p.package-info", "@org.openide.util.NbBundle.Messages(\"k=v\")", "package p;");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         Method m = l.loadClass("p.Bundle").getDeclaredMethod("k");
         m.setAccessible(true);
         assertEquals("v", m.invoke(null));
@@ -230,17 +231,17 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "public class C2 {public @Override String toString() {return Bundle.k2();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v1", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v3\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, null));
-        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v3", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k3=v4\")", "public class C1 {public @Override String toString() {return Bundle.k3();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, null));
-        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v4", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
     }
@@ -251,7 +252,7 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.C3", "class C3 {C3() {new Runnable() {public @Override void run() {new Runnable() {public @Override void run() {}};}};}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v1", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
         assertTrue(new File(dest, "p/C3.class").delete());
@@ -259,7 +260,7 @@ public class NbBundleProcessorTest extends NbTestCase {
         assertTrue(new File(dest, "p/C3$1$1.class").isFile());
         AnnotationProcessorTestUtils.makeSource(src, "p.C1", "@org.openide.util.NbBundle.Messages(\"k1=v3\")", "public class C1 {public @Override String toString() {return Bundle.k1();}}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, null));
-        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v3", l.loadClass("p.C1").newInstance().toString());
         assertEquals("v2", l.loadClass("p.C2").newInstance().toString());
     }
@@ -269,11 +270,11 @@ public class NbBundleProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.package-info", "@org.openide.util.NbBundle.Messages(\"k2=v2\")", "package p;");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
-        ClassLoader l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v1v2", l.loadClass("p.C").newInstance().toString());
         assertTrue(new File(dest, "p/C.class").delete());
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C.java", dest, null, null));
-        l = new URLClassLoader(new URL[] {dest.toURI().toURL()});
+        l = new URLClassLoader(new URL[] {Utilities.toURI(dest).toURL()});
         assertEquals("v1v2", l.loadClass("p.C").newInstance().toString());
     }
 

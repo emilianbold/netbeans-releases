@@ -45,6 +45,9 @@
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.event.ActionEvent;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -54,6 +57,9 @@ import org.openide.windows.TopComponent;
  *
  * @author Alexander Simon
  */
+@ActionID(id = "org.netbeans.modules.cnd.callgraph.impl.CallGraphAction", category = "Window")
+@ActionRegistration(lazy = true, displayName = "#CTL_CallGraphAction", iconBase=CallGraphTopComponent.ICON_PATH)
+@ActionReference(path = "Menu/Window/Output", name = "CallGraphAction", position = 2500)
 public class CallGraphAction extends CallableSystemAction {
 
     public CallGraphAction() {
@@ -81,6 +87,7 @@ public class CallGraphAction extends CallableSystemAction {
         return NbBundle.getMessage(CallGraphAction.class, "CTL_CallGraphAction"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
     }

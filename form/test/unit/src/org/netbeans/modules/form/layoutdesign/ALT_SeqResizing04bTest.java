@@ -65,7 +65,7 @@ public class ALT_SeqResizing04bTest extends LayoutTestCase {
     }
 
     /**
-     * Resize the toggle button sligtly to the right (so it does not go under
+     * Resize the toggle button slightly to the right (so it does not go under
      * the combobox). It shuld stay in the sequence with the label and combobox
      * even though it visually does not belong there (arranged artificially).
      */
@@ -181,7 +181,7 @@ public class ALT_SeqResizing04bTest extends LayoutTestCase {
     /**
      * Resize the toggle button slightly to the left so it goes under the label
      * but does not snap anywhere. It should now be placed in parallel with the
-     * original sequence.
+     * label, but remain in sequence with the combobox on the other side.
      * (A variant of ALT_SeqResizing04Test, just without snapping.)
      */
     public void doChanges1() {

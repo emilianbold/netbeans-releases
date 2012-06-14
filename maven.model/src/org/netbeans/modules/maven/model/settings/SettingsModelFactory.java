@@ -78,6 +78,7 @@ public class SettingsModelFactory extends AbstractModelFactory<SettingsModel> {
         return super.getModel(source);
     }
     
+    @Override
     protected SettingsModel createModel(ModelSource source) {
         return new SettingsModelImpl(source);
     }

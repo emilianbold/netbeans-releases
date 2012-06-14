@@ -47,6 +47,7 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 /**
@@ -69,7 +70,7 @@ public class URLsAreEqualTest extends NbTestCase {
         
         File jar = new File(wd, "default-package-resource.jar");
         
-        URL orig = new URL("jar:" + jar.toURI() + "!/package/resource.txt");
+        URL orig = new URL("jar:" + Utilities.toURI(jar) + "!/package/resource.txt");
         URLConnection conn = orig.openConnection();
         assertFalse("JDK connection: " + conn, conn.getClass().getName().startsWith("org.netbeans"));
         

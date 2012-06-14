@@ -1,21 +1,21 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009, 2011 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-    <title>Sharing Files With Remote Development Hosts</title>
+    <title>Sharing Files With Remote Build Hosts</title>
   </head>
   <body>
     <h2>
-       Sharing Files With Remote Development Hosts
+       Sharing Files With Remote Build Hosts
     </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
-    <p>When you use a remote development host, the local and remote hosts both need
+    <p>When you use a remote build host, the local and remote hosts both need
     to access the project files. This access can be accomplished through file sharing or securely copying
     the files. Before the IDE can use file sharing between the
     local and remote systems, the shared filesystem or folder must be set up and
@@ -29,7 +29,7 @@ Copyright &copy; 2009, 2011 Oracle and/or its affiliates. All rights reserved.
      <p>
         <b>To set up the remote host to use existing network file sharing:</b>
      <ol>
-         <li>In the Services window, expand the C/C++ Development Hosts node.
+         <li>In the Services window, expand the C/C++ Build Hosts node.
          <li>Right-click the server you want to change and choose Properties.</li>
          <li>In the Host Properties dialog box, select File System Sharing from 
 the Synchronization drop-down list</li>
@@ -37,7 +37,7 @@ the Synchronization drop-down list</li>
 </ol>
     <p>
       When you use the File System Sharing option for making project files available for
-      local and remote development hosts, you might need to provide path mapping information to help the
+      local and remote build hosts, you might need to provide path mapping information to help the
       IDE use the shared file system.
     </p>
     <p>
@@ -47,8 +47,8 @@ the Synchronization drop-down list</li>
 
         </li>
         <li>Select the Build Tools tab.</li>
-        <li>Click Edit next to the Development Host list.</li>
-        <li>In the Development Hosts Manager dialog box, select the remote host that you have set up to use File Sharing.</li>
+        <li>Click Edit next to the Build Host list.</li>
+        <li>In the Build Hosts Manager dialog box, select the remote host that you have set up to use File Sharing.</li>
         <li>Click Path Mapper...</li>
         <li>Double-click the text entry line under Local Path, and type the full path to the
         shared directory as seen from the local machine. For example, if you are storing your

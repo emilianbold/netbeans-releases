@@ -50,31 +50,35 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureItem.CollapsedDefault;
+import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.navigation.actions.OpenAction;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /** 
  * This file is originally from Retouche, the Java Support 
@@ -96,23 +100,39 @@ import org.openide.util.NbBundle;
  */
 public class ElementNode extends AbstractNode {
 
+    /**
+     * This RP will collect children keys, while not blocking the actual getChildren() call.
+     */
+    private static final RequestProcessor CHILD_RP = new RequestProcessor("Child node fetcher"); // NOI18N
     
-    private static Node WAIT_NODE;
+    private static final Logger LOG = Logger.getLogger(ElementNode.class.getName());
+    
+    static Node WAIT_NODE;
     
     private OpenAction openAction;
     private StructureItem description;
     private ClassMemberPanelUI ui;
     private FileObject fileObject; // For the root description
+    
+    private static final int WAIT_PERIOD = 100; // max 100ms
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
-        super(description.isLeaf() ? Children.LEAF: new ElementChildren((List<StructureItem>)description.getNestedItems(), ui.getFilters(), ui, fileObject));
+        super(description.isLeaf() ? Children.LEAF: 
+                new ElementChildren(description, ui, fileObject));
         this.description = description;
-        setDisplayName( description.getName() ); 
         this.ui = ui;
         this.fileObject = fileObject;
+        setDisplayName( description.getName() ); 
     }
     
+    private ElementNode(Children ch) {
+        super(ch);
+    }
+    
+    StructureItem getModel() {
+        return description;
+    }
     
     @Override
     public Image getIcon(int type) {
@@ -187,6 +207,20 @@ public class ElementNode extends AbstractNode {
         return WAIT_NODE;
     }
 
+    boolean isExpandedByDefault() {
+        return ui.isExpandedByDefault(this);
+    }
+    
+    /**
+     * Runs the Runnable after all pending Children keys requests were completed.
+     * 
+     * @param r code to execute
+     * @return Task handle for the runnable.
+     */
+    static Task runWithChildren(Runnable r) {
+        return CHILD_RP.post(r);
+    }
+    
     /**
      * Refreshes the Node recursively. Only initiates the refresh; the refresh
      * itself may happen asynchronously.
@@ -197,20 +231,30 @@ public class ElementNode extends AbstractNode {
         ui.performExpansion(toExpand, Collections.<Node>emptyList());
     }
 
-    private void refreshRecursively(Collection<ElementNode> toDo, final Collection<Node> toExpand) {
-        for (ElementNode elnod : toDo) {
+    private void refreshRecursively(Collection<? extends Node> toDo, final Collection<Node> toExpand) {
+        if (toDo.isEmpty()) {
+            return;
+        }
+        Collection<Node> nextRound = new ArrayList<Node>(toDo.size());
+        for (Node nod : toDo) {
+            if (!(nod instanceof ElementNode)) {
+                continue;
+            }
+            ElementNode elnod = (ElementNode)nod;
+            LOG.fine("Refreshing: " + elnod);
             final Children ch = elnod.getChildren();
             if ( ch instanceof ElementChildren ) {
-                ((ElementChildren)ch).resetKeys((List<StructureItem>)elnod.description.getNestedItems(), elnod.ui.getFilters());
-
-                Collection<ElementNode> children = (Collection<ElementNode>)(List)Arrays.asList((Node[])ch.getNodes());
-                toExpand.addAll(children);
-                refreshRecursively(children, toExpand);
+                ElementChildren ech = (ElementChildren)ch;
+                if (ech.wasInitialized()) {
+                    ech.refreshChildren();
+                    nextRound.addAll(Arrays.asList(ech.getNodes()));
+                }
             }
         }
+        refreshRecursively(nextRound, toExpand);
     }
-
-    public ElementNode getMimeRootNodeForOffset(ParserResult info, int offset) {
+    
+    private ElementNode findMimeRootNode(ParserResult info, int offset) {
         if (getDescription().getPosition() > offset) {
             return null;
         }
@@ -225,6 +269,7 @@ public class ElementNode extends AbstractNode {
 
         // Look specifically within the
         if (languages.size() > 0) {
+            LOG.fine("Found embedded languages: " + languages);
             Children ch = getChildren();
             if ( ch instanceof ElementChildren ) {
                 Node[] children = ch.getNodes();
@@ -236,19 +281,51 @@ public class ElementNode extends AbstractNode {
                         if (c.getDescription() instanceof ElementScanningTask.MimetypeRootNode) {
                             ElementScanningTask.MimetypeRootNode mr = (ElementScanningTask.MimetypeRootNode)c.getDescription();
                             if (mr.language == language) {
-                                return c.getNodeForOffset(offset);
+                                LOG.fine("Found MIME root: " + c);
+                                return c;
                             }
                         }
                     }
                 }
             }
         }
-
-        // No match in embedded languages - do normal offset search
-        return getNodeForOffset(offset);
+        LOG.fine("No MIME type root found");
+        return null;
     }
     
-    public ElementNode getNodeForOffset(int offset) {
+    void doWithNodeAtOffset(ParserResult info, int offset, NodeAction exec) {
+        ElementNode rootNode = findMimeRootNode(info, offset);
+        if (rootNode == null) {
+            rootNode = this;
+        }
+        rootNode.doWithNodeAtOffset(offset, exec, false);
+    }
+    
+    private void doWithNodeAtOffset(final int offset, final NodeAction exec, boolean dontWait) {
+        LOG.log(Level.FINE, "Searching for offset {0} under {1}", new Object[] { offset, this });
+        final Node n = getNodeForOffset(offset);
+        
+        // exec if not a wait node, or if AGAIN our own wait node.
+        if (!isWaitNode(n) ||
+            (dontWait && n.getParentNode() == this)) {
+            LOG.log(Level.FINE, "Search terminated; waitNode = {0}", n);
+            exec.runWith(n);
+            return;
+        }
+        
+        if (exec.isCanceled()) {
+            // terminate
+            return;
+        }
+        LOG.log(Level.FINE, "Got wait node under {0}", n.getParentNode());
+        runWithChildren(new Runnable() {
+           public void run() {
+               ((ElementNode)n.getParentNode()).doWithNodeAtOffset(offset, exec, true);
+           } 
+        });
+    }
+    
+    private ElementNode getNodeForOffset(int offset) {
         if (getDescription().getPosition() > offset) {
             return null;
         }
@@ -260,6 +337,9 @@ public class ElementNode extends AbstractNode {
             Node[] children = ch.getNodes();
             for (int i = 0; i < children.length; i++) {
                 ElementNode c = (ElementNode) children[i];
+                if (isWaitNode(c)) {
+                    return c;
+                }
                 long start = c.getDescription().getPosition();
                 if (start <= offset) {
                     long end = c.getDescription().getEndPosition();
@@ -274,68 +354,18 @@ public class ElementNode extends AbstractNode {
     }
 
     public void updateRecursively( StructureItem newDescription ) {
-           List<Node> nodesToExpand = new LinkedList<Node>();
-           List<Node> nodesToExpandRec = new LinkedList<Node>();
-           updateRecursively(newDescription, nodesToExpand, nodesToExpandRec);
-           ui.performExpansion(nodesToExpand, nodesToExpandRec);
+           TreeUpdater u = new TreeUpdater(ui);
+           u.execute(this, newDescription);
     }
-
-    private void updateRecursively( StructureItem newDescription, List<Node> nodesToExpand, List<Node> nodesToExpandRec ) {
-        Children ch = getChildren();
-
-        //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
-        //to ElementChildren to be able to hold the new child data
-        if(!(ch instanceof ElementChildren) && newDescription.getNestedItems().size()>0) {
-            ch=new ElementChildren((List<StructureItem>)Collections.EMPTY_LIST, ui.getFilters(), ui, fileObject);
-            setChildren(ch);
-        }
-        
-        if ( ch instanceof ElementChildren ) {           
-           HashSet<StructureItem> oldSubs = new HashSet<StructureItem>( description.getNestedItems() );
-
-           
-           // Create a hashtable which maps StructureItem to node.
-           // We will then identify the nodes by the description. The trick is 
-           // that the new and old description are equal and have the same hashcode
-           Node[] nodes = ch.getNodes( true );           
-           HashMap<StructureItem,ElementNode> oldD2node = new HashMap<StructureItem,ElementNode>();           
-           for (Node node : nodes) {
-               oldD2node.put(((ElementNode)node).description, (ElementNode)node);
-           }
-           
-           // Now refresh keys
-           ((ElementChildren)ch).resetKeys((List<StructureItem>)newDescription.getNestedItems(), ui.getFilters());
-
-           
-           // Reread nodes
-           nodes = ch.getNodes( true );
-
-           boolean alreadyExpanded = false;
-           
-           for( StructureItem newSub : newDescription.getNestedItems() ) {
-                ElementNode node = oldD2node.get(newSub);
-                if ( node != null ) { // filtered out
-                    if ( !oldSubs.contains(newSub)) {
-                       nodesToExpand.add(node);
-                    }
-                    node.updateRecursively( newSub, nodesToExpand, nodesToExpandRec ); // update the node recursively
-                } else { // a new node
-                    if (! alreadyExpanded) {
-                        alreadyExpanded = true;
-                        if (ui.isExpandedByDefault(this)) {
-                            nodesToExpand.add(this);
-                        }
-                    }
-                    for (Node newNode : nodes) {
-                        if (newNode instanceof ElementNode  &&  ((ElementNode) newNode).getDescription() == newSub) {
-                            nodesToExpandRec.add(newNode);
-                            break;
-                        }
-                    }
-                }
-           }
-        }
-                        
+    
+    /**
+     * Updates the node itself, and schedules an update for its children,
+     * if children have been initialized.
+     * 
+     * @param newDescription
+     * @param updater 
+     */
+    void updateSelf(StructureItem newDescription, TreeUpdater updater) {
         StructureItem oldDescription = description; // Remember old description        
         description = newDescription; // set new descrioption to the new node
         String oldHtml = oldDescription.getHtml(new NavigatorFormatter());
@@ -348,6 +378,39 @@ public class ElementNode extends AbstractNode {
             fireIconChange();
             fireOpenedIconChange();
         }
+
+        Children ch = getChildren();
+
+        //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
+        //to ElementChildren to be able to hold the new child data
+        ElementChildren ech = ch instanceof ElementChildren ? (ElementChildren)ch : null;
+
+        if (ech == null) {
+            LOG.log(Level.FINE, "LEAF children found, stop update at {0}", this);
+            if (!newDescription.isLeaf()) {
+                ech= new ElementChildren(newDescription, ui, fileObject);
+                setChildren(ech);
+                LOG.log(Level.FINE, "Changing children from nonleaf > leaf for: {0}", this);
+            }
+            return;
+        }
+        // add the children potentially to the update list
+        updater.runUpdate(this, description);
+    }
+
+    /**
+     * Callback action to perform at a certain node. Currently
+     * used to select node after it is found in the tree.
+     */
+    interface NodeAction {
+        public void runWith(Node n);
+        /**
+         * Informs that the action has been canceled, e.g. a selection was
+         * superseded by another caret movement.
+         * 
+         * @return true, if the action is canceled.
+         */
+        public boolean isCanceled();
     }
     
     public StructureItem getDescription() {
@@ -358,25 +421,214 @@ public class ElementNode extends AbstractNode {
         return fileObject;
     }
     
-    private static final class ElementChildren extends Children.Keys<StructureItem> {
+    /**
+     * Key for the wait node
+     */
+    private static final StructureItem WAIT_KEY = new StructureItem() {
+        @Override
+        public String getName() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getSortText() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ElementKind getKind() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isLeaf() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<? extends StructureItem> getNestedItems() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public long getPosition() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public long getEndPosition() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ImageIcon getCustomIcon() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    };
+    
+    static final class ElementChildren extends Children.Keys<StructureItem> {
         private ClassMemberPanelUI ui;
         private FileObject fileObject;
+        private volatile boolean initialized;
+        /**
+         * Handle for the update. The async ChildR task will not update the keys
+         * if the handle on the Children object changes in the meantime.
+         */
+        private volatile int processing;
+        private StructureItem parentItem;
+        private List<StructureItem> keys;
         
-        public ElementChildren(List<StructureItem> descriptions, ClassMemberFilters filters, ClassMemberPanelUI ui, FileObject fileObject) {
-            resetKeys( descriptions, filters );            
+        public ElementChildren(List<StructureItem> children, ClassMemberPanelUI ui, FileObject fileObject) {
+            this.parentItem = null;
             this.ui = ui;
             this.fileObject = fileObject;
         }
         
+        public ElementChildren(StructureItem parentItem, ClassMemberPanelUI ui, FileObject fileObject) {
+            this.parentItem = parentItem;
+            this.ui = ui;
+            this.fileObject = fileObject;
+        }
+        
+        synchronized List<StructureItem> getKeys() {
+            return keys == null ? Collections.EMPTY_LIST : keys;
+        }
+        
+        boolean wasInitialized() {
+            return initialized;
+        }
+
+        @Override
+        protected void addNotify() {
+            if (parentItem != null) {
+                initialize(parentItem, ui.getFilters());
+            }
+        }
+        
         protected Node[] createNodes(StructureItem key) {
+            if (key == WAIT_KEY) {
+                return new Node[] { new FilterNode(getWaitNode()) };
+            }
             return new Node[] {new  ElementNode(key, ui, fileObject)};
         }
         
-        void resetKeys( List<StructureItem> descriptions, ClassMemberFilters filters ) {            
+        void refreshChildren() {
+            resetKeys(processing, getKeys(), ui.getFilters());
+        }
+        
+        /**
+         * Replaces our own StructureItem with the new version. If nodes were not initialized,
+         * returns null. If nodes WERE initialized, it attempts to reset keys 
+         * and potentially defers the keys computation to a RP, if the fetching takes too long.
+         * Returns the immediate node snapshot.
+         * 
+         * @return node snapshot or {@code null} to indicate that no nodes were created yet
+         */
+        Collection<Node> replaceItem(StructureItem description) {
+            Collection<Node>    items;
+            
+            synchronized (this) {
+                this.parentItem = description;
+                if (processing == 0) {
+                    return null;
+                }
+                items = snapshot();
+                processing++;
+            }
+            initialize(description, ui.getFilters());
+            return items;
+        }
+        
+        private void initialize(StructureItem parentDescription, ClassMemberFilters filters) {
+            // #212895: cannot wait for getChildren() forever, as it may involve parsing;
+            // wait for a short while, then create a wait node
+            ChildR r = new ChildR(
+                    this,
+                    parentDescription,
+                    ui.getFilters());
+            Task t = CHILD_RP.post(r);
+            try {
+                t.waitFinished(1);
+                List<StructureItem> items = r.getNestedItemsIfReady();
+                if (items != null) {
+                    LOG.log(Level.FINE, "Got nested items within limit for: {0}", this);
+                    resetKeys(processing, items, filters);
+                }
+            } catch (InterruptedException ex) {
+                // no op
+            }
+            synchronized (this) {
+                if (!initialized) {
+                    // only if never initialized, otherwise keep the current content
+                    setKeys(new StructureItem[] { WAIT_KEY });
+                }
+            }
+        }
+        
+        synchronized void resetKeys(int key, List<StructureItem> descriptions, ClassMemberFilters filters ) {
+            if (processing != key) {
+                return;
+            }
+            this.keys = descriptions;
+            initialized = true;
             setKeys( filters.filter(descriptions) );
         }
     }
-                       
+        
+    /**
+     * This Runnable actually acquires nested items and reset children
+     * keys.
+     */
+    private static class ChildR implements Runnable {
+        private final ElementChildren children;
+        private final StructureItem description;
+        private final ClassMemberFilters filters;
+        private List<StructureItem> nestedItems;
+        private boolean delayed;
+
+        public ChildR(ElementChildren children, StructureItem description, ClassMemberFilters filters) {
+            this.children = children;
+            this.description = description;
+            this.filters = filters;
+        }
+        
+        synchronized List<StructureItem> getNestedItemsIfReady() {
+            if (nestedItems != null) {
+                return nestedItems;
+            } else {
+                delayed = true;
+                return null;
+            }
+        }
+        
+        public void run() {
+            int p = children.processing;
+            this.nestedItems = (List<StructureItem>)description.getNestedItems();
+            synchronized (this) {
+                if (!delayed) {
+                    return;
+                }
+            }
+            children.resetKeys(p, nestedItems, filters);
+        }
+    }
+    
     /** Stores all interesting data about given element.
      */    
     static class Description {
@@ -499,7 +751,7 @@ public class ElementNode extends AbstractNode {
         
     }
         
-    private static class WaitNode extends AbstractNode {
+    private static class WaitNode extends ElementNode {
         
         private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/csl/navigation/resources/wait.gif"); // NOI18N
         private String displayName;
@@ -507,6 +759,7 @@ public class ElementNode extends AbstractNode {
         WaitNode( ) {
             super( Children.LEAF );
             displayName = NbBundle.getMessage(ElementNode.class, "LBL_WaitNode");
+            getCookieSet().assign(WaitNode.class, this);
         }
         
         @Override
@@ -523,6 +776,11 @@ public class ElementNode extends AbstractNode {
         public java.lang.String getDisplayName() {
             return displayName;
         }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return displayName;
+        }
     }
     
     private static class NavigatorFormatter extends GsfHtmlFormatter {
@@ -530,5 +788,13 @@ public class ElementNode extends AbstractNode {
         public void name(ElementKind kind, boolean start) {
             // No special formatting for names
         }
+    }
+    
+    public static boolean isWaitNode(Node n) {
+        return n.getLookup().lookup(WaitNode.class) != null;
+    }
+    
+    public static boolean isWaitNode(StructureItem si) {
+        return si == WAIT_KEY;
     }
 }

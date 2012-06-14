@@ -64,6 +64,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Defines class path for maven2 projects..
@@ -218,7 +219,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         
         URI web = project.getWebAppDirectory();
-        FileObject fo = FileUtil.toFileObject(new File(web));
+        FileObject fo = FileUtil.toFileObject(Utilities.toFile(web));
         if (fo != null && (fo.equals(file) || FileUtil.isParentOf(fo, file))) {
             return TYPE_WEB;
         }

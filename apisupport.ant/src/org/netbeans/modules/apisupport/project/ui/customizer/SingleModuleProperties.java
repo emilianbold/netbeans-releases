@@ -1151,7 +1151,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 universeDependencies = Collections.unmodifiableSet(allDependencies);
                 return true;
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                LOG.log(Level.INFO, "#213110: broken module/suite metadata?", ioe);
             }
         }
         return false;
@@ -1209,6 +1209,21 @@ public final class SingleModuleProperties extends ModuleProperties {
         }
         model.reloadData(loadPublicPackages(pkgs));
         return pkgs.size() - origC;
+    }
+
+    boolean isOSGi() {
+        FileObject manifestFO = FileUtil.toFileObject(getManifestFile());
+        if (manifestFO == null) {
+            return false;
+        }
+        EditableManifest em;
+        try {
+            em = Util.loadManifest(manifestFO);
+        } catch (IOException x) {
+            LOG.log(Level.INFO, null, x);
+            return false;
+        }
+        return em.getAttribute(ManifestManager.BUNDLE_SYMBOLIC_NAME, null) != null;
     }
 
 }

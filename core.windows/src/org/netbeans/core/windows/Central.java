@@ -2062,7 +2062,8 @@ final class Central implements ControllerHandler {
             if( m.getKind() == Constants.MODE_KIND_EDITOR 
                     && !"editor".equals(m.getName()) //NOI18N
                     && !m.getOpenedTopComponentsIDs().isEmpty()
-                    && !m.isPermanent() )
+                    && !m.isPermanent()
+                    && m.getState() != Constants.MODE_STATE_SEPARATED )
                 return m;
         }
         return null;
@@ -2149,7 +2150,11 @@ final class Central implements ControllerHandler {
         if( draggable.isTopComponentTransfer() ) {
             moveTopComponentIntoMode(mode, draggable.getTopComponent());
         } else {
-            dockMode( mode, draggable.getMode() );
+            if( mode.getKind() != draggable.getKind() ) {
+                mergeModes( draggable.getMode(), mode, 0 );
+            } else {
+                dockMode( mode, draggable.getMode() );
+            }
         }
         updateViewAfterDnD(true);
     }
@@ -2517,7 +2522,7 @@ final class Central implements ControllerHandler {
         int dockIndex = model.getModeTopComponentPreviousIndex(source, tcID);
         int modeKind = mode.getKind();
         
-        if ((dockTo == null) || !model.getModes().contains(dockTo)) {
+        if ((dockTo == null) || !model.getModes().contains(dockTo) || dockTo.getState() == Constants.MODE_STATE_SEPARATED) {
             // mode to dock to back isn't valid anymore, try constraints
             SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(source, tcID);
             if (constraints != null) {

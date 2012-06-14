@@ -84,25 +84,28 @@ public class ReplaceAction extends AbstractEditorAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
-            if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit)
+        if (target != null) {
+            if ((target instanceof JEditorPane) && ((JEditorPane) target).getEditorKit() instanceof SearchNbEditorKit) {
                 target = SearchBar.getInstance().getActualTextComponent();
+            }
             EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
             if (eui != null) {
-                JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
-                if (comp != null) {
-                    JPanel jp = SearchNbEditorKit.findComponent(comp, SearchJPanel.class, 5);
-                    if (jp != null) {
-                        SearchBar searchBar = SearchBar.getInstance(eui.getComponent());
-                        jp.add(searchBar);
-                        jp.add(ReplaceBar.getInstance(searchBar));
-                        ReplaceBar.getInstance(searchBar).gainFocus();
-                        SearchNbEditorKit.makeSearchAndReplaceBarPersistent();
-                        return;
+                JPanel jp = null;
+                Object clientProperty = target.getClientProperty(SearchNbEditorKit.PROP_SEARCH_CONTAINER);
+                if (clientProperty instanceof JPanel) {
+                    jp = (JPanel) clientProperty;
+                } else {
+                    JComponent comp = eui.hasExtComponent() ? eui.getExtComponent() : null;
+                    if (comp != null) {
+                        jp = SearchNbEditorKit.findComponent(comp, SearchNbEditorKit.SearchJPanel.class, 5);
                     }
                 }
-                if (target.isEditable()) {
-                    SearchNbEditorKit.DIALOG_REPLACE_ACTION.actionPerformed(evt, target);
+                if (jp != null && target.isEditable()) {
+                    SearchBar searchBar = SearchBar.getInstance(eui.getComponent());
+                    jp.add(searchBar);
+                    jp.add(ReplaceBar.getInstance(searchBar));
+                    ReplaceBar.getInstance(searchBar).gainFocus();
+                    SearchNbEditorKit.makeSearchAndReplaceBarPersistent();
                 }
             }
         }

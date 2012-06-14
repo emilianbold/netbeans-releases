@@ -155,7 +155,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
         lib = new DefaultLibraryImplementation("j2se", new String[]{"classpath", "src"});
         lib.setName(libName);
         List<URL> l = new ArrayList<URL>();
-        URL u = cp.toURI().toURL();
+        URL u = Utilities.toURI(cp).toURL();
         if (cp.getPath().endsWith(".jar")) {
             u = FileUtil.getArchiveRoot(u);
         }
@@ -163,7 +163,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
         lib.setContent("classpath", l);
         if (src != null) {
             l = new ArrayList<URL>();
-            u = src.toURI().toURL();
+            u = Utilities.toURI(src).toURL();
             if (src.getPath().endsWith(".jar")) {
                 u = FileUtil.getArchiveRoot(u);
             }
@@ -191,16 +191,16 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
         
         // library1: test that folder with javadoc is found for the jar
         File f = new File(getBase()+"/library1/library1.jar");
-        URL u = f.toURI().normalize().toURL();
+        URL u = Utilities.toURI(f).normalize().toURL();
         u = FileUtil.getArchiveRoot(u);
         FileObject[] fos = SourceForBinaryQuery.findSourceRoots(u).getRoots();
         assertEquals(1, fos.length);
-        String base = new File(getBase()).toURI().toString();
+        String base = Utilities.toURI(new File(getBase())).toString();
         assertEquals(base+"library1/src1/", fos[0].getURL().toExternalForm());
         
         // library2: test that jar with javadoc is found for the class from library jar
         f = new File(getBase()+"/library2/library2.jar");
-        String us = f.toURI().normalize().toString();
+        String us = Utilities.toURI(f).normalize().toString();
         us = "jar:" + us + "!/";
         u = new URL(us);
         fos = SourceForBinaryQuery.findSourceRoots(u).getRoots();
@@ -209,7 +209,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
         
         // library2: test that folder with javadoc is found for the classpath root from the library
         f = new File(getBase()+"/library3/library3");
-        u = f.toURI().normalize().toURL();
+        u = Utilities.toURI(f).normalize().toURL();
         fos = SourceForBinaryQuery.findSourceRoots(u).getRoots();
         assertEquals(1, fos.length);
         assertEquals(base+"library3/src3/", fos[0].getURL().toExternalForm());
@@ -219,7 +219,7 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
         setupLibraryForListeningTest();
         File f = new File(getBase()+"/library4");
         f = new File (f, "library4");
-        URL u = f.toURI().normalize().toURL();
+        URL u = Utilities.toURI(f).normalize().toURL();
         SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(u);
         assertEquals(result.getRoots().length,0);
         SFBQResultListener l = new SFBQResultListener ();        
@@ -229,13 +229,13 @@ public class SourceForBinaryQueryLibraryImplTest extends NbTestCase {
         File baseDir = new File(getBase());
         File libDir = new File(baseDir,"library4");
         File srcDir = new File(libDir,"src4");
-        srcList.add (srcDir.toURI().toURL());
+        srcList.add (Utilities.toURI(srcDir).toURL());
         impl.setContent("src", srcList);
         ChangeEvent[] events = l.getEvents();
         assertEquals(1,events.length);
         l.clearEventQueue();
         assertEquals(result.getRoots().length,1);
-        String base = new File(getBase()).toURI().toString();
+        String base = Utilities.toURI(new File(getBase())).toString();
         assertEquals(base+"library4/src4/",result.getRoots()[0].getURL().toExternalForm());
     }
     

@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard.api;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -69,6 +70,9 @@ public interface DiscoveryDescriptor {
 
     String getBuildResult();
     void setBuildResult(String binaryPath);
+
+    FileSystem getFileSystem();
+    void setFileSystem(FileSystem fs);
 
     String getAditionalLibraries();
     void setAditionalLibraries(String binaryPath);

@@ -50,6 +50,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
@@ -57,14 +60,18 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author lahvac
  */
 public class COSSynchronizingIndexer extends CustomIndexer {
+    
+    private static final Logger LOG = Logger.getLogger(COSSynchronizingIndexer.class.getName());
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
@@ -78,7 +85,7 @@ public class COSSynchronizingIndexer extends CustomIndexer {
 
         Set<String> javaMimeTypes = gatherJavaMimeTypes();
         List<File> updated = new LinkedList<File>();
-
+        final ClassPath srcPath = ClassPath.getClassPath(context.getRoot(), ClassPath.SOURCE);
         for (Indexable i : files) {
             if (javaMimeTypes.contains(i.getMimeType()))
                 continue;
@@ -90,15 +97,26 @@ public class COSSynchronizingIndexer extends CustomIndexer {
                     //#174026: presumably a deleted file:
                     continue;
                 }
-                
-                updated.add(new File(url.toURI()));
+                final FileObject resource = srcPath.findResource(i.getRelativePath());
+                if (resource == null) {
+                    LOG.log(
+                        Level.INFO,
+                        "File {0} not on source path {1}, root {2}",    //NOI18N
+                        new Object[]{
+                            i.getURL(),
+                            srcPath,
+                            context.getRoot()
+                        });
+                } else if (FileUtil.isParentOf(context.getRoot(), resource)) {
+                    updated.add(Utilities.toFile(url.toURI()));
+                }
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
         try {
-            File sourceRootFile = new File(context.getRootURI().toURI());
+            File sourceRootFile = Utilities.toFile(context.getRootURI().toURI());
 
             if (!context.checkForEditorModifications()) { // #187514, see also #152222 and JavaCustomIndexer
                 BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), sourceRootFile, Collections.<File>emptyList(), updated, true);
@@ -140,14 +158,14 @@ public class COSSynchronizingIndexer extends CustomIndexer {
 
             for (Indexable d : deleted) {
                 try {
-                    deletedFiles.add(new File(d.getURL().toURI()));
+                    deletedFiles.add(Utilities.toFile(d.getURL().toURI()));
                 } catch (URISyntaxException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
 
             try {
-                File sourceRootFile = new File(context.getRootURI().toURI());
+                File sourceRootFile = Utilities.toFile(context.getRootURI().toURI());
 
                 BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), sourceRootFile, deletedFiles, Collections.<File>emptyList(), true);
             } catch (URISyntaxException ex) {

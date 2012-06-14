@@ -86,7 +86,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         }
         List<URL> installFolders = new ArrayList<URL> ();
         try {
-            installFolders.add (javaHome.toURI().toURL());
+            installFolders.add (Utilities.toURI(javaHome).toURL());
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
@@ -151,7 +151,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
                     }
                 }
                 if (f.exists() && f.canRead()) {
-                    URL url = FileUtil.getArchiveRoot(f.toURI().toURL());
+                    URL url = FileUtil.getArchiveRoot(Utilities.toURI(f).toURL());
                     
                      //Test for src folder in the src.zip on Mac
                     if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {

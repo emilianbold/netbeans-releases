@@ -66,6 +66,9 @@ public class ExtensionModule implements Module {
         //we just replace it with the simple variant that relies on file's presence only. 
         //I'm a bit afraid to remove the binding altogether, that's why we map simple to enhanced.
         binder.bind(Roles.componentKey(LocalRepositoryManagerFactory.class, "enhanced")).to(SimpleLocalRepositoryManagerFactory.class);
+        
+        //exxperimental only.
+//        binder.bind(InheritanceAssembler.class).to(NbInheritanceAssembler.class);
     }
     
 }

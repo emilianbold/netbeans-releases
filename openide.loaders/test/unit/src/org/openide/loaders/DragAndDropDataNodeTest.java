@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.netbeans.junit.*;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.util.Utilities;
 
 public class DragAndDropDataNodeTest extends NbTestCase {
 
@@ -89,7 +90,7 @@ public class DragAndDropDataNodeTest extends NbTestCase {
 
         assertTrue( t.isDataFlavorSupported( uriListFlavor ) );
         String uriList = (String) t.getTransferData( uriListFlavor );
-        assertEquals( tmpFile.toURI()+"\r\n", uriList );
+        assertEquals( Utilities.toURI(tmpFile)+"\r\n", uriList );
     }
 
     public void testClipboardCut() throws ClassNotFoundException, IOException, UnsupportedFlavorException {
@@ -110,6 +111,6 @@ public class DragAndDropDataNodeTest extends NbTestCase {
 
         assertTrue( t.isDataFlavorSupported( uriListFlavor ) );
         String uriList = (String) t.getTransferData( uriListFlavor );
-        assertEquals( tmpFile.toURI()+"\r\n", uriList );
+        assertEquals( Utilities.toURI(tmpFile)+"\r\n", uriList );
     }
 }

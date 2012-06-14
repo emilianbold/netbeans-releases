@@ -60,7 +60,7 @@ public class NodeUtilsTest extends NbTestCase {
     }
 
     public void testReadOnlyLocalRepositoryFile() throws Exception {
-        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
         File f = TestFileUtils.writeFile(new File(repo, "ant/ant/1.5.1/ant-1.5.1.jar.sha1"), "a50e3e050a6e78e0656edc183435b9773f53ce78");
         FileObject rw = FileUtil.toFileObject(f);
         FileObject ro = NodeUtils.readOnlyLocalRepositoryFile(rw);

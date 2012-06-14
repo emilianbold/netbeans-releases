@@ -70,6 +70,7 @@ import java.util.StringTokenizer;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -165,6 +166,8 @@ public final class CsmProjectContentResolver {
                     }
                 } else if (CsmKindUtilities.isEnum(ob)) {
                     elemEnum = (CsmEnum) ob;
+                } else if (CsmKindUtilities.isEnumForwardDeclaration(ob)) {
+                    elemEnum = ((CsmEnumForwardDeclaration)ob).getCsmEnum();
                 } else {
                     // for typedef check whether it defines unnamed enum
                     assert CsmKindUtilities.isTypedef(ob);
@@ -174,10 +177,12 @@ public final class CsmProjectContentResolver {
                         CsmClassifier classifier = type.getClassifier();
                         if (CsmKindUtilities.isEnum(classifier)) {
                             elemEnum = (CsmEnum) classifier;
+                        } else if (CsmKindUtilities.isEnumForwardDeclaration(classifier)) {
+                            elemEnum = ((CsmEnumForwardDeclaration)classifier).getCsmEnum();
                         }
                     }
                 }
-                if (elemEnum != null) {
+                if (elemEnum != null && !elemEnum.isStronglyTyped()) {
                     for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
                         CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {
@@ -898,23 +903,28 @@ public final class CsmProjectContentResolver {
     }
 
     private Map<CharSequence, CsmNamespace> getNestedNamespaces(CsmNamespace ns, String strPrefix, boolean match, Set<CsmNamespace> handledNS) {
-        handledNS.add(ns);
         Map<CharSequence, CsmNamespace> res = new LinkedHashMap<CharSequence, CsmNamespace>(); // order is important
-        // handle all nested namespaces
-        for (CsmProject lib : ns.getProject().getLibraries()) {
-            CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
-            if (n != null && !handledNS.contains(n)) {
-                res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+        if(ns != null) {
+            handledNS.add(ns);
+            CsmProject nsProject = ns.getProject();
+            if(nsProject != null) {
+                // handle all nested namespaces
+                for (CsmProject lib : nsProject.getLibraries()) {
+                    CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
+                    if (n != null && !handledNS.contains(n)) {
+                        res.putAll(getNestedNamespaces(n, strPrefix, match, handledNS));
+                    }
+                }
+                for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
+                    CsmNamespace nestedNs = (CsmNamespace) it.next();
+                    // TODO: consider when we add nested namespaces
+                    if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
+                        res.put(nestedNs.getQualifiedName(), nestedNs);
+                    }
+                }
             }
         }
-        for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
-            CsmNamespace nestedNs = (CsmNamespace) it.next();
-            // TODO: consider when we add nested namespaces
-            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
-                res.put(nestedNs.getQualifiedName(), nestedNs);
-            }
-        }
-        return res;
+        return res;        
     }
 
     @SuppressWarnings("unchecked")
@@ -942,12 +952,14 @@ public final class CsmProjectContentResolver {
         // unnamed enum
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
         List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNested, true);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         CsmDeclaration.Kind classAndEnumeratorKinds[] = {
             CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF,
             CsmDeclaration.Kind.ENUMERATOR
         };
@@ -964,7 +976,8 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
-            CsmDeclaration.Kind.ENUM
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
+            CsmDeclaration.Kind.ENUM,
         };
         List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, inspectOuterClasses, true, false);
         if (res != null && this.isSortNeeded()) {
@@ -1033,6 +1046,7 @@ public final class CsmProjectContentResolver {
         // unnamed enum
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.ENUM,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
         List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, true);

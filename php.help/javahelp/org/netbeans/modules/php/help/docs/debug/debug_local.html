@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Starting a Debugging Session</title>
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+
+        <h2>Starting a Debugging Session</h2>
+        <p>
+            <small><a href="#seealso">See Also</a></small></p>
+        <p>The IDE starts the debugger, then runs the application 
+            inside the debugger. When you start a debugging session, the IDE automatically 
+            opens the debugger windows, opens a browser window, and prints debugger output to the Output window. You start the debugging session in the browser window. 
+        </p>
+        <p>By default, the debugging session stops at the first line of the PHP code. 
+            You can disable stopping at the first line in Tools &gt; Options 
+            (NetBeans Preferences on Mac) &gt; PHP &gt; Debugging. When the session 
+            stops, you have a number of options for <a href="debug_step.html">
+                stepping through/into or continuing</a> the debugging session.</p>
+        <p><strong>To start debugging a project:</strong></p>
+        <ol>
+            <li>Locate the project's node in the Projects window.</li>
+            <li>Either right-click the project node and select Debug, or select the project node
+                and run the Debug Project command (Ctrl-F5 or <img src="images/Start.gif" alt="Start icon">).</li>
+        </ol>
+        <p>Alternatively, you can debug an individual PHP file:</p>
+
+        <ol>
+            <li>Expand the project's node in the Projects window. Navigate the tree 
+                until you locate the file you want.</li>
+            <li>Either right-click the file node and select Debug, or select the file node
+                and run the Debug File command (Ctrl-Shift-F5).</li>
+        </ol>
+
+        <p>The process for starting a debugging session is the same for local and remote projects. However
+            path mapping must be set up to debug remote projects.</p>
+
+
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="breakpoint_php.html">PHP Breakpoints in NetBeans IDE</a></dd>
+            <dd><a href="debug_remote.html">Remote Debugging and Path Mapping</a> </dd>
+            <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
+            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                    <param name="content" value="http://netbeans.org/kb/docs/php/debugging.html">
+                    <param name="text" value="<html><u>Debugging PHP Source Code in NetBeans IDE</u></html>">
+                    <param name="textFontSize" value="medium">
+                    <param name="textColor" value="blue">
+                </object></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

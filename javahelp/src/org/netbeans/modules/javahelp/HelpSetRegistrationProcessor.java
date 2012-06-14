@@ -111,7 +111,7 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
                 loc = builder.validateResource(hs, e, r, "helpSet", false).toUri();
                 if (loc.getScheme() == null) {
                     // JDK #6419926: FileObject.toUri() generates URI without schema
-                    loc = new File(loc.toString()).toURI();
+                    loc = Utilities.toURI(new File(loc.toString()));
                 }
                 doc = XMLUtil.parse(new InputSource(loc.toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
                     public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
@@ -145,7 +145,7 @@ public class HelpSetRegistrationProcessor extends LayerGeneratingProcessor {
             }
             if (searchDir != null) {
                 if ("file".equals(loc.getScheme())) {
-                    File d = new File(loc).getParentFile();
+                    File d = Utilities.toFile(loc).getParentFile();
                     String out = hs.replaceFirst("/[^/]+$", "/") + searchDir + "/";
                     try {
                         File config = File.createTempFile("jhindexer-config", ".txt");

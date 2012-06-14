@@ -54,6 +54,7 @@ import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.jaxws.client.ProjectJAXWSClientSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
 
 
@@ -65,8 +66,8 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
     private EjbJarProject project;
     
     /** Creates a new instance of WebProjectJAXWSClientSupport */
-    public EjbProjectJAXWSClientSupport(EjbJarProject project) {
-        super(project);
+    public EjbProjectJAXWSClientSupport(EjbJarProject project,AntProjectHelper helper) {
+        super(project,helper);
         this.project=project;    
     }
     

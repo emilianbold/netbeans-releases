@@ -303,7 +303,7 @@ public class EjbJarProject implements Project, FileChangeListener {
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
         jaxwsSupport = new EjbProjectJAXWSSupport(this, helper);
         ejbJarWebServicesClientSupport = new EjbJarWebServicesClientSupport(this, helper, refHelper);
-        jaxWsClientSupport = new EjbProjectJAXWSClientSupport(this);
+        jaxWsClientSupport = new EjbProjectJAXWSClientSupport(this,helper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport(ejbJarWebServicesSupport);
         apiJaxwsSupport = JAXWSSupportFactory.createJAXWSSupport(jaxwsSupport);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(ejbJarWebServicesClientSupport);

@@ -58,7 +58,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -492,7 +491,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 
         /** Recreate the instance in AWT thread. */
         protected @Override Task postCreationTask (Runnable run) {
-            return new AWTTask (run);
+            return new AWTTask (run, this);
         }
 
         /**
@@ -779,11 +778,15 @@ public class MenuBar extends JMenuBar implements Externalizable {
 		// It will load the classes few ms later from instanceCreate
 		// anyway and more instanceOf calls take longer
             	Class c = cookie.instanceClass();
+                boolean action = Action.class.isAssignableFrom (c);
+                if (action) {
+                    cookie.instanceCreate();
+                }
             	boolean is =
                 	Presenter.Menu.class.isAssignableFrom (c) ||
                 	JMenuItem.class.isAssignableFrom (c) ||
                 	JSeparator.class.isAssignableFrom (c) ||
-                	Action.class.isAssignableFrom (c);
+                    action;
             	return is ? cookie : null;
     	    }
 
@@ -849,7 +852,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	    /** Recreate the instance in AWT thread.
     	     */
     	    protected @Override Task postCreationTask(Runnable run) {
-            	return new AWTTask (run);
+            	return new AWTTask (run, this);
     	    }
 	}
     } // end of LazyMenu

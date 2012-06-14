@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Customizer for general project attributes.
  *
@@ -230,7 +231,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             try {
                 File base = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
                 File location = FileUtil.normalizeFile(PropertyUtils.resolveFile(base, loc));
-                URL url = location.toURI().toURL();
+                URL url = Utilities.toURI(location).toURL();
                 man = LibraryManager.forLocation(url);
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);

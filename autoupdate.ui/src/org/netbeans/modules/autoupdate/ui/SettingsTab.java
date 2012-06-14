@@ -69,7 +69,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -82,15 +81,15 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.options.OptionsDisplayer;
+import static org.netbeans.modules.autoupdate.ui.Bundle.*;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import static org.netbeans.modules.autoupdate.ui.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 
 /**
  * @author  Radek Matous, Jirka Rechtacek
@@ -109,9 +108,10 @@ public class SettingsTab extends javax.swing.JPanel {
     private boolean refreshModel;
     
     /** Creates new form UnitTab */
-    @Messages({"cbLocation_InstallDefault=<Default>",
+    @Messages({"cbLocation_InstallDefault=Default",
         "cbLocation_InstallGlobal=Force install into shared directories",
         "cbLocation_InstallLocal=Force install into user directory"})
+    @SuppressWarnings({"OverridableMethodCallInConstructor", "LeakingThisInConstructor"})
     public SettingsTab(PluginManagerUI manager) {
         this.manager = manager;
         initComponents();
@@ -187,6 +187,7 @@ public class SettingsTab extends javax.swing.JPanel {
     public void addNotify () {
         super.addNotify ();
         Utilities.startAsWorkerThread (new Runnable () {
+            @Override
             public void run () {
                 getSettingsTableModel ().refreshModel ();                
             }
@@ -205,6 +206,7 @@ public class SettingsTab extends javax.swing.JPanel {
     public void doLazyRefresh (final Runnable postTask) {
         if (needRefresh ()) {
             Utilities.startAsWorkerThread (new Runnable () {
+                @Override
                 public void run () {
                     setWaitingState (true);
                     try {
@@ -471,8 +473,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                     sb.append("<b>").append(getMessage("SettingsTab_UpdateUnitProvider_Description")).append("</b><br>"); // NOI18N
                     sb.append(desc).append("<br><br>"); // NOI18N
                 }
-                sb.append("<b>" + getMessage("SettingsTab_UpdateUnitProvider_URL") + // NOI18N
-                      " </b><a href=\"" + u.toExternalForm() + "\">" + u.toExternalForm() + "</a><br>"); // NOI18N
+                sb.append("<b>").append(getMessage("SettingsTab_UpdateUnitProvider_URL")).append(" </b><a href=\"").append(u.toExternalForm()).append("\">").append(u.toExternalForm()).append("</a><br>"); // NOI18N
                 sbEnabled = true;
             } else {
                 sbEnabled = false;
@@ -524,6 +525,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         setWaitingState (true);
         Utilities.startAsWorkerThread (new Runnable () {
 
+            @Override
             public void run () {
                 try {
                     Utilities.presentRefreshProviders (Collections.singleton (provider), getPluginManager (), force);
@@ -552,6 +554,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             putValue(MNEMONIC_KEY, UnitTab.mnemonicForKey("SettingsTab.EditButton.text"));
         }
         
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             final int rowIndex = table.getSelectedRow();
             if (rowIndex != -1) {
@@ -566,6 +569,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                         true); // editing
                 DialogDescriptor descriptor = getCustomizerDescriptor(panel);
                 panel.getOKButton().addActionListener(new ActionListener(){
+                    @Override
                     public void actionPerformed(ActionEvent arg0) {
                         setData(provider, panel);
                         table.getSelectionModel().setSelectionInterval(rowIndex, rowIndex);
@@ -585,6 +589,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             super(UnitTab.textForKey("SettingsTab.RemoveButton.text"));//NOI18N
             putValue (MNEMONIC_KEY, UnitTab.mnemonicForKey ("SettingsTab.RemoveButton.text"));//NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             SettingsTableModel model = getSettingsTableModel();
             int[] rowIndexes = table.getSelectedRows();
@@ -618,6 +623,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             super(UnitTab.textForKey("SettingsTab.AddButton.text"));
             putValue (MNEMONIC_KEY, UnitTab.mnemonicForKey ("SettingsTab.AddButton.text"));
         }
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             final UpdateUnitProviderPanel panel = new UpdateUnitProviderPanel(true,
                     NbBundle.getMessage(SettingsTab.class, "SettingsTab_NewProviderName"), // NOI18N
@@ -625,6 +631,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                     false);
             DialogDescriptor descriptor = getCustomizerDescriptor(panel);
             panel.getOKButton().addActionListener(new ActionListener(){
+                @Override
                 public void actionPerformed(ActionEvent arg0) {
                     try {
                         getSettingsTableModel().add
@@ -654,6 +661,7 @@ private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     }
     
     private class Table extends JTable {
+        @SuppressWarnings("LeakingThisInConstructor")
         public Table() {
             setShowGrid(false);
             setIntercellSpacing(new Dimension(0, 0));            

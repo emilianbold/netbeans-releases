@@ -798,9 +798,17 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         Node node = new Node(servicesOper.getRootNode(), "Maven Repositories|" + repositoryName);
         new Action(null, "Update Index").perform(node);
         String lblCancelProgress = "Click to cancel process";
-        JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
-        btnCancel.pushNoBlock();
-        new NbDialogOperator("Cancel Running Task").yes();
+        long oldTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 10000);
+            JButtonOperator btnCancel = new JButtonOperator((JButton) JButtonOperator.waitJComponent((Container) MainWindowOperator.getDefault().getSource(), lblCancelProgress, true, true));
+            btnCancel.pushNoBlock();
+            new NbDialogOperator("Cancel Running Task").yes();
+        } catch (TimeoutExpiredException tee) {
+            // ignore - already done in previous tests
+        } finally {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
+        }
     }
     
     protected File getProjectsRootDir() throws IOException {
@@ -816,7 +824,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         } else {
             return new File(System.getProperty("java.io.tmpdir"));
         }
-        return f;
+        return new File(f, getJavaEEversion().name());
     }
 
     protected J2eeServerNode getServerNode() {

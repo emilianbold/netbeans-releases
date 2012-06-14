@@ -506,34 +506,36 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     }
 
     private ProjectCBItem getProjectByPath(String hostName, String path) {
+        
+        FileSystem fs = FileSystemProvider.getFileSystem(Host.byName(hostName).executionEnvironment());
+        FileObject f;
+        Project prj = null;
+        int pos = path.indexOf(" "); // NOI18N
+        while (pos != -1) {                
+            f = CndFileUtils.toFileObject(fs, path.substring(0, pos));
+            if (f != null && f.isValid()) {
+                prj = FileOwnerQuery.getOwner(f);
+                if (prj != null) {
+                    break;
+                }
+            }
+            pos = path.indexOf(" ", pos+1); // NOI18N
+        }
+        if (prj == null) {
+            f = CndFileUtils.toFileObject(fs, path);
+            if (f != null && f.isValid()) {
+                prj = FileOwnerQuery.getOwner(f);
+                if (prj == null) {
+                    return null;
+                }
+            }
+        }
+        
         for(int i=0; i<projectComboBox.getModel().getSize(); i++) {
             Object item = projectComboBox.getModel().getElementAt(i);
             if (item instanceof ProjectCBItem) {
-                
-                FileSystem fs = FileSystemProvider.getFileSystem(Host.byName(hostName).executionEnvironment());
-                FileObject f;
-                Project prj;
-                int pos = path.indexOf(" "); // NOI18N
-                while (pos != -1) {                
-                    f = CndFileUtils.toFileObject(fs, path.substring(0, pos));
-                    if (f.isValid()) {
-                        prj = FileOwnerQuery.getOwner(f);
-                        if (prj != null) {
-                            if (((ProjectCBItem) item).getProject().equals(prj)) {
-                                return (ProjectCBItem) item;
-                            }
-                        }
-                    }
-                    pos = path.indexOf(" ", pos+1); // NOI18N
-                }
-                f = CndFileUtils.toFileObject(fs, path);
-                if (f.isValid()) {
-                    prj = FileOwnerQuery.getOwner(f);
-                    if (prj != null) {
-                        if (((ProjectCBItem) item).getProject().equals(prj)) {
-                                return (ProjectCBItem) item;
-                            }
-                        }
+                if (((ProjectCBItem) item).getProject().equals(prj)) {
+                        return (ProjectCBItem) item;
                 }
             }
         }

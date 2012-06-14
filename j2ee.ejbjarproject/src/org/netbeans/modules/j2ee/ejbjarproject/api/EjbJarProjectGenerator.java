@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.modules.SpecificationVersion;
@@ -662,7 +663,7 @@ public class EjbJarProjectGenerator {
                                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String finalPlatformName = platformName;
                                 if (finalPlatformName == null) {
-                                    finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
+                                    finalPlatformName = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName()).getDisplayName();
                                 }
 
                                 PlatformUiSupport.storePlatform(ep, updateHelper, EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.java.source.indexing;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,7 +54,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,13 +94,11 @@ import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
-import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.*;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -111,10 +110,14 @@ import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.awt.HtmlBrowser;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
@@ -238,7 +241,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                             round++;
                         } else {
                             toCompileRound = new ArrayList<CompileTuple>(compileResult.aptGenerated.size());
-                            for (CompileTuple ct : compileResult.aptGenerated) {
+                            final SPIAccessor accessor = SPIAccessor.getInstance();
+                            for (javax.tools.FileObject fo : compileResult.aptGenerated) {
+                                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
+                                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
+                                CompileTuple ct = new CompileTuple(pfo, i, false, true, true);
                                 toCompileRound.add(ct);
                                 toCompile.add(ct);
                             }
@@ -246,6 +253,31 @@ public class JavaCustomIndexer extends CustomIndexer {
                         }
                     }
                     finished = compileResult.success;
+                    
+                    if (compileResult.lowMemory) {
+                        final String rootName = FileUtil.getFileDisplayName(context.getRoot());
+                        JavaIndex.LOG.log(
+                            Level.WARNING,
+                            "Not enough memory to compile folder: {0}.",     //NOI18N
+                            rootName);
+                        NotificationDisplayer.getDefault().notify(
+                            NbBundle.getMessage(JavaCustomIndexer.class, "TITLE_LowMemory"),
+                            ImageUtilities.loadImageIcon("org/netbeans/modules/java/resources/error.png", false),
+                            NbBundle.getMessage(JavaCustomIndexer.class, "MSG_LowMemory", rootName),
+                            new ActionListener() {
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    try {
+                                        final URL url = new URL(NbBundle.getMessage(JavaCustomIndexer.class, "URL_LowMemory"));
+                                        HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
+                                    } catch (MalformedURLException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                            },
+                            NotificationDisplayer.Priority.HIGH);
+                    }
+                    
                 } finally {
                     try {
                         javaContext.finish();
@@ -319,7 +351,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             return Collections.<CompileTuple>emptySet();
         }
         try {
-            final File root = new File (URI.create(rootURL.toString()));
+            final File root = Utilities.toFile(URI.create(rootURL.toString()));
             return VirtualSourceProviderQuery.translate(virtualSources, root);
         } catch (IllegalArgumentException e) {
             //Called on non local fs => not supported, log and ignore.
@@ -332,7 +364,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
-                File file = new File(indexable.getURL().toURI().getPath());
+                File file = Utilities.toFile(indexable.getURL().toURI());
                 return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
             } catch (Exception ex) {
             } catch (AssertionError ae) {
@@ -398,7 +430,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     for (String fileName : readRSFile(file)) {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
-                            sourceRelativeURLPairs.add(Pair.of(fileName,f.toURI().toURL()));
+                            sourceRelativeURLPairs.add(Pair.of(fileName,Utilities.toURI(f).toURL()));
                         }
                         fmTx.delete(f);
                     }
@@ -548,16 +580,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             @NonNull final Context context,
             @NonNull JavaParsingContext javaContext,
             @NonNull final CompileTuple source,
-            @NonNull final Set<CompileTuple> aptGenerated) throws IOException {
+            @NonNull final Set<javax.tools.FileObject> aptGenerated) throws IOException {
         boolean ret = false;
         final Set<javax.tools.FileObject> genSources = javaContext.getProcessorGeneratedFiles().getGeneratedSources(source.indexable.getURL());
         if (genSources != null) {
-            final SPIAccessor accessor = SPIAccessor.getInstance();
-            for (javax.tools.FileObject fo : genSources) {
-                final PrefetchableJavaFileObject pfo = (PrefetchableJavaFileObject) fo;
-                final Indexable i = accessor.create(new AptGeneratedIndexable(pfo));
-                ret |= aptGenerated.add(new CompileTuple(pfo, i, false, true, true));
-            }
+            ret |= aptGenerated.addAll(genSources);
         }
         return ret;
     }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
+import com.sun.xml.internal.ws.util.StringUtils;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,7 +53,8 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 
@@ -64,19 +66,29 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     private final Query query;
     private JPanel panel;
-    private List<TreeLabel> labels;
-    private List<LinkButton> buttons;
     private TreeLabel lblName;
     private LinkButton btnChanged;
     private LinkButton btnTotal;
     private QueryListener queryListener;
+    final Object LOCK = new Object();
+    private TreeLabel lblSeparator;
 
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
-        super(refresh, true, parent);
+        super(refresh, true, parent, query.getDisplayName());
         this.query = query;
         updateNodes();
         queryListener = new QueryListener();
         query.addPropertyChangeListener(queryListener);
+    }
+
+    @Override
+    protected List<Issue> load() {
+        if (isRefresh()) {
+            query.refresh();
+            updateNodes();
+            setRefresh(false);
+        }
+        return new ArrayList<Issue>(query.getIssues());
     }
 
     @Override
@@ -86,31 +98,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        if (isRefresh()) {
-            removeTaskListeners();
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        List<TaskNode> children = getFilteredTaskNodes();
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
-    }
-
-    @Override
-    void updateContent() {
-        updateNodes();
-        refreshChildren();
-    }
-
-    @Override
     void updateCounts() {
-        synchronized (UI_LOCK) {
-            if (btnTotal != null) {
-                btnTotal.setText(getTotalString());
-                btnChanged.setText(getChangedString());
-            }
+        if (panel != null) {
+            btnTotal.setText(getTotalString());
+            btnChanged.setText(getChangedString());
+            boolean showChanged = getChangedTaskCount() > 0;
+            lblSeparator.setVisible(showChanged);
+            btnChanged.setVisible(showChanged);
         }
     }
 
@@ -124,74 +118,76 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     @Override
-    boolean isLoaded() {
-        return true;
-    }
-
-    @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        synchronized (UI_LOCK) {
-            if (panel == null) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                labels = new ArrayList<TreeLabel>();
-                buttons = new ArrayList<LinkButton>();
-                lblName = new TreeLabel(query.getDisplayName());
-                panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                labels.add(lblName);
-
-                TreeLabel lbl = new TreeLabel("("); //NOI18N
-                labels.add(lbl);
-                addTotalCountComp(lbl);
-                panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-
-                btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(query));
-                panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                buttons.add(btnTotal);
-                addTotalCountComp(btnTotal);
-                lbl = new TreeLabel("|"); //NOI18N
-                panel.add(lbl, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
-                labels.add(lbl);
-                addChangedCountComp(lbl);
-                btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(query, Query.QueryMode.SHOW_NEW_OR_CHANGED)); //NOI18N
-                panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                buttons.add(btnChanged);
-                addChangedCountComp(btnChanged);
-
-                lbl = new TreeLabel(")"); //NOI18N
-                labels.add(lbl);
-                addTotalCountComp(lbl);
-                panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                panel.add(getLblProgress(), new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                getLblProgress().setVisible(false);
-                labels.add(getLblProgress());
-
-                panel.add(new JLabel(), new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-            }
-
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        super.configure(component, foreground, background, isSelected, hasFocus);
+        if (panel != null) {
             if (DashboardViewer.getInstance().containsActiveTask(this)) {
                 lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
             } else {
                 lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
             }
-            for (JLabel lbl : labels) {
-                lbl.setForeground(foreground);
-            }
-            for (LinkButton lb : buttons) {
-                lb.setForeground(foreground, isSelected);
-            }
-            return panel;
         }
     }
 
     @Override
+    protected JComponent createComponent(List<Issue> data) {
+        panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        synchronized (LOCK) {
+            labels.clear();
+            buttons.clear();
+
+            lblName = new TreeLabel(query.getDisplayName());
+            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            labels.add(lblName);
+
+            TreeLabel lbl = new TreeLabel("("); //NOI18N
+            labels.add(lbl);
+            panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
+
+            btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(this));
+            panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            buttons.add(btnTotal);
+
+            boolean showChanged = getChangedTaskCount() > 0;
+            lblSeparator = new TreeLabel("|"); //NOI18N
+            lblSeparator.setVisible(showChanged);
+            panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+            labels.add(lblSeparator);
+
+            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(Query.QueryMode.SHOW_NEW_OR_CHANGED, this)); //NOI18N
+            btnChanged.setVisible(showChanged);
+            panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            buttons.add(btnChanged);
+
+
+            lbl = new TreeLabel(")"); //NOI18N
+            labels.add(lbl);
+            panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+            panel.add(new JLabel(), new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        }
+        return panel;
+    }
+
+    @Override
     protected Action getDefaultAction() {
-        return new OpenQueryAction(query);
+        return new OpenQueryAction(this);
     }
 
     @Override
     public Action[] getPopupActions() {
-        List<Action> actions = Actions.getQueryPopupActions(this);
+        List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        QueryNode[] queryNodes = new QueryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof QueryNode) {
+                queryNodes[i] = (QueryNode) treeListNode;
+            } else {
+                return null;
+            }
+        }
+        List<Action> actions = Actions.getQueryPopupActions(queryNodes);
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -229,12 +225,22 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         return this.query.getDisplayName();
     }
 
+    @Override
+    boolean isTaskLimited() {
+        return DashboardSettings.getInstance().isTasksLimitQuery();
+    }
+
     private class QueryListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-                updateContent();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateContent();
+                    }
+                });
             }
         }
     }

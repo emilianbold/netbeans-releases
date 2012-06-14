@@ -66,9 +66,10 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import static org.netbeans.modules.maven.actions.scm.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Anuradha G
@@ -78,9 +79,11 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
     private Lookup lookup;
     private Lookup.Result<MavenProject> result;
 
+    @Messages("LBL_Checkout=Check Out Sources")
+    @SuppressWarnings("LeakingThisInConstructor")
     public CheckoutAction(Lookup lkp) {
         this.lookup = lkp;
-        putValue(NAME, NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
+        putValue(NAME, LBL_Checkout());
         //TODO proper icon
         putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/actions/scm/update.png", true))); //NOI18N
         putValue("iconBase", "org/netbeans/modules/maven/actions/scm/update.png"); //NOI18N
@@ -107,7 +110,7 @@ public class CheckoutAction extends AbstractAction implements LookupListener {
         MavenProject project = prj.next();
 
         CheckoutUI checkoutUI = new CheckoutUI(project);
-        DialogDescriptor dd = new DialogDescriptor(checkoutUI,  NbBundle.getMessage(CheckoutAction.class, "LBL_Checkout"));
+        DialogDescriptor dd = new DialogDescriptor(checkoutUI,  LBL_Checkout());
         dd.setClosingOptions(new Object[]{
             checkoutUI.getCheckoutButton(),
             DialogDescriptor.CANCEL_OPTION

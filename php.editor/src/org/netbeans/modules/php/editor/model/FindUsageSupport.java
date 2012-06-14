@@ -41,13 +41,7 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -56,10 +50,10 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -71,6 +65,7 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public final class FindUsageSupport {
+
     private Set<FileObject> files;
     private ModelElement element;
     private ElementQuery.Index index;
@@ -82,10 +77,6 @@ public final class FindUsageSupport {
     private FindUsageSupport(ElementQuery.Index index, ModelElement element) {
         this.element = element;
         this.files = new LinkedHashSet<FileObject>();
-        String name = element.getName();
-        if (name.startsWith("$")) {//NOI18N
-            name = name.substring(1);
-        }
         this.index = index;
     }
 
@@ -100,7 +91,7 @@ public final class FindUsageSupport {
             return ElementFilter.forName(NameKind.exact(method.getName())).filter(inheritedByMethods);
         } else if (element instanceof MethodScope) {
             MethodScope method = (MethodScope) element;
-            TypeScope type = (TypeScope)method.getInScope();
+            TypeScope type = (TypeScope) method.getInScope();
             HashSet inheritedByMethods = new HashSet<MethodElement>();
             for (TypeElement nextType : index.getInheritedByTypes(type)) {
                 inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
@@ -110,7 +101,6 @@ public final class FindUsageSupport {
 
         return Collections.emptyList();
     }
-
 
     public Collection<TypeElement> subclasses() {
         if (element instanceof TypeElement) {
@@ -128,7 +118,8 @@ public final class FindUsageSupport {
 
     @CheckForNull
     public Collection<Occurence> occurences(FileObject fileObject) {
-        final Set<Occurence> retval = new TreeSet<Occurence>(new Comparator<Occurence>(){
+        final Set<Occurence> retval = new TreeSet<Occurence>(new Comparator<Occurence>() {
+
             @Override
             public int compare(Occurence o1, Occurence o2) {
                 return o1.getOccurenceRange().compareTo(o2.getOccurenceRange());
@@ -137,11 +128,12 @@ public final class FindUsageSupport {
         if (fileObject != null && fileObject.isValid()) {
             try {
                 ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
+
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         Result parameter = resultIterator.getParserResult();
                         if (parameter != null && parameter instanceof PHPParseResult) {
-                            Model model = ModelFactory.getModel((PHPParseResult)parameter);
+                            Model model = ModelFactory.getModel((PHPParseResult) parameter);
                             ModelVisitor modelVisitor = model.getModelVisitor();
                             retval.addAll(modelVisitor.getOccurence(element));
                         }
@@ -157,18 +149,18 @@ public final class FindUsageSupport {
     /**
      * @return the files
      */
-    public  Set<FileObject> inFiles() {
-        synchronized(this) {
+    public Set<FileObject> inFiles() {
+        synchronized (this) {
             if (this.files.isEmpty()) {
                 this.files.add(element.getFileObject());
                 String name = element.getName();
                 final PhpElementKind kind = element.getPhpElementKind();
                 if (kind.equals(PhpElementKind.VARIABLE) || kind.equals(PhpElementKind.FIELD)) {
-                  name = name.startsWith("$") ? name.substring(1) : name;
+                    name = name.startsWith("$") ? name.substring(1) : name;
                 } else if (kind.equals(PhpElementKind.METHOD) && MethodElement.CONSTRUCTOR_NAME.equalsIgnoreCase(name)) {
                     name = element.getInScope().getName();
                 }
-                for(FileObject fo : index.getLocationsForIdentifiers(name)) {
+                for (FileObject fo : index.getLocationsForIdentifiers(name)) {
                     FileType fileType = PhpSourcePath.getFileType(fo);
                     if (fileType == PhpSourcePath.FileType.SOURCE
                             || fileType == PhpSourcePath.FileType.TEST) {
@@ -186,6 +178,4 @@ public final class FindUsageSupport {
     public ModelElement elementToFind() {
         return element;
     }
-
-
 }

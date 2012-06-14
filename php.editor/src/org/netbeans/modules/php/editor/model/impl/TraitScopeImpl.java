@@ -41,21 +41,14 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.ClassConstantElement;
-import org.netbeans.modules.php.editor.model.FieldElement;
-import org.netbeans.modules.php.editor.model.IndexScope;
-import org.netbeans.modules.php.editor.model.MethodScope;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 
 /**
@@ -144,6 +137,54 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     @Override
     public Collection<QualifiedName> getUsedTraits() {
         return usedTraits;
+    }
+
+    @Override
+    public Collection<? extends TraitScope> getTraits(){
+        Collection<TraitScope> result = new ArrayList<TraitScope>();
+        for (QualifiedName qualifiedName : getUsedTraits()) {
+            result.addAll(IndexScopeImpl.getTraits(qualifiedName, this));
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isSuperTypeOf(final TypeScope subType) {
+        boolean result = false;
+        if (subType.isTraited()) {
+            for (TraitScope traitScope : ((TraitedScope) subType).getTraits()) {
+                if (traitScope.equals(this)) {
+                    result = true;
+                } else {
+                    result = isSuperTypeOf(traitScope);
+                }
+                if (result == true) {
+                    break;
+                }
+            }
+            if (result == false && subType.isClass()) {
+                result = subType.isSubTypeOf(this);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isSubTypeOf(final TypeScope superType) {
+        boolean result = false;
+        if (superType.isTrait()) {
+            for (TraitScope traitScope : getTraits()) {
+                if (traitScope.equals(superType)) {
+                    result = true;
+                } else {
+                    result = traitScope.isSubTypeOf(superType);
+                }
+                if (result == true) {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
 }

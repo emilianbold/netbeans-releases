@@ -58,16 +58,18 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
  */
 final class APTFortranFilter extends APTBaseLanguageFilter {
 
+    private final String flavor;
     private Map<Integer,Integer> filter = new HashMap<Integer,Integer>();
 
-    public APTFortranFilter() {
+    public APTFortranFilter(String flavor) {
         super(true);
         initialize();
+        this.flavor = flavor;
     }
 
     @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
-        return new APTFortranFilterEx().getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream)));
+        return new APTFortranFilterEx(flavor).getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream)));
     }
 
     private void initialize() {
@@ -227,10 +229,14 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
         filter(APTTokenTypes.STAR, APTTokenTypes.T_ASTERISK);
         filter(APTTokenTypes.COMMA, APTTokenTypes.T_COMMA);
         filter(APTTokenTypes.CHAR_LITERAL, APTTokenTypes.T_CHAR_CONSTANT);
-        filter(APTTokenTypes.EQUAL, APTTokenTypes.T_EQUIVALENCE);
+        filter(APTTokenTypes.EQUAL, APTTokenTypes.T_EQV);
+        filter(APTTokenTypes.NOTEQUAL, APTTokenTypes.T_NEQV);
         filter(APTTokenTypes.ASSIGNEQUAL, APTTokenTypes.T_EQUALS);
         filter(APTTokenTypes.SCOPE, APTTokenTypes.T_COLON_COLON);
         filter(APTTokenTypes.LESSTHAN, APTTokenTypes.T_LESSTHAN);
+        filter(APTTokenTypes.GREATERTHAN, APTTokenTypes.T_GREATERTHAN);
+        filter(APTTokenTypes.LESSTHANOREQUALTO, APTTokenTypes.T_LESSTHAN_EQ);
+        filter(APTTokenTypes.GREATERTHANOREQUALTO, APTTokenTypes.T_GREATERTHAN_EQ);        
         filter(APTTokenTypes.PLUS, APTTokenTypes.T_PLUS);
         filter(APTTokenTypes.MINUS, APTTokenTypes.T_MINUS);
         filter(APTTokenTypes.DIVIDE, APTTokenTypes.T_SLASH);

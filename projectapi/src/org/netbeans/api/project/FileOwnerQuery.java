@@ -44,10 +44,7 @@
 
 package org.netbeans.api.project;
 
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +101,7 @@ public class FileOwnerQuery {
             Project p = q.getOwner(file);
             if (p != null) {
                 LOG.log(Level.FINE, "getOwner({0}) -> {1} @{2} from {3}", new Object[] {file, p, p.hashCode(), q});
-                return p;
+                return p == UNOWNED ? null : p;
             }
         }
         LOG.log(Level.FINE, "getOwner({0}) -> nil", file);
@@ -113,44 +110,29 @@ public class FileOwnerQuery {
 
     /**
      * Find the project, if any, which "owns" the given URI.
-     * @param uri the uri to the file (generally on disk); must be absolute and not opaque
+     * @param uri the URI to the file (generally on disk); must be absolute and not opaque (though {@code jar}-protocol URIs are unwrapped as a convenience)
      * @return a project which contains it, or null if there is no known project containing it
      * @throws IllegalArgumentException if the URI is relative or opaque
      */
     public static Project getOwner(URI uri) {
-        if (uri.isOpaque() && "jar".equalsIgnoreCase(uri.getScheme())) {    //NOI18N
-            // XXX the following is bogus; should use FileUtil methods
-            String schemaPart = uri.getSchemeSpecificPart();
-            int index = schemaPart.lastIndexOf ('!');                       //NOI18N
-            if (index>0) {
-                schemaPart = schemaPart.substring(0,index);
-            }
-            // XXX: schemaPart can contains spaces. create File first and 
-            // then convert it to URI.
+        if ("jar".equals(uri.getScheme())) {
             try {
-                //#85137 - # character in uri path seems to cause problems, because it's not escaped. test added.
-                schemaPart = schemaPart.replace("#", "%23");
-                uri = new URI(schemaPart);
-            } catch (URISyntaxException ex) {
-                try {
-                    URL u = new URL(schemaPart);
-                    // XXX bad to ever use new File(URL.getPath()):
-                    uri = new File(u.getPath()).toURI();
-                } catch (MalformedURLException ex2) {
-                    ex2.printStackTrace();
-                    assert false : schemaPart;
-                    return null;
+                URL jar = FileUtil.getArchiveFile(uri.toURL());
+                if (jar != null) {
+                    uri = jar.toURI();
                 }
+            } catch (Exception x) {
+                LOG.log(Level.INFO, null, x);
             }
         }
-        else if (!uri.isAbsolute() || uri.isOpaque()) {
+        if (!uri.isAbsolute() || uri.isOpaque()) {
             throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
         }
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(uri);
             if (p != null) {
                 LOG.log(Level.FINE, "getOwner({0}) -> {1} from {2}", new Object[] {uri, p, q});
-                return p;
+                return p == UNOWNED ? null : p;
             }
         }
         LOG.log(Level.FINE, "getOwner({0}) -> nil", uri);
@@ -164,6 +146,31 @@ public class FileOwnerQuery {
     static void reset() {
         SimpleFileOwnerQueryImplementation.reset();
     }
+    
+    /**
+     * Pseudoproject indicating just that a directory is definitely unowned. May
+     * be returned by either {@code getOwner} overload of
+     * {@link FileOwnerQueryImplementation}, in which case null is returned from
+     * either {@code getOwner} overload here. May also be passed to either
+     * {@code markExternalOwner} overload, in which case the standard directory
+     * search will be pruned at this point with no result.
+     *
+     * @since 1.46
+     */
+    public static final Project UNOWNED = new Project() {
+        @Override
+        public FileObject getProjectDirectory() {
+            return FileUtil.createMemoryFileSystem().getRoot();
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+        @Override public String toString() {
+            return "UNOWNED";
+        }
+    };
     
     /**
      * Simplest algorithm for marking external file owners, which just keeps
@@ -188,6 +195,7 @@ public class FileOwnerQuery {
      * @param owner a project which should be considered to own that folder tree
      *              (any prior marked external owner is overridden),
      *              or null to cancel external ownership for this folder root
+     *              or {@link #UNOWNED} if the directory is known definitely to be unowned
      * @param algorithm an algorithm to use for retaining this information;
      *                  currently may only be {@link #EXTERNAL_ALGORITHM_TRANSIENT}
      * @throws IllegalArgumentException if the root or owner is null, if an unsupported

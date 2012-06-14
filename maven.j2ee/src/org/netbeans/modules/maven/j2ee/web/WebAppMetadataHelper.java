@@ -63,6 +63,7 @@ public class WebAppMetadataHelper {
             throws MetadataModelException, IOException
     {
         return mm.runReadAction(new MetadataModelAction<WebAppMetadata, List<ServletInfo>>() {
+            @Override
             public List<ServletInfo> run(WebAppMetadata metadata) throws Exception {
                 return metadata.getServlets();
             }

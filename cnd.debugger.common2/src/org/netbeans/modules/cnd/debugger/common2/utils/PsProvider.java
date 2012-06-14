@@ -108,6 +108,10 @@ public abstract class PsProvider {
         public int pidColumnIdx() {
             return pidColumnIndex();
         }
+        
+        public FileMapper getFileMapper() {
+            return PsProvider.this.getFileMapper();
+        }
 
 	/**
 	 * filter lines and convert to columns
@@ -431,6 +435,7 @@ public abstract class PsProvider {
      * Specialization of PsProvider for Windows
      */
     static class WindowsPsProvider extends PsProvider {
+        private FileMapper fileMapper = FileMapper.getDefault();
 
 	private final static String header_str_windows[] = {
 	    "PID", // NOI18N
@@ -488,13 +493,21 @@ public abstract class PsProvider {
         
         private String getUtilityPath(String util) {
             File file = new File(CompilerSetUtils.getCygwinBase() + "/bin", util + ".exe"); // NOI18N
-            if (!file.exists()) {
+            if (file.exists()) {
+                fileMapper = FileMapper.getByType(FileMapper.Type.CYGWIN);
+            } else {
+                fileMapper = FileMapper.getByType(FileMapper.Type.MSYS);
                 file = new File(CompilerSetUtils.getCommandFolder(null), util + ".exe"); // NOI18N
             }
             if (file.exists()) {
                 return file.getAbsolutePath();
             }
             return util;
+        }
+
+        @Override
+        public FileMapper getFileMapper() {
+            return fileMapper;
         }
     }
 
@@ -548,7 +561,12 @@ public abstract class PsProvider {
     protected int firstPosition() {
         return 0;
     }
-
+    
+    // return file mapper (important only on Windows)
+    public FileMapper getFileMapper() {
+        return FileMapper.getDefault();
+    }
+    
     protected final ExecutionEnvironment exEnv;
 
     private PsProvider(Host host) {

@@ -47,7 +47,7 @@ import java.util.List;
 import org.openide.util.Lookup;
 
 /**
- * This service provides defualt include path and macros.
+ * This service provides default include path and macros.
  * @author Leonid Mesnik
  */
 public abstract class DefaultSystemSettings {
@@ -76,24 +76,24 @@ public abstract class DefaultSystemSettings {
      * Return empty list if language is neither C nor C++ or no default compilers were found.
      * @return Unmodifiable list of strings or empty list.
      */
-    public abstract List<String> getSystemIncludes(NativeFileItem.Language language);
+    public abstract List<String> getSystemIncludes(NativeFileItem.Language language, NativeProject project);
     
     /**
      * Obtain a list of default system macros for given language. 
      * Return empty list if language is neither C nor C++ or no default compilers were found.
      * @return Unmodifiable list of strings or empty list.
      */
-    public abstract List<String> getSystemMacros(NativeFileItem.Language language);
+    public abstract List<String> getSystemMacros(NativeFileItem.Language language, NativeProject project);
 
     private static final class Empty extends DefaultSystemSettings {
 
         @Override
-        public List<String> getSystemIncludes(NativeFileItem.Language language) {
+        public List<String> getSystemIncludes(NativeFileItem.Language language, NativeProject project) {
             return Collections.emptyList();
         }
       
         @Override
-        public List<String> getSystemMacros(NativeFileItem.Language language) {
+        public List<String> getSystemMacros(NativeFileItem.Language language, NativeProject project) {
             return Collections.emptyList();
         }
       

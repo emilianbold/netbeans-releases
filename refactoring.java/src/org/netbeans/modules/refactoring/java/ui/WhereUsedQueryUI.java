@@ -104,8 +104,12 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
             elementHandle = ElementHandle.create(el);
         }
-        name = el.getSimpleName().toString();
         kind = el.getKind();
+        if(kind == ElementKind.CONSTRUCTOR) {
+            name = el.getEnclosingElement().getSimpleName().toString();
+        } else {
+            name = el.getSimpleName().toString();
+        }
         this.classes = classes;
     }
 
@@ -189,7 +193,16 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
         if (panel != null && kind != null) {
             switch (kind) {
-                case CONSTRUCTOR:
+                case CONSTRUCTOR: {
+                    if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedAndOverriders", name);
+                    } else if (panel.isMethodFindUsages()) {
+                        desc = getString("DSC_WhereUsed",  name);
+                    } else if (panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedMethodOverriders",  name);
+                    }
+                    break;
+                }
                 case METHOD: {
                     if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
                         desc = getString("DSC_WhereUsedAndOverriders", panel.getMethodDeclaringClass() + '.' + name);

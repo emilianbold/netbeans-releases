@@ -81,6 +81,14 @@ public class OverrideAnnotationAction extends AbstractAction {
     public OverrideAnnotationAction() {
         putValue(NAME, NbBundle.getMessage(OverrideAnnotationAction.class,
                                           "CTL_IsOverriddenAnnotationAction")); //NOI18N
+        putValue("supported-annotation-types", new String[] { // NOI18N
+            "org-netbeans-modules-editor-annotations-is_overridden", // NOI18N
+            "org-netbeans-modules-editor-annotations-overrides", // NOI18N
+            "org-netbeans-modules-cnd-navigation-specializes", // NOI18N
+            "org-netbeans-modules-cnd-navigation-is_specialized", // NOI18N
+            "org-netbeans-modules-cnd-navigation-extended_specializes", // NOI18N
+            "org-netbeans-modules-cnd-navigation-extended_is_specialized" // NOI18N
+        });
         setEnabled(true);
     }
 

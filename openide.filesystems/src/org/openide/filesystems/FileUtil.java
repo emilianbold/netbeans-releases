@@ -1007,7 +1007,7 @@ public final class FileUtil extends Object {
             }
 
             if ((fileURL != null) && "file".equals(fileURL.getProtocol())) {
-                retVal = new File(URI.create(fileURL.toExternalForm()));
+                retVal = Utilities.toFile(URI.create(fileURL.toExternalForm()));
             }
             if (retVal != null) {
                 retVal = normalizeFile(retVal);
@@ -1060,13 +1060,7 @@ public final class FileUtil extends Object {
 
         FileObject retVal = null;
         try {
-            URL url = file.toURI().toURL();
-
-            if ((url.getAuthority() != null) &&
-                    (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
-                return null;
-            }
-
+            URL url = Utilities.toURI(file).toURL();
             retVal = URLMapper.findFileObject(url);
 
             /*probably temporary piece of code to catch the cause of #46630*/
@@ -1110,15 +1104,7 @@ public final class FileUtil extends Object {
         }
 
         try {
-            URL url = (file.toURI().toURL());
-
-            if (
-                (url.getAuthority() != null) &&
-                    (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))
-            ) {
-                return null;
-            }
-
+            URL url = (Utilities.toURI(file).toURL());
             retVal = URLMapper.findFileObjects(url);
         } catch (MalformedURLException e) {
             retVal = null;
@@ -1780,6 +1766,7 @@ public final class FileUtil extends Object {
         File ret;
         if (normalized == null) {
             ret = normalizeFileImpl(file);
+            assert !ret.getName().equals(".") : "Original file " + file + " normalized: " + ret;
             normalizedPaths.put(unnormalized, ret.getPath());
         } else if (normalized.equals(unnormalized)) {
             ret = file;
@@ -1814,7 +1801,7 @@ public final class FileUtil extends Object {
     private static File normalizeFileOnUnixAlike(File file) {
         // On Unix, do not want to traverse symlinks.
         // URI.normalize removes ../ and ./ sequences nicely.
-        file = new File(file.toURI().normalize()).getAbsoluteFile();
+        file = Utilities.toFile(Utilities.toURI(file).normalize()).getAbsoluteFile();
         while (file.getAbsolutePath().startsWith("/../")) { // NOI18N
             file = new File(file.getAbsolutePath().substring(3));
         }
@@ -1830,7 +1817,7 @@ public final class FileUtil extends Object {
 
         try {
             // URI.normalize removes ../ and ./ sequences nicely.            
-            File absoluteFile = new File(file.toURI().normalize());
+            File absoluteFile = Utilities.toFile(Utilities.toURI(file).normalize());
             File canonicalFile = file.getCanonicalFile();
             String absolutePath = absoluteFile.getAbsolutePath();
             if (absolutePath.equals("/..")) { // NOI18N
@@ -2040,9 +2027,15 @@ public final class FileUtil extends Object {
                     }
                     return new URL(jarPath);
 
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(Exceptions.attachMessage(mue,
-                    "URL: " + url.toExternalForm() +" jarPath: " + jarPath));   //NOI18N
+                } catch (MalformedURLException mue) {                    
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL ({0}): {1}, jarPath: {2}", //NOI18N
+                        new Object[] {
+                            mue.getMessage(),
+                            url.toExternalForm(),
+                            jarPath
+                        });
                 }
             }
         }
@@ -2158,7 +2151,7 @@ public final class FileUtil extends Object {
             do {
                 wasDir = entry.isDirectory();
                 LOG.finest("urlForArchiveOrDir:toURI:entry");   //NOI18N
-                u = entry.toURI().toURL();
+                u = Utilities.toURI(entry).toURL();
                 isDir = entry.isDirectory();
             } while (wasDir ^ isDir);
             if (isArchiveFile(u) || entry.isFile() && entry.length() < 4) {
@@ -2193,9 +2186,9 @@ public final class FileUtil extends Object {
     public static File archiveOrDirForURL(URL entry) {
         String u = entry.toString();
         if (u.startsWith("jar:file:") && u.endsWith("!/")) { // NOI18N
-            return new File(URI.create(u.substring(4, u.length() - 2)));
+            return Utilities.toFile(URI.create(u.substring(4, u.length() - 2)));
         } else if (u.startsWith("file:")) { // NOI18N
-            return new File(URI.create(u));
+            return Utilities.toFile(URI.create(u));
         } else {
             return null;
         }

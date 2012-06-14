@@ -600,8 +600,15 @@ public class Utils {
     }    
         
     public static Line getEditorLine(CodeProfilingPoint.Location location) {
+        if (location == null) {
+            return null;
+        }
+        
         // URL
         String url = location.getFile();
+        if (url == null) {
+            return null;
+        }
 
         // FileObject
         FileObject file = null;

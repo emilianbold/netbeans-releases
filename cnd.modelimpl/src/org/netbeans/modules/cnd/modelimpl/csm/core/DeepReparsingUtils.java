@@ -135,9 +135,15 @@ public final class DeepReparsingUtils {
     }
 
     static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
-        if (newSignature.equals(lastFileBasedSignature)) {
+        FileContentSignature.ComparisonResult compareResult = FileContentSignature.compare(newSignature, lastFileBasedSignature);
+        if (compareResult == FileContentSignature.ComparisonResult.SAME) {
             if (TRACE) {
                 LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for {0}", fileImpl.getAbsolutePath());
+            }
+            return true;
+        } else if (fileImpl.isSourceFile() && compareResult == FileContentSignature.ComparisonResult.FILE_LOCAL_CHANGE) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for changed src {0}", fileImpl.getAbsolutePath());
             }
             return true;
         } else if (TRACE) {
@@ -186,7 +192,7 @@ public final class DeepReparsingUtils {
             }
         } else {
             if (scheduleParsing) {
-                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlers(changedFile), ParserQueue.Position.HEAD);
+                ParserQueue.instance().add(changedFile, changedFileProject.getPreprocHandlersForParse(changedFile), ParserQueue.Position.HEAD);
             }
         }
     }
@@ -207,7 +213,7 @@ public final class DeepReparsingUtils {
                 coherence.addAll(project.getGraph().getCoherenceFiles(fileImpl).getCoherenceFilesUids());
             } else {
                 if (scheduleParsing) {
-                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlers(fileImpl), ParserQueue.Position.HEAD);
+                    ParserQueue.instance().add(fileImpl, project.getPreprocHandlersForParse(fileImpl), ParserQueue.Position.HEAD);
                 }
             }
         }
@@ -419,7 +425,7 @@ public final class DeepReparsingUtils {
         ProjectBase project = fileImpl.getProjectImpl(true);
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(invalidateCache);
-        ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlers(), ParserQueue.Position.HEAD);
+        ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlersForParse(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse " + fileImpl.getAbsolutePath() + " from " + project); // NOI18N
         }
