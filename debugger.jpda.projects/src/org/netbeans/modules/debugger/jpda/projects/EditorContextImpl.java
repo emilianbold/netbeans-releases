@@ -95,6 +95,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -1372,18 +1373,24 @@ public class EditorContextImpl extends EditorContext {
         for (VariableElement param : elm.getParameters()) {
             TypeMirror pt = param.asType();
             pt = types.erasure(pt);
-            String paramType;
-            if (pt instanceof DeclaredType) {
-                paramType = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) pt).asElement());
-            } else {
-                paramType = pt.toString();
-            }
+            String paramType = getTypeBinaryName(pt);
             signature.append(getSignature(paramType));
         }
         signature.append(')');
-        String returnType = types.erasure(elm.getReturnType()).toString();
+        String returnType = getTypeBinaryName(types.erasure(elm.getReturnType()));
         signature.append(getSignature(returnType));
         return signature.toString();
+    }
+    
+    private static String getTypeBinaryName(TypeMirror t) {
+        if (t instanceof ArrayType) {
+            TypeMirror ct = ((ArrayType) t).getComponentType();
+            return getTypeBinaryName(ct)+"[]";
+        }
+        if (t instanceof DeclaredType) {
+            return ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) t).asElement());
+        }
+        return t.toString();
     }
 
     private static String getSignature(String javaType) {
@@ -1403,6 +1410,8 @@ public class EditorContextImpl extends EditorContext {
             return "F";
         } else if (javaType.equals("double")) {
             return "D";
+        } else if (javaType.equals("void")) {
+            return "V";
         } else if (javaType.endsWith("[]")) {
             return "["+getSignature(javaType.substring(0, javaType.length() - 2));
         } else {
