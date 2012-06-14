@@ -79,6 +79,8 @@ class GdbVariable extends Variable {
     private boolean dynamic = false;
     private DisplayHint displayHint = DisplayHint.NONE;
     
+    public static final String HAS_MORE = "has_more";   //NOI18N
+    
     public GdbVariable(GdbDebuggerImpl debugger, ModelChangeDelegator updater,
 		       Variable parent,
 		       String name, String type, String value,
@@ -234,12 +236,21 @@ class GdbVariable extends Variable {
         return childrenRequested;
     }
     
-    public void stepChildrenRequestedCount() {
+    public int incrementChildrenRequestedCount() {
         this.childrenRequested += REQUEST_STEP;
+        return childrenRequested;
     }
     
     public void resetChildrenRequestedCount() {
         this.childrenRequested = 0;
+    }
+    
+    public void setHasMore(String value) {
+        if (value == null || value.isEmpty()) {
+            hasMore = false;
+        }
+            
+        hasMore = !value.equals("0");  //NOI18N
     }
     
     @Override
@@ -353,10 +364,10 @@ class GdbVariable extends Variable {
         if (dynamicVal != null) {
             setDynamic(dynamicVal.asConst().value());
             setDisplayHint(results.getConstValue("displayhint")); //NOI18N
-            String hasMoreVal = results.getConstValue("has_more"); //NOI18N
+            String hasMoreVal = results.getConstValue(HAS_MORE);
             if (!hasMoreVal.isEmpty()) {
                 numchild_l = hasMoreVal;
-                hasMore = !hasMoreVal.equals("0"); // NOI18N
+                setHasMore(hasMoreVal);
             } else {
                 switch (displayHint) {
                     case ARRAY:
@@ -384,13 +395,12 @@ class GdbVariable extends Variable {
                 setDynamic(item.value().asConst().value());
             } else if (item.matches("displayhint")) { //NOI18N
                 setDisplayHint(item.value().asConst().value());
-            } else if (item.matches("has_more")) { //NOI18N
-                if (!"0".equals(item.value().asConst().value())) { //NOI18N
+            } else if (item.matches(HAS_MORE)) {
+                setHasMore(item.value().asConst().value());
+                if (hasMore) {
                     setNumChild(item.value().asConst().value());
                     setChildren(null, false);
-                    hasMore = true;
                 }
-                hasMore = false;
             } else if (item.matches("new_children")) { //NOI18N
                 //TODO: can update new children from here
             }
