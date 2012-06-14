@@ -735,9 +735,9 @@ NetBeans.repaintGlassPane = function() {
         ctx.canvas.height = height;
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = "#0000FF";
-        this.paintElements(ctx, NetBeans.selection);
+        NetBeans.paintElements(ctx, NetBeans.selection);
         ctx.globalAlpha = 0.25;
-        this.paintElements(ctx, NetBeans.highlight);
+        NetBeans.paintElements(ctx, NetBeans.highlight);
     } else {
         console.log('canvas.getContext not supported!');
     }
