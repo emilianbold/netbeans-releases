@@ -905,8 +905,17 @@ public final class LayoutInterval implements LayoutConstants {
         int max = interval.getMaximumSize();
         int pref = interval.getPreferredSize();
         assert interval.isGroup() || max != NOT_EXPLICITLY_DEFINED;
-        return (max != pref && max != USE_PREFERRED_SIZE)
-               || max == NOT_EXPLICITLY_DEFINED;
+        if ((max != pref && max != USE_PREFERRED_SIZE) || max == NOT_EXPLICITLY_DEFINED) {
+            if (interval.isComponent()) {
+                LayoutComponent comp = interval.getComponent();
+                int dimension = comp.getLayoutInterval(HORIZONTAL) == interval ? HORIZONTAL : VERTICAL;
+                if (comp.isLinkSized(dimension)) {
+                    return false; // components with linked size actually can't resize
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -52,7 +52,8 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  */
 @ProjectServiceProvider(service = RecommendedTemplates.class, projectType = {
     "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-web-project"
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-maven"
 })
 public class RecommendedTemplatesImpl implements RecommendedTemplates {
 
