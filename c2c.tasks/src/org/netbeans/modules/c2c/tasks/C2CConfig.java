@@ -135,7 +135,7 @@ public class C2CConfig {
         String[] values = value.split(DELIMITER);
         assert values.length >= 2;
         String parametersString = values[0];
-        return new C2CQuery(queryName, repository, parametersString, true, true);
+        return null; // XXX new C2CQuery(queryName, repository, parametersString, true, true);
     }
 
     public String getUrlParams(C2CRepository repository, String queryName) {
