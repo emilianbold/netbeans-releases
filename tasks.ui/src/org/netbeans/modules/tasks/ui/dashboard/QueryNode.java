@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
+import com.sun.xml.internal.ws.util.StringUtils;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -234,7 +235,12 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-                updateContent();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateContent();
+                    }
+                });
             }
         }
     }
