@@ -139,4 +139,20 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("F^oo::CON;");
     }
 
+    public void testAliases_01() throws Exception {
+        findUsages("use Foo\\Bar\\FB as A^li;");
+    }
+
+    public void testAliases_02() throws Exception {
+        findUsages("* @param A^li $param");
+    }
+
+    public void testAliases_03() throws Exception {
+        findUsages("function functionName(A^li $param) {");
+    }
+
+    public void testAliases_04() throws Exception {
+        findUsages("A^li::CON;");
+    }
+
 }
