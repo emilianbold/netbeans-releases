@@ -6,14 +6,14 @@ Position: BEGIN: 95 END: 103
 Display text: <font color=#000000>$f-></font><b>inMethod</b><font color=#000000>();</font>
 File name: index.php
 Name: inMethod
-Position: BEGIN: 249 END: 257
+Position: BEGIN: 248 END: 256
 
 Display text: <font color=#000000>$retFoo-></font><b>inMethod</b><font color=#000000>();</font>
 File name: index.php
 Name: inMethod
-Position: BEGIN: 313 END: 321
+Position: BEGIN: 312 END: 320
 
 Display text: <font color=#000000>$retFoo2-></font><b>inMethod</b><font color=#000000>();</font>
 File name: index.php
 Name: inMethod
-Position: BEGIN: 380 END: 388
+Position: BEGIN: 379 END: 387
