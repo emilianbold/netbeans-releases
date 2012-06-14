@@ -155,4 +155,28 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("A^li::CON;");
     }
 
+    public void testFields_01() throws Exception {
+        findUsages("const C^ON = 1;");
+    }
+
+    public void testFields_02() throws Exception {
+        findUsages("public static $st^Field;");
+    }
+
+    public void testFields_03() throws Exception {
+        findUsages("public $pub^Field;");
+    }
+
+    public void testFields_04() throws Exception {
+        findUsages("Foo::$st^Field;");
+    }
+
+    public void testFields_05() throws Exception {
+        findUsages("Foo::C^ON;");
+    }
+
+    public void testFields_06() throws Exception {
+        findUsages("$f->pub^Field;");
+    }
+
 }
