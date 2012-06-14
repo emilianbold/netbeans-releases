@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -77,8 +76,6 @@ public class DOM {
     private Node documentNode;
     /** Known nodes - maps node ID to Node. */
     private Map<Integer,Node> nodes = new HashMap<Integer,Node>();
-
-    private static final Logger LOG = Logger.getLogger(DOM.class.getName());
 
     /**
      * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
@@ -120,7 +117,7 @@ public class DOM {
      * 
      * @param node node to check/insert.
      */
-    private void updateNodesMap(Node node) {
+    private synchronized void updateNodesMap(Node node) {
         nodes.put(node.getNodeId(), node);
         synchronized (node) {
             List<Node> subNodes = node.getChildren();
@@ -224,7 +221,9 @@ public class DOM {
             JSONObject result = response.getResult();
             if (result != null) {
                 int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
-                n = nodes.get(nodeId);
+                synchronized (this) {
+                    n = nodes.get(nodeId);
+                }
             }
         }
         return n;
@@ -250,11 +249,13 @@ public class DOM {
             if (result != null) {
                 list = new ArrayList<Node>();
                 JSONArray array = (JSONArray)params.get("nodeIds"); // NOI18N
-                for (Object id : array) {
-                    int nodeId = ((Number)id).intValue();
-                    Node n = nodes.get(nodeId);
-                    if (n != null) {
-                        list.add(n);
+                synchronized (this) {
+                    for (Object id : array) {
+                        int nodeId = ((Number)id).intValue();
+                        Node n = nodes.get(nodeId);
+                        if (n != null) {
+                            list.add(n);
+                        }
                     }
                 }
             }
@@ -281,7 +282,9 @@ public class DOM {
             JSONObject result = response.getResult();
             if (result != null) {
                 int nodeId = ((Number)result.get("nodeId")).intValue(); // NOI18N
-                n = nodes.get(nodeId);
+                synchronized (this) {
+                    n = nodes.get(nodeId);
+                }
             }
         }
         return n;
@@ -388,7 +391,9 @@ public class DOM {
             JSONObject result = response.getResult();
             if (result != null) {
                 int nodeId = ((Number)result.get("nodeId")).intValue(); // NOI18N
-                n = nodes.get(nodeId);
+                synchronized (this) {
+                    n = nodes.get(nodeId);
+                }
             }
         }
         return n;
@@ -517,7 +522,7 @@ public class DOM {
         }
     }
 
-    void handleSetChildNodes(JSONObject params) {
+    synchronized void handleSetChildNodes(JSONObject params) {
         int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
         Node parent = nodes.get(parentId);
         JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
@@ -529,7 +534,7 @@ public class DOM {
         notifyChildNodesSet(parent);
     }
 
-    void handleChildNodeInserted(JSONObject params) {
+    synchronized void handleChildNodeInserted(JSONObject params) {
         int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
         Node parent = nodes.get(parentId);
         int previousNodeId = ((Number)params.get("previousNodeId")).intValue(); // NOI18N
@@ -541,7 +546,7 @@ public class DOM {
         notifyChildNodeInserted(parent, child);
     }
 
-    void handleChildNodeRemoved(JSONObject params) {
+    synchronized void handleChildNodeRemoved(JSONObject params) {
         int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
         Node parent = nodes.get(parentId);
         int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
@@ -551,15 +556,13 @@ public class DOM {
         notifyChildNodeRemoved(parent, child);
     }
 
-    void handleDocumentUpdated() {
-        synchronized (this) {
-            nodes.clear();
-            documentNode = null;
-        }
+    synchronized void handleDocumentUpdated() {
+        nodes.clear();
+        documentNode = null;
         notifyDocumentUpdated();
     }
 
-    void handleAttributeModified(JSONObject params) {
+    synchronized void handleAttributeModified(JSONObject params) {
         int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
         Node node = nodes.get(nodeId);
         String name = (String)params.get("name"); // NOI18N
@@ -568,7 +571,7 @@ public class DOM {
         notifyAttributeModified(node, name);
     }
 
-    void handleAttributeRemoved(JSONObject params) {
+    synchronized void handleAttributeRemoved(JSONObject params) {
         int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
         Node node = nodes.get(nodeId);
         String name = (String)params.get("name"); // NOI18N
@@ -576,7 +579,7 @@ public class DOM {
         notifyAttributeRemoved(node, name);
     }
 
-    void handleCharacterDataModified(JSONObject params) {
+    synchronized void handleCharacterDataModified(JSONObject params) {
         int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
         Node node = nodes.get(nodeId);
         String characterData = (String)params.get("characterData"); // NOI18N

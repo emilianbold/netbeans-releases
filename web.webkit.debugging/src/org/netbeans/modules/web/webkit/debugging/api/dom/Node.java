@@ -153,7 +153,7 @@ public class Node {
      * 
      * @return node value.
      */
-    public String getNodeValue() {
+    public synchronized String getNodeValue() {
         return (String)getProperties().get("nodeValue"); // NOI18N
     }
 
@@ -162,7 +162,7 @@ public class Node {
      * 
      * @param value new node value.
      */
-    void setNodeValue(String value) {
+    synchronized void setNodeValue(String value) {
         getProperties().put("nodeValue", value); // NOI18N
     }
 
