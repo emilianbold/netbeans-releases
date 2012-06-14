@@ -311,6 +311,9 @@ public class WebKitPageModel extends PageModel {
     @Override
     public void setSelectedNodes(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
+            if (selectedNodes.equals(nodes)) {
+                return;
+            }
             selectedNodes = nodes;
         }
         webKit.getRuntime().evaluate("NetBeans.initNextSelection()"); // NOI18N
@@ -335,6 +338,9 @@ public class WebKitPageModel extends PageModel {
     @Override
     public void setHighlightedNodes(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
+            if (highlightedNodes.equals(nodes)) {
+                return;
+            }
             highlightedNodes = nodes;
         }
         webKit.getRuntime().evaluate("NetBeans.initNextHighlight()"); // NOI18N
