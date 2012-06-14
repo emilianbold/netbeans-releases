@@ -1,0 +1,9 @@
+Display text: <font color=#000000>$retFoo2 = $this-></font><b>retFoo2</b><font color=#000000>();</font>
+File name: index.php
+Name: retFoo2
+Position: BEGIN: 351 END: 358
+
+Display text: <font color=#000000>private function </font><b>retFoo2</b><font color=#000000>() {</font>
+File name: index.php
+Name: retFoo2
+Position: BEGIN: 527 END: 534

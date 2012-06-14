@@ -50,15 +50,15 @@ package org.netbeans.modules.php.editor.codegen.ui;
 
 import java.awt.Dimension;
 import java.util.List;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
+import org.netbeans.modules.php.editor.codegen.ComboBoxModelElement;
 import org.netbeans.modules.php.editor.codegen.Property;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -87,53 +87,30 @@ public class ConstructorPanel extends JPanel {
     }
 
     private void initPanel(CGSGenerator.GenType genType) {
-        String panelTitle = "";                     //NOI18N
         boolean customizeMethodGeneration = true;
         String name = "";
         if (properties.size() > 0) {
             name = properties.get(0).getName();
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        switch (genType) {
-            case CONSTRUCTOR:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_CONSTRUCTOR");    //NOI18N
-                customizeMethodGeneration = false;
-                break;
-            case GETTER:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS");    //NOI18N
-                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name));
-                }
-                break;
-            case SETTER:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS");    //NOI18N
-                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getSetterExample(name));
-                }
-                break;
-            case GETTER_AND_SETTER:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS");    //NOI18N
-                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name) + ", " + way.getSetterExample(name));
-                }
-                break;
-            case METHODS:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_METHODS");    //NOI18N
-                customizeMethodGeneration = false;
-                Dimension preferredSize = getPreferredSize();
-                setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
+        ComboBoxModel model = genType.getModel(name);
+        if (genType.equals(CGSGenerator.GenType.METHODS)) {
+            customizeMethodGeneration = false;
+            Dimension preferredSize = getPreferredSize();
+            setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
         }
-        this.label.setText(panelTitle);
+        this.label.setText(genType.getPanelTitle());
         this.pGSCustomize.setVisible(customizeMethodGeneration);
         if (customizeMethodGeneration) {
             cbMethodGeneration.setModel(model);
             int index = 0;
             if (cgsInfo.getHowToGenerate() != null) {
-                for (CGSGenerator.GenWay genWay : CGSGenerator.GenWay.values()) {
-                    if (genWay.equals(cgsInfo.getHowToGenerate())) {
+                for (int i = 0; i < model.getSize(); i++) {
+                    Object modelElement = model.getElementAt(index);
+                    assert modelElement instanceof ComboBoxModelElement;
+                    if (cgsInfo.getHowToGenerate().equals(((ComboBoxModelElement) modelElement).getGenWay())) {
                         break;
                     }
-                    index++;
+                    index = i;
                 }
             }
             cbMethodGeneration.setSelectedIndex(index);
@@ -170,7 +147,6 @@ public class ConstructorPanel extends JPanel {
 
     protected void initTree(JTree tree) {
     }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -277,8 +253,9 @@ public class ConstructorPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMethodGenerationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMethodGenerationActionPerformed
-        int selectedIndex = cbMethodGeneration.getSelectedIndex();
-        cgsInfo.setHowToGenerate(CGSGenerator.GenWay.values()[selectedIndex]);
+        Object selectedItem = cbMethodGeneration.getSelectedItem();
+        assert selectedItem instanceof ComboBoxModelElement;
+        cgsInfo.setHowToGenerate(((ComboBoxModelElement) selectedItem).getGenWay());
     }//GEN-LAST:event_cbMethodGenerationActionPerformed
 
     private void cbGenerateDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGenerateDocActionPerformed

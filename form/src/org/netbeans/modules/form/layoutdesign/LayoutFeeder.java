@@ -1293,7 +1293,7 @@ class LayoutFeeder implements LayoutConstants {
                 layoutModel.addInterval(neighbor, seq, 0);
                 if (iDesc1.index > -1) {
                     index = iDesc1.index;
-                } else if (getAddDirection(addingSpace, neighbor.getCurrentSpace(), dimension, iDesc1.alignment) == TRAILING) {
+                } else if (getAddDirection(neighbor, iDesc1.alignment) == TRAILING) {
                     index = 1;
                 } // otherwise 0
             } else {
@@ -2906,7 +2906,7 @@ class LayoutFeeder implements LayoutConstants {
                     IncludeDesc iDesc = addInclusion(group, false, distance, ortDistance, inclusions);
                     if (iDesc != null) {
                         iDesc.neighbor = sub;
-                        iDesc.index = getAddDirection(addingSpace, subSpace, dimension, getAddingPoint()) == LEADING ? 0 : 1;
+                        iDesc.index = getAddDirection(sub, getAddingPoint()) == LEADING ? 0 : 1;
                     }
                 }
             }
@@ -3000,7 +3000,7 @@ class LayoutFeeder implements LayoutConstants {
                         && addingSpace.positions[dimension][aEdge] == subSpace.positions[dimension][aEdge]) {
                     inSequenceParallelSnap = true;
                 }
-                if (getAddDirection(addingSpace, subSpace, dimension, getAddingPoint()) == LEADING) {
+                if (getAddDirection(sub, getAddingPoint()) == LEADING) {
                     endIndex = i;
                     if (!ortOverlap) {
                         endPos = subSpace.positions[dimension][LEADING];
@@ -5011,6 +5011,21 @@ class LayoutFeeder implements LayoutConstants {
             return iDesc.neighbor == null
                    || (iDesc.alignment == LEADING && iDesc.index >= 1)
                    || (iDesc.alignment == TRAILING && iDesc.index == 0);
+        }
+    }
+
+    private int getAddDirection(LayoutInterval interval, int alignment) {
+        LayoutRegion space = interval.getCurrentSpace();
+        if (dragger.isResizing(dimension)) {
+            int fixedEdge = dragger.getResizingEdge(dimension) ^ 1;
+            int dst = LayoutRegion.distance(addingSpace, space, dimension, fixedEdge, fixedEdge);
+            if (dst == 0) {
+                return fixedEdge;
+            } else {
+                return dst > 0 ? LEADING : TRAILING;
+            }
+        } else {
+            return getAddDirection(addingSpace, space, dimension, alignment);
         }
     }
 

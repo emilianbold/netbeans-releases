@@ -249,7 +249,7 @@ public final class WhereUsedSupport {
         if (modifier == null) {
             Set<Modifier> retval = Collections.emptySet();
             if (mElement != null && mElement.getInScope() instanceof TypeScope) {
-                retval = new HashSet<Modifier>();
+                retval = EnumSet.noneOf(Modifier.class);
                 if (mElement.getPhpModifiers().isPrivate()) {
                     retval.add(Modifier.PRIVATE);
                 } else if (mElement.getPhpModifiers().isProtected()) {
