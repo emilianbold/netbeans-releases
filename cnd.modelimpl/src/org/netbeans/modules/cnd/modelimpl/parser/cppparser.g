@@ -2552,7 +2552,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
