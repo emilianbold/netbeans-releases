@@ -104,6 +104,22 @@ public class JsParserTest extends JsTestBase {
             1);
     }
     
+    public void testSimpleCurrentError1() throws Exception {
+        parse("var global1 = new Foo.Bar();\n"
+            + "var global2 = new Array();\n"
+            + "\n"
+            + "a = 0x1G\n"
+            + "\n"
+            + "var global3 = 7\n",
+            "var global1 = new Foo.Bar();\n"
+            + "var global2 = new Array();\n"
+            + "\n"
+            + "a = 0x1 \n"
+            + "\n"
+            + "var global3 = 7\n",
+            1);
+    }
+    
     public void testSimplePreviousError1() throws Exception {
         parse("var global1 = new Foo.Bar();\n"
             + "var global2 = new Array();\n"

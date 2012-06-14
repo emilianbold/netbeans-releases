@@ -185,36 +185,58 @@ public class JsParser extends Parser {
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
         if (sanitizing == Sanitize.MISSING_CURLY) {
             org.netbeans.modules.csl.api.Error error = errorManager.getMissingCurlyError();
-            
-            String source = context.getOriginalSource();
-            int balance = 0;
-            for (int i = 0; i < source.length(); i++) {
-                char current = source.charAt(i);
-                if (current == '{') {
-                    balance++;
-                } else if (current == '}') {
-                    balance--;
-                }
-            }
-            if (balance != 0) {
-                StringBuilder builder = new StringBuilder(source);
-                if (balance < 0) {
-                    while (balance < 0) {
-                        int index = builder.lastIndexOf("}");
-                        if (index < 0) {
-                            break;
-                        }
-                        erase(builder, index, index + 1);
+            if (error != null) {
+                String source = context.getOriginalSource();
+                int balance = 0;
+                for (int i = 0; i < source.length(); i++) {
+                    char current = source.charAt(i);
+                    if (current == '{') {
                         balance++;
-                    }
-                } else if (balance > 0 && error.getStartPosition() >= source.length()) {
-                    while (balance > 0) {
-                        builder.append('}');
+                    } else if (current == '}') {
                         balance--;
                     }
                 }
-                context.setSanitizedSource(builder.toString());
-                return true;
+                if (balance != 0) {
+                    StringBuilder builder = new StringBuilder(source);
+                    if (balance < 0) {
+                        while (balance < 0) {
+                            int index = builder.lastIndexOf("}");
+                            if (index < 0) {
+                                break;
+                            }
+                            erase(builder, index, index + 1);
+                            balance++;
+                        }
+                    } else if (balance > 0 && error.getStartPosition() >= source.length()) {
+                        while (balance > 0) {
+                            builder.append('}');
+                            balance--;
+                        }
+                    }
+                    context.setSanitizedSource(builder.toString());
+                    return true;
+                }
+            }
+        } else if (sanitizing == Sanitize.SYNTAX_ERROR_CURRENT) {
+            List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
+            if (!errors.isEmpty()) {
+                org.netbeans.modules.csl.api.Error error = errors.get(0);
+                int offset = error.getStartPosition();
+                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                        context.getSnapshot(), 0);
+                if (ts != null) {
+                    ts.move(offset);
+                    if (ts.moveNext()) {
+                        int start = ts.offset();
+                        if (start >= 0 && ts.moveNext()) {
+                            int end = ts.offset();
+                            StringBuilder builder = new StringBuilder(context.getOriginalSource());
+                            erase(builder, start, end);
+                            context.setSanitizedSource(builder.toString());
+                            return true;
+                        }
+                    }
+                }
             }
         } else if (sanitizing == Sanitize.SYNTAX_ERROR_PREVIOUS) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = errorManager.getErrors();
