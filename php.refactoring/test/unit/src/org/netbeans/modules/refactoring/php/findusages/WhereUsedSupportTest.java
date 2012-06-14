@@ -63,4 +63,44 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("echo Kitchen::SI^ZE;");
     }
 
+    public void testTraits_01() throws Exception {
+        findUsages("trait F^oo {");
+    }
+
+    public void testTraits_02() throws Exception {
+        findUsages("trait B^ar {");
+    }
+
+    public void testTraits_03() throws Exception {
+        findUsages("trait B^az {");
+    }
+
+    public void testTraits_04() throws Exception {
+        findUsages("use F^oo, Bar, Baz {");
+    }
+
+    public void testTraits_05() throws Exception {
+        findUsages("use Foo, B^ar, Baz {");
+    }
+
+    public void testTraits_06() throws Exception {
+        findUsages("use Foo, Bar, B^az {");
+    }
+
+    public void testTraits_07() throws Exception {
+        findUsages("F^oo::fnc insteadof Bar, Baz;");
+    }
+
+    public void testTraits_08() throws Exception {
+        findUsages("Foo::fnc insteadof B^ar, Baz;");
+    }
+
+    public void testTraits_09() throws Exception {
+        findUsages("Foo::fnc insteadof Bar, B^az;");
+    }
+
+    public void testTraits_10() throws Exception {
+        findUsages("B^ar::fnc as aliased;");
+    }
+
 }
