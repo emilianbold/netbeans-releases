@@ -449,7 +449,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     @Override
     public String getIconBase (final NodeModel original, final Object node) 
     throws UnknownTypeException {
-        Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.WARNING,
+        Logger.getLogger(VariablesTreeModelFilter.class.getName()).log(Level.CONFIG,
                 "Obsolete getIconBase() method was called!",
                 new IllegalStateException("getIconBaseWithExtension() should be called!"));
         final String[] unfilteredIconBase = new String[] { null };
