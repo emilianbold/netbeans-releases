@@ -545,7 +545,7 @@ public class ElementNode extends AbstractNode {
             
             synchronized (this) {
                 this.parentItem = description;
-                if (processing == 0) {
+                if (!initialized && processing == 0) {
                     return null;
                 }
                 items = snapshot();
@@ -564,7 +564,7 @@ public class ElementNode extends AbstractNode {
                     ui.getFilters());
             Task t = CHILD_RP.post(r);
             try {
-                t.waitFinished(1);
+                t.waitFinished(WAIT_PERIOD);
                 List<StructureItem> items = r.getNestedItemsIfReady();
                 if (items != null) {
                     LOG.log(Level.FINE, "Got nested items within limit for: {0}", this);
@@ -791,7 +791,7 @@ public class ElementNode extends AbstractNode {
     }
     
     public static boolean isWaitNode(Node n) {
-        return n.getLookup().lookup(WaitNode.class) != null;
+        return n != null && n.getLookup().lookup(WaitNode.class) != null;
     }
     
     public static boolean isWaitNode(StructureItem si) {
