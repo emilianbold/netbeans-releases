@@ -248,9 +248,9 @@ class GdbVariable extends Variable {
     public void setHasMore(String value) {
         if (value == null || value.isEmpty()) {
             hasMore = false;
+        } else {
+            hasMore = !value.equals("0");  //NOI18N
         }
-            
-        hasMore = !value.equals("0");  //NOI18N
     }
     
     @Override
