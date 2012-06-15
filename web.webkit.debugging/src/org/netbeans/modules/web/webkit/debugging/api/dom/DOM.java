@@ -76,7 +76,11 @@ public class DOM {
     }
 
     public synchronized Node getDocument() {
-        if (documentNode == null) {
+        return getDocument(false);
+    }
+    
+    public synchronized Node getDocument(boolean ignoreCache) {
+        if (documentNode == null || ignoreCache) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
             if (response != null) {
                 JSONObject result = response.getResult();
@@ -132,6 +136,13 @@ public class DOM {
 
     public void hideHighlight() {
         transport.sendCommand(new Command("DOM.hideHighlight")); // NOI18N
+    }
+
+    public String getNodeHTML(Node node) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("DOM.getOuterHTML", params)); // NOI18N
+        return (String)((JSONObject)response.getResponse().get("result")).get("outerHTML");
     }
 
     public void addListener(Listener listener) {
@@ -222,6 +233,9 @@ public class DOM {
     void handleAttributeModified(JSONObject params) {
         int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
         Node node = nodes.get(nodeId);
+        if (node == null) {
+            return;
+        }
         String name = (String)params.get("name"); // NOI18N
         String value = (String)params.get("value"); // NOI18N
         node.setAttribute(name, value);
