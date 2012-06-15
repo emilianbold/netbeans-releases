@@ -88,7 +88,7 @@ public class CGSGenerator implements CodeGenerator {
     private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
 
     public enum GenType {
-        CONSTRUCTOR() {
+        CONSTRUCTOR {
 
             @Override
             public String getPanelTitle() {
@@ -106,8 +106,37 @@ public class CGSGenerator implements CodeGenerator {
                 return result;
             }
 
+            @Override
+            public String getDisplayName() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_CONSTRUCTOR"); //NOI18N
+            }
+
+            @Override
+            public String getDialogTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_CONSTRUCTOR"); //NOI18N
+            }
+
+            @Override
+            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+                final StringBuilder params = new StringBuilder();
+                final StringBuilder assignments = new StringBuilder();
+                for (Property property : cgsInfo.getProperties()) {
+                    final String name = property.getName();
+                    final String paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? withoutUnderscore(name) : name;
+                    if (property.isSelected()) {
+                        params.append(", $").append(paramName);        //NOI18N
+                        assignments.append(ASSIGNMENT_TEMPLATE.replace(PROPERTY, name).replace(PARAM_NAME, paramName));
+                    }
+                }
+                if (params.length() == 0) {
+                    params.append(", ");                                        //NOI18N
+                }
+                return CONSTRUCTOR_TEMPLATE.replace(PARAMS, params.toString().substring(2)).replace(ASSIGNMENTS, assignments);
+            }
+
         },
-        GETTER() {
+        GETTER {
 
             @Override
             public String getPanelTitle() {
@@ -123,8 +152,34 @@ public class CGSGenerator implements CodeGenerator {
                 return result;
             }
 
+            @Override
+            public String getDisplayName() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER"); //NOI18N
+            }
+
+            @Override
+            public String getDialogTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS"); //NOI18N
+            }
+
+            @Override
+            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+                final StringBuilder getters = new StringBuilder();
+                for (Property property : cgsInfo.getPossibleGetters()) {
+                    if (property.isSelected()) {
+                        final String name = property.getName();
+                        final String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
+                        final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
+                        getters.append(getGetterTemplate(cgsInfo).replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        getters.append(NEW_LINE);
+                    }
+                }
+                return getters.toString();
+            }
+
         },
-        SETTER() {
+        SETTER {
 
             @Override
             public String getPanelTitle() {
@@ -140,8 +195,36 @@ public class CGSGenerator implements CodeGenerator {
                 return result;
             }
 
+            @Override
+            public String getDisplayName() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_SETTER"); //NOI18N
+            }
+
+            @Override
+            public String getDialogTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_SETTERS"); //NOI18N
+            }
+
+            @Override
+            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+                StringBuilder setters = new StringBuilder();
+                for (Property property : cgsInfo.getPossibleSetters()) {
+                    if (property.isSelected()) {
+                        final String name = property.getName();
+                        final String paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? withoutUnderscore(name) : name;
+                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
+                        final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
+                        setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        setters.append(NEW_LINE);
+                    }
+                }
+                return setters.toString();
+            }
+
         },
-        GETTER_AND_SETTER() {
+        GETTER_AND_SETTER {
 
             @Override
             public String getPanelTitle() {
@@ -157,8 +240,38 @@ public class CGSGenerator implements CodeGenerator {
                 return result;
             }
 
+            @Override
+            public String getDisplayName() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER_AND_SETTER");  //NOI18N
+            }
+
+            @Override
+            public String getDialogTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS_AND_SETTERS"); //NOI18N
+            }
+
+            @Override
+            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+                final StringBuilder gettersAndSetters = new StringBuilder();
+                for (Property property : cgsInfo.getPossibleSetters()) {
+                    if (property.isSelected()) {
+                        final String name = property.getName();
+                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
+                        final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
+                        final String paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? withoutUnderscore(name) : name;
+                        gettersAndSetters.append(getGetterTemplate(cgsInfo).replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        gettersAndSetters.append(NEW_LINE);
+                        gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        gettersAndSetters.append(NEW_LINE);
+                    }
+                }
+                return gettersAndSetters.toString();
+            }
+
         },
-        METHODS() {
+        METHODS {
 
             @Override
             public String getPanelTitle() {
@@ -170,10 +283,60 @@ public class CGSGenerator implements CodeGenerator {
                 return new DefaultComboBoxModel();
             }
 
+            @Override
+            public String getDisplayName() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_METHOD"); //NOI18N
+            }
+
+            @Override
+            public String getDialogTitle() {
+                return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS"); //NOI18N
+            }
+
+            @Override
+            public JPanel createPanel(final CGSInfo cgsInfo) {
+                return new MethodPanel(cgsInfo);
+            }
+
+            @Override
+            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+                final StringBuilder inheritedMethods = new StringBuilder();
+                for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
+                    if (methodProperty.isSelected()) {
+                        final MethodElement method = methodProperty.getMethod();
+                        final TypeNameResolver typeNameResolver = method.getParameters().isEmpty() ? TypeNameResolverImpl.forNull()
+                                : CodegenUtils.createSmarterTypeNameResolver(method, ModelUtils.getModel(Source.create(textComponent.getDocument()), 300), textComponent.getCaretPosition());
+                        if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
+                        } else {
+                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
+                        }
+                        inheritedMethods.append(NEW_LINE);
+                    }
+                }
+                return inheritedMethods.toString();
+            }
+
         };
 
         public abstract String getPanelTitle();
         public abstract ComboBoxModel getModel(final String propertyName);
+        public abstract String getDisplayName();
+        public abstract String getDialogTitle();
+        public abstract String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent);
+
+        public JPanel createPanel(final CGSInfo cgsInfo) {
+            return new ConstructorPanel(this, cgsInfo);
+        }
+
+        String getGetterTemplate(final CGSInfo cgsInfo) {
+            return GETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getGetterTemplate());
+        }
+
+        String getSetterTemplate(final CGSInfo cgsInfo) {
+            return SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
+        }
+
     }
 
     public enum GenWay {
@@ -264,8 +427,6 @@ public class CGSGenerator implements CodeGenerator {
 
     @Override
     public void invoke() {
-        String dialogTitle = null;
-        JPanel panel = null;
         String methodGenerationWay = null;
         AntProjectHelper helper = null;
         EditableProperties properties = null;
@@ -287,38 +448,13 @@ public class CGSGenerator implements CodeGenerator {
         } else {
             cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
         }
-
-        switch (type) {
-            case CONSTRUCTOR:
-                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_CONSTRUCTOR");    //NOI18N
-                panel = new ConstructorPanel(type, cgsInfo);
-                break;
-            case GETTER:
-                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS");    //NOI18N
-                panel = new ConstructorPanel(type, cgsInfo);
-                break;
-            case SETTER:
-                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_SETTERS");    //NOI18N
-                panel = new ConstructorPanel(type, cgsInfo);
-                break;
-            case GETTER_AND_SETTER:
-                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_GETTERS_AND_SETTERS");    //NOI18N
-                panel = new ConstructorPanel(type, cgsInfo);
-                break;
-            case METHODS:
-                dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS");    //NOI18N
-                panel = new MethodPanel(cgsInfo);
-                break;
-
-        }
-
-        DialogDescriptor desc = new DialogDescriptor(panel, dialogTitle);
+        DialogDescriptor desc = new DialogDescriptor(type.createPanel(cgsInfo), type.getDialogTitle());
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         dialog.setVisible(true);
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
             CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
-            CodeTemplate template = manager.createTemporary(getTemplateText());
+            CodeTemplate template = manager.createTemporary(type.getTemplateText(cgsInfo, component));
             template.insert(component);
             //save the gen type value to the project properties
             if (project != null) {
@@ -330,25 +466,7 @@ public class CGSGenerator implements CodeGenerator {
 
     @Override
     public String getDisplayName() {
-        String name = null;
-        switch (type) {
-            case CONSTRUCTOR:
-                name = NbBundle.getMessage(CGSGenerator.class, "LBL_CONSTRUCTOR");    //NOI18N
-                break;
-            case GETTER:
-                name = NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER");    //NOI18N
-                break;
-            case SETTER:
-                name = NbBundle.getMessage(CGSGenerator.class, "LBL_SETTER");    //NOI18N
-                break;
-            case GETTER_AND_SETTER:
-                name = NbBundle.getMessage(CGSGenerator.class, "LBL_GETTER_AND_SETTER");    //NOI18N
-                break;
-            case METHODS:
-                name = NbBundle.getMessage(CGSGenerator.class, "LBL_METHOD");    //NOI18N
-                break;
-        }
-        return name;
+        return type.getDisplayName();
     }
 
     public static class Factory implements CodeGenerator.Factory {
@@ -380,102 +498,7 @@ public class CGSGenerator implements CodeGenerator {
         }
     }
 
-    private String getTemplateText() {
-        String text = null;
-        String name;
-        String methodName;
-        String paramName;
-        String getterTemplate = GETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getGetterTemplate());
-        String setterTemplate = SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
-
-        ArrayList<String> createdMethods = new ArrayList<String>();
-        switch (type) {
-            case CONSTRUCTOR:
-                StringBuilder params = new StringBuilder();
-                StringBuilder assignments = new StringBuilder();
-                for (Property property : cgsInfo.getProperties()) {
-                    name = property.getName();
-                    paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
-                                ? withoutUnderscore(name) : name;
-                    if (property.isSelected()) {
-                        params.append(", $").append(paramName);        //NOI18N
-                        assignments.append(ASSIGNMENT_TEMPLATE.replace(PROPERTY, name).replace(PARAM_NAME, paramName));
-                    }
-                }
-                if (params.length() == 0) {
-                    params.append(", ");                                        //NOI18N
-                }
-                text = CONSTRUCTOR_TEMPLATE.replace(PARAMS, params.toString().substring(2)).replace(ASSIGNMENTS, assignments);
-                break;
-            case GETTER:
-                StringBuilder getters = new StringBuilder();
-                for (Property property : cgsInfo.getPossibleGetters()) {
-                    if (property.isSelected()) {
-                        name = property.getName();
-                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
-                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
-                        methodName = getUnusedMethodName(createdMethods, changedName);
-                        getters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
-                        getters.append(NEW_LINE);
-                    }
-                }
-                text = getters.toString();
-                break;
-            case SETTER:
-                StringBuilder setters = new StringBuilder();
-                for (Property property : cgsInfo.getPossibleSetters()) {
-                    if (property.isSelected()) {
-                        name = property.getName();
-                        paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
-                                ? withoutUnderscore(name) : name;
-                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
-                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
-                        methodName = getUnusedMethodName(createdMethods, changedName);
-                        setters.append(setterTemplate.replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
-                        setters.append(NEW_LINE);
-                    }
-                }
-                text = setters.toString();
-                break;
-            case GETTER_AND_SETTER:
-                StringBuilder gettersAndSetters = new StringBuilder();
-                for (Property property : cgsInfo.getPossibleSetters()) {
-                    if (property.isSelected()) {
-                        name = property.getName();
-                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
-                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
-                        methodName = getUnusedMethodName(createdMethods, changedName);
-                        paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
-                                ? withoutUnderscore(name) : name;
-                        gettersAndSetters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
-                        gettersAndSetters.append(NEW_LINE);
-                        gettersAndSetters.append(setterTemplate.replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
-                        gettersAndSetters.append(NEW_LINE);
-                    }
-                }
-                text = gettersAndSetters.toString();
-                break;
-            case METHODS:
-                StringBuilder inheritedMethods = new StringBuilder();
-                for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
-                    if (methodProperty.isSelected()) {
-                        MethodElement method = methodProperty.getMethod();
-                        TypeNameResolver typeNameResolver = method.getParameters().isEmpty() ? TypeNameResolverImpl.forNull() : CodegenUtils.createSmarterTypeNameResolver(method, ModelUtils.getModel(Source.create(component.getDocument()), 300), component.getCaretPosition());
-                        if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
-                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
-                        } else {
-                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
-                        }
-                        inheritedMethods.append(NEW_LINE);
-                    }
-                }
-                text = inheritedMethods.toString();
-                break;
-        }
-        return text;
-    }
-
-    private String getUnusedMethodName(List<String> usedMethods, String methodName) {
+    private static String getUnusedMethodName(List<String> usedMethods, String methodName) {
         if (usedMethods.contains(methodName)) {
             int counter = 1;
             while (usedMethods.contains(methodName + "_" + counter)) {  //NOI18N
