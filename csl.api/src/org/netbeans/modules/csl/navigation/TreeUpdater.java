@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,13 +78,13 @@ final class TreeUpdater implements Runnable {
      */
     private boolean     waiting;
     
-    private List<Node>  nodesToExpand;
+    private final List<Node>  nodesToExpand = new LinkedList<Node>();
     
-    private List<Node>  nodesToExpandRec;
+    private final List<Node>  nodesToExpandRec = new LinkedList<Node>();
     
     private List<UpdateRecord>  childrenToUpdate;
     
-    private List<UpdateRecord>  newChildren;
+    private List<UpdateRecord>  newChildren = new ArrayList<UpdateRecord>();
 
     public TreeUpdater(ClassMemberPanelUI ui) {
         this.ui = ui;
