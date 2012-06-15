@@ -133,10 +133,19 @@ public class RepositoryInfo {
         // this should return alwaus the same instance, so the cache can be implemented as a weak map.
         File repositoryRootSingleInstance = Git.getInstance().getRepositoryRoot(repositoryRoot);
         if (repositoryRoot.equals(repositoryRootSingleInstance)) {
+            boolean refresh = false;
             synchronized (cache) {
                 info = cache.get(repositoryRootSingleInstance);
                 if (info == null) {
                     cache.put(repositoryRootSingleInstance, info = new RepositoryInfo(repositoryRootSingleInstance));
+                    refresh = true;
+                }
+            }
+            if (refresh) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    LOG.log(Level.FINE, "getInstance (): had to schedule an async refresh for {0}", repositoryRoot); //NOI18N
+                    refreshAsync(repositoryRoot);
+                } else {
                     info.refresh();
                 }
             }
