@@ -16,13 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.test.lib;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
@@ -37,7 +37,7 @@ public abstract class BasicTokensTest extends JellyTestCase {
     }
 
     abstract protected boolean generateGoldenFiles();
-    
+
     @Override
     public void tearDown() {
         if (generateGoldenFiles()) {
@@ -52,10 +52,10 @@ public abstract class BasicTokensTest extends JellyTestCase {
         File dir = new File(getDataDir(), "tokens");
         File file = new File(dir, fileName);
         try {
-            result = new DumpTokens(file).getTokenString();
+            result = DumpTokens.printTokens(file);
         } catch (Throwable t) {
-            System.out.println(t);
-            t.printStackTrace();
+            NbTestCase.fail("Unable to get tokens "+t.toString());
+            t.printStackTrace(System.err);
         }
         if (generateGoldenFiles()) {
             try {
@@ -67,7 +67,7 @@ public abstract class BasicTokensTest extends JellyTestCase {
                 writer.close();
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
-                fail("IO EXCEPTION");
+                NbTestCase.fail("IO EXCEPTION");
             }
         } else {
             ref(result);
