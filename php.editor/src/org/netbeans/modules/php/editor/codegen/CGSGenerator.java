@@ -454,7 +454,7 @@ public class CGSGenerator implements CodeGenerator {
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
             CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
-            CodeTemplate template = manager.createTemporary(getTemplateText());
+            CodeTemplate template = manager.createTemporary(type.getTemplateText(cgsInfo, component));
             template.insert(component);
             //save the gen type value to the project properties
             if (project != null) {
@@ -496,10 +496,6 @@ public class CGSGenerator implements CodeGenerator {
             }
             return ret;
         }
-    }
-
-    private String getTemplateText() {
-        return type.getTemplateText(cgsInfo, component);
     }
 
     private static String getUnusedMethodName(List<String> usedMethods, String methodName) {
