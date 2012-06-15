@@ -37,7 +37,6 @@ httpserver@ide.netbeans.org=httpserver/*,servletapi/*
 i18n@java.netbeans.org=i18n/*,i18n.form/*
 javadoc-commits@java.netbeans.org=javadoc/*
 jbecicka@netbeans.org=beans/*,spi.quicksearch/*,editor.lib*/*,editor.bookmarks/*,editor.errorstripe*/*
-jglick@netbeans.org=hudson*/*,mercurial.search/*
 jmx@contrib.netbeans.org=jmx*/*,jconsole/*
 junit-commits@java.netbeans.org=junit/*,junitlib/*
 libs@ide.netbeans.org=libs.freemarker/*,c.jcraft.*/*,libs.jsr223/*,libs.lucene/*,o.apache.xml.resolver/*,o.jdesktop.layout/*,libs.xerces/*,libs.xmlbeans/*,javax.*/*,o.apache.axis/*,o.apache.commons.*/*,o.apache.ws.commons.util/*,o.apache.xmlrpc/*,o.eclipse.*/*
