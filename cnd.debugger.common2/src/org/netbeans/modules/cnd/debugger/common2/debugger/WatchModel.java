@@ -184,10 +184,7 @@ public final class WatchModel extends VariableModel
                         Catalog.get("CTL_WatchesModel_Empty_Watch_Hint") + // NOI18N
                         "&gt;</font></html>"; // NOI18N
         }
-        if (node instanceof ShowMoreMessage) {
-            return  ((ShowMoreMessage) node).getMessage();
-        }
-	if (node instanceof Watch)
+        if (node instanceof Watch)
 	    return ((Watch) node).getExpression ();
 	else
 	    return super.getDisplayName(original, node);
@@ -230,9 +227,7 @@ public final class WatchModel extends VariableModel
 		return ICON_WATCH1;
 	    }
 
-	} else if (node instanceof ShowMoreMessage) {
-            return null;
-        } else {
+	} else {
 	    return super.getIconBase(original, node);
 	}
     }

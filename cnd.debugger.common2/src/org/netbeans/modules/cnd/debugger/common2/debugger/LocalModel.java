@@ -155,8 +155,6 @@ public final class LocalModel extends VariableModel
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
         if (node instanceof WarningMessage) {
             return  ((WarningMessage) node).getMessage();
-        } else if (node instanceof ShowMoreMessage) {
-            return  ((ShowMoreMessage) node).getMessage();
         } else {
             return super.getDisplayName(original, node);
         }
@@ -164,7 +162,7 @@ public final class LocalModel extends VariableModel
 
     @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
-        if (node instanceof WarningMessage || node instanceof ShowMoreMessage) {
+        if (node instanceof WarningMessage) {
             return null;
         } else{
             return super.getIconBaseWithExtension(original, node);
@@ -173,7 +171,7 @@ public final class LocalModel extends VariableModel
 
     @Override
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
-        if (node instanceof WarningMessage || node instanceof ShowMoreMessage){
+        if (node instanceof WarningMessage){
             return "";
         } else {
             return super.getValueAt(node, columnID);
