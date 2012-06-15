@@ -43,7 +43,9 @@ package org.netbeans.modules.c2c.tasks.query;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
@@ -58,6 +60,7 @@ public class C2CQuery {
     private final C2CRepository repository;
     private C2CQueryController controller;
 
+    private final List<QueryNotifyListener> notifyListeners = new ArrayList<QueryNotifyListener>();
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
     private String name;
         
@@ -110,8 +113,46 @@ public class C2CQuery {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    void addNotifyListener(QueryNotifyListener l) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public void addNotifyListener(QueryNotifyListener l) {
+        synchronized(notifyListeners) {
+            notifyListeners.add(l);
+        }
+    }
+
+    public void removeNotifyListener(QueryNotifyListener l) {
+        synchronized(notifyListeners) {
+            notifyListeners.remove(l);
+        }
+    }
+
+    protected void fireNotifyData(C2CIssue issue) {
+        QueryNotifyListener[] list;
+        synchronized(notifyListeners) {
+            list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
+        }
+        for (QueryNotifyListener l : list) {
+            l.notifyData(issue);
+        }
+    }
+
+    protected void fireStarted() {
+        QueryNotifyListener[] list;
+        synchronized(notifyListeners) {
+            list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
+        }        
+        for (QueryNotifyListener l : list) {
+            l.started();
+        }
+    }
+
+    protected void fireFinished() {
+        QueryNotifyListener[] list;
+        synchronized(notifyListeners) {
+            list = notifyListeners.toArray(new QueryNotifyListener[notifyListeners.size()]);
+        }        
+        for (QueryNotifyListener l : list) {
+            l.finished();
+        }
     }
 
     public String getTooltip() {
@@ -148,5 +189,6 @@ public class C2CQuery {
     public void refresh() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
     
 }
