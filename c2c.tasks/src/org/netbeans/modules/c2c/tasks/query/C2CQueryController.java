@@ -42,6 +42,16 @@
 
 package org.netbeans.modules.c2c.tasks.query;
 
+import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
+import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
+import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
+import com.tasktop.c2c.server.tasks.domain.Keyword;
+import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.TaskResolution;
+import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
+import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -55,20 +65,18 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
@@ -78,23 +86,17 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
-import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConfig;
-import org.netbeans.modules.c2c.tasks.C2CConnector;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
-import org.netbeans.modules.c2c.tasks.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.c2c.tasks.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.c2c.tasks.query.QueryParameter.ListParameter;
-import org.netbeans.modules.c2c.tasks.query.QueryParameter.ParameterValue;
-import org.netbeans.modules.c2c.tasks.query.QueryParameter.TextFieldParameter;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -105,24 +107,26 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
 
     protected QueryPanel panel;
 
     private static final String CHANGED_NOW = "Now";                            // NOI18N
 
-    private final ComboParameter peopleParameter;
+//    private final ComboParameter nameParameter;
+    private final ComboParameter tagsParameter;
     private final ListParameter productParameter;
     private final ListParameter componentParameter;
-    private final ListParameter versionParameter;
+    private final ListParameter releasesParameter;
+    private final ListParameter iterationsParameter;
+    
+    private final ListParameter issueTypeParameter;
+    private final ListParameter priorityParameter;
+    private final ListParameter severityParameter;
+    
     private final ListParameter statusParameter;
     private final ListParameter resolutionParameter;
-    private final ListParameter priorityParameter;
-    private final ListParameter changedFieldsParameter;
-    private final ListParameter severityParameter;
-    private final ListParameter issueTypeParameter;
-    private final ListParameter iterationParameter;
-
+    
     private final Map<String, QueryParameter> parameters;
 
     private RequestProcessor rp = new RequestProcessor("C2C query", 1, true);  // NOI18N
@@ -136,18 +140,22 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     private final Object REFRESH_LOCK = new Object();
         
-    public QueryController(C2CRepository repository, C2CQuery query, String parametersString) {
+    C2CQueryController(C2CRepository repository, C2CQuery query) {
+        this(repository, query, null);
+    }
+    
+    public C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString) {
         this(repository, query, parametersString, true);
     }
 
-    public QueryController(C2CRepository repository, C2CQuery query, String parametersString, boolean populate) {
+    public C2CQueryController(C2CRepository repository, C2CQuery query, String parametersString, boolean populate) {
         this.repository = repository;
         this.query = query;
         
 //        issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
 //        setupRenderer(issueTable);
 //        panel = new QueryPanel(issueTable.getComponent(), this);
-        panel = new QueryPanel(new JList(), this);
+        panel = new QueryPanel(new JList());
 
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -165,7 +173,6 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.refreshConfigurationButton.addActionListener(this);
         panel.findIssuesButton.addActionListener(this);
         panel.cloneQueryButton.addActionListener(this);
-        panel.changedFromTextField.addFocusListener(this);
 
         panel.idTextField.addActionListener(this);
         panel.productList.addKeyListener(this);
@@ -175,38 +182,42 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.resolutionList.addKeyListener(this);
         panel.severityList.addKeyListener(this);
         panel.priorityList.addKeyListener(this);
-        panel.changedList.addKeyListener(this);
         panel.iterationList.addKeyListener(this);
 
         panel.byTextTextField.addActionListener(this);
-        panel.peopleTextField.addActionListener(this);
-        panel.changedFromTextField.addActionListener(this);
-        panel.changedToTextField.addActionListener(this);
-        panel.changedToTextField.addActionListener(this);
 
         // setup parameters
         parameters = new LinkedHashMap<String, QueryParameter>();
-        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
-        productParameter = createQueryParameter(ListParameter.class, panel.productList, "product");                 // NOI18N
-        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
-        versionParameter = createQueryParameter(ListParameter.class, panel.releaseList, "version");                 // NOI18N
-        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, "bug_status");                // NOI18N
-        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, "resolution");        // NOI18N
-        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, "priority");              // NOI18N
-        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, "bug_severity");      // NOI18N
-        issueTypeParameter = null;
-        iterationParameter = null;
+        productParameter = createQueryParameter(ListParameter.class, panel.productList, CfcTaskAttribute.PRODUCT);              // NOI18N
+        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, CfcTaskAttribute.COMPONENT);        // NOI18N
+        releasesParameter = createQueryParameter(ListParameter.class, panel.releaseList, CfcTaskAttribute.MILESTONE);           // NOI18N
+        iterationsParameter = createQueryParameter(ListParameter.class, panel.iterationList, CfcTaskAttribute.ITERATION);       // NOI18N
+           
+        issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, CfcTaskAttribute.TASK_TYPE);        // NOI18N
+        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, CfcTaskAttribute.PRIORITY);           // NOI18N
+        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, CfcTaskAttribute.SEVERITY);           // NOI18N
+        
+        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, CfcTaskAttribute.STATUS);                 // NOI18N
+        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, CfcTaskAttribute.RESOLUTION);     // NOI18N
+        
+        tagsParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, CfcTaskAttribute.TAGS);                  // NOI18N
+//        nameParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, CfcTaskAttribute.ggg);                  // NOI18N
+        
+//        versionParameter = createQueryParameter(ListParameter.class, panel.List, CfcTaskAttribute.VERSION);                 // NOI18N
+//        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
+//        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
+//        versionParameter = createQueryParameter(ListParameter.class, panel.releaseList, "version");                 // NOI18N
+//        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
 
-        createQueryParameter(TextFieldParameter.class, panel.byTextTextField, "short_desc");                       // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
-        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.byTextTextField, CfcTaskAttribute.su);                       // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
+//        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
+//        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
 
         // XXX
 //        panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
@@ -261,14 +272,14 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 //        }
     }
 
-    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {
+    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, CfcTaskAttribute attribute) {
         try {
-            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class, String.class);
-            T t = constructor.newInstance(c, parameter, getRepository().getTaskRepository().getCharacterEncoding());
-            parameters.put(parameter, t);
+            Constructor<T> constructor = clazz.getConstructor(c.getClass(), CfcTaskAttribute.class);
+            T t = constructor.newInstance(c, attribute);
+            parameters.put(attribute.getKey(), t);
             return t;
         } catch (Exception ex) {
-            C2C.LOG.log(Level.SEVERE, parameter, ex);
+            C2C.LOG.log(Level.SEVERE, attribute.getKey(), ex);
         }
         return null;
     }
@@ -280,7 +291,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(org.netbeans.modules.c2c.tasks.query.QueryController.class);
+        return new HelpCtx(org.netbeans.modules.c2c.tasks.query.C2CQueryController.class);
     }
 
     @Override
@@ -303,7 +314,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     public String getUrlParameters(boolean encode) {
         StringBuilder sb = new StringBuilder();
         for (QueryParameter qp : parameters.values()) {
-            sb.append(qp.get(encode));
+//            XXX sb.append(qp.get(encode));
         }
         return sb.toString();
     }
@@ -312,7 +323,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         return repository;
     }
 
-    private void postPopulate(final String urlParameters, final boolean forceRefresh) {
+    private void postPopulate(final String parametersString, final boolean forceRefresh) {
 
         final Task[] t = new Task[1];
         Cancellable c = new Cancellable() {
@@ -325,7 +336,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             }
         };
 
-        final String msgPopulating = NbBundle.getMessage(QueryController.class, "MSG_Populating", new Object[]{repository.getDisplayName()});    // NOI18N
+        final String msgPopulating = NbBundle.getMessage(C2CQueryController.class, "MSG_Populating", new Object[]{repository.getDisplayName()});    // NOI18N
         final ProgressHandle handle = ProgressHandleFactory.createHandle(msgPopulating, c);
 
         EventQueue.invokeLater(new Runnable() {
@@ -344,7 +355,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                     if(forceRefresh) {
                         repository.refreshConfiguration();
                     }
-                    populate(urlParameters);
+                    populate(parametersString);
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -363,8 +374,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         if(C2C.LOG.isLoggable(Level.FINE)) {
             C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
-        final C2CConfiguration bc = repository.getConfiguration();
-        if(bc == null || !bc.isValid()) {
+        final CfcClientData clientData = C2C.getInstance().getClientData(repository);
+        if(clientData == null) {
             // XXX nice errro msg?
             return;
         }
@@ -372,17 +383,24 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             @Override
             public void run() {
                 try {
-                    productParameter.setParameterValues(toParameterValues(bc.getProducts()));
-                    populateProductDetails();
-                    severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
-                    statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
-                    priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
-                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
-                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
-                    panel.changedToTextField.setText(CHANGED_NOW);
+                    productParameter.setParameterValues(toParameterValues(clientData.getProducts()));
+                    populateProductDetails(clientData, clientData.getProducts());
+                    
+                    
+                    issueTypeParameter.setParameterValues(toParameterValues(clientData.getTaskTypes()));
+                    priorityParameter.setParameterValues(toParameterValues(clientData.getPriorities()));
+                    severityParameter.setParameterValues(toParameterValues(clientData.getSeverities()));
+                    
+                    statusParameter.setParameterValues(toParameterValues(clientData.getStatuses()));
+                    resolutionParameter.setParameterValues(toParameterValues(clientData.getResolutions()));
+                    
+                    tagsParameter.setParameterValues(toParameterValues(clientData.getKeywords()));
+                    
+//                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
+//                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
+//                    panel.changedToTextField.setText(CHANGED_NOW);
 
-                    setParameters(parametersString != null ? parametersString : C2CConfig.getInstance().getDefaultParameters());
+//                    setParameters(parametersString != null ? parametersString : C2CConfig.getInstance().getDefaultParameters());
 
                     // XXX
 //                    if(query.isSaved()) {
@@ -439,12 +457,13 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public void focusGained(FocusEvent e) {
-        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
-            String lastChangeFrom = C2CConfig.getInstance().getLastChangeFrom();
-            panel.changedFromTextField.setText(lastChangeFrom);
-            panel.changedFromTextField.setSelectionStart(0);
-            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
-        }
+        // XXX
+//        if(panel.changedFromTextField.getText().equals("")) {                   // NOI18N
+//            String lastChangeFrom = C2CConfig.getInstance().getLastChangeFrom();
+//            panel.changedFromTextField.setText(lastChangeFrom);
+//            panel.changedFromTextField.setSelectionStart(0);
+//            panel.changedFromTextField.setSelectionEnd(lastChangeFrom.length());
+//        }
     }
 
     @Override
@@ -491,11 +510,13 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 onGotoIssue();
             }
         } else if (e.getSource() == panel.idTextField ||
-                   e.getSource() == panel.byTextTextField ||
-                   e.getSource() == panel.peopleTextField ||
-                   e.getSource() == panel.changedFromTextField ||
-                   e.getSource() == panel.newValueTextField ||
-                   e.getSource() == panel.changedToTextField)
+                   e.getSource() == panel.byTextTextField 
+//                ||
+//                   e.getSource() == panel.peopleTextField ||
+//                   e.getSource() == panel.changedFromTextField ||
+//                   e.getSource() == panel.newValueTextField ||
+//                   e.getSource() == panel.changedToTextField
+                )
         {
             onRefresh();
         }
@@ -521,8 +542,10 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
            e.getSource() == panel.releaseList ||
            e.getSource() == panel.statusList ||
            e.getSource() == panel.resolutionList ||
-           e.getSource() == panel.priorityList ||
-           e.getSource() == panel.changedList)
+           e.getSource() == panel.priorityList 
+//                ||
+//           e.getSource() == panel.changedList
+                )
         {
             onRefresh();
         }
@@ -580,7 +603,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 Collection<C2CQuery> queries = repository.getQueries ();
                 for (C2CQuery q : queries) {
                     if(q.getDisplayName().equals(name)) {
-                        return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
+                        return NbBundle.getMessage(C2CQueryController.class, "MSG_SAME_NAME");
                     }
                 }
                 return null;
@@ -593,7 +616,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
             String urlParameters = C2CConfig.getInstance().getUrlParams(repository, query.getDisplayName());
             if(urlParameters != null) {
-                setParameters(urlParameters);
+//                XXX setParameters(urlParameters);
             }
         }
         setAsSaved();
@@ -638,7 +661,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         long l = query.getLastRefresh();
         return l > 0 ?
             dateFormat.format(new Date(l)) :
-            NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
+            NbBundle.getMessage(C2CQueryController.class, "LBL_Never"); // NOI18N
     }
 
     private void onGotoIssue() {
@@ -710,15 +733,15 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     private void onProductChanged(ListSelectionEvent e) {
-        Object[] values =  panel.productList.getSelectedValues();
-        String[] products = null;
-        if(values != null) {
-            products = new String[values.length];
-            for (int i = 0; i < values.length; i++) {
-                products[i] = ((ParameterValue) values[i]).getValue();
-            }
-        }
-        populateProductDetails(products);
+//        Object[] values =  panel.productList.getSelectedValues();
+//        String[] products = null;
+//        if(values != null) {
+//            products = new String[values.length];
+//            for (int i = 0; i < values.length; i++) {
+//                products[i] = ((ParameterValue) values[i]).getValue();
+//            }
+//        }
+//        populateProductDetails(products);
     }
 
     public void autoRefresh() {
@@ -770,8 +793,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     private void onRemove() {
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-            NbBundle.getMessage(QueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
-            NbBundle.getMessage(QueryController.class, "CTL_RemoveQuery"),      // NOI18N
+            NbBundle.getMessage(C2CQueryController.class, "MSG_RemoveQuery", new Object[] { query.getDisplayName() }), // NOI18N
+            NbBundle.getMessage(C2CQueryController.class, "CTL_RemoveQuery"),      // NOI18N
             NotifyDescriptor.OK_CANCEL_OPTION);
 
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
@@ -828,98 +851,103 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         query.remove();
     }
 
-    private void populateProductDetails(String... products) {
-        C2CConfiguration bc = repository.getConfiguration();
-        if(bc == null || !bc.isValid()) {
-            // XXX nice errro msg?
-            return;
+    private void populateProductDetails(CfcClientData clientData, Collection<Product> products) {
+        Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<com.tasktop.c2c.server.tasks.domain.Component>();
+        Set<String> newIterations = new HashSet<String>();
+        Set<Milestone> newMilestones = new HashSet<Milestone>();
+        
+        // XXX why not product specific?
+        newIterations.addAll(clientData.getActiveIterations());
+        
+        for (Product p : products) {    
+            newComponents.addAll(clientData.getComponents(p));
+            newMilestones.addAll(clientData.getMilestones(p));
         }
-        if(products == null || products.length == 0) {
-            products = new String[] {null};
-        }
-
-        List<String> newComponents = new ArrayList<String>();
-        List<String> newVersions = new ArrayList<String>();
-        List<String> newTargetMilestone = new ArrayList<String>();
-        for (String p : products) {
-            List<String> productComponents = bc.getComponents(p);
-            for (String c : productComponents) {
-                if(!newComponents.contains(c)) {
-                    newComponents.add(c);
-                }
-            }
-            List<String> productVersions = bc.getVersions(p);
-            for (String c : productVersions) {
-                if(!newVersions.contains(c)) {
-                    newVersions.add(c);
-                }
-            }
-        }
-
-        Collections.sort(newComponents);
-        Collections.sort(newVersions);
 
         componentParameter.setParameterValues(toParameterValues(newComponents));
-        versionParameter.setParameterValues(toParameterValues(newVersions));
+        iterationsParameter.setParameterValues(toParameterValues(newIterations));
+        releasesParameter.setParameterValues(toParameterValues(newMilestones));
     }
 
-    private List<ParameterValue> toParameterValues(List<String> values) {
-        List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
-        for (String v : values) {
-            ret.add(new ParameterValue(v, v));
-        }
-        return ret;
-    }
-
-    private void setParameters(String urlParameters) {
-        if(urlParameters == null) {
-            return;
-        }
-        String[] params = urlParameters.split("&"); // NOI18N
-        if(params == null || params.length == 0) return;
-        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
-        for (String p : params) {
-            int idx = p.indexOf("="); // NOI18N
-            if(idx > -1) {
-                String parameter = p.substring(0, idx);
-                String value = p.substring(idx + 1, p.length());
-
-                ParameterValue pv = new ParameterValue(value, value);
-                List<ParameterValue> values = normalizedParams.get(parameter);
-                if(values == null) {
-                    values = new ArrayList<ParameterValue>();
-                    normalizedParams.put(parameter, values);
-                }
-                values.add(pv);
+    private String toParameterValues(Collection values) {
+        List<String> l = new ArrayList<String>(values.size());
+        for (Object o : values) {
+            if(o instanceof Product) {
+                l.add(((Product) o).getName());
+            } else if(o instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+                l.add(((com.tasktop.c2c.server.tasks.domain.Component) o).getName());
+            } else if(o instanceof Keyword) {
+                l.add(((Keyword) o).getName());
+            } else if(o instanceof AbstractReferenceValue) {
+                l.add(((AbstractReferenceValue) o).getValue());
+            } else if(o instanceof String) {
+                l.add(o.toString());
             } else {
-                // XXX warning!!
+                throw new IllegalStateException("Unknown parameter type " + o.getClass()); // NOI18N
             }
         }
-
-        List<ParameterValue> componentPV = null;
-        List<ParameterValue> versionPV = null;
-        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
-            QueryParameter qp = parameters.get(e.getKey());
-            if(qp != null) {
-                if(qp == componentParameter) {
-                    componentPV = e.getValue();
-                } else if(qp == versionParameter) {
-                    versionPV = e.getValue();
-                } else {
-                    List<ParameterValue> pvs = e.getValue();
-                    qp.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
-                }
+        
+        Collections.sort(l); // XXX e.g. Milestone has a sortkey
+        
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < l.size(); i++) {
+            sb.append(l.get(i));
+            if(i < values.size() - 1) {
+                sb.append(",");
             }
-        }
-        setDependentParameter(componentParameter, componentPV);
-        setDependentParameter(versionParameter, versionPV);
+        }    
+        return sb.toString();
     }
-                
-    private void setDependentParameter(QueryParameter qp, List<ParameterValue> values) {
-        if(values != null) {
-            qp.setValues(values.toArray(new ParameterValue[values.size()]));
-        }
-    }
+//
+//    private void setParameters(String urlParameters) {
+//        if(urlParameters == null) {
+//            return;
+//        }
+//        String[] params = urlParameters.split("&"); // NOI18N
+//        if(params == null || params.length == 0) return;
+//        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
+//        for (String p : params) {
+//            int idx = p.indexOf("="); // NOI18N
+//            if(idx > -1) {
+//                String parameter = p.substring(0, idx);
+//                String value = p.substring(idx + 1, p.length());
+//
+//                ParameterValue pv = new ParameterValue(value, value);
+//                List<ParameterValue> values = normalizedParams.get(parameter);
+//                if(values == null) {
+//                    values = new ArrayList<ParameterValue>();
+//                    normalizedParams.put(parameter, values);
+//                }
+//                values.add(pv);
+//            } else {
+//                // XXX warning!!
+//            }
+//        }
+//
+//        List<ParameterValue> componentPV = null;
+//        List<ParameterValue> versionPV = null;
+//        for (Map.Entry<String, List<ParameterValue>> e : normalizedParams.entrySet()) {
+//            QueryParameter qp = parameters.get(e.getKey());
+//            if(qp != null) {
+//                if(qp == componentParameter) {
+//                    componentPV = e.getValue();
+//                } else if(qp == versionParameter) {
+//                    versionPV = e.getValue();
+//                } else {
+//                    List<ParameterValue> pvs = e.getValue();
+//                    qp.setValues(pvs.toArray(new ParameterValue[pvs.size()]));
+//                }
+//            }
+//        }
+//        setDependentParameter(componentParameter, componentPV);
+//        setDependentParameter(versionParameter, versionPV);
+//    }
+//                
+//    private void setDependentParameter(QueryParameter qp, List<ParameterValue> values) {
+//        if(values != null) {
+//            qp.setValues(values.toArray(new ParameterValue[values.size()]));
+//        }
+//    }
 
     private void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
@@ -927,8 +955,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             public void run() {
                 String msg =
                     count == 1 ?
-                        NbBundle.getMessage(QueryController.class, "LBL_MatchingIssue", new Object[] {count}) : // NOI18N
-                        NbBundle.getMessage(QueryController.class, "LBL_MatchingIssues", new Object[] {count}); // NOI18N
+                        NbBundle.getMessage(C2CQueryController.class, "LBL_MatchingIssue", new Object[] {count}) : // NOI18N
+                        NbBundle.getMessage(C2CQueryController.class, "LBL_MatchingIssues", new Object[] {count}); // NOI18N
                 panel.tableSummaryLabel.setText(msg);
             }
         });
@@ -970,7 +998,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         private void startQuery() {
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
-                        QueryController.class,
+                        C2CQueryController.class,
                         "MSG_SearchingQuery",                                       // NOI18N
                         new Object[] {
                             query.getDisplayName() != null ?
@@ -981,7 +1009,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 @Override
                 public void run() {
                     enableFields(false);
-                    panel.showSearchingProgress(true, NbBundle.getMessage(QueryController.class, "MSG_Searching")); // NOI18N
+                    panel.showSearchingProgress(true, NbBundle.getMessage(C2CQueryController.class, "MSG_Searching")); // NOI18N
                 }
             });
             handle.start();
@@ -1016,7 +1044,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             if(handle != null && progressWorkunits < progressMaxWorkunits) {
                 handle.progress(
                     NbBundle.getMessage(
-                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
+                        C2CQueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
                     ++progressWorkunits);
             }
         }

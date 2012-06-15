@@ -41,17 +41,33 @@
  */
 package org.netbeans.modules.c2c.tasks.query;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
+import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public class C2CQuery {
 
-    boolean isSaved() {
-        throw new UnsupportedOperationException("Not yet implemented");
+    private final C2CRepository repository;
+    private C2CQueryController controller;
+
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
+    private String name;
+        
+    public C2CQuery(C2CRepository repository) {
+        this.repository = repository;
+    }
+    
+    
+    public boolean isSaved() {
+        return false; // XXX
     }
 
     int getSize() {
@@ -63,7 +79,7 @@ public class C2CQuery {
     }
 
     public String getDisplayName() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return name;
     }
 
     void setName(String name) {
@@ -78,15 +94,15 @@ public class C2CQuery {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    boolean contains(String iD) {
+    public boolean contains(String iD) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    void remove() {
+    public void remove() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    Collection<C2CIssue> getIssues() {
+    public Collection<C2CIssue> getIssues() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -95,6 +111,41 @@ public class C2CQuery {
     }
 
     void addNotifyListener(QueryNotifyListener l) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public String getTooltip() {
+        return name + " - " + repository.getDisplayName(); // NOI18N
+    }
+
+    public QueryController getController() {
+        if(controller == null) {
+            controller = new C2CQueryController(repository, this);
+        }
+        return controller;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    private void fireQuerySaved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
+    }
+
+    private void fireQueryRemoved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
+    }
+
+    private void fireQueryIssuesChanged() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }  
+
+    public void refresh() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
     

@@ -69,18 +69,19 @@ import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
  */
 public class C2CUtil {
      public static TaskData createTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, String summary, String desc, String typeName) throws MalformedURLException, CoreException {
-        TaskAttributeMapper attributeMapper = cfcrc.getTaskDataHandler().getAttributeMapper(repository);
-        TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
         
         ICfcClient client = cfcrc.getClientManager().getClient(repository);
         client.updateRepositoryConfiguration(new NullProgressMonitor());
         CfcClientData clientData = client.getCalmClientData();
         
+        TaskAttributeMapper attributeMapper = cfcrc.getTaskDataHandler().getAttributeMapper(repository);
+        TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
+        
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
-        ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
+        ta = rta.createMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
         ta.setValue(summary);
-        ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
+        ta = rta.createMappedAttribute(CfcTaskAttribute.DESCRIPTION.getKey());
         ta.setValue(desc);
         
         ta = rta.createMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());

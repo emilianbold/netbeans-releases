@@ -56,52 +56,52 @@ public class C2CQueryProvider extends QueryProvider<C2CQuery, C2CIssue> {
 
     @Override
     public String getDisplayName(C2CQuery q) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return q.getDisplayName();
     }
 
     @Override
     public String getTooltip(C2CQuery q) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return q.getTooltip();
     }
 
     @Override
     public QueryController getController(C2CQuery q) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return q.getController();
     }
 
     @Override
     public boolean isSaved(C2CQuery q) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return q.isSaved();
     }
 
     @Override
     public void remove(C2CQuery q) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        q.remove();
     }
 
     @Override
     public Collection<C2CIssue> getIssues(C2CQuery q) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return q.getIssues();
     }
 
     @Override
     public boolean contains(C2CQuery q, String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return q.contains(id);
     }
 
     @Override
-    public void refresh(C2CQuery query) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void refresh(C2CQuery q) {
+        q.refresh();
     }
 
     @Override
     public void removePropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        q.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(C2CQuery q, PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        q.addPropertyChangeListener(listener);
     }
     
 }

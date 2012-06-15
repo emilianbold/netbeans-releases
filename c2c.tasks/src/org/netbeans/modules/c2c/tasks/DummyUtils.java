@@ -48,55 +48,42 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
-import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
-import org.netbeans.modules.c2c.tasks.query.C2CQuery;
-import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author tomas
  */
-public class C2C {
+public class DummyUtils {
+    /********************************************************************************
+     * Dummies
+     ********************************************************************************/
     
-    private static C2C instance;
-    public final static Logger LOG = Logger.getLogger("org.netbeans.modules.c2c.tasks"); // NOI18N
-    
-    private CfcRepositoryConnector cfcrc;
-    private TaskRepositoryLocationFactory trlf;
-    
-    private RequestProcessor rp;
-    
-    public static C2C getInstance() {
-        if(instance == null) {
-            instance = new C2C();
-            instance.init();
-        }
-        return instance;
-    }
-    private C2CIssueProvider c2cip;
-    private C2CQueryProvider c2cqp;
-    private C2CRepositoryProvider c2crp;
-    private BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> bf;
-
-    private void init() {
-        cfcrc = new CfcRepositoryConnector();
-        trlf = new TaskRepositoryLocationFactory();
-        cfcrc.getClientManager().setTaskRepositoryLocationFactory(trlf);
+    private static boolean firstRun = true;
+    private static String uname;
+    private static String passw;
+    private static String proxyHost;
+    private static String proxyPort;
+   
+    static TaskRepository repository;
+    static CfcRepositoryConnector rc;
+    static {
+        rc = new CfcRepositoryConnector();
+        rc.getClientManager().setTaskRepositoryLocationFactory(new TaskRepositoryLocationFactory());
+        repository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
+        setup(repository);
     }
     
-    public CfcClientData getClientData(C2CRepository repository) {
-        ICfcClient client = cfcrc.getClientManager().getClient(repository.getTaskRepository());
-        CfcClientData clientData = client.getCalmClientData();
+    public static CfcClientData getClientData(TaskRepository taskRepository) {
+        ICfcClient client = rc.getClientManager().getClient(taskRepository);
+        CfcClientData clientData = client.getCalmClientData();       
+        
         if(!clientData.isInitialized()) {
             try {
                 client.updateRepositoryConfiguration(new NullProgressMonitor());
@@ -108,41 +95,45 @@ public class C2C {
         return client.getCalmClientData();
     }
     
-    public CfcRepositoryConnector getRepositoryConnector() {
-        return cfcrc;
+    public static void setup(TaskRepository repository) {
+        setupCredentials(repository);
     }
     
-    public BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> getBugtrackingFactory() {
-        if(bf == null) {
-            bf = new BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue>();
-        }    
-        return bf;
-    }
-    
-    public C2CIssueProvider getIssueProvider() {
-        if(c2cip == null) {
-            c2cip = new C2CIssueProvider();
-        }
-        return c2cip; 
-    }
-    public C2CQueryProvider getQueryProvider() {
-        if(c2cqp == null) {
-            c2cqp = new C2CQueryProvider();
-        }
-        return c2cqp; 
-    }
-    public C2CRepositoryProvider getRepositoryProvider() {
-        if(c2crp == null) {
-            c2crp = new C2CRepositoryProvider();
-        }
-        return c2crp; 
-    }    
+    private static void setupCredentials(TaskRepository repository) {
+        if(firstRun) {
+            if (uname == null) {
+                uname = System.getProperty("team.user.login");
+                passw = System.getProperty("team.user.password");
+            }
+            if (uname == null) { 
+                try {
+                        // if it is still null, check the file in ~
+                    BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+                    uname = br.readLine();
+                    passw = br.readLine();
 
-    public RequestProcessor getRequestProcessor() {
-        if(rp == null) {
-            rp = new RequestProcessor("C2C", 1, true); // NOI18N
+                    proxyHost = br.readLine();
+                    proxyPort = br.readLine();
+
+                    br.close();  
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (firstRun) {
+                firstRun = false;
+            }
         }
-        return rp;
+        
+        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(uname, passw);
+        repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
+        
+        if(proxyHost != null && !proxyHost.isEmpty() && !proxyHost.trim().startsWith("#")) {
+            repository.setProperty(TaskRepository.PROXY_HOSTNAME, proxyHost);
+        }
+        if(proxyPort != null && !proxyPort.isEmpty() && !proxyPort.trim().startsWith("#")) {
+            repository.setProperty(TaskRepository.PROXY_PORT, proxyPort);
+        }
+        
     }
-    
 }

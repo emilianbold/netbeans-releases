@@ -51,6 +51,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConnector;
+import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.util.MylynUtils;
@@ -106,6 +107,10 @@ public class C2CRepository {
                 url,
                 user, password,
                 httpUser, httpPassword);
+        
+        // XXX dummy setup
+        DummyUtils.setup(repository);
+        
         return repository;
     }
 
@@ -140,6 +145,10 @@ public class C2CRepository {
         }
     }
 
+    public TaskRepository getTaskRepository() {
+        return taskRepository;
+    }
+            
     public RepositoryInfo getInfo() {
         synchronized(INFO_LOCK) {
             return info;
@@ -190,15 +199,11 @@ public class C2CRepository {
     }
 
     public C2CQuery createQuery() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return new C2CQuery(this);
     }
 
     public C2CIssue[] getIssues(String[] ids) {
         return new C2CIssue[0];
-    }
-    
-    TaskRepository getTaskRepository() {
-        return taskRepository;
     }
     
     private String getTooltip(String repoName, String user, String url) {
