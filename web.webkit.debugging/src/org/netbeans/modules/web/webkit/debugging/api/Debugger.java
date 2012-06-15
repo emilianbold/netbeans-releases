@@ -300,7 +300,7 @@ public final class Debugger {
     private void recordDocumentChange(long timeStamp, JSONArray callStack, boolean attachDOMListeners) {
         assert LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL());
         
-        Node n = webkit.getDOM().getDocument(true);
+        Node n = webkit.getDOM().getDocument();
         if (attachDOMListeners) {
             addDOMBreakpoint(n, Debugger.DOM_BREAKPOINT_SUBTREE);
             removeEventBreakpoint("DOMContentLoaded");
