@@ -46,7 +46,9 @@ package org.netbeans.modules.web.javascript.debugger.watches;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -69,6 +71,12 @@ public final class WatchesModel extends VariablesModel {
             WatchesModel.class.getCanonicalName());
     
     private WatchesListener listener;
+    
+    private static Map<String, ScopedRemoteObject> expressionsCache = 
+            new HashMap<String, ScopedRemoteObject>();
+    
+    private static ScopedRemoteObject NULL_SCOPED_REMOTE_OBJECT = 
+            new ScopedRemoteObject(null, null, ViewScope.DEFAULT);
     
     public WatchesModel(final ContextProvider contextProvider) {
         super(contextProvider);
@@ -95,18 +103,27 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
-        
     public static ScopedRemoteObject evaluateWatch(CallFrame frame, Watch watch) {
         return evaluateExpression(frame, watch.getExpression());
     }
     
     public static ScopedRemoteObject evaluateExpression(CallFrame frame, String expression) {
+        ScopedRemoteObject var = expressionsCache.get(expression);
+        if (var != null) {
+            if (NULL_SCOPED_REMOTE_OBJECT == var) {
+                return null;
+            }
+            return var;
+        }
         RemoteObject prop = frame.evaluate(expression);
         if (prop == null) {
+            expressionsCache.put(expression, NULL_SCOPED_REMOTE_OBJECT);
             LOG.log(Level.WARNING, "expression was not evaluated: '"+expression+"'");
             return null;
         }
-        return new ScopedRemoteObject(prop, expression, VariablesModel.ViewScope.LOCAL);
+        var = new ScopedRemoteObject(prop, expression, VariablesModel.ViewScope.LOCAL);
+        expressionsCache.put(expression, var);
+        return var;
     }
 
     @Override
@@ -242,6 +259,13 @@ public final class WatchesModel extends VariablesModel {
         throw new UnknownTypeException(node);
     }
 
+    @Override
+    public void resumed() {
+        expressionsCache = new HashMap<String, ScopedRemoteObject>();        
+        super.resumed();
+    }
+
+    
     private static class WatchesListener extends DebuggerManagerAdapter implements PropertyChangeListener {
 
         // XXX: check whether model has to be hold with WeakReference here to prevent memory leaks

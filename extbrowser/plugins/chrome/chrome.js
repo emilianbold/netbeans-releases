@@ -72,7 +72,7 @@ NetBeans.browserDetachDebugger = function(tabId) {
 
 NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
-        console.log('send ['+tabId+","+id+","+method+","+params);
+        console.log('send ['+tabId+","+id+","+method+","+JSON.stringify(params));
     }
     chrome.debugger.sendCommand({tabId : tabId}, method, params, 
         function(result) {

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
+import java.net.URL;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
@@ -87,6 +88,15 @@ public class WebKitDebuggingTransport implements TransportImplementation {
             return impl.getURL().toExternalForm();
         } else {
             return "...";
+        }
+    }
+    
+    @Override
+    public URL getConnectionURL() {
+        if (impl.getURL() != null) {
+            return impl.getURL();
+        } else {
+            return null;
         }
     }
     

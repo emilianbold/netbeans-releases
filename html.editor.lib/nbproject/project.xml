@@ -277,6 +277,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>
+                <friend>org.netbeans.modules.web.livehtml</friend>
                 <package>org.netbeans.modules.html.editor.lib.api</package>
                 <package>org.netbeans.modules.html.editor.lib.api.dtd</package>
                 <package>org.netbeans.modules.html.editor.lib.api.elements</package>

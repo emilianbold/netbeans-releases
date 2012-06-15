@@ -103,6 +103,7 @@
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
+                <friend>org.netbeans.modules.web.livehtml</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.browser.api</package>
                 <package>org.netbeans.modules.web.browser.spi</package>
