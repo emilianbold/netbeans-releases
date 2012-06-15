@@ -1822,8 +1822,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
-    (   ( (LITERAL_constexpr | LITERAL_static)? LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr | LITERAL_static)?
+    (   ( (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)*
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
