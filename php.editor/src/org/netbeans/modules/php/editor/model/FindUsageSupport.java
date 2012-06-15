@@ -163,7 +163,8 @@ public final class FindUsageSupport {
                 for (FileObject fo : index.getLocationsForIdentifiers(name)) {
                     FileType fileType = PhpSourcePath.getFileType(fo);
                     if (fileType == PhpSourcePath.FileType.SOURCE
-                            || fileType == PhpSourcePath.FileType.TEST) {
+                            || fileType == PhpSourcePath.FileType.TEST
+                            || fileType == PhpSourcePath.FileType.UNKNOWN) {
                         this.files.add(fo);
                     }
                 }

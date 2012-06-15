@@ -96,6 +96,17 @@ public final class CndFileUtils {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        } else {
+            tmpDirFile = new File(System.getProperty("netbeans.user")); //NOI18N
+            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+            tmpDirFo = FileUtil.toFileObject(tmpDirFile);
+            if (tmpDirFo != null) {
+                try {
+                    afileFileSystem = tmpDirFo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         if (afileFileSystem == null) {
             afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
@@ -115,11 +126,11 @@ public final class CndFileUtils {
             absPath = absPath.toUpperCase();
             caseSenstive = !new File(absPath).exists();
             tmpFile.delete();
-            FileUtil.addFileChangeListener(FSL);
         } catch (IOException ex) {
             caseSenstive = Utilities.isUnix() && !Utilities.isMac();
         }
         TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
+        FileUtil.addFileChangeListener(FSL);
     }
 
     public static boolean isSystemCaseSensitive() {

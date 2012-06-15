@@ -3,5 +3,5 @@ AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.modules.options.java
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/options/java/Bundle.properties
 OpenIDE-Module-Provides: org.netbeans.modules.options.java
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 

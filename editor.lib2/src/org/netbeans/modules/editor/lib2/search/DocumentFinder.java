@@ -1222,7 +1222,7 @@ public class DocumentFinder
                     do {
                         initOffset++;
                     } while(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() == 0);
-                    if(matcher.end() - matcher.start() > 0)
+                    if(matcher.find(initOffset) && matcher.end() - matcher.start() > 0)
                         return find(initOffset,chars);
                     else
                         return -1;

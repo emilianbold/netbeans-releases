@@ -50,6 +50,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
@@ -71,6 +73,7 @@ import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -173,7 +176,6 @@ public final class DashboardViewer implements PropertyChangeListener {
         treeList.setDragEnabled(true);
         treeList.setDropMode(DropMode.ON_OR_INSERT);
         treeList.setModel(model);
-        treeList.addPropertyChangeListener("dropLocation", new DropLocationListener());
         attachActions();
         dashboardComponent.setViewportView(treeList);
         dashboardComponent.invalidate();
@@ -209,6 +211,8 @@ public final class DashboardViewer implements PropertyChangeListener {
                     updateContent();
                 }
             });
+        } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)){
+            DashboardRefresher.getInstance().setupDashboardRefresh();
         }
     }
 
@@ -230,6 +234,14 @@ public final class DashboardViewer implements PropertyChangeListener {
     private static class Holder {
 
         private static final DashboardViewer theInstance = new DashboardViewer();
+    }
+
+    public void addDashboardSelectionListener(ListSelectionListener listener) {
+        treeList.addListSelectionListener(listener);
+    }
+
+    public void removeDashboardSelectionListener(ListSelectionListener listener) {
+        treeList.removeListSelectionListener(listener);
     }
 
     public void setActiveTaskNode(TreeListNode activeTaskNode) {
@@ -778,6 +790,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 titleRepositoryNode.setProgressVisible(false);
                 loadCategories();
                 titleCategoryNode.setProgressVisible(false);
+                DashboardRefresher.getInstance().setupDashboardRefresh();
             }
         });
     }
@@ -859,7 +872,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
 
-            List<Repository> oldValue = getRepositories();
+            List<Repository> oldValue = getRepositories(false);
             for (Repository newRepository : newValue) {
                 if (!oldValue.contains(newRepository)) {
                     toAdd.add(newRepository);
@@ -881,11 +894,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private List<Repository> getRepositories() {
+    public List<Repository> getRepositories(boolean openedOnly) {
         synchronized (LOCK_REPOSITORIES) {
             List<Repository> repositories = new ArrayList<Repository>();
             for (RepositoryNode repositoryNode : repositoryNodes) {
-                repositories.add(repositoryNode.getRepository());
+                if (!(openedOnly && !repositoryNode.isOpened())) {
+                    repositories.add(repositoryNode.getRepository());
+                }
             }
             return repositories;
         }
@@ -911,12 +926,6 @@ public final class DashboardViewer implements PropertyChangeListener {
                     setRepositories(repoNodes);
                 }
             });
-        }
-    }
-
-    private void refreshQueries(Collection<Query> queries) {
-        for (Query query : queries) {
-            query.refresh();
         }
     }
 
@@ -1052,13 +1061,5 @@ public final class DashboardViewer implements PropertyChangeListener {
             return true;
         }
         return false;
-    }
-
-    private static class DropLocationListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            
-        }
     }
 }
