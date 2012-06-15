@@ -50,8 +50,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -226,6 +228,10 @@ public final class NbMavenProject {
                         } else {
                             throw x;
                         }
+                    } catch (RuntimeException exc) {
+                        //guard against exceptions that are not processed by the embedder
+                        //#136184 NumberFormatException, #214152 InvalidArtifactRTException
+                        StatusDisplayer.getDefault().setStatusText(MSG_Failed(exc.getLocalizedMessage()));
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
@@ -464,6 +470,8 @@ public final class NbMavenProject {
         } catch (ArtifactNotFoundException ex) {
             // just ignore..ex.printStackTrace();
         } catch (ArtifactResolutionException ex) {
+            // just ignore..ex.printStackTrace();
+        } catch (InvalidArtifactRTException ex) { //214152 InvalidArtifactRTException
             // just ignore..ex.printStackTrace();
         } finally {
             progress.finish();
