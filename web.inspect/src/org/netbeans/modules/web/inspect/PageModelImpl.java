@@ -315,4 +315,14 @@ public class PageModelImpl extends PageModel {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public void setSelectionMode(boolean selectionMode) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean isSelectionMode() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 }

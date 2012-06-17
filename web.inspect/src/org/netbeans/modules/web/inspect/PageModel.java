@@ -59,6 +59,8 @@ public abstract class PageModel {
     public static final String PROP_SELECTED_NODES = "selectedNodes"; // NOI18N
     /** Name of the property that is fired when the set of highlighted nodes is changed. */
     public static final String PROP_HIGHLIGHTED_NODES = "highlightedNodes"; // NOI18N
+    /** Name of the property that is fired when the selection mode is switched on/off. */
+    public static final String PROP_SELECTION_MODE = "selectionMode"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
@@ -89,6 +91,22 @@ public abstract class PageModel {
      * @param nodes highlighted nodes.
      */
     public abstract void setHighlightedNodes(List<? extends Node> nodes);
+
+    /**
+     * Switches the selection mode on or off.
+     * 
+     * @param selectionMode determines whether the selection mode should
+     * be switched on or off.
+     */
+    public abstract void setSelectionMode(boolean selectionMode);
+
+    /**
+     * Determines whether the selection mode is switched on or off.
+     * 
+     * @return {@code true} when the selection mode is switched on,
+     * returns {@code false} otherwise.
+     */
+    public abstract boolean isSelectionMode();
 
     /**
      * Returns highlighted nodes.

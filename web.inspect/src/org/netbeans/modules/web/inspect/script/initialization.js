@@ -62,6 +62,9 @@ NetBeans.ATTR_HIGHLIGHTED = ':netbeans_highlighted';
 // ID of canvas element that serves as a glass-pane
 NetBeans.GLASSPANE_ID = 'netbeans_glasspane';
 
+// ID of check-box for selection mode
+NetBeans.SELECTION_MODE_ID = 'netbeans_selection_mode';
+
 // Name of the parameter (in query string)
 // that is used to force reload of some resource
 NetBeans.RELOAD_PARAM = 'netbeans_reload';
@@ -704,6 +707,7 @@ NetBeans.insertGlassPane = function() {
     toolbox.style.zIndex = zIndex;
     var selectionMode = document.createElement('input');
     selectionMode.type = 'checkbox';
+    selectionMode.id = this.SELECTION_MODE_ID;
     selectionMode.setAttribute(this.ATTR_ARTIFICIAL, true);
     selectionMode.addEventListener('click', this.switchSelectionMode);
     toolbox.appendChild(selectionMode);
@@ -719,9 +723,19 @@ NetBeans.insertGlassPane = function() {
 // Updates the selection mode according to the 'Select Mode' check-box
 NetBeans.switchSelectionMode = function(event) {
     var checked = event.currentTarget.checked;
-    var value = checked ? 'auto' : 'none';
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
+    // Notify IDE about the change
+    canvas.setAttribute(':netbeans_selection_mode', checked);
+}
+
+NetBeans.setSelectionMode = function(selectionMode) {
+    var value = selectionMode ? 'auto' : 'none';
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
     canvas.style.pointerEvents = value;
+    var checkbox = document.getElementById(NetBeans.SELECTION_MODE_ID);
+    if (checkbox != null) {
+        checkbox.checked = selectionMode;
+    }
 }
 
 // Repaints the glass-pane

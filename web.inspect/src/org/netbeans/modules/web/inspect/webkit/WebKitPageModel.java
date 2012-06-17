@@ -77,6 +77,8 @@ public class WebKitPageModel extends PageModel {
     private List<? extends org.openide.nodes.Node> highlightedNodes = Collections.EMPTY_LIST;
     /** WebKit DOM domain listener. */
     private DOM.Listener domListener;
+    /** Determines whether the selection mode is switched on. */
+    private boolean selectionMode;
 
     /** Logger used by this class */
     //private java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(WebKitPageModel.class.getName());
@@ -182,7 +184,6 @@ public class WebKitPageModel extends PageModel {
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            initializePage();
                             firePropertyChange(PROP_DOCUMENT, null, null);
                         }
                     });
@@ -192,6 +193,7 @@ public class WebKitPageModel extends PageModel {
             @Override
             public void attributeModified(Node node, String attrName) {
                 synchronized(WebKitPageModel.this) {
+                    // Attribute modifications that represent selection/highlight
                     final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
                     final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
                     if (selected || highlighted) {
@@ -217,6 +219,27 @@ public class WebKitPageModel extends PageModel {
                         });
                         return;
                     }
+
+                    // Notifications via attribute modification of the glass-pane
+                    if (node.isInjectedByNetBeans()) {
+                        Node.Attribute attr = node.getAttribute("id"); // NOI18N
+                        if (attr != null && "netbeans_glasspane".equals(attr.getValue())) { // NOI18N
+                            // Attribute modifications that represent selection mode switching
+                            if (":netbeans_selection_mode".equals(attrName)) { // NOI18N
+                                attr = node.getAttribute(attrName);
+                                final boolean mode = "true".equals(attr.getValue()); // NOI18N
+                                RP.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        setSelectionMode(mode);
+                                    }
+                                });
+                            }
+                        }
+                        return;
+                    }
+
+                    // Update DOMNode
                     int nodeId = node.getNodeId();
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
@@ -347,6 +370,24 @@ public class WebKitPageModel extends PageModel {
         }
     }
 
+    @Override
+    public void setSelectionMode(boolean selectionMode) {
+        synchronized (this) {
+            if (this.selectionMode == selectionMode) {
+                return;
+            }
+            this.selectionMode = selectionMode;
+        }
+        firePropertyChange(PROP_SELECTION_MODE, !selectionMode, selectionMode);
+    }
+
+    @Override
+    public boolean isSelectionMode() {
+        synchronized (this) {
+            return selectionMode;
+        }
+    }
+
     class WebPaneSynchronizer implements PropertyChangeListener {
         private final Object LOCK_HIGHLIGHT = new Object();
         private final Object LOCK_SELECTION = new Object();
@@ -358,6 +399,11 @@ public class WebKitPageModel extends PageModel {
                 updateHighlight();
             } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
                 updateSelection();
+            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                updateSelectionMode();
+            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                initializePage();
+                updateSelectionMode();
             }
         }
 
@@ -390,7 +436,13 @@ public class WebKitPageModel extends PageModel {
                 webKit.getRuntime().evaluate("NetBeans.finishNextSelection()"); // NOI18N                    
             } 
         }
-        
+
+        private void updateSelectionMode() {
+            boolean selectionMode = isSelectionMode();
+            String code = "NetBeans.setSelectionMode("+selectionMode+")"; // NOI18N
+            webKit.getRuntime().evaluate(code);
+        }
+
     }
-    
+
 }
