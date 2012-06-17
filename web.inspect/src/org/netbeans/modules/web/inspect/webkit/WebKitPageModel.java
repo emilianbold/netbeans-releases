@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -86,6 +88,7 @@ public class WebKitPageModel extends PageModel {
      */
     public WebKitPageModel(WebKitDebugging webKit) {
         this.webKit = webKit;
+        addPropertyChangeListener(new WebPaneSynchronizer());
         
         // Register DOM domain listener
         domListener = createDOMListener();
@@ -316,15 +319,6 @@ public class WebKitPageModel extends PageModel {
             }
             selectedNodes = nodes;
         }
-        webKit.getRuntime().evaluate("NetBeans.initNextSelection()"); // NOI18N
-        for (org.openide.nodes.Node node : nodes) {
-            Node webKitNode = node.getLookup().lookup(Node.class);
-            RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
-            if (remote != null) {
-                webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
-            }
-        }
-        webKit.getRuntime().evaluate("NetBeans.finishNextSelection()"); // NOI18N
         firePropertyChange(PROP_SELECTED_NODES, null, null);
     }
 
@@ -343,15 +337,6 @@ public class WebKitPageModel extends PageModel {
             }
             highlightedNodes = nodes;
         }
-        webKit.getRuntime().evaluate("NetBeans.initNextHighlight()"); // NOI18N
-        for (org.openide.nodes.Node node : nodes) {
-            Node webKitNode = node.getLookup().lookup(Node.class);
-            RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
-            if (remote != null) {
-                webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
-            }
-        }
-        webKit.getRuntime().evaluate("NetBeans.finishNextHighlight()"); // NOI18N
         firePropertyChange(PROP_HIGHLIGHTED_NODES, null, null);
     }
 
@@ -360,6 +345,52 @@ public class WebKitPageModel extends PageModel {
         synchronized (this) {
             return Collections.unmodifiableList(highlightedNodes);
         }
+    }
+
+    class WebPaneSynchronizer implements PropertyChangeListener {
+        private final Object LOCK_HIGHLIGHT = new Object();
+        private final Object LOCK_SELECTION = new Object();
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                updateHighlight();
+            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                updateSelection();
+            }
+        }
+
+        private void updateHighlight() {
+            synchronized (LOCK_HIGHLIGHT) {
+                List<? extends org.openide.nodes.Node> nodes = getHighlightedNodes();
+                webKit.getRuntime().evaluate("NetBeans.initNextHighlight()"); // NOI18N
+                for (org.openide.nodes.Node node : nodes) {
+                    Node webKitNode = node.getLookup().lookup(Node.class);
+                    RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+                    if (remote != null) {
+                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
+                    }
+                }
+                webKit.getRuntime().evaluate("NetBeans.finishNextHighlight()"); // NOI18N
+            }            
+        }
+
+        private void updateSelection() {
+            synchronized (LOCK_SELECTION) {
+                List<? extends org.openide.nodes.Node> nodes = getSelectedNodes();
+                webKit.getRuntime().evaluate("NetBeans.initNextSelection()"); // NOI18N
+                for (org.openide.nodes.Node node : nodes) {
+                    Node webKitNode = node.getLookup().lookup(Node.class);
+                    RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
+                    if (remote != null) {
+                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
+                    }
+                }
+                webKit.getRuntime().evaluate("NetBeans.finishNextSelection()"); // NOI18N                    
+            } 
+        }
+        
     }
     
 }
