@@ -222,7 +222,11 @@ public class DOMNode extends AbstractNode {
         @Override
         protected org.openide.nodes.Node[] createNodes(Integer nodeId) {
             DOMNode node = pageModel.getNode(nodeId);
-            return new org.openide.nodes.Node[] { node };
+            if (node == null) {
+                return null;
+            } else {
+                return new org.openide.nodes.Node[] { node };
+            }
         }
         
     }
