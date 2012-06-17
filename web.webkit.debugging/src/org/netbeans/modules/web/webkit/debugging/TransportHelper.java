@@ -93,6 +93,7 @@ public class TransportHelper {
         if (res) {
             return handle.getResponse();
         } else {
+            log("no response for "+command.toString()); // NOI18N
             return null;
         }
     }
