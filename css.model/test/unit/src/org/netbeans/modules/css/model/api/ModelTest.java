@@ -42,6 +42,8 @@
 package org.netbeans.modules.css.model.api;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.diff.Difference;
@@ -199,6 +201,26 @@ public class ModelTest extends ModelTestBase {
                         .getDeclarations().get(0).getProperty().setContent("background-color");
             }
         });
+        
+    }
+    
+    public void testModelCaching() {
+        CssParserResult result = TestUtil.parse("div { color: red; }");
+        Model model = Model.getModel(result);
+        
+        System.gc();
+        
+        Model model2 = Model.getModel(result);
+        
+        assertSame(model, model2);
+
+        //check the model is properly released when no one holds it
+        Reference<Model> ref = new WeakReference<Model>(model);
+        
+        model = null;
+        model2 = null;
+        
+        assertGC("model not properly released", ref);
         
     }
     

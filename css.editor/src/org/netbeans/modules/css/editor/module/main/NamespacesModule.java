@@ -65,8 +65,10 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
-import org.netbeans.modules.css.lib.api.model.Namespace;
-import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Namespace;
+import org.netbeans.modules.css.model.api.Namespaces;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -81,8 +83,8 @@ public class NamespacesModule extends CssEditorModule {
     static ElementKind NAMESPACE_ELEMENT_KIND = ElementKind.GLOBAL; //XXX fix CSL
 
     @Override
-    public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+    public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
+        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
         if (isError) {
@@ -95,10 +97,7 @@ public class NamespacesModule extends CssEditorModule {
                 //already in the prefix
 
                 //todo: rewrite to use index later
-                Stylesheet model = context.getParserResult().getModel();
-                for (Namespace ns : model.getNamespaces()) {
-                    proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-                }
+                proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
             case root:
@@ -163,11 +162,24 @@ public class NamespacesModule extends CssEditorModule {
         return Css3Utils.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
 
-    private static List<CompletionProposal> getNamespaceCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
-            proposals.add(new NamespaceCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-        }
+    private static List<CompletionProposal> getNamespaceCompletionProposals(final CompletionContext context) {
+        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        //todo: rewrite to use index later
+        Model sourceModel = Model.getModel(context.getParserResult());
+        sourceModel.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                Namespaces namespaces = styleSheet.getNamespaces();
+                if(namespaces == null) {
+                    return ;
+                }
+                for (Namespace ns : namespaces.getNamespaces()) {
+                    proposals.add(
+                            new NamespaceCompletionItem(ns.getNamespacePrefixName().getContent().toString(),
+                            ns.getResourceIdentifier().getContent().toString(), context.getAnchorOffset()));
+                }
+            }
+        });
         return proposals;
     }
 

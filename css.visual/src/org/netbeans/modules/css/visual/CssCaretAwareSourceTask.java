@@ -126,7 +126,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             return ;
         }
         
-        Model model = result.getModelV2();
+        Model model = result.getModel();
         
         model.runReadTask(new Model.ModelTask() {
 
@@ -152,7 +152,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                     return ;
                 }
                 
-                RuleContext context = match == null ? null : new RuleContext(match, result.getModelV2());
+                RuleContext context = match == null ? null : new RuleContext(match, result.getModel());
                 cssPropertiesTC.setContext(context);
             }
         });

@@ -83,6 +83,14 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.css.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

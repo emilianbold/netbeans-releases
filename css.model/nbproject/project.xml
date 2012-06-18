@@ -118,6 +118,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
+                <friend>org.netbeans.modules.web.inspect</friend>
                 <package>org.netbeans.modules.css.model.api</package>
             </friend-packages>
         </data>

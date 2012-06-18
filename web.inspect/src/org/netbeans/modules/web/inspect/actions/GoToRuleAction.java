@@ -47,14 +47,16 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.model.Rule;
-import org.netbeans.modules.css.lib.api.model.Stylesheet;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelVisitor;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.SelectorsGroup;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -125,25 +127,42 @@ public class GoToRuleAction extends AbstractAction {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            String selector = normalizeSelector(rule.getSelector());
+            final String selector = normalizeSelector(rule.getSelector());
             CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
-            CssParserResult wrappedResult = result.getWrappedCssParserResult();
-            Stylesheet sheet = wrappedResult.getModel();
-            for (Rule ruleInFile : sheet.rules()) {
-                Node selectorGroup = ruleInFile.getSelectorsGroup();
-                CharSequence image = selectorGroup.image();
-                String selectorInFile = normalizeSelector(image.toString());
-                if (selector.equals(selectorInFile)) {
-                    final int offset = ruleInFile.getRuleNameOffset();
-                    EventQueue.invokeLater(new Runnable() {
+            final Model sourceModel = result.getModel();
+            final AtomicBoolean visitorCancelled = new AtomicBoolean();
+            sourceModel.runReadTask(new Model.ModelTask() {
+                
+                @Override
+                public void run(StyleSheet styleSheet) {
+                    styleSheet.accept(new ModelVisitor.Adapter() {
+
                         @Override
-                        public void run() {
-                            CSSUtils.open(fob, offset);
+                        public void visitRule(Rule rule) {
+                            if(visitorCancelled.get()) {
+                                return ;
+                            }
+                            SelectorsGroup selectorGroup = rule.getSelectorsGroup();
+                            CharSequence image = sourceModel.getElementSource(selectorGroup);
+                            String selectorInFile = normalizeSelector(image.toString());
+                            if (selector.equals(selectorInFile)) {
+                                //found 
+                                visitorCancelled.set(true);
+                                final int offset = rule.getStartOffset();
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        CSSUtils.open(fob, offset);
+                                    }
+                                });
+                            }
                         }
-                    });
-                    break;
+                        
+                    }); //model visitor
                 }
-            }
+                
+            }); //model task
+            
         }
 
         /**

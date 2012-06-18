@@ -44,9 +44,13 @@ package org.netbeans.modules.css.model.api;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -83,6 +87,43 @@ public final class Model {
 
     private Lookup MODEL_LOOKUP;
     private ElementFactory ELEMENT_FACTORY;
+    
+    private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE
+            = new WeakHashMap<CssParserResult, Reference<Model>>();
+    
+    /**
+     * Gets the Model instance for given CssParserResult.
+     * 
+     * This is the basic way how clients should obtain the Css Source Model.
+     * 
+     * The returned model instance can be cached to the given parsing result.
+     * 
+     * <b>This method should be called under the parsing lock as the parser 
+     * result task should not escape the UserTask</b>
+     * 
+     * @param parserResult
+     * 
+     * @return an instance of the Css Source Model
+     */
+    public static synchronized Model getModel(CssParserResult parserResult) {
+        //try cache first
+        Reference<Model> cached_ref = PR_MODEL_CACHE.get(parserResult);
+        if(cached_ref != null) {
+            Model cached = cached_ref.get();
+            if(cached != null) {
+                return cached;
+            }
+        }
+        
+        //recreate
+        Model model = new Model(parserResult);
+        
+        //cache
+        PR_MODEL_CACHE.put(parserResult, new WeakReference<Model>(model));
+        
+        return model;
+    }
+    
     
     /**
      * Creates a new model with empty stylesheet
@@ -168,19 +209,7 @@ public final class Model {
         });
     }
 
-    private void checkModelAccess() {
-        if (ModelAccess.checkModelAccess) {
-            if (!(MODEL_MUTEX.isReadAccess() || MODEL_MUTEX.isWriteAccess())) {
-                LOGGER.log(Level.WARNING, "Model access outside of Model.runRead/WriteTask()!", new IllegalAccessException());
-            }
-        }
-    }
-
-    //for tests only
-    StyleSheet getStyleSheet() {
-        checkModelAccess();
-        return getLookup().lookup(StyleSheet.class);
-    }
+   
 
     public CharSequence getOriginalSource() {
         return getLookup().lookup(CharSequence.class);
@@ -204,17 +233,7 @@ public final class Model {
         return b;
     }
 
-    private void getElementSource(Element e, StringBuilder b) {
-        if (e instanceof PlainElement) {
-            b.append(((PlainElement) e).getContent());
-        }
-        for (Iterator<Element> itr = e.childrenIterator(); itr.hasNext();) {
-            Element element = itr.next();
-            if (element != null) {
-                getElementSource(element, b);
-            }
-        }
-    }
+    
 
     public Difference[] getModelSourceDiff() throws IOException {
         DiffProvider diffProvider = Lookup.getDefault().lookup(DiffProvider.class);
@@ -266,6 +285,64 @@ public final class Model {
         applyChanges(document, DIRECT_OFFSET_CONVERTOR);
     }
     
+    
+
+    /**
+     * Returns an instance of {@link ElementFactory}.
+     */
+    public synchronized ElementFactory getElementFactory() {
+        if(ELEMENT_FACTORY == null) {
+            ELEMENT_FACTORY = getElementFactoryImpl(this);
+        }
+        return ELEMENT_FACTORY;
+    }
+
+    /**
+     * Allows clients to read/write access the css source model
+     */
+    public static interface ModelTask {
+
+        /**
+         * This method is called within the model lock when one 
+         * calls Model.runRead/WriteTask
+         * 
+         * @param styleSheet the stylesheet object representing
+         * the model source. May be used for reading or modifying 
+         * the source.
+         */
+        public void run(StyleSheet styleSheet);
+        
+    }
+    
+    // ---------------------- private -------------------------
+    
+    //for tests only
+    StyleSheet getStyleSheet() {
+        checkModelAccess();
+        return getLookup().lookup(StyleSheet.class);
+    }
+    
+    private void getElementSource(Element e, StringBuilder b) {
+        if (e instanceof PlainElement) {
+            b.append(((PlainElement) e).getContent());
+        }
+        for (Iterator<Element> itr = e.childrenIterator(); itr.hasNext();) {
+            Element element = itr.next();
+            if (element != null) {
+                getElementSource(element, b);
+            }
+        }
+    }
+    
+    private void checkModelAccess() {
+        if (ModelAccess.checkModelAccess) {
+            if (!(MODEL_MUTEX.isReadAccess() || MODEL_MUTEX.isWriteAccess())) {
+                LOGGER.log(Level.WARNING, "Model access outside of Model.runRead/WriteTask()!", new IllegalAccessException());
+            }
+        }
+    }
+
+    
     private void applyChanges(Document document, OffsetConvertor convertor) throws IOException, BadLocationException {
         int sourceDelta = 0;
         for (Difference d : getModelSourceDiff()) {
@@ -300,27 +377,11 @@ public final class Model {
         }
 
     }
-
-    /**
-     * Returns an instance of {@link ElementFactory}.
-     */
-    public synchronized ElementFactory getElementFactory() {
-        if(ELEMENT_FACTORY == null) {
-            ELEMENT_FACTORY = getElementFactoryImpl(this);
-        }
-        return ELEMENT_FACTORY;
-    }
-
+    
     private static ElementFactoryImpl getElementFactoryImpl(Model model) {
         return new ElementFactoryImpl(model);
     }
 
-    public static interface ModelTask {
-
-        public void run(StyleSheet styleSheet);
-        
-    }
-    
     private static interface OffsetConvertor {
         
         public int getOriginalOffset(int documentOffset);

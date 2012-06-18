@@ -43,7 +43,6 @@ package org.netbeans.modules.css.lib.api;
 
 import java.util.List;
 import org.netbeans.modules.css.lib.AbstractParseTreeNode;
-import org.netbeans.modules.css.lib.api.model.Stylesheet;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -57,7 +56,6 @@ public class CssParserResult extends Parser.Result {
     
     private AbstractParseTreeNode parseTree;
     private List<ProblemDescription> diagnostics;
-    private Stylesheet model;
     
     public CssParserResult(Snapshot snapshot, AbstractParseTreeNode parseTree, List<ProblemDescription> diagnostics) {
         super(snapshot);
@@ -80,13 +78,6 @@ public class CssParserResult extends Parser.Result {
             throw new IllegalStateException("Already invalidated parser result, you are likely trying to use it outside of the parsing task runnable!"); //NOI18N
         }
         return parseTree;
-    }
-    
-    public synchronized Stylesheet getModel() {
-        if(model == null) {
-            model = Stylesheet.create(this);
-        }
-        return model;
     }
     
     public List<ProblemDescription> getDiagnostics() {

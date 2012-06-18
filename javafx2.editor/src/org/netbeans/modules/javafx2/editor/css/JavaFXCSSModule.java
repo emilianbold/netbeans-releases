@@ -45,7 +45,6 @@ import java.util.Collection;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.CssModule;
-import org.netbeans.modules.css.lib.api.model.Namespace;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;

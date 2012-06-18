@@ -104,6 +104,6 @@ public class NamespaceI extends ModelElement implements Namespace {
 
     @Override
     protected Class getModelClass() {
-        return ResourceIdentifier.class;
+        return Namespace.class;
     }
 }
