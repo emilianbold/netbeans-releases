@@ -82,6 +82,7 @@ public abstract class ELPlugin {
      * @param compilationContext compilation context to get additional informations.
      * @return <b>True</b> when {@link ExecutableElement} can be used as valid property in context for code on caret.
      * Returns <b>false</b> when not. Default implementation returns <b>false</b>. <br /> <b>False</b> is returned on any error. 
+     * @since 1.20
      */
     public boolean isValidProperty(ExecutableElement executableElement, Source source, CodeCompletionContext completionContext, CompilationContext compilationContext) {
         return false;
@@ -127,6 +128,7 @@ public abstract class ELPlugin {
          * @param compilationContext compilation context to get additional informations.
          * @return <b>True</b> when {@link ExecutableElement} can be used as valid property in context for code on caret.
          * Returns <b>false</b> when not. Default implementation returns <b>false</b>. <br /> <b>False</b> is returned on any error. 
+         * @since 1.20
          */
         public static boolean isValidProperty(ExecutableElement executableElement, Source source, CompilationContext compilationContext, CodeCompletionContext completionContext) {
             for (ELPlugin plugin : getELPlugins()) {
