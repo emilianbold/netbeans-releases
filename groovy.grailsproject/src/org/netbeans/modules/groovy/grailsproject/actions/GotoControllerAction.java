@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.grailsproject.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
 import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -52,7 +51,7 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
-@Messages("CTL_GotoControllerAction=Go to Grails Con&troller")
+@Messages("CTL_GotoControllerAction=Go to Grails Controller")
 @ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoControllerAction", category = "Groovy")
 @ActionRegistration(lazy = false, displayName = "#CTL_GotoControllerAction")
 @ActionReferences(value = {
