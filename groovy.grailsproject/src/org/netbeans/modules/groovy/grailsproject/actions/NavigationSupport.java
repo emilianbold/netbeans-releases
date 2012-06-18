@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.io.File;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -68,7 +69,7 @@ public class NavigationSupport {
     private static final Logger LOG = Logger.getLogger(NavigationSupport.class.getName());
 
     private enum ActionType {
-        DOMAIN, VIEW, CONTROLLER, NONE;
+        DOMAIN, VIEW, CONTROLLER;
     }
 
 
@@ -117,6 +118,38 @@ public class NavigationSupport {
         if (GSP_MIME_TYPE.equals(fo.getMIMEType())) {
             String parentName = fo.getParent().getName();
             targetName = parentName.substring(0, 1).toUpperCase() + parentName.substring(1);
+
+            if (ActionType.DOMAIN == target) {
+                final String BASE_DIR = FileUtil.getFileDisplayName(getOwningProject(fo).getProjectDirectory()) + File.separator + "grails-app" + File.separator; //NOI18N
+                final String DOMAIN_DIR = BASE_DIR + "domain" + File.separator;
+
+                File file = new File(DOMAIN_DIR);
+                FileObject domainDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                Enumeration<? extends FileObject> children = domainDirFO.getChildren(true);
+
+                while (children.hasMoreElements()) {
+                    FileObject child = children.nextElement();
+                    if (targetName.equals(child.getName())) {
+                        targetName = findPackagePath(child) + File.separator + targetName;
+                        break;
+                    }
+                }
+            } else if (ActionType.CONTROLLER == target) {
+                final String BASE_DIR = FileUtil.getFileDisplayName(getOwningProject(fo).getProjectDirectory()) + File.separator + "grails-app" + File.separator; //NOI18N
+                final String CONTROLLERS_DIR = BASE_DIR + "controllers" + File.separator;
+
+                File file = new File(CONTROLLERS_DIR);
+                FileObject domainDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                Enumeration<? extends FileObject> children = domainDirFO.getChildren(true);
+
+                while (children.hasMoreElements()) {
+                    FileObject child = children.nextElement();
+                    if ((targetName + "Controller").equals(child.getName())) {
+                        targetName = findPackagePath(child) + File.separator + targetName;
+                        break;
+                    }
+                }
+            }
         } else {
             if (ActionType.VIEW == target) {
                 targetName = dataObject.getName();
@@ -258,6 +291,9 @@ public class NavigationSupport {
         } else if (caller instanceof GotoControllerAction) {
             return ActionType.CONTROLLER;
         }
-        return ActionType.NONE;
+
+        // This should never happened
+        assert false;
+        return null;
     }
 }
