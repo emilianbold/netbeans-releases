@@ -122,6 +122,9 @@ var NetBeans = {
         // add buttons
         for (p in presets) {
             var preset = presets[p];
+            if (!preset.toolbar) {
+                continue;
+            }
             var button = document.createElement('a');
             button.setAttribute('href', '#');
             button.setAttribute('onclick', 'NetBeans.resizePage(' + p + '); return false;');
@@ -146,7 +149,7 @@ var NetBeans = {
 
     _savePresets: function() {
         // XXX save presets back to NB
-        alert('Saving presets not implemented');
+        console.error('Saving presets not implemented');
     },
 
     _resizeFrame: function(width, height, units) {
@@ -183,6 +186,15 @@ NetBeans_Preset.SMARTPHONE = {
 NetBeans_Preset.allTypes = function() {
     return [NetBeans_Preset.DESKTOP, NetBeans_Preset.TABLET, NetBeans_Preset.SMARTPHONE];
 }
+NetBeans_Preset.typeForIdent = function(ident) {
+    var allTypes = NetBeans_Preset.allTypes();
+    for (i in allTypes) {
+        if (allTypes[i].ident == ident) {
+            return allTypes[i];
+        }
+    }
+    return null;
+}
 
 function NetBeans_PresetCustomizer() {
 
@@ -191,6 +203,7 @@ function NetBeans_PresetCustomizer() {
     this._removePresetButton = null;
     this._moveUpPresetButton = null;
     this._moveDownPresetButton = null;
+    this._okButton = null;
     this._presets = null;
     this._activePreset = null;
 
@@ -213,6 +226,7 @@ function NetBeans_PresetCustomizer() {
         this._removePresetButton = document.getElementById('removePreset');
         this._moveUpPresetButton = document.getElementById('moveUpPreset');
         this._moveDownPresetButton = document.getElementById('moveDownPreset');
+        this._okButton = document.getElementById('presetCustomizerOk');
         this._registerEvents();
     }
 
@@ -241,7 +255,7 @@ function NetBeans_PresetCustomizer() {
         this._moveDownPresetButton.addEventListener('click', function() {
             that._moveDownPreset();
         }, false);
-        document.getElementById('presetCustomizerOk').addEventListener('click', function() {
+        this._okButton.addEventListener('click', function() {
             that._save();
         }, false);
         document.getElementById('presetCustomizerCancel').addEventListener('click', function() {
@@ -258,9 +272,12 @@ function NetBeans_PresetCustomizer() {
             var preset = presets[p];
             // row
             var row = document.createElement('tr');
+            row.addEventListener('click', function() {
+                that._rowSelected(this);
+            }, true);
             // type
             var type = document.createElement('td');
-            var select = document.createElement('select');
+            var typeSelect = document.createElement('select');
             NetBeans_Preset.allTypes().forEach(function(type) {
                 var option = document.createElement('option');
                 option.setAttribute('value', type.ident);
@@ -268,38 +285,58 @@ function NetBeans_PresetCustomizer() {
                     option.setAttribute('selected', 'selected');
                 }
                 option.appendChild(document.createTextNode(type.title));
-                select.appendChild(option);
+                typeSelect.appendChild(option);
             });
-            type.appendChild(select);
+            typeSelect.addEventListener('change', function() {
+                that._typeChanged(this);
+            }, false);
+            type.appendChild(typeSelect);
             row.appendChild(type);
             // name
             var title = document.createElement('td');
-            title.appendChild(document.createTextNode(preset.title));
+            var titleInput = document.createElement('input');
+            titleInput.setAttribute('value', preset.title);
+            titleInput.addEventListener('keyup', function() {
+                that._titleChanged(this);
+            }, false);
+            title.appendChild(titleInput);
             row.appendChild(title);
             // width
             var witdh = document.createElement('td');
-            witdh.appendChild(document.createTextNode(preset.width));
+            var widthInput = document.createElement('input');
+            widthInput.setAttribute('value', preset.width);
+            widthInput.className = 'number';
+            widthInput.addEventListener('keyup', function() {
+                that._widthChanged(this);
+            }, false);
+            witdh.appendChild(widthInput);
             row.appendChild(witdh);
             // height
             var height = document.createElement('td');
-            height.appendChild(document.createTextNode(preset.height));
+            var heightInput = document.createElement('input');
+            heightInput.setAttribute('value', preset.height);
+            heightInput.className = 'number';
+            heightInput.addEventListener('keyup', function() {
+                that._heightChanged(this);
+            }, false);
+            height.appendChild(heightInput);
             row.appendChild(height);
             // toolbar
             var toolbar = document.createElement('td');
-            var checkbox = document.createElement('input');
-            checkbox.setAttribute('type', 'checkbox');
+            var toolbarCheckbox = document.createElement('input');
+            toolbarCheckbox.setAttribute('type', 'checkbox');
             if (preset.toolbar) {
-                checkbox.setAttribute('checked', 'checked');
+                toolbarCheckbox.setAttribute('checked', 'checked');
             }
-            toolbar.appendChild(checkbox);
+            toolbarCheckbox.addEventListener('click', function() {
+                that._toolbarChanged(this);
+            }, false);
+            toolbar.appendChild(toolbarCheckbox);
             row.appendChild(toolbar);
-            // events
-            row.addEventListener('click', function() {
-                that._rowSelected(this);
-            });
             // append row
             this._rowContainer.appendChild(row);
-            preset['row'] = row;
+            preset['_row'] = row;
+            preset['_error'] = false;
         }
     }
 
@@ -309,6 +346,7 @@ function NetBeans_PresetCustomizer() {
             this._rowContainer.removeChild(this._rowContainer.firstChild);
         }
         this._activePreset = null;
+        this._enableButtons();
     }
 
     this._addPreset = function() {
@@ -322,7 +360,7 @@ function NetBeans_PresetCustomizer() {
         // presets
         this._presets.splice(this._presets.indexOf(this._activePreset), 1);
         // ui
-        this._rowContainer.removeChild(this._activePreset['row']);
+        this._rowContainer.removeChild(this._activePreset['_row']);
         this._activePreset = null;
         this._enableButtons();
     }
@@ -331,7 +369,7 @@ function NetBeans_PresetCustomizer() {
         // presets
         this._movePreset(this._activePreset, -1);
         // ui
-        var row = this._activePreset['row'];
+        var row = this._activePreset['_row'];
         var before = row.previousSibling;
         this._rowContainer.removeChild(row);
         this._rowContainer.insertBefore(row, before);
@@ -342,7 +380,7 @@ function NetBeans_PresetCustomizer() {
         // presets
         this._movePreset(this._activePreset, +1);
         // ui
-        var row = this._activePreset['row'];
+        var row = this._activePreset['_row'];
         var after = row.nextSibling;
         this._rowContainer.removeChild(row);
         insertAfter(row, after);
@@ -359,7 +397,8 @@ function NetBeans_PresetCustomizer() {
     this._save = function() {
         this._hide();
         this._presets.forEach(function(preset) {
-            delete preset['row'];
+            delete preset['_row'];
+            delete preset['_error'];
         });
         NetBeans.setPresets(this._presets);
         NetBeans.redrawPresets();
@@ -373,38 +412,42 @@ function NetBeans_PresetCustomizer() {
 
     this._rowSelected = function(row) {
         if (this._activePreset != null) {
-            this._activePreset['row'].className = '';
+            if (this._activePreset['_row'] === row) {
+                // repeated click => ignore
+                return;
+            }
+            this._activePreset['_row'].className = '';
         }
-        if (this._activePreset != null && this._activePreset['row'] === row) {
-            // deselect
-            this._activePreset = null;
-        } else {
-            // select
-            var that = this;
-            this._presets.forEach(function(preset) {
-                if (preset['row'] === row) {
-                    that._activePreset = preset;
-                    that._activePreset['row'].className = 'active';
-                }
-            });
-        }
+        // select
+        var that = this;
+        this._presets.forEach(function(preset) {
+            if (preset['_row'] === row) {
+                that._activePreset = preset;
+                that._activePreset['_row'].className = 'active';
+            }
+        });
         this._enableButtons();
     }
 
     this._enableButtons = function() {
-        var enabled = this._activePreset != null;
-        if (enabled) {
+        this._enablePresetButtons();
+        this._enableMainButtons();
+    }
+
+    this._enablePresetButtons = function() {
+        if (this._activePreset != null) {
+            // any preset selected
             if (this._activePreset.internal) {
                 this._removePresetButton.setAttribute('disabled', 'disabled');
             } else {
                 this._removePresetButton.removeAttribute('disabled');
             }
-            if (this._activePreset['row'] !== this._rowContainer.firstChild) {
+            if (this._activePreset['_row'] !== this._rowContainer.firstChild) {
                 this._moveUpPresetButton.removeAttribute('disabled');
             } else {
                 this._moveUpPresetButton.setAttribute('disabled', 'disabled');
             }
-            if (this._activePreset['row'] !== this._rowContainer.lastChild) {
+            if (this._activePreset['_row'] !== this._rowContainer.lastChild) {
                 this._moveDownPresetButton.removeAttribute('disabled');
             } else {
                 this._moveDownPresetButton.setAttribute('disabled', 'disabled');
@@ -414,6 +457,82 @@ function NetBeans_PresetCustomizer() {
             this._moveUpPresetButton.setAttribute('disabled', 'disabled');
             this._moveDownPresetButton.setAttribute('disabled', 'disabled');
         }
+    }
+
+    this._enableMainButtons = function() {
+        var anyError = false;
+        for (i in this._presets) {
+            if (this._presets[i]['_error']) {
+                anyError = true;
+                break;
+            }
+        }
+        if (anyError) {
+            this._okButton.setAttribute('disabled', 'disabled');
+        } else {
+            this._okButton.removeAttribute('disabled');
+        }
+    }
+
+    this._typeChanged = function(input) {
+        if (this._activePreset == null) {
+            // select change event fired before row click event => select the closest row
+            var row = input;
+            while (true) {
+                row = row.parentNode;
+                if (row.tagName.toLowerCase() == 'tr') {
+                    break;
+                }
+            }
+            this._rowSelected(row);
+        }
+        this._activePreset.type = NetBeans_Preset.typeForIdent(input.value);
+    }
+
+    this._titleChanged = function(input) {
+        var that = this;
+        this._checkField(input, 'title', function(value) {
+            return that._validateNotEmpty(value);
+        });
+    }
+
+    this._widthChanged = function(input) {
+        var that = this;
+        this._checkField(input, 'width', function(value) {
+            return that._validateNumber(value);
+        });
+    }
+
+    this._heightChanged = function(input) {
+        var that = this;
+        this._checkField(input, 'height', function(value) {
+            return that._validateNumber(value);
+        });
+    }
+
+    this._toolbarChanged = function(input) {
+        this._activePreset.toolbar = input.checked;
+    }
+
+    this._validateNotEmpty = function(value) {
+        return value != null && value.trim().length > 0;
+    }
+
+    this._validateNumber = function(value) {
+        return value != null && !isNaN(parseFloat(value)) && isFinite(value);
+    }
+
+    this._checkField = function(input, key, validation) {
+        var value = input.value;
+        if (validation(value)) {
+            removeCssClass(input, 'error');
+            this._activePreset['_error'] = false;
+        } else {
+            addCssClass(input, 'error');
+            this._activePreset['_error'] = true;
+        }
+        this._activePreset[key] = value;
+        this._enableMainButtons();
     }
 
 }
@@ -427,6 +546,14 @@ function insertAfter(newElement, targetElement) {
     } else {
 		parent.insertBefore(newElement, targetElement.nextSibling);
     }
+}
+
+function addCssClass(element, cssClass) {
+    element.className = (element.className + ' ' + cssClass).trim();
+}
+
+function removeCssClass(element, cssClass) {
+    element.className = element.className.replace(cssClass, '');
 }
 
 

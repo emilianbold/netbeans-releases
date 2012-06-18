@@ -141,6 +141,17 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             #presetCustomizerTable .active {
                 background-color: lightgreen;
             }
+            #presetCustomizerTable input {
+                background-color: transparent;
+                border: 1px solid transparent;
+            }
+            #presetCustomizerTable input.number {
+                width: 60px;
+            }
+            #presetCustomizerTable input.error {
+                background-color: red;
+                border: 1px solid darkred;
+            }
         </style>
         <script type="text/javascript" src="page.js"></script>
     </head>
@@ -157,7 +168,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             <div id="mask"></div>
             <!--iframe onload="alert(this.contentWindow.location);"-->
             <!--iframe id="nbframe" src="__SRC__" sandbox="allow-same-origin allow-forms allow-scripts"-->
-            <iframe id="nbframe" src="http://www.seznam.cz/" sandbox="allow-same-origin allow-forms allow-scripts">
+            <iframe id="nbframe" src="http://www.kubuntu.cz/" sandbox="allow-same-origin allow-forms allow-scripts">
                 <h1>Your browser does not support iframes.</h1>
             </iframe>
         </div>
