@@ -41,12 +41,10 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import com.sun.xml.internal.ws.util.StringUtils;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
