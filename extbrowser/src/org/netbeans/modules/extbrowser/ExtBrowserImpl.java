@@ -258,7 +258,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         try {
             File f = File.createTempFile("blank", ".html");
             FileWriter fw = new FileWriter(f);
-            fw.write("<html></html>");
+            fw.write("<html :netbeans_temporary=\"true\"></html>");
             fw.close();
             return f.toURI().toURL();
         } catch (IOException ex) {
