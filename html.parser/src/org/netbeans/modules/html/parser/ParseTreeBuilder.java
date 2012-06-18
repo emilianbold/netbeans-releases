@@ -109,11 +109,12 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
     private ModifiableOpenTag currentOpenTag;
     private ModifiableCloseTag currentCloseTag;
     
-    private CharSequence sourceCode;
+    private final CharSequence sourceCode;
 
     private boolean ADD_TEXT_NODES = false;
     
     public ParseTreeBuilder(CharSequence sourceCode, Lookup lookup) {
+        this.sourceCode = sourceCode;
         factory = new ElementsFactory(sourceCode);
         root = factory.createRoot();
         
