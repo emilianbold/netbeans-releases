@@ -105,6 +105,7 @@ public class WebKitPageModel extends PageModel {
      */
     private void initializePage() {
         // XXX ignore blank page
+        // XXX it would be _perfect_ if we could distinguish bewteen the page itself and the nb page (the one with iframe)
         if (!webKit.getDOM().getDocument().getDocumentURL().contains("blank")) { // NOI18N
             // documentUpdated event is not delivered when no node information
             // was sent to the client => requesting document node to make sure
@@ -115,6 +116,8 @@ public class WebKitPageModel extends PageModel {
             String initScript = Files.getScript("initialization"); // NOI18N
             webKit.getRuntime().evaluate(initScript);
             // frame
+            String pageScript = Files.getScript("page"); // NOI18N
+            webKit.getRuntime().evaluate(pageScript);
             String pageHtml = toScriptString(Files.getHtml("page")); // NOI18N
             String frameScript = Files.getScript("frame").replace("__HTML_PAGE__", pageHtml); // NOI18N
             webKit.getRuntime().evaluate(frameScript);
@@ -125,7 +128,7 @@ public class WebKitPageModel extends PageModel {
      * Escapes the given string so it can be used in JS as a string.
      */
     private String toScriptString(String input) {
-        return input.replace("\n", "\\\n").replace("\r", ""); // NOI18N
+        return input.replace("\n", "\\\n").replace("\r", "").replace("'", "&quot;"); // NOI18N
     }
 
     @Override
