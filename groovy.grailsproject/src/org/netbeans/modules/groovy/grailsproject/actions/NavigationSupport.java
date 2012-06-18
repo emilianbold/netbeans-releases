@@ -91,7 +91,7 @@ public class NavigationSupport {
 
         if (artifactFile != null && artifactFile.isValid()) {
             LOG.log(Level.FINEST, "Open File : {0}", FileUtil.getFileDisplayName(artifactFile)); // NOI18N
-            NbUtilities.open(artifactFile, 1, "");
+            NbUtilities.open(artifactFile, 0, "");
         } else {
             LOG.log(Level.FINEST, "File is either null or invalid : {0}", fileName); // NOI18N
         }
@@ -222,8 +222,10 @@ public class NavigationSupport {
     }
 
     private static String getTargetPath(ActionType type, GrailsProject prj, String filename) {
-        String GRAILS_APP_DIR = "grails-app"; // NOI18N
-        String BASE_DIR = FileUtil.getFileDisplayName(prj.getProjectDirectory()) + File.separator + GRAILS_APP_DIR + File.separator;
+        final String BASE_DIR = FileUtil.getFileDisplayName(prj.getProjectDirectory()) + File.separator + "grails-app" + File.separator; //NOI18N
+        final String VIEWS_DIR = BASE_DIR + "views" + File.separator;
+        final String DOMAIN_DIR = BASE_DIR + "domain" + File.separator;
+        final String CONTROLLERS_DIR = BASE_DIR + "controllers" + File.separator;
 
         // this needs to be done if we are moving from controller to view or domain.
         if (filename.endsWith("Controller")) {
@@ -232,9 +234,9 @@ public class NavigationSupport {
 
         switch (type) {
             case CONTROLLER:
-                return BASE_DIR + "controllers" + File.separator + filename + "Controller.groovy"; //NOI18N
+                return CONTROLLERS_DIR + filename + "Controller.groovy"; //NOI18N
             case DOMAIN:
-                return BASE_DIR + "domain" + File.separator + filename + ".groovy"; //NOI18N
+                return DOMAIN_DIR + filename + ".groovy"; //NOI18N
             case VIEW:
                 if (filename.length() > 1) {
                     char first = filename.charAt(0);
@@ -242,7 +244,7 @@ public class NavigationSupport {
                 } else {
                     filename = filename.toLowerCase();
                 }
-                return BASE_DIR + "views" + File.separator + filename + File.separator + "show.gsp"; //NOI18N
+                return VIEWS_DIR + filename + File.separator + "show.gsp"; //NOI18N //NOI18N
         }
 
         return "";
