@@ -45,8 +45,8 @@
 function NetBeans_Page() {
     this._presets = null;
     this._preset = null;
-    // XXX how to create and gc the preset customizer properly?
-    this._presetCustomizer = new NetBeans_PresetCustomizer();
+    // XXX how to create and gc the preset menu properly?
+    this._presetMenu = new NetBeans_PresetMenu();
 }
 NetBeans_Page.prototype.initPage = function() {
     this._registerEvents();
@@ -67,8 +67,8 @@ NetBeans_Page.prototype.resizePage = function(preset) {
 NetBeans_Page.prototype.resetPage = function() {
     this._resizeFrame('100', '100', '%');
 }
-NetBeans_Page.prototype.showPresetCustomizer = function() {
-    this._presetCustomizer.show(this._loadPresets()); // always use copy of presets!
+NetBeans_Page.prototype.showPresetMenu = function() {
+    this._presetMenu.show(this._loadPresets()); // always use copy of presets!
 }
 NetBeans_Page.prototype.getPreset = function(preset) {
     if (preset == undefined) {
@@ -97,11 +97,11 @@ NetBeans_Page.prototype.redrawPresets = function() {
 /*** ~Private ***/
 NetBeans_Page.prototype._registerEvents = function() {
     var that = this;
-    document.getElementById('autoPreset').addEventListener('click', function() {
+    document.getElementById('autoPresetButton').addEventListener('click', function() {
         that.resizePage(null);
     }, false);
-    document.getElementById('customizePresets').addEventListener('click', function() {
-        that.showPresetCustomizer();
+    document.getElementById('presetMenuButton').addEventListener('click', function() {
+        that.showPresetMenu();
     }, false);
 }
 NetBeans_Page.prototype._showPresets = function() {
@@ -182,6 +182,112 @@ NetBeans_Preset.typeForIdent = function(ident) {
     }
     return null;
 }
+
+function NetBeans_PresetMenu() {
+    this._container = null;
+    this._presets = null;
+    this._hideTimeout = null;
+    this._presetCustomizer = new NetBeans_PresetCustomizer();
+}
+NetBeans_PresetMenu.prototype.show = function(presets) {
+    this._init();
+    this._presets = presets;
+    this._putPresets(this._presets);
+    this._show();
+}
+NetBeans_PresetMenu.prototype.hide = function() {
+    this._hide();
+    this._hideTimeout = null;
+}
+/*** ~Private ***/
+NetBeans_PresetMenu.prototype._init = function() {
+    if (this._container != null) {
+        return;
+    }
+    this._container = document.getElementById('presetMenu');
+    this._registerEvents();
+}
+NetBeans_PresetMenu.prototype._show = function() {
+    this._container.style.visibility = 'visible';
+    this._hideLater(2000);
+}
+NetBeans_PresetMenu.prototype._hide = function() {
+    this._container.style.visibility = 'hidden';
+}
+NetBeans_PresetMenu.prototype._hideStop = function() {
+    clearTimeout(this._hideTimeout);
+}
+NetBeans_PresetMenu.prototype._hideLater = function(timeout) {
+    if (timeout == undefined) {
+        timeout = 1000;
+    }
+    var that = this;
+    this._hideTimeout = setTimeout(function() {
+        that.hide();
+    }, timeout);
+}
+NetBeans_PresetMenu.prototype._registerEvents = function() {
+    var that = this;
+    this._container.addEventListener('mouseover', function() {
+        that._hideStop();
+    }, false);
+    this._container.addEventListener('mouseout', function() {
+        that._hideLater();
+    }, false);
+    this._container.addEventListener('click', function() {
+        that.hide();
+    }, false);
+    document.getElementById('autoPresetMenu').addEventListener('click', function() {
+        NetBeans_Page.resetPage();
+    }, false);
+    document.getElementById('customizePresetsMenu').addEventListener('click', function() {
+        that._presetCustomizer.show(that._presets);
+    }, false);
+}
+NetBeans_PresetMenu.prototype._putPresets = function() {
+    var menu = document.getElementById('menuPresets');
+    // clean
+    menu.innerHTML = '';
+    this._putPresetsInternal(true);
+    this._putPresetsInternal(false);
+}
+NetBeans_PresetMenu.prototype._putPresetsInternal = function(toolbar) {
+    var menu = document.getElementById('menuPresets');
+    for (p in this._presets) {
+        var preset = this._presets[p];
+        if (preset.toolbar != toolbar) {
+            continue;
+        }
+        // item
+        var item = document.createElement('a');
+        item.setAttribute('href', '#');
+        item.setAttribute('title', preset.title + ' (' + preset.width + ' x ' + preset.height + ')');
+        item.setAttribute('onclick', 'NetBeans_Page.resizePage(' + p + '); return false;');
+        // type
+        var typeDiv = document.createElement('div');
+        typeDiv.setAttribute('class', 'type');
+        typeDiv.appendChild(document.createTextNode(preset.type.title));
+        item.appendChild(typeDiv);
+        // label
+        var labelDiv = document.createElement('div');
+        labelDiv.setAttribute('class', 'label');
+        // label - size
+        var sizeDiv = document.createElement('div');
+        sizeDiv.setAttribute('class', 'size');
+        sizeDiv.appendChild(document.createTextNode(preset.width + ' x ' + preset.height));
+        labelDiv.appendChild(sizeDiv);
+        // label - title
+        var titleDiv = document.createElement('div');
+        titleDiv.setAttribute('class', 'title');
+        titleDiv.appendChild(document.createTextNode(preset.title));
+        labelDiv.appendChild(titleDiv);
+        item.appendChild(labelDiv);
+        // append item
+        menu.appendChild(item);
+        menu.appendChild(document.createElement('hr'));
+    }
+}
+
 
 function NetBeans_PresetCustomizer() {
     this._container = null;

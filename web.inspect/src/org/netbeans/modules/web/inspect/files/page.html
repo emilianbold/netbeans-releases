@@ -88,7 +88,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 border: 1px solid orange;
                 border-radius: 3px;
                 color: white;
-                padding: 0.2em 0.4em;
+                padding: 2px 4px;
                 box-shadow: 1px 1px 5px #1D1D1D;
             }
             button:hover, .button:hover {
@@ -116,12 +116,12 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 
             #main {
                 display: block;
-                margin-top: 1.5em;
+                margin-top: 15px;
                 -webkit-transition: all 1s;
                 -moz-transition: all 1s;
                 transition: all 1s;
                 height: 100%;
-                height: calc(100%-1.5em);
+                height: calc(100%-15px);
             }
 
             #mask {
@@ -148,6 +148,41 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 height: 100%;
                 background-color: rgba(0,0,0,0.5);
                 z-index: 9;
+            }
+
+            #presetMenu {
+                visibility: hidden;
+                background-color: white;
+                border: 2px solid orange;
+                border-radius: 5px;
+                position: absolute;
+                left: 590px;
+                top: 20px;
+                z-index: 9999;
+            }
+            #presetMenu a {
+                display: block;
+            }
+            #presetMenu div.type, #presetMenu div.label {
+                float: left;
+                padding: 4px;
+            }
+            #presetMenu div.type {
+                width: 100px;
+            }
+            #presetMenu div.title {
+                color: chocolate;
+            }
+            #presetMenu div.size {
+                color: darkorange;
+                font-weight: bold;
+            }
+            #presetMenu div.size:hover {
+                color: orange;
+            }
+            #presetMenu hr {
+                clear: both;
+                border: 1px solid orange;
             }
 
             #presetCustomizer {
@@ -248,8 +283,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <div id="nbpanel">
             <div id="preview">
                 <div id="presets">Loading presets...</div>
-                <a href="#" id="autoPreset" class="button" title="Actual Window Size">Auto</a>
-                <a href="#" id="customizePresets" class="button" title="Customize Window Settings...">&hellip;</a>
+                <a href="#" id="autoPresetButton" class="button" title="Actual Window Size">Auto</a>
+                <a href="#" id="presetMenuButton" class="button" title="Window Settings Menu">&nabla;</a>
             </div>
         </div>
 
@@ -264,6 +299,12 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         </div>
 
         <div id="disabler"></div>
+
+        <div id="presetMenu">
+            <div id="menuPresets"></div>
+            <a href="#" id="autoPresetMenu" title="Actual Window Size"><div class="type">&nbsp;</div><div class="label size">Size to Fit</div></a>
+            <a href="#" id="customizePresetsMenu" title="Customize Window Settings..."><div class="type">&nbsp;</div><div class="label size">Customize...</div></a>
+        </div>
 
         <div id="presetCustomizer">
             <div class="title">Customize Window Settings<a href="#" id="closePresetCustomizer" title="Close without Saving">X</a></div>
