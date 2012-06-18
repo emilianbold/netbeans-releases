@@ -114,14 +114,17 @@ public class WebKitPageModel extends PageModel {
      * Prepares the page for inspection.
      */
     private void initializePage() {
-        // XXX ignore blank page
-        // XXX it would be _perfect_ if we could distinguish bewteen the page itself and the nb page (the one with iframe)
-        if (!webKit.getDOM().getDocument().getDocumentURL().contains("blank")) { // NOI18N
-            // documentUpdated event is not delivered when no node information
-            // was sent to the client => requesting document node to make sure
-            // that we obtain next documentUpdated event (that we need to be able
-            // to reinitialize the page)
-            getDocumentNode();
+        // documentUpdated event is not delivered when no node information
+        // was sent to the client => requesting document node to make sure
+        // that we obtain next documentUpdated event (that we need to be able
+        // to reinitialize the page)
+        org.openide.nodes.Node node = getDocumentNode();
+
+        // Do not initialize the temporary page unnecessarily
+        Node webKitNode = node.getLookup().lookup(Node.class);
+        webKitNode = convertNode(webKitNode);
+        Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
+        if (attr == null) {
             // init
             String initScript = Files.getScript("initialization"); // NOI18N
             webKit.getRuntime().evaluate(initScript);
@@ -454,6 +457,35 @@ public class WebKitPageModel extends PageModel {
         }
     }
 
+    /**
+     * Converts the WebKit node into a node that should be highlighted/selected.
+     * Usually this method returns the passed node, but there are some exceptions
+     * like document nodes.
+     * 
+     * @param node node to convert.
+     * @return node that should be highlighted/selected instead of the given node.
+     */
+    Node convertNode(Node node) {
+        Node result = node;
+        int type = node.getNodeType();
+        if (type == 9) { // document node
+            // Highlight/select document element
+            synchronized (node) {
+                List<Node> subNodes = node.getChildren();
+                if (subNodes != null) {
+                    for (Node subNode : subNodes) {
+                        // There should be just one element
+                        if (subNode.getNodeType() == 1) { // element
+                            result = subNode;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     class WebPaneSynchronizer implements PropertyChangeListener {
         private final Object LOCK_HIGHLIGHT = new Object();
         private final Object LOCK_SELECTION = new Object();
@@ -515,35 +547,6 @@ public class WebKitPageModel extends PageModel {
                 // Finalize the next selection in all content documents
                 invokeInAllDocuments("NetBeans.finishNextSelection();"); // NOI18N
             } 
-        }
-
-        /**
-         * Converts the WebKit node into a node that should be highlighted/selected.
-         * Usually this method returns the passed node, but there are some exceptions
-         * like document nodes.
-         * 
-         * @param node node to convert.
-         * @return node that should be highlighted/selected instead of the given node.
-         */
-        private Node convertNode(Node node) {
-            Node result = node;
-            int type = node.getNodeType();
-            if (type == 9) { // document node
-                // Highlight/select document element
-                synchronized (node) {
-                    List<Node> subNodes = node.getChildren();
-                    if (subNodes != null) {
-                        for (Node subNode : subNodes) {
-                            // There should be just one element
-                            if (subNode.getNodeType() == 1) { // element
-                                result = subNode;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            return result;
         }
 
         private void updateSelectionMode() {
