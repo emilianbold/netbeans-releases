@@ -41,7 +41,7 @@
  */
 
 // XXX detect running in frame
-if (window.parent.TOP_FRAME == undefined) {
+if (TOP_FRAME == undefined) {
     var TOP_FRAME = true;
 
     function nbHtmlEntities(str) {
