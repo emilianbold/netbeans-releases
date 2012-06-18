@@ -1,0 +1,333 @@
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2012 Sun Microsystems, Inc.
+-->
+
+<!-- !!! THIS HTML PAGE IS USED IN JS eval() -> NO QUOTES ALLOWED !!! -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>__TITLE__</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                height: 100%;
+                background: #000;
+            }
+            body {
+                height: 100%;
+                font-family: Tahoma, Helvetica;
+                font-size: 12px;
+            }
+            iframe {
+                width: 100%;
+                height: 100%;
+                background-color: white;
+                display: block;
+                border: none;
+                margin: 0 auto;
+                -webkit-transition: all 1s;
+                -moz-transition: all 1s;
+                transition: all 1s;
+            }
+            a {
+                text-decoration: none;
+            }
+
+            .clear {
+                clear: both;
+            }
+
+            button, .button {
+                cursor: pointer;
+                font-weight: bold;
+                position: relative;
+                margin-right: 4px;
+                background-color: orange;
+                border: 1px solid orange;
+                border-radius: 3px;
+                color: white;
+                padding: 2px 4px;
+                box-shadow: 1px 1px 5px #1D1D1D;
+            }
+            button:hover, .button:hover {
+                background-color: darkorange;
+            }
+            button.disabled, button[disabled=disabled], .button.disabled {
+                cursor: not-allowed;
+                border: 1px solid grey;
+                background-color: grey;
+            }
+            button.disabled:hover, button[disabled=disabled]:hover, .button.disabled:hover {
+                background-color: grey;
+            }
+
+            #nbpanel {
+                position: fixed;
+                top:0;
+                display: block;
+                width: 100%;
+                background: white;
+            }
+            #preview * {
+                float: left;
+            }
+
+            #main {
+                display: block;
+                margin-top: 15px;
+                -webkit-transition: all 1s;
+                -moz-transition: all 1s;
+                transition: all 1s;
+                height: 100%;
+                height: calc(100%-15px);
+            }
+
+            #mask {
+                display: block;
+                content: ".";
+                background-color: black;
+                background-color: rgba(0,0,0,0.5);
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                z-index: 0;
+                margin-top: 9999px;
+                -webkit-transition: all 1s;
+                -moz-transition: all 1s;
+                transition: all 1s;
+            }
+
+            #disabler {
+                visibility: hidden;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                z-index: 9;
+            }
+
+            #presetMenu {
+                visibility: hidden;
+                background-color: white;
+                border: 2px solid orange;
+                border-radius: 5px;
+                position: absolute;
+                top: 20px;
+                z-index: 9999;
+            }
+            #presetMenu a {
+                display: block;
+            }
+            #presetMenu div.type, #presetMenu div.label {
+                float: left;
+                padding: 4px;
+            }
+            #presetMenu div.type {
+                width: 100px;
+            }
+            #presetMenu div.title {
+                color: chocolate;
+            }
+            #presetMenu div.size {
+                color: darkorange;
+                font-weight: bold;
+            }
+            #presetMenu div.size:hover {
+                color: orange;
+            }
+            #presetMenu hr {
+                clear: both;
+                border: 1px solid orange;
+            }
+
+            #presetCustomizer {
+                visibility: hidden;
+                background-color: white;
+                border: 2px solid orange;
+                border-radius: 5px;
+                position: absolute;
+                z-index: 9999;
+            }
+            #presetCustomizer p {
+                margin: 3px 0;
+            }
+            #presetCustomizer .title {
+                border-bottom: 2px solid orange;
+                font-weight: bold;
+                padding: 5px;
+                font-size: 120%;
+            }
+            #presetCustomizer .title a {
+                float: right;
+                font-weight: bold;
+                color: orange;
+            }
+            #presetCustomizer .content {
+                margin: 10px;
+            }
+            #presetCustomizer .info {
+                margin-bottom: 5px;
+                font-style: italic;
+                color: chocolate;
+            }
+            #presetCustomizerTable {
+                float: left;
+                border-collapse: collapse;
+                width: 80%;
+                margin-right: 10px;
+                border: 1px solid darkgrey;
+            }
+            #presetCustomizerTable tr:nth-child(even) {
+                background: lightgrey;
+            }
+            #presetCustomizerTable tr.active {
+                background-color: lightgreen;
+            }
+            #presetCustomizerTable th, #presetCustomizerTable td {
+                padding: 1px 5px;
+            }
+            #presetCustomizerTable th {
+                text-align: center;
+                background-color: darkgrey;
+            }
+            #presetCustomizerTable td {
+                position: relative;
+                border-left: 1px solid darkgrey;
+            }
+            #presetCustomizerTable input {
+                background-color: transparent;
+                border: 1px solid transparent;
+                border-radius: 3px;
+            }
+            #presetCustomizerTable input:focus {
+                outline: none;
+            }
+            #presetCustomizerTable input.number {
+                width: 60px;
+            }
+            #presetCustomizerTable input.error {
+                background-color: lightpink;
+            }
+            #presetCustomizerTable .toolbar {
+                text-align: center;
+            }
+            #presetCustomizer .presetButtons {
+                float: right;
+            }
+            #presetCustomizer .presetButtons button {
+                display: block;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            #presetCustomizer .buttons {
+                margin-top: 20px;
+                float: right;
+            }
+            #presetCustomizerHelp {
+                margin-right: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="nbpanel">
+            <div id="preview">
+                <div id="presets">Loading presets...</div>
+                <a href="#" id="autoPresetButton" class="button" title="Actual Window Size">Auto</a>
+                <a href="#" id="presetMenuButton" class="button" title="Window Settings Menu">&nabla;</a>
+            </div>
+        </div>
+
+        <div id="main">
+            <div id="mask"></div>
+            <iframe id="nbframe" src="__SRC__" sandbox="allow-same-origin allow-forms allow-scripts">
+                <h1>Your browser does not support iframes.</h1>
+            </iframe>
+        </div>
+
+        <div id="disabler"></div>
+
+        <div id="presetMenu">
+            <div id="menuPresets"></div>
+            <a href="#" id="autoPresetMenu" title="Actual Window Size"><div class="type">&nbsp;</div><div class="label size">Size to Fit</div></a>
+            <a href="#" id="customizePresetsMenu" title="Customize Window Settings..."><div class="type">&nbsp;</div><div class="label size">Customize...</div></a>
+        </div>
+
+        <div id="presetCustomizer">
+            <div class="title">Customize Window Settings<a href="#" id="closePresetCustomizer" title="Close without Saving">X</a></div>
+            <div class="content">
+                <div class="info">Configure window size options and control which appear in the Preview toolbar.</div>
+                <p>Display sizes:</p>
+                <table id="presetCustomizerTable">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Width</th>
+                            <th>Height</th>
+                            <th>Toolbar</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="presetButtons">
+                    <button id="addPreset" title="Add Size">New</button>
+                    <button id="removePreset" disabled="disabled" title="Remove Size">Remove</button>
+                    <button id="moveUpPreset" disabled="disabled" title="Move Size Up">Move Up</button>
+                    <button id="moveDownPreset" disabled="disabled" title="Move Size Down">Move Down</button>
+                </div>
+                <div class="clear"></div>
+                <div class="buttons">
+                    <button id="presetCustomizerOk" title="Save and Close">OK</button>
+                    <button id="presetCustomizerCancel" title="Close without Saving">Cancel</button>
+                    <button id="presetCustomizerHelp" title="Show Help">Help</button>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+
+    </body>
+</html>

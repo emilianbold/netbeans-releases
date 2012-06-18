@@ -47,8 +47,9 @@ NetBeans.cleanup();
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl != undefined) {
         chrome.tabs.update(tabId, {url: newUrl});
+        NetBeans.executeScripts(tabId);
     } else {
-        chrome.tabs.reload(tabId, {bypassCache: true});
+        chrome.tabs.sendRequest(tabId, {'id': 'RELOAD_FRAME'});
     }
 }
 
@@ -83,6 +84,17 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
                 NetBeans.sendDebuggingResponse(tabId, {id : id, result : result});
             }
         });
+}
+
+NetBeans.executeScripts = function(tabId, callback) {
+    if (NetBeans.DEBUG) {
+        console.log('Executing external NB scripts for tab "' + tabId + '"');
+    }
+    chrome.tabs.executeScript(tabId, {'file': 'nbframe.js'}, function() {
+        if (callback) {
+            callback();
+        }
+    });
 }
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
