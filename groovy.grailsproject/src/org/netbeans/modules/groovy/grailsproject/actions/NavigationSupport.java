@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.grailsproject;
+package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.io.File;
 import java.util.logging.Level;
@@ -50,15 +50,13 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.grailsproject.actions.GotoControllerAction;
-import org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction;
-import org.netbeans.modules.groovy.grailsproject.actions.GotoViewAction;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
