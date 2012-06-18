@@ -173,7 +173,7 @@ public class ActionProviderImpl implements ActionProvider {
 
     private boolean usingJUnit4() { // SUREFIRE-724
         for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
-            if ("junit".equals(a.getGroupId()) && "junit".equals(a.getArtifactId())) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
                 String version = a.getVersion();
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
                     return true;

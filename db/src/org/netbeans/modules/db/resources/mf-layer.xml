@@ -493,6 +493,9 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-db-explorer-action-ExecuteCommandAction.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
+                    <file name="org-netbeans-modules-db-explorer-action-RefreshAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="ForeignKey">

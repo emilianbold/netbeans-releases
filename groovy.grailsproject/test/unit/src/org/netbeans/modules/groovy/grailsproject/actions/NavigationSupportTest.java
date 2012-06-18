@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseAction;
-import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle.Messages;
+import java.io.File;
+import java.io.IOException;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.netbeans.modules.groovy.grailsproject.actions.NavigationSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
-@Messages("CTL_GotoControllerAction=Go to Grails Controller")
-@ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoControllerAction", category = "Groovy")
-@ActionRegistration(lazy = false, displayName = "#CTL_GotoControllerAction")
-@ActionReferences(value = {
-    @ActionReference(path = "Menu/GoTo", position = 550),
-    @ActionReference(path = "Editors/text/x-groovy/Popup/goto", position = 150),
-    @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 150)})
+/**
+ *
+ * @author Martin Janicek
+ */
+public class NavigationSupportTest {
 
-public final class GotoControllerAction extends BaseAction {
 
-    public GotoControllerAction() {
-        super(CTL_GotoControllerAction()); // NOI18N
+    public NavigationSupportTest() {
     }
 
-    @Override
-    public boolean isEnabled() {
-        return NavigationSupport.isActionEnabled(this);
+    @Test
+    public void findPackagePathTest1() {
+        File folder = new File("/home/martin/whatever/grails-app/domain/packagename");
+        File file = new File(folder, "SomeDomainClass.groovy");
+
+        setupFolder(folder);
+        setupTestFile(file);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); //NOI18N
+
+        assertEquals("packagename", NavigationSupport.findPackagePath(fo));
     }
 
-    @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        NavigationSupport.openArtifact(this, target);
+    @Test
+    public void findPackagePathTest2() {
+        File folder = new File("/home/martin/whatever/grails-app/domain/packagename/secondarypkg");
+        File file = new File(folder, "AnotherDomainClass.groovy");
+
+        setupFolder(folder);
+        setupTestFile(file);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); //NOI18N
+
+        assertEquals("packagename/secondarypkg", NavigationSupport.findPackagePath(fo));
+    }
+
+    private void setupFolder(File folder) {
+        if (!folder.exists()) {
+            if (!folder.mkdirs()) {
+                // If we are not able to create folders, we can't continue
+                fail("Test folder couldn't be created for some reason!");
+            }
+        }
+    }
+
+    private void setupTestFile(File testFile) {
+        if (!testFile.exists()) {
+            try {
+                if (!testFile.createNewFile()) {
+                    fail("Testfile couldn't be created for some reason!");
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }
