@@ -320,6 +320,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.javafx2.editor</friend>
                 <friend>org.netbeans.modules.javafx2.samples</friend>
                 <package>org.netbeans.modules.javafx2.project.api</package>
             </friend-packages>
