@@ -117,6 +117,8 @@ public class ConstructorPanel extends JPanel {
         }
         cbGenerateDoc.setSelected(cgsInfo.isGenerateDoc());
         cbGenerateDoc.setVisible(false);
+        fluentSetterCheckBox.setVisible(genType.isFluentSetterComboVisible());
+        fluentSetterCheckBox.setSelected(cgsInfo.isFluentSetter());
     }
 
     private void initTree(){
@@ -163,6 +165,7 @@ public class ConstructorPanel extends JPanel {
         jLabel1 = new javax.swing.JLabel();
         cbMethodGeneration = new javax.swing.JComboBox();
         cbGenerateDoc = new javax.swing.JCheckBox();
+        fluentSetterCheckBox = new javax.swing.JCheckBox();
 
         label.setDisplayedMnemonic('G');
         label.setLabelFor(scrollPane);
@@ -212,17 +215,29 @@ public class ConstructorPanel extends JPanel {
             }
         });
 
+        fluentSetterCheckBox.setMnemonic('F');
+        fluentSetterCheckBox.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.fluentSetterCheckBox.text")); // NOI18N
+        fluentSetterCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fluentSetterCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                    .addComponent(label, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbGenerateDoc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                    .addComponent(pGSCustomize, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(cbGenerateDoc, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(pGSCustomize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(label)
+                            .addComponent(fluentSetterCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -231,11 +246,13 @@ public class ConstructorPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pGSCustomize, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbGenerateDoc)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fluentSetterCheckBox)
                 .addContainerGap())
         );
 
@@ -262,10 +279,15 @@ public class ConstructorPanel extends JPanel {
         cgsInfo.setGenerateDoc(cbGenerateDoc.isSelected());
     }//GEN-LAST:event_cbGenerateDocActionPerformed
 
+    private void fluentSetterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fluentSetterCheckBoxActionPerformed
+        cgsInfo.setFluentSetter(fluentSetterCheckBox.isSelected());
+    }//GEN-LAST:event_fluentSetterCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbGenerateDoc;
     private javax.swing.JComboBox cbMethodGeneration;
+    private javax.swing.JCheckBox fluentSetterCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel label;
     private javax.swing.JPanel pGSCustomize;
