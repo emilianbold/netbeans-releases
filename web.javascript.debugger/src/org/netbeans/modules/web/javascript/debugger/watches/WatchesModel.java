@@ -146,7 +146,10 @@ public final class WatchesModel extends VariablesModel {
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
-        if (node instanceof Watch && frame != null) {
+        if (node instanceof Watch) {
+            if (frame == null) {
+                return true;
+            }
             ScopedRemoteObject sro = evaluateWatch(frame, (Watch)node);
             RemoteObject var = sro.getRemoteObject();
             if (var.getType() == RemoteObject.Type.OBJECT) {
