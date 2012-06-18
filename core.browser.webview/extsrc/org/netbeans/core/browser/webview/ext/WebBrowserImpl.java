@@ -106,6 +106,10 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private boolean initialized;
     /** Lookup of this web-browser tab. */
     private Lookup lookup;
+    private String currentLocation = null;
+    private String currentTitle = null;
+    private boolean isBackward = false;
+    private boolean isForward = false;
 
     /**
      * Creates a new {@code WebBrowserImpl}.
@@ -215,15 +219,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public String getURL() {
-        String url = null;
-        if (isInitialized()) {
-            url = runInFXThread(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return browser.getEngine().getLocation();
-                }
-            });
-        }
+        String url = currentLocation;
         if (url == null) {
             url = urlToLoad;
         }
@@ -239,29 +235,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public String getTitle() {
-        String title = null;
-        if (isInitialized()) {
-            title = runInFXThread(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    return browser.getEngine().getTitle();
-                }
-            });
-        }
-        return title;
+        return currentTitle;
     }
 
     @Override
     public boolean isForward() {
-        if (isInitialized()) {
-            return runInFXThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return _isForward();
-                }
-            });
-        }
-        return false;
+        return isForward;
     }
 
     @Override
@@ -278,15 +257,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     @Override
     public boolean isBackward() {
-        if (isInitialized()) {
-            return runInFXThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() throws Exception {
-                    return _isBackward();
-                }
-            });
-        }
-        return false;
+        return isBackward;
     }
 
     @Override
@@ -483,6 +454,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
         eng.locationProperty().addListener(new ChangeListener<String>() {
             @Override public void changed(ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+                currentLocation = eng.getLocation();
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -493,6 +465,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         });
         eng.titleProperty().addListener(new ChangeListener<String>() {
             @Override public void changed(ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+                currentTitle = eng.getTitle();
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -635,14 +608,16 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     }
 
     private void _updateBackAndForward() {
-        final boolean forward = _isForward();
-        final boolean backward = _isBackward();
+        final boolean oldForward = isForward;
+        final boolean oldBackward = isBackward;
+        isForward = _isForward();
+        isBackward = _isBackward();
         SwingUtilities.invokeLater( new Runnable() {
 
             @Override
             public void run() {
-                propSupport.firePropertyChange( WebBrowser.PROP_BACKWARD, !backward, backward );
-                propSupport.firePropertyChange( WebBrowser.PROP_FORWARD, !forward, forward );
+                propSupport.firePropertyChange( WebBrowser.PROP_BACKWARD, oldBackward, isBackward );
+                propSupport.firePropertyChange( WebBrowser.PROP_FORWARD, oldForward, isForward );
             }
         });
     }
