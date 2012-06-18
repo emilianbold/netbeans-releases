@@ -49,14 +49,14 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionID;
 import org.openide.util.NbBundle.Messages;
 
-@ActionID(
+/*@ActionID(
     category = "View",
 id = "org.netbeans.modules.web.livehtml.ui.ShowGlobalLiveHTML")
 @ActionRegistration(
     displayName = "#CTL_ShowGlobalLiveHTML")
 @ActionReferences({
     @ActionReference(path = "Menu/View", position = 1100, separatorBefore = 1050)
-})
+})*/
 @Messages("CTL_ShowGlobalLiveHTML=Live HTML")
 public final class ShowGlobalLiveHTML implements ActionListener {
 

@@ -53,14 +53,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-@MultiViewElement.Registration(
+/*@MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption", // NOI18N
         // no icon
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=LiveHTMLComponent.PREFERRED_ID, 
         mimeType="text/html",
         position=1000000
-)
+)*/
 public class LiveHTMLMultiViewElement implements MultiViewElement {
 
     private FileObject fo;
