@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -18,7 +18,7 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
     </p>
     <p>
        The IDE uses the build tools (compilers, debuggers, make utility) that are installed on your system,
-       or on a remote system that you set up as a remote development host. The IDE looks for installed compilers
+       or on a remote system that you set up as a remote build host. The IDE looks for installed compilers
        debuggers, and make utility on your path. You cannot work with C, C++, or Fortran projects without
        these build tools. If the IDE does not find your compilers, you can configure build tools to show
        the IDE where to find them.</p>
@@ -48,30 +48,30 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
     </p>
     <ul>
       <li>
-        <b>Development Host.</b> The Development Host list includes your local host and any remote
+        <b>Build Host.</b> The Build Host list includes your local host and any remote
         hosts you have defined. For information on using remote hosts, see <a href=
-        "RemoteDevelopment.html">Overview of Remote Development</a>. You can add and remove remote development
-        hosts, change the default host, and change IDE properties of remote development
+        "RemoteDevelopment.html">Overview of Remote Development</a>. You can add and remove 
+        remote build hosts, change the default host, and change IDE properties of remote build
         hosts.
         <ul>
           <li>
-            To add a remote host, click Edit. In the Development Host Manager dialog box, click
-            Add. The New Remote Development Host wizard starts. See the help for the <a href=
-            "NewRemoteDevelopmentHostWizardP1.html">New Remote Development Host wizard</a> for more
+            To add a remote host, click Edit. In the Build Hosts Manager dialog box, click
+            Add. The New Remote Host Setup wizard starts. See the help for the <a href=
+            "NewRemoteDevelopmentHostWizardP1.html">New Remote Host Setup wizard</a> for more
             information.
           </li>
           <li>
-            To remove a remote host, click Edit. In the Development Host Manager dialog box, select
+            To remove a remote host, click Edit. In the Build Hosts Manager dialog box, select
             the host you want to remove, click Remove, then click OK.
           </li>
           <li>
-            To set a host as the default development host, select the host from the Development
+            To set a host as the default build host, select the host from the build 
             Host list and click Set as Default.
           </li>
          
           <li>
-            To change IDE properties related to a remote development host, click Edit. In the Development
-            Host Manager dialog box, select the host you want to change and click Properties. In
+            To change IDE properties related to a remote build host, click Edit. In the Build
+            Hosts Manager dialog box, select the host you want to change and click Properties. In
             the Host Properties dialog box, you can change the name displayed in the IDE for the
             host by typing in the Display Name field. To change the way project files are shared with the
             remote host, select the file synchronization method in the Synchronization list. If the

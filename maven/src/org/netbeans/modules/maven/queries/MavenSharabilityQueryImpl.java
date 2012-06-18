@@ -55,6 +55,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -71,7 +72,7 @@ public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation
     
     public @Override SharabilityQuery.Sharability getSharability(URI uri) {
         //#119541 for the project's root, return MIXED right away.
-        File file = FileUtil.normalizeFile(new File(uri));
+        File file = FileUtil.normalizeFile(Utilities.toFile(uri));
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null && fo.equals(project.getProjectDirectory())) {
             return SharabilityQuery.Sharability.MIXED;

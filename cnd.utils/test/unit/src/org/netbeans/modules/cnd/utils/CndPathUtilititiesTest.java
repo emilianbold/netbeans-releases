@@ -78,6 +78,12 @@ public class CndPathUtilititiesTest {
         assertFalse(CndPathUtilitities.isPathAbsolute("../tmp/test.cpp")); // NOI18N
         assertFalse(CndPathUtilitities.isPathAbsolute("./")); // NOI18N
         assertFalse(CndPathUtilitities.isPathAbsolute("tmp\\test.cpp")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("C:")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:\\")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:/")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("C:a")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:\\a")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("C:/a")); // NOI18N
     }
 
     @Test
@@ -93,7 +99,7 @@ public class CndPathUtilititiesTest {
         assertEquals("../home2", // NOI18N
                      normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export/home2"))); // NOI18N
         assertEquals("..", // NOI18N
-                     normalize(CndPathUtilitities.toRelativePath("\\C:\\a", "C:"))); // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("\\C:\\a", "C:\\"))); // NOI18N
         assertEquals("..", // NOI18N
                      normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export"))); // NOI18N
     }

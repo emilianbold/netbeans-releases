@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.dashboard;
 
-import org.netbeans.modules.tasks.ui.actions.CloseRepositoryNodeAction;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,6 +54,9 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.tasks.ui.actions.*;
+import org.netbeans.modules.tasks.ui.actions.Actions.CloseRepositoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CreateTaskAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenRepositoryNodeAction;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -113,6 +115,7 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 }
             });
         }
+        loaded = true;
         List<QueryNode> children = getFilteredQueryNodes();
         boolean expand = DashboardViewer.getInstance().expandNodes();
         for (QueryNode queryNode : children) {
@@ -169,7 +172,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
                 filteredQueryNodes.add(queryNode);
             }
         }
-        loaded = true;
     }
 
     public final Repository getRepository() {

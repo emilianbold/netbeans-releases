@@ -110,6 +110,7 @@ public class HandlerButtonListener implements ActionListener{
         this.service = service;
         this.isNew = isNew;
     }
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
             if(!panel.isChanged()) return;
@@ -119,6 +120,7 @@ public class HandlerButtonListener implements ActionListener{
                 FileObject parent = implBeanClass.getParent();
                 final String handlerFileName = FileUtil.findFreeFileName(parent, servicehandlerFileName, "xml");
                 CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+                    @Override
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
                         ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
@@ -192,6 +194,7 @@ public class HandlerButtonListener implements ActionListener{
             if(chain.getHandlers().length == 0) {
                 
                 CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+                    @Override
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
                         TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);

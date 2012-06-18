@@ -51,15 +51,13 @@ import java.util.logging.Logger;
 
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
@@ -99,28 +97,29 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
             // Get deployment desctriptor from the web module
             FileObject ddFileObject = webModule.getDeploymentDescriptor();
             if (ddFileObject != null){
-                // Get all jsf configurations files
-                FileObject[] jsfConfigs = ConfigurationUtils.getFacesConfigFiles(webModule);
-                for (FileObject jsfConfigFO : jsfConfigs) {
-                    JSFConfigModel model = ConfigurationUtils.getConfigModel(jsfConfigFO, true);
-                    if (model != null) {
-                        // Get manage beans from the configuration file
-                        FacesConfig facesConfig = model.getRootComponent();
-                        if (facesConfig != null) {
-                            List<ManagedBean> beans = facesConfig.getManagedBeans();
-                            for (ManagedBean managedBean : beans) {
-                                if (typeElement.getQualifiedName().contentEquals(managedBean.getManagedBeanClass())) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
+            // Get all jsf configurations files
+            FileObject[] jsfConfigs = ConfigurationUtils.getFacesConfigFiles(webModule);
+            for (FileObject jsfConfigFO : jsfConfigs) {
+            JSFConfigModel model = ConfigurationUtils.getConfigModel(jsfConfigFO, true);
+            if (model != null) {
+            // Get manage beans from the configuration file
+            FacesConfig facesConfig = model.getRootComponent();
+            if (facesConfig != null) {
+            List<ManagedBean> beans = facesConfig.getManagedBeans();
+            for (ManagedBean managedBean : beans) {
+            if (typeElement.getQualifiedName().contentEquals(managedBean.getManagedBeanClass())) {
+            return true;
+            }
+            }
+            }
+            }
+            }
             }*/
             /**
              * @author ads
              */
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
+            Project project = FileOwnerQuery.getOwner(controller.getFileObject());
+            MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
             if ( model != null ){
                 try {
                 return model.runReadAction( new MetadataModelAction<JsfModel, Boolean>() {

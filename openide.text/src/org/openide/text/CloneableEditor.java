@@ -751,7 +751,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     }
                 }
             }
-            if (tmp.getDocument() == d) {
+            if (d == null || tmp.getDocument() == d) {
                 return false;
             }
             tmp.setEditorKit(k);

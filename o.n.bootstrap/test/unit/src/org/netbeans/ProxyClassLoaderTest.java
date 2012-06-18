@@ -55,6 +55,7 @@ import java.util.Enumeration;
 import org.fakepkg.FakeIfceHidden;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 public class ProxyClassLoaderTest extends SetupHid {
 
@@ -252,11 +253,11 @@ public class ProxyClassLoaderTest extends SetupHid {
         }
 
         File j1 = new File(jars, "simple-module.jar");
-        ClassLoader l1 = new URLClassLoader(new URL[] { j1.toURI().toURL() });
+        ClassLoader l1 = new URLClassLoader(new URL[] { Utilities.toURI(j1).toURL() });
 
         Loader loader = new Loader("org.bar", "org.fakepkg");
         File jar = new File(jars, "depends-on-simple-module.jar");
-        loader.l = new URLClassLoader(new URL[] { jar.toURI().toURL() }, l1);
+        loader.l = new URLClassLoader(new URL[] { Utilities.toURI(jar).toURL() }, l1);
 
 
         Class<?> clazz = loader.loadClass("org.bar.SomethingElse");

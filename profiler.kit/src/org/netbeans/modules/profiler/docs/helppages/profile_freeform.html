@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Copyright © 1997, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
@@ -13,29 +13,31 @@
    <h2>Profiling a Free-form Project</h2>
       <p>In a free-form project, you have to create Ant targets to be able to profile a file or project.
       You generally want one target in your free-form project's build script
-      for profiling a project and one target for profiling individual files.
-      The first time that you choose the <tt>&quot;Profile Project&quot;</tt> or 
+      for profiling a project and one target for profiling individual files.</p>
+      
+      <p>The first time that you choose the <tt>&quot;Profile Project&quot;</tt> or 
       <tt>&quot;Profile File&quot;</tt> command on a free-form project
-      you will need to create the targets.
+      you will need to create the targets. 
       The IDE can create the targets for you based on the information for the target that is 
-      mapped to the Run command for the project.</p>
+      mapped to the Run command for the project.
+      You only need to generate the targets once.</p>
     
       <p>To profile a free-form project perform the following steps.</p>
       
       <ol>
         <li>Set the free-form project as the main project by choosing
             Run &gt; Set Main Project in the main menu and selecting the project.</li>
-        <li>Choose Profile &gt; Profile Main Project.</li>
-        <li>Click Generate in the Profile Project dialog box.</li>
-        <li>Right-click the project's node and choose Profile Project.</li>
+        <li>Choose Profile &gt; Profile Main Project in the main menu.
+            <p>Click Generate in the Profile Project dialog box if you are prompted to generate a target.</p></li>
         <li>Configure the profiling session in the Select Profiling Task dialog.
             Click Run.</li>
       </ol>
 
         <p class="note"><b>Notes.</b></p>
         <ul>
-            <li>When you click Generate in the Profile Project dialog box the IDE creates
-        a build script named <tt>ide-targets.xml</tt> and generates a target named 
+            <li>The project output must be set before you can profile a free-form application.</li>
+            <li>If you click Generate in the Profile Project dialog box to generate the targets 
+                the IDE creates a build script named <tt>ide-targets.xml</tt> and generates a target named 
         <tt>profile-nb</tt>.
         You should verify that the generated <tt>profile-nb</tt> target properly 
         takes into account all of the elements of your project. 

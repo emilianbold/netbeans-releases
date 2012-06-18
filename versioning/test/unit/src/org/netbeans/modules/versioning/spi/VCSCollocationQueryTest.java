@@ -51,6 +51,7 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSCollocationQuery;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -90,7 +91,7 @@ public class VCSCollocationQueryTest extends NbTestCase {
     }
     
     public void testFindRootBogusFile() throws FileStateInvalidException, IOException, Exception {
-        assertNull(CollocationQuery.findRoot(new File("/a/b/c")));
+        assertNull(CollocationQuery.findRoot(FileUtil.normalizeFile(new File("/a/b/c"))));
     }
     
     private void assertRoot(File root, File file) {

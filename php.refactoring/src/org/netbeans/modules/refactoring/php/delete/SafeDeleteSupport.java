@@ -44,23 +44,13 @@ package org.netbeans.modules.refactoring.php.delete;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.ConstantElement;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.FunctionScope;
-import org.netbeans.modules.php.editor.model.InterfaceScope;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 
@@ -69,14 +59,13 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public final class SafeDeleteSupport {
+
     private Collection<? extends ClassScope> declaredClasses;
     private Collection<? extends ConstantElement> declaredConstants;
     private Collection<? extends FunctionScope> declaredFunctions;
     private Collection<? extends InterfaceScope> declaredInterfaces;
     private Collection<? extends VariableName> declaredVariables;
     private Set<FileObject> relevantFiles;
-
-
     private ElementQuery.Index idx;
     private final Model model;
     private Set<ModelElement> visibleElements;
@@ -119,7 +108,7 @@ public final class SafeDeleteSupport {
             declaredFunctions = ModelUtils.getDeclaredFunctions(fileScope);
             declaredConstants = ModelUtils.getDeclaredConstants(fileScope);
             declaredVariables = ModelUtils.getDeclaredVariables(fileScope);
-            
+
             final Set<ModelElement> elements = new HashSet<ModelElement>();
             elements.addAll(declaredClasses);
             elements.addAll(declaredInterfaces);
@@ -140,7 +129,7 @@ public final class SafeDeleteSupport {
         if (relevantFiles == null) {
             relevantFiles = new HashSet<FileObject>();
             for (ModelElement element : getVisibleElements()) {
-                 relevantFiles.addAll(idx.getLocationsForIdentifiers(element.getName()));
+                relevantFiles.addAll(idx.getLocationsForIdentifiers(element.getName()));
             }
             relevantFiles.remove(getFile());
         }

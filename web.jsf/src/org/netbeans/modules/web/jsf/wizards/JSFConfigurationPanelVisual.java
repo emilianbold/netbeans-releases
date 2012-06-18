@@ -251,24 +251,37 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 Set<ServerLibraryDependency> deps = getServerDependencies(jmp);
                 for (ServerLibraryDependency serverLibraryDependency : deps) {
                     if (serverLibraryDependency.getName().startsWith("jsf")) { //NOI18N
+                        ServerLibraryItem candidate = null;
                         for (final ServerLibraryItem serverLibraryItem : serverJsfLibraries) {
-                            Version implVersion = serverLibraryItem.getLibrary().getImplementationVersion();
-                            Version specVersion = serverLibraryItem.getLibrary().getSpecificationVersion();
-                            if ((implVersion != null && implVersion.equals(serverLibraryDependency.getImplementationVersion()))
-                                    || specVersion != null && specVersion.equals(serverLibraryDependency.getSpecificationVersion())) {
-                                Mutex.EVENT.readAccess(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        rbServerLibrary.setSelected(true);
-                                        enableComponents(false);
-                                        serverLibraries.setSelectedItem(serverLibraryItem);
-                                    }
-                                });
-                                return;
+                            if (serverLibraryItem.getLibrary() != null) {
+                                Version implVersion = serverLibraryItem.getLibrary().getImplementationVersion();
+                                Version specVersion = serverLibraryItem.getLibrary().getSpecificationVersion();
+                                if ((implVersion != null && implVersion.equals(serverLibraryDependency.getImplementationVersion()))
+                                        || specVersion != null && specVersion.equals(serverLibraryDependency.getSpecificationVersion())) {
+                                    selectServerLibraryItem(serverLibraryItem);
+                                    return;
+                                }
+                            } else {
+                                // IDE didn't recognize library correctly
+                                candidate = serverLibraryItem;
                             }
+                        }
+                        if (candidate != null) {
+                            selectServerLibraryItem(candidate);
                         }
                     }
                 }
+            }
+
+            private void selectServerLibraryItem(final ServerLibraryItem item) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        rbServerLibrary.setSelected(true);
+                        enableComponents(false);
+                        serverLibraries.setSelectedItem(item);
+                    }
+                });
             }
         };
 

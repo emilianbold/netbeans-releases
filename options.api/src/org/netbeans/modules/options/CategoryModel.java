@@ -123,7 +123,7 @@ public final class CategoryModel implements LookupListener {
         categoryTask.schedule(0);
     }
 
-    public static CategoryModel getInstance() {
+    public static synchronized CategoryModel getInstance() {
         CategoryModel retval = INSTANCE.get();
         if (retval == null) {
             retval = new CategoryModel();
@@ -312,7 +312,8 @@ public final class CategoryModel implements LookupListener {
         synchronized(CategoryModel.class) {
             categoriesValid = false;
             OptionsDisplayerImpl.lookupListener.resultChanged(ev);
-            INSTANCE = new WeakReference<CategoryModel>(new CategoryModel());
+            INSTANCE = new WeakReference<CategoryModel>(null);
+            result.removeLookupListener(this);
         }
     }
 

@@ -83,7 +83,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
     })
     public @Override Configuration forFolder(File folder) {
         try {
-            SvnUtils.Info info = SvnUtils.parseCheckout(folder.toURI().toURL());
+            SvnUtils.Info info = SvnUtils.parseCheckout(org.openide.util.Utilities.toURI(folder).toURL());
             if (info == null) {
                 return null;
             }
@@ -124,7 +124,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
 
     public @Override String translateWorkspacePath(HudsonJob job, String workspacePath, File localRoot) {
         try {
-            SvnUtils.Info local = SvnUtils.parseCheckout(localRoot.toURI().toURL());
+            SvnUtils.Info local = SvnUtils.parseCheckout(org.openide.util.Utilities.toURI(localRoot).toURL());
             if (local == null) {
                 return null;
             }

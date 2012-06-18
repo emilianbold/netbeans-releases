@@ -59,9 +59,19 @@ public class ParsingUtils {
      * @param cpInfo classpath
      * @param t task to run
      */
-    public static void invokeScanSensitiveTask(final ClasspathInfo cpInfo, final Task<CompilationController> t) {
+    public static void invokeScanSensitiveTask(final ClasspathInfo cpInfo, final ScanSensitiveTask<CompilationController> t) {
+        invokeScanSensitiveTask(JavaSource.create(cpInfo), t);
+    }
+    
+    public static void invokeScanSensitiveTask(final JavaSource js, final ScanSensitiveTask<CompilationController> t) {
         try {
-            JavaSource.create(cpInfo).runWhenScanFinished(t, true).get();
+            boolean wasScanning = SourceUtils.isScanInProgress();
+            if (!t.requiresUpToDate()) {
+                js.runUserActionTask(t, true);
+            }
+            if (t.requiresUpToDate() || (wasScanning && t.shouldRetry())) {
+                js.runWhenScanFinished(t, true).get();
+            }
         } catch (IllegalArgumentException e) {
             LOG.log(Level.SEVERE, null, e);
         } catch (IOException e) {
@@ -72,5 +82,4 @@ public class ParsingUtils {
             LOG.log(Level.SEVERE, null, e);
         }
     }
-    
 }

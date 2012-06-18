@@ -54,12 +54,13 @@ import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
+import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 
 /**
@@ -142,9 +143,11 @@ public class InstallPanel extends javax.swing.JPanel {
         chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(InstallPanel.class, "TIT_Select_Artifact"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setFileFilter(new FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return (f.isDirectory() || f.getName().toLowerCase().endsWith(".jar"));//NOI18N
             }
+            @Override
             public String getDescription() {
                 return org.openide.util.NbBundle.getMessage(InstallPanel.class, "SEL_Jars");
             }
@@ -169,21 +172,25 @@ public class InstallPanel extends javax.swing.JPanel {
         return fil != null && fil.exists() ? fil : null;
     }
     
+    @Messages({"MSG_Instructions=<html>Please enter path to JAR file that represents the dependency with <br>groupId: <b>{0}</b>,<br>artifactId: <b>{1}</b> and <br>version: <b>{2}</b><br>This JAR will be copied to your local repository. <br>Please note that having non-repository based JARs as dependencies is bad for build reproducibility.</html>", 
+        "BTN_Install_locally=Install locally", "TIT_Install_locally=Install locally"})
     public static File showInstallDialog(Artifact art) {
         final InstallPanel panel = new InstallPanel();
-        panel.setExplainText(NbBundle.getMessage(InstallPanel.class, "MSG_Instructions", 
-                art.getGroupId(), art.getArtifactId(), art.getVersion()));
+        panel.setExplainText(MSG_Instructions(art.getGroupId(), art.getArtifactId(), art.getVersion()));
                 
                 
-        final JButton btnSelect  = new JButton(org.openide.util.NbBundle.getMessage(InstallPanel.class, "BTN_Install_locally"));
+        final JButton btnSelect  = new JButton(BTN_Install_locally());
         btnSelect.setEnabled(panel.getFile() != null);
         panel.addDocListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 btnSelect.setEnabled(panel.getFile() != null);
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 btnSelect.setEnabled(panel.getFile() != null);
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 btnSelect.setEnabled(panel.getFile() != null);
             }
@@ -192,7 +199,7 @@ public class InstallPanel extends javax.swing.JPanel {
             btnSelect,
             NotifyDescriptor.CANCEL_OPTION
         };
-        DialogDescriptor dd = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(InstallPanel.class, "TIT_Install_locally"),
+        DialogDescriptor dd = new DialogDescriptor(panel, TIT_Install_locally(),
                 true,
                 options,
                 btnSelect, 0, HelpCtx.DEFAULT_HELP, null);
@@ -205,6 +212,7 @@ public class InstallPanel extends javax.swing.JPanel {
         return null;
     }
     
+    @Messages("TXT_InstallTask=Install artifact")
     public static void runInstallGoal(NbMavenProjectImpl project, File fil, Artifact art) {
         BeanRunConfig brc = new BeanRunConfig();
         brc.setExecutionDirectory(project.getPOMFile().getParentFile());
@@ -218,7 +226,7 @@ public class InstallPanel extends javax.swing.JPanel {
         brc.setProperty("file", fil.getAbsolutePath()); //NOI18N
         brc.setProperty("generatePom", "false"); //NOI18N
         brc.setActivatedProfiles(Collections.<String>emptyList());
-        brc.setTaskDisplayName(NbBundle.getMessage(InstallPanel.class, "TXT_InstallTask"));
+        brc.setTaskDisplayName(TXT_InstallTask());
         RunUtils.executeMaven(brc); //NOI18N
         //TODO how to handle errors
         

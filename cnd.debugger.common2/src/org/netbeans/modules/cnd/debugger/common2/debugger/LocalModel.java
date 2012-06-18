@@ -118,6 +118,13 @@ public final class LocalModel extends VariableModel
 	} else if (parent instanceof Variable) {
 	    Variable v = (Variable) parent;
 	    children = v.getChildren();
+            
+            if (v.hasMore()) {
+                Object[] newChildren = new Object[children.length+1];
+                System.arraycopy(children, 0, newChildren, 0, children.length);
+                newChildren[newChildren.length-1] = new ShowMoreMessage(v);
+                children = newChildren;
+            }
 	} else {
 	    throw new UnknownTypeException (parent);
 	}
@@ -148,7 +155,7 @@ public final class LocalModel extends VariableModel
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
         if (node instanceof WarningMessage) {
             return  ((WarningMessage) node).getMessage();
-        } else{
+        } else {
             return super.getDisplayName(original, node);
         }
     }
@@ -227,7 +234,9 @@ public final class LocalModel extends VariableModel
 	    return;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	} else {
+	} else if (node instanceof ShowMoreMessage) {
+            ((ShowMoreMessage) node).getMore();
+        } else {
 	    throw new UnknownTypeException(node);
 	}
     }

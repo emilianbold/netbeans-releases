@@ -48,7 +48,6 @@ import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManagerFactory;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
 import org.sonatype.guice.plexus.config.Roles;
-import org.apache.maven.model.inheritance.InheritanceAssembler;
 
 /**
  * this module is meant to be used by the project embedder only

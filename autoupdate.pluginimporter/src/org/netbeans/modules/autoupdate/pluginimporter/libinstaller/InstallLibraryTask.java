@@ -62,7 +62,7 @@ public class InstallLibraryTask implements Runnable {
     private static final String JUNIT_APPROVED = "junit_accepted"; // NOI18N
     private static final String JUNIT_DENIED = "junit_denied"; // NOI18N
     private static final Logger LOG = Logger.getLogger(InstallLibraryTask.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(InstallLibraryTask.class.getName(), 1);
+    public static final RequestProcessor RP = new RequestProcessor(InstallLibraryTask.class.getName(), 1);
 
     public @Override
     void run() {

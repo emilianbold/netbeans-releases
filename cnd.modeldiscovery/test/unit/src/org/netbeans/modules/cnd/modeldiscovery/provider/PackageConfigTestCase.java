@@ -49,8 +49,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
-import org.openide.util.NbPreferences;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -77,7 +78,7 @@ public class PackageConfigTestCase extends CndBaseTestCase {
     public void testLibxmlPackage() {
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
-        PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(null);
+        PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(ExecutionEnvironmentFactory.getLocal());
         basicTest(pc, "libxml-2.0", "libxml/tree.h");
     }
 
@@ -91,7 +92,7 @@ public class PackageConfigTestCase extends CndBaseTestCase {
         }
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
-        PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(null);
+        PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(ExecutionEnvironmentFactory.getLocal());
         basicTest(pc, "gtk+-2.0", "gtk/gtk.h");
     }
 

@@ -1260,8 +1260,8 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
     private synchronized void storeProfilingPoints(ProfilingPoint[] profilingPointsArr) {
         if (ignoreStoreProfilingPoints) return;
         
-        Set<Lookup.Provider> projects = new HashSet();
-        Set<ProfilingPointFactory> factories = new HashSet();
+        final Set<Lookup.Provider> projects = new HashSet();
+        final Set<ProfilingPointFactory> factories = new HashSet();
 
         for (ProfilingPoint profilingPoint : profilingPointsArr) {
             projects.add(profilingPoint.getProject());
@@ -1269,19 +1269,23 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
             dirtyProfilingPoints.remove(profilingPoint);
         }
 
-        for (ProfilingPointFactory factory : factories) {
-            if (factory == null) continue;
+        processor().post(new Runnable() {
+            public void run() {
+                for (ProfilingPointFactory factory : factories) {
+                    if (factory == null) continue;
 
-            for (Lookup.Provider project : projects) {
-                try {
-                    factory.saveProfilingPoints(project);
-                } catch (IOException ex) {
-                    ProfilerDialogs.displayError(
-                            Bundle.ProfilingPointsManager_CannotStorePpMsg(
-                                factory.getType(), ProjectUtilities.getDisplayName(project)));
+                    for (Lookup.Provider project : projects) {
+                        try {
+                            factory.saveProfilingPoints(project);
+                        } catch (IOException ex) {
+                            ProfilerDialogs.displayError(
+                                    Bundle.ProfilingPointsManager_CannotStorePpMsg(
+                                        factory.getType(), ProjectUtilities.getDisplayName(project)));
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     private void unloadProfilingPoints(Lookup.Provider project) {

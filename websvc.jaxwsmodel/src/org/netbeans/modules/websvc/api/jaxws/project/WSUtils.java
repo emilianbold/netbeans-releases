@@ -72,6 +72,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -110,6 +111,7 @@ import org.xml.sax.SAXException;
  */
 public class WSUtils {
     
+    private static final String WSIMPORT_BAD_VERSION = "wsimport.bad.version";  // NOI18N
     private static String SUN_DOMAIN_12_DTD_SUFFIX =
             "lib" + File.separator + "dtds" + File.separator + "sun-domain_1_2.dtd";
     private static String SUN_DOMAIN_13_DTD_SUFFIX =
@@ -642,14 +644,14 @@ public class WSUtils {
         return found;
     }
     
-    public static Properties identifyWsimport( AntProjectHelper helper ){
+    public static Properties identifyWsimport( final AntProjectHelper helper ){
         if ( helper == null ){
             return null;
         }
         EditableProperties props = helper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String wsImportCp = props.getProperty("j2ee.platform.wsimport.classpath");  // NOI18N
-        if ( wsImportCp ==null && wsImportCp.length() == 0 ){
+        if ( wsImportCp ==null || wsImportCp.length() == 0 ){
             return null;
         }
         PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
@@ -691,6 +693,10 @@ public class WSUtils {
                  *  version is 2.2 but it has minor release numbers so it is 
                  *  newer 2.2 version with fixed wsimport issue 
                  */
+                if ( evaluator.getProperty(WSIMPORT_BAD_VERSION)!= null ){
+                    setProjectProperty(helper, WSIMPORT_BAD_VERSION,                  
+                            null);  
+                }
                 return null;
             }
             else if ( version.startsWith("2.2")){                                   // NOI18N
@@ -705,11 +711,17 @@ public class WSUtils {
                             NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(notifyDescriptor);
                 Properties properties = new Properties();
-                properties.put("wsimport.bad.version", Boolean.TRUE.toString());    // NOI18N
+                properties.put(WSIMPORT_BAD_VERSION, Boolean.TRUE.toString());    
+                setProjectProperty(helper, WSIMPORT_BAD_VERSION,                  
+                        Boolean.TRUE.toString());           
                 return properties;
             }
             else {
                 // version is not 2.2 ( older or newer )
+                if ( evaluator.getProperty(WSIMPORT_BAD_VERSION)!= null ){
+                    setProjectProperty(helper, WSIMPORT_BAD_VERSION,                  
+                            null);  
+                }
                 return null;
             }
         }
@@ -717,6 +729,38 @@ public class WSUtils {
             Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, null , e);
             return null;
         }
+        catch (MutexException e) {
+            Logger.getLogger(WSUtils.class.getName()).log(Level.INFO, null, e);
+            return null;
+        } 
+    }
+
+    private static void setProjectProperty( final AntProjectHelper helper,
+            final String propertyName, final String value ) throws MutexException
+    {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            @Override
+            public Object run() throws IOException {
+                // and save the project
+                try {
+                    EditableProperties ep = helper.getProperties(
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if ( value == null ){
+                        ep.remove(propertyName);
+                    }
+                    else {
+                        ep.setProperty(propertyName, value);
+                    }
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                    Project project = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+                    ProjectManager.getDefault().saveProject(project);  
+                } 
+                catch(IOException ioe) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
+                }
+                return null;
+            }
+        });
     }
 
 }

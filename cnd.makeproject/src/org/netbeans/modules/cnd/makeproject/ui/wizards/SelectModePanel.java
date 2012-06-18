@@ -504,6 +504,10 @@ public class SelectModePanel extends javax.swing.JPanel {
                 return false;
             }
             return true;
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+            messageKind = cannotReadFolder;
+            return false;
         } finally {
             if (messageKind > 0) {
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 

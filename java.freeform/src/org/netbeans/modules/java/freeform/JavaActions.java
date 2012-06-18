@@ -90,6 +90,7 @@ import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
@@ -711,7 +712,7 @@ final class JavaActions implements ActionProvider {
             // Can't do anything, forget it.
             return;
         }
-        String origScriptURI = helper.resolveFile(origScriptPathEval).toURI().toString();
+        String origScriptURI = Utilities.toURI(helper.resolveFile(origScriptPathEval)).toString();
         Document origScriptDocument = XMLUtil.parse(new InputSource(origScriptURI), false, true, null, null);
         String origBasedir = origScriptDocument.getDocumentElement().getAttribute("basedir"); // NOI18N
         if (origBasedir.length() == 0) {
@@ -886,7 +887,7 @@ final class JavaActions implements ActionProvider {
                     File dest = helper.resolveFile(evaltext);
                     URL destU;
                     try {
-                        destU = dest.toURI().toURL();
+                        destU = Utilities.toURI(dest).toURL();
                     } catch (MalformedURLException e) {
                         throw new AssertionError(e);
                     }
@@ -1149,7 +1150,7 @@ final class JavaActions implements ActionProvider {
             return null;
         }
         File scriptFile = helper.resolveFile(scriptPath);
-        String scriptURI = scriptFile.toURI().toString();
+        String scriptURI = Utilities.toURI(scriptFile).toString();
         Document doc = XMLUtil.parse(new InputSource(scriptURI), false, true, null, null);
         if (targetName == null) {
             targetName = doc.getDocumentElement().getAttribute("default"); // NOI18N

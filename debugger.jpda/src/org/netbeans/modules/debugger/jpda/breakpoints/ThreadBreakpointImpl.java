@@ -80,6 +80,8 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
     // variables ...............................................................
 
     private ThreadBreakpoint              breakpoint;
+    private int                           hitCount;
+    private int                           hitCountFilter;
 
 
     // init ....................................................................
@@ -96,21 +98,29 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
     @Override
     protected void setRequests () {
         try {
-            if ( (breakpoint.getBreakpointType () & 
-                  ThreadBreakpoint.TYPE_THREAD_STARTED ) != 0
-            ) {
+            int type = breakpoint.getBreakpointType();
+            boolean threadStartedType = (type & ThreadBreakpoint.TYPE_THREAD_STARTED) != 0;
+            boolean threadDeathType = (type & ThreadBreakpoint.TYPE_THREAD_DEATH) != 0;
+            boolean ignoreEventHitCount = false;
+            int hitCountFilter = breakpoint.getHitCountFilter();
+            if (threadStartedType && threadDeathType) {
+                if (hitCountFilter > 0) {
+                    this.hitCountFilter = hitCountFilter;
+                    ignoreEventHitCount = true;
+                }
+            }
+            //boolean bothType = threadStartedType && threadDeathType;
+            if (threadStartedType) {
                 ThreadStartRequest tsr = EventRequestManagerWrapper.
                     createThreadStartRequest(getEventRequestManager());
-                addEventRequest (tsr);
+                addEventRequest (tsr, ignoreEventHitCount);
             }
-            if ( (breakpoint.getBreakpointType () & 
-                  ThreadBreakpoint.TYPE_THREAD_DEATH) != 0
-            ) {
+            if (threadDeathType) {
                 VirtualMachine vm = getVirtualMachine();
                 if (vm != null) {
                     ThreadDeathRequest tdr = EventRequestManagerWrapper.
                         createThreadDeathRequest(VirtualMachineWrapper.eventRequestManager(vm));
-                    addEventRequest (tdr);
+                    addEventRequest (tdr, ignoreEventHitCount);
                 }
             }
         } catch (InternalExceptionWrapper e) {
@@ -134,7 +144,31 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
 
     @Override
     public boolean processCondition(Event event) {
-        return true; // Empty condition, always satisfied.
+        if (hitCountFilter > 0) {
+            hitCount++;
+            switch (breakpoint.getHitCountFilteringStyle()) {
+                case MULTIPLE:
+                    if ((hitCount % hitCountFilter) != 0) {
+                        return false;
+                    }
+                    break;
+                case EQUAL:
+                    if (hitCountFilter != hitCount) {
+                        return false;
+                    }
+                    hitCountFilter = 0;
+                    removeAllEventRequests();
+                    break;
+                case GREATER:
+                    if (hitCount <= hitCountFilter) {
+                        return false;
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException(getBreakpoint().getHitCountFilteringStyle().name());
+            }
+        }
+        return processCondition(event, null, null, null);
     }
 
     @Override

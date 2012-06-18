@@ -64,6 +64,7 @@ import java.util.jar.Manifest;
 import org.fakepkg.FakeIfceHidden;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /** Verify contracts needed by Netigso.
@@ -159,7 +160,7 @@ public class ModuleFactoryAlienTest extends SetupHid {
             both = b;
 
             AlienModule am = (AlienModule)m2;
-            am.loader.l = new URLClassLoader(new URL[] { am.jar.toURI().toURL() }, m1.getClassLoader());
+            am.loader.l = new URLClassLoader(new URL[] { Utilities.toURI(am.jar).toURL() }, m1.getClassLoader());
 
             assertFalse("Finish without exception", m2.provides("false"));
 

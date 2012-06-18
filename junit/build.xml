@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="files-init" depends="projectized-common.files-init">
+    <target name="files-init" depends="projectized.files-init">
         <property name="extra.arch.files.dir" value="arch"/>
         <patternset id="extra.arch.files" includes="JUnitPlugin.png"/>
     </target>

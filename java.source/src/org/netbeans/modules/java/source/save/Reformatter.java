@@ -1478,7 +1478,9 @@ public class Reformatter implements ReformatTask {
                         WrapAbort oldCheckWrap = checkWrap;
                         checkWrap = new WrapAbort(o);
                         try {
+                            spaces(0, true);
                             accept(DOT);
+                            spaces(0, true);
                             scanMethodCall(node);
                         } catch (WrapAbort wa) {
                         } finally {
@@ -1497,7 +1499,9 @@ public class Reformatter implements ReformatTask {
                         }
                         break;
                     case WRAP_NEVER:
+                        spaces(0, true);
                         accept(DOT);
+                        spaces(0, true);
                         scanMethodCall(node);
                         break;
                 }
@@ -3616,6 +3620,12 @@ public class Reformatter implements ReformatTask {
                         }
                     }
                 } else {
+                    if (pendingDiff != null) {
+                        String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                        if (sub.equals(pendingDiff.text)) {
+                            pendingDiff = null;
+                        }
+                    }
                     if (enableCommentFormatting) {
                         if (currNWSPos < 0) {
                             currNWSPos = i;
@@ -3781,7 +3791,7 @@ public class Reformatter implements ReformatTask {
                                                     } else {
                                                         pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, indentString + SPACE);
                                                     }
-                                                    col = indent;
+                                                    col = getCol(indentString + SPACE);
                                                 }
                                             } else { 
                                                 if (currWSPos < 0) {

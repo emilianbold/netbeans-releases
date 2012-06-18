@@ -163,8 +163,11 @@ final class CreateFilesWorker {
 
     /*package*/ void finishProjectFilesCreation() {
         if (!failureDetected.get()) {
+            // add to parse all needed elements
             if (!reparseOnEdit.isEmpty()) {
-                DeepReparsingUtils.reparseOnEdit(reparseOnEdit, project, true);
+                for (FileImpl file : reparseOnEdit) {
+                    DeepReparsingUtils.tryPartialReparseOnChangedFile(project, file);
+                }
             }
             if (!reparseOnPropertyChanged.isEmpty()) {
                 DeepReparsingUtils.reparseOnPropertyChanged(reparseOnPropertyChanged, project, false);
@@ -172,8 +175,11 @@ final class CreateFilesWorker {
         }
     }
 
-    void createProjectFilesIfNeed(List<NativeFileItem> sources, List<NativeFileItem> headers) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    /*package*/void checkLibraries() {
+        if (!failureDetected.get() && validator != null) {
+            // check libraries and find if our storage has extra model to contribute
+            reparseOnEdit.addAll(project.checkLibrariesAfterRestore());
+        }
     }
 
     private class CreateFileRunnable implements Runnable {

@@ -129,7 +129,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         String sh = p.getProperty(propertyPrefix + NUMBER_OF_HIDDEN_COLUMNS);
         int numHiddenColumns = Integer.parseInt(sh);
         for (int i = 0; i < numHiddenColumns; i++) {
-            ETableColumn etc = new ETableColumn(table);
+            ETableColumn etc = (ETableColumn)table.createColumn(0);
             etc.readSettings(p, i, propertyPrefix + PROP_HIDDEN_PREFIX);
             hiddenColumns.add(etc);
         }
@@ -249,6 +249,10 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     
     @Override
     public void removeColumn(TableColumn column) {
+        removeColumn(column, true);
+    }
+    
+    private void removeColumn(TableColumn column, boolean doShift) {
         if (sortedColumns.remove(column)) {
             int i = 1;
             for (TableColumn sc : sortedColumns) {
@@ -259,13 +263,28 @@ public class ETableColumnModel extends DefaultTableColumnModel {
                 i++;
             }
         }
-        if (removeHiddenColumn(column) < 0) {
+        if (removeHiddenColumn(column, doShift) < 0) {
+            int columnIndex = tableColumns.indexOf(column);
             super.removeColumn(column);
+            if (doShift) {
+                int n = hiddenColumnsPosition.size();
+                for (int i = 0; i < n; i++) {
+                    if (hiddenColumnsPosition.get(i) <= columnIndex) {
+                        columnIndex++;
+                    }
+                }
+                for (int i = 0; i < n; i++) {
+                    int index = hiddenColumnsPosition.get(i);
+                    if (index > columnIndex) {
+                        hiddenColumnsPosition.set(i, --index);
+                    }
+                }
+            }
         }
     }
     
     /** @return the column position of the hidden column or -1 if the column is not hidden */
-    private int removeHiddenColumn(TableColumn column) {
+    private int removeHiddenColumn(TableColumn column, boolean doShift) {
         int hiddenIndex = -1;
         for (int i = 0; i < hiddenColumns.size(); i++) {
             if (column.equals(hiddenColumns.get(i))) {
@@ -275,7 +294,17 @@ public class ETableColumnModel extends DefaultTableColumnModel {
         }
         if (hiddenIndex >= 0) {
             hiddenColumns.remove(hiddenIndex);
-            return hiddenColumnsPosition.remove(hiddenIndex);
+            int hi = hiddenColumnsPosition.remove(hiddenIndex);
+            if (doShift) {
+                int n = hiddenColumnsPosition.size();
+                for (int i = 0; i < n; i++) {
+                    int index = hiddenColumnsPosition.get(i);
+                    if (index > hi) {
+                        hiddenColumnsPosition.set(i, --index);
+                    }
+                }
+            }
+            return hi;
         } else {
             return -1;
         }
@@ -292,7 +321,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
             if (! hiddenColumns.contains(column)) {
                 int index = tableColumns.indexOf(column);
                 if (index >= 0) {
-                    removeColumn(column);
+                    removeColumn(column, false);
                     hiddenColumns.add(column);
                     for (Integer pos : hiddenColumnsPosition) {
                         if (pos <= index) index++;
@@ -303,12 +332,13 @@ public class ETableColumnModel extends DefaultTableColumnModel {
             }
         } else {
             if (! tableColumns.contains(column)) {
-                int index = removeHiddenColumn(column);
+                int index = removeHiddenColumn(column, false);
                 if (index >= 0) {
+                    int i = index;
                     for (Integer pos : hiddenColumnsPosition) {
-                        if (pos < index) index--;
+                        if (pos < index) i--;
                     }
-                    index = Math.min(index, tableColumns.size());
+                    index = Math.min(i, tableColumns.size());
                     addColumn(column, index);
                 }
             }
@@ -330,6 +360,35 @@ public class ETableColumnModel extends DefaultTableColumnModel {
 	fireColumnAdded(new TableColumnModelEvent(this, 0, index));
     }
 
+    @Override
+    public void moveColumn(int ci1, int ci2) {
+        super.moveColumn(ci1, ci2);
+        // hidden positions between ci1 and ci2 need to be adjusted:
+        int n = hiddenColumns.size();
+        // Shift ci1 and ci2 by hidden columns:
+        for (int i = 0; i < n; i++) {
+            int index = hiddenColumnsPosition.get(i);
+            if (ci1 >= index) ci1++;
+            if (ci2 >= index) ci2++;
+        }
+        if (ci1 < ci2) {
+            for (int i = 0; i < n; i++) {
+                int index = hiddenColumnsPosition.get(i);
+                if (ci1 < index && index <= ci2) {
+                    hiddenColumnsPosition.set(i, --index);
+                }
+            }
+        }
+        if (ci2 < ci1) {
+            for (int i = 0; i < n; i++) {
+                int index = hiddenColumnsPosition.get(i);
+                if (ci2 <= index && index < ci1) {
+                    hiddenColumnsPosition.set(i, ++index);
+                }
+            }
+        }
+    }
+    
     /** Get all columns, including hidden ones. */
     List<TableColumn> getAllColumns() {
         List<TableColumn> columns = Collections.list(getColumns());

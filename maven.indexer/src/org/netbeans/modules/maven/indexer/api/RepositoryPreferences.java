@@ -112,11 +112,11 @@ public final class RepositoryPreferences {
         }
     }
 
-    private Preferences getPreferences() {
+    private static Preferences getPreferences() {
         return NbPreferences.root().node("org/netbeans/modules/maven/nexus/indexing"); //NOI18N
     }
 
-    private Preferences storage() {
+    private static Preferences storage() {
         return NbPreferences.root().node("org/netbeans/modules/maven/repositories");
     }
 
@@ -340,15 +340,15 @@ public final class RepositoryPreferences {
         cs.fireChange();
     }
 
-    public void setIndexUpdateFrequency(int fr) {
+    public static void setIndexUpdateFrequency(int fr) {
         getPreferences().putInt(PROP_INDEX_FREQ, fr);
     }
 
-    public int getIndexUpdateFrequency() {
+    public static int getIndexUpdateFrequency() {
         return getPreferences().getInt(PROP_INDEX_FREQ, Boolean.getBoolean("netbeans.full.hack") ? FREQ_NEVER : FREQ_ONCE_WEEK);
     }
 
-    public Date getLastIndexUpdate(String repoId) {
+    public static Date getLastIndexUpdate(String repoId) {
         long old = getPreferences().getLong(PROP_LAST_INDEX_UPDATE + "." + repoId, 0); // compatibility
         if (old != 0) { // upgrade it
             getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
@@ -357,7 +357,7 @@ public final class RepositoryPreferences {
         return new Date(storage().node(repoId).getLong(PROP_LAST_INDEX_UPDATE, 0));
     }
 
-    public void setLastIndexUpdate(String repoId,Date date) {
+    public static void setLastIndexUpdate(String repoId,Date date) {
         getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
         storage().node(repoId).putLong(PROP_LAST_INDEX_UPDATE, date.getTime());
     }

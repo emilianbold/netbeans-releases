@@ -399,9 +399,9 @@ public final class FileImpl implements CsmFile,
         return projectImpl.getPreprocHandler(fileBuffer.getAbsolutePath(), statePair);
     }
 
-    public Collection<APTPreprocHandler> getPreprocHandlers() {
+    public Collection<APTPreprocHandler> getPreprocHandlersForParse() {
         final ProjectBase projectImpl = getProjectImpl(true);
-        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this);
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlersForParse(this);
     }
 
     public Collection<PreprocessorStatePair> getPreprocStatePairs() {
@@ -494,12 +494,10 @@ public final class FileImpl implements CsmFile,
             }
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
-            boolean tryPartialReparse = false;
-            boolean triggerParsingActivity = true;
+            boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
+            boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
-                triggerParsingActivity = false;
-                tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
-                handlers = getPreprocHandlers();
+                handlers = getPreprocHandlersForParse();
             }
             long time;
             synchronized (stateLock) {

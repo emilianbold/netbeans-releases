@@ -58,6 +58,7 @@ public class JaxWsRootChildren extends Children.Keys<WebService> {
     WebServiceData wsData;
 
     private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+        @Override
         public void run() {
             updateKeys();
         }
@@ -84,12 +85,14 @@ public class JaxWsRootChildren extends Children.Keys<WebService> {
         setKeys(wsData.getServiceProviders());
     }
 
+    @Override
     protected Node[] createNodes(final WebService key) {
         Node wsNode = key.createNode();
         return wsNode == null ? new Node[0] : new Node[] {wsNode};
     }
     
     class JaxWsListener implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             updateNodeTask.schedule(1000);
         }        

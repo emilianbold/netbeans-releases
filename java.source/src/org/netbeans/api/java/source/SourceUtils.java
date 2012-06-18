@@ -970,7 +970,7 @@ public class SourceUtils {
                         Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
                         List<ElementHandle<TypeElement>> classes = new LinkedList<ElementHandle<TypeElement>>();
                         for (URL mainClass : mainClasses) {
-                            File mainFo = new File (URI.create(mainClass.toExternalForm()));
+                            File mainFo = Utilities.toFile(URI.create(mainClass.toExternalForm()));
                             if (mainFo.exists()) {
                                 classes.addAll(JavaCustomIndexer.getRelatedTypes(mainFo, rootFile));
                             }

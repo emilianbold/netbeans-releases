@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 
 /**
  * A basic AntArtifact implementation.
@@ -88,7 +89,7 @@ final class SimpleAntArtifact extends AntArtifact {
         }
         File locF = new File(locationResolved);
         if (locF.isAbsolute()) {
-            return locF.toURI();
+            return Utilities.toURI(locF);
         } else {
             // Project-relative path.
             try {

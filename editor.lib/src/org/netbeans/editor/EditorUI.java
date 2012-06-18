@@ -1224,8 +1224,17 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     public void scrollRectToVisible(final Rectangle r, final int scrollPolicy) {
         Utilities.runInEventDispatchThread(
             new Runnable() {
+                boolean docLocked;
                 public @Override void run() {
-                    scrollRectToVisibleFragile(r, scrollPolicy);
+                    if (!docLocked) {
+                        docLocked = true;
+                        Document doc = getDocument();
+                        if (doc != null) {
+                            doc.render(this);
+                        }
+                    } else { // Document already read-locked
+                        scrollRectToVisibleFragile(r, scrollPolicy);
+                    }
                 }
             }
         );

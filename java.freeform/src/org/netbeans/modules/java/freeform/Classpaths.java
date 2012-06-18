@@ -680,7 +680,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             // But using SourceGroup.contains is not an option since that requires FileObject creation.
             File rootFolder;
             try {
-                rootFolder = new File(rootURI);
+                rootFolder = Utilities.toFile(rootURI);
             } catch (IllegalArgumentException x) {
                 Logger.getLogger(Classpaths.class.getName()).warning("Illegal source root: " + rootURI);
                 rootFolder = null;

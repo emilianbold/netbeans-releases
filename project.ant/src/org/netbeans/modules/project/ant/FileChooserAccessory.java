@@ -69,6 +69,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
 /**
  * Accessory allowing to choose how file is referenced from a project - relative
@@ -343,7 +344,7 @@ public final class FileChooserAccessory extends javax.swing.JPanel
 
     private boolean areCollocated(File base, Collection<File> files){
         for(File file: files){
-            if (!CollocationQuery.areCollocated(base.toURI(), file.toURI())) {
+            if (!CollocationQuery.areCollocated(Utilities.toURI(base), Utilities.toURI(file))) {
                 return false;
             }
         }

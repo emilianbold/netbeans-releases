@@ -46,7 +46,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +55,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -379,6 +377,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         writeNbActionsModel(project, project.getProjectDirectory(), mapping, path);
     }
     
+    @Messages({"TXT_Problem_Broken_Actions=Broken nbactions.xml file.", "DESC_Problem_Broken_Actions=Cannot parse the $project_basedir/nbactions.xml file. The information contained in the file will be ignored until fixed. This affects several features in the IDE that will not work properly as a result.\n\n Parsing exception:\n{0}"})
     private static void writeNbActionsModel(final Project project, final FileObject pomDir, final ActionToGoalMapping mapping, final String path) throws IOException {
         pomDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
@@ -419,8 +418,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     ProblemReporterImpl impl = project != null ? project.getLookup().lookup(ProblemReporterImpl.class) : null;
                     if (impl != null && !impl.hasReportWithId(BROKEN_NBACTIONS)) {
                         ProblemReport rep = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
-                                NbBundle.getMessage(CustomizerProviderImpl.class, "TXT_Problem_Broken_Actions"),
-                                NbBundle.getMessage(CustomizerProviderImpl.class, "DESC_Problem_Broken_Actions", exc.getMessage()),
+                                TXT_Problem_Broken_Actions(),
+                                DESC_Problem_Broken_Actions(exc.getMessage()),
                                 new OpenActions(pomDir.getFileObject(path)));
                         rep.setId(BROKEN_NBACTIONS);
                         impl.addReport(rep);

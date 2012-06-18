@@ -113,6 +113,7 @@ public class ValueCellEditor extends AbstractCellEditor implements TableCellRend
         JavaVMOption<?> option = (JavaVMOption<?>) value;
         if (column == 0) {
             textEditor.setText(extractText(option, column));
+            currentEditor = textEditor;
             return textEditor;
         } else if (option instanceof SwitchNode) {
             SwitchNode sn = (SwitchNode) option;

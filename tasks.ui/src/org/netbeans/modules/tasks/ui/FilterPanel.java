@@ -52,6 +52,7 @@ import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.filter.OpenedCategoryFilter;
 import org.netbeans.modules.tasks.ui.filter.OpenedRepositoryFilter;
 import org.netbeans.modules.tasks.ui.filter.OpenedTaskFilter;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
@@ -202,6 +203,7 @@ public class FilterPanel extends javax.swing.JPanel {
                 DashboardViewer.getInstance().removeRepositoryFilter(openedRepositoryFilter, false);
                 int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
                 manageHitCount(hits);
+                DashboardSettings.getInstance().setFinishedTaskFilter(false);
                 if (e.getSource() instanceof JMenuItem) {
                     ((JMenuItem) e.getSource()).setSelected(enabled);
                 }
@@ -220,14 +222,18 @@ public class FilterPanel extends javax.swing.JPanel {
                 DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
                 int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
                 manageHitCount(hits);
+                DashboardSettings.getInstance().setFinishedTaskFilter(true);
                 if (e.getSource() instanceof JMenuItem) {
                     ((JMenuItem) e.getSource()).setSelected(enabled);
                 }
             }
         });
         groupStatus.add(rbOpenedStatus);
-        //TODO load filter settings
-        rbOpenedStatus.setSelected(true);
+        // load saved setting
+        boolean finishedTaskFilter = DashboardSettings.getInstance().isFinishedTaskFilter();
+        rbOpenedStatus.setSelected(finishedTaskFilter);
+        rbAllStatuses.setSelected(!finishedTaskFilter);
+
         if (rbOpenedStatus.isSelected()) {
             DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
             DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);

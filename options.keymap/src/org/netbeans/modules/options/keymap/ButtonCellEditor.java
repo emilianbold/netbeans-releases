@@ -43,6 +43,8 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -80,6 +82,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
 
         @Override
         public void focusGained (FocusEvent e) {
+            System.err.println("Bu");
         }
 
         @Override
@@ -127,11 +130,22 @@ public class ButtonCellEditor extends DefaultCellEditor {
             }
         }
     }
+    
+    private void refocusTableCell(JTable parent) {
+        
+    }
 
     @Override
     public boolean stopCellEditing() {
         String s = cell.toString();
-
+        Window ancestorWindow = SwingUtilities.getWindowAncestor(cell);
+        // HACK: if this Editor creates a dialog, it will lose the focus and Swing
+        // will remove the editor, calling JTable.cancelEditing. Any re-selections performed
+        // by the JTable will occur BEFORE the dialog is finished, so we need to
+        // reestablish the column selection later from here.
+        // This binds the BCEditor to the KeymapTable layout / internals.
+        JTable parent = (JTable)cell.getParent();
+        
         ShortcutAction sca = (ShortcutAction) action;
         Set<ShortcutAction> conflictingAction = model.findActionForShortcutPrefix(s);
         conflictingAction.remove(sca); //remove the original action
@@ -141,11 +155,14 @@ public class ButtonCellEditor extends DefaultCellEditor {
         if (!conflictingAction.isEmpty()) {
             //there is a conflicting action, show err dialog
             Object overrride = overrride(conflictingAction, sameScopeActions);
+            
+            // bring the focus back
+            ancestorWindow.toFront();
+            parent.requestFocus();
             if (overrride.equals(DialogDescriptor.YES_OPTION)) {
                 for (ShortcutAction sa : conflictingAction) {
                     removeConflictingShortcut(sa, s); //remove all conflicting shortcuts
                 }
-                getComponent().requestFocus();
                 //proceed with override
             } else if (overrride == DialogDescriptor.CANCEL_OPTION) {
                 cell.getTextField().setText(orig);
@@ -182,7 +199,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
         cell.setText((String) value);
         this.orig = cell.getTextField().getText();
         this.action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
-        JTextField textField = cell.getTextField();
+        final JTextField textField = cell.getTextField();
         textField.addActionListener(delegate);
         textField.setBorder(new LineBorder(Color.BLACK));
         textField.addFocusListener (focusListener);
@@ -190,6 +207,11 @@ public class ButtonCellEditor extends DefaultCellEditor {
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                textField.requestFocus();
+            }
+        });
         return cell;
     }
 
@@ -236,7 +258,7 @@ public class ButtonCellEditor extends DefaultCellEditor {
             return DialogDescriptor.CANCEL_OPTION;
         } else {
             return o;
-    }
+        }
     }
 
     private void setBorderEmpty() {

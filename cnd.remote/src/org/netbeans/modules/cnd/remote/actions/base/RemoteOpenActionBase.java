@@ -42,24 +42,21 @@
 
 package org.netbeans.modules.cnd.remote.actions.base;
 
-import org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction;
 import java.awt.event.ActionEvent;
-import java.util.MissingResourceException;
+import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-import org.netbeans.modules.cnd.api.remote.ServerList;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -67,87 +64,66 @@ import org.openide.util.actions.Presenter;
  */
 public abstract class RemoteOpenActionBase extends AbstractAction implements DynamicMenuContent, Presenter.Toolbar {
 
-    protected static final String ENV_KEY = "org.netbeans.modules.cnd.remote.actions.ENV"; // NOI18N
-    private JMenuItem lastPresenter;
+    static final String ENV_KEY = "org.netbeans.modules.cnd.remote.actions.ENV"; // NOI18N
     private JButton lastToolbarPresenter;
-    private final boolean allowLocal;
     private boolean isEnabledToolbarAction = true;
+    private ActionListener peformer;
     
-    public RemoteOpenActionBase(String name, boolean allowLocal) {
+    public RemoteOpenActionBase(String name) {
         super(name);
-        this.allowLocal = allowLocal;
     }
 
     @Override
     public JComponent[] getMenuPresenters() {
-        lastPresenter = createSubMenu();
-        return new JComponent[] { lastPresenter };
+        initPerformer();
+        return ((DynamicMenuContent)peformer).getMenuPresenters();
     }
 
     @Override
     public JComponent[] synchMenuPresenters(JComponent[] jcs) {
-        lastPresenter = createSubMenu();
-        return new JComponent[] { lastPresenter };
+        initPerformer();
+        return ((DynamicMenuContent)peformer).synchMenuPresenters(jcs);
     }
     
     @Override
     public JButton getToolbarPresenter() {
-        if (!allowLocal) {
-            isEnabledToolbarAction = !ServerList.getDefaultRecord().getExecutionEnvironment().isLocal();
-        }
         lastToolbarPresenter = new JButton() {
 
             @Override
             public void setEnabled(boolean b) {
-                if (!allowLocal) {
-                    super.setEnabled(isEnabledToolbarAction);
-                } else {
-                    super.setEnabled(b);
-                }
+                super.setEnabled(isEnabledToolbarAction);
             }
 
             @Override
             public boolean isEnabled() {
-                if (!allowLocal) {
-                    return isEnabledToolbarAction;
-                } else {
-                    return super.isEnabled();
-                }
+                return isEnabledToolbarAction;
             }
         };
+        lastToolbarPresenter.addHierarchyListener(new HierarchyListener() {
+
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                    if (e.getChanged().isShowing()){
+                        initPerformer();
+                    }
+                }
+            }
+        });
         Actions.connect(lastToolbarPresenter, this);
         return lastToolbarPresenter;
     }
 
-    private JMenuItem createSubMenu() throws MissingResourceException {
-        String label = getSubmenuTitle();
-        JMenu subMenu = new JMenu(label);
-        subMenu.setIcon(getIcon());
-        //if (isEnabled()) {
-            for (ServerRecord record : ServerList.getRecords()) {
-                if (allowLocal || record.isRemote()) {
-                    String text = getItemTitle(record);
-                    JMenuItem item = new JMenuItem(text);
-                    item.putClientProperty(ENV_KEY, record.getExecutionEnvironment());
-                    item.addActionListener(this);
-                    subMenu.add(item);
-                }
-            }
-            if (subMenu.getItemCount() > 0) {
-                subMenu.add(new JSeparator());
-            }
-            JMenuItem item = new JMenuItem(NbBundle.getMessage(OpenRemoteProjectAction.class, "LBL_ManagePlatforms_Name"));
-            item.putClientProperty(ENV_KEY, null);
-            item.addActionListener(this);
-            subMenu.add(item);
-        //} else {
-        //    subMenu.setEnabled(false);
-        //}
-        return subMenu;
+    private void initPerformer() {
+        assert SwingUtilities.isEventDispatchThread();
+        if (peformer == null) {
+            peformer = Lookups.forPath(getPerformerID()).lookup(ActionListener.class);
+            peformer.actionPerformed(new ActionEvent(RemoteOpenActionBase.this, 0, "performerActivated")); // NOI18N
+        }
     }
-
+    
     @Override
-    public void setEnabled(boolean enabled) {
+    public final void setEnabled(boolean enabled) {
         isEnabledToolbarAction = enabled;
         if (lastToolbarPresenter != null) {
             lastToolbarPresenter.setEnabled(enabled);
@@ -155,20 +131,26 @@ public abstract class RemoteOpenActionBase extends AbstractAction implements Dyn
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public final void actionPerformed(ActionEvent e) {
         if (e.getSource() instanceof JMenuItem) {
             JMenuItem item = (JMenuItem) e.getSource();
-            ExecutionEnvironment env = (ExecutionEnvironment) item.getClientProperty(ENV_KEY);
+            Object env = item.getClientProperty(ENV_KEY);
             if (env == null) {
                 ServerListUI.showServerListDialog();
             } else {
-                actionPerformed(env);                
+                actionPerformedRemote();          
             }
+        } else {
+            actionPerformedRemote();          
         }
-    }    
+    }
+
+    protected final void actionPerformedRemote() {
+        peformer.actionPerformed(null);
+    }
 
     protected abstract Icon getIcon();
-    protected abstract void actionPerformed(ExecutionEnvironment env);
+    protected abstract String getPerformerID();
     protected abstract String getSubmenuTitle();
-    protected abstract String getItemTitle(ServerRecord record);
+    protected abstract String getItemTitle(String record);
 }

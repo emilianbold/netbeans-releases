@@ -918,7 +918,7 @@ abstract public class CsmCompletionQuery {
                 resolveType = CsmCompletion.getObjectType(resolveObj, _const);
                 visible.set(true);
                 // trace
-                if (TRACE_MULTIPLE_VISIBE_OBJECTS && CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
                     if (visibleObject.size() > 1) {
                         // we have several visible classifiers
                         System.err.printf("getVariableOrClassifierType: : we have several objects visible from %s [%d]\n", contextFile.getAbsolutePath(), endOffset); // NOI18N
@@ -1256,9 +1256,7 @@ abstract public class CsmCompletionQuery {
                                 if (cls == null) {
                                     cls = lastType.getClassifier();
                                 }
-                                if (cls == null || CsmKindUtilities.isBuiltIn(cls)) {
-                                    res.add(lastType);
-                                } else {
+                                if (cls != null) {
                                     res.add(cls);
                                 }
                             } else { // not source-help
@@ -1311,7 +1309,12 @@ abstract public class CsmCompletionQuery {
                             List res;
                             if (openingSource) {
                                 res = new ArrayList();
-                                res.add(lastType.getClassifier());
+                                if (cls == null) {
+                                    cls = lastType.getClassifier();
+                                } 
+                                if (cls != null) {
+                                    res.add(cls);
+                                }
                             } else { // not source-help
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
@@ -2124,6 +2127,27 @@ abstract public class CsmCompletionQuery {
                                 // resolve all functions in context
                                 int varPos = mtdNameExp.getTokenOffset(0);
                                 boolean look4Constructors = findType || openingSource;
+                                if(methodOpen) {
+                                    Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
+                                    // try to resolve field initializers
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
+                                    if (resolve(varPos, mtdName, true)) {
+                                        compResolver.getResult().addResulItemsToCol(candidates);
+                                    }
+                                    ArrayList<CsmField> varList = new ArrayList<CsmField>();
+                                    for (CsmObject object : candidates) {
+                                        if (CsmKindUtilities.isField(object)) {
+                                            varList.add((CsmField)object);
+                                            break;
+                                        }
+                                    } 
+                                    if(!varList.isEmpty()) {
+                                        result = new CsmCompletionResult(component, getBaseDocument(), varList,
+                                                formatType(lastType, true, true, false) + mtdName,
+                                                item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                        return true;
+                                    }
+                                }
                                 if (look4Constructors) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     // try to resolve the most visible
@@ -2375,7 +2399,7 @@ abstract public class CsmCompletionQuery {
             if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
                 CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                 List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
-                int paramsNumber = (template.getTemplateParameters().size() < exp.getParameterCount() - 1) ? template.getTemplateParameters().size() : exp.getParameterCount() - 1;
+                int paramsNumber = exp.getParameterCount() - 1;
                 for (int i = 0; i < paramsNumber; i++) {
                     CsmCompletionExpression paramInst = exp.getParameter(i + 1);
                     if (paramInst != null) {
@@ -2466,7 +2490,7 @@ abstract public class CsmCompletionQuery {
                         }
                     }
                 }
-                if (CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+                if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
                     if (visibleClassifiers.size() > 1) {
                         // we have several visible classifiers
                         System.err.printf("findExactClass: we have several classifiers %s visible from %s [%d]\n", var, contextFile.getAbsolutePath(), endOffset); // NOI18N

@@ -1139,6 +1139,51 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(0, elements.size());
     }
     
+     //Bug 211792 
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=211792
+    public void testIssue211792() throws ParseException {
+//        ParseTreeBuilder.setLoggerLevel(Level.ALL);
+        String code = "<a href=\"\"</p>";
+        //             01234567 8 901234
+        //             0         1         
+        Node root = parse(code).root();
+//        ElementUtils.dumpTree(root);
+        OpenTag a = ElementUtils.query(root, "html/body/a");
+        assertNotNull(a);
+        
+        Collection<Attribute> attrs = a.attributes();
+        assertNotNull(attrs);
+        
+//        for(Attribute attr : attrs) {
+//            System.out.println("from:" + attr.from());
+//            System.out.println("to:" + attr.to());
+//            System.out.println("nameoffset:" + attr.nameOffset());
+//            System.out.println("valueoffset:" + attr.valueOffset());
+//            System.out.println("name:"+attr.name());
+//            System.out.println("value:"+attr.value());
+//        }
+        
+        //properly the number of the attributes should be one, but the 
+        //html parser itself serves the three attributes, where first one
+        //is correct, second one is completely
+        //out of the source are and a third one which represents
+        //the close tag after the quotes.
+        assertEquals(2, attrs.size());
+        
+        Attribute href = attrs.iterator().next();
+        assertNotNull(href);
+        
+        assertEquals(3, href.from());
+        assertEquals(10, href.to());
+        assertEquals(3, href.nameOffset());
+        assertEquals(8, href.valueOffset());
+        assertEquals("href", href.name().toString());
+        assertEquals("\"\"", href.value().toString());
+        assertEquals("", href.unquotedValue().toString());
+        
+    }
+    
+    
     //fails
 //     //Bug 194037 - AssertionError at nu.validator.htmlparser.impl.TreeBuilder.endTag
 //    public void testIssue194037() throws ParseException {
@@ -1227,6 +1272,23 @@ public class Html5ParserTest extends NbTestCase {
                     ElementUtils.dumpTree(root);
                     throw ae;
                 }
+                
+                //validate attributes
+                for(Attribute a : openTag.attributes()) {
+                    assertNotNull(a);
+                    assertNotNull(a.name());
+                    assertTrue(a.nameOffset() > openTag.from());
+                    
+                    if(a.value() != null) {
+                        assertTrue(a.valueOffset() > a.nameOffset() + a.name().length());
+                        
+                        if(!(a.valueOffset() < root.to())) {
+                            System.out.println("error");
+                        }
+                        assertTrue(a.valueOffset() < root.to());
+                    }
+                }
+                
             }
         };
 

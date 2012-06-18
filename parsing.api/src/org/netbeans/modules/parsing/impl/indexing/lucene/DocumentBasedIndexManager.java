@@ -53,6 +53,7 @@ import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -102,7 +103,7 @@ public final class DocumentBasedIndexManager {
                 switch (mode) {
                     case CREATE:
                     {
-                        final File file = new File(root.toURI());
+                        final File file = Utilities.toFile(root.toURI());
                         file.mkdir();
                         li = IndexManager.createDocumentIndex(file);
                         indexes.put(root,li);
@@ -110,7 +111,7 @@ public final class DocumentBasedIndexManager {
                     }
                     case IF_EXIST:
                     {
-                        final File file = new File(root.toURI());
+                        final File file = Utilities.toFile(root.toURI());
                         String[] children;
                         if (file.isDirectory() && (children=file.list())!= null && children.length > 0) {
                             li = IndexManager.createDocumentIndex(file);

@@ -72,6 +72,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * various debugger related utility methods.
@@ -242,7 +243,7 @@ public class Utils {
     static URL fileToURL(File file) {
         try {
             URL url;
-            url = file.toURI().toURL();
+            url = Utilities.toURI(file).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
             }

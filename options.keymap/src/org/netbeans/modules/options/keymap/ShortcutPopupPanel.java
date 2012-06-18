@@ -43,6 +43,9 @@
 package org.netbeans.modules.options.keymap;
 
 import java.awt.Point;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
@@ -74,7 +77,30 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         initComponents();
         this.table = table;
         this.pm = pm;
-        }
+        
+        // forward focus to the list & select 1st item in it
+        addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                list.requestFocus();
+                list.setSelectedIndex(0);
+            }
+            
+        });
+        
+        // close on ESCape
+        list.addKeyListener(new KeyAdapter() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
+                    ShortcutPopupPanel.this.pm.setVisible(false);
+                }
+            }
+            
+        });
+    }
 
     public void setRow(int row) {
         this.row = row;
@@ -176,6 +202,10 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
 
     private void listMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseClicked
         int index = list.locationToIndex(new Point(evt.getX(), evt.getY()));
+        itemSelected(index);
+    }//GEN-LAST:event_listMouseClicked
+
+    private void itemSelected(int index) {
         if (displayAlternative) {
         switch (index) {
             case 0: //edit
@@ -216,16 +246,21 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
             }
 
         }
-
-    }//GEN-LAST:event_listMouseClicked
-
+    }
     private void listKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyPressed
+        // UP / DOWN just wraps around the list
+        // TODO: convert to action & bind to action map
         int index = list.getSelectedIndex();
         if (evt.getKeyCode() == KeyEvent.VK_UP) {
             list.setSelectedIndex(index == 0 ? model.getSize() - 1 : index - 1);
-        }
+        } 
         if (evt.getKeyCode() == KeyEvent.VK_DOWN) {
             list.setSelectedIndex(index == (model.getSize() - 1) ? 0 : index + 1);
+        }
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            if (!list.isSelectionEmpty()) {
+                itemSelected(list.getSelectedIndex());
+            }
         }
         evt.consume();
     }//GEN-LAST:event_listKeyPressed

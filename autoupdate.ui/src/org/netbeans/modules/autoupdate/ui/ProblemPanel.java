@@ -125,7 +125,7 @@ public class ProblemPanel extends javax.swing.JPanel {
         }
     }
     
-    @Messages({"write_taTitle_Text=You don`t have permission to install plugin(s) into the installation directory.",
+    @Messages({"write_taTitle_Text=You don't have permission to install plugin(s) into the installation directory.",
         "write_taMessage_WarningText=To perform installation into the shared directory, you should run the application "
             + "as a user with administrative privilege or install the plugin(s) into your user directory.<br>"
             + "You can also change <i>Plugin Install Location</i> in Settings tab of <i>Tools|Plugins</i> dialog."})

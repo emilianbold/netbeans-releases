@@ -76,6 +76,24 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="source-level-synonyms">
+            <api name="queries"/>
+            <summary>The <code>SourceLevelQuery</code> supports source level synonyms</summary>
+            <version major="1" minor="40"/>
+            <date day="7" month="6" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    The semantics of the <code>SourceLevelQuery</code>, <code>SourceLevelQueryImplementation</code>
+                    and <code>SourceLevelQueryImplementation2</code> was extended to support source level synonyms.
+                    The <code>SourceLevelQueryImplementation</code> and <code>SourceLevelQueryImplementation2</code>
+                    can return source level synonyms, e.g. "5" for "1.5". These synonyms are always normalized
+                    by the <code>SourceLevelQuery</code> before they are teturned to an API client.
+                </p>
+            </description>
+            <issue number="202329"/>
+        </change>
         <change id="java-classpath-compile-only">
             <api name="classpath"/>
             <summary>Introducing JavaClassPathConstants.COMPILE_ONLY</summary>
@@ -110,7 +128,7 @@ made subject to such option by the copyright holder.
             </description>
             <class package="org.netbeans.api.java.queries" name="SourceJavadocAttacher" />
             <class package="org.netbeans.spi.java.queries" name="SourceJavadocAttacherImplementation" />
-            <issue number="47498"/>
+            <issue number="200698"/>
         </change>
         <change id="source-level-changes">
             <api name="queries"/>

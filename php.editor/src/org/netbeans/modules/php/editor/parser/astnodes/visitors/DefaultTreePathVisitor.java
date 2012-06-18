@@ -639,8 +639,10 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
     }
 
     protected void addToPath(ASTNode node) {
-        synchronized (unmodifiablePath) {
-            path.add(0, node);
+        if (node != null) {
+            synchronized (unmodifiablePath) {
+                path.add(0, node);
+            }
         }
     }
 

@@ -95,10 +95,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
@@ -521,43 +523,35 @@ public class EditorContextImpl extends EditorContext {
      * @return signature of method currently selected in editor or null
      */
     public String getCurrentMethodSignature () {
-        final Element[] elementPtr = new Element[] { null };
+        final String[] elementSignaturePtr = new String[] { null };
         try {
-            getCurrentElement(ElementKind.METHOD, elementPtr);
+            getCurrentElement(ElementKind.METHOD, elementSignaturePtr);
         } catch (final java.awt.IllegalComponentStateException icse) {
             throw new java.awt.IllegalComponentStateException() {
                 @Override
                 public String getMessage() {
                     icse.getMessage();
-                    return createSignature((ExecutableElement) elementPtr[0]);
+                    return elementSignaturePtr[0];
                 }
             };
         }
-        if (elementPtr[0] != null) {
-            return createSignature((ExecutableElement) elementPtr[0]);
-        } else {
-            return null;
-        }
+        return elementSignaturePtr[0];
     }
 
     public String getMostRecentMethodSignature () {
-        final Element[] elementPtr = new Element[] { null };
+        final String[] elementSignaturePtr = new String[] { null };
         try {
-            getMostRecentElement(ElementKind.METHOD, elementPtr);
+            getMostRecentElement(ElementKind.METHOD, elementSignaturePtr);
         } catch (final java.awt.IllegalComponentStateException icse) {
             throw new java.awt.IllegalComponentStateException() {
                 @Override
                 public String getMessage() {
                     icse.getMessage();
-                    return createSignature((ExecutableElement) elementPtr[0]);
+                    return elementSignaturePtr[0];
                 }
             };
         }
-        if (elementPtr[0] != null) {
-            return createSignature((ExecutableElement) elementPtr[0]);
-        } else {
-            return null;
-        }
+        return elementSignaturePtr[0];
     }
 
     /**
@@ -916,7 +910,7 @@ public class EditorContextImpl extends EditorContext {
                                 name = elm.getSimpleName().toString();
                             }
                             if (name.equals(methodName)) {
-                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm))) {
+                                if (methodSignature == null || egualMethodSignatures(methodSignature, createSignature((ExecutableElement) elm, ci.getTypes()))) {
                                     SourcePositions positions =  ci.getTrees().getSourcePositions();
                                     Tree tree = ci.getTrees().getTree(elm);
                                     if (tree == null) {
@@ -1304,7 +1298,7 @@ public class EditorContextImpl extends EditorContext {
                                 // The constructor name is the class name:
                                 currentMethodPtr[0] = el.getEnclosingElement().getSimpleName().toString();
                             }
-                            currentMethodPtr[1] = createSignature((ExecutableElement) el);
+                            currentMethodPtr[1] = createSignature((ExecutableElement) el, ci.getTypes());
                             Element enclosingClassElement = el;
                             TypeElement te = null; // SourceUtils.getEnclosingTypeElement(el);
                             while (enclosingClassElement != null) {
@@ -1374,22 +1368,29 @@ public class EditorContextImpl extends EditorContext {
     }
 
 
-    private static String createSignature(ExecutableElement elm) {
+    private static String createSignature(ExecutableElement elm, Types types) {
         StringBuilder signature = new StringBuilder("(");
         for (VariableElement param : elm.getParameters()) {
             TypeMirror pt = param.asType();
-            String paramType;
-            if (pt instanceof DeclaredType) {
-                paramType = ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) pt).asElement());
-            } else {
-                paramType = param.asType().toString();
-            }
+            pt = types.erasure(pt);
+            String paramType = getTypeBinaryName(pt);
             signature.append(getSignature(paramType));
         }
         signature.append(')');
-        String returnType = elm.getReturnType().toString();
+        String returnType = getTypeBinaryName(types.erasure(elm.getReturnType()));
         signature.append(getSignature(returnType));
         return signature.toString();
+    }
+    
+    private static String getTypeBinaryName(TypeMirror t) {
+        if (t instanceof ArrayType) {
+            TypeMirror ct = ((ArrayType) t).getComponentType();
+            return getTypeBinaryName(ct)+"[]";
+        }
+        if (t instanceof DeclaredType) {
+            return ElementUtilities.getBinaryName((TypeElement) ((DeclaredType) t).asElement());
+        }
+        return t.toString();
     }
 
     private static String getSignature(String javaType) {
@@ -1409,14 +1410,11 @@ public class EditorContextImpl extends EditorContext {
             return "F";
         } else if (javaType.equals("double")) {
             return "D";
+        } else if (javaType.equals("void")) {
+            return "V";
         } else if (javaType.endsWith("[]")) {
             return "["+getSignature(javaType.substring(0, javaType.length() - 2));
         } else {
-            int gp1 = javaType.indexOf('<');
-            int gp2 = javaType.lastIndexOf('>');
-            if (gp1 > 0 && gp2 > gp1) {
-                javaType = javaType.substring(0, gp1) + javaType.substring(gp2 + 1);
-            }
             return "L"+javaType.replace('.', '/')+";";
         }
     }
@@ -1926,7 +1924,7 @@ public class EditorContextImpl extends EditorContext {
                 retValue = visitor.scan(treePath, context);
             } else {
                 if (tree == null) {
-                    throw new InvalidExpressionException(NbBundle.getMessage(EditorContextImpl.class, "MSG_NoParseNoEval"));
+                    throw new InvalidExpressionException(NbBundle.getMessage(EditorContextImpl.class, "MSG_NoParseNoEval")+" URL="+url+":"+line);
                 }
                 retValue = tree.accept(visitor, context);
             }
@@ -2130,24 +2128,24 @@ public class EditorContextImpl extends EditorContext {
     }
 
     /** throws IllegalComponentStateException when can not return the data in AWT. */
-    private String getCurrentElement(final ElementKind kind, final Element[] elementPtr)
+    private String getCurrentElement(final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
         return getCurrentElement(contextDispatcher.getCurrentFile(),
                                  contextDispatcher.getCurrentEditor(),
-                                 kind, elementPtr);
+                                 kind, elementSignaturePtr);
     }
 
     /** throws IllegalComponentStateException when can not return the data in AWT. */
-    private String getMostRecentElement(final ElementKind kind, final Element[] elementPtr)
+    private String getMostRecentElement(final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
         return getCurrentElement(contextDispatcher.getMostRecentFile(),
                                  contextDispatcher.getMostRecentEditor(),
-                                 kind, elementPtr);
+                                 kind, elementSignaturePtr);
     }
 
     /** throws IllegalComponentStateException when can not return the data in AWT. */
     private String getCurrentElement(FileObject fo, JEditorPane ep,
-                                     final ElementKind kind, final Element[] elementPtr)
+                                     final ElementKind kind, final String[] elementSignaturePtr)
             throws java.awt.IllegalComponentStateException {
 
         if (fo == null) return null;
@@ -2248,24 +2246,20 @@ public class EditorContextImpl extends EditorContext {
                             String text = ci.getText();
                             int l = text.length();
                             char c = 0; // Search for the end of the field declaration
-                            while (offset < l && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') offset++;
-                            if (offset < l && c == ';' || c == ',') { // we have it, but there might be '=' sign somewhere before
-                                int endOffset = --offset;
-                                int setOffset = -1;
-                                while(offset >= 0 && (c = text.charAt(offset)) != ';' && c != ',' && c != '\n' && c != '\r') {
-                                    if (c == '=') setOffset = offset;
-                                    offset--;
-                                }
-                                if (setOffset > -1) {
-                                    offset = setOffset;
-                                } else {
-                                    offset = endOffset;
-                                }
-                                while (offset >= 0 && Character.isWhitespace(text.charAt(offset))) offset--;
+                            while (offset < l && (c = text.charAt(offset)) != '\n' && c != '\r' && Character.isWhitespace(c)) {
+                                offset++;
                             }
-                            if (offset < 0) offset = 0;
+                            if (!Character.isWhitespace(c)) offset++;
                         }
-                        Tree tree = ci.getTreeUtilities().pathFor(offset).getLeaf();
+                        TreePath tp = ci.getTreeUtilities().pathFor(offset);
+                        Tree tree = tp.getLeaf();
+                        if (selectedIdentifier == null) {
+                            while (tree.getKind() != Tree.Kind.VARIABLE) {
+                                tp = tp.getParentPath();
+                                if (tp == null) break;
+                                tree = tp.getLeaf();
+                            }
+                        }
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
                             el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
                             if (el != null && (el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.ENUM_CONSTANT)) {
@@ -2299,8 +2293,8 @@ public class EditorContextImpl extends EditorContext {
                             }
                         }
                     }
-                    if (elementPtr != null) {
-                        elementPtr[0] = el;
+                    if (elementSignaturePtr != null && el instanceof ExecutableElement) {
+                        elementSignaturePtr[0] = createSignature((ExecutableElement) el, ci.getTypes());
                     }
                 }
             }, true);
