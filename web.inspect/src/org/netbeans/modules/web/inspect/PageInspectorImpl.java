@@ -100,7 +100,7 @@ public class PageInspectorImpl extends PageInspector {
             }
             WebKitDebugging webKit = pageContext.lookup(WebKitDebugging.class);
             if (webKit != null) {
-                pageModel = new WebKitPageModel(webKit);
+                pageModel = new WebKitPageModel(pageContext);
                 messageDispatcher = pageContext.lookup(MessageDispatcher.class);
                 if (messageDispatcher != null) {
                     messageListener = new InspectionMessageListener(pageModel);

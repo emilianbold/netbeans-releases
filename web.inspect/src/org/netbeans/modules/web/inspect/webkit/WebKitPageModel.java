@@ -48,6 +48,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.web.browser.spi.Resizable;
+import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
@@ -55,6 +57,7 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -81,6 +84,8 @@ public class WebKitPageModel extends PageModel {
     private boolean selectionMode;
 
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
+    /** Determines whether the page has a native toolbar or whether we should inject one. */
+    private boolean hasNativeToolbar;
 
     /** Logger used by this class */
     //private java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(WebKitPageModel.class.getName());
@@ -88,10 +93,13 @@ public class WebKitPageModel extends PageModel {
     /**
      * Creates a new {@code WebKitPageModel}.
      * 
-     * @param webKit WebKit to base the model on.
+     * @param pageContext page context.
      */
-    public WebKitPageModel(WebKitDebugging webKit) {
-        this.webKit = webKit;
+    public WebKitPageModel(Lookup pageContext) {
+        this.webKit = pageContext.lookup(WebKitDebugging.class);
+        // Indirect way how to distinguish WebView from Chrome
+        this.hasNativeToolbar = (pageContext.lookup(Resizable.class) != null)
+                && (pageContext.lookup(Zoomable.class) != null);
         addPropertyChangeListener(new WebPaneSynchronizer());
         
         // Register DOM domain listener
@@ -117,12 +125,14 @@ public class WebKitPageModel extends PageModel {
             // init
             String initScript = Files.getScript("initialization"); // NOI18N
             webKit.getRuntime().evaluate(initScript);
-            // frame
-            String pageScript = Files.getScript("page"); // NOI18N
-            webKit.getRuntime().evaluate(pageScript);
-            String pageHtml = toScriptString(Files.getHtml("page")); // NOI18N
-            String frameScript = Files.getScript("frame").replace("__HTML_PAGE__", pageHtml); // NOI18N
-            webKit.getRuntime().evaluate(frameScript);
+            if (!hasNativeToolbar) {
+                // frame
+                String pageScript = Files.getScript("page"); // NOI18N
+                webKit.getRuntime().evaluate(pageScript);
+                String pageHtml = toScriptString(Files.getHtml("page")); // NOI18N
+                String frameScript = Files.getScript("frame").replace("__HTML_PAGE__", pageHtml); // NOI18N
+                webKit.getRuntime().evaluate(frameScript);
+            }
         }
     }
 
