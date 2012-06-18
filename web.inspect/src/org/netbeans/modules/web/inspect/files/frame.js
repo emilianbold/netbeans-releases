@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -40,12 +40,23 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-// register listener for extension requests
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-    console.log('Got request "' + request.id + '"');
-    if (request.id == 'RELOAD_FRAME') {
-        reloadFrame();
-        return;
+// XXX detect running in frame
+if (window.parent.TOP_FRAME == undefined) {
+    var TOP_FRAME = true;
+
+    function nbHtmlEntities(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-    console.log('Unknown request "' + request.id + '"');
-});
+
+    function nbReloadFrame() {
+        console.log('Reloading iframe for "' + document.location.href + '"');
+        document.getElementById('nbframe').contentDocument.location.reload(true);
+    }
+
+    var origTitle = document.title;
+    var origUrl = document.location.href;
+    console.log('Placing "' + origUrl + '" to iframe');
+    var nbdoc = '__HTML_PAGE__';
+    var encodedNbDoc = encodeURIComponent(nbdoc);
+    document.location.href = "javascript:(function(){document.open();document.write('" + encodedNbDoc + "');document.close();})();";
+}

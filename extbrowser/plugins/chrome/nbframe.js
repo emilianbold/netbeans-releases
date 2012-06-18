@@ -40,28 +40,12 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-function htmlEntities(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function reloadFrame() {
-    console.log('Reloading iframe for "' + document.location.href + '"');
-    document.getElementById('nbframe').contentDocument.location.reload(true);
-}
-
-var origTitle = document.title;
-var origUrl = document.location.href;
-console.log('Placing "' + origUrl + '" to iframe');
-var nbdoc = '<!DOCTYPE><html>'
-        + '<head>'
-        + '    <title>' + htmlEntities(origTitle) + '</title>'
-        + '    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" >'
-        + '</head>'
-        + '<body>'
-        + '<div id="nbpanel">NETBEANS PANEL</div>'
-        // XXX <iframe onload="alert(this.contentWindow.location);">
-        + '    <iframe src="' + origUrl + '" id="nbframe" sandbox="allow-same-origin allow-forms allow-scripts" style="border: 1px solid blue; width: 600px; height: 400px;"></iframe>'
-        + '</body>';
-        + '</html>';
-var encodedNbDoc = encodeURIComponent(nbdoc);
-document.location.href = "javascript:(function(){document.open();document.write('" + encodedNbDoc + "');document.close();})();";
+// register listener for extension requests
+chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+    console.log('Got request "' + request.id + '"');
+    if (request.id == 'RELOAD_FRAME') {
+        reloadFrame();
+        return;
+    }
+    console.log('Unknown request "' + request.id + '"');
+});

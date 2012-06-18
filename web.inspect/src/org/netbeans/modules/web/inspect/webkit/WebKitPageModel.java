@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
-import org.netbeans.modules.web.inspect.script.Script;
+import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
@@ -104,13 +104,28 @@ public class WebKitPageModel extends PageModel {
      * Prepares the page for inspection.
      */
     private void initializePage() {
-        // documentUpdated event is not delivered when no node information
-        // was sent to the client => requesting document node to make sure
-        // that we obtain next documentUpdated event (that we need to be able
-        // to reinitialize the page)
-        getDocumentNode();
-        String initScript = Script.getScript("initialization"); // NOI18N
-        webKit.getRuntime().evaluate(initScript);
+        // XXX ignore blank page
+        if (!webKit.getDOM().getDocument().getDocumentURL().contains("blank")) { // NOI18N
+            // documentUpdated event is not delivered when no node information
+            // was sent to the client => requesting document node to make sure
+            // that we obtain next documentUpdated event (that we need to be able
+            // to reinitialize the page)
+            getDocumentNode();
+            // init
+            String initScript = Files.getScript("initialization"); // NOI18N
+            webKit.getRuntime().evaluate(initScript);
+            // frame
+            String pageHtml = toScriptString(Files.getHtml("page")); // NOI18N
+            String frameScript = Files.getScript("frame").replace("__HTML_PAGE__", pageHtml); // NOI18N
+            webKit.getRuntime().evaluate(frameScript);
+        }
+    }
+
+    /**
+     * Escapes the given string so it can be used in JS as a string.
+     */
+    private String toScriptString(String input) {
+        return input.replace("\n", "\\\n").replace("\r", ""); // NOI18N
     }
 
     @Override
@@ -135,7 +150,7 @@ public class WebKitPageModel extends PageModel {
 
     /**
      * Creates DOM domain listener.
-     * 
+     *
      * @return DOM domain listener.
      */
     private DOM.Listener createDOMListener() {
@@ -275,7 +290,7 @@ public class WebKitPageModel extends PageModel {
     /**
      * Updates the map of known nodes with the information about the specified
      * node and its sub-nodes.
-     * 
+     *
      * @param node node to start the update at.
      * @return {@code DOMNode} that corresponds to the specified node.
      */
@@ -300,7 +315,7 @@ public class WebKitPageModel extends PageModel {
 
     /**
      * Returns {@code DOMNode} with the specified ID.
-     * 
+     *
      * @param nodeId ID of the requested {@code DOMNode}.
      * @return {@code DOMNode} with the speicified ID.
      */
@@ -333,7 +348,7 @@ public class WebKitPageModel extends PageModel {
         // PENDING
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     @Override
     public void setSelectedNodes(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
