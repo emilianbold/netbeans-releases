@@ -86,6 +86,7 @@ public class CGSGenerator implements CodeGenerator {
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}";  //NOI18N
     private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
+    private static final String FLUENT_SETTER = "${FluentSetter}"; //NOI18N
 
     public enum GenType {
         CONSTRUCTOR {
@@ -223,6 +224,11 @@ public class CGSGenerator implements CodeGenerator {
                 return setters.toString();
             }
 
+            @Override
+            public boolean isFluentSetterComboVisible() {
+                return true;
+            }
+
         },
         GETTER_AND_SETTER {
 
@@ -268,6 +274,11 @@ public class CGSGenerator implements CodeGenerator {
                     }
                 }
                 return gettersAndSetters.toString();
+            }
+
+            @Override
+            public boolean isFluentSetterComboVisible() {
+                return true;
             }
 
         },
@@ -329,12 +340,17 @@ public class CGSGenerator implements CodeGenerator {
             return new ConstructorPanel(this, cgsInfo);
         }
 
+        public boolean isFluentSetterComboVisible() {
+            return false;
+        }
+
         String getGetterTemplate(final CGSInfo cgsInfo) {
             return GETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getGetterTemplate());
         }
 
         String getSetterTemplate(final CGSInfo cgsInfo) {
-            return SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
+            final String preparedSetterTemplate = SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
+            return cgsInfo.isFluentSetter() ? preparedSetterTemplate.replace(FLUENT_SETTER, "return $this;" + NEW_LINE) : preparedSetterTemplate.replace(FLUENT_SETTER, ""); //NOI18N
         }
 
     }
@@ -412,12 +428,13 @@ public class CGSGenerator implements CodeGenerator {
     private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
     private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + "$this->" + PROPERTY + " = $" + PARAM_NAME + ";";          //NOI18N
     private static final String GETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "() {" + NEW_LINE + "return $$this->" + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N
-    private static final String SETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "($$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + "}" + NEW_LINE; //NOI18N
+    private static final String SETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "($$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
     private final GenType type;
     private final CGSInfo cgsInfo;
     private final JTextComponent component;
 
     private static final String GETTER_SETTER_PROJECT_PROPERTY = "getter.setter.method.name.generation";
+    private static final String FLUENT_SETTER_PROJECT_PROPERTY = "fluent.setter.project.property"; //NOI18N
 
     private CGSGenerator(JTextComponent component, CGSInfo cgsInfo, GenType type) {
         this.type = type;
@@ -430,6 +447,7 @@ public class CGSGenerator implements CodeGenerator {
         String methodGenerationWay = null;
         AntProjectHelper helper = null;
         EditableProperties properties = null;
+        boolean fluentSetter = false;
 
         // obtain the generation from project properties
         FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
@@ -438,6 +456,7 @@ public class CGSGenerator implements CodeGenerator {
             helper = project.getLookup().lookup(AntProjectHelper.class);
             properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             methodGenerationWay = properties.getProperty(GETTER_SETTER_PROJECT_PROPERTY);
+            fluentSetter = Boolean.valueOf(properties.getProperty(FLUENT_SETTER_PROJECT_PROPERTY));
         }
         if (methodGenerationWay != null) {
             try {
@@ -448,6 +467,7 @@ public class CGSGenerator implements CodeGenerator {
         } else {
             cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
         }
+        cgsInfo.setFluentSetter(fluentSetter);
         DialogDescriptor desc = new DialogDescriptor(type.createPanel(cgsInfo), type.getDialogTitle());
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         dialog.setVisible(true);
@@ -459,6 +479,7 @@ public class CGSGenerator implements CodeGenerator {
             //save the gen type value to the project properties
             if (project != null) {
                 properties.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
+                properties.put(FLUENT_SETTER_PROJECT_PROPERTY, String.valueOf(cgsInfo.isFluentSetter()));
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
             }
         }

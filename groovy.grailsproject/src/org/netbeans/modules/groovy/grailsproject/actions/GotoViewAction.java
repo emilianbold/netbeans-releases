@@ -44,7 +44,6 @@ package org.netbeans.modules.groovy.grailsproject.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
 import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
