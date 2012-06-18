@@ -50,16 +50,13 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             * {
                 margin:0; padding:0;
             }
-
             html {
                 height:100%;
                 background: #000;
             }
-
             body {
                 height:100%;
             }
-
             iframe {
                 width:100%;
                 height: 100%;
@@ -83,11 +80,9 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 width:100%;
                 background: white;
             }
-
             #nbpanel #preview * {
                 float: left;
             }
-
             #nbpanel #preview a {
                 margin-right: 3px;
                 border: 1px solid black;
@@ -140,6 +135,12 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             #presetCustomizer .buttons {
                 float: right;
             }
+            #presetCustomizer .sizes .buttons button {
+                display: block;
+            }
+            #presetCustomizerTable .active {
+                background-color: lightgreen;
+            }
         </style>
         <script type="text/javascript" src="page.js"></script>
     </head>
@@ -182,6 +183,9 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 </div>
                 <div class="buttons">
                     <button id="addPreset">New</button>
+                    <button id="removePreset" disabled="disabled">Remove</button>
+                    <button id="moveUpPreset" disabled="disabled">Move Up</button>
+                    <button id="moveDownPreset" disabled="disabled">Move Down</button>
                 </div>
             </div>
             <div class="clear"></div>

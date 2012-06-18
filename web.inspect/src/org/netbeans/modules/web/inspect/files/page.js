@@ -70,7 +70,7 @@ var NetBeans = {
     },
 
     showPresetCustomizer: function() {
-        this._presetCustomizer.show(this._loadPresets()); // always use copy!
+        this._presetCustomizer.show(this._loadPresets()); // always use copy of presets!
     },
 
     getPreset: function(preset) {
@@ -132,18 +132,21 @@ var NetBeans = {
 
     _loadPresets: function() {
         // XXX load presets from NB
+        if (this._presets != null) {
+            return this._presets.slice(0);
+        }
         return [
-            new NetBeans_Preset('Desktop', '1440', '900', true, true),
-            new NetBeans_Preset('Tablet Landscape', '1039', '768', true, true),
-            new NetBeans_Preset('Tablet Portrait', '783', '1024', true, true),
-            new NetBeans_Preset('Smartphone Landscape', '495', '320', true, true),
-            new NetBeans_Preset('Smartphone Portrait', '335', '480', true, true)
+            new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Desktop', '1440', '900', true, true),
+            new NetBeans_Preset(NetBeans_Preset.TABLET, 'Tablet Landscape', '1039', '768', true, true),
+            new NetBeans_Preset(NetBeans_Preset.TABLET, 'Tablet Portrait', '783', '1024', true, true),
+            new NetBeans_Preset(NetBeans_Preset.SMARTPHONE, 'Smartphone Landscape', '495', '320', true, true),
+            new NetBeans_Preset(NetBeans_Preset.SMARTPHONE, 'Smartphone Portrait', '335', '480', true, true)
         ];
     },
 
     _savePresets: function() {
         // XXX save presets back to NB
-        alert('Saving presets');
+        alert('Saving presets not implemented');
     },
 
     _resizeFrame: function(width, height, units) {
@@ -157,19 +160,39 @@ var NetBeans = {
 
 /*** ~Inner classes ***/
 
-function NetBeans_Preset(title, width, height, toolbar, internal) {
+function NetBeans_Preset(type, title, width, height, toolbar, internal) {
+    this.type = type;
     this.title = title;
     this.width = width;
     this.height = height;
     this.toolbar = toolbar;
     this.internal = internal;
 }
+NetBeans_Preset.DESKTOP = {
+    ident: 'DESKTOP',
+    title: 'Desktop' // XXX i18n
+};
+NetBeans_Preset.TABLET = {
+    ident: 'TABLET',
+    title: 'Tablet'
+};
+NetBeans_Preset.SMARTPHONE = {
+    ident: 'SMARTPHONE',
+    title: 'Smartphone'
+};
+NetBeans_Preset.allTypes = function() {
+    return [NetBeans_Preset.DESKTOP, NetBeans_Preset.TABLET, NetBeans_Preset.SMARTPHONE];
+}
 
 function NetBeans_PresetCustomizer() {
 
     this._container = null;
     this._rowContainer = null;
+    this._removePresetButton = null;
+    this._moveUpPresetButton = null;
+    this._moveDownPresetButton = null;
     this._presets = null;
+    this._activePreset = null;
 
 
     this.show = function(presets) {
@@ -187,6 +210,9 @@ function NetBeans_PresetCustomizer() {
         }
         this._container = document.getElementById('presetCustomizer');
         this._rowContainer = document.getElementById('presetCustomizerTable').getElementsByTagName('tbody')[0];
+        this._removePresetButton = document.getElementById('removePreset');
+        this._moveUpPresetButton = document.getElementById('moveUpPreset');
+        this._moveDownPresetButton = document.getElementById('moveDownPreset');
         this._registerEvents();
     }
 
@@ -206,6 +232,15 @@ function NetBeans_PresetCustomizer() {
         document.getElementById('addPreset').addEventListener('click', function() {
             that._addPreset();
         }, false);
+        this._removePresetButton.addEventListener('click', function() {
+            that._removePreset();
+        }, false);
+        this._moveUpPresetButton.addEventListener('click', function() {
+            that._moveUpPreset();
+        }, false);
+        this._moveDownPresetButton.addEventListener('click', function() {
+            that._moveDownPreset();
+        }, false);
         document.getElementById('presetCustomizerOk').addEventListener('click', function() {
             that._save();
         }, false);
@@ -218,13 +253,24 @@ function NetBeans_PresetCustomizer() {
     }
 
     this._putPresets = function(presets) {
+        var that = this;
         for (p in presets) {
             var preset = presets[p];
             // row
             var row = document.createElement('tr');
             // type
             var type = document.createElement('td');
-            type.appendChild(document.createTextNode('???'));
+            var select = document.createElement('select');
+            NetBeans_Preset.allTypes().forEach(function(type) {
+                var option = document.createElement('option');
+                option.setAttribute('value', type.ident);
+                if (preset.type === type) {
+                    option.setAttribute('selected', 'selected');
+                }
+                option.appendChild(document.createTextNode(type.title));
+                select.appendChild(option);
+            });
+            type.appendChild(select);
             row.appendChild(type);
             // name
             var title = document.createElement('td');
@@ -240,39 +286,149 @@ function NetBeans_PresetCustomizer() {
             row.appendChild(height);
             // toolbar
             var toolbar = document.createElement('td');
-            toolbar.appendChild(document.createTextNode(preset.toolbar ? 'yes' : 'no'));
+            var checkbox = document.createElement('input');
+            checkbox.setAttribute('type', 'checkbox');
+            if (preset.toolbar) {
+                checkbox.setAttribute('checked', 'checked');
+            }
+            toolbar.appendChild(checkbox);
             row.appendChild(toolbar);
+            // events
+            row.addEventListener('click', function() {
+                that._rowSelected(this);
+            });
             // append row
             this._rowContainer.appendChild(row);
+            preset['row'] = row;
         }
     }
 
-    this._cleanPresets = function() {
+    this._cleanUp = function() {
         this._presets = null;
         while (this._rowContainer.hasChildNodes()) {
             this._rowContainer.removeChild(this._rowContainer.firstChild);
         }
+        this._activePreset = null;
     }
 
     this._addPreset = function() {
-        var preset = new NetBeans_Preset('New...', '800', '600', true, false);
+        var preset = new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'New...', '800', '600', true, false);
         this._presets.push(preset);
         this._putPresets([preset]);
+        this._enableButtons();
+    }
+
+    this._removePreset = function() {
+        // presets
+        this._presets.splice(this._presets.indexOf(this._activePreset), 1);
+        // ui
+        this._rowContainer.removeChild(this._activePreset['row']);
+        this._activePreset = null;
+        this._enableButtons();
+    }
+
+    this._moveUpPreset = function() {
+        // presets
+        this._movePreset(this._activePreset, -1);
+        // ui
+        var row = this._activePreset['row'];
+        var before = row.previousSibling;
+        this._rowContainer.removeChild(row);
+        this._rowContainer.insertBefore(row, before);
+        this._enableButtons();
+    }
+
+    this._moveDownPreset = function() {
+        // presets
+        this._movePreset(this._activePreset, +1);
+        // ui
+        var row = this._activePreset['row'];
+        var after = row.nextSibling;
+        this._rowContainer.removeChild(row);
+        insertAfter(row, after);
+        this._enableButtons();
+    }
+
+    this._movePreset = function(preset, shift) {
+        var index = this._presets.indexOf(preset);
+        var tmp = this._presets[index];
+        this._presets[index] = this._presets[index + shift];
+        this._presets[index + shift] = tmp;
     }
 
     this._save = function() {
         this._hide();
+        this._presets.forEach(function(preset) {
+            delete preset['row'];
+        });
         NetBeans.setPresets(this._presets);
         NetBeans.redrawPresets();
-        this._cleanPresets();
+        this._cleanUp();
     }
 
     this._cancel = function() {
         this._hide();
-        this._cleanPresets();
+        this._cleanUp();
+    }
+
+    this._rowSelected = function(row) {
+        if (this._activePreset != null) {
+            this._activePreset['row'].className = '';
+        }
+        if (this._activePreset != null && this._activePreset['row'] === row) {
+            // deselect
+            this._activePreset = null;
+        } else {
+            // select
+            var that = this;
+            this._presets.forEach(function(preset) {
+                if (preset['row'] === row) {
+                    that._activePreset = preset;
+                    that._activePreset['row'].className = 'active';
+                }
+            });
+        }
+        this._enableButtons();
+    }
+
+    this._enableButtons = function() {
+        var enabled = this._activePreset != null;
+        if (enabled) {
+            if (this._activePreset.internal) {
+                this._removePresetButton.setAttribute('disabled', 'disabled');
+            } else {
+                this._removePresetButton.removeAttribute('disabled');
+            }
+            if (this._activePreset['row'] !== this._rowContainer.firstChild) {
+                this._moveUpPresetButton.removeAttribute('disabled');
+            } else {
+                this._moveUpPresetButton.setAttribute('disabled', 'disabled');
+            }
+            if (this._activePreset['row'] !== this._rowContainer.lastChild) {
+                this._moveDownPresetButton.removeAttribute('disabled');
+            } else {
+                this._moveDownPresetButton.setAttribute('disabled', 'disabled');
+            }
+        } else {
+            this._removePresetButton.setAttribute('disabled', 'disabled');
+            this._moveUpPresetButton.setAttribute('disabled', 'disabled');
+            this._moveDownPresetButton.setAttribute('disabled', 'disabled');
+        }
     }
 
 }
+
+
+/*** ~Helpers ***/
+function insertAfter(newElement, targetElement) {
+	var parent = targetElement.parentNode;
+	if (parent.lastchild == targetElement) {
+		parent.appendChild(newElement);
+    } else {
+		parent.insertBefore(newElement, targetElement.nextSibling);
+    }
+}
+
 
 /*** ~Run ***/
 window.onload = function() {
