@@ -47,7 +47,7 @@ package org.netbeans.modules.web.javascript.debugger.watches;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,8 +107,12 @@ public final class WatchesModel extends VariablesModel {
         return evaluateExpression(frame, watch.getExpression());
     }
     
+    private static String getKey(CallFrame frame, String expression) {
+        return frame.getCallFrameID() +" - "+ expression;
+    }
+    
     public static ScopedRemoteObject evaluateExpression(CallFrame frame, String expression) {
-        ScopedRemoteObject var = expressionsCache.get(expression);
+        ScopedRemoteObject var = expressionsCache.get(getKey(frame, expression));
         if (var != null) {
             if (NULL_SCOPED_REMOTE_OBJECT == var) {
                 return null;
@@ -117,12 +121,12 @@ public final class WatchesModel extends VariablesModel {
         }
         RemoteObject prop = frame.evaluate(expression);
         if (prop == null) {
-            expressionsCache.put(expression, NULL_SCOPED_REMOTE_OBJECT);
+            expressionsCache.put(getKey(frame, expression), NULL_SCOPED_REMOTE_OBJECT);
             LOG.log(Level.WARNING, "expression was not evaluated: '"+expression+"'");
             return null;
         }
         var = new ScopedRemoteObject(prop, expression, VariablesModel.ViewScope.LOCAL);
-        expressionsCache.put(expression, var);
+        expressionsCache.put(getKey(frame, expression), var);
         return var;
     }
 
@@ -261,7 +265,15 @@ public final class WatchesModel extends VariablesModel {
 
     @Override
     public void resumed() {
-        expressionsCache = new HashMap<String, ScopedRemoteObject>();        
+        String prefix = getKey(getCurrentStack(), "");
+        synchronized (WatchesModel.class) {
+            for (Iterator<String> it = expressionsCache.keySet().iterator(); it.hasNext();) {
+                String key = it.next();
+                if (key.startsWith(prefix)) {
+                    it.remove();
+                }
+            }
+        }
         super.resumed();
     }
 
