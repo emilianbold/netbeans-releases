@@ -46,8 +46,10 @@ package org.netbeans.modules.web.javascript.debugger.watches;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,16 +92,27 @@ public final class WatchesModel extends VariablesModel {
             throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
         if (parent == ROOT) {
+            evaluateWatches(frame);
             return DebuggerManager.getDebuggerManager().getWatches();
         } else if (parent instanceof Watch && frame != null) {
             ScopedRemoteObject var = evaluateWatch(frame, (Watch)parent);
             if (var == null) {
                 return new Object[0];
-            } else {
+        } else {
                 return super.getChildren(var, from, to);
             }
         } else {
             return super.getChildren(parent, from, to);
+        }
+    }
+    
+    private void evaluateWatches(CallFrame frame) throws UnknownTypeException {
+        if (frame == null) {
+            return;
+        }
+        for (Watch w : DebuggerManager.getDebuggerManager().getWatches()) {
+            // this triggers call to WebKit engine and outcome is cached:
+            ScopedRemoteObject sro = evaluateWatch(frame, w);
         }
     }
     
@@ -134,12 +147,17 @@ public final class WatchesModel extends VariablesModel {
     public boolean isLeaf(Object node) throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
         if (node instanceof Watch && frame != null) {
-            ScopedRemoteObject var = evaluateWatch(frame, (Watch)node);
-            if (var == null) {
-                return true;
-            } else {
-                return super.isLeaf(var);
+            ScopedRemoteObject sro = evaluateWatch(frame, (Watch)node);
+            RemoteObject var = sro.getRemoteObject();
+            if (var.getType() == RemoteObject.Type.OBJECT) {
+                if (var.hasFetchedProperties()) {
+                    return var.getProperties().isEmpty();
+                } else {
+                    updateNodeOnBackground(node, var);
+                    return true;
+                }
             }
+            return true;
         } else {
             return super.isLeaf(node);
         }
