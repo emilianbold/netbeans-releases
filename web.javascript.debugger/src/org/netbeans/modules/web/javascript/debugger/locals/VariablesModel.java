@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
@@ -62,6 +61,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import static org.netbeans.spi.debugger.ui.Constants.*;
 import org.netbeans.spi.viewmodel.*;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
 @NbBundle.Messages({"VariablesModel_Name=Name",
@@ -81,6 +81,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     private AtomicReference<CallFrame>  currentStack = new AtomicReference<CallFrame>();
 
     private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
+    
+    private RequestProcessor RP = new RequestProcessor();
 
 	public VariablesModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
@@ -126,11 +128,20 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             RemoteObject obj = scope.getScopeObject();
             if (scope.isLocalScope()) {
                 vars.addAll(getProperties(obj, ViewScope.LOCAL));
-            } else {
-                vars.add(new ScopedRemoteObject(obj, scope));
+            } else if (scope.isGlobalScope()) {
+                vars.add(getGlobalScopeVariable(obj, scope));
             }
         }
         return sortVariables(vars);
+    }
+    
+    private ScopedRemoteObject globalScopeVar;
+    
+    private ScopedRemoteObject getGlobalScopeVariable(RemoteObject obj, Scope scope) {
+        if (globalScopeVar == null) {
+            globalScopeVar = new ScopedRemoteObject(obj, scope);
+        }
+        return globalScopeVar;
     }
     
     private List<ScopedRemoteObject> sortVariables(List<ScopedRemoteObject> vars) {
@@ -153,7 +164,12 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     }
     
     private Collection<? extends ScopedRemoteObject> getProperties(RemoteObject prop, ViewScope scope) {
-        List<ScopedRemoteObject> res = new ArrayList<ScopedRemoteObject>();
+        List<ScopedRemoteObject> res = variablesCache.get(prop);
+            if (res != null) {
+                return res;
+            }
+            res = new ArrayList<ScopedRemoteObject>();
+            variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
                 if (desc.getValue() == null || desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
@@ -165,6 +181,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         return sortVariables(res);
     }
     
+    private Map<RemoteObject, List<ScopedRemoteObject>> variablesCache = new HashMap<RemoteObject, List<ScopedRemoteObject>>();
+    
     @Override
 	public boolean isLeaf(Object node) throws UnknownTypeException {
 		if (node == ROOT) {
@@ -172,13 +190,32 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 		} else if (node instanceof ScopedRemoteObject) {
 			RemoteObject var = ((ScopedRemoteObject)node).getRemoteObject();
             if (var.getType() == RemoteObject.Type.OBJECT) {
-                return var.getProperties().isEmpty();
+                if (var.hasFetchedProperties()) {
+                    return var.getProperties().isEmpty();
+                } else {
+                    updateNodeOnBackground(node, var);
+                    return true;
+                }
             }
             return true;
 		} else {
 			throw new UnknownTypeException(node);
 		}
 	}
+    
+    protected void updateNodeOnBackground(final Object node, final RemoteObject var) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (getCurrentStack() == null) {
+                    return;
+                }
+                var.getProperties();
+                fireChangeEvent(new ModelEvent.NodeChanged(this, node, ModelEvent.NodeChanged.EXPANSION_MASK));
+            }
+        });
+    }
+
 
     @Override
 	public int getChildrenCount(Object parent) throws UnknownTypeException {
@@ -339,6 +376,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     @Override
     public void resumed() {
         currentStack.set(null);
+        variablesCache = new HashMap<RemoteObject, List<ScopedRemoteObject>>();
+        globalScopeVar = null;
         refresh();
     }
 

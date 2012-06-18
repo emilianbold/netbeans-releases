@@ -46,7 +46,11 @@ package org.netbeans.modules.web.javascript.debugger.watches;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -70,6 +74,12 @@ public final class WatchesModel extends VariablesModel {
     
     private WatchesListener listener;
     
+    private static Map<String, ScopedRemoteObject> expressionsCache = 
+            new HashMap<String, ScopedRemoteObject>();
+    
+    private static ScopedRemoteObject NULL_SCOPED_REMOTE_OBJECT = 
+            new ScopedRemoteObject(null, null, ViewScope.DEFAULT);
+    
     public WatchesModel(final ContextProvider contextProvider) {
         super(contextProvider);
         listener = new WatchesListener(this);
@@ -82,12 +92,13 @@ public final class WatchesModel extends VariablesModel {
             throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
         if (parent == ROOT) {
+            evaluateWatches(frame);
             return DebuggerManager.getDebuggerManager().getWatches();
         } else if (parent instanceof Watch && frame != null) {
             ScopedRemoteObject var = evaluateWatch(frame, (Watch)parent);
             if (var == null) {
                 return new Object[0];
-            } else {
+        } else {
                 return super.getChildren(var, from, to);
             }
         } else {
@@ -95,30 +106,61 @@ public final class WatchesModel extends VariablesModel {
         }
     }
     
-        
+    private void evaluateWatches(CallFrame frame) throws UnknownTypeException {
+        if (frame == null) {
+            return;
+        }
+        for (Watch w : DebuggerManager.getDebuggerManager().getWatches()) {
+            // this triggers call to WebKit engine and outcome is cached:
+            ScopedRemoteObject sro = evaluateWatch(frame, w);
+        }
+    }
+    
     public static ScopedRemoteObject evaluateWatch(CallFrame frame, Watch watch) {
         return evaluateExpression(frame, watch.getExpression());
     }
     
+    private static String getKey(CallFrame frame, String expression) {
+        return frame.getCallFrameID() +" - "+ expression;
+    }
+    
     public static ScopedRemoteObject evaluateExpression(CallFrame frame, String expression) {
+        ScopedRemoteObject var = expressionsCache.get(getKey(frame, expression));
+        if (var != null) {
+            if (NULL_SCOPED_REMOTE_OBJECT == var) {
+                return null;
+            }
+            return var;
+        }
         RemoteObject prop = frame.evaluate(expression);
         if (prop == null) {
+            expressionsCache.put(getKey(frame, expression), NULL_SCOPED_REMOTE_OBJECT);
             LOG.log(Level.WARNING, "expression was not evaluated: '"+expression+"'");
             return null;
         }
-        return new ScopedRemoteObject(prop, expression, VariablesModel.ViewScope.LOCAL);
+        var = new ScopedRemoteObject(prop, expression, VariablesModel.ViewScope.LOCAL);
+        expressionsCache.put(getKey(frame, expression), var);
+        return var;
     }
 
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         CallFrame frame = getCurrentStack();
-        if (node instanceof Watch && frame != null) {
-            ScopedRemoteObject var = evaluateWatch(frame, (Watch)node);
-            if (var == null) {
+        if (node instanceof Watch) {
+            if (frame == null) {
                 return true;
-            } else {
-                return super.isLeaf(var);
             }
+            ScopedRemoteObject sro = evaluateWatch(frame, (Watch)node);
+            RemoteObject var = sro.getRemoteObject();
+            if (var.getType() == RemoteObject.Type.OBJECT) {
+                if (var.hasFetchedProperties()) {
+                    return var.getProperties().isEmpty();
+                } else {
+                    updateNodeOnBackground(node, var);
+                    return true;
+                }
+            }
+            return true;
         } else {
             return super.isLeaf(node);
         }
@@ -242,6 +284,21 @@ public final class WatchesModel extends VariablesModel {
         throw new UnknownTypeException(node);
     }
 
+    @Override
+    public void resumed() {
+        String prefix = getKey(getCurrentStack(), "");
+        synchronized (WatchesModel.class) {
+            for (Iterator<String> it = expressionsCache.keySet().iterator(); it.hasNext();) {
+                String key = it.next();
+                if (key.startsWith(prefix)) {
+                    it.remove();
+                }
+            }
+        }
+        super.resumed();
+    }
+
+    
     private static class WatchesListener extends DebuggerManagerAdapter implements PropertyChangeListener {
 
         // XXX: check whether model has to be hold with WeakReference here to prevent memory leaks

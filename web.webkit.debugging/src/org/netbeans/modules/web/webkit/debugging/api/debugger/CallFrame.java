@@ -67,7 +67,7 @@ public class CallFrame extends AbstractObject {
         return (String)getObject().get("functionName");
     }
     
-    private String getCallFrameID() {
+    public String getCallFrameID() {
         return (String)getObject().get("callFrameId");
     }
     

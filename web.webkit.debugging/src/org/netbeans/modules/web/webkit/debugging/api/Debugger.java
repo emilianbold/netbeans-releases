@@ -46,19 +46,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
+import org.netbeans.modules.web.webkit.debugging.LiveHTML;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
+import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
-import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * See Debugger section of WebKit Remote Debugging Protocol for more details.
@@ -69,11 +70,13 @@ public final class Debugger {
     private boolean enabled = false;
     private boolean suspended = false;
     private Callback callback;
+    private boolean initDOMLister = true;
     private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     private Map<String, Script> scripts = new HashMap<String, Script>();
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
+    private boolean disablePageAndNetwork = false;
 
     Debugger(TransportHelper transport, WebKitDebugging webkit) {
         this.transport = transport;
@@ -84,14 +87,29 @@ public final class Debugger {
     
     public boolean enable() {
         Response response = transport.sendBlockingCommand(new Command("Debugger.enable"));
+
+        if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL())) {
+            webkit.getPage().enable();
+            webkit.getNetwork().enable();
+            disablePageAndNetwork = true;
+            addEventBreakpoint("DOMContentLoaded");
+            addEventBreakpoint("load");
+        }
+        
         // TODO: what will response contain if there was an error enabling debuggger in the page?
         enabled = true;
         return true;
     }
 
     public void disable() {
+        if (disablePageAndNetwork) {
+            webkit.getPage().disable();
+            webkit.getNetwork().disable();
+            disablePageAndNetwork = false;
+        }
         transport.sendCommand(new Command("Debugger.disable"));
         enabled = false;
+        initDOMLister = true;
     }
 
     public void stepOver() {
@@ -141,12 +159,17 @@ public final class Debugger {
         }
     }
 
-    private void notifyPaused(JSONArray callFrames, String reason, JSONObject data) {
-        suspended = true;
+    private List<CallFrame> createCallStack(JSONArray callFrames) {
         List<CallFrame> callStack = new ArrayList<CallFrame>();
         for (Object cf : callFrames) {
             callStack.add(APIFactory.createCallFrame((JSONObject)cf, webkit, transport));
         }
+        return callStack;
+    }
+    
+    private void notifyPaused(JSONArray callFrames, String reason, JSONObject data) {
+        suspended = true;
+        List<CallFrame> callStack = createCallStack(callFrames);
         setCurrentCallStack(callStack);
         for (Listener l : listeners ) {
             l.paused(callStack, reason);
@@ -157,6 +180,24 @@ public final class Debugger {
         for (Listener l : listeners ) {
             l.reset();
         }
+    }
+
+    private JSONArray normalizeStackTrace(JSONArray callStack) {
+        JSONArray res = new JSONArray();
+        for (Object o : callStack) {
+            JSONObject cf = (JSONObject)o;
+            JSONObject ncf = new JSONObject();
+            ncf.put("lineNumber", ((JSONObject)cf.get("location")).get("lineNumber"));
+            ncf.put("columnNumber", ((JSONObject)cf.get("location")).get("columnNumber"));
+            ncf.put("function", cf.get("functionName"));
+            Script sc = getScript((String)((JSONObject)(cf.get("location"))).get("scriptId"));
+            if (sc == null) {
+                continue;
+            }
+            ncf.put("script", sc.getURL());
+            res.add(ncf);
+        }
+        return res;
     }
     
     /**
@@ -223,6 +264,56 @@ public final class Debugger {
         currentBreakpoints.remove(b);
     }
     
+    // TODO: this method is used only internally so far and it needs to be revisisted
+    public void addDOMBreakpoint(Node node, String type) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId());
+        params.put("type", type);
+        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
+    }
+    
+    // TODO: this method is used only internally so far and it needs to be revisisted
+    public void addXHRBreakpoint(String urlSubstring) {
+        JSONObject params = new JSONObject();
+        params.put("url", urlSubstring);
+        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setXHRBreakpoint", params));
+    }
+    
+    public static final String DOM_BREAKPOINT_SUBTREE = "subtree-modified";
+    public static final String DOM_BREAKPOINT_ATTRIBUTE = "attribute-modified";
+    public static final String DOM_BREAKPOINT_NODE = "node-removed";
+
+    // TODO: this method is used only internally so far and it needs to be revisisted
+    public void addEventBreakpoint(String event) {
+        JSONObject params = new JSONObject();
+        params.put("eventName", event);
+        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setEventListenerBreakpoint", params));
+    }
+    
+    // TODO: this method is used only internally so far and it needs to be revisisted
+    public void removeEventBreakpoint(String event) {
+        JSONObject params = new JSONObject();
+        params.put("eventName", event);
+        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeEventListenerBreakpoint", params));
+    }
+    
+    private void recordDocumentChange(long timeStamp, JSONArray callStack, boolean attachDOMListeners) {
+        assert LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL());
+        
+        Node n = webkit.getDOM().getDocument();
+        if (attachDOMListeners) {
+            addDOMBreakpoint(n, Debugger.DOM_BREAKPOINT_SUBTREE);
+            removeEventBreakpoint("DOMContentLoaded");
+            removeEventBreakpoint("load");
+        }
+        String content = webkit.getDOM().getNodeHTML(n);
+        JSONArray callStack2 = normalizeStackTrace(callStack);
+        LiveHTML.getDefault().storeDocumentVersion(transport.getConnectionURL(), timeStamp, content, callStack2.toJSONString());
+        resume();
+    }
+ 
+    public static final AtomicBoolean INTERNAL_PAUSE = new AtomicBoolean(false);
+    
     private class Callback implements ResponseCallback {
 
         @Override
@@ -232,6 +323,38 @@ public final class Debugger {
                 webkit.getRuntime().releaseNetBeansObjectGroup();
             } else if ("Debugger.paused".equals(response.getMethod())) {
                 JSONObject params = (JSONObject)response.getResponse().get("params");
+
+                if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL())) {
+                    final long timestamp = System.currentTimeMillis();
+                    final JSONObject data = (JSONObject)params.get("data");
+
+                    boolean internalSuspend = false;
+                    boolean attachDOMListeners = false;
+                    if ("DOM".equals(params.get("reason")) || INTERNAL_PAUSE.getAndSet(false)) {
+                        internalSuspend = true;
+                    }
+                    if ("EventListener".equals(params.get("reason"))) {
+                        if (data != null && ("listener:DOMContentLoaded".equals(data.get("eventName")) ||
+                                "listener:load".equals(data.get("eventName")))) {
+                            internalSuspend = true;
+                            if (initDOMLister) {
+                                attachDOMListeners = true;
+                            }
+                            initDOMLister = false;
+                        }
+                    }
+                    if (internalSuspend) {
+                        final JSONArray callStack = (JSONArray)params.get("callFrames");
+                        final boolean finalAttachDOMListeners = attachDOMListeners;
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                recordDocumentChange(timestamp, callStack, finalAttachDOMListeners);
+                            }
+                        });
+                        return;
+                    }
+                }
                 notifyPaused((JSONArray)params.get("callFrames"), (String)params.get("reason"), (JSONObject)params.get("data"));
             } else if ("Debugger.globalObjectCleared".equals(response.getMethod())) {
                 notifyReset();

@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api;
 
-import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
+import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
+import org.netbeans.modules.web.webkit.debugging.api.network.Network;
+import org.netbeans.modules.web.webkit.debugging.api.page.Page;
 
 /**
  * Main API entry point for Remote WebKit Debugging support. Instance of this
@@ -66,6 +68,8 @@ public class WebKitDebugging {
     private Debugger debugger;
     private Runtime runtime;
     private DOM dom;
+    private Page page;
+    private Network network;
 
     private WebKitDebugging(TransportHelper transport) {
         this.transport = transport;
@@ -105,6 +109,26 @@ public class WebKitDebugging {
             dom = new DOM(transport, this);
         }
         return dom;
+    }
+    
+    /**
+     * Get Page part of Remote WebKit Debugging.
+     */
+    public synchronized Page getPage() {
+        if (page == null) {
+            page = new Page(transport, this);
+        }
+        return page;
+    }
+
+    /**
+     * Get Network part of Remote WebKit Debugging.
+     */
+    public synchronized Network getNetwork() {
+        if (network == null) {
+            network = new Network(transport, this);
+        }
+        return network;
     }
     
     // other parts of Remote WebKit Debugging like CSS, DOMDebugger, 

@@ -160,6 +160,11 @@ public class RemoteObject extends AbstractObject {
         return remoteObjectId;
     }
     
+    public boolean hasFetchedProperties() {
+        assert getType() == Type.OBJECT;
+        return properties != null || getObjectID() == null;
+    }
+    
     public List<PropertyDescriptor> getProperties() {
         assert getType() == Type.OBJECT;
         if (properties != null) {

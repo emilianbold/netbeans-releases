@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.webkit.debugging.spi;
 
+import java.net.URL;
+
 /**
  * Transport of {@link Command}s or {@link Response}s between IDE and WebKit browser.
  */
@@ -70,5 +72,10 @@ public interface TransportImplementation {
      * Descriptive name of the established transport. For example URL being debugged.
      */
     String getConnectionName();
+    
+    /**
+     * URL being debugged.
+     */
+    URL getConnectionURL();
     
 }
