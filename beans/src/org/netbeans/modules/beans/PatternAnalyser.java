@@ -361,6 +361,9 @@ public final class PatternAnalyser {
                         pp = new IdxProperty( p.ci, null, null, method, null );
                     } else if ( returnType.getKind() == TypeKind.BOOLEAN && name.startsWith( IS_PREFIX )) {
                         pp = new IdxProperty( p.ci, null, null, method, null );
+                    } else if (returnType.getKind() == TypeKind.VOID && name.startsWith(SET_PREFIX)) {
+                        pp = new Property(p.ci, null, method);
+                        // PENDING vetoable => constrained
                     }
                 }
                 else if ( returnType.getKind() == TypeKind.VOID && name.startsWith( SET_PREFIX )) {
