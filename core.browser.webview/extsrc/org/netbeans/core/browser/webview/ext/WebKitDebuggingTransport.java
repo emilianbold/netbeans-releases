@@ -42,6 +42,8 @@
 package org.netbeans.core.browser.webview.ext;
 
 import com.sun.javafx.scene.web.Debugger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -119,6 +121,16 @@ public class WebKitDebuggingTransport implements TransportImplementation {
     @Override
     public String getConnectionName() {
         return browserImpl.getEngine().getLocation();
+    }
+    
+    @Override
+    public URL getConnectionURL() {
+        try {
+            return new URL(browserImpl.getURL());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
     
     private static class FXCallback implements Callback<String, Void> {
