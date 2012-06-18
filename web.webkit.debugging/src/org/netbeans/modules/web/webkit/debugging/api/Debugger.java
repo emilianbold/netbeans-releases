@@ -107,6 +107,7 @@ public final class Debugger {
             webkit.getNetwork().disable();
             disablePageAndNetwork = false;
         }
+        assert enabled;
         transport.sendCommand(new Command("Debugger.disable"));
         enabled = false;
         initDOMLister = true;

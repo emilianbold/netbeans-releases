@@ -600,9 +600,13 @@ public final class ExternalBrowserPlugin {
             if (webkitDebugger == null || factory == null) {
                 return;
             }
-            factory.stopDebuggingSession(session);
+            if (session != null) {
+                factory.stopDebuggingSession(session);
+            }
             session = null;
-            webkitDebugger.getDebugger().disable();
+            if (webkitDebugger.getDebugger().isEnabled()) {
+                webkitDebugger.getDebugger().disable();
+            }
             transport.detach();
 
             MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);
