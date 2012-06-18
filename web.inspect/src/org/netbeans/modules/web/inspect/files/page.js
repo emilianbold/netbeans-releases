@@ -223,6 +223,8 @@ function NetBeans_PresetMenu() {
     this._presets = null;
     // hide timeout
     this._hideTimeout = null;
+    // preset menu button
+    this._presetMenuButton = null;
     // preset customizer
     this._presetCustomizer = new NetBeans_PresetCustomizer();
 }
@@ -245,10 +247,12 @@ NetBeans_PresetMenu.prototype._init = function() {
         return;
     }
     this._container = document.getElementById('presetMenu');
+    this._presetMenuButton = document.getElementById('presetMenuButton');
     this._registerEvents();
 }
 // show menu
 NetBeans_PresetMenu.prototype._show = function() {
+    this._container.style.left = this._presetMenuButton.offsetLeft + 'px';
     this._container.style.visibility = 'visible';
     this._hideLater(2000);
 }
