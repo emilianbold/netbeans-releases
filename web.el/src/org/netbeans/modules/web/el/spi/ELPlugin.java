@@ -46,6 +46,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.ExecutableElement;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.web.el.CompilationContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -53,24 +57,37 @@ import org.openide.util.Lookup;
  *
  * @author marekfukala
  */
-public interface ELPlugin {
+public abstract class ELPlugin {
 
     /** Name - id of the ELPlugin */
-    public String getName();
+    public abstract String getName();
 
     /** A list of file mimetypes which this plugin is registered for. */
-    public Collection<String> getMimeTypes();
+    public abstract Collection<String> getMimeTypes();
 
     /** A list of EL implicit objects for given file */
-    public Collection<ImplicitObject> getImplicitObjects(FileObject file);
+    public abstract Collection<ImplicitObject> getImplicitObjects(FileObject file);
 
     /** A list of resource bundles for given file */
-    public List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context);
+    public abstract List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context);
 
     /** A list of functions for given file */
-    public List<Function> getFunctions(FileObject file);
+    public abstract List<Function> getFunctions(FileObject file);
+    
+    /**
+     * Check {@link ExecutableElement} can be used as valid property in context for code on caret.
+     * @param executableElement element to be checked. Can not be null.
+     * @param source content of this Source will be checked. Can not be null.
+     * @param completionContext code completion context to get additional informations.
+     * @param compilationContext compilation context to get additional informations.
+     * @return <b>True</b> when {@link ExecutableElement} can be used as valid property in context for code on caret.
+     * Returns <b>false</b> when not. Default implementation returns <b>false</b>. <br /> <b>False</b> is returned on any error. 
+     */
+    public boolean isValidProperty(ExecutableElement executableElement, Source source, CodeCompletionContext completionContext, CompilationContext compilationContext) {
+        return false;
+    }
 
-    static class Query {
+    public static class Query {
 
         public static Collection<? extends ELPlugin> getELPlugins() {
             Collection<? extends ELPlugin> plugins =
@@ -100,6 +117,26 @@ public interface ELPlugin {
                 result.addAll(plugin.getFunctions(file));
             }
             return result;
+        }
+        
+        /**
+         * Check {@link ExecutableElement} can be used as valid property in context for code on caret.
+         * @param executableElement element to be checked. Can not be null.
+         * @param source content of this Source will be checked. Can not be null.
+         * @param completionContext code completion context to get additional informations.
+         * @param compilationContext compilation context to get additional informations.
+         * @return <b>True</b> when {@link ExecutableElement} can be used as valid property in context for code on caret.
+         * Returns <b>false</b> when not. Default implementation returns <b>false</b>. <br /> <b>False</b> is returned on any error. 
+         */
+        public static boolean isValidProperty(ExecutableElement executableElement, Source source, CompilationContext compilationContext, CodeCompletionContext completionContext) {
+            for (ELPlugin plugin : getELPlugins()) {
+                boolean correspondsToSignature = plugin.isValidProperty(executableElement, source, completionContext, compilationContext);
+                if (correspondsToSignature) {
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
     }
