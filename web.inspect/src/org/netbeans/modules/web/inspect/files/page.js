@@ -493,7 +493,7 @@ NetBeans_PresetCustomizer.prototype._putPresets = function(presets) {
         // append row
         this._rowContainer.appendChild(row);
         preset['_row'] = row;
-        preset['_error'] = false;
+        preset['_errors'] = [];
     }
 }
 // cleanup (remove presets from customizer)
@@ -556,7 +556,7 @@ NetBeans_PresetCustomizer.prototype._save = function() {
     for (i in this._presets) {
         var preset = this._presets[i];
         delete preset['_row'];
-        delete preset['_error'];
+        delete preset['_errors'];
     }
     NetBeans_Page.setPresets(this._presets);
     NetBeans_Page.redrawPresets();
@@ -621,7 +621,7 @@ NetBeans_PresetCustomizer.prototype._enablePresetButtons = function() {
 NetBeans_PresetCustomizer.prototype._enableMainButtons = function() {
     var anyError = false;
     for (i in this._presets) {
-        if (this._presets[i]['_error']) {
+        if (this._presets[i]['_errors'].length) {
             anyError = true;
             break;
         }
@@ -678,17 +678,22 @@ NetBeans_PresetCustomizer.prototype._validateNotEmpty = function(value) {
 }
 // check whether the value is a number
 NetBeans_PresetCustomizer.prototype._validateNumber = function(value) {
-    return value != null && !isNaN(parseFloat(value)) && isFinite(value);
+    return value != null && value.search(/^[1-9][0-9]*$/) != -1;
 }
 // check the given input, for the given key with the given validation callback
 NetBeans_PresetCustomizer.prototype._checkField = function(input, key, validation) {
     var value = input.value;
+    var index = this._activePreset['_errors'].indexOf(key);
     if (validation(value)) {
         nbRemoveCssClass(input, 'error');
-        this._activePreset['_error'] = false;
+        if (index != -1) {
+            this._activePreset['_errors'].splice(index, 1);
+        }
     } else {
         nbAddCssClass(input, 'error');
-        this._activePreset['_error'] = true;
+        if (index == -1) {
+            this._activePreset['_errors'].push(key);
+        }
     }
     this._activePreset[key] = value;
     this._enableMainButtons();
@@ -722,11 +727,16 @@ function nbInsertAfter(newElement, targetElement) {
 }
 // add CSS class to the given element
 function nbAddCssClass(element, cssClass) {
-    element.className = (element.className + ' ' + cssClass).trim();
+    var className = element.className;
+    if (className.indexOf(cssClass) != -1) {
+        // already has this class
+        return;
+    }
+    element.className = (element.className.trim() + ' ' + cssClass);
 }
 // remove CSS class to the given element
 function nbRemoveCssClass(element, cssClass) {
-    element.className = element.className.replace(cssClass, '');
+    element.className = element.className.replace(cssClass, '').trim();
 }
 
 /*** ~Run app! ***/
