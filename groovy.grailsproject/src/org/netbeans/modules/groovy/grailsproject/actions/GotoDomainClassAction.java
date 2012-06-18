@@ -47,16 +47,23 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
 import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 @Messages("CTL_GotoDomainClassAction=Go to Grails Domain class")
 @ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoDomainClassAction", category = "Groovy")
 @ActionRegistration(lazy = false, displayName = "#CTL_GotoDomainClassAction")
+@ActionReferences(value = {
+    @ActionReference(path = "Menu/GoTo", position = 525),
+    @ActionReference(path = "Editors/text/x-groovy/Popup/goto", position = 125),
+    @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 125)
+})
 public final class GotoDomainClassAction extends BaseAction {
 
     public GotoDomainClassAction() {
-        super(CTL_GotoControllerAction()); // NOI18N
+        super(CTL_GotoDomainClassAction()); // NOI18N
     }
 
     @Override

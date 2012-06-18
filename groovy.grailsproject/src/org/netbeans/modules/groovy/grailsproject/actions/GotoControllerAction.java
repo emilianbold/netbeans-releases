@@ -52,7 +52,7 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
-@Messages("CTL_GotoControllerAction=Go to Grails Con&troller")
+@Messages("CTL_GotoControllerAction=Go to Grails Controller")
 @ActionID(id = "org.netbeans.modules.groovy.grailsproject.actions.GotoControllerAction", category = "Groovy")
 @ActionRegistration(lazy = false, displayName = "#CTL_GotoControllerAction")
 @ActionReferences(value = {

@@ -154,6 +154,8 @@ public class NavigationSupport {
             return null;
         }
 
+        ActionType target = actionToType(caller);
+
         // if we are dealing with a view (*.gsp), then the filename is the directory with first
         // character uppercase
 
@@ -163,10 +165,12 @@ public class NavigationSupport {
             String parentName = fo.getParent().getName();
             targetName = parentName.substring(0, 1).toUpperCase() + parentName.substring(1);
         } else {
-            targetName = sourceName;
+            if (ActionType.VIEW == target) {
+                targetName = sourceName;
+            } else {
+                targetName = findPackagePath(fo) + File.separator + sourceName;
+            }
         }
-
-        ActionType target = actionToType(caller);
 
         String ret = getTargetPath(target, prj, targetName);
         FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(ret)));
@@ -176,6 +180,24 @@ public class NavigationSupport {
         }
 
         return ret;
+    }
+
+    static String findPackagePath(FileObject fo) {
+        FileObject pkgFO = fo.getParent();
+        String pkgName = pkgFO.getName();
+        if (!"controllers".equals(pkgName) &&    //NOI18N
+            !"domain".equals(pkgName) &&         //NOI18N
+            !"views".equals(pkgName)) {          //NOI18N
+
+            String parentPath = findPackagePath(pkgFO);
+            if ("".equals(parentPath)) {
+                return pkgName; // We don't want to add separator at the beginning
+            } else {
+                return parentPath + File.separator + pkgName;
+            }
+        } else {
+            return ""; //NOI18N
+        }
     }
 
     public static void openArtifact(AbstractAction caller, JTextComponent sourceComponent) {
@@ -235,4 +257,3 @@ public class NavigationSupport {
         return ActionType.NONE;
     }
 }
-
