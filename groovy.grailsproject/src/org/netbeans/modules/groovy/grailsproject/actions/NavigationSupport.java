@@ -65,24 +65,74 @@ import org.openide.loaders.DataObject;
 public class NavigationSupport {
 
     private static final String GSP_MIME_TYPE = "text/x-gsp"; // NOI18N
-
     private static final Logger LOG = Logger.getLogger(NavigationSupport.class.getName());
 
-    public NavigationSupport() {
-        super();
+    private enum ActionType {
+        DOMAIN, VIEW, CONTROLLER, NONE;
+    }
+
+
+    private NavigationSupport() {
     }
 
     public static boolean isActionEnabled(AbstractAction caller) {
-
         JTextComponent component = Utilities.getFocusedComponent();
-
         String fileName = getTargetFilename(caller, component);
 
         if (fileName != null && (new File(fileName)).canRead()) {
             return true;
         }
-
         return false;
+    }
+
+    public static void openArtifact(AbstractAction caller, JTextComponent sourceComponent) {
+        String fileName = getTargetFilename(caller, sourceComponent);
+        FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
+
+        if (artifactFile != null && artifactFile.isValid()) {
+            LOG.log(Level.FINEST, "Open File : {0}", FileUtil.getFileDisplayName(artifactFile)); // NOI18N
+            NbUtilities.open(artifactFile, 1, "");
+        } else {
+            LOG.log(Level.FINEST, "File is either null or invalid : {0}", fileName); // NOI18N
+        }
+
+    }
+
+    private static String getTargetFilename(AbstractAction caller, JTextComponent sourceComponent) {
+        LOG.log(Level.FINEST, "openArtifact()"); // NOI18N
+
+        if (!isValid(sourceComponent)) {
+            return null;
+        }
+
+        DataObject dataObject = getDataObjectFromComponent(sourceComponent);
+        FileObject fo = dataObject.getPrimaryFile();
+        ActionType target = actionToType(caller);
+
+        // if we are dealing with a view (*.gsp), then the filename is the directory with first
+        // character uppercase
+
+        String targetName;
+
+        if (GSP_MIME_TYPE.equals(fo.getMIMEType())) {
+            String parentName = fo.getParent().getName();
+            targetName = parentName.substring(0, 1).toUpperCase() + parentName.substring(1);
+        } else {
+            if (ActionType.VIEW == target) {
+                targetName = dataObject.getName();
+            } else {
+                targetName = findPackagePath(fo) + File.separator + dataObject.getName();
+            }
+        }
+
+        String ret = getTargetPath(target, getOwningProject(fo), targetName);
+        FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(ret)));
+        // do not navigate to itself
+        if (fo.equals(artifactFile)) {
+            return null;
+        }
+
+        return ret;
     }
 
     private static DataObject getDataObjectFromComponent(JTextComponent sourceComponent) {
@@ -97,35 +147,33 @@ public class NavigationSupport {
             LOG.log(Level.FINEST, "Document == null"); // NOI18N
             return null;
         }
-
         return NbEditorUtilities.getDataObject(doc);
-
     }
 
     private static GrailsProject getOwningProject(FileObject fo) {
-        Project prj = FileOwnerQuery.getOwner(fo);
+        Project project = FileOwnerQuery.getOwner(fo);
 
-        if (prj instanceof GrailsProject) {
-            return (GrailsProject) prj;
+        if (project instanceof GrailsProject) {
+            return (GrailsProject) project;
         }
-
         return null;
     }
 
-    private static String getTargetFilename(AbstractAction caller, JTextComponent sourceComponent) {
-        LOG.log(Level.FINEST, "openArtifact()"); // NOI18N
-
-
-        /* 1. Are we are dealing with a Grails Project?
-         * 2. Are we called up from a groovy ducument?
-         * 3. Is the target where it should be?
-         */
-
+    /**
+     * Finds out if the source component is valid. Those are validation criteria:
+     *   1. Are we are dealing with a Grails Project?
+     *   2. Are we called up from a groovy document?
+     *   3. Is the target where it should be?
+     *
+     * @param sourceComponent
+     * @return true, if the source component is valid, false otherwise
+     */
+    private static boolean isValid(JTextComponent sourceComponent) {
         DataObject dob = getDataObjectFromComponent(sourceComponent);
 
         if (dob == null) {
             LOG.log(Level.FINEST, "DataObject == null"); // NOI18N
-            return null;
+            return false;
         }
 
         String sourceName = dob.getName();
@@ -133,7 +181,7 @@ public class NavigationSupport {
 
         if (fo == null) {
             LOG.log(Level.FINEST, "FileObject == null"); // NOI18N
-            return null;
+            return false;
         }
 
         LOG.log(Level.FINEST, "Source Name : {0}", sourceName); // NOI18N
@@ -142,42 +190,17 @@ public class NavigationSupport {
 
         if (prj == null) {
             LOG.log(Level.FINEST, "Not a grails-project"); // NOI18N
-            return null;
+            return false;
         }
 
         String mimetype = fo.getMIMEType();
 
         if (!(mimetype.equals(GroovyTokenId.GROOVY_MIME_TYPE) || mimetype.equals(GSP_MIME_TYPE))) {
             LOG.log(Level.FINEST, "Not a groovy mimetype : {0}", mimetype); // NOI18N
-            return null;
+            return false;
         }
 
-        ActionType target = actionToType(caller);
-
-        // if we are dealing with a view (*.gsp), then the filename is the directory with first
-        // character uppercase
-
-        String targetName;
-
-        if (mimetype.equals(GSP_MIME_TYPE)) {
-            String parentName = fo.getParent().getName();
-            targetName = parentName.substring(0, 1).toUpperCase() + parentName.substring(1);
-        } else {
-            if (ActionType.VIEW == target) {
-                targetName = sourceName;
-            } else {
-                targetName = findPackagePath(fo) + File.separator + sourceName;
-            }
-        }
-
-        String ret = getTargetPath(target, prj, targetName);
-        FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(ret)));
-        // do not navigate to itself
-        if (fo.equals(artifactFile)) {
-            return null;
-        }
-
-        return ret;
+        return true;
     }
 
     static String findPackagePath(FileObject fo) {
@@ -198,23 +221,8 @@ public class NavigationSupport {
         }
     }
 
-    public static void openArtifact(AbstractAction caller, JTextComponent sourceComponent) {
-        String fileName = getTargetFilename(caller, sourceComponent);
-
-        FileObject artifactFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
-
-        if (artifactFile != null && artifactFile.isValid()) {
-            LOG.log(Level.FINEST, "Open File : {0}", FileUtil.getFileDisplayName(artifactFile)); // NOI18N
-            NbUtilities.open(artifactFile, 1, "");
-        } else {
-            LOG.log(Level.FINEST, "File is either null or invalid : {0}", fileName); // NOI18N
-        }
-
-    }
-
     private static String getTargetPath(ActionType type, GrailsProject prj, String filename) {
         String GRAILS_APP_DIR = "grails-app"; // NOI18N
-
         String BASE_DIR = FileUtil.getFileDisplayName(prj.getProjectDirectory()) + File.separator + GRAILS_APP_DIR + File.separator;
 
         // this needs to be done if we are moving from controller to view or domain.
@@ -238,10 +246,6 @@ public class NavigationSupport {
         }
 
         return "";
-    }
-
-    private enum ActionType {
-        DOMAIN, VIEW, CONTROLLER, NONE;
     }
 
     private static ActionType actionToType(AbstractAction caller) {
