@@ -813,8 +813,10 @@ public final class DocumentViewOp
         // #183797 - most likely seeing a non-nb document during the editor pane creation
         Integer dllw = (Integer) doc.getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
         int textLimitLineColumn = (dllw != null) ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
-        boolean drawTextLimitLine = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
-        textLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
+        if (prefs != null) {
+            boolean drawTextLimitLine = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+            textLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
+        }
     }
     
     private void updateLineWrapType() {
