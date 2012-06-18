@@ -63,9 +63,6 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  */
 public class JsDocDocumentationProvider implements DocumentationProvider {
 
-    // max length to be read for seeking the new line and doc comment
-    private static final int MAX_SCANNED_LINE_LENGTH = 200;
-
     JsParserResult parserResult;
 
     public JsDocDocumentationProvider(JsParserResult parserResult) {
@@ -169,9 +166,9 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
             ts.move(offset);
 
             // get to first EOL
-            while (ts.movePrevious()
+            while (ts.movePrevious() 
                     && ts.token().id() != JsTokenId.EOL
-                    && offset - ts.offset() < MAX_SCANNED_LINE_LENGTH);
+                    && ts.token().id() != JsTokenId.OPERATOR_SEMICOLON);
 
             // search for DOC_COMMENT
             while (ts.movePrevious()) {
