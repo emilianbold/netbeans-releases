@@ -48,7 +48,32 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.Document;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.web.el.CompilationContext;
+import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELParserResult;
+import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
@@ -56,6 +81,11 @@ import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.*;
 import org.netbeans.modules.web.el.spi.ResolverContext;
+import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.JsfSupport;
+import org.netbeans.modules.web.jsfapi.api.Library;
+import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -64,9 +94,12 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = ELPlugin.class)
-public class JspJsfELPlugin implements ELPlugin {
+public class JspJsfELPlugin extends ELPlugin {
 
+    private static final Logger LOGGER = Logger.getLogger(JspJsfELPlugin.class.getName());
+    
     private static final String PLUGIN_NAME = "JSP JSF EL Plugin"; //NOI18N
+    private static final String VOID_RETURN_TYPE = "void";
     private Collection<String> MIMETYPES = Arrays.asList(new String[]{"text/x-jsp", "text/x-tag"});
     private Collection<ImplicitObject> implicitObjects;
 
@@ -92,6 +125,189 @@ public class JspJsfELPlugin implements ELPlugin {
         return Collections.emptyList();
     }
 
+    @Override
+    public boolean isValidProperty(ExecutableElement executableElement, Source source, CodeCompletionContext completionContext, CompilationContext compilationContext) {
+        if (executableElement == null || source == null || completionContext == null || 
+                compilationContext == null || executableElement.getReturnType() == null) {
+            return false;
+        }
+
+        Attribute attribute = getAttributeOnCaret(source, completionContext);
+        if (attribute == null) {
+            return false;
+        }
+        
+        TypeMirror elementReturnType = executableElement.getReturnType();
+        Types types = compilationContext.info().getTypes();
+        
+        String methodSignature = attribute.getMethodSignature();
+
+        // When no signature was found in Tag library.
+        if (methodSignature == null || methodSignature.isEmpty()) {
+
+            String attributeReturnType = attribute.getType();
+            if (attributeReturnType == null) {
+                return false;
+            }
+            
+            TypeElement attributeReturnTypeElement = ELTypeUtilities.getElementForType(compilationContext, attributeReturnType);
+            if (attributeReturnTypeElement == null) {
+                return false;
+            }
+            
+            // method has not parameters and return types are assignable.
+            if ( executableElement.getParameters().isEmpty() && 
+                    ( (TypeKind.VOID.equals(elementReturnType.getKind()) && VOID_RETURN_TYPE.equals(attributeReturnType)) || 
+                    (types.isAssignable(elementReturnType, attributeReturnTypeElement.asType())) ) ) {
+                return true;
+            }
+            return false;
+        }
+        
+        methodSignature = methodSignature.trim();
+        
+        // Get Classes of parameters from attribute method signature.
+        String attributeName = attribute.getName();
+        int atributeNameIndex = methodSignature.indexOf(attributeName);
+        String attributeReturnType = methodSignature.substring(0, atributeNameIndex).trim();
+        String attributeParametersStr = methodSignature.substring(atributeNameIndex + attributeName.length()).replaceAll("[()]", "").trim();
+
+        List<String> attributeParameters = new ArrayList<String>();
+        StringTokenizer tokenizer = new StringTokenizer(attributeParametersStr, ",");
+        while (tokenizer.hasMoreTokens()) {
+            String parameterClass = tokenizer.nextToken();
+            if (parameterClass != null) {
+                attributeParameters.add(parameterClass);
+            }
+        }
+                    
+        boolean signatureEquals = true;
+        
+        // Now compare each type from executableElement and attribute.
+        List<? extends VariableElement> elementParameters = executableElement.getParameters();
+        if (elementParameters == null || elementParameters.size() != attributeParameters.size()) {
+            return false;
+        }
+        
+        for (int i = 0; i < elementParameters.size(); i++) {
+            VariableElement variableElementParameter = elementParameters.get(i);
+            
+            String attributeParameterClass = attributeParameters.get(i);
+            TypeElement attributeParameterClassTypeElement = ELTypeUtilities.getElementForType(compilationContext, attributeParameterClass);
+
+            if (variableElementParameter == null || 
+                    variableElementParameter.asType() == null || 
+                    attributeParameterClassTypeElement == null || 
+                    attributeParameterClassTypeElement.asType() == null) {
+                // Error getting informations about parameters. Can not continue.
+                return false;
+            }
+            
+            if (!types.isSameType(variableElementParameter.asType(), attributeParameterClassTypeElement.asType())) {
+                signatureEquals = false;
+                break;
+            }
+            signatureEquals = true;
+        }
+        
+        TypeElement elementForReturnType = ELTypeUtilities.getElementForType(compilationContext, attributeReturnType);
+        
+        // Signatures and return are equal.
+        if ( signatureEquals && 
+                ( (TypeKind.VOID.equals(elementReturnType.getKind()) && VOID_RETURN_TYPE.equals(attributeReturnType)) || 
+                (types.isSameType(elementReturnType, elementForReturnType.asType())) ) ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static Attribute getAttributeOnCaret(Source source, CodeCompletionContext completionContext) {
+        if (source == null || completionContext == null) {
+            return null;
+        }
+        
+        final ParserResult parserResult = completionContext.getParserResult();
+        if (parserResult == null || !(parserResult instanceof ELParserResult)) {
+            return null;
+        }
+        
+        ELParserResult elParserResult = (ELParserResult) parserResult;
+        final Parser.Result[] results = new Parser.Result[1];
+                            
+        try {
+            ParserManager.parse(Collections.singleton(parserResult.getSnapshot().getSource()), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    results[0] = resultIterator.getParserResult(parserResult.getSnapshot().getOriginalOffset(0) - 2);
+                }
+
+            });
+            
+        } catch (ParseException ex) {
+            LOGGER.log(Level.WARNING, "Error parsing Source with mimeType=" + source.getMimeType(), ex);
+            return null;
+        }
+        
+        Parser.Result result = results[0];
+        if (result == null || !(result instanceof HtmlParserResult)) {
+            // unexpected instance of Result
+            return null;
+        }
+        
+        HtmlParserResult htmlParserResult = (HtmlParserResult) result;
+        Snapshot htmlParserSnapshot = htmlParserResult.getSnapshot();
+
+        int caretOffset = completionContext.getCaretOffset();
+        ELElement elementAtCaret = elParserResult.getElementAt(caretOffset);
+        
+        if (elementAtCaret == null) {
+            return null;
+        }
+        
+        int elementAtCaretOriginalOffset = elementAtCaret.getSnapshot().getOriginalOffset(elementAtCaret.getEmbeddedOffset().getStart());
+        int elementAtCaretEmbeddedOffset = htmlParserSnapshot.getEmbeddedOffset(elementAtCaretOriginalOffset);
+        CharSequence htmlParserResultText = htmlParserSnapshot.getText();
+
+        Element element = htmlParserResult.findByPhysicalRange(elementAtCaretEmbeddedOffset, true);
+        if (element == null || !(element instanceof OpenTag)) {
+            return null;
+        }
+        
+        OpenTag openTag = (OpenTag) element;
+
+        String namespacePrefix = openTag.namespacePrefix().toString();
+        Map<String, String> namespaces = htmlParserResult.getNamespaces();
+        String namespace = null;
+
+        if (namespaces != null && namespacePrefix != null && !namespacePrefix.isEmpty()) {
+            for (Map.Entry<String, String> entry : namespaces.entrySet()) {
+                if (namespacePrefix.equalsIgnoreCase(entry.getValue())) {
+                    namespace = entry.getKey();
+                }
+            }
+        }
+
+        if (namespace == null) {
+            // No namespace was found.
+            return null;
+        }
+
+        
+        String textToCaret = htmlParserResultText.subSequence(0, elementAtCaretEmbeddedOffset).toString();
+        int spaceLastIndex = textToCaret.lastIndexOf(" ");
+        String attributeName = textToCaret.substring(spaceLastIndex).replaceAll("[^A-Za-z0-9 ]", "").trim();
+        
+        JsfSupport jsfSupport = JsfSupportProvider.get(source);
+        Library library = jsfSupport.getLibrary(namespace);
+        String tagName = openTag.unqualifiedName().toString();
+        LibraryComponent component = library.getComponent(tagName);
+        
+        Attribute attribute = component.getTag().getAttribute(attributeName);
+        
+        return attribute;
+    }
+    
     static class FacesContextObject extends JsfImplicitObject {
 
         public FacesContextObject() {

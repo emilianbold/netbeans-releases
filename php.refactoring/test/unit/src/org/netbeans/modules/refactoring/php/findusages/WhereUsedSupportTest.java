@@ -219,4 +219,28 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("private function ret^Foo2() {");
     }
 
+    public void testInterfaces_01() throws Exception {
+        findUsages("interface My^Face {}");
+    }
+
+    public void testInterfaces_02() throws Exception {
+        findUsages("use First\\My^Face;");
+    }
+
+    public void testInterfaces_03() throws Exception {
+        findUsages("interface Another^Face extends MyFace {}");
+    }
+
+    public void testInterfaces_04() throws Exception {
+        findUsages("interface AnotherFace extends My^Face {}");
+    }
+
+    public void testInterfaces_05() throws Exception {
+        findUsages("use Second\\Another^Face;");
+    }
+
+    public void testInterfaces_06() throws Exception {
+        findUsages("class Foo implements Another^Face {}");
+    }
+
 }
