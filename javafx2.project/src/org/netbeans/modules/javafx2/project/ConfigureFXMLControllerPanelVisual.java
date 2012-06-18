@@ -436,7 +436,7 @@ public class ConfigureFXMLControllerPanelVisual extends JPanel implements Docume
             controllerName = fxmlName;
             String firstChar = String.valueOf(controllerName.charAt(0)).toUpperCase();
             String otherChars = controllerName.substring(1);
-            controllerName = firstChar + otherChars + "Controller"; // NOI18N
+            controllerName = firstChar + otherChars + NbBundle.getMessage(ConfigureFXMLControllerPanelVisual.class, "TXT_FileNameControllerPostfix"); // NOI18N
             createdNameTextField.setText(controllerName);
         }
     }

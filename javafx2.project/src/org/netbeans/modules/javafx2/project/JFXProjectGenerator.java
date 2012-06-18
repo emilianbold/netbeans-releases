@@ -808,15 +808,17 @@ public class JFXProjectGenerator {
             if (xmlTemplate == null) {
                 return; // Don't know the template
             }
+            Map<String, String> params = new HashMap<String, String>(1);
+            params.put("postfix", NbBundle.getMessage(JFXProjectGenerator.class, "TXT_FileNameControllerPostfix")); // NOI18N
             DataObject dXMLTemplate = DataObject.find(xmlTemplate);
-            dXMLTemplate.createFromTemplate(pDf, fxmlName);
+            dXMLTemplate.createFromTemplate(pDf, fxmlName, params);
 
             FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXML2.java"); // NOI18N
             if (javaTemplate == null) {
                 return; // Don't know the template
             }
             DataObject dJavaTemplate = DataObject.find(javaTemplate);
-            dJavaTemplate.createFromTemplate(pDf, fxmlName);
+            dJavaTemplate.createFromTemplate(pDf, fxmlName + NbBundle.getMessage(JFXProjectGenerator.class, "TXT_FileNameControllerPostfix")); //NOI18N
         }
     }
     
