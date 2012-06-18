@@ -47,8 +47,9 @@ NetBeans.cleanup();
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl != undefined) {
         chrome.tabs.update(tabId, {url: newUrl});
+        NetBeans.placeToFrame(tabId);
     } else {
-        chrome.tabs.reload(tabId, {bypassCache: true});
+        chrome.tabs.sendRequest(tabId, {'id': 'RELOAD_FRAME'});
     }
 }
 
@@ -83,6 +84,19 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
                 NetBeans.sendDebuggingResponse(tabId, {id : id, result : result});
             }
         });
+}
+
+NetBeans.placeToFrame = function(tabId, callback) {
+    if (NetBeans.DEBUG) {
+        console.log('Placing document of tab "' + tabId + '" to an iframe');
+    }
+    chrome.tabs.executeScript(tabId, {'file': 'nbframe.js'}, function() {
+        chrome.tabs.executeScript(tabId, {'file': 'nbframe-chrome.js'}, function() {
+            if (callback) {
+                callback();
+            }
+        });
+    });
 }
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
