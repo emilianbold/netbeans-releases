@@ -91,7 +91,7 @@ public class NavigationSupport {
 
         if (artifactFile != null && artifactFile.isValid()) {
             LOG.log(Level.FINEST, "Open File : {0}", FileUtil.getFileDisplayName(artifactFile)); // NOI18N
-            NbUtilities.open(artifactFile, 1, "");
+            NbUtilities.open(artifactFile, 0, "");
         } else {
             LOG.log(Level.FINEST, "File is either null or invalid : {0}", fileName); // NOI18N
         }
