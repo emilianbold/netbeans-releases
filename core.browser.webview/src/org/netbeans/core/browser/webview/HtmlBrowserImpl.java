@@ -148,9 +148,13 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                debuggerFactory.stopDebuggingSession(session);
+                if (session != null) {
+                    debuggerFactory.stopDebuggingSession(session);
+                }
                 session = null;
-                webkitDebugger.getDebugger().disable();
+                if (webkitDebugger.getDebugger().isEnabled()) {
+                    webkitDebugger.getDebugger().disable();
+                }
                 transport.detach();
             }
         });
