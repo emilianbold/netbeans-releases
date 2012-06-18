@@ -57,8 +57,8 @@ if (window.parent.TOP_FRAME == undefined) {
     var origUrl = document.location.href;
     console.log('Placing "' + origUrl + '" to iframe');
     var nbdoc = '__HTML_PAGE__';
-    nbdoc.replace('__TITLE__', nbHtmlEntities(origTitle));
-    nbdoc.replace('__SRC__', origUrl);
+    nbdoc = nbdoc.replace('__TITLE__', nbHtmlEntities(origTitle));
+    nbdoc = nbdoc.replace('__SRC__', origUrl);
     var encodedNbDoc = encodeURIComponent(nbdoc);
     document.location.href = "javascript:(function(){document.open();document.write('" + encodedNbDoc + "');document.close();})();";
 }

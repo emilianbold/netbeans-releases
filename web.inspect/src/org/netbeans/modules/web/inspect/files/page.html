@@ -60,6 +60,22 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 height:100%;
             }
 
+            iframe {
+                width:100%;
+                height: 100%;
+                background-color: white;
+                display: block;
+                border:none;
+                margin:0 auto;
+                -webkit-transition: all 1s;
+                -moz-transition: all 1s;
+                transition: all 1s;
+            }
+
+            .clear {
+                clear: both;
+            }
+
             #nbpanel {
                 position: fixed;
                 top:0;
@@ -68,12 +84,11 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 background: white;
             }
 
-            #nbpanel * {
-                display: inline-block;
-                line-height: 1.5em;
+            #nbpanel #preview * {
+                float: left;
             }
 
-            #resizer a {
+            #nbpanel #preview a {
                 margin-right: 3px;
                 border: 1px solid black;
             }
@@ -103,23 +118,38 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 transition: all 1s;
             }
 
-            iframe {
-                width:100%;
-                height: 100%;
-                background-color: white;
-                display: block;
-                border:none;
-                margin:0 auto;
-                -webkit-transition: all 1s;
-                -moz-transition: all 1s;
-                transition: all 1s;
+            #presetCustomizer {
+                display: none;
+                background-color: lightgray;
+                border: 1px solid black;
+                padding: 5px;
+                position: absolute;
+                left: 200px;
+                top: 200px;
+                z-index: 9999;
+            }
+            #presetCustomizer .title a {
+                float: right;
+            }
+            #presetCustomizer .sizes {
+                clear: both;
+            }
+            #presetCustomizer .table {
+                float: left;
+            }
+            #presetCustomizer .buttons {
+                float: right;
             }
         </style>
         <script type="text/javascript" src="page.js"></script>
     </head>
-    <body onload="NetBeans.initPage();">
+    <body>
         <div id="nbpanel">
-            <div id="resizer"></div>
+            <div id="preview">
+                <div id="presets">Loading presets...</div>
+                <a href="#" id="autoPreset">Auto</a>
+                <a href="#" id="customizePresets">Customize...</a>
+            </div>
         </div>
 
         <div id="main">
@@ -130,5 +160,37 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <h1>Your browser does not support iframes.</h1>
             </iframe>
         </div>
+
+        <div id="presetCustomizer">
+            <div class="title">Customize Window Settings<a href="#" id="closePresetCustomizer">X</a></div>
+            <div class="info">Configure window size options and control which appear in the Preview toolbar.</div>
+            <div class="sizes">
+                <p>Display sizes:</p>
+                <div class="table">
+                    <table id="presetCustomizerTable">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Name</th>
+                                <th>Width</th>
+                                <th>Height</th>
+                                <th>Toolbar</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="buttons">
+                    <button id="addPreset">New</button>
+                </div>
+            </div>
+            <div class="clear"></div>
+            <div class="buttons">
+                <button id="presetCustomizerOk">OK</button>
+                <button id="presetCustomizerCancel">Cancel</button>
+                <button id="presetCustomizerHelp">Help</button>
+            </div>
+        </div>
+
     </body>
 </html>
