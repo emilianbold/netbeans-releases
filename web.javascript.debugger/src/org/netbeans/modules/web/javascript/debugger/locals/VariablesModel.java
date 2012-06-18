@@ -125,7 +125,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             RemoteObject obj = scope.getScopeObject();
             if (scope.isLocalScope()) {
                 vars.addAll(getProperties(obj, ViewScope.LOCAL));
-            } else {
+            } else if (scope.isGlobalScope()) {
                 vars.add(getGlobalScopeVariable(obj, scope));
             }
         }
@@ -162,11 +162,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     
     private Collection<? extends ScopedRemoteObject> getProperties(RemoteObject prop, ViewScope scope) {
         List<ScopedRemoteObject> res = variablesCache.get(prop);
-        if (res != null) {
-            return res;
-        }
-        res = new ArrayList<ScopedRemoteObject>();
-        variablesCache.put(prop, res);
+            if (res != null) {
+                return res;
+            }
+            res = new ArrayList<ScopedRemoteObject>();
+            variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
                 if (desc.getValue() == null || desc.getValue().getType() == RemoteObject.Type.FUNCTION) {

@@ -64,6 +64,10 @@ public class Scope extends AbstractObject{
         return "local".equals(getType());
     }
     
+    public boolean isGlobalScope() {
+        return "global".equals(getType());
+    }
+    
     public RemoteObject getScopeObject() {
         return scopeObject;
     }
