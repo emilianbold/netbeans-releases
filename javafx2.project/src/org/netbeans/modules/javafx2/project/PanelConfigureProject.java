@@ -76,11 +76,11 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     @Override
     public HelpCtx getHelp() {
         switch (type){
-            case FXML: return new HelpCtx(PanelConfigureProject.class.getName() + "_FXML");
-            case PRELOADER: return new HelpCtx(PanelConfigureProject.class.getName() + "_PRELOADER");
-            case SWING: return new HelpCtx(PanelConfigureProject.class.getName() + "_SWING");
+            case FXML: return new HelpCtx(PanelConfigureProject.class.getName() + "_FXML"); //NOI18N
+            case PRELOADER: return new HelpCtx(PanelConfigureProject.class.getName() + "_PRELOADER"); //NOI18N
+            case SWING: return new HelpCtx(PanelConfigureProject.class.getName() + "_SWING"); //NOI18N
             default:
-            case APPLICATION: return new HelpCtx(PanelConfigureProject.class.getName() + "_APPLICATION"); 
+            case APPLICATION: return new HelpCtx(PanelConfigureProject.class.getName() + "_APPLICATION"); //NOI18N
             
             
         }
