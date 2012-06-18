@@ -40,18 +40,23 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-/*** ~Main object ***/
-
+/**
+ * The main object, manipulating with the page.
+ */
 function NetBeans_Page() {
+    // all presets
     this._presets = null;
+    // active/current preset
     this._preset = null;
-    // XXX how to create and gc the preset menu properly?
-    this._presetMenu = new NetBeans_PresetMenu();
+    // preset menu
+    this._presetMenu = new NetBeans_PresetMenu(); // XXX how to create and gc the preset menu properly?
 }
+// page init
 NetBeans_Page.prototype.initPage = function() {
     this._registerEvents();
     this._showPresets();
 }
+// resize page to the given preset, can be null (it means "fit to size")
 NetBeans_Page.prototype.resizePage = function(preset) {
     if (preset == null) {
         this.resetPage();
@@ -64,12 +69,15 @@ NetBeans_Page.prototype.resizePage = function(preset) {
     }
     this._resizeFrame(data['width'], data['height'], 'px');
 }
+// fit page to the window size
 NetBeans_Page.prototype.resetPage = function() {
     this._resizeFrame('100', '100', '%');
 }
+// show menu for presets
 NetBeans_Page.prototype.showPresetMenu = function() {
     this._presetMenu.show(this._loadPresets()); // always use copy of presets!
 }
+// get preset, can be null (the current preset is returned in such case)
 NetBeans_Page.prototype.getPreset = function(preset) {
     if (preset == undefined) {
         return this._preset;
@@ -81,20 +89,24 @@ NetBeans_Page.prototype.getPreset = function(preset) {
     this._preset = tmp;
     return this._preset;
 }
+// get all presets
 NetBeans_Page.prototype.getPresets = function() {
     if (this._presets == null) {
         this._presets = this._loadPresets();
     }
     return this._presets;
 }
+// set (and save) new presets
 NetBeans_Page.prototype.setPresets = function(presets) {
     this._presets = presets;
     this._savePresets();
 }
+// redraw presets (in the toolbar)
 NetBeans_Page.prototype.redrawPresets = function() {
     this._showPresets();
 }
 /*** ~Private ***/
+// register events
 NetBeans_Page.prototype._registerEvents = function() {
     var that = this;
     document.getElementById('autoPresetButton').addEventListener('click', function() {
@@ -104,6 +116,7 @@ NetBeans_Page.prototype._registerEvents = function() {
         that.showPresetMenu();
     }, false);
 }
+// show presets in the toolbar
 NetBeans_Page.prototype._showPresets = function() {
     var presets = this.getPresets();
     var resizer = document.getElementById('presets');
@@ -124,6 +137,7 @@ NetBeans_Page.prototype._showPresets = function() {
         resizer.appendChild(button);
     }
 }
+// load presets from the central storage
 NetBeans_Page.prototype._loadPresets = function() {
     // XXX load presets from NB
     if (this._presets != null) {
@@ -137,10 +151,12 @@ NetBeans_Page.prototype._loadPresets = function() {
         new NetBeans_Preset(NetBeans_Preset.SMARTPHONE, 'Smartphone Portrait', '335', '480', true, true)
     ];
 }
+// save presets to the central storage
 NetBeans_Page.prototype._savePresets = function() {
     // XXX save presets back to NB
     console.error('Saving presets not implemented');
 }
+// resize frame (and the mask)
 NetBeans_Page.prototype._resizeFrame = function(width, height, units) {
     var nbframe = document.getElementById('nbframe');
     var mask = document.getElementById('mask');
@@ -148,31 +164,45 @@ NetBeans_Page.prototype._resizeFrame = function(width, height, units) {
     mask.style.marginTop = height + units;
 }
 
-/*** ~Inner classes ***/
-
+/**
+ * Class representing window preset.
+ *
+ * Internal presets cannot be removed.
+ */
 function NetBeans_Preset(type, title, width, height, toolbar, internal) {
+    // type
     this.type = type;
+    // title
     this.title = title;
+    // width (in px)
     this.width = width;
+    // height (in px)
     this.height = height;
+    // show in toolbar
     this.toolbar = toolbar;
+    // internal or not?
     this.internal = internal;
 }
+// preset type for Desktops
 NetBeans_Preset.DESKTOP = {
     ident: 'DESKTOP',
     title: 'Desktop' // XXX i18n
 };
+// preset type for Tablets
 NetBeans_Preset.TABLET = {
     ident: 'TABLET',
     title: 'Tablet'
 };
+// preset type for Smartphones
 NetBeans_Preset.SMARTPHONE = {
     ident: 'SMARTPHONE',
     title: 'Smartphone'
 };
+// get a list of all preset types
 NetBeans_Preset.allTypes = function() {
     return [NetBeans_Preset.DESKTOP, NetBeans_Preset.TABLET, NetBeans_Preset.SMARTPHONE];
 }
+// get preset type for the given ident, or null if not found
 NetBeans_Preset.typeForIdent = function(ident) {
     var allTypes = NetBeans_Preset.allTypes();
     for (i in allTypes) {
@@ -183,23 +213,33 @@ NetBeans_Preset.typeForIdent = function(ident) {
     return null;
 }
 
+/**
+ * Window presets menu.
+ */
 function NetBeans_PresetMenu() {
+    // menu container
     this._container = null;
+    // menu presets
     this._presets = null;
+    // hide timeout
     this._hideTimeout = null;
+    // preset customizer
     this._presetCustomizer = new NetBeans_PresetCustomizer();
 }
+// show the menu
 NetBeans_PresetMenu.prototype.show = function(presets) {
     this._init();
     this._presets = presets;
     this._putPresets(this._presets);
     this._show();
 }
+// hide the menu
 NetBeans_PresetMenu.prototype.hide = function() {
     this._hide();
     this._hideTimeout = null;
 }
 /*** ~Private ***/
+// menu init
 NetBeans_PresetMenu.prototype._init = function() {
     if (this._container != null) {
         return;
@@ -207,16 +247,20 @@ NetBeans_PresetMenu.prototype._init = function() {
     this._container = document.getElementById('presetMenu');
     this._registerEvents();
 }
+// show menu
 NetBeans_PresetMenu.prototype._show = function() {
     this._container.style.visibility = 'visible';
     this._hideLater(2000);
 }
+// hide menu
 NetBeans_PresetMenu.prototype._hide = function() {
     this._container.style.visibility = 'hidden';
 }
+// clear the hide timeout
 NetBeans_PresetMenu.prototype._hideStop = function() {
     clearTimeout(this._hideTimeout);
 }
+// hide menu after the given timeout, can be undefined (it means 1 second in such case)
 NetBeans_PresetMenu.prototype._hideLater = function(timeout) {
     if (timeout == undefined) {
         timeout = 1000;
@@ -226,6 +270,7 @@ NetBeans_PresetMenu.prototype._hideLater = function(timeout) {
         that.hide();
     }, timeout);
 }
+// register events
 NetBeans_PresetMenu.prototype._registerEvents = function() {
     var that = this;
     this._container.addEventListener('mouseover', function() {
@@ -244,6 +289,7 @@ NetBeans_PresetMenu.prototype._registerEvents = function() {
         that._presetCustomizer.show(that._presets);
     }, false);
 }
+// clean and put presets to the menu (first, presets from toolbar)
 NetBeans_PresetMenu.prototype._putPresets = function() {
     var menu = document.getElementById('menuPresets');
     // clean
@@ -251,6 +297,7 @@ NetBeans_PresetMenu.prototype._putPresets = function() {
     this._putPresetsInternal(true);
     this._putPresetsInternal(false);
 }
+// put presets to the menu (internal)
 NetBeans_PresetMenu.prototype._putPresetsInternal = function(toolbar) {
     var menu = document.getElementById('menuPresets');
     for (p in this._presets) {
@@ -288,17 +335,28 @@ NetBeans_PresetMenu.prototype._putPresetsInternal = function(toolbar) {
     }
 }
 
-
+/**
+ * Preset customizer.
+ */
 function NetBeans_PresetCustomizer() {
+    // customizer container
     this._container = null;
+    // presets container
     this._rowContainer = null;
+    // remove button
     this._removePresetButton = null;
+    // move up button
     this._moveUpPresetButton = null;
+    // move down button
     this._moveDownPresetButton = null;
+    // OK button
     this._okButton = null;
+    // presets
     this._presets = null;
+    // active/selected preset
     this._activePreset = null;
 }
+// show customizer
 NetBeans_PresetCustomizer.prototype.show = function(presets) {
     this._init();
     this._presets = presets;
@@ -306,6 +364,7 @@ NetBeans_PresetCustomizer.prototype.show = function(presets) {
     this._show();
 }
 /*** ~Private ***/
+// customizer init
 NetBeans_PresetCustomizer.prototype._init = function() {
     if (this._container != null) {
         return;
@@ -318,6 +377,7 @@ NetBeans_PresetCustomizer.prototype._init = function() {
     this._okButton = document.getElementById('presetCustomizerOk');
     this._registerEvents();
 }
+// show customizer
 NetBeans_PresetCustomizer.prototype._show = function() {
     NetBeans_Disabler.on();
     var left = Math.max(window.innerWidth / 2 - this._container.clientWidth / 2, 0);
@@ -326,10 +386,12 @@ NetBeans_PresetCustomizer.prototype._show = function() {
     this._container.style.top = top + 'px';
     this._container.style.visibility = 'visible';
 }
+// hide customizer
 NetBeans_PresetCustomizer.prototype._hide = function() {
     NetBeans_Disabler.off();
     this._container.style.visibility = 'hidden';
 }
+// register events
 NetBeans_PresetCustomizer.prototype._registerEvents = function() {
     var that = this;
     document.getElementById('closePresetCustomizer').addEventListener('click', function() {
@@ -357,6 +419,7 @@ NetBeans_PresetCustomizer.prototype._registerEvents = function() {
         alert('[not implemented]');
     }, false);
 }
+// put presets to the customizer
 NetBeans_PresetCustomizer.prototype._putPresets = function(presets) {
     var that = this;
     var allPresetTypes = NetBeans_Preset.allTypes();
@@ -433,6 +496,7 @@ NetBeans_PresetCustomizer.prototype._putPresets = function(presets) {
         preset['_error'] = false;
     }
 }
+// cleanup (remove presets from customizer)
 NetBeans_PresetCustomizer.prototype._cleanUp = function() {
     this._presets = null;
     while (this._rowContainer.hasChildNodes()) {
@@ -441,12 +505,14 @@ NetBeans_PresetCustomizer.prototype._cleanUp = function() {
     this._activePreset = null;
     this._enableButtons();
 }
+// add a new preset
 NetBeans_PresetCustomizer.prototype._addPreset = function() {
     var preset = new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'New...', '800', '600', true, false);
     this._presets.push(preset);
     this._putPresets([preset]);
     this._enableButtons();
 }
+// remove the active preset
 NetBeans_PresetCustomizer.prototype._removePreset = function() {
     // presets
     this._presets.splice(this._presets.indexOf(this._activePreset), 1);
@@ -455,6 +521,7 @@ NetBeans_PresetCustomizer.prototype._removePreset = function() {
     this._activePreset = null;
     this._enableButtons();
 }
+// move the active preset up
 NetBeans_PresetCustomizer.prototype._moveUpPreset = function() {
     // presets
     this._movePreset(this._activePreset, -1);
@@ -465,6 +532,7 @@ NetBeans_PresetCustomizer.prototype._moveUpPreset = function() {
     this._rowContainer.insertBefore(row, before);
     this._enableButtons();
 }
+// move the active preset down
 NetBeans_PresetCustomizer.prototype._moveDownPreset = function() {
     // presets
     this._movePreset(this._activePreset, +1);
@@ -475,12 +543,14 @@ NetBeans_PresetCustomizer.prototype._moveDownPreset = function() {
     nbInsertAfter(row, after);
     this._enableButtons();
 }
+// move the preset up or down
 NetBeans_PresetCustomizer.prototype._movePreset = function(preset, shift) {
     var index = this._presets.indexOf(preset);
     var tmp = this._presets[index];
     this._presets[index] = this._presets[index + shift];
     this._presets[index + shift] = tmp;
 }
+// save presets to the centrak storage and redraw them
 NetBeans_PresetCustomizer.prototype._save = function() {
     this._hide();
     for (i in this._presets) {
@@ -492,10 +562,12 @@ NetBeans_PresetCustomizer.prototype._save = function() {
     NetBeans_Page.redrawPresets();
     this._cleanUp();
 }
+// cancel customizer
 NetBeans_PresetCustomizer.prototype._cancel = function() {
     this._hide();
     this._cleanUp();
 }
+// callback when row is selected
 NetBeans_PresetCustomizer.prototype._rowSelected = function(row) {
     if (this._activePreset != null) {
         if (this._activePreset['_row'] === row) {
@@ -515,10 +587,12 @@ NetBeans_PresetCustomizer.prototype._rowSelected = function(row) {
     }
     this._enableButtons();
 }
+// enable/disable action buttons (based on the active preset)
 NetBeans_PresetCustomizer.prototype._enableButtons = function() {
     this._enablePresetButtons();
     this._enableMainButtons();
 }
+// enable/disable preset buttons (based on the active preset)
 NetBeans_PresetCustomizer.prototype._enablePresetButtons = function() {
     if (this._activePreset != null) {
         // any preset selected
@@ -543,6 +617,7 @@ NetBeans_PresetCustomizer.prototype._enablePresetButtons = function() {
         this._moveDownPresetButton.setAttribute('disabled', 'disabled');
     }
 }
+// enable/disable customizer buttons
 NetBeans_PresetCustomizer.prototype._enableMainButtons = function() {
     var anyError = false;
     for (i in this._presets) {
@@ -557,6 +632,7 @@ NetBeans_PresetCustomizer.prototype._enableMainButtons = function() {
         this._okButton.removeAttribute('disabled');
     }
 }
+// callback when preset type changes
 NetBeans_PresetCustomizer.prototype._typeChanged = function(input) {
     if (this._activePreset == null) {
         // select change event fired before row click event => select the closest row
@@ -571,33 +647,40 @@ NetBeans_PresetCustomizer.prototype._typeChanged = function(input) {
     }
     this._activePreset.type = NetBeans_Preset.typeForIdent(input.value);
 }
+// callback when preset title changes
 NetBeans_PresetCustomizer.prototype._titleChanged = function(input) {
     var that = this;
     this._checkField(input, 'title', function(value) {
         return that._validateNotEmpty(value);
     });
 }
+// callback when preset width changes
 NetBeans_PresetCustomizer.prototype._widthChanged = function(input) {
     var that = this;
     this._checkField(input, 'width', function(value) {
         return that._validateNumber(value);
     });
 }
+// callback when preset height changes
 NetBeans_PresetCustomizer.prototype._heightChanged = function(input) {
     var that = this;
     this._checkField(input, 'height', function(value) {
         return that._validateNumber(value);
     });
 }
+// callback when preset toolbar changes
 NetBeans_PresetCustomizer.prototype._toolbarChanged = function(input) {
     this._activePreset.toolbar = input.checked;
 }
+// check whether the value is not empty
 NetBeans_PresetCustomizer.prototype._validateNotEmpty = function(value) {
     return value != null && value.trim().length > 0;
 }
+// check whether the value is a number
 NetBeans_PresetCustomizer.prototype._validateNumber = function(value) {
     return value != null && !isNaN(parseFloat(value)) && isFinite(value);
 }
+// check the given input, for the given key with the given validation callback
 NetBeans_PresetCustomizer.prototype._checkField = function(input, key, validation) {
     var value = input.value;
     if (validation(value)) {
@@ -611,18 +694,24 @@ NetBeans_PresetCustomizer.prototype._checkField = function(input, key, validatio
     this._enableMainButtons();
 }
 
+/**
+ * "Disable" all elements in the page.
+ *
+ * Puts extra DIV over the page which "disables" any page elements.
+ */
 function NetBeans_Disabler() {
 }
+// show disabler
 NetBeans_Disabler.on = function() {
     document.getElementById('disabler').style.visibility = 'visible';
 }
+// hide disabler
 NetBeans_Disabler.off = function() {
     document.getElementById('disabler').style.visibility = 'hidden';
 }
 
-
 /*** ~Helpers ***/
-
+// mirror function to element.insertBefore()
 function nbInsertAfter(newElement, targetElement) {
 	var parent = targetElement.parentNode;
 	if (parent.lastchild == targetElement) {
@@ -631,16 +720,15 @@ function nbInsertAfter(newElement, targetElement) {
 		parent.insertBefore(newElement, targetElement.nextSibling);
     }
 }
-
+// add CSS class to the given element
 function nbAddCssClass(element, cssClass) {
     element.className = (element.className + ' ' + cssClass).trim();
 }
-
+// remove CSS class to the given element
 function nbRemoveCssClass(element, cssClass) {
     element.className = element.className.replace(cssClass, '');
 }
 
 /*** ~Run app! ***/
-
 var NetBeans_Page = new NetBeans_Page();
 NetBeans_Page.initPage();

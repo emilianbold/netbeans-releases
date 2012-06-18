@@ -44,15 +44,18 @@
 if (TOP_FRAME == undefined) {
     var TOP_FRAME = true;
 
+    // Escape HTML entities
     function nbHtmlEntities(str) {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // Reload the NetBeans iframe
     function nbReloadFrame() {
         console.log('Reloading iframe for "' + document.location.href + '"');
         document.getElementById('nbframe').contentDocument.location.reload(true);
     }
 
+    // get the current page and place it to the iframe
     var origTitle = document.title;
     var origUrl = document.location.href;
     console.log('Placing "' + origUrl + '" to iframe');
