@@ -89,8 +89,10 @@ public class DOMNode extends AbstractNode {
             String tagName = node.getNodeName().toLowerCase();
             String selector = getSelector();
             displayName = MessageFormat.format(pattern, tagName, selector);
+        } else if (nodeType == 9) {
+            displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
         } else {
-            // Not used by now - we show elements only
+            // Not used by now
             displayName = node.getNodeType() + " " + node.getNodeName() + " " + node.getNodeValue(); // NOI18N
         }
         return displayName;
@@ -214,6 +216,10 @@ public class DOMNode extends AbstractNode {
                         keys.add(subNode.getNodeId());
                     }
                 }
+            }
+            Node contentDocument = node.getContentDocument();
+            if (contentDocument != null) {
+                keys.add(contentDocument.getNodeId());
             }
             setKeys(keys);
             getNodes(true);

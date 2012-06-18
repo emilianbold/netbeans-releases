@@ -66,7 +66,7 @@ public class WebKitPageModel extends PageModel {
     /** Request processor used by this class. */
     private RequestProcessor RP = new RequestProcessor(WebKitPageModel.class);
     /** Entry point to WebKit debuggin API. */
-    private WebKitDebugging webKit;
+    WebKitDebugging webKit;
     /** Document node. */
     private DOMNode documentNode;
     /** Nodes of the document (maps ID of the node to the node itself).*/
@@ -79,6 +79,8 @@ public class WebKitPageModel extends PageModel {
     private DOM.Listener domListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
+
+    private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
 
     /** Logger used by this class */
     //private java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(WebKitPageModel.class.getName());
@@ -304,6 +306,7 @@ public class WebKitPageModel extends PageModel {
             domNode = new DOMNode(this, node);
             nodes.put(nodeId, domNode);
         }
+        boolean updateChildren = false;
         List<Node> subNodes = node.getChildren();
         if (subNodes == null) {
             webKit.getDOM().requestChildNodes(nodeId);
@@ -311,6 +314,25 @@ public class WebKitPageModel extends PageModel {
             for (Node subNode : subNodes) {
                 updateNodes(subNode);
             }
+            updateChildren = true;
+        }
+        final Node contentDocument = node.getContentDocument();
+        if (contentDocument != null) {
+            updateNodes(contentDocument);
+            updateChildren = true;
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    String initScript = Files.getScript("initialization"); // NOI18N
+                    RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
+                    webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
+                    synchronized (WebKitPageModel.this) {
+                        contentDocumentMap.put(contentDocument.getNodeId(), remote);
+                    }
+                }
+            });
+        }
+        if (updateChildren) {
             domNode.updateChildren();
         }
         return domNode;
@@ -406,6 +428,22 @@ public class WebKitPageModel extends PageModel {
         }
     }
 
+    /**
+     * Invoke the specified script in all content documents.
+     * 
+     * @param script script to invoke.
+     */
+    void invokeInAllDocuments(String script) {
+        // Main document
+        webKit.getRuntime().evaluate(script);
+
+        // Content documents
+        script = "function() {\n" + script + "\n}"; // NOI18N
+        for (RemoteObject contentDocument : contentDocumentMap.values()) {
+            webKit.getRuntime().callFunctionOn(contentDocument, script);
+        }
+    }
+
     class WebPaneSynchronizer implements PropertyChangeListener {
         private final Object LOCK_HIGHLIGHT = new Object();
         private final Object LOCK_SELECTION = new Object();
@@ -428,31 +466,74 @@ public class WebKitPageModel extends PageModel {
         private void updateHighlight() {
             synchronized (LOCK_HIGHLIGHT) {
                 List<? extends org.openide.nodes.Node> nodes = getHighlightedNodes();
-                webKit.getRuntime().evaluate("NetBeans.initNextHighlight()"); // NOI18N
+
+                // Initialize the next highlight in all content documents
+                invokeInAllDocuments("NetBeans.initNextHighlight();"); // NOI18N
+
+                // Add highlighted nodes into the next highlight (in their document)
                 for (org.openide.nodes.Node node : nodes) {
                     Node webKitNode = node.getLookup().lookup(Node.class);
+                    webKitNode = convertNode(webKitNode);
                     RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
                     if (remote != null) {
                         webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
                     }
                 }
-                webKit.getRuntime().evaluate("NetBeans.finishNextHighlight()"); // NOI18N
+                
+                // Finalize the next highlight in all content documents
+                invokeInAllDocuments("NetBeans.finishNextHighlight();"); // NOI18N
             }            
         }
 
         private void updateSelection() {
             synchronized (LOCK_SELECTION) {
                 List<? extends org.openide.nodes.Node> nodes = getSelectedNodes();
-                webKit.getRuntime().evaluate("NetBeans.initNextSelection()"); // NOI18N
+
+                // Initialize the next selection in all content documents
+                invokeInAllDocuments("NetBeans.initNextSelection();"); // NOI18N
+
+                // Add selected nodes into the next selection (in their document)
                 for (org.openide.nodes.Node node : nodes) {
                     Node webKitNode = node.getLookup().lookup(Node.class);
+                    webKitNode = convertNode(webKitNode);
                     RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
                     if (remote != null) {
                         webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
                     }
                 }
-                webKit.getRuntime().evaluate("NetBeans.finishNextSelection()"); // NOI18N                    
+                
+                // Finalize the next selection in all content documents
+                invokeInAllDocuments("NetBeans.finishNextSelection();"); // NOI18N
             } 
+        }
+
+        /**
+         * Converts the WebKit node into a node that should be highlighted/selected.
+         * Usually this method returns the passed node, but there are some exceptions
+         * like document nodes.
+         * 
+         * @param node node to convert.
+         * @return node that should be highlighted/selected instead of the given node.
+         */
+        private Node convertNode(Node node) {
+            Node result = node;
+            int type = node.getNodeType();
+            if (type == 9) { // document node
+                // Highlight/select document element
+                synchronized (node) {
+                    List<Node> subNodes = node.getChildren();
+                    if (subNodes != null) {
+                        for (Node subNode : subNodes) {
+                            // There should be just one element
+                            if (subNode.getNodeType() == 1) { // element
+                                result = subNode;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         private void updateSelectionMode() {

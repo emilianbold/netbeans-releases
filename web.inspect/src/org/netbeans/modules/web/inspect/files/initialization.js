@@ -697,7 +697,8 @@ NetBeans.insertGlassPane = function() {
     });
 
     document.body.appendChild(canvas);
-    
+
+    if (window.top === window) {
     // Selection Mode checkbox
     var toolbox = document.createElement('div');
     toolbox.setAttribute(this.ATTR_ARTIFICIAL, true);
@@ -714,6 +715,7 @@ NetBeans.insertGlassPane = function() {
     var selectionText = document.createTextNode('Selection Mode');
     toolbox.appendChild(selectionText);
     document.body.appendChild(toolbox);
+    }
 
     window.addEventListener('scroll', this.repaintGlassPane);
     window.addEventListener('resize', this.repaintGlassPane);
