@@ -55,6 +55,7 @@ import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
@@ -98,31 +99,35 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         final int caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
 
         SwingUtilities.invokeLater(new Runnable() {
-
+        
             @Override
             public void run() {
-                updateCssPropertiesWindow(result, caretOffset);
+                final RuleEditorTC ruleEditorTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
+                if (ruleEditorTC != null) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            updateCssPropertiesWindow(ruleEditorTC, result, caretOffset);
+                        }
+                        
+                    });
+                }
             }
-            
+
         });
 
     }
 
-    private void updateCssPropertiesWindow(final CssCslParserResult result, int documentOffset) {
+    private void updateCssPropertiesWindow(final RuleEditorTC ruleEditorTC, final CssCslParserResult result, int documentOffset) {
         if(cancelled) {
             return ;
         }
         
-        final RuleEditorTC cssPropertiesTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
-        if (cssPropertiesTC == null) {
-            return;
-        }
-        
-        
         final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
         if(astOffset == -1) {
             //disable the rule editor
-            cssPropertiesTC.setContext(null);
+            ruleEditorTC.setContext(null);
             return ;
         }
         
@@ -153,7 +158,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                 }
                 
                 RuleContext context = match == null ? null : new RuleContext(match, result.getModel());
-                cssPropertiesTC.setContext(context);
+                ruleEditorTC.setContext(context);
             }
         });
 
