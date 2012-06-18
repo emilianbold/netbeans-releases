@@ -60,8 +60,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
+ * mjanicek: I don't think that this class should even exist. All the logic
+ * could be encapsulate in ActionType enum and as a result we would have some methods
+ * much simple and easier to read (e.g. getTargetFilename() which seems to me
+ * overcomplicated atm.)
  *
  * @author schmidtm
+ * @author Martin Janicek
  */
 public class NavigationSupport {
 
