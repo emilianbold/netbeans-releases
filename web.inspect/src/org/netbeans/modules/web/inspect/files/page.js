@@ -117,6 +117,8 @@ NetBeans_Page.prototype._showPresets = function() {
         }
         var button = document.createElement('a');
         button.setAttribute('href', '#');
+        button.setAttribute('class', 'button');
+        button.setAttribute('title', preset.title + ' (' + preset.width + ' x ' + preset.height + ')');
         button.setAttribute('onclick', 'NetBeans_Page.resizePage(' + p + '); return false;');
         button.appendChild(document.createTextNode(preset.title));
         resizer.appendChild(button);
@@ -211,10 +213,16 @@ NetBeans_PresetCustomizer.prototype._init = function() {
     this._registerEvents();
 }
 NetBeans_PresetCustomizer.prototype._show = function() {
-    this._container.style.display = 'block';
+    NetBeans_Disabler.on();
+    var left = Math.max(window.innerWidth / 2 - this._container.clientWidth / 2, 0);
+    var top = Math.max(window.innerHeight / 2 - this._container.clientHeight / 2, 0);
+    this._container.style.left = left + 'px';
+    this._container.style.top = top + 'px';
+    this._container.style.visibility = 'visible';
 }
 NetBeans_PresetCustomizer.prototype._hide = function() {
-    this._container.style.display = 'none';
+    NetBeans_Disabler.off();
+    this._container.style.visibility = 'hidden';
 }
 NetBeans_PresetCustomizer.prototype._registerEvents = function() {
     var that = this;
@@ -302,6 +310,7 @@ NetBeans_PresetCustomizer.prototype._putPresets = function(presets) {
         row.appendChild(height);
         // toolbar
         var toolbar = document.createElement('td');
+        toolbar.setAttribute('class', 'toolbar');
         var toolbarCheckbox = document.createElement('input');
         toolbarCheckbox.setAttribute('type', 'checkbox');
         if (preset.toolbar) {
@@ -494,6 +503,15 @@ NetBeans_PresetCustomizer.prototype._checkField = function(input, key, validatio
     }
     this._activePreset[key] = value;
     this._enableMainButtons();
+}
+
+function NetBeans_Disabler() {
+}
+NetBeans_Disabler.on = function() {
+    document.getElementById('disabler').style.visibility = 'visible';
+}
+NetBeans_Disabler.off = function() {
+    document.getElementById('disabler').style.visibility = 'hidden';
 }
 
 

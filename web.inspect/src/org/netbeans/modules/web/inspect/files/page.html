@@ -48,44 +48,70 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <style type="text/css">
             * {
-                margin:0; padding:0;
+                margin: 0;
+                padding: 0;
             }
             html {
-                height:100%;
+                height: 100%;
                 background: #000;
             }
             body {
-                height:100%;
+                height: 100%;
+                font-family: Tahoma, Helvetica;
+                font-size: 12px;
             }
             iframe {
-                width:100%;
+                width: 100%;
                 height: 100%;
                 background-color: white;
                 display: block;
-                border:none;
-                margin:0 auto;
+                border: none;
+                margin: 0 auto;
                 -webkit-transition: all 1s;
                 -moz-transition: all 1s;
                 transition: all 1s;
+            }
+            a {
+                text-decoration: none;
             }
 
             .clear {
                 clear: both;
             }
 
+            button, .button {
+                cursor: pointer;
+                font-weight: bold;
+                position: relative;
+                margin-right: 4px;
+                background-color: orange;
+                border: 1px solid orange;
+                border-radius: 3px;
+                color: white;
+                padding: 0.2em 0.4em;
+                box-shadow: 1px 1px 5px #1D1D1D;
+            }
+            button:hover, .button:hover {
+                background-color: darkorange;
+            }
+            button.disabled, button[disabled=disabled], .button.disabled {
+                cursor: not-allowed;
+                border: 1px solid grey;
+                background-color: grey;
+            }
+            button.disabled:hover, button[disabled=disabled]:hover, .button.disabled:hover {
+                background-color: grey;
+            }
+
             #nbpanel {
                 position: fixed;
                 top:0;
                 display: block;
-                width:100%;
+                width: 100%;
                 background: white;
             }
-            #nbpanel #preview * {
+            #preview * {
                 float: left;
-            }
-            #nbpanel #preview a {
-                margin-right: 3px;
-                border: 1px solid black;
             }
 
             #main {
@@ -99,58 +125,122 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             }
 
             #mask {
-                display:block;
-                content:".";
-                background-color:black;
-                background-color:rgba(0,0,0,0.5);
-                width:100%;
-                height:100%;
-                position:fixed;
-                z-index:0;
-                margin-top:9999px;
+                display: block;
+                content: ".";
+                background-color: black;
+                background-color: rgba(0,0,0,0.5);
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                z-index: 0;
+                margin-top: 9999px;
                 -webkit-transition: all 1s;
                 -moz-transition: all 1s;
                 transition: all 1s;
             }
 
-            #presetCustomizer {
-                display: none;
-                background-color: lightgray;
-                border: 1px solid black;
-                padding: 5px;
+            #disabler {
+                visibility: hidden;
                 position: absolute;
-                left: 200px;
-                top: 200px;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                z-index: 9;
+            }
+
+            #presetCustomizer {
+                visibility: hidden;
+                background-color: white;
+                border: 2px solid orange;
+                border-radius: 5px;
+                position: absolute;
                 z-index: 9999;
+            }
+            #presetCustomizer p {
+                margin: 3px 0;
+            }
+            #presetCustomizer .title {
+                border-bottom: 2px solid orange;
+                font-weight: bold;
+                padding: 5px;
+                font-size: 120%;
             }
             #presetCustomizer .title a {
                 float: right;
+                font-weight: bold;
+                color: orange;
             }
-            #presetCustomizer .sizes {
-                clear: both;
+            #presetCustomizer .content {
+                margin: 10px;
             }
-            #presetCustomizer .table {
+            #presetCustomizer .info {
+                margin-bottom: 5px;
+                font-style: italic;
+                color: chocolate;
+            }
+            #presetCustomizerTable {
                 float: left;
+                border-collapse: collapse;
+                width: 80%;
+                margin-right: 10px;
+                border: 1px solid darkgrey;
             }
-            #presetCustomizer .buttons {
-                float: right;
+            #presetCustomizerTable tr:nth-child(even) {
+                background: lightgrey;
             }
-            #presetCustomizer .sizes .buttons button {
-                display: block;
-            }
-            #presetCustomizerTable .active {
+            #presetCustomizerTable tr.active {
                 background-color: lightgreen;
+            }
+            #presetCustomizerTable th, #presetCustomizerTable td {
+                padding: 1px 5px;
+            }
+            #presetCustomizerTable th {
+                text-align: center;
+                background-color: darkgrey;
+            }
+            #presetCustomizerTable td {
+                position: relative;
+                border-left: 1px solid darkgrey;
             }
             #presetCustomizerTable input {
                 background-color: transparent;
                 border: 1px solid transparent;
             }
+            #presetCustomizerTable input:focus {
+                outline: none;
+            }
             #presetCustomizerTable input.number {
                 width: 60px;
             }
             #presetCustomizerTable input.error {
-                background-color: red;
-                border: 1px solid darkred;
+                color: red;
+            }
+            #presetCustomizerTable input.error:after {
+                position: absolute;
+                top: 3px;
+                left: 2px;
+                font-weight: bold;
+                content: "!";
+            }
+            #presetCustomizerTable .toolbar {
+                text-align: center;
+            }
+            #presetCustomizer .presetButtons {
+                float: right;
+            }
+            #presetCustomizer .presetButtons button {
+                display: block;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            #presetCustomizer .buttons {
+                margin-top: 20px;
+                float: right;
+            }
+            #presetCustomizerHelp {
+                margin-right: 0;
             }
         </style>
     </head>
@@ -158,8 +248,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <div id="nbpanel">
             <div id="preview">
                 <div id="presets">Loading presets...</div>
-                <a href="#" id="autoPreset">Auto</a>
-                <a href="#" id="customizePresets">Customize...</a>
+                <a href="#" id="autoPreset" class="button" title="Actual Window Size">Auto</a>
+                <a href="#" id="customizePresets" class="button" title="Customize Window Settings...">&hellip;</a>
             </div>
         </div>
 
@@ -173,37 +263,38 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             </iframe>
         </div>
 
+        <div id="disabler"></div>
+
         <div id="presetCustomizer">
-            <div class="title">Customize Window Settings<a href="#" id="closePresetCustomizer">X</a></div>
-            <div class="info">Configure window size options and control which appear in the Preview toolbar.</div>
-            <div class="sizes">
+            <div class="title">Customize Window Settings<a href="#" id="closePresetCustomizer" title="Close without Saving">X</a></div>
+            <div class="content">
+                <div class="info">Configure window size options and control which appear in the Preview toolbar.</div>
                 <p>Display sizes:</p>
-                <div class="table">
-                    <table id="presetCustomizerTable">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Name</th>
-                                <th>Width</th>
-                                <th>Height</th>
-                                <th>Toolbar</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <table id="presetCustomizerTable">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Name</th>
+                            <th>Width</th>
+                            <th>Height</th>
+                            <th>Toolbar</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="presetButtons">
+                    <button id="addPreset" title="Add Size">New</button>
+                    <button id="removePreset" disabled="disabled" title="Remove Size">Remove</button>
+                    <button id="moveUpPreset" disabled="disabled" title="Move Size Up">Move Up</button>
+                    <button id="moveDownPreset" disabled="disabled" title="Move Size Down">Move Down</button>
                 </div>
+                <div class="clear"></div>
                 <div class="buttons">
-                    <button id="addPreset">New</button>
-                    <button id="removePreset" disabled="disabled">Remove</button>
-                    <button id="moveUpPreset" disabled="disabled">Move Up</button>
-                    <button id="moveDownPreset" disabled="disabled">Move Down</button>
+                    <button id="presetCustomizerOk" title="Save and Close">OK</button>
+                    <button id="presetCustomizerCancel" title="Close without Saving">Cancel</button>
+                    <button id="presetCustomizerHelp" title="Show Help">Help</button>
                 </div>
-            </div>
-            <div class="clear"></div>
-            <div class="buttons">
-                <button id="presetCustomizerOk">OK</button>
-                <button id="presetCustomizerCancel">Cancel</button>
-                <button id="presetCustomizerHelp">Help</button>
+                <div class="clear"></div>
             </div>
         </div>
 
