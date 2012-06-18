@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -395,9 +392,8 @@ public class TokenFormatter {
                     int countSpaces = 0;
                     int column = 0;
                     int indentOfOpenTag = 0;
-                    Stack<Integer> lastBracedBlockIndent = new Stack<Integer>();
+                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<Integer>();
 
-                    lastBracedBlockIndent.push(0);
                     FormatToken formatToken;
                     String newText = null;
                     String oldText = null;
@@ -437,13 +433,13 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_CLASS_LEFT_BRACE:
                                         indentRule = true;
-                                        Whitespace ws = countWhiteSpaceBeforeLeftBrace(docOptions.classDeclBracePlacement, docOptions.spaceBeforeClassDeclLeftBrace, oldText, indent, lastBracedBlockIndent.peek());
+                                        Whitespace ws = countWhiteSpaceBeforeLeftBrace(docOptions.classDeclBracePlacement, docOptions.spaceBeforeClassDeclLeftBrace, oldText, indent, peekLastBracedIndent(lastBracedBlockIndent));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE:
                                         indentRule = true;
-                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.methodDeclBracePlacement, docOptions.spaceBeforeMethodDeclLeftBrace, oldText, indent, lastBracedBlockIndent.peek());
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.methodDeclBracePlacement, docOptions.spaceBeforeMethodDeclLeftBrace, oldText, indent, peekLastBracedIndent(lastBracedBlockIndent));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -584,7 +580,7 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_CLASS_RIGHT_BRACE:
                                         indentRule = true;
-                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.classDeclBracePlacement, newLines, docOptions.blankLinesBeforeClassEnd, indent, formatTokens, index - 1, oldText, lastBracedBlockIndent.pop());
+                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.classDeclBracePlacement, newLines, docOptions.blankLinesBeforeClassEnd, indent, formatTokens, index - 1, oldText, popLastBracedIndent(lastBracedBlockIndent));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         lastBracePlacement = docOptions.classDeclBracePlacement;
@@ -600,7 +596,7 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE:
                                         indentLine = indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
-                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.methodDeclBracePlacement, newLines, docOptions.blankLinesBeforeFunctionEnd, indent, formatTokens, index - 1, oldText, lastBracedBlockIndent.pop());
+                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.methodDeclBracePlacement, newLines, docOptions.blankLinesBeforeFunctionEnd, indent, formatTokens, index - 1, oldText, popLastBracedIndent(lastBracedBlockIndent));
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
                                         lastBracePlacement = docOptions.methodDeclBracePlacement;
@@ -1994,6 +1990,16 @@ public class TokenFormatter {
             this.lines = lines;
             this.spaces = spaces;
         }
+    }
+
+    private static int peekLastBracedIndent(final Deque<Integer> lastBracedBlockIndent) {
+        final Integer result = lastBracedBlockIndent.peekFirst();
+        return result == null ? 0 : result;
+    }
+
+    private static int popLastBracedIndent(final Deque<Integer> lastBracedBlockIndent) {
+        final Integer result = lastBracedBlockIndent.pollFirst();
+        return result == null ? 0 : result;
     }
 
     /**
