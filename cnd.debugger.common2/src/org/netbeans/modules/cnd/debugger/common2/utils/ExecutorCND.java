@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 
 import org.openide.util.Exceptions;
 
@@ -77,10 +78,12 @@ import org.openide.util.Utilities;
     private int pid = -1;
     private final ExecutionEnvironment exEnv;
     private String startError = null;
+    private final ChangeListener changeListener;
 
-    public ExecutorCND(String name, Host host) {
+    public ExecutorCND(String name, Host host, ChangeListener changeListener) {
 	super(name, host);
         exEnv = host.executionEnvironment();
+        this.changeListener = changeListener;
     }
 
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -94,6 +97,11 @@ import org.openide.util.Utilities;
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public int getExitValue() {
+        return engineProc.exitValue();
     }
 
     public void terminate() throws IOException {
@@ -177,6 +185,8 @@ import org.openide.util.Utilities;
         startError = null;
         
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(exEnv);
+        if (changeListener != null)
+            npb.addNativeProcessListener(changeListener);
 
 	String argv[] = new String[engine_argv.length-1];
 	//argv[0] = enginePath;

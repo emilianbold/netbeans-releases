@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--       
-*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Copyright © 1997, 2011, 2012, Oracle and/or its affiliates. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Selecting a Profiling Task</title>
-        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
         
@@ -43,12 +43,14 @@
         
         <h3>Selecting a Profiling Task</h3>
         <p>Each time you start or modify a profiling session, you first select a profiling task in the Select Profiling Task dialog box. 
-        You cannot run more than one profiling session at one time.</p>
+        You cannot run more than one profiling session at one time.
+        You can profile a project or an individual file if the file has a runnable method.
+        You can also profile test classes.</p>
         
         <ol>
-            <li>Choose Profile &gt; Profile Main Project from the main menu.
+            <li>Select a project or file in the Projects window and choose Profile &gt; Profile Project from the main menu.
                 <p>Alternatively, you can right-click a project node in the Projects window and choose Profile, or 
-                    choose Profile &gt; Attach Profiler or Profile &gt; Profile Other &gt; Profile Project "<i>projectname</i>" from the main menu.</p>
+                right-click a file and choose Profile File or Profile Test File.</p>
             </li>
             <li>Select a profiling task by clicking one of the tasks in the left pane of the Select Profiling Task dialog box.</li>
             <li>Specify the options for the task in the right pane of the dialog box.</li>

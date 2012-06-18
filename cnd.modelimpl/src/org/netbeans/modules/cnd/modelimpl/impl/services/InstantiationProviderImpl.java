@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -88,6 +90,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariadicSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
@@ -100,8 +103,10 @@ import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.VariadicSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -132,12 +137,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
             int i = 0;
             for (CsmTemplateParameter templateParam : templateParams) {
-                if (paramsIter.hasNext()) {
+                if(templateParam.isVarArgs() && i == templateParams.size() - 1 && paramsIter.hasNext()) {
+                    List<CsmSpecializationParameter> args = new ArrayList<CsmSpecializationParameter>();
+                    while(paramsIter.hasNext()) {
+                        args.add(paramsIter.next());
+                    }    
+                    mapping.put(templateParam, new VariadicSpecializationParameterImpl(args, ((CsmOffsetableDeclaration)template).getContainingFile(), 0, 0));                    
+                } else if (paramsIter.hasNext()) {
                     mapping.put(templateParam, paramsIter.next());
                 } else {
-                    CsmObject defaultValue = getTemplateParameterDefultValue(template, templateParam, i);
-                    if (CsmKindUtilities.isType(defaultValue)) {
-                        CsmType defaultType = (CsmType) defaultValue;
+                    CsmSpecializationParameter defaultValue = getTemplateParameterDefultValue(template, templateParam, i);
+                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(defaultValue)) {
+                        CsmType defaultType = ((CsmTypeBasedSpecializationParameter)defaultValue).getType();
                         defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) template));
                         if (defaultType != null) {
                             mapping.put(templateParam, new TypeBasedSpecializationParameterImpl(defaultType));
@@ -470,9 +481,29 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
         CsmClassifier bestSpecialization = null;
 
+        boolean variadic = false;
+        
+        List<CsmSpecializationParameter> params2 = new ArrayList<CsmSpecializationParameter>();
+        for (CsmSpecializationParameter param : params) {
+            if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                params2.addAll(((CsmVariadicSpecializationParameter)param).getArgs());
+                variadic = true;
+            } else {
+                params2.add(param);
+            }
+        }
+        params = params2;
+        
         if (!specializations.isEmpty()) {
             int bestMatch = 0;
-            int paramsSize = params.size();
+            int paramsSize = 0;
+            for (CsmSpecializationParameter param : params) {
+                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                    paramsSize += ((CsmVariadicSpecializationParameter)param).getArgs().size();
+                } else {
+                    paramsSize++;
+                }
+            }
 
             List<CharSequence> paramsText = new ArrayList<CharSequence>();
             List<CsmType> paramsType = new ArrayList<CsmType>();
@@ -494,6 +525,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     ClassImplSpecialization specialization = (ClassImplSpecialization) decl;
                     List<CsmSpecializationParameter> specParams = specialization.getSpecializationParameters();
                     int match = 0;
+                    if (specParams.size() - 1  <= paramsSize) {
+                        if(variadic) {
+                            match += specParams.size();
+                        }
+                    }
                     if (specParams.size() == paramsSize) {
                         for (int i = 0; i < paramsSize - 1; i++) {
                             CsmSpecializationParameter specParam1 = specParams.get(i);
@@ -769,8 +805,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return null;
     }    
     
-    private CsmObject getTemplateParameterDefultValue(CsmTemplate declaration, CsmTemplateParameter param, int index) {
-        CsmObject res = param.getDefaultValue();
+    private CsmSpecializationParameter getTemplateParameterDefultValue(CsmTemplate declaration, CsmTemplateParameter param, int index) {
+        CsmSpecializationParameter res = param.getDefaultValue();
         if (res != null) {
             return res;
         }

@@ -51,6 +51,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -556,20 +558,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                             assert prepareTask != null : "Failed to get prepareTask";
                             prepareTask.waitFinished();
                         } else {
-                            isDocLoadingCanceled = true;
-                            synchronized (this) {
-                                //Wake up AWT thread to cancel initVisual
-                                notifyAll();
-                            }
-                            //Cancel initialization sequence and close editor
-                            isComponentOpened = false;
-                            SwingUtilities.invokeLater(new Runnable () {
-                                public void run () {
-                                    CloneableEditor.this.close();
-                                }
-                            });
+                            cancelLoadingAndCloseEditor();
                             return Integer.MAX_VALUE;
                         }
+                    } else {
+                        Exceptions.printStackTrace(ex.getCause());
+                        cancelLoadingAndCloseEditor();
+                        return Integer.MAX_VALUE;
                     }
                 }
             } else {
@@ -583,6 +578,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                         prepareTask = support.prepareDocument();
                         assert prepareTask != null : "Failed to get prepareTask";
                         prepareTask.waitFinished();
+                    } else {
+                        Exceptions.printStackTrace(ex.getCause());
+                        cancelLoadingAndCloseEditor();
+                        return Integer.MAX_VALUE;
                     }
                 }
             }
@@ -650,6 +649,25 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 notifyAll();
             }
             return phase;
+        }
+        
+        private void cancelLoadingAndCloseEditor() {
+            isDocLoadingCanceled = true;
+            synchronized (this) {
+                //Wake up AWT thread to cancel initVisual
+                notifyAll();
+            }
+            //Cancel initialization sequence and close editor
+            isComponentOpened = false;
+            SwingUtilities.invokeLater(new Runnable () {
+                @Override
+                public void run () {
+                    TopComponent toClose = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, CloneableEditor.this );
+                    if( null == toClose )
+                        toClose = CloneableEditor.this;
+                    toClose.close();
+                }
+            });
         }
         
         private void initCustomEditor() {
@@ -733,7 +751,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     }
                 }
             }
-            if (tmp.getDocument() == d) {
+            if (d == null || tmp.getDocument() == d) {
                 return false;
             }
             tmp.setEditorKit(k);

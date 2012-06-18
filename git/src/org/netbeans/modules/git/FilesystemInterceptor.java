@@ -161,7 +161,12 @@ class FilesystemInterceptor extends VCSInterceptor {
             if (GitUtils.getGitFolderForRoot(root).exists()) {
                 git.getClient(root).remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
             } else if (file.exists()) {
-                file.delete();
+                Utils.deleteRecursively(file);
+                if (file.exists()) {
+                    IOException ex = new IOException();
+                    Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_DeleteFailed", new Object[] { file, "" })); //NOI18N
+                    throw ex;
+                }
             }
             if (file.equals(root)) {
                 // the whole repository was deleted -> release references to the repository folder

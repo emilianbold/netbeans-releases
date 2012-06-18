@@ -318,7 +318,9 @@ public abstract class APTWalker {
             APTUtils.LOG.log(Level.SEVERE, "incomplete APT {0}", new Object[] { root });// NOI18N
             do {
                 popState();
-                curAPT = curAPT.getNextSibling();
+                if (curAPT != null) {
+                    curAPT = curAPT.getNextSibling();
+                }
             } while (curAPT == null && !finished());
             
             if (curAPT == null) {

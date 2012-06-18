@@ -47,6 +47,7 @@ import java.net.URI;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 public class LibrariesSupportTest extends NbTestCase {
 
@@ -65,7 +66,7 @@ public class LibrariesSupportTest extends NbTestCase {
     public void testConvertFilePathToURI() throws Exception {
         String path = getWorkDirPath()+"/aa/bb/c c.ext".replace('/', File.separatorChar);
         URI u = LibrariesSupport.convertFilePathToURI(path);
-        assertEquals(FileUtil.normalizeFile(new File(path)).toURI(), u);
+        assertEquals(Utilities.toURI(FileUtil.normalizeFile(new File(path))), u);
         path = "../zz/re l.ext".replace('/', File.separatorChar);
         u = LibrariesSupport.convertFilePathToURI(path);
         assertEquals("../zz/re%20l.ext", u.toString());
@@ -75,7 +76,7 @@ public class LibrariesSupportTest extends NbTestCase {
      * Test of convertURLToFilePath method, of class LibrariesSupport.
      */
     public void testConvertURIToFilePath() throws Exception{
-        URI u = getWorkDir().toURI();
+        URI u = Utilities.toURI(getWorkDir());
         String path = LibrariesSupport.convertURIToFilePath(u);
         assertEquals(getWorkDir().getPath(), path);
         u = new URI(null, null, "../zz/re l.ext", null);
@@ -92,12 +93,12 @@ public class LibrariesSupportTest extends NbTestCase {
         f.createNewFile();
         f2.createNewFile();
         FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(
-                f.toURI().toURL(), 
+                Utilities.toURI(f).toURL(),
                 new URI(null, null, "bertie.jar", null));
         assertEquals(f2.getPath(), FileUtil.toFile(fo).getPath());
         fo = LibrariesSupport.resolveLibraryEntryFileObject(
                 null, 
-                f2.toURI());
+                Utilities.toURI(f2));
         assertEquals(f2.getPath(), FileUtil.toFile(fo).getPath());
     }
 
@@ -107,37 +108,37 @@ public class LibrariesSupportTest extends NbTestCase {
         f.createNewFile();
         f2.createNewFile();
         URI u = LibrariesSupport.resolveLibraryEntryURI(
-                f.toURI().toURL(), 
+                Utilities.toURI(f).toURL(),
                 new URI(null, null, "ber tie.jar", null));
-        assertEquals(new File(f.getParentFile(), f2.getName()).toURI(), u);
+        assertEquals(Utilities.toURI(new File(f.getParentFile(), f2.getName())), u);
         u = LibrariesSupport.resolveLibraryEntryURI(
-                f.toURI().toURL(), 
-                f2.toURI());
-        assertEquals(f2.toURI(), u);
+                Utilities.toURI(f).toURL(),
+                Utilities.toURI(f2));
+        assertEquals(Utilities.toURI(f2), u);
         u = LibrariesSupport.resolveLibraryEntryURI(
-                f.toURI().toURL(), 
+                Utilities.toURI(f).toURL(),
                 new URI(null, null, "ber tie.jar!/main/ja va", null));
-        assertEquals(new URI("jar:"+ (new File(f.getParentFile(), f2.getName()).toURI().toString()) + "!/main/ja%20va"), u);
+        assertEquals(new URI("jar:"+ (Utilities.toURI(new File(f.getParentFile(), f2.getName())).toString()) + "!/main/ja%20va"), u);
         u = LibrariesSupport.resolveLibraryEntryURI(
-                f.toURI().toURL(),
+                Utilities.toURI(f).toURL(),
                 new URI(null, null, "../"+getWorkDir().getName()+"/ber tie.jar!/main/ja va", null));
-        assertEquals(new URI("jar:"+ (new File(f.getParentFile(), f2.getName()).toURI().toString()) + "!/main/ja%20va"), u);
+        assertEquals(new URI("jar:"+ (Utilities.toURI(new File(f.getParentFile(), f2.getName())).toString()) + "!/main/ja%20va"), u);
         u = LibrariesSupport.resolveLibraryEntryURI(
-                f.toURI().toURL(),
+                Utilities.toURI(f).toURL(),
                 new URI(null, null, "../a folder/", null));
-        assertEquals(new URI(new File(getWorkDir().getParentFile(), "a folder").toURI().toString() + "/"), u);
+        assertEquals(new URI(Utilities.toURI(new File(getWorkDir().getParentFile(), "a folder")).toString() + "/"), u);
         // UNC paths
-        URI uncBaseURI = URI.create("file:////computerName/sharedFolder/a/b/c/d.properties");
+        URI uncBaseURI = URI.create("file://computerName/sharedFolder/a/b/c/d.properties");
         URI uncEntryURI = URI.create("e/e.jar");
-        URI expectedURI = new File(new File(uncBaseURI).getParent(), uncEntryURI.getPath()).toURI();
+        URI expectedURI = URI.create("file://computerName/sharedFolder/a/b/c/e/e.jar");
         URI resolvedURI = LibrariesSupport.resolveLibraryEntryURI(uncBaseURI.toURL(), uncEntryURI);
         assertEquals("UNC entry wrongly resolved.", expectedURI, resolvedURI);
         uncEntryURI = new URI(null, null, "e/e.jar!/f f/f", null);
-        expectedURI = URI.create("jar:"+new File(new File(uncBaseURI).getParent(), uncEntryURI.getPath()).toURI().toString());
+        expectedURI = URI.create("jar:file://computerName/sharedFolder/a/b/c/e/e.jar!/f%20f/f");
         resolvedURI = LibrariesSupport.resolveLibraryEntryURI(uncBaseURI.toURL(), uncEntryURI);
         assertEquals("UNC jar entry wrongly resolved.", expectedURI, resolvedURI);
         uncEntryURI = new URI(null, null, "e/e.jar!/", null);
-        expectedURI = URI.create("jar:"+new File(new File(uncBaseURI).getParent()).toURI().toString()+"/e/e.jar!/");
+        expectedURI = URI.create("jar:file://computerName/sharedFolder/a/b/c/e/e.jar!/");
         resolvedURI = LibrariesSupport.resolveLibraryEntryURI(uncBaseURI.toURL(), uncEntryURI);
         assertEquals("UNC jar entry wrongly resolved.", expectedURI, resolvedURI);   
     }

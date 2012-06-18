@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Utilities;
 
 public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
 
@@ -73,7 +74,7 @@ public class MavenAnnotationProcessingQueryImplTest extends NbTestCase {
         assertEquals(expected,
                 "enabled=" + r.annotationProcessingEnabled() +
                 " run=" + r.annotationProcessorsToRun() +
-                " s=" + (sOD != null ? sOD.toString().replace(getWorkDir().toURI().toString(), ".../") : "-") +
+                " s=" + (sOD != null ? sOD.toString().replace(Utilities.toURI(getWorkDir()).toString(), ".../") : "-") +
                 " opts=" + opts);
     }
 

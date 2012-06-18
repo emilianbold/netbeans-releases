@@ -1408,6 +1408,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                     false);//@SuppressWarning is not application to package-info.
     }
 
+    public void testAddAnnotationToInterface213360() throws Exception {
+        performTest("package test;\npublic interface Test { }\n",
+                    new AddAnnotationAttributeValue("java.lang.SuppressWarnings", "value", "\"foo\"", "\"bar\""),
+                    new ContentValidator("package test;\n@SuppressWarnings({\"foo\", \"bar\"})\npublic interface Test { }\n"));
+    }
+    
     private static final class AddAnnotationAttributeValue implements Task<WorkingCopy> {
 
         private final String annotationType;

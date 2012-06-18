@@ -77,6 +77,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -372,7 +373,7 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
                 if (!f.exists()) {
                     continue;
                 }
-                URL url = f.toURI().toURL();
+                URL url = Utilities.toURI(f).toURL();
                 if (FileUtil.isArchiveFile(url)) {
                     url = FileUtil.getArchiveRoot(url);
                 }

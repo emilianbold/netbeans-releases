@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.*;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
@@ -220,7 +221,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
         final ChangeParamsTransformer changeParamsTransformer = new ChangeParamsTransformer(paramTable, null, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         final ChangeParamsJavaDocTransformer changeParamsJavaDocTransformer = new ChangeParamsJavaDocTransformer(paramTable, null, refactoring.isOverloadMethod(), javadoc == null? Javadoc.NONE : javadoc, allMethods, methodHandle);
         
-        fireProgressListenerStart(ProgressEvent.START, a.size() * 2);
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size() * 2);
         Problem p = null;
         if (!a.isEmpty()) {
         

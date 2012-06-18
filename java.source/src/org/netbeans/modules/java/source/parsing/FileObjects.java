@@ -703,7 +703,7 @@ public class FileObjects {
      * @return the relative path
      */
     public static @NonNull String getRelativePath (@NonNull final URL root, @NonNull final URL fo) throws URISyntaxException {
-        final String path = getRelativePath(new File(root.toURI()), new File(fo.toURI()));
+        final String path = getRelativePath(Utilities.toFile(root.toURI()), Utilities.toFile(fo.toURI()));
         return path.replace(File.separatorChar, '/');   //NOI18N
     }
     
@@ -953,7 +953,7 @@ public class FileObjects {
         @Override
         public URI toUri () {
             if (this.uriCache == null) {
-                this.uriCache = f.toURI();
+                this.uriCache = Utilities.toURI(f);
             }
             return this.uriCache;
         }
@@ -1283,7 +1283,7 @@ public class FileObjects {
         
         @Override
         public URI getArchiveURI () {
-            return this.archiveFile.toURI();
+            return Utilities.toURI(this.archiveFile);
         }
         
         @Override
@@ -1361,7 +1361,7 @@ public class FileObjects {
         
         @Override
         public URI getArchiveURI () {
-            return new File (this.zipFile.getName()).toURI();
+            return Utilities.toURI(new File (this.zipFile.getName()));
         }
         
         @Override

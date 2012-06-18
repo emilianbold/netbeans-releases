@@ -100,7 +100,7 @@ public class DefaultTestCase extends NbTestCase {
         if (!catalogFile.exists()) {
             catalogFile.createNewFile();
         }
-        catalogURL = catalogFile.toURI().toURL();        
+        catalogURL = org.openide.util.Utilities.toURI(catalogFile).toURL();
         populateCatalog(TestUtils.class.getResourceAsStream("data/updates.xml"));
         
         TestUtils.setUserDir (getWorkDirPath ());

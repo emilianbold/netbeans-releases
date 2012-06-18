@@ -863,7 +863,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             };
             nd.setName("Empty"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(QueryPanel.class, "LBL_Node_Empty")); //NOI18N
+            nd.setDisplayName(NbBundle.getMessage(AddDependencyPanel.class, "LBL_Node_Empty")); //NOI18N
 
             noResultsNode = nd;
         }
@@ -887,7 +887,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             };
             nd.setName("Searching"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(QueryPanel.class, "LBL_Node_Searching")); //NOI18N
+            nd.setDisplayName(NbBundle.getMessage(AddDependencyPanel.class, "LBL_Node_Searching")); //NOI18N
 
             searchingNode = nd;
         }
@@ -911,7 +911,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             };
             nd.setName("Too General"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(QueryPanel.class, "LBL_Node_TooGeneral")); //NOI18N
+            nd.setDisplayName(NbBundle.getMessage(AddDependencyPanel.class, "LBL_Node_TooGeneral")); //NOI18N
 
             tooGeneralNode = nd;
         }
@@ -1034,6 +1034,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
         
 
+        @Messages("MSG_ClassesExcluded=Too general query. Class names excluded from the search.")
         void find(String queryText) {
             synchronized (LOCK) {
                 if (inProgressText != null) {
@@ -1107,7 +1108,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    AddDependencyPanel.this.nls.setInformationMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_ClassesExcluded")); //NOI18N
+                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_ClassesExcluded()); //NOI18N
                                 }
                             });
                             Result<NBVersionInfo> result = RepositoryQueries.findResult(fieldsNonClasses, RepositoryPreferences.getInstance().getRepositoryInfos());
@@ -1358,7 +1359,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         }
                     };
                     nd.setName("Empty"); //NOI18N
-                    nd.setDisplayName(NbBundle.getMessage(DMListPanel.class, "LBL_DM_Empty"));
+                    nd.setDisplayName(NbBundle.getMessage(AddDependencyPanel.class, "LBL_DM_Empty"));
                     Children.Array array = new Children.Array();
                     array.add(new Node[]{nd});
                     noDMRoot = new AbstractNode(array);

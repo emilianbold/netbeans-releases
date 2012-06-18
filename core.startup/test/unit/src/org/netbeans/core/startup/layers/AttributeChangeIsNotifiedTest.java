@@ -57,6 +57,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -100,8 +101,8 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
 
         {
             List<URL> list = new ArrayList<URL>();
-            list.add(f1.toURI().toURL());
-            list.add(f3.toURI().toURL());
+            list.add(Utilities.toURI(f1).toURL());
+            list.add(Utilities.toURI(f3).toURL());
             fs.setURLs (list);
         }
         
@@ -121,8 +122,8 @@ public class AttributeChangeIsNotifiedTest extends NbTestCase {
         
         {
             List<URL> list = new ArrayList<URL>();
-            list.add(f2.toURI().toURL());
-            list.add(f3.toURI().toURL());
+            list.add(Utilities.toURI(f2).toURL());
+            list.add(Utilities.toURI(f3).toURL());
             fs.setURLs (list);
         }
         String v2 = (String) file.getAttribute("value");

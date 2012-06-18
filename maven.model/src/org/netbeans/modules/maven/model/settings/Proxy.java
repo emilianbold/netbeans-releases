@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.maven.model.settings;
 
-import java.util.*;
-
 /**
  *
  * @author mkleint

@@ -51,6 +51,7 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.jvm.Pool;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -117,6 +118,14 @@ public class PostFlowAnalysis extends TreeScanner {
             if (env != null)
                 this.scan(env.toplevel);
         }
+    }
+
+    @Override
+    public void scan(JCTree tree) {
+        if (tree != null && tree.type != null && tree.type.constValue() != null) {
+            checkStringConstant(tree.pos(), tree.type.constValue());
+        }
+        super.scan(tree);
     }
 
     @Override
@@ -236,5 +245,10 @@ public class PostFlowAnalysis extends TreeScanner {
         Type target = types.erasure(owner.enclClass().type.getEnclosingType());
         Pair<TypeSymbol, Symbol> outerThis = Pair.of(target.tsym, owner);
         outerThisStack = outerThisStack.prepend(outerThis);
+    }
+    
+    private void checkStringConstant(DiagnosticPosition pos, Object constValue) {
+        if (constValue instanceof String && ((String)constValue).length() >= Pool.MAX_STRING_LENGTH)
+            log.error(pos, "limit.string"); //NOI18N
     }
 }

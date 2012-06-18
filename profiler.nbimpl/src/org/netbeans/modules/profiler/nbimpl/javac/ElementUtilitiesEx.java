@@ -126,7 +126,7 @@ public class ElementUtilitiesEx {
         
         final ElementHandle<TypeElement>[] rslt = new ElementHandle[1];
         
-        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>() {
 
             @Override
             public void run(CompilationController cc) throws Exception {
@@ -134,6 +134,11 @@ public class ElementUtilitiesEx {
                 if (te != null) {
                     rslt[0] = ElementHandle.create(te);
                 }
+            }
+
+            @Override
+            public boolean shouldRetry() {
+                return rslt[0] == null;
             }
         });
         
@@ -169,7 +174,7 @@ public class ElementUtilitiesEx {
                     if (mainClass != null) {
                         fo = SourceUtils.getFile(ElementHandle.create(mainClass), controller.getClasspathInfo());
                     }
-                    TypeElement anon = null;
+                    TypeElement anon;
                     if (fo != null) {
                         anon = getAnonymousFromSource(fo, className);
                         
@@ -201,27 +206,29 @@ public class ElementUtilitiesEx {
     private static TypeElement getAnonymousFromSource(FileObject fo, final String className) throws IllegalArgumentException, IOException {
         final TypeElement[] resolvedClassElement = new TypeElement[1];
         JavaSource js = JavaSource.forFileObject(fo);
-        ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
+        if (js != null) {
+            js.runUserActionTask(new Task<CompilationController>() {
 
-            @Override
-            public void run(final CompilationController cc) throws Exception {
-                cc.toPhase(Phase.RESOLVED);
-                new TreePathScanner<Void, Void>() {
+                @Override
+                public void run(final CompilationController cc) throws Exception {
+                    cc.toPhase(Phase.RESOLVED);
+                    new TreePathScanner<Void, Void>() {
 
-                    @Override
-                    public Void visitClass(ClassTree node, Void p) {
-                        TypeElement te = (TypeElement)cc.getTrees().getElement(getCurrentPath());
-                        if (te != null) {
-                            if (className.equals(ElementUtilities.getBinaryName(te))) {
-                                resolvedClassElement[0] = te;
+                        @Override
+                        public Void visitClass(ClassTree node, Void p) {
+                            TypeElement te = (TypeElement)cc.getTrees().getElement(getCurrentPath());
+                            if (te != null) {
+                                if (className.equals(ElementUtilities.getBinaryName(te))) {
+                                    resolvedClassElement[0] = te;
+                                }
                             }
+                            return super.visitClass(node, p);
                         }
-                        return super.visitClass(node, p);
-                    }
 
-                }.scan(cc.getCompilationUnit(), null);
-            }
-        });
+                    }.scan(cc.getCompilationUnit(), null);
+                }
+            }, true);
+        }
         return resolvedClassElement[0];
     }
 
@@ -237,20 +244,21 @@ public class ElementUtilitiesEx {
         if (fo != null) {
             final TypeElement[] resolvedClassElement = new TypeElement[1];
             JavaSource js = JavaSource.forFileObject(fo);
+            if (js != null) {
+                js.runUserActionTask(new Task<CompilationController>(){
 
-            ParsingUtils.invokeScanSensitiveTask(js.getClasspathInfo(), new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController cc) throws Exception {
-                    for(TypeElement te : cc.getTopLevelElements()) {
-                        if (ElementUtilities.getBinaryName(te).equals(className)) {
-                            resolvedClassElement[0] = te;
-                            break;
+                    @Override
+                    public void run(CompilationController cc) throws Exception {
+                        for(TypeElement te : cc.getTopLevelElements()) {
+                            if (ElementUtilities.getBinaryName(te).equals(className)) {
+                                resolvedClassElement[0] = te;
+                                break;
+                            }
                         }
                     }
-                }
-            });
-            return resolvedClassElement[0];
+                }, true);
+                return resolvedClassElement[0];
+            }
         }
         return null;
     }
@@ -261,7 +269,7 @@ public class ElementUtilitiesEx {
         
         final Set<ElementHandle<TypeElement>> allImplementors = new HashSet<ElementHandle<TypeElement>>();
 
-        ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+        ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>(true) {
             @Override
             public void run(CompilationController cc) {
                 Set<ElementHandle<TypeElement>> implementors = cpInfo.getClassIndex().getElements(baseType, kind, scope);
@@ -286,7 +294,7 @@ public class ElementUtilitiesEx {
         final Set<ElementHandle<TypeElement>> implHandles = findImplementors(cpInfo, baseType);
         
         if (!implHandles.isEmpty()) {
-            ParsingUtils.invokeScanSensitiveTask(cpInfo, new Task<CompilationController>() {
+            ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>(true) {
                 public void run(CompilationController controller)
                         throws Exception {
                     if (controller.toPhase(Phase.ELEMENTS_RESOLVED).compareTo(Phase.ELEMENTS_RESOLVED) < 0) {
@@ -321,7 +329,7 @@ public class ElementUtilitiesEx {
         ExecutableElement foundMethod = null;
         boolean found = false;
 
-        List<ExecutableElement> methods = null;
+        List<ExecutableElement> methods;
 
         if (methodName.equals(VM_CONSTRUCTUR_SIG)) {
             methods = ElementFilter.constructorsIn(ci.getElements().getAllMembers(parentClass));
@@ -392,12 +400,14 @@ public class ElementUtilitiesEx {
 
         ClassPath compilePath;
 
+        final ClassPath cpEmpty = ClassPathSupport.createClassPath(new FileObject[0]);
+        
         if (roots == null || roots.length == 0) {
-            srcPath = ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).toArray(new ClassPath[0]));
-            bootPath =
-                    JavaPlatform.getDefault().getBootstrapLibraries();
-            compilePath =
-                    ClassPathSupport.createProxyClassPath(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE).toArray(new ClassPath[0]));
+            Set<ClassPath> paths = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+            srcPath = ClassPathSupport.createProxyClassPath(paths.toArray(new ClassPath[paths.size()]));
+            bootPath = JavaPlatform.getDefault().getBootstrapLibraries();
+            paths = GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE);
+            compilePath = ClassPathSupport.createProxyClassPath(paths.toArray(new ClassPath[paths.size()]));
         } else {
             srcPath = ClassPathSupport.createClassPath(roots);
             bootPath =
@@ -406,7 +416,7 @@ public class ElementUtilitiesEx {
                     ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
         }
         
-        return ClasspathInfo.create(bootPath, compilePath, srcPath);
+        return ClasspathInfo.create(bootPath != null ? bootPath : cpEmpty, compilePath != null ? compilePath : cpEmpty, srcPath);
     }
     
     /**

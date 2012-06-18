@@ -1014,6 +1014,7 @@ class LayoutOperations implements LayoutConstants {
         }
 
         layoutModel.removeInterval(interval);
+        // TODO compensate possible group shrinking when removing the biggest interval
         if (interval.getAlignment() == DEFAULT) {
             layoutModel.setIntervalAlignment(interval, parent.getGroupAlignment());
         }
@@ -1301,6 +1302,8 @@ class LayoutOperations implements LayoutConstants {
                     contentResizing = true;
                 }
             }
+        } else {
+            contentResizing = LayoutInterval.wantResize(group);
         }
         }
 
@@ -1309,8 +1312,8 @@ class LayoutOperations implements LayoutConstants {
         boolean defaultTrailingPadding = false;
         PaddingType leadingPadding = null;
         PaddingType trailingPadding = null;
-        boolean effectiveExplicitGapLeading = false; // in case effectiveLeadingPadding is null
-        boolean effectiveExplicitGapTrailing = false; // in case effectiveTrailingPadding is null
+        boolean effectiveExplicitGapLeading = false;
+        boolean effectiveExplicitGapTrailing = false;
         boolean resizingGapLeading = false;
         boolean resizingGapTrailing = false;
         LayoutInterval zeroGapLeading = null;
@@ -1331,7 +1334,7 @@ class LayoutOperations implements LayoutConstants {
             LayoutInterval gap = li.getSubInterval(0);
             if (gap.isEmptySpace()) {
                 boolean process = processLeading.contains(li);
-                if (!isEndingGapUsable(li, dimension, LEADING, process)) {
+                if (!isEndingGapUsable(li, dimension, LEADING, process, contentResizing)) {
                     // default gap that would not work
                     layoutModel.removeInterval(gap);
                     gap = null;
@@ -1374,7 +1377,7 @@ class LayoutOperations implements LayoutConstants {
             gap = li.getSubInterval(li.getSubIntervalCount() - 1);
             if (gap.isEmptySpace()) {
                 boolean process = processTrailing.contains(li);
-                if (!isEndingGapUsable(li, dimension, TRAILING, process)) {
+                if (!isEndingGapUsable(li, dimension, TRAILING, process, contentResizing)) {
                     // default gap that would not work
                     layoutModel.removeInterval(gap);
                     gap = null;
@@ -1445,6 +1448,9 @@ class LayoutOperations implements LayoutConstants {
             }
             if (!subGroupTrailing) {
                 resizingGapTrailing = false;
+            }
+            if (!contentResizing) { // after removing resizing gaps the group with suppressed resizing has only fixed content
+                enableGroupResizing(group);
             }
         }
 
@@ -1812,6 +1818,11 @@ class LayoutOperations implements LayoutConstants {
         int idx = alignment == LEADING ? 0 : seq.getSubIntervalCount() - 1;
         LayoutInterval gap = seq.getSubInterval(idx);
         assert gap.isEmptySpace();
+        int prefDistance = gap.getPreferredSize();
+        if (LayoutInterval.canResize(gap) && prefDistance == NOT_EXPLICITLY_DEFINED
+                && gap.hasAttribute(LayoutInterval.ATTR_SIZE_DIFF)) {
+            return false;
+        }
         if (LayoutInterval.isAlignedAtBorder(seq, alignment)) {
             return true;
         }
@@ -1819,7 +1830,6 @@ class LayoutOperations implements LayoutConstants {
         int d = alignment == LEADING ? 1 : -1;
         LayoutInterval neighbor = seq.getSubInterval(idx+d);
 
-        int prefDistance = gap.getPreferredSize();
         if (prefDistance == NOT_EXPLICITLY_DEFINED) {
             prefDistance = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
         }
@@ -1842,7 +1852,8 @@ class LayoutOperations implements LayoutConstants {
         return currentDistance <= prefDistance;
     }
 
-    private static boolean isEndingGapUsable(LayoutInterval seq, int dimension, int alignment, boolean toBeProcessed) {
+    private boolean isEndingGapUsable(LayoutInterval seq, int dimension, int alignment,
+                                      boolean toBeProcessed, boolean groupResizing) {
         assert seq.isSequential() && (alignment == LEADING || alignment == TRAILING);
         int idx = alignment == LEADING ? 0 : seq.getSubIntervalCount() - 1;
         LayoutInterval gap = seq.getSubInterval(idx);
@@ -1852,16 +1863,20 @@ class LayoutOperations implements LayoutConstants {
                 if (!LayoutUtils.isDefaultGapValidForNeighbor(neighbor, alignment^1)) {
                     return false;
                 }
-                if (!toBeProcessed && LayoutInterval.isAlignedAtBorder(seq, alignment)) {
-                    LayoutInterval par = seq.getParent();
-                    while (par.getParent() != null && par.getParent().isParallel()) {
-                        par = par.getParent();
-                    }
-                    if (par != seq.getParent()
-                            && !LayoutInterval.isAlignedAtBorder(seq, par, alignment)
-                            && !LayoutInterval.isPlacedAtBorder(seq, par, dimension, alignment)) {
-                        // aligned default gap that is not touching its neighbor is suspicious
-                        return false;
+                if (!toBeProcessed) {
+                    if (LayoutInterval.isAlignedAtBorder(seq, alignment)) {
+                        LayoutInterval par = seq.getParent();
+                        while (par.getParent() != null && par.getParent().isParallel()) {
+                            par = par.getParent();
+                        }
+                        if (par != seq.getParent()
+                                && !LayoutInterval.isAlignedAtBorder(seq, par, alignment)
+                                && !LayoutInterval.isPlacedAtBorder(seq, par, dimension, alignment)) {
+                            // aligned default gap that is not touching its neighbor is suspicious
+                            return false;
+                        }
+                    } else if (!LayoutInterval.canResize(gap) && groupResizing) { // unaligned default gap at group edge can be problematic
+                        setIntervalResizing(gap, true); // in resizing group it can also be resizing
                     }
                 }
             }
@@ -1952,18 +1967,22 @@ class LayoutOperations implements LayoutConstants {
         // Determine which sides of the group deserves changes of the ending gaps.
         boolean independentEdges = unalignedGap[LEADING].count() > 0 && unalignedGap[TRAILING].count() > 0
                 && unalignedGap[LEADING].count() + unalignedGap[TRAILING].count() == group.getSubIntervalCount();
-        boolean edgeNotDefined[] = new boolean[2];
-        boolean allGaps[] = new boolean[2];
+        boolean[] edgeNotDefined = new boolean[2];
+        boolean[] allGaps = new boolean[2];
+        boolean[] allGapsToReduce = new boolean[2];
         for (int e = LEADING; e <= TRAILING; e++) {
             if (outGaps[e] != null) {
                 edgeNotDefined[e] = (alignedNoGap[e].count() == 0);
                 allGaps[e] = (alignedGap[e].count() + unalignedGap[e].count() == group.getSubIntervalCount());
+                allGapsToReduce[e] = (unalignedGap[e].count() == group.getSubIntervalCount())
+                        || (allGaps[e] && !LayoutInterval.canResize(group));
             }
         }
         boolean processEdge[] = new boolean[2];
         for (int e = LEADING; e <= TRAILING; e++) {
             if (outGaps[e] != null) {
-                if (LayoutInterval.wantResize(outGaps[e]) && !LayoutInterval.canResize(group)) {
+                if (LayoutInterval.wantResize(outGaps[e]) && !LayoutInterval.canResize(group)
+                        && (!edgeNotDefined[e] || !allGaps[e])) {
                     processEdge[e] = false;
                 } else if (edgeNotDefined[e]) {
                     processEdge[e] = alignedGap[e].count() > 0 || unalignedGap[e].count() > 0;
@@ -2097,6 +2116,9 @@ class LayoutOperations implements LayoutConstants {
                         if (e == TRAILING) {
                             layoutModel.addInterval(outGap, subSeq, -1);
                         }
+                    } else if (allGapsToReduce[e]) {
+                        group.getCurrentSpace().positions[dimension][e] = 
+                            LayoutUtils.getOutermostComponent(group, dimension, e).getCurrentSpace().positions[dimension][e];
                     } else {
                         layoutModel.removeInterval(outGap);
                         group.getCurrentSpace().positions[dimension][e] = outPos[e];
@@ -2119,11 +2141,45 @@ class LayoutOperations implements LayoutConstants {
         // Adjust ending gaps, now in parallel with the outer gaps
         for (int e = LEADING; e <= TRAILING; e++) {
             if (newGroups[e] != null) {
-                LayoutInterval gapCopy = LayoutInterval.cloneInterval(outGaps[e], null);
-                for (Iterator<LayoutInterval> it=newGroups[e].getSubIntervals(); it.hasNext(); ) {
-                    LayoutInterval li = it.next();
-                    if (independentEdges || alignedGap[e].contains(li) || unalignedGap[e].contains(li)) {
-                        extendWithGap(li, gapCopy, dimension, e);
+                if (newGroups[e] != group || !allGapsToReduce[e]) {
+                    LayoutInterval gapCopy = LayoutInterval.cloneInterval(outGaps[e], null);
+                    for (Iterator<LayoutInterval> it=newGroups[e].getSubIntervals(); it.hasNext(); ) {
+                        LayoutInterval li = it.next();
+                        if (independentEdges || alignedGap[e].contains(li) || unalignedGap[e].contains(li)) {
+                            extendWithGap(li, gapCopy, dimension, e);
+                        }
+                    }
+                } else { // just reducing all side gaps in a group with suppressed resizing
+                    int reduceSize = (inPos[e] - group.getCurrentSpace().positions[dimension][e]) * (e==LEADING ? -1:1);
+                    if (reduceSize >= 0) {
+                        boolean gapsResizing = false;
+                        for (LayoutInterval gap : LayoutUtils.getSideSubIntervals(group, e, false, true, true, false)) {
+                            boolean resizing = LayoutInterval.canResize(gap) && LayoutInterval.canResize(group);
+                            if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED || resizing
+                                    || !LayoutInterval.isAlignedAtBorder(gap, LayoutInterval.getFirstParent(gap, PARALLEL), e)) {
+                                layoutModel.removeInterval(gap);
+                            } else {
+                                LayoutInterval neighbor = LayoutInterval.getNeighbor(gap, e^1, true, false, true);
+                                if (neighbor != null) {
+                                    int currentGapSize = (inPos[e] - neighbor.getCurrentSpace().positions[dimension][e]) * (e==LEADING ? -1:1);
+                                    if (currentGapSize > 0) {
+                                        if (currentGapSize > reduceSize) {
+                                            resizeInterval(gap, currentGapSize - reduceSize);
+                                        } else {
+                                            layoutModel.removeInterval(gap);
+                                        }
+                                    }
+                                }
+                            }
+                            if (resizing) {
+                                gapsResizing = true;
+                            }
+                        }
+                        if (gapsResizing && !LayoutInterval.canResize(outGaps[e])) {
+                            setIntervalResizing(outGaps[e], true);
+                        }
+                        int adjustedOutGapSize = ((outPos[e] - inPos[e]) * (e==LEADING ? -1:1)) + reduceSize;
+                        resizeInterval(outGaps[e], adjustedOutGapSize);
                     }
                 }
             }
@@ -2270,10 +2326,12 @@ class LayoutOperations implements LayoutConstants {
         assert alignment == LEADING || alignment == TRAILING;
         assert gap.isEmptySpace();
 
+        boolean parentPos = false;
         if (interval.isSequential()) {
             interval = interval.getSubInterval(alignment == LEADING ? 0 : interval.getSubIntervalCount()-1);
             if (interval.isEmptySpace()) {
                 interval = LayoutInterval.getDirectNeighbor(interval, alignment^1, true);
+                parentPos = true;
             }
         }
 
@@ -2330,9 +2388,17 @@ class LayoutOperations implements LayoutConstants {
             LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
             if (neighbor != null && neighbor.isEmptySpace()) {
                 LayoutInterval next = LayoutInterval.getDirectNeighbor(neighbor, alignment, false);
-                int otherPos = next != null ? next.getCurrentSpace().positions[dimension][alignment^1] :
-                                              parent.getCurrentSpace().positions[dimension][alignment];
-                int mergedSize = (pos - otherPos) * (alignment == LEADING ? 1 : -1);
+                int mergedSize;
+                if (next != null) {
+                    mergedSize = pos - next.getCurrentSpace().positions[dimension][alignment^1];
+                } else if (!parentPos) {
+                    mergedSize = pos - parent.getCurrentSpace().positions[dimension][alignment];
+                } else {
+                    mergedSize = interval.getCurrentSpace().positions[dimension][alignment] - pos;
+                }
+                if (alignment == TRAILING) {
+                    mergedSize = -mergedSize;
+                }
                 eatGap(neighbor, gap, mergedSize);
             }
             else {
@@ -2484,9 +2550,10 @@ class LayoutOperations implements LayoutConstants {
     }
 
     /**
-     * Fixes invalid configurations of gaps: two (or more) adjacent gaps, or
-     * adjacent components with no gap. Assumed to be used as a filter for
-     * loaded (old) forms or converted layouts that could potentially be buggy.
+     * Fixes invalid configurations of gaps, e.g. two (or more) adjacent gaps,
+     * adjacent components with no gap, invalid default gaps, etc. To be used as
+     * a filter for loaded (old) forms or converted layouts that could
+     * potentially be buggy.
      * @return true if any change was made
      */
     boolean fixSurplusOrMissingGaps(LayoutInterval group, int dimension) {
@@ -2520,6 +2587,11 @@ class LayoutOperations implements LayoutConstants {
                             interval = group.getSubInterval(i);
                             updated = true;
                         }
+                    }
+                    if (interval.getPreferredSize() == 0 && interval.getMinimumSize() == NOT_EXPLICITLY_DEFINED) {
+                        // gaps with 0 pref size and default min size render as default,
+                        // but presented to the user as 0 size; this is wrong configuration
+                        layoutModel.setIntervalSize(interval, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, interval.getMaximumSize());
                     }
                 } else if (prev != null && prev.isComponent() && interval.isComponent()) {
                     // no gap between two components

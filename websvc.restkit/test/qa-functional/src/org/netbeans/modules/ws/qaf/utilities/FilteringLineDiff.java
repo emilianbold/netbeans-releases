@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.ws.qaf.utilities;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.diff.LineDiff;
 
@@ -100,17 +101,22 @@ public class FilteringLineDiff extends LineDiff {
         //"randomly" chosen types are used with FQN
         String pkg = "o.n.m.ws.qaf.rest.crud.service.";//NOI18N
         if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
-            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
             return true;
         }
         pkg = "o.n.m.ws.qaf.rest.crud.converter.";//NOI18N
         if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, ""))) {
-            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
+            return true;
+        }
+        pkg = "org.codehaus.jettison.json.";//NOI18N
+        if (l1.replaceAll(pkg, "").equals(l2.replaceAll(pkg, "")) || l1.startsWith("import " + pkg) || l2.startsWith("import " + pkg)) {
+            LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
             return true;
         }
         //to avoid having two sets of golden files (for ant/maven based projects)
         if (l1.contains("private static String DEFAULT_PU = ")) { //NOI18N
-            LOGGER.warning("skiping \"" + l1 + "\" and \"" + l2 + "\""); //NOI18N
+            LOGGER.log(Level.WARNING, "skiping \"{0}\" and \"{1}\"", new Object[]{l1, l2}); //NOI18N
             return l2.trim().startsWith("private static String DEFAULT_PU = "); //NOI18N
         }
         return false;

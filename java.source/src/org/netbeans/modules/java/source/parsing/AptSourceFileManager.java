@@ -49,7 +49,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -87,6 +89,11 @@ public class AptSourceFileManager extends SourceFileManager {
         this.userRoots = userRoots;
         this.siblings = siblings;
         this.fileTx = fileTx;
+    }
+
+    @Override
+    public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
+        return fileTx.filter(packageName, super.list(l, packageName, kinds, recursive));
     }
 
     @Override

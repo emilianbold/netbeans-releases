@@ -92,6 +92,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -238,7 +239,7 @@ public class ResourceBundleBrandingPanel extends AbstractBrandingPanel
         
         for (File file : jars) {
             try {
-                URI juri = file.toURI();
+                URI juri = Utilities.toURI(file);
                 JarFile jf = new JarFile(file);
                 String codeNameBase = ManifestManager.getInstance(jf.getManifest(), false).getCodeNameBase();
                 Enumeration<JarEntry> entries = jf.entries();

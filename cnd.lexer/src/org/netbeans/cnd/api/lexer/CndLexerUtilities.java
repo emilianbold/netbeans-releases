@@ -216,10 +216,14 @@ public final class CndLexerUtilities {
         } catch (BadLocationException ex) {
             return FortranFormat.FIXED;
         }
+        return detectFortranFormat(sequence);
+    }
+
+    public static FortranFormat detectFortranFormat(CharSequence text) {
         int column = 0;
         boolean ignoreRestLine = false;
-        for (int i = 0; i < sequence.length(); i++) {
-            char c = sequence.charAt(i);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
             if (c == '\n') {
                 column = 0;
                 ignoreRestLine = false;
@@ -270,8 +274,8 @@ public final class CndLexerUtilities {
             }
         }
         return FortranFormat.FIXED;
-    }
-
+    }    
+    
     public static boolean isCppIdentifier(CharSequence id) {
         if (id == null) {
             return false;
@@ -529,6 +533,8 @@ public final class CndLexerUtilities {
             addGccOnlyCppOnlyKeywords(FILTER_HEADER);
             // for header add all C keywords as well
             addCOnlyKeywords(FILTER_HEADER);
+            // for header add all C++11 keywords as well
+            addCpp11OnlyKeywords(FILTER_HEADER);
         }
         return FILTER_HEADER;
     }

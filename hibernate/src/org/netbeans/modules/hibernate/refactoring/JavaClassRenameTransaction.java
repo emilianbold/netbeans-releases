@@ -92,7 +92,7 @@ public class JavaClassRenameTransaction extends RenameTransaction {
                     renamer.refactoringImports(hbMapping);
 
                     // Change all the occurrences in <class> elements
-                    renamer.refactoringMyClasses(hbMapping.getMyClass());
+                    renamer.refactoringMyClasses(hbMapping);
 
                     // Change all the occurrences in <subclass> elements
                     renamer.refactoringSubclasses(hbMapping.getSubclass());

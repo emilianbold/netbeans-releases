@@ -65,6 +65,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /** 
@@ -150,7 +151,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
                             //Logging for issue #181155, #186213
                             String foStatus;
                             try {
-                                final FileObject fo = URLMapper.findFileObject(f.toURI().toURL());
+                                final FileObject fo = URLMapper.findFileObject(Utilities.toURI(f).toURL());
                                 foStatus = fo == null ? "not exist" : fo.isValid() ? fo.isFolder() ? "valid folder" : "valid file" : "invalid";   //NOI18N
                             } catch (MalformedURLException ex) {
                                 foStatus = "malformed"; //NOI18N

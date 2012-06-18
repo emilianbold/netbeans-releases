@@ -51,6 +51,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,12 +59,14 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -78,8 +81,9 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     private final boolean writeable;
-    private static final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
+    private final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
             new HashMap<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>>();
+    private ClasspathInfo owner;
     private ClassPath userSources;
     private ClassPath aptSources;
     private File cachedFile;
@@ -104,20 +108,28 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     public void bind(
+         @NonNull final ClasspathInfo  owner,
          @NonNull final ClassPath userSources,
          @NonNull final ClassPath aptSources) {
+        Parameters.notNull("owner", owner);             //NOI18N
         Parameters.notNull("userSources", userSources); //NOI18N
-        if (this.userSources != null) {
-            throw new IllegalStateException();
-        }
-        if (this.aptSources != null) {
-            throw new IllegalStateException();
-        }
         if (!writeable) {
             return;
         }
+        if (this.owner != null) {
+            throw new IllegalStateException(MessageFormat.format(
+                "Previous owner: {0}({1}), New owner: {2}({3})",                //NOI18N
+                this.owner,
+                System.identityHashCode(this.owner),
+                owner,
+                System.identityHashCode(owner)));
+        }
+        assert this.userSources == null;
+        assert this.aptSources == null;
+        
         this.userSources = userSources;
         this.aptSources = aptSources;
+        this.owner = owner;
     }
     
     public void register(
@@ -201,12 +213,12 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 }
                 apt = true;
             }
-            final File sourceRoot = new File (sourceRootURL.toURI());
+            final File sourceRoot = Utilities.toFile(sourceRootURL.toURI());
             final File classCache = apt ?
-                new File (AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
+                Utilities.toFile(AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
                 JavaIndex.getClassFolder(sourceRoot);
             if (!genSources.isEmpty()) {
-                final File sourceFile = new File(forSource.toURI());
+                final File sourceFile = Utilities.toFile(forSource.toURI());
                 final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
                 final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
                 if (!cacheFile.getParentFile().exists()) {
@@ -226,7 +238,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 final StringBuilder sb = readResources(resFile, currentResources);
                 boolean changed = false;
                 for (javax.tools.FileObject file : genResources) {
-                    String resPath = FileObjects.getRelativePath(classCache.toURI().toURL(), file.toUri().toURL());
+                    String resPath = FileObjects.getRelativePath(Utilities.toURI(classCache).toURL(), file.toUri().toURL());
                     if (currentResources.add(resPath)) {
                         sb.append(resPath);
                         sb.append('\n');    //NOI18N

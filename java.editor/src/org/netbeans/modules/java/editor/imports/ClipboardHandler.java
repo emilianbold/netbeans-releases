@@ -296,7 +296,12 @@ public class ClipboardHandler {
         }
 
         if (finished) {
-            t.waitFinished();
+            try {
+                finished = t.waitFinished(1000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+                finished = false;
+            }
         } else {
             cancel.set(true);
         }
@@ -387,7 +392,7 @@ public class ClipboardHandler {
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if (s >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                                    if (s >= start && e >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
                                         simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
                                         spans.add(new int[] {s - start, e - start});
                                     }
@@ -466,10 +471,14 @@ public class ClipboardHandler {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
                         final FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
                         final Document doc = tc.getDocument();
+                        final int len = doc.getLength();
                         final List<Position[]> inSpans = new ArrayList<Position[]>();
 
                         for (int[] span : imports.identifiers) {
-                            inSpans.add(new Position[] {doc.createPosition(caret + span[0]), doc.createPosition(caret + span[1])});
+                            int start = caret + span[0];
+                            int end = caret + span[1];
+                            if (0 <= start && start <= end && end <= len)
+                                inSpans.add(new Position[] {doc.createPosition(start), doc.createPosition(end)});
                         }
 
                         SwingUtilities.invokeLater(new Runnable() {

@@ -84,6 +84,27 @@ public class ChooseArchetypePanel extends JPanel {
             }
             @Override public void changedUpdate(DocumentEvent e) {}
         });
+        DocumentListener dl = new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                wizardPanel.fireChangeEvent();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+               wizardPanel.fireChangeEvent();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                wizardPanel.fireChangeEvent();
+            }
+        };
+        textArtifactId.getDocument().addDocumentListener(dl);
+        textGroupId.getDocument().addDocumentListener(dl);
+        textVersion.getDocument().addDocumentListener(dl);
+        textRepository.getDocument().addDocumentListener(dl);
         listArtifact.setCellRenderer(new ArchetypeRenderer());
     }
 

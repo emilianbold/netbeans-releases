@@ -74,22 +74,27 @@ public class MavenJaxWsServicesProvider implements WebServiceDataProvider, Prope
         jaxWsSupport.addPropertyChangeListener(this);
     }
 
+    @Override
     public List<WebService> getServiceProviders() {
         return providers;
     }
 
+    @Override
     public List<WebService> getServiceConsumers() {
         return consumers;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
         jaxWsSupport.addPropertyChangeListener(pcl);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener pcl) {
         jaxWsSupport.removePropertyChangeListener(pcl);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (JAXWSLightSupport.PROPERTY_SERVICE_ADDED.equals(evt.getPropertyName())) {
             MavenWebService mavenService = new MavenWebService((JaxWsService) evt.getNewValue(), prj);

@@ -46,6 +46,12 @@ package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyAction;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -56,6 +62,9 @@ import org.openide.util.actions.CallableSystemAction;
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
+@ActionID(id = "org.netbeans.modules.cnd.navigation.macroview.MacroExpansionAction", category = "Window")
+@ActionRegistration(lazy = true, displayName = "#CTL_MacroExpansionAction", iconBase=MacroExpansionTopComponent.ICON_PATH)
+@ActionReference(path = "Menu/Window/Other", name = "MacroExpansionAction", position = 1100)
 public class MacroExpansionAction extends CallableSystemAction {
 
     public MacroExpansionAction() {
@@ -73,6 +82,12 @@ public class MacroExpansionAction extends CallableSystemAction {
 
     @Override
     public void performAction() {
+        if (!CsmUtilities.isAnyNativeProjectOpened()) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(MacroExpansionAction.class, "CTL_MacroExpansionAction.warning"), NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
         MacroExpansionTopComponent win = MacroExpansionTopComponent.findInstance();
 //        Preferences ps = NbPreferences.forModule(MacroExpansionTopComponent.class);
         win.open();
@@ -91,7 +106,7 @@ public class MacroExpansionAction extends CallableSystemAction {
 
     @Override
     public boolean isEnabled() {
-        return CsmUtilities.isAnyNativeProjectOpened();
+        return true;
     }
 
     @Override

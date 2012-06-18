@@ -45,12 +45,21 @@
 package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyTopComponent.TypeContextFinder;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
+@ActionID(id = "org.netbeans.modules.cnd.navigation.hierarchy.ShowClassHierarchyAction", category = "Edit")
+@ActionRegistration(lazy = true, displayName = "#CTL_ShowHierarchyAction")
+@ActionReferences(value = {
+    @ActionReference(path = "Editors/text/x-h/Popup/goto", position = 1200),
+    @ActionReference(path = "Editors/text/x-c++/Popup/goto", position = 1200)})
 public final class ShowClassHierarchyAction extends CookieAction {
     
     @Override

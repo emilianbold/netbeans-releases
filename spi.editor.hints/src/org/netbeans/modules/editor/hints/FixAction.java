@@ -61,6 +61,12 @@ public class FixAction extends AbstractAction {
     
     public FixAction() {
         putValue(NAME, NbBundle.getMessage(FixAction.class, "NM_FixAction"));
+        putValue("supported-annotation-types", new String[] {
+            "org-netbeans-spi-editor-hints-parser_annotation_err_fixable",
+            "org-netbeans-spi-editor-hints-parser_annotation_warn_fixable",
+            "org-netbeans-spi-editor-hints-parser_annotation_verifier_fixable",
+            "org-netbeans-spi-editor-hints-parser_annotation_hint_fixable"
+        });
     }
     
     public void actionPerformed(ActionEvent e) {

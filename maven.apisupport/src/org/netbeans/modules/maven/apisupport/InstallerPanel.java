@@ -227,7 +227,7 @@ public class InstallerPanel extends JPanel {
         if (jfc.showOpenDialog(licenseButton) == JFileChooser.APPROVE_OPTION) {
             File license = jfc.getSelectedFile();
             licenseField.setText(FileUtilities.relativizeFile(dir, license));
-            if (CollocationQuery.areCollocated(license.toURI(), dir.toURI())) {
+            if (CollocationQuery.areCollocated(Utilities.toURI(license), Utilities.toURI(dir))) {
                 category.setErrorMessage(null);
             } else {
                 category.setErrorMessage(InstallerPanel_not_collocated());

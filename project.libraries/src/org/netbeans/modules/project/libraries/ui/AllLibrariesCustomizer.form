@@ -57,7 +57,7 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/project/libraries/ui/Bundle.properties" key="AllLibrariesCustomizer.jLabel1.text" replaceFormat="java.text.MessageFormat.format(org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;), {arguments})"/>
+          <ResourceString bundle="org/netbeans/modules/project/libraries/ui/Bundle.properties" key="AllLibrariesCustomizer.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

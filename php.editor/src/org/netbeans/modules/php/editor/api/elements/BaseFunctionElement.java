@@ -62,4 +62,5 @@ public interface BaseFunctionElement extends PhpElement{
     List<ParameterElement> getParameters();
     Collection<TypeResolver> getReturnTypes();
     String asString(PrintAs as);
+    String asString(PrintAs as, TypeNameResolver typeNameResolver);
 }

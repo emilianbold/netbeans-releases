@@ -9,7 +9,7 @@
                       <Component id="jToggleButton1" alignment="leading" max="Short.MAX_VALUE" attributes="1"/>
                       <Component id="jButton2" alignment="leading" max="Short.MAX_VALUE" attributes="513"/>
                   </Group>
-                  <Component id="jButton1" alignment="leading" min="$pref" pref="123" max="$pref" attributes="1025"/>
+                  <Component id="jButton1" min="$pref" pref="123" max="$pref" attributes="1025"/>
               </Group>
               <EmptySpace max="$pref" attributes="0"/>
               <Component id="jScrollPane1" min="$pref" max="$pref" attributes="0"/>

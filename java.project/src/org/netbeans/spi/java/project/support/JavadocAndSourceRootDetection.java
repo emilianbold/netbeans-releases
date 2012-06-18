@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
@@ -273,19 +274,17 @@ public class JavadocAndSourceRootDetection {
         }
     }
 
-    private static FileObject getPackageRoot(FileObject javaOrClassFile, String packageName) {
-        String suffix = '/' + packageName.replace('.', '/') + '/' + javaOrClassFile.getNameExt(); //NOI18N
-        String fpath = javaOrClassFile.getPath();
-        if (fpath.endsWith(suffix)) {
-            FileObject fo = javaOrClassFile.getParent();
-            String targetPath = fpath.substring(0, fpath.length() - suffix.length());
-            while (!fo.getPath().equals(targetPath)) {
-                fo = fo.getParent();
+    @CheckForNull
+    private static FileObject getPackageRoot(@NonNull final FileObject javaOrClassFile, @NonNull final String packageName) {
+        final String[] path = packageName.split("\\."); //NOI18N
+        FileObject pkg = javaOrClassFile.getParent();
+        for (int i=path.length-1; i>=0; i--) {
+            if (!path[i].equals(pkg.getName())) {
+                return null;
             }
-            return fo;
-        } else {
-            return null;
+            pkg = pkg.getParent();
         }
+        return pkg;
     }
 
 

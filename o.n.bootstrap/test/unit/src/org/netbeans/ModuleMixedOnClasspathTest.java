@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -97,7 +98,7 @@ public class ModuleMixedOnClasspathTest extends SetupHid {
             File j1 = new File(jars, "simple-module.jar");
             File j2 = new File(jars, "depends-on-simple-module.jar");
             File j3 = new File(jars, "dep-on-two-modules.jar");
-            URLClassLoader l = new URLClassLoader(new URL[] {j1.toURI().toURL()});
+            URLClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(j1).toURL()});
             Manifest mani1, mani2;
             JarFile j = new JarFile(j1);
             try {

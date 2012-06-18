@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.bookmarks;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,8 +79,8 @@ public class BookmarkManager {
      * <br/>
      * Once the bookmarks exist in the map they will be written to project's private.xml upon project close.
      */
-    private final Map<Project,ProjectBookmarks> project2Bookmarks =
-            new HashMap<Project,ProjectBookmarks> ();
+    private final Map<URI,ProjectBookmarks> project2Bookmarks =
+            new HashMap<URI,ProjectBookmarks> ();
     
     private List<BookmarkManagerListener> listenerList = new CopyOnWriteArrayList<BookmarkManagerListener>();
     
@@ -136,7 +137,8 @@ public class BookmarkManager {
      */
     void ensureProjectBookmarksLoaded(List<Project> projects) {
         for (Project project : projects) {
-            getProjectBookmarks(project, true, false); // Force project's bookmarks loading
+            // Force project's bookmarks loading
+            getProjectBookmarks(project, true, false);
         }
     }
     
@@ -234,8 +236,14 @@ public class BookmarkManager {
     }
     
     public ProjectBookmarks getProjectBookmarks(Project project, boolean load, boolean forceCreation) {
+        return getProjectBookmarks(project, BookmarkUtils.toURI(project), load, forceCreation);
+    }
+
+    public ProjectBookmarks getProjectBookmarks(Project project, URI projectURI,
+            boolean load, boolean forceCreation)
+    {
         ProjectBookmarks projectBookmarks;
-        projectBookmarks = project2Bookmarks.get(project);
+        projectBookmarks = project2Bookmarks.get(projectURI);
         if (projectBookmarks == null) {
             if (load) {
                 if (project != null) {
@@ -244,16 +252,16 @@ public class BookmarkManager {
                     projectBookmarks = new ProjectBookmarks(null);
                 }
                 if (projectBookmarks != null) {
-                    BookmarkChange change = new BookmarkChange(projectBookmarks.getProject(), null);
+                    BookmarkChange change = new BookmarkChange(projectBookmarks.getProjectURI(), null);
                     change.markAdded();
                 }
             }
             if (projectBookmarks == null && forceCreation) {
-                projectBookmarks = new ProjectBookmarks(project);
+                projectBookmarks = new ProjectBookmarks(projectURI);
             }
             if (projectBookmarks != null) {
-                project2Bookmarks.put(project, projectBookmarks);
-                BookmarkChange change = new BookmarkChange(project);
+                project2Bookmarks.put(projectURI, projectBookmarks);
+                BookmarkChange change = new BookmarkChange(projectURI);
                 change.markAdded();
                 transactionChanges.add(change);
             }
@@ -262,9 +270,9 @@ public class BookmarkManager {
     }
     
     public void removeProjectBookmarks(ProjectBookmarks projectBookmarks) {
-        project2Bookmarks.remove(projectBookmarks.getProject());
+        project2Bookmarks.remove(projectBookmarks.getProjectURI());
         projectBookmarks.markRemoved();
-        BookmarkChange change = new BookmarkChange(projectBookmarks.getProject());
+        BookmarkChange change = new BookmarkChange(projectBookmarks.getProjectURI());
         change.markRemoved();
         transactionChanges.add(change);
     }
@@ -310,7 +318,7 @@ public class BookmarkManager {
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
         for (ProjectBookmarks projectBookmarks : allLoadedProjectBookmarks()) {
-            sb.append("Project ").append(projectBookmarks.getProject()).append('\n');
+            sb.append("Project ").append(projectBookmarks.getProjectURI()).append('\n');
             for (URL url : projectBookmarks.allURLs()) {
                 sb.append("    ").append(url).append("\n");
                 for (BookmarkInfo info : projectBookmarks.get(url).getBookmarks()) {

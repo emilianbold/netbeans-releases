@@ -75,23 +75,28 @@ public class SearchClassDependencyHint extends AbstractHint {
         return NbBundle.getMessage(SearchClassDependencyHint.class, "LBL_Missing_Class_Dec");
     }
 
+    @Override
     public Set<Kind> getTreeKinds() {
         return EnumSet.noneOf(Kind.class);
     }
 
+    @Override
     public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
         return null;//should not be called
 
     }
 
+    @Override
     public String getId() {
         return "MAVEN_SEARCH_HINT";//NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(SearchClassDependencyHint.class, "LBL_Missing_Class");
     }
 
+    @Override
     public void cancel() {
     }
 

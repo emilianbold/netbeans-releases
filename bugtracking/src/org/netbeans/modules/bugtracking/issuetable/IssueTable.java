@@ -139,7 +139,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
             Integer sk1 = (Integer) p1.getValue("sortkey"); // NOI18N
             if (sk1 != null) {
                 Integer sk2 = (Integer) p2.getValue("sortkey"); // NOI18N
-                return sk1.compareTo(sk2);
+                return sk2 != null ? sk1.compareTo(sk2) : 1;
             } else {
                 try {
                     return p1.compareTo(p2);

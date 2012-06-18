@@ -136,6 +136,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javahelp</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.27</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -241,6 +250,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -372,6 +389,8 @@
                 <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.swdev.sunstudio.windistr</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
+                <friend>org.netbeans.modules.cnd.remote.projectui</friend>
+                <package>org.netbeans.modules.cnd.remote.actions.base</package>
                 <package>org.netbeans.modules.cnd.remote.api</package>
                 <package>org.netbeans.modules.cnd.remote.mapper</package>
                 <package>org.netbeans.modules.cnd.remote.server</package>

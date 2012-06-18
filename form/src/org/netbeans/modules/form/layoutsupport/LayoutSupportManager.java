@@ -123,10 +123,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         if (layoutDelegateClass != null) {
             delegate = LayoutSupportRegistry.createSupportInstance(layoutDelegateClass);
             if (!fromCode && !delegate.checkEmptyContainer(getPrimaryContainer())) {
-                RuntimeException ex = new IllegalArgumentException();
-                org.openide.ErrorManager.getDefault().annotate(
-                    ex, AbstractLayoutSupport.getBundle().getString(
-                                        "MSG_ERR_NonEmptyContainer")); // NOI18N
+                RuntimeException ex = new IllegalArgumentException(
+                        AbstractLayoutSupport.getBundle().getString("MSG_ERR_NonEmptyContainer")); // NOI18N
                 throw ex;
             }
         }
@@ -168,10 +166,8 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                         new NullLayoutSupport();
                 }
                 else {
-                    RuntimeException ex = new IllegalArgumentException();
-                    org.openide.ErrorManager.getDefault().annotate(
-                        ex, AbstractLayoutSupport.getBundle().getString(
-                                            "MSG_ERR_NonEmptyContainer")); // NOI18N
+                    RuntimeException ex = new IllegalArgumentException(
+                            AbstractLayoutSupport.getBundle().getString("MSG_ERR_NonEmptyContainer")); // NOI18N
                     throw ex;
                 }
             }

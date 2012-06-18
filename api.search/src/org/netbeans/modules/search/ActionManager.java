@@ -40,14 +40,12 @@ package org.netbeans.modules.search;
 //import org.netbeans.modules.search.project.SearchScopeNodeSelection;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.actions.ReplaceAction;
 import org.openide.text.CloneableEditorSupport;
@@ -117,77 +115,9 @@ public abstract class ActionManager<A extends SystemAction, S extends CallbackSy
         //ssnslsClass = SearchScopeNodeSelection.class;
     }
 
-    /**
-     * Cleanup, called from Installer.
-     */
-    void cleanup() {
-        //System.out.println("cleanup");
-        TopComponent.getRegistry().removePropertyChangeListener(this);
-
-        /*
-         * We just need to run method 'cleanupWindowRegistry' in the AWT event
-         * dispatching thread. We use Mutex.EVENT for this task.
-         *
-         * We use Mutex.Action rather than Runnable. The reason is that Runnable
-         * could be run asynchronously which is undesirable during
-         * uninstallation (we do not want any instance/class from this module to
-         * be in use by the time ModuleInstall.uninstalled() returns).
-         */
-        Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
-
-            @Override
-            public Object run() {
-                cleanupWindowRegistry();
-                return null;
-            }
-        });
-
-        // cleaning up classes that have been cached
-        //ssnslsClass = null;
-    }
-
     @Override
     public void run() {
         someoneActivated();
-    }
-
-    private void cleanupWindowRegistry() {
-        //System.out.println("Utilities: Cleaning window registry");
-        final Object actionKey = getActionMapKey();
-
-        for (TopComponent tc : activatedOnWindows) {
-            //System.out.println("     ** " + tc.getName());
-
-            Action origAction = null, currAction = null;
-
-            Object origActionRef = tc.getClientProperty(getMappedActionKey());
-            if (origActionRef instanceof Reference) {
-                Object origActionObj = ((Reference) origActionRef).get();
-                if (origActionObj instanceof Action) {
-                    origAction = (Action) origActionObj;
-                }
-            }
-
-            if (origAction != null) {
-                currAction = tc.getActionMap().get(actionKey);
-            }
-
-            if ((currAction != null) && (currAction == origAction)) {
-                tc.getActionMap().put(actionKey, null);
-                //System.out.println("         - successfully cleared");
-            } else {
-                //System.out.println("         - DID NOT MATCH");
-                ErrorManager.getDefault().log(
-                        ErrorManager.WARNING,
-                        "ActionMap mapping of Action changed" + //NOI18N
-                        " for window " + tc.getName());         //NOI18N
-            }
-
-            if (origActionRef != null) {
-                tc.putClientProperty(getMappedActionKey(), null);
-            }
-        }
-        activatedOnWindows.clear();
     }
 
     private void someoneActivated() {

@@ -43,16 +43,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
-import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
 import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
-import org.netbeans.spi.java.hints.HintContext.MessageKind;
-import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext.MessageKind;
+import org.openide.util.NbBundle.Messages;
 
 public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactoringPlugin {
 
@@ -96,11 +96,18 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
         return current;
     }
 
+    @Messages("WARN_HasQueries=The selected configuration contains inspections that do not provide any transformations. " +
+              "No diff will be provided for code detected by such inspections. Use Source/Inspect... to perform code analysis.")
     private List<MessageImpl> performSearchForPattern(final RefactoringElementsBag refactoringElements) {
         ProgressHandleWrapper w = new ProgressHandleWrapper(this, 10, 90);
-        BatchResult candidates = BatchSearch.findOccurrences(filterQueries(refactoring.getPattern(), true), refactoring.getScope(), w);
+        Iterable<? extends HintDescription> queries = filterQueries(refactoring.getPattern(), true);
+        BatchResult candidates = BatchSearch.findOccurrences(queries, refactoring.getScope(), w);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
 
+        if (queries.iterator().hasNext()) {
+            problems.add(new MessageImpl(MessageKind.WARNING, Bundle.WARN_HasQueries()));
+        }
+        
         prepareElements(candidates, w, refactoringElements, refactoring.isVerify(), problems);
 
         w.finish();
@@ -115,7 +122,7 @@ public class FindDuplicatesRefactoringPlugin extends AbstractApplyHintsRefactori
     private Iterable<? extends HintDescription> filterQueries(Iterable<? extends HintDescription> hints, boolean positive) {
         ArrayList<HintDescription> result = new ArrayList<HintDescription>();
         for (HintDescription hint: hints) {
-            if (positive ^ !hint.getMetadata().options.contains(Options.QUERY)) {
+            if (positive ^ !(hint.getMetadata().options.contains(Options.QUERY) || hint.getOptions().contains(Options.QUERY))) {
                 result.add(hint);
             }
         }

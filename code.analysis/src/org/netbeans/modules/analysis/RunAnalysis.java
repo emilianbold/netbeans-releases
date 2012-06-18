@@ -56,7 +56,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.prefs.BackingStoreException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
@@ -77,7 +78,6 @@ import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
-import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
 import org.netbeans.modules.analysis.ui.AnalysisProblemNode;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
 import org.netbeans.modules.analysis.ui.RequiredPluginsNode;
@@ -88,11 +88,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -103,6 +101,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class RunAnalysis {
 
+    private static final Logger LOG = Logger.getLogger(RunAnalysis.class.getName());
     private static final RequestProcessor WORKER = new RequestProcessor(RunAnalysisAction.class.getName(), 1, false, false);
     private static final int MAX_WORK = 1000;
 
@@ -127,6 +126,8 @@ public class RunAnalysis {
 
         runAnalysis.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
+                final long analysisStart = System.currentTimeMillis();
+                
                 runAnalysis.setEnabled(false);
 
                 final AnalyzerFactory toRun = rap.getSelectedAnalyzer();
@@ -183,6 +184,8 @@ public class RunAnalysis {
 
                                 d.setVisible(false);
                                 d.dispose();
+                                
+                                LOG.log(Level.FINE, "Total analysis time: {0}", System.currentTimeMillis() - analysisStart);
                             }
                         });
                     }
@@ -199,9 +202,11 @@ public class RunAnalysis {
                         Analyzer a = analyzer.createAnalyzer(context);
                         currentlyRunning.set(a);
                         if (doCancel.get()) return;
+                        long s = System.currentTimeMillis();
                         for (ErrorDescription ed : a.analyze()) {
                             current.add(ed);
                         }
+                        LOG.log(Level.FINE, "Analysis by {0} took {1}", new Object[] {SPIAccessor.ACCESSOR.getAnalyzerDisplayName(analyzer), System.currentTimeMillis() - s});
                         currentlyRunning.set(null);
                         if (!current.isEmpty())
                             result.put(analyzer, current);

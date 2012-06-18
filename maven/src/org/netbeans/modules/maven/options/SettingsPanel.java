@@ -77,6 +77,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.maven.options.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The visual panel that displays in the Options dialog. Some properties
@@ -575,6 +577,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }
     
+    @Messages({"MAVEN_RUNTIME_Bundled=Bundled", "MAVEN_RUNTIME_External={0}", "MAVEN_RUNTIME_Browse=Browse..."})
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
 
@@ -592,32 +595,27 @@ public class SettingsPanel extends javax.swing.JPanel {
         String bundled = null;
         for (String runtime : predefinedRuntimes) {
             boolean bundledRuntime = runtime.isEmpty();
-            String desc = org.openide.util.NbBundle.getMessage(SettingsPanel.class,
-                    bundledRuntime ? "MAVEN_RUNTIME_Bundled" : "MAVEN_RUNTIME_External",
-                    new Object[]{runtime,
-                    bundledRuntime ? BUNDLED_RUNTIME_VERSION : MavenSettings.getCommandLineMavenVersion(new File(runtime))}); // NOI18N
+            String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled() :
+                    MAVEN_RUNTIME_External(runtime);
             mavenHomeDataModel.addElement(desc);
         }
         
         if (!userDefinedMavenRuntimes.isEmpty()) {
             mavenHomeDataModel.addElement(SEPARATOR);
             for (String runtime : userDefinedMavenRuntimes) {
-                String desc = org.openide.util.NbBundle.getMessage(SettingsPanel.class,
-                        "MAVEN_RUNTIME_External",
-                        new Object[]{runtime, MavenSettings.getCommandLineMavenVersion(new File(runtime))}); // NOI18N
+                String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
                 mavenHomeDataModel.addElement(desc);
             }
         }
         
         mavenHomeDataModel.addElement(SEPARATOR);
-        mavenHomeDataModel.addElement(org.openide.util.NbBundle.getMessage(SettingsPanel.class,
-                    "MAVEN_RUNTIME_Browse"));
+        mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
         comMavenHome.setSelectedItem(command != null ? command.getAbsolutePath() : bundled); //NOI18N
         listDataChanged();
         lastSelected = comMavenHome.getSelectedIndex();
         comMavenHome.addActionListener(listItemChangedListener);
         
-        comIndex.setSelectedIndex(RepositoryPreferences.getInstance().getIndexUpdateFrequency());
+        comIndex.setSelectedIndex(RepositoryPreferences.getIndexUpdateFrequency());
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
@@ -651,7 +649,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         } else {
             EmbedderFactory.setMavenHome(null);
         }
-        RepositoryPreferences.getInstance().setIndexUpdateFrequency(comIndex.getSelectedIndex());
+        RepositoryPreferences.setIndexUpdateFrequency(comIndex.getSelectedIndex());
         MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());
@@ -669,6 +667,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     
     private class ActionListenerImpl implements ActionListener {
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             changed = true;
         }

@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
@@ -57,6 +58,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.spi.actions.ActionConvertor;
 import org.netbeans.modules.maven.spi.actions.ReplaceTokenProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -79,9 +81,9 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     private static final String CLASSPATHSCOPE = "classPathScope";//NOI18N
     private static final String GROUPID = "groupId";//NOI18N
     private final Project project;
-    private static final String CLASSNAME = "className";//NOI18N
-    private static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
-    private static final String PACK_CLASSNAME = "packageClassName";//NOI18N
+    static final String CLASSNAME = "className";//NOI18N
+    static final String CLASSNAME_EXT = "classNameWithExtension";//NOI18N
+    static final String PACK_CLASSNAME = "packageClassName";//NOI18N
     public static final String METHOD_NAME = "nb.single.run.methodName"; //NOI18N
     private static final String VARIABLE_PREFIX = "var."; //NOI18N
     // as defined in org.netbeans.modules.project.ant.VariablesModel
@@ -89,14 +91,13 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
     public DefaultReplaceTokenProvider(Project prj) {
         project = prj;
     }
-    /**
-     * just gets the array of FOs from lookup.
-     */
-    protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
-        List<FileObject> files = new ArrayList<FileObject>();
-        for (DataObject d : lookup.lookupAll(DataObject.class)) {
-            FileObject f = d.getPrimaryFile();
-            files.add(f);
+
+    private static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
+        List<FileObject> files = new ArrayList<FileObject>(lookup.lookupAll(FileObject.class));
+        if (files.isEmpty()) { // fallback to old nodes
+            for (DataObject d : lookup.lookupAll(DataObject.class)) {
+                files.add(d.getPrimaryFile());
+            }
         }
         Collection<? extends SingleMethod> methods = lookup.lookupAll(SingleMethod.class);
         if (methods.size() == 1) {
@@ -109,29 +110,73 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
 
     @Override public Map<String, String> createReplacements(String actionName, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
-        Tuple tuple = new Tuple(null, null);
-        FileObject fo;
+        SourceGroup group = findGroup(ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), fos);
         HashMap<String, String> replaceMap = new HashMap<String, String>();
+        // read environment variables in the IDE and prefix them with "env." just in case someone uses it as variable in the action mappings
+        for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+            replaceMap.put(MavenCommandLineExecutor.ENV_PREFIX + entry.getKey(), entry.getValue());
+        }
+        
+        
         //read global variables defined in the IDE
         Map<String, String> vars = readVariables();
         replaceMap.putAll(vars);
+        
+        //read active configuration properties..
+        Map<String, String> configProps = project.getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration().getProperties();
+        replaceMap.putAll(configProps);
 
         NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
         replaceMap.put(GROUPID, prj.getMavenProject().getGroupId());
         replaceMap.put(ARTIFACTID, prj.getMavenProject().getArtifactId());
 
-        if (fos.length > 0) {
-            fo = fos[0];
-            Sources srcs = ProjectUtils.getSources(project);
-            if ("text/x-java".equals(fo.getMIMEType())) {//NOI18N
-                tuple = checkSG(srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA), replaceMap, fo);
+        StringBuilder packClassname = new StringBuilder();
+        StringBuilder classname = new StringBuilder();
+        StringBuilder classnameExt = new StringBuilder();
+        if (group != null) {
+            boolean first = true;
+            for (FileObject file : fos) {
+                if (first) {
+                    first = false;
+                } else {
+                    packClassname.append(',');
+                    classname.append(',');
+                    classnameExt.append(',');
+                }
+                if (file.isFolder()) {
+                    String rel = FileUtil.getRelativePath(group.getRootFolder(), file);
+                    assert rel != null;
+                    String pkg = rel.replace('/', '.');
+                    if (!pkg.isEmpty()) {
+                        packClassname.append(pkg).append('.');
+                    }
+                    packClassname.append("*");
+                    if (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) || ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
+                        packClassname.append("Test");
+                    }
+                    classname.append(pkg); // ?
+                    classnameExt.append(pkg); // ??
+                } else { // XXX do we need to limit to text/x-java? What about files of other type?
+                    String relP = FileUtil.getRelativePath(group.getRootFolder(), file.getParent());
+                    assert relP != null;
+                    if (!relP.isEmpty()) {
+                        packClassname.append(relP.replace('/', '.')).append('.');
+                    }
+                    String n = file.getName();
+                    packClassname.append(n);
+                    classname.append(n);
+                    classnameExt.append(file.getNameExt());
+                }
             }
-            if (tuple.relPath == null) {
-                replaceMap.put(CLASSNAME_EXT, "");//NOI18N
-                replaceMap.put(CLASSNAME, "");//NOI18N
-                replaceMap.put(PACK_CLASSNAME, "");//NOI18N
-            }
-
+        }
+        if (packClassname.length() > 0) { //#213671
+            replaceMap.put(PACK_CLASSNAME, packClassname.toString());
+        }
+        if (classname.length() > 0) { //#213671
+            replaceMap.put(CLASSNAME, classname.toString());
+        }
+        if (classnameExt.length() > 0) { //#213671
+            replaceMap.put(CLASSNAME_EXT, classnameExt.toString());
         }
 
         Collection<? extends SingleMethod> methods = lookup.lookupAll(SingleMethod.class);
@@ -141,14 +186,14 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
             replaceMap.put(METHOD_NAME, method.getMethodName());
         }
 
-        if (tuple.group != null &&
+        if (group != null &&
                 //TODO not nice, how to figure in a better way? by source classpath?
-                (MavenSourcesImpl.NAME_TESTSOURCE.equals(tuple.group.getName()))) {
+                (MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName()))) {
             replaceMap.put(CLASSPATHSCOPE,"test"); //NOI18N
         } else {
             replaceMap.put(CLASSPATHSCOPE,"runtime"); //NOI18N
         }
-        if (tuple.group != null && MavenSourcesImpl.NAME_SOURCE.equals(tuple.group.getName()) &&
+        if (group != null && MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
                 (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
             String withExt = replaceMap.get(CLASSNAME_EXT);
@@ -161,35 +206,22 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         return replaceMap;
     }
 
-    private static Tuple checkSG(SourceGroup[] grp, HashMap<String, String> replaceMap, FileObject fo) {
-        String relPath = null;
-        SourceGroup group = null;
-        for (int i = 0; i < grp.length; i++) {
-            relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
-            if (relPath != null) {
-                group = grp[i];
-                replaceMap.put(CLASSNAME_EXT, fo.getNameExt());
-                replaceMap.put(CLASSNAME, fo.getName());
-                String pack = FileUtil.getRelativePath(grp[i].getRootFolder(), fo.getParent());
-                if (pack != null) { //#141175
-                    replaceMap.put(PACK_CLASSNAME, (pack + (pack.length() > 0 ? "." : "") + fo.getName()).replace('/', '.')); //NOI18N
-                } else {
-                    replaceMap.put(PACK_CLASSNAME, fo.getName());//NOI18N
+    /** Finds the one source group, if any, which contains all of the listed files. */
+    private static @CheckForNull SourceGroup findGroup(SourceGroup[] groups, FileObject[] files) {
+        SourceGroup selected = null;
+        for (FileObject file : files) {
+            for (SourceGroup group : groups) {
+                FileObject root = group.getRootFolder();
+                if (file == root || FileUtil.isParentOf(root, file)) { // or group.contains(file)?
+                    if (selected == null) {
+                        selected = group;
+                    } else if (selected != group) {
+                        return null;
+                    }
                 }
-                break;
             }
         }
-        return new Tuple(relPath, group);
-    }
-
-    private static class Tuple {
-        final String relPath;
-        final SourceGroup group;
-        Tuple(String path, SourceGroup sg) {
-            relPath = path;
-            group = sg;
-        }
-
+        return selected;
     }
 
     public static Map<String, String> readVariables() {

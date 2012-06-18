@@ -155,18 +155,6 @@ public final class RemoteFileObject extends FileObject implements Serializable {
         return false;
     }
     
-    protected byte[] getMagic() {
-        try {
-            RemoteDirectory parent = RemoteFileSystemUtils.getCanonicalParent(this.getImplementor());
-            if (parent != null) {
-                return parent.getMagic(this.getImplementor());
-            }
-        } catch (IOException ex) {
-            System.err.println(ex.getMessage());
-        }
-        return null;
-    }
-    
     // <editor-fold">
     
     // <editor-fold desc="Moved from RemoteFileObjectBase.">
@@ -378,7 +366,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     public InputStream getInputStream() throws FileNotFoundException {
         if (!getImplementor().hasCache()) {
             if (isMimeResolving()) {
-                byte[] b = getMagic();
+                byte[] b = getImplementor().getMagic();
                 if (b != null) {
                     return new ByteArrayInputStream(b);
                 }

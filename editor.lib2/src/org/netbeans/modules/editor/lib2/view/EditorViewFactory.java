@@ -285,8 +285,9 @@ public abstract class EditorViewFactory {
      *  This method can be called from any thread.
      */
     protected final void notifyStaleCreation() {
-        if (viewBuilder != null) {
-            viewBuilder.notifyStaleCreation();
+        ViewBuilder builder = viewBuilder;
+        if (builder != null) {
+            builder.notifyStaleCreation();
         }
     }
     

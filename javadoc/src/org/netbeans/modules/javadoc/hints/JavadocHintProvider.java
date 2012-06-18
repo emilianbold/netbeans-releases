@@ -80,8 +80,8 @@ import org.openide.util.NbBundle;
  */
 public final class JavadocHintProvider extends AbstractHint {
     
-    public static final String SCOPE_KEY = "scope";             // NOI18N
-    public static final String SCOPE_DEFAULT = "protected"; // NOI18N
+    public static final String SCOPE_KEY = "scope";               // NOI18N
+    public static final String SCOPE_DEFAULT = "protected";       // NOI18N
     public static final String AVAILABILITY_KEY = "availability"; // NOI18N
 
     private boolean createJavadocKind;
@@ -129,7 +129,7 @@ public final class JavadocHintProvider extends AbstractHint {
         }
         
         Access access = Access.resolve(getPreferences(null).get(SCOPE_KEY, SCOPE_DEFAULT));
-        Analyzer a = new Analyzer(javac, doc, path, severity, hintSeverity, createJavadocKind, access);
+        Analyzer a = new Analyzer(javac, doc, path, severity, createJavadocKind, access);
         return a.analyze();
     }
 
@@ -229,9 +229,9 @@ public final class JavadocHintProvider extends AbstractHint {
         return outerPanel;
     }
     
-    public static JavadocHintProvider createCreateJavadoc() {
-        return new JavadocHintProvider(true);
-    }
+//    public static JavadocHintProvider createCreateJavadoc() {
+//        return new JavadocHintProvider(true);
+//    }
     
     public static JavadocHintProvider createErrorInJavadoc() {
         return new JavadocHintProvider(false);

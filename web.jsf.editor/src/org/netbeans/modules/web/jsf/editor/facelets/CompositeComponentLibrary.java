@@ -178,6 +178,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             return CompositeComponentLibrary.this.getNamespace();
         }
 
+        @Override
+        public String getPrefix() {
+            return null;
+        }
+        
         private class LazyLoadingTag extends GenericTag {
 
             private CompositeComponent cc;
@@ -202,12 +207,31 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("<p><b>"); //NOI18N
+                
+                if(model.getDisplayName() != null) {
+                    sb.append("<p>").append("<b>")
+                    .append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_DISPLAYNAME"))
+                    .append("</b>").append("&nbsp;")
+                    .append(model.getDisplayName())
+                    .append("</p>"); //NOI18N
+                }
+                
+                if(model.getShortDescription() != null) {
+                    sb.append("<p>").append("<b>")
+                    .append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SHORTDESCRIPTION"))
+                    .append("</b>").append("&nbsp;")
+                    .append(model.getShortDescription())
+                    .append("</p>"); //NOI18N
+                }
+                
+                sb.append("<p>"); //NOI18N
+                sb.append("<b>");//NOI18N
                 sb.append(NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_COMPOSITE_COMPONENT_SOURCE"));//NOI18N
                 sb.append("</b>");//NOI18N
                 sb.append("&nbsp;");//NOI18N
                 sb.append(relativePath);
                 sb.append("</p>");//NOI18N
+                
                 sb.append("<p>");//NOI18N
                 sb.append(getAttributesDescription(model, false));
                 sb.append("</p>");//NOI18N

@@ -100,6 +100,8 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
                     table.editCellAt(editingRow, 1);
                     table.setRowSelectionInterval(editingRow, editingRow);
                     scField.requestFocus();
+                    
+                    return;
                 }
             }
 
@@ -111,7 +113,7 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
             @Override
             public void focusGained(FocusEvent e) {
                 changeButton.setText(""); // NOI18N
-                changeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/more.png")));
+                changeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/more_opened.png")));
             }
 
             @Override
@@ -120,6 +122,7 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
                 changeButton.setText("..."); // NOI18N
             }
         });
+        setFocusable(true);
     }
 
     ShortcutCellPanel(String displayedShortcut) {
@@ -196,6 +199,8 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
 
         changeButton.setBackground(new java.awt.Color(204, 204, 204));
         org.openide.awt.Mnemonics.setLocalizedText(changeButton, org.openide.util.NbBundle.getMessage(ShortcutCellPanel.class, "ShortcutCellPanel.changeButton.text")); // NOI18N
+        changeButton.setContentAreaFilled(false);
+        changeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         changeButton.setMaximumSize(new java.awt.Dimension(20, 15));
         changeButton.setMinimumSize(new java.awt.Dimension(20, 15));
         changeButton.setPreferredSize(new java.awt.Dimension(20, 15));
@@ -223,19 +228,25 @@ public class ShortcutCellPanel extends javax.swing.JPanel implements Comparable,
     }// </editor-fold>//GEN-END:initComponents
 
     private void changeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeButtonActionPerformed
-        JComponent tf = (JComponent) evt.getSource();
+        JComponent tf = changeButton;
         Point p = new Point(tf.getX(), tf.getY());
         SwingUtilities.convertPointToScreen(p, this);
         //show special key popup
         if (popup == null) {
+            changeButton.setText(""); // NOI18N
+            changeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/more_closed.png")));
             if (Utilities.isUnix()) {
                 // #156869 workaround, force HW for Linux
-                popup = PopupFactory.getSharedInstance().getPopup(null, specialkeyList, p.x, p.y);
+                popup = PopupFactory.getSharedInstance().getPopup(null, specialkeyList, p.x, p.y + tf.getHeight());
             } else {
-                popup = factory.getPopup(this, specialkeyList, p.x, p.y);
+                popup = factory.getPopup(this, specialkeyList, p.x, p.y + tf.getHeight());
             }
+            popup.show();
+        } else {
+            changeButton.setText(""); // NOI18N
+            changeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/options/keymap/more_opened.png")));
+            hidePopup();
         }
-        popup.show();
     }//GEN-LAST:event_changeButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

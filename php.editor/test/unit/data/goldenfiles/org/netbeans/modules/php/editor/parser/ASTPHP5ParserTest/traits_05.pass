@@ -123,11 +123,11 @@
                                             <Identifier start='92' end='99' name='MyTrait'/>
                                         </NamespaceName>
                                     </PreferredTraitName>
-                                    <SuppressedTraitName>
+                                    <SuppressedTraitNames>
                                         <NamespaceName start='115' end='125' isCurrent='false' isGlobal='false'>
                                             <Identifier start='115' end='125' name='MyTrait_02'/>
                                         </NamespaceName>
-                                    </SuppressedTraitName>
+                                    </SuppressedTraitNames>
                                 </TraitConflictResolutionDeclaration>
                             </Block>
                         </Body>

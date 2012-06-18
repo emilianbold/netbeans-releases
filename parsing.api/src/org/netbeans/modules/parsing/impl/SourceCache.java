@@ -106,6 +106,18 @@ public final class SourceCache {
             source.getMimeType ();
         mimeType.getClass();
     }
+    
+    public SourceCache (
+        Source              source,
+        Embedding           embedding,
+        Parser              parser
+    ) {
+        this(source, embedding);
+        if (parser != null) {
+            this.parserInitialized = true;
+            this.parser = parser;
+        }
+    }
 
     private void setEmbedding (
         Embedding           embedding

@@ -223,6 +223,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     // CustomizerSources
     private String srcDir;
     private String testDir;
+    private boolean testDirRemoved = false;
     private String copySrcFiles;
     private String copySrcTarget;
     private String webRoot;
@@ -355,7 +356,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     // getter not needed
     public void setTestDir(String testDir) {
+        testDirRemoved = false;
         this.testDir = testDir;
+    }
+
+    public void testDirRemoved() {
+        testDirRemoved = true;
     }
 
     public String getUrl() {
@@ -560,7 +566,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
-        if (testDir != null) {
+        if (testDirRemoved) {
+            projectProperties.remove(TEST_SRC_DIR);
+        } else if (testDir != null) {
             projectProperties.setProperty(TEST_SRC_DIR, testDir);
         }
         if (copySrcFiles != null) {

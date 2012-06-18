@@ -41,22 +41,15 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.elements.FunctionElement;
-import org.netbeans.modules.php.editor.api.elements.ParameterElement;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -192,7 +185,12 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
 
     @Override
     public String asString(PrintAs as) {
-        return this.functionSupport.asString(as, this);
+        return asString(as, TypeNameResolverImpl.forNull());
+    }
+
+    @Override
+    public String asString(PrintAs as, TypeNameResolver typeNameResolver) {
+        return this.functionSupport.asString(as, this, typeNameResolver);
     }
 
     private static class FunctionSignatureParser {

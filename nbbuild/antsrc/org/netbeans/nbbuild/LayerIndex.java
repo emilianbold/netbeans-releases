@@ -147,6 +147,9 @@ public class LayerIndex extends Task {
                         if (modname == null) {
                             continue;
                         }
+                        // XXX services.txt has e.g. "SERVICE org.openide.filesystems.MIMEResolver\n PROVIDER org.netbeans.modules.java.hints.test.Utilities$JavaMimeResolver"
+                        // which is misleading since this pseudomodule is used only in unit tests
+                        // maybe define Normally-Disabled: true in manifest.mf and skip from here (and disabledAutoloads)?
                         String cnb = modname.replaceFirst("/\\d+$", "");
                         String layer = mf.getMainAttributes().getValue("OpenIDE-Module-Layer");
                         if (layer != null) {

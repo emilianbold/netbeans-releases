@@ -45,8 +45,9 @@
 package org.netbeans.modules.project.ui.actions;
 
 import javax.swing.Action;
-import javax.swing.Icon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.project.ui.ProjectTab;
+import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -54,17 +55,13 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 public class SelectNodeAction extends LookupSensitiveAction implements ContextAwareAction {
     
-    private static final Icon SELECT_IN_PROJECTS_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/projectTab.png", false); //NOI18N
-    private static final Icon SELECT_IN_FILES_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/filesTab.png", false); //NOI18N
-    
-    private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage(CloseProject.class, "LBL_SelectInProjectsAction_MainMenuName"); // NOI18N
-    private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage(CloseProject.class, "LBL_SelectInFilesAction_MainMenuName"); // NOI18N
+    @StaticResource private static final String SELECT_IN_PROJECTS_ICON = "org/netbeans/modules/project/ui/resources/projectTab.png";
+    @StaticResource private static final String SELECT_IN_FILES_ICON = "org/netbeans/modules/project/ui/resources/filesTab.png";
     
     private final String findIn;
     
@@ -75,8 +72,9 @@ public class SelectNodeAction extends LookupSensitiveAction implements ContextAw
         @ActionReference(path = "Menu/GoTo", position = 2600, separatorBefore = 2500),
         @ActionReference(path = "Editors/TabActions", position = 100)
     })
+    @Messages("LBL_SelectInProjectsAction_MainMenuName=Select in Pro&jects")
     public static SelectNodeAction inProjects() {
-        return new SelectNodeAction(SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME, ProjectTab.ID_LOGICAL, null);
+        return new SelectNodeAction(SELECT_IN_PROJECTS_ICON, LBL_SelectInProjectsAction_MainMenuName(), ProjectTab.ID_LOGICAL, null);
     }
     
     @ActionID(id = "org.netbeans.modules.project.ui.SelectInFiles", category = "Window/SelectDocumentNode")
@@ -85,12 +83,14 @@ public class SelectNodeAction extends LookupSensitiveAction implements ContextAw
         @ActionReference(path = "Shortcuts", name = "DS-2"),
         @ActionReference(path = "Menu/GoTo", position = 2700)
     })
+    @Messages("LBL_SelectInFilesAction_MainMenuName=Sele&ct in Files")
     public static SelectNodeAction inFiles() {
-        return new SelectNodeAction(SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME, ProjectTab.ID_PHYSICAL, null);
+        return new SelectNodeAction(SELECT_IN_FILES_ICON, LBL_SelectInFilesAction_MainMenuName(), ProjectTab.ID_PHYSICAL, null);
     }
     
-    private SelectNodeAction(Icon icon, String name, String findIn, Lookup lookup) {
-        super( icon, lookup, new Class<?>[] { DataObject.class, FileObject.class } );
+    private SelectNodeAction(String icon, String name, String findIn, Lookup lookup) {
+        super(null, lookup, new Class<?>[] {DataObject.class, FileObject.class});
+        putValue("iconBase", icon);
         this.findIn = findIn;
         this.setDisplayName( name );
     }
@@ -121,7 +121,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements ContextAw
     }
 
     @Override public Action createContextAwareInstance(Lookup context) {
-        return new SelectNodeAction((Icon) getValue(SMALL_ICON), (String) getValue(NAME), findIn, context);
+        return new SelectNodeAction((String) getValue("iconBase"), (String) getValue(NAME), findIn, context);
     }
     
 }

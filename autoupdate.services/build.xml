@@ -31,10 +31,4 @@
 
     <target name="netbeans-extra" depends="jar-updater"/>
 
-    <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
-        <locjar jarfile="${cluster}/modules/ext/updater.jar"
-                basedir="${nb_all}/translatedfiles/src/${module.name}/libsrc"
-                compress="${build.package.compress}"/>
-    </target>
-
 </project>

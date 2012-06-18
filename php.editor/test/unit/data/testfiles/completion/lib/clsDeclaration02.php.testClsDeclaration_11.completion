@@ -39,6 +39,7 @@ PACKAGE    Test204925_07_C                 [PUBLIC]   null
 PACKAGE    Test204925_07_P                 [PUBLIC]   null
 PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
+PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
@@ -76,6 +77,8 @@ PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      If1                             [PUBLIC]   tests166339.php
 CLASS      If2                             [PUBLIC]   tests166339.php
+CLASS      Inter                           [PUBLIC]   issue208193.php
+CLASS      Interf                          [PUBLIC]   issue208193.php
 CLASS      Interface1                      [PUBLIC]   test204104.php
 CLASS      Interface1                      [PUBLIC]   test204104_02.php
 CLASS      Interface2                      [PUBLIC]   test204104.php

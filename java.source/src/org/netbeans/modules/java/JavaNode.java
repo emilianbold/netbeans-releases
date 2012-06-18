@@ -80,6 +80,7 @@ import org.openide.util.WeakListeners;
 import static org.openide.util.ImageUtilities.assignToolTipToImage;
 import static org.openide.util.ImageUtilities.loadImage;
 import static org.openide.util.NbBundle.getMessage;
+import org.openide.util.Utilities;
 
 /**
  * The node representation of Java source files.
@@ -262,12 +263,12 @@ public final class JavaNode extends DataNode implements ChangeListener {
                     URL u = entry.getURL();
                     String item = u.toExternalForm(); // fallback
                     if (u.getProtocol().equals("file")) { // NOI18N
-                        item = new File(URI.create(item)).getAbsolutePath();
+                        item = Utilities.toFile(URI.create(item)).getAbsolutePath();
                     } else if (u.getProtocol().equals("jar") && item.endsWith("!/")) { // NOI18N
                         URL embedded = FileUtil.getArchiveFile(u);
                         assert embedded != null : u;
                         if (embedded.getProtocol().equals("file")) { // NOI18N
-                            item = new File(URI.create(embedded.toExternalForm())).getAbsolutePath();
+                            item = Utilities.toFile(URI.create(embedded.toExternalForm())).getAbsolutePath();
                         }
                     }
                     if (sb.length() > 0) {

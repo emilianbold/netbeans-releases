@@ -56,6 +56,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.io.IOException;
@@ -423,6 +424,12 @@ public class ArraysTest extends GeneratorTestMDRCompat {
                 scan(node.getImports(), p);
                 scan(node.getTypeDecls(), p);
                 return null;
+            }
+            @Override
+            public Void scan(Tree tree, Void p) {
+                if (tree != null && copy.getTreeUtilities().isSynthetic(new TreePath(getCurrentPath(), tree)))
+                    return null;
+                return super.scan(tree, p);
             }
         }
 

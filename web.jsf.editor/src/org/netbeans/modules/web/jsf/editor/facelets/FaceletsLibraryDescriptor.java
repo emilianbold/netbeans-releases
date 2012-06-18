@@ -81,6 +81,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     }
     private FileObject definitionFile;
     private String uri;
+    private String prefix;
     private Map<String, Tag> tags = new HashMap<String, Tag>();
     private Map<String, Function> functions = new HashMap<String, Function>();
 
@@ -98,6 +99,11 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
         return uri;
     }
 
+    @Override
+    public String getPrefix() {
+        return prefix;
+    }
+    
     @Override
     public Map<String, Tag> getTags() {
         return tags;
@@ -130,7 +136,6 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
             }
             Document doc = docBuilder.parse(is);
 
-            //usually the default taglib prefix
             Node tagLib = getNodeByName(doc, "facelet-taglib"); //NOI18N
 
             uri = getTextContent(tagLib, "namespace"); //NOI18N
@@ -138,6 +143,9 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
                 throw new IllegalStateException("Missing namespace entry in " + getDefinitionFile().getPath() + " library.", null);
             }
 
+            Node idAttrItem = tagLib.getAttributes().getNamedItem("id");
+            prefix = idAttrItem != null ? idAttrItem.getNodeValue() : null;
+            
             //scan the <tag> nodes content - the tag descriptions
             NodeList tagNodes = doc.getElementsByTagName("tag"); //NOI18N
             if (tagNodes != null) {
@@ -152,9 +160,10 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
                         String aName = getTextContent(attrNode, "name"); //NOI18N
                         String aType = getTextContent(attrNode, "type"); //NOI18N
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
+                        String aMethodSignature = getTextContent(attrNode, "method-signature"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
 
-                        attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired));
+                        attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired, aMethodSignature));
                     }
 
                     tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));

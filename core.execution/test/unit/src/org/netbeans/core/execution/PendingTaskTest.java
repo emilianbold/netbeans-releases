@@ -46,10 +46,10 @@ package org.netbeans.core.execution;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import junit.framework.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.progress.spi.Controller;
 import org.netbeans.modules.progress.spi.ProgressEvent;
 import org.netbeans.modules.progress.spi.ProgressUIWorker;
@@ -66,13 +66,6 @@ public class PendingTaskTest extends NbTestCase {
 	super(testName);
     }
 
-    protected void setUp() throws Exception {
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    
     public void testActionManagersInvokeAction() throws InterruptedException {
         class BlockingAction extends AbstractAction implements Runnable {
             public synchronized void actionPerformed(ActionEvent e) {
@@ -112,7 +105,7 @@ public class PendingTaskTest extends NbTestCase {
     	assertEquals("Action finished", Install.getPendingTasks().size(), 0);
     }
 
-    
+    @RandomlyFails // NB-Core-Build #8375
     public void testProgressTasks() throws InterruptedException {
         class MyWorker implements ProgressUIWorker {
             int cnt;

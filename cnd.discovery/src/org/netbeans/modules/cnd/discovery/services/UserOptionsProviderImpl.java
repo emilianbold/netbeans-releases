@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -59,9 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
@@ -69,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.CharSequences;
@@ -102,6 +100,10 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         return res;
     }
 
+    private ExecutionEnvironment getExecutionEnvironment(MakeConfiguration makeConfiguration) {
+        return makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+    }
+    
     @Override
     public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(macros);
@@ -229,13 +231,13 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         return res;
     }
 
-    private PkgConfig getPkgConfig(MakeConfiguration conf){
-        String hostKey = conf.getDevelopmentHost().getHostKey();
+    private PkgConfig getPkgConfig(ExecutionEnvironment env){
+        String hostKey = ExecutionEnvironmentFactory.toUniqueID(env);
         PkgConfig pkg;
         synchronized(pkgConfigs){
             pkg = pkgConfigs.get(hostKey);
             if (pkg == null) {
-                pkg = PkgConfigManager.getDefault().getPkgConfig(conf);
+                pkg = PkgConfigManager.getDefault().getPkgConfig(env);
                 pkgConfigs.put(hostKey, pkg);
             }
         }
@@ -243,32 +245,22 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     @Override
-    public NativeFileSearch getPackageFileSearch(Project project) {
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null || !pdp.gotDescriptor()){
-            return null;
-        }
-        MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
-        if (make != null) {
-            MakeConfiguration conf = make.getActiveConfiguration();
-            if (conf != null){
-                final PkgConfig pkg = getPkgConfig(conf);
-                if (pkg != null) {
-                    return new NativeFileSearch() {
-                        @Override
-                        public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                            Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
-                            ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
-                            if (resolvedPath != null) {
-                                for(ResolvedPath path : resolvedPath) {
-                                    res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
-                                }
-                            }
-                            return res;
+    public NativeFileSearch getPackageFileSearch(ExecutionEnvironment env) {
+        final PkgConfig pkg = getPkgConfig(env);
+        if (pkg != null) {
+            return new NativeFileSearch() {
+                @Override
+                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                    Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
+                    ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
+                    if (resolvedPath != null) {
+                        for(ResolvedPath path : resolvedPath) {
+                            res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
                         }
-                    };
+                    }
+                    return res;
                 }
-            }
+            };
         }
         return null;
     }
@@ -291,7 +283,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             findPkg = aPkg;
         }
         if (readFlags && findPkg != null) {
-            PkgConfig configs = getPkgConfig(conf);
+            PkgConfig configs = getPkgConfig(getExecutionEnvironment(conf));
             PackageConfiguration config = configs.getPkgConfig(findPkg);
             if (config != null){
                 return config;
@@ -301,7 +293,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     private synchronized PackageConfiguration getCommandOutput(MakeConfiguration conf, String command) {
-        ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+        ExecutionEnvironment env = getExecutionEnvironment(conf);
         Map<String, PackageConfiguration> map = commandCache.get(env);
         if (map == null) {
             map = new HashMap<String, PackageConfiguration>();

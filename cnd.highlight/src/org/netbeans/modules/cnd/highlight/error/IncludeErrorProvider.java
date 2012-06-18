@@ -57,18 +57,34 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=20)
+@ServiceProviders({
+    @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1000),
+    @ServiceProvider(service=CsmErrorProvider.class, position=20)
+})
 public class IncludeErrorProvider extends CsmErrorProvider {
 
     @Override
     public String getName() {
         return "include-errors"; //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return NbBundle.getMessage(IncludeErrorProvider.class, "Show-include-errors"); //NOI18N
+    }
+
+    @Override
+    public String getDescription() {
+        return NbBundle.getMessage(IncludeErrorProvider.class, "Show-include-errors-AD"); //NOI18N
     }
 
     private static abstract class OffsetableErrorInfo implements CsmErrorInfo {

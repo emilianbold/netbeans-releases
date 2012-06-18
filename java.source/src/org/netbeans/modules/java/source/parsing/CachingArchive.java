@@ -93,7 +93,7 @@ public class CachingArchive implements Archive, FileChangeListener {
         this.archiveFile = archiveFile;
         this.keepOpened = keepOpened;
         
-        FileUtil.addFileChangeListener(this, archiveFile);
+        FileUtil.addFileChangeListener(this, FileUtil.normalizeFile(archiveFile));
     }
         
     // Archive implementation --------------------------------------------------

@@ -79,6 +79,7 @@ public class JavaOutputListenerProvider implements OutputProcessor {
         failPattern = Pattern.compile("\\s*(?:\\[WARNING\\])?(?:\\[javac\\])?(?:Compilation failure)?\\s*(.*)\\.java\\:\\[([0-9]*),([0-9]*)\\] (.*)", Pattern.DOTALL); //NOI18N
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
             Matcher match = failPattern.matcher(line);
             if (match.matches()) {
@@ -121,16 +122,20 @@ public class JavaOutputListenerProvider implements OutputProcessor {
         }
     }
 
+    @Override
     public String[] getRegisteredOutputSequences() {
         return JAVAGOALS;
     }
 
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
     }
 
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
     }
     

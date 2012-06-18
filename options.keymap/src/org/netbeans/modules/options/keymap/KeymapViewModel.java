@@ -66,6 +66,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
@@ -109,10 +110,10 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
      */
     public KeymapViewModel () {
         super(new String[]{
-                    NbBundle.getMessage(KeymapViewModel.class, "Actions"), //NOI18N
-                    NbBundle.getMessage(KeymapViewModel.class, "Shortcut"), //NOI18N
-                    NbBundle.getMessage(KeymapViewModel.class, "Category"), //NOI18N
-//                    NbBundle.getMessage(KeymapViewModel.class, "Scope") //NOI18N
+                    NbBundle.getMessage(KeymapViewModel.class, "ActionsColumnName"), //NOI18N
+                    NbBundle.getMessage(KeymapViewModel.class, "ShortcutColumnName"), //NOI18N
+                    NbBundle.getMessage(KeymapViewModel.class, "CategoryColumnName"), //NOI18N
+//                    NbBundle.getMessage(KeymapViewModel.class, "ScopeColumnName") //NOI18N
                 }, 0);
         currentProfile = model.getCurrentProfile ();
     }
@@ -201,6 +202,38 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         }
         return result;
     }
+    
+    private boolean supressDataEvents;
+
+    @Override
+    public void fireTableDataChanged() {
+        if (!supressDataEvents) {
+            super.fireTableDataChanged();
+        }
+    }
+
+    @Override
+    public void fireTableRowsInserted(int firstRow, int lastRow) {
+        if (!supressDataEvents) {
+            super.fireTableRowsInserted(firstRow, lastRow);
+        }
+    }
+
+    @Override
+    public void fireTableRowsDeleted(int firstRow, int lastRow) {
+        if (!supressDataEvents) {
+            super.fireTableRowsDeleted(firstRow, lastRow);
+        }
+    }
+
+    @Override
+    public void fireTableChanged(TableModelEvent e) {
+        if (!supressDataEvents) {
+            super.fireTableChanged(e);
+        }
+    }
+    
+    
 
     
     // other methods ...........................................................
@@ -216,6 +249,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             searchTxt = searchText.toLowerCase();
         }
 
+        supressDataEvents = true;
         getDataVector().removeAllElements();
         for (String categorySet : getCategories().keySet()) {
             for (String category : getCategories().get(categorySet)) {
@@ -245,6 +279,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                 }
             }
         }
+        supressDataEvents = false;
         fireTableDataChanged();
     }
 
@@ -778,6 +813,15 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                     return ((ShortcutAction) o1).getDisplayName ().compareTo (
                         ((ShortcutAction) o2).getDisplayName ()
                     );
+        }
+    }
+    
+    void runWithoutEvents(Runnable r) {
+        try {
+            supressDataEvents = true;
+            r.run();
+        } finally {
+            supressDataEvents = false;
         }
     }
 }

@@ -48,6 +48,8 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -233,8 +235,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
     
     private void annotateException(Throwable t, int severity, String localizedMessage) {
-        ErrorManager.getDefault().annotate(t, severity, null, localizedMessage, null, null);
-        
         if (errorMessages == null) {
             errorMessages = new HashMap<Throwable, String>();
         }
@@ -460,10 +460,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             new Object[] { javaFile.getName(),
                                            substClass.getName(),
                                            declaredSuperclassName != null ?
-                                             declaredSuperclassName : "<unknown class>" }); // NOI18N
-                        System.err.println(msg);
-                        if (formBaseClassEx != null)
-                            formBaseClassEx.printStackTrace();
+                                           declaredSuperclassName : "<unknown class>" }); // NOI18N
+                        if (formBaseClassEx != null) {
+                            Logger.getLogger("").log(Level.INFO, msg, formBaseClassEx); // NOI18N
+                        } else {
+                            Logger.getLogger("").log(Level.INFO, msg);
+                        }
                     }
                 }
                 catch (Exception ex) { // should not happen for the substitute types
@@ -2004,8 +2006,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @throws PersistenceException with explanation for the user.
      */
     private void swingappEncountered() throws PersistenceException {
-        String msg = FormUtils.getBundleString("MSG_ERR_SwingAppEncountered"); // NOI18N
-        throw new PersistenceException(msg);
+        if (!swingappAvailable()) {
+            String msg = FormUtils.getBundleString("MSG_ERR_SwingAppEncountered"); // NOI18N
+            throw new PersistenceException(msg);
+        }
+    }
+
+    private static boolean swingappAvailable() {
+        return Lookup.getDefault().lookup(ResourceService.class) != null;
     }
 
     private void loadProperty(org.w3c.dom.Node propNode, RADComponent metacomp, FormProperty property)
@@ -2513,7 +2521,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         Class clazz = null;
         Throwable t = null;
         try {
-            clazz = PersistenceObjectRegistry.loadClass(className, formFile);
+            clazz = getClassFromString(className);
         }
         catch (Exception ex) {
             t = ex;
@@ -3032,15 +3040,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                     }                    
                 }
-                if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)) {
-                    if (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value) {
-                        // Swing Application Framework support has been discontinued
-                        // => changing the setting to I18N. It is just a fallback
-                        // in case the resourcing was not used at all. If it was used
-                        // then we refuse to open the form (this is implemented
-                        // on another place in this class).
-                        formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
-                    }
+                if (ResourceSupport.PROP_AUTO_RESOURCING.equals(settingName)
+                        && (ResourceSupport.AUTO_RESOURCING == value || ResourceSupport.AUTO_INJECTION == value)
+                        && !swingappAvailable()) {
+                    // Swing Application Framework support has been discontinued
+                    // => changing the setting to I18N. It is just a fallback
+                    // in case the resourcing was not used at all. If it was used
+                    // then we refuse to open the form (this is implemented
+                    // on another place in this class).
+                    formSettings.set(ResourceSupport.PROP_AUTO_RESOURCING, ResourceSupport.AUTO_I18N);
                 }
             } else {
                 // we have a valid name / value pair

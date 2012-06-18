@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -107,6 +108,38 @@ public class RootSelectorTree extends JPanel {
             return o1.toFlattened().compareTo(o2.toFlattened());
         }
     };
+    
+    private static class TypeEntry {
+        SelectionTreeBuilderType type;
+        int frequency;
+
+        public TypeEntry(SelectionTreeBuilderType type) {
+            this.type = type;
+            frequency = 0;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final TypeEntry other = (TypeEntry) obj;
+            if (this.type != other.type && (this.type == null || !this.type.equals(other.type))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 53 * hash + (this.type != null ? this.type.hashCode() : 0);
+            return hash;
+        }
+    }
     
     private JCheckTree tree = new JCheckTree() {
         @Override
@@ -192,134 +225,131 @@ public class RootSelectorTree extends JPanel {
     }
 
     final private AtomicBoolean isActive = new AtomicBoolean(true);
-    final private Semaphore selectionSemaphore = new Semaphore(1);
-    public void setSelection(final SourceCodeSelection[] selection) {
-        new SwingWorker(selectionSemaphore) {
-            volatile private ProgressDisplayer pd = null;
-            
-            protected void doInBackground() {
-                isActive.set(true);
-                removeSelection(getSelection());
-                applySelection(selection);
-            }
+    final private Semaphore semaphore = new Semaphore(1);
+    
+    public void setSelection(final SourceCodeSelection[] selection, Lookup context) {
+        setSelection(selection);
+        setContext(context);
+    }
+    
+    private static interface SelectionGetter {
+        SourceCodeSelection[] getSelection();
+    }
+    
+    final private class SelectionSetter extends SwingWorker {
+        volatile private ProgressDisplayer pd = null;
+        final private SelectionGetter getter;
+        
+        private SelectionSetter(SelectionGetter selection) {
+            super(semaphore);
+            this.getter = selection;
+        }
+        
+        private SelectionSetter(final SourceCodeSelection[] newSelection) {
+            this(new SelectionGetter() {
 
-            @Override
-            protected void nonResponding() {
-                final CountDownLatch cl = new CountDownLatch(1);
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        RootSelectorTree.this.setEnabled(false);
-                        cl.countDown();
-                    }
-                });
-                final SwingWorker worker = this;
-                pd = progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
-                    @Override
-                    public boolean cancel() {
-                        worker.cancel();
-                        return true;
-                    }
-                });
-                
-                try {
-                    cl.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                @Override
+                public SourceCodeSelection[] getSelection() {
+                    return newSelection;
                 }
-            }
-            
-            protected void done() {
-                closeProgress();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        RootSelectorTree.this.setEnabled(true);
-                    }
-                });
-                tree.treeDidChange();
-            }
-            
-            
-            
-            private void closeProgress() {
-                if (pd != null && pd.isOpened()) {
-                    pd.close();
-                    pd = null;
-                }                
-            }
+            });
+        }
+        
+        protected void doInBackground() {
+            isActive.set(true);
+            SourceCodeSelection[] newSelection = getter.getSelection(); // just in case if the getter decides to return the current selection which gets cleaned on the next line
+            removeSelection(getSelection());
+            applySelection(newSelection);
+        }
 
-            @Override
-            protected int getWarmup() {
-                return 50;
-            }
+        @Override
+        protected void nonResponding() {
+            final CountDownLatch cl = new CountDownLatch(1);
+            SwingUtilities.invokeLater(new Runnable() {
 
-            @Override
-            protected void cancelled() {
-                isActive.set(false);
-                closeProgress();
-                if (cancellHandler != null) {
-                    cancellHandler.cancel();
+                @Override
+                public void run() {
+                    RootSelectorTree.this.setEnabled(false);
+                    cl.countDown();
                 }
+            });
+            final SwingWorker worker = this;
+            pd = progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                @Override
+                public boolean cancel() {
+                    worker.cancel();
+                    return true;
+                }
+            });
+
+            try {
+                cl.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
-        }.execute();
+        }
+
+        protected void done() {
+            closeProgress();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    RootSelectorTree.this.setEnabled(true);
+                }
+            });
+            tree.treeDidChange();
+        }
+
+        private void closeProgress() {
+            if (pd != null && pd.isOpened()) {
+                pd.close();
+                pd = null;
+            }                
+        }
+
+        @Override
+        protected int getWarmup() {
+            return 50;
+        }
+
+        @Override
+        protected void cancelled() {
+            isActive.set(false);
+            closeProgress();
+            if (cancellHandler != null) {
+                cancellHandler.cancel();
+            }
+        }
+    }
+    
+    private void setSelection(final SourceCodeSelection[] selection) {
+        new SelectionSetter(selection).execute();
     }
 
     public SourceCodeSelection[] getSelection() {
-        if (currentSelectionSet.isEmpty()) return new SourceCodeSelection[0];
-        
-        List<SourceCodeSelection> selectionList = new ArrayList<SourceCodeSelection>(currentSelectionSet);
-        
-        Collections.sort(selectionList, containmentComparator);
-        
-        currentSelectionSet.clear();
-        SourceCodeSelection parentSel = null;
-        for(SourceCodeSelection scs : selectionList) {
-            if (parentSel == null || !parentSel.contains(scs)) {
-                parentSel = scs;
-                currentSelectionSet.add(scs);
-            }
-        }        
-        return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
+        synchronized(currentSelectionSet) {
+            if (currentSelectionSet.isEmpty()) return new SourceCodeSelection[0];
+
+            List<SourceCodeSelection> selectionList = new ArrayList<SourceCodeSelection>(currentSelectionSet);
+
+            Collections.sort(selectionList, containmentComparator);
+
+            currentSelectionSet.clear();
+            SourceCodeSelection parentSel = null;
+            for(SourceCodeSelection scs : selectionList) {
+                if (parentSel == null || !parentSel.contains(scs)) {
+                    parentSel = scs;
+                    currentSelectionSet.add(scs);
+                }
+            }        
+            return currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]);
+        }
     }
 
     public List<SelectionTreeBuilderType> getBuilderTypes() {
 //      **** useful for testing *******
 //      return Collections.EMPTY_LIST;
 //      *******************************
-        class TypeEntry {
-
-            SelectionTreeBuilderType type;
-            int frequency;
-
-            public TypeEntry(SelectionTreeBuilderType type) {
-                this.type = type;
-                frequency = 0;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (obj == null) {
-                    return false;
-                }
-                if (getClass() != obj.getClass()) {
-                    return false;
-                }
-                final TypeEntry other = (TypeEntry) obj;
-                if (this.type != other.type && (this.type == null || !this.type.equals(other.type))) {
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            public int hashCode() {
-                int hash = 5;
-                hash = 53 * hash + (this.type != null ? this.type.hashCode() : 0);
-                return hash;
-            }
-        }
 
         List<TypeEntry> entries = new ArrayList<TypeEntry>();
 
@@ -372,10 +402,12 @@ public class RootSelectorTree extends JPanel {
     public void reset() {
         isActive.set(true);
         tree.setModel(DEFAULTMODEL);
-        currentSelectionSet.clear();
         context = Lookup.EMPTY;
         sCont = null;
         searchPanel.reset();
+        synchronized(currentSelectionSet) {
+            currentSelectionSet.clear();
+        }
     }
 
     public void setRowHeight(int rowHeight) {
@@ -523,10 +555,12 @@ public class RootSelectorTree extends JPanel {
 
                         // replace with this root method as much as possible from the previously selected root methods (eg. wildcard replacing single root methods within a package etc.)
                         // basically remove all root methods of the selected node's subtree
-                        for (SourceCodeSelection signature : signatures) {
-                            for (SourceCodeSelection rootMethod : currentSelectionSet) {
-                                if (signature.contains(rootMethod)) {
-                                    toRemove.add(rootMethod);
+                        synchronized(currentSelectionSet) {
+                            for (SourceCodeSelection signature : signatures) {
+                                for (SourceCodeSelection rootMethod : currentSelectionSet) {
+                                    if (signature.contains(rootMethod)) {
+                                        toRemove.add(rootMethod);
+                                    }
                                 }
                             }
                         }
@@ -693,7 +727,9 @@ public class RootSelectorTree extends JPanel {
             }
         }
 
-        currentSelectionSet.addAll(Arrays.asList(selections));
+        synchronized(currentSelectionSet) {
+            currentSelectionSet.addAll(Arrays.asList(selections));
+        }
     }
 
     private void applySelection(SelectorNode node, SourceCodeSelection selection) {
@@ -813,8 +849,8 @@ public class RootSelectorTree extends JPanel {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.setModel(new DefaultTreeModel(getTreeRoot()));
-        applyCurrentSelection();
         tree.treeDidChange();
+        applyCurrentSelection();
     }
 
     private DefaultMutableTreeNode getTreeRoot() {
@@ -834,18 +870,12 @@ public class RootSelectorTree extends JPanel {
     }
 
     private void applyCurrentSelection() {
-        setSelection(currentSelectionSet.toArray(new SourceCodeSelection[currentSelectionSet.size()]));
-//        TreeNode root = (TreeNode) tree.getModel().getRoot();
-//        Enumeration childrenEnum = root.children();
-//
-//        while (childrenEnum.hasMoreElements()) {
-//            Object child = childrenEnum.nextElement();
-//
-//            if (child instanceof SelectorNode) {
-//                for (SourceCodeSelection selection : currentSelectionSet) {
-//                    applySelection((SelectorNode) child, selection);
-//                }
-//            }
-//        }
+        new SelectionSetter(new SelectionGetter() {
+
+            @Override
+            public SourceCodeSelection[] getSelection() {
+                return RootSelectorTree.this.getSelection();
+            }
+        }).execute();
     }
 }

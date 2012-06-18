@@ -59,7 +59,6 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
@@ -75,10 +74,9 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     public static final int REMOVE = ClassPathModifierSupport.REMOVE;
     
     private final Project project;
-    private final UpdateHelper helper;
     private final PropertyEvaluator eval;    
     private final ClassPathSupport cs;    
-    private final AntProjectHelper antHelper;
+    private final UpdateHelper updateHelper;
     private ReferenceHelper refHelper;
     private ClassPathModifier.Callback cpModifierCallback;
     private ClassPathUiSupport.Callback cpUiSupportCallback;
@@ -96,11 +94,10 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         assert eval != null;
         assert refHelper != null;
         this.project = project;
-        this.helper = helper;
         this.eval = eval;
         this.refHelper = refHelper;
-        this.antHelper = helper.getAntProjectHelper();
-        this.cs = new ClassPathSupport( eval, refHelper, antHelper, helper,
+        this.updateHelper = helper;
+        this.cs = new ClassPathSupport( eval, refHelper, updateHelper.getAntProjectHelper(), helper,
                                         cpSupportCallback);
         this.cpModifierCallback = cpModifierCallback;
         this.cpUiSupportCallback = cpUiSupportCallback;
@@ -152,7 +149,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     boolean handleRoots (final URI[] classPathRoots, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
         assert classPathRoots != null : "The classPathRoots cannot be null";      //NOI18N        
         assert classPathProperty != null;
-        return ClassPathModifierSupport.handleRoots(project, antHelper, cs, eval, cpUiSupportCallback, classPathRoots, classPathProperty, projectXMLElementName, operation);
+        return ClassPathModifierSupport.handleRoots(project, updateHelper, cs, eval, refHelper, cpUiSupportCallback, classPathRoots, classPathProperty, projectXMLElementName, operation);
     }
     
     protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
@@ -166,11 +163,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     boolean handleAntArtifacts (final AntArtifact[] artifacts, final URI[] artifactElements, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
-        assert artifacts != null : "Artifacts cannot be null";    //NOI18N
-        assert artifactElements != null : "ArtifactElements cannot be null";  //NOI18N
-        assert artifacts.length == artifactElements.length : "Each artifact has to have corresponding artifactElement"; //NOI18N
-        assert classPathProperty != null;
-        return ClassPathModifierSupport.handleAntArtifacts(project, antHelper, cs, eval, cpUiSupportCallback, artifacts, artifactElements, classPathProperty, projectXMLElementName, operation);
+        return ClassPathModifierSupport.handleAntArtifacts(project, updateHelper, cs, eval, refHelper, cpUiSupportCallback, artifacts, artifactElements, classPathProperty, projectXMLElementName, operation);
     }
     
     protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
@@ -184,7 +177,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     boolean handleLibraries (final Library[] libraries, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
-        return ClassPathModifierSupport.handleLibraries(project, antHelper, cs, eval, cpUiSupportCallback, refHelper, libraries, classPathProperty, projectXMLElementName, operation);
+        return ClassPathModifierSupport.handleLibraries(project, updateHelper.getAntProjectHelper(), cs, eval, cpUiSupportCallback, refHelper, libraries, classPathProperty, projectXMLElementName, operation);
     }
     
 

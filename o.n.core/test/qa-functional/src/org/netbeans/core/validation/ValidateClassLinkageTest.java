@@ -61,6 +61,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 
 /**
  * Test that all classes in the system can load and link.
@@ -96,7 +97,7 @@ public class ValidateClassLinkageTest extends NbTestCase {
                     System.err.println("Skipping " + jarfileurl);
                     continue;
                 }
-                File f = new File(new URI(jarfileurl));
+                File f = Utilities.toFile(new URI(jarfileurl));
                 jars.add(f);
             }
         }

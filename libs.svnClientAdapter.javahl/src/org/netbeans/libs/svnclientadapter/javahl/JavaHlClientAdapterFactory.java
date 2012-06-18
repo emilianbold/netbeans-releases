@@ -62,11 +62,43 @@ import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
 public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
 
     private static final String SUBVERSION_NATIVE_LIBRARY = "subversion.native.library";
-    
-    /** indicates that something went terribly wrong with javahl init during the previous nb session */
-    private static boolean javahlCrash = false;
-    private final static int JAVAHL_INIT_NOCRASH = 1;
-    private final static int JAVAHL_INIT_STOP_REPORTING = 2;
+    private static final String[] COLLABNET_LIBRARIES = new String[] { 
+        "msvcr100.dll", //NOI18N
+        "msvcp100.dll", //NOI18N
+        "libapr-1.dll", //NOI18N
+        "libapriconv-1.dll", //NOI18N
+        "libeay32.dll", //NOI18N
+        "ssleay32.dll", //NOI18N
+        "libaprutil-1.dll", //NOI18N
+        "dbghelp.dll", //NOI18N
+        "libsasl.dll", //NOI18N
+        "libsvn_subr-1.dll", //NOI18N
+        "libsvn_delta-1.dll", //NOI18N
+        "libsvn_diff-1.dll", //NOI18N
+        "libsvn_wc-1.dll", //NOI18N
+        "libsvn_fs-1.dll", //NOI18N
+        "libsvn_repos-1.dll", //NOI18N
+        "libsvn_ra-1.dll", //NOI18N
+        "libsvn_client-1.dll" //NOI18N
+    };
+    private static final String SLIKSVN_CLIENT_LIBRARY = "SlikSvn-svn_client-1.dll"; //NOI18N
+    private static final String[] SLIKSVN_LIBRARIES = new String[] { 
+        "SlikSvn-DB44-20-win32.dll", //NOI18N
+        "SlikSvn-libapr-1.dll", //NOI18N
+        "SlikSvn-libaprutil-1.dll", //NOI18N
+        "SlikSvn-libeay32.dll", //NOI18N
+        "SlikSvn-libintl-Win32.dll", //NOI18N
+        "SlikSvn-ssleay32.dll", //NOI18N
+        "SlikSvn-Sasl21-23-win32.dll", //NOI18N
+        "SlikSvn-svn_subr-1.dll", //NOI18N
+        "SlikSvn-svn_delta-1.dll", //NOI18N
+        "SlikSvn-svn_diff-1.dll", //NOI18N
+        "SlikSvn-svn_wc-1.dll", //NOI18N
+        "SlikSvn-svn_fs-1.dll", //NOI18N
+        "SlikSvn-svn_repos-1.dll", //NOI18N
+        "SlikSvn-svn_ra-1.dll", //NOI18N
+        SLIKSVN_CLIENT_LIBRARY
+    };
     
     private boolean available = false;
 
@@ -207,23 +239,15 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     }
 
     private void loadJavahlDependencies(String locationPath) {
-        try { System.load(locationPath + "/msvcr100.dll"); }        catch (Throwable t) { }
-        try { System.load(locationPath + "/msvcp100.dll"); }        catch (Throwable t) { }
-        try { System.load(locationPath + "/libapr-1.dll"); }        catch (Throwable t) { }
-        try { System.load(locationPath + "/libapriconv-1.dll"); }   catch (Throwable t) { }
-        try { System.load(locationPath + "/libeay32.dll"); }        catch (Throwable t) { }
-        try { System.load(locationPath + "/ssleay32.dll"); }        catch (Throwable t) { }
-        try { System.load(locationPath + "/libaprutil-1.dll"); }    catch (Throwable t) { }
-        try { System.load(locationPath + "/dbghelp.dll"); }         catch (Throwable t) { }
-        try { System.load(locationPath + "/libsasl.dll"); }         catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_subr-1.dll"); }   catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_delta-1.dll"); }  catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_diff-1.dll"); }   catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_wc-1.dll"); }     catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_fs-1.dll"); }     catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_repos-1.dll"); }  catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_ra-1.dll"); }     catch (Throwable t) { }
-        try { System.load(locationPath + "/libsvn_client-1.dll"); } catch (Throwable t) { }
+        for (String filename : COLLABNET_LIBRARIES) {
+            try { System.load(locationPath + "/" + filename); } catch (Throwable t) { LOG.log(Level.FINE, "cannot load library {0}", filename); } //NOI18N
+        }
+        // SlikSVN??
+        if (new File(locationPath + "/" + SLIKSVN_CLIENT_LIBRARY).exists()) { //NOI18N
+            for (String filename : SLIKSVN_LIBRARIES) {
+                try { System.load(locationPath + "/" + filename); } catch (Throwable t) { LOG.log(Level.FINE, "cannot load library {0}", filename); } //NOI18N
+            }
+        }
     }    
     
     private File getJavahlFromExecutablePath(String libName) {

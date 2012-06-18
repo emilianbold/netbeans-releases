@@ -64,8 +64,7 @@ import org.openide.filesystems.FileObject;
 public class NewProjectWizardUtils {
 
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
-        Boolean b = (Boolean) wizardDescriptor.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
-        return b != null && b.booleanValue();
+        return wizardDescriptor.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null;
     }
 
     public static FileObject getFileObject(String path, WizardDescriptor wizardDescriptor) {

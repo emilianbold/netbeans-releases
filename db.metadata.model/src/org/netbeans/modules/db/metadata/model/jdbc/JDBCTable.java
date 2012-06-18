@@ -204,7 +204,13 @@ public class JDBCTable extends TableImplementation {
                 JDBCIndex index = null;
                 String currentIndexName = null;
                 while (rs.next()) {
-                    if (rs.getShort("TYPE") == DatabaseMetaData.tableIndexStatistic) {
+                    // Ignore Indices marked statistic
+                    // explicit: TYPE == DatabaseMetaData or
+                    // implicit: ORDINAL_POSITION == 0
+                    // @see java.sql.DatabaseMetaData#getIndexInfo
+                    if (rs.getShort("TYPE") //NOI18N
+                            == DatabaseMetaData.tableIndexStatistic
+                            || rs.getInt("ORDINAL_POSITION") == 0) { //NOI18N
                         continue;
                     }
 
@@ -324,12 +330,15 @@ public class JDBCTable extends TableImplementation {
             colname = MetadataUtilities.trimmed(rs.getString("PKCOLUMN_NAME")); // NOI18N
             referredColumn = table.getColumn(colname);
             if (referredColumn == null) {
-                throw new MetadataException(getMessage("ERR_COL_NOT_FOUND", table.getParent().getParent().getName(), table.getParent().getName(), table.getName(), colname)); // NOI18N
+                throwColumnNotFoundException(table, colname);
             }
 
             colname = MetadataUtilities.trimmed(rs.getString("FKCOLUMN_NAME"));
             referringColumn = getColumn(colname);
 
+            if (referringColumn == null) {
+                throwColumnNotFoundException(this.getTable(), colname);
+            }
             position = rs.getInt("KEY_SEQ");
         } catch (SQLException e) {
             filterSQLException(e);
@@ -337,6 +346,16 @@ public class JDBCTable extends TableImplementation {
         return new JDBCForeignKeyColumn(parent.getForeignKey(), referringColumn.getName(), referringColumn, referredColumn, position);
     }
     
+    private void throwColumnNotFoundException(Table table, String colname)
+            throws MetadataException {
+        String message = getMessage("ERR_COL_NOT_FOUND", //NOI18N
+                table.getParent().getParent().getName(),
+                table.getParent().getName(), table.getName(), colname);
+        MetadataException e = new MetadataException(message);
+        LOGGER.log(Level.INFO, message, e);
+        throw e;
+    }
+
     private String getMessage(String key, String ... args) {
         return NbBundle.getMessage(JDBCTable.class, key, args);
     }

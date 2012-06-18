@@ -80,6 +80,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
             if (wsdlModel == null) {
                 wsdlModeler.generateWsdlModel(new WsdlModelListener() {
 
+                    @Override
                     public void modelCreated(WsdlModel model) {
                         wsdlModel = model;
                         ((JaxWsClientNode) getNode()).changeIcon();
@@ -109,6 +110,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
         setKeys(keys == null ? new ArrayList<WsdlService>() : keys);
     }
 
+    @Override
     protected Node[] createNodes(WsdlService key) {
         return new Node[]{new ServiceNode(key)};
     }

@@ -141,10 +141,11 @@ public final class DiffPanel extends JPanel {
             }
         } finally {
             if (ok) {
-                // clean any old tmp file
-                syncItem.cleanupTmpLocalFile();
                 // set new tmp file?
                 if (fileModified) {
+                    // clean any old tmp file
+                    syncItem.cleanupTmpLocalFile();
+                    // set new tmp file
                     syncItem.setTmpLocalFile(localTmpFile);
                 } else {
                     localTmpFile.cleanup();

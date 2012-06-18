@@ -46,6 +46,11 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -53,6 +58,9 @@ import org.openide.util.actions.CallableSystemAction;
 /**
  * Action which shows Hierarchy component.
  */
+@ActionID(id = "org.netbeans.modules.cnd.navigation.hierarchy.HierarchyAction", category = "Window")
+@ActionRegistration(lazy = true, displayName = "#CTL_HierarchyAction", iconBase=HierarchyTopComponent.ICON_PATH)
+@ActionReference(path = "Menu/Window/Navigator", name = "HierarchyAction", position = 1100)
 public class HierarchyAction extends CallableSystemAction {
 
     public HierarchyAction() {
@@ -70,6 +78,12 @@ public class HierarchyAction extends CallableSystemAction {
 
     @Override
     public void performAction() {
+        if (!CsmUtilities.isAnyNativeProjectOpened()) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(HierarchyAction.class, "CTL_HierarchyAction.warning"), NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
         HierarchyTopComponent win = HierarchyTopComponent.findInstance();
         //Preferences ps = NbPreferences.forModule(HierarchyTopComponent.class);
         win.open();
@@ -88,7 +102,7 @@ public class HierarchyAction extends CallableSystemAction {
 
     @Override
     public boolean isEnabled() {
-        return CsmUtilities.isAnyNativeProjectOpened();
+        return true;
     }
     
     @Override

@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.gsf.testrunner.api;
 
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.DefaultTestRunnerNodeFactory;
@@ -78,7 +81,8 @@ public class TestSession {
     /**
      * The project where this session is invoked.
      */
-    private final Project project;
+    private WeakReference<Project> project;
+    private final URI projectURI;
     /**
      * The suites that were executed.
      */
@@ -135,7 +139,8 @@ public class TestSession {
         Parameters.notNull("project", project);
         Parameters.notNull("nodeFactory", nodeFactory);
         this.name = name;
-        this.project = project;
+        this.project = new WeakReference<Project>(project);
+        this.projectURI = project.getProjectDirectory().toURI();
         this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.sessionType = sessionType;
         this.result = new SessionResult();
@@ -201,7 +206,12 @@ public class TestSession {
      * @return the project where this session for invoked.
      */
     public Project getProject() {
-        return project;
+        Project prj = project.get();
+        if (prj == null) {
+            prj = FileOwnerQuery.getOwner(projectURI);
+            project = new WeakReference<Project>(prj);
+        }
+        return prj;
     }
 
     /**
@@ -277,7 +287,12 @@ public class TestSession {
      * @return
      */
     public Report getReport(long timeInMillis) {
-        Report report = new Report(getCurrentSuite().getName(), project);
+        Project prj = project.get();
+        if (prj == null) {
+            prj = FileOwnerQuery.getOwner(projectURI);
+            project = new WeakReference<Project>(prj);
+        }
+        Report report = new Report(getCurrentSuite().getName(), prj);
         report.setElapsedTimeMillis(timeInMillis);
         for (Testcase testcase : getCurrentSuite().getTestcases()) {
             report.reportTest(testcase);
@@ -329,7 +344,12 @@ public class TestSession {
      * @see #name
      */
     public String getName() {
-        return name.length() != 0 ? name : ProjectUtils.getInformation(project).getDisplayName();
+        Project prj = project.get();
+        if (prj == null) {
+            prj = FileOwnerQuery.getOwner(projectURI);
+            project = new WeakReference<Project>(prj);
+        }
+        return name.length() != 0 ? name : ProjectUtils.getInformation(prj).getDisplayName();
     }
 
     /**

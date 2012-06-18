@@ -92,6 +92,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * openhook implementation, register global classpath and also
@@ -158,6 +159,9 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
         registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
+        //manually register the listener for this project, we know it's loaded and should be listening on changes.
+        //registerCoordinates() doesn't attach listeners
+        MavenFileOwnerQueryImpl.getInstance().attachProjectListener(project);
         Set<URI> uris = getProjectExternalSourceRoots(project);
         for (URI uri : uris) {
             FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -198,7 +202,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
         //only check for the updates of index, if the indexing was already used.
         if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
-            final int freq = RepositoryPreferences.getInstance().getIndexUpdateFrequency();
+            final int freq = RepositoryPreferences.getIndexUpdateFrequency();
             new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() { // #138102
                 public @Override void run() {
                     List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
@@ -238,10 +242,10 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         // the project root.
         uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(false)));
         uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(true)));
-        URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
-        File rootDir = new File(rootUri);
+        URI rootUri = Utilities.toURI(FileUtil.toFile(project.getProjectDirectory()));
+        File rootDir = Utilities.toFile(rootUri);
         for (URI uri : uris) {
-            if (FileUtilities.getRelativePath(rootDir, new File(uri)) == null) {
+            if (FileUtilities.getRelativePath(rootDir, Utilities.toFile(uri)) == null) {
                 toRet.add(uri);
             }
         }
@@ -252,7 +256,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         return cacheDir.exists() && cacheDir.isDirectory();
     }
     private boolean checkDiff(String repoid, long amount) {
-        Date date = RepositoryPreferences.getInstance().getLastIndexUpdate(repoid);
+        Date date = RepositoryPreferences.getLastIndexUpdate(repoid);
         Date now = new Date();
         LOGGER.log(Level.FINER, "Check Date Diff :{0}", repoid);//NOI18N
         LOGGER.log(Level.FINER, "Last Indexed Date :{0}", SimpleDateFormat.getInstance().format(date));//NOI18N
@@ -413,8 +417,17 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             LOGGER.log(Level.WARNING, "no artifactId in {0}", pom);
             return;
         }
-        if (groupId.contains("${") || artifactId.contains("${")) {
-            LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId in {0}", basedir);
+        String version = model.getVersion();
+        if (version == null && parent != null) {
+            version = parent.getVersion();
+        }
+        if (version == null) {
+            LOGGER.log(Level.WARNING, "no version in {0}", pom);
+            return;
+        }        
+        
+        if (groupId.contains("${") || artifactId.contains("${") || version.contains("${")) {
+            LOGGER.log(Level.FINE, "Unevaluated groupId/artifactId/version in {0}", basedir);
             FileObject basedirFO = FileUtil.toFileObject(basedir);
             if (basedirFO != null) {
                 try {
@@ -437,7 +450,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
         } else {
             try {
-                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, basedir.toURI().toURL());
+                MavenFileOwnerQueryImpl.getInstance().registerCoordinates(groupId, artifactId, version, Utilities.toURI(basedir).toURL());
             } catch (MalformedURLException x) {
                 LOGGER.log(Level.FINE, null, x);
             }

@@ -68,6 +68,7 @@ public class OperationEditorDrop implements ActiveEditorDrop {
         this.operationNode=operationNode;
     }
 
+    @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
         if (mimeType!=null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType) )) { //NOI18N

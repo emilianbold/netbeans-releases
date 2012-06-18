@@ -540,7 +540,8 @@ public class Reformatter implements ReformatTask {
                     int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
                     if (startPos >= 0 && startPos > tokens.offset()) {
                         tokens.move(startPos);
-                        tokens.moveNext();
+                        if (!tokens.moveNext())
+                            tokens.movePrevious();
                     }
                     if (startPos >= endPos)
                         endPos = -1;
@@ -1477,7 +1478,9 @@ public class Reformatter implements ReformatTask {
                         WrapAbort oldCheckWrap = checkWrap;
                         checkWrap = new WrapAbort(o);
                         try {
+                            spaces(0, true);
                             accept(DOT);
+                            spaces(0, true);
                             scanMethodCall(node);
                         } catch (WrapAbort wa) {
                         } finally {
@@ -1496,7 +1499,9 @@ public class Reformatter implements ReformatTask {
                         }
                         break;
                     case WRAP_NEVER:
+                        spaces(0, true);
                         accept(DOT);
+                        spaces(0, true);
                         scanMethodCall(node);
                         break;
                 }
@@ -3571,7 +3576,7 @@ public class Reformatter implements ReformatTask {
                                     } else {
                                         col++;
                                     }
-                                    if (!s.equals(text.substring(lastWSPos, endOff)))
+                                    if (endOff > lastWSPos && !s.equals(text.substring(lastWSPos, endOff)))
                                         addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                                 } else if (pendingDiff != null) {
                                     String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
@@ -3615,6 +3620,12 @@ public class Reformatter implements ReformatTask {
                         }
                     }
                 } else {
+                    if (pendingDiff != null) {
+                        String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                        if (sub.equals(pendingDiff.text)) {
+                            pendingDiff = null;
+                        }
+                    }
                     if (enableCommentFormatting) {
                         if (currNWSPos < 0) {
                             currNWSPos = i;
@@ -3780,7 +3791,7 @@ public class Reformatter implements ReformatTask {
                                                     } else {
                                                         pendingDiff = new Diff(offset + lastNewLinePos + 1, offset + i, indentString + SPACE);
                                                     }
-                                                    col = indent;
+                                                    col = getCol(indentString + SPACE);
                                                 }
                                             } else { 
                                                 if (currWSPos < 0) {
