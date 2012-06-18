@@ -77,10 +77,5 @@ made subject to such option by the copyright holder.
 
     <target name="netbeans-extra" depends="jar-server"/>
 
-    <target name="pre-jar-ml" depends="projectized.build-init,projectized.check-run-mlbuild" if="run.ml.build">
-        <locjar jarfile="${cluster}/modules/ext/org-netbeans-modules-web-httpmonitor.jar"
-                basedir="${nb_all}/translatedfiles/src/${module.name}/serversrc"
-                compress="${build.package.compress}"/>
-    </target>
 
 </project>

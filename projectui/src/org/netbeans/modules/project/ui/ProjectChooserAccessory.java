@@ -80,6 +80,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Special component on side of project filechooser.
@@ -393,7 +394,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
             b.append("../"); // NOI18N
         }
-        URI u = base.toURI().relativize(f2.toURI());
+        URI u = Utilities.toURI(base).relativize(Utilities.toURI(f2));
         assert !u.isAbsolute() : u + " from " + f1 + " and " + f2 + " with common root " + base;
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {

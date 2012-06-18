@@ -217,7 +217,7 @@ public class ModelTest extends TestCase {
 
     private ModelSource createModelSource(String templateName) throws FileNotFoundException, IOException, URISyntaxException {
         URL url = getClass().getClassLoader().getResource(templateName);
-        File templateFile = new File(url.toURI());
+        File templateFile = org.openide.util.Utilities.toFile(url.toURI());
         assertTrue(templateFile.exists());
         FileObject fo = FileUtil.toFileObject(templateFile);
         FileInputStream str = new FileInputStream(templateFile);

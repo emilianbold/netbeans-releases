@@ -142,6 +142,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     
     private void updateKeys() {
             SwingUtilities.invokeLater(new Runnable() {
+            @Override
                 public void run() {
                     final List<?>[] keys = new List<?>[1];
                     if (implClass != null) {
@@ -279,6 +280,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
             });
     }
     
+    @Override
     protected Node[] createNodes(Object key) {
         if(key instanceof WebOperationInfo) {
             final WebOperationInfo method = (WebOperationInfo)key;

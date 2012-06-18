@@ -59,6 +59,7 @@ import org.netbeans.modules.javafx2.platform.Utils;
 import org.netbeans.modules.javafx2.platform.registration.PlatformAutoInstaller;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 
 /**
@@ -190,17 +191,6 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
-     * Determines whether JavaFX SDK and JavaFX Runtime locations are correct
-     * 
-     * @param JavaFX SDK path
-     * @param JavaFX Runtime path
-     * @return are locations correct
-     */
-    public static boolean areJFXLocationsCorrect(@NonNull String sdkPath, @NonNull String runtimePath) {
-        return isSdkPathCorrect(sdkPath) && isRuntimePathCorrect(runtimePath);
-    }
-    
-    /**
      * Determines whether any JavaFX enabled platform exist
      * 
      * @return is there any JavaFX platform
@@ -234,28 +224,8 @@ public final class JavaFXPlatformUtils {
         JavaPlatform registered = PlatformAutoInstaller.createRegisteredJavaFXPlatform();
         if(registered != null) {
             return registered;
-        }
-        
-        Set<String> locations = new LinkedHashSet<String>();
-        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        Collection<FileObject> roots = defaultPlatform.getInstallFolders();
-        for(FileObject root : roots) {
-            assert root != null && root.isFolder();
-            FileObject parent = root.getParent();
-            if(parent != null) {
-                locations.add(parent.getPath());
-                // on Mac compensate for the two additional subdirs (cf. MAC_JDK_SUBDIR)
-                parent = parent.getParent();
-                if(parent != null) {
-                    parent = parent.getParent();
-                    if(parent != null) {
-                        locations.add(parent.getPath());
-                    }
-                }
-            }
-        }
-        locations.addAll(Arrays.asList(KNOWN_JFX_LOCATIONS));
-        
+        }        
+        Set<String> locations = getLocations(JavaPlatformManager.getDefault().getDefaultPlatform());
         for (String path : locations.toArray(new String[0])) {
             if (sdkPath == null) {
                 sdkPath = predictSDKLocation(path);
@@ -266,22 +236,60 @@ public final class JavaFXPlatformUtils {
             // SDK and RT location is enought for JFX platform definition
             if (sdkPath != null && runtimePath != null) {
                 if (javadocPath == null) {
-                    javadocPath = predictJavadocLocation(path);
+                    javadocPath = predictJavadocLocation(sdkPath);
                 }
                 if (srcPath == null) {
-                    srcPath = predictSourcesLocation(path);
+                    srcPath = predictSourcesLocation(sdkPath);
                 }
                 break;
             }
         }
-
         if (sdkPath != null && runtimePath != null) {
             return Utils.createJavaFXPlatform(Utils.DEFAULT_FX_PLATFORM_NAME, sdkPath, runtimePath, javadocPath, srcPath);
         }
-
         return null;
     }
 
+    /**
+     * Returns a set of locations where FX can potentially be found
+     * 
+     * @param platform JavaPlatform in relation to which FX location predictions are made
+     * @return set of locations
+     */
+    @CheckForNull
+    public static Set<String> getLocations(JavaPlatform platform) {
+        Set<String> locations = new LinkedHashSet<String>();
+        Collection<FileObject> roots = platform.getInstallFolders();
+        for(FileObject root : roots) {
+            assert root != null && root.isFolder();
+            locations.add(root.getPath());
+        }        
+        Set<String> parentLocations = new LinkedHashSet<String>();
+        for(FileObject root : roots) {
+            FileObject parent = root.getParent();
+            if(parent != null) {
+                parentLocations.add(parent.getPath());
+                // on Mac compensate for the two additional subdirs (cf. MAC_JDK_SUBDIR)
+                parent = parent.getParent();
+                if(parent != null) {
+                    parent = parent.getParent();
+                    if(parent != null) {
+                        parentLocations.add(parent.getPath());
+                    }
+                }
+            }
+        }
+        SpecificationVersion ver = platform.getSpecification().getVersion();
+        if(ver.equals(new SpecificationVersion("1.6"))) {
+            locations.addAll(Arrays.asList(KNOWN_JFX_LOCATIONS));
+            locations.addAll(parentLocations);
+        } else {
+            locations.addAll(parentLocations);
+            locations.addAll(Arrays.asList(KNOWN_JFX_LOCATIONS));
+        }
+        return locations;
+    }
+    
     /**
      * Tries to predict JavaFX SDK location for given path
      * Can return null.
@@ -293,15 +301,17 @@ public final class JavaFXPlatformUtils {
     public static String predictSDKLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
+            List<File> locations = new ArrayList<File>();
+            locations.add(location); // check root location
             File[] children = location.listFiles();
-            if (children == null) {
-                return null;
+            if (children != null) {
+                locations.addAll(Arrays.asList(children));
             }
-            for (File child : children) {
-                if(isSdkPathCorrect(child)) {
-                    return child.getAbsolutePath();
+            for (File file : locations) {
+                if(isSdkPathCorrect(file)) {
+                    return file.getAbsolutePath();
                 }
-                File macSubDir = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
+                File macSubDir = new File(file.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
                 if (isSdkPathCorrect(macSubDir)) {
                     return macSubDir.getAbsolutePath();
                 }
@@ -321,28 +331,28 @@ public final class JavaFXPlatformUtils {
     public static String predictRuntimeLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
-            List<File> files = new ArrayList<File>();
-            files.add(location); // check root location
+            List<File> locations = new ArrayList<File>();
+            locations.add(location); // check root location
             File[] children = location.listFiles();
             if (children == null) {
                 return null;
             }
             for(File child : Arrays.asList(children)) {
-                files.add(child);
+                locations.add(child);
                 File[] f = child.listFiles(); // jre subdir
                 if (f != null) {
-                    files.addAll(Arrays.asList(f));
+                    locations.addAll(Arrays.asList(f));
                 }
                 File macSubDir = new File(child.getAbsolutePath() + MAC_JDK_SUBDIR); // NOI18N
                 if(macSubDir.exists()) {
-                    files.add(macSubDir);
+                    locations.add(macSubDir);
                     f = macSubDir.listFiles();
                     if (f != null) {
-                        files.addAll(Arrays.asList(f));
+                        locations.addAll(Arrays.asList(f));
                     }
                 }
             }
-            for (File file : files) {
+            for (File file : locations) {
                 if(isRuntimePathCorrect(file)) {
                     return file.getAbsolutePath();
                 }
@@ -362,14 +372,14 @@ public final class JavaFXPlatformUtils {
     public static String predictJavadocLocation(@NonNull String path) {
         File location = new File(path);
         if (location.exists()) {
-            List<File> files = new ArrayList<File>();
-            files.add(location); // check root location
+            List<File> locations = new ArrayList<File>();
+            locations.add(location); // check root location
             File[] children = location.listFiles();
             if (children == null) {
                 return null;
             }
-            files.addAll(Arrays.asList(children));
-            for (File file : files) {
+            locations.addAll(Arrays.asList(children));
+            for (File file : locations) {
                 File docs = new File(file.getAbsolutePath() + File.separatorChar + "docs" + File.separatorChar + "api"); // NOI18N
                 if (docs.exists()) {
                     return docs.getAbsolutePath();
@@ -396,7 +406,24 @@ public final class JavaFXPlatformUtils {
         return null;
     }
 
-    private static boolean isSdkPathCorrect(@NonNull String sdkPath) {
+    /**
+     * Determines whether JavaFX SDK and JavaFX Runtime locations are valid
+     * 
+     * @param JavaFX SDK path
+     * @param JavaFX Runtime path
+     * @return are locations correct
+     */
+    public static boolean areJFXLocationsCorrect(@NonNull String sdkPath, @NonNull String runtimePath) {
+        return isSdkPathCorrect(sdkPath) && isRuntimePathCorrect(runtimePath);
+    }
+    
+    /**
+     * Determines whether JavaFX SDK location is valid
+     * 
+     * @param JavaFX SDK path
+     * @return true if location is correct
+     */
+    public static boolean isSdkPathCorrect(@NonNull String sdkPath) {
         if (sdkPath.isEmpty()) {
             return false;
         }
@@ -407,7 +434,13 @@ public final class JavaFXPlatformUtils {
         return isSdkPathCorrect(file);
     }
     
-    private static boolean isSdkPathCorrect(@NonNull File file) {
+    /**
+     * Determines whether JavaFX SDK location is valid
+     * 
+     * @param JavaFX SDK path
+     * @return true if location is correct
+     */
+    public static boolean isSdkPathCorrect(@NonNull File file) {
         File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "ant-javafx.jar"); // NOI18N
         if(!toolsJar.exists()) {
             toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
@@ -415,7 +448,13 @@ public final class JavaFXPlatformUtils {
         return toolsJar.exists();
     }
 
-    private static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
+    /**
+     * Determines whether JavaFX RT location is valid
+     * 
+     * @param JavaFX RT path
+     * @return true if location is correct
+     */
+    public static boolean isRuntimePathCorrect(@NonNull String runtimePath) {
         if (runtimePath.isEmpty()) {
             return false;
         }
@@ -426,7 +465,13 @@ public final class JavaFXPlatformUtils {
         return isRuntimePathCorrect(file);
     }
 
-    private static boolean isRuntimePathCorrect(@NonNull File file) {
+    /**
+     * Determines whether JavaFX RT location is valid
+     * 
+     * @param JavaFX RT path
+     * @return true if location is correct
+     */
+    public static boolean isRuntimePathCorrect(@NonNull File file) {
         File rtJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "jfxrt.jar"); // NOI18N
         return rtJar.exists();
     }

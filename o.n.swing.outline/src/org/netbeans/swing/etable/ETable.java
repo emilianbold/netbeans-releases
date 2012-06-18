@@ -653,13 +653,16 @@ public class ETable extends JTable {
                         isHidden = true;
                     }
                 }
-                if (!isHidden && oi < colModel.getColumnCount()) {
+                if (oi < colModel.getColumnCount()) {
                     TableColumn tc = colModel.getColumn(oi++);
-                    newColumns[i].setPreferredWidth(tc.getPreferredWidth());
-                    newColumns[i].setWidth(tc.getWidth());
+                    if (!isHidden) {
+                        newColumns[i].setPreferredWidth(tc.getPreferredWidth());
+                        newColumns[i].setWidth(tc.getWidth());
+                    }
                     if (sortable && tc instanceof ETableColumn && newColumns[i] instanceof ETableColumn) {
                         ETableColumn etc = (ETableColumn) tc;
                         ETableColumn enc = (ETableColumn) newColumns[i];
+                        enc.nestedComparator = etc.nestedComparator;
                         if (enc.isSortingAllowed()) {
                             columnSorting[i] = new Sorting(etc.isAscending(), etc.getSortRank());
                         }
@@ -692,10 +695,12 @@ public class ETable extends JTable {
                 if (sortedColumnIndexes != null) {
                     for (int sci = 0; sci < sortedColumnIndexes.length; sci++) {
                         int index = sortedColumnIndexes[sci];
-                        Sorting sorting = columnSorting[index];
-                        if (index >= 0 && newColumns[index] instanceof ETableColumn && sorting != null) {
-                            ETableColumn etc = (ETableColumn) newColumns[index];
-                            etcm.setColumnSorted(etc, sorting.ascending, sorting.sortRank);
+                        if (index >= 0) {
+                            Sorting sorting = columnSorting[index];
+                            if (newColumns[index] instanceof ETableColumn && sorting != null) {
+                                ETableColumn etc = (ETableColumn) newColumns[index];
+                                etcm.setColumnSorted(etc, sorting.ascending, sorting.sortRank);
+                            }
                         }
                     }
                 }

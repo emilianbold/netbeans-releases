@@ -298,14 +298,18 @@ public final class ProjectImpl extends ProjectBase {
     protected 
     @Override
     void ensureChangedFilesEnqueued() {
+        List<FileImpl> addToParse = new ArrayList<FileImpl>();
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
             for (Iterator<CsmFile> iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
-                    ParserQueue.instance().add(file, getPreprocHandlers(file), ParserQueue.Position.TAIL);
+                    addToParse.add(file);
                 }
             }
+        }
+        for (FileImpl file : addToParse) {
+            ParserQueue.instance().add(file, getPreprocHandlersForParse(file), ParserQueue.Position.TAIL);
         }
     //N.B. don't clear list of editedFiles here.
     }

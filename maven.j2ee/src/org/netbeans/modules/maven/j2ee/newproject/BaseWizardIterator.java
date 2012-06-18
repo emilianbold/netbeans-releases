@@ -41,26 +41,23 @@
  */
 package org.netbeans.modules.maven.j2ee.newproject;
 
-import org.openide.util.NbBundle.Messages;
-import org.openide.filesystems.FileObject;
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import java.awt.Component;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
-import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Base abstract class for all types of Maven enterprise projects

@@ -165,7 +165,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
 
     final void addURL(URL location) throws IOException, URISyntaxException {
-        File f = new File(location.toURI());
+        File f = Utilities.toFile(location.toURI());
         assert f.exists() : "URL must be existing local file: " + location;
 
         List<Source> arr = new ArrayList<Source>(Arrays.asList(sources));
@@ -464,7 +464,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     return this;
                 }
             }
-            return "jar:" + new VFile().toURI() + "!/"; // NOI18N
+            return "jar:" + Utilities.toURI(new VFile()) + "!/"; // NOI18N
         }
 
         @Override
@@ -813,7 +813,7 @@ public class JarClassLoader extends ProxyClassLoader {
         File dir;
         
         DirSource(File file) throws MalformedURLException {
-            super(file.toURI().toURL());
+            super(Utilities.toURI(file).toURL());
             dir = file;
         }
         
@@ -823,7 +823,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
         protected URL doGetResource(String name) throws MalformedURLException {
             File resFile = new File(dir, name);
-            return resFile.exists() ? resFile.toURI().toURL() : null;
+            return resFile.exists() ? Utilities.toURI(resFile).toURL() : null;
         }
         
         protected byte[] readClass(String path) throws IOException {
@@ -946,7 +946,7 @@ public class JarClassLoader extends ProxyClassLoader {
             AGAIN: for (;;) try {
                 final URI uri = new URI(filePath);
                 if (uri.getScheme().equals("file")) {
-                    jar = uri2File(uri).getPath();
+                    jar = Utilities.toFile(uri).getPath();
                 } else {
                     jar = null;
                 }
@@ -981,14 +981,6 @@ public class JarClassLoader extends ProxyClassLoader {
             return new NbJarURLConnection (u, _src, _name, loader);
         }
         
-        static File uri2File(URI uri) { // #207060: UNC; candidate for API (#46813)
-            if (uri.getHost() == null) {
-                return new File(uri);
-            } else {
-                return new File("\\\\" + uri.getHost() + uri.getPath().replace('/', '\\'));
-            }
-        }    
-
         @Override
         protected void parseURL(URL u, String spec, int start, int limit) {
             if (spec.startsWith("/")) {

@@ -296,7 +296,12 @@ public class ClipboardHandler {
         }
 
         if (finished) {
-            t.waitFinished();
+            try {
+                finished = t.waitFinished(1000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+                finished = false;
+            }
         } else {
             cancel.set(true);
         }

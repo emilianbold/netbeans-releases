@@ -145,6 +145,7 @@ public final class EmbedderFactory {
     
     
     static Map<String, String> getCustomSystemProperties() {
+        //maybe set org.eclipse.aether.ConfigurationProperties.USER_AGENT with netbeans specific value.
         Map<String, String> toRet = new HashMap<String, String>();
         String options = getPreferences().get(PROP_DEFAULT_OPTIONS, "");
         try {

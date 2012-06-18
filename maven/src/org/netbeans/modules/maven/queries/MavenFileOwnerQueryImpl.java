@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Model;
@@ -64,6 +65,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,6 +73,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -114,13 +117,19 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         }
         
         String key = oldkey + ":" + version;
-        String prevKey = reversePrefs().get(owner.toString(), null);
-        if (prevKey != null && !prevKey.equals(key)) {
-            prefs().remove(prevKey);
+        String ownerString = owner.toString();
+        try {
+            for (String k : prefs().keys()) {
+                if (ownerString.equals(prefs().get(k, null))) {
+                    prefs().remove(k);
+                    break;
+                }
+            }
+        } catch (BackingStoreException ex) {
+            LOG.log(Level.FINE, "Error iterating preference to find old mapping", ex);
         }
         
-        prefs().put(key, owner.toString());
-        reversePrefs().put(owner.toString(), key);
+        prefs().put(key, ownerString);
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
         
     }
@@ -158,7 +167,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     public @Override Project getOwner(URI uri) {
         LOG.log(Level.FINEST, "getOwner of uri={0}", uri);
         if ("file".equals(uri.getScheme())) { //NOI18N
-            File file = new File(uri);
+            File file = Utilities.toFile(uri);
             return getOwner(file);
         }
         return null;
@@ -290,6 +299,8 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return null;
     }
 
+    
+    //NOTE: called from NBArtifactFixer, cannot contain references to ProjectManager
     public File getOwnerPOM(String groupId, String artifactId, String version) {
         LOG.log(Level.FINER, "Checking {0} / {1} / {2} (POM only)", new Object[] {groupId, artifactId, version});
         String oldKey = groupId + ":" + artifactId;
@@ -304,7 +315,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             try {
                 URI uri = new URI(ownerURI);
                 if ("file".equals(uri.getScheme())) {
-                    File pom = new File(uri.resolve("pom.xml"));
+                    File pom = Utilities.toFile(uri.resolve("pom.xml"));
                     if (pom.isFile()) {
                         ModelReader reader = EmbedderFactory.getProjectEmbedder().lookupComponent(ModelReader.class);
                         Model model = reader.read(pom, Collections.singletonMap(ModelReader.IS_STRICT, false));
@@ -324,10 +335,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                             LOG.log(Level.FINE, "mismatch on groupId in {0}", pom);
                         }
                         // Might actually be a match due to use of e.g. string interpolation, so double-check with live project.
-                        Project p = getOwner(groupId, artifactId, version);
-                        if (p != null) {
-                            LOG.log(Level.FINE, "live project match for {0}", pom);
-                            return p.getLookup().lookup(NbMavenProjectImpl.class).getPOMFile();
+                        FileObject projectDir = URLMapper.findFileObject(new URI(ownerURI).toURL());
+                        if (projectDir != null && projectDir.isFolder()) {
+                            MavenProject prj = MavenProjectCache.getMavenProject(projectDir, false);
+                            if (prj != null && prj.getGroupId().equals(groupId) && prj.getArtifactId().equals(artifactId) && prj.getVersion().equals(version)) {
+                                return pom;
+                            }
                         } else {
                             LOG.log(Level.FINE, "no live project match for {0}", pom);
                         }
@@ -356,9 +369,5 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
 
     static Preferences prefs() {
         return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("externalOwners"); // NOI18N
-    }
-
-    private static Preferences reversePrefs() {
-        return NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node("reverseExternalOwners"); // NOI18N
     }
 }

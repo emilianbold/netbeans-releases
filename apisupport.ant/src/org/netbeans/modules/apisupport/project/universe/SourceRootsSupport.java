@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 
 
 /**
@@ -124,7 +125,7 @@ public final class SourceRootsSupport implements SourceRootsProvider {
                 if (!u.getProtocol().equals("file")) { // NOI18N
                     continue;
                 }
-                File dir = new File(URI.create(u.toExternalForm()));
+                File dir = Utilities.toFile(URI.create(u.toExternalForm()));
                 if (dir.isDirectory()) {
                     try {
                         if (ModuleList.isNetBeansOrg(dir)) {

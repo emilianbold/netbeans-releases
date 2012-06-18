@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -129,7 +128,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
             Map<String, String> oldMap = (Map<String, String>) evt.getOldValue();
             Map<String, String> newMap = (Map<String, String>) evt.getNewValue();
             if(oldMap.containsKey(Repository.ATTRIBUTE_DISPLAY_NAME)) {
-                fireDisplayNameChange(oldMap.get(Repository.ATTRIBUTE_DISPLAY_NAME), newMap.get(Repository.ATTRIBUTE_DISPLAY_NAME));
+                super.setDisplayName(newMap.get(Repository.ATTRIBUTE_DISPLAY_NAME));
             }
         }
     }

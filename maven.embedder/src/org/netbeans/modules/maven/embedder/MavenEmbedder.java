@@ -106,6 +106,7 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.util.DefaultRepositorySystemSession;
@@ -203,7 +204,7 @@ public final class MavenEmbedder {
             if (localRep == null) {
                 localRep = RepositorySystem.defaultUserLocalRepository.getAbsolutePath();
             }
-            URI localRepU = FileUtil.normalizeFile(new File(localRep)).toURI();
+            URI localRepU = Utilities.toURI(FileUtil.normalizeFile(new File(localRep)));
             synchronized (lastLocalRepositoryLock) {
                 if (lastLocalRepository == null || !lastLocalRepository.equals(localRepU)) {
                     FileOwnerQuery.markExternalOwner(localRepU, FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);

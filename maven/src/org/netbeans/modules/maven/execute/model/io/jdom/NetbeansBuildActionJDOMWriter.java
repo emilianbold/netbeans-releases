@@ -11,6 +11,7 @@ package org.netbeans.modules.maven.execute.model.io.jdom;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -276,9 +277,7 @@ public class NetbeansBuildActionJDOMWriter {
         if (parentDom.getChildCount() > 0) {
             Xpp3Dom[] childs = parentDom.getChildren();
             Collection domChilds = new ArrayList();
-            for (int i = 0; i < childs.length; i++) {
-                domChilds.add(childs[i]);
-            }
+            domChilds.addAll(Arrays.asList(childs));
             int domIndex = 0;
             ListIterator it = parent.getChildren().listIterator();
             while (it.hasNext()) {

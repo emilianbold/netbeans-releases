@@ -133,9 +133,14 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("iz212124.cpp", 27, 45, "iz212124.cpp", 16, 88);
     }
 
-//    public void testBug210303() throws Exception {
-//        // Bug 210303 - Unresolved instantiation
-//        performTest("bug210303.cpp", 18, 11, "bug210303.cpp", 11, 9);
-//    }
+    public void testBug210303() throws Exception {
+        // Bug 210303 - Unresolved instantiation
+        performTest("bug210303.cpp", 18, 11, "bug210303.cpp", 11, 9);
+    }
+
+    public void testBug214111() throws Exception {
+        // Bug 214111 - No code completion for auto variable
+        performTest("bug214111.cpp", 48, 23, "bug214111.cpp", 4, 5);
+    }
     
 }

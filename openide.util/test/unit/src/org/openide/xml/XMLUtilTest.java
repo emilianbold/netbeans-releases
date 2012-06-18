@@ -59,6 +59,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
@@ -454,7 +455,7 @@ public class XMLUtilTest extends NbTestCase {
         File ent = new File(d, "ent.xml");
         TestFileUtils.writeFile(main, "<!DOCTYPE root [<!ENTITY ent SYSTEM 'ent.xml'>]> <root xmlns='some://where'>&ent;</root>");
         TestFileUtils.writeFile(ent, "<hello xmlns='some://where'>there</hello>");
-        Document doc = XMLUtil.parse(new InputSource(main.toURI().toString()), false, true, null, null);
+        Document doc = XMLUtil.parse(new InputSource(Utilities.toURI(main).toString()), false, true, null, null);
         XMLUtil.validate(doc.getDocumentElement(), s);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
@@ -467,7 +468,7 @@ public class XMLUtilTest extends NbTestCase {
         // XXX #160806 reported a problem with "xml:base" being consider a no-NS attr; not yet caught by test
         // Try again with no xmlns specified in entity; should inherit from main.xml:
         TestFileUtils.writeFile(ent, "<hello>there</hello>");
-        doc = XMLUtil.parse(new InputSource(main.toURI().toString()), false, true, null, null);
+        doc = XMLUtil.parse(new InputSource(Utilities.toURI(main).toString()), false, true, null, null);
         XMLUtil.validate(doc.getDocumentElement(), s);
         baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");

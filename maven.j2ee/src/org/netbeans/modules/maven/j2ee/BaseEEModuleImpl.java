@@ -61,6 +61,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.openide.ErrorManager;
@@ -217,12 +219,20 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
      */
     @Override
     public FileObject getContentDirectory() throws IOException {
-        File file = mavenproject().getOutputDirectory(false);
-        FileObject fo = FileUtil.toFileObject(file.getParentFile());
-        if (fo != null) {
-            fo.refresh();
+        MavenProject mavenProject = mavenproject().getMavenProject();
+        String webappLocation = PluginPropertyUtils.getPluginProperty(project,
+            Constants.GROUP_APACHE_PLUGINS,
+            Constants.PLUGIN_WAR,
+            "webappDirectory", "war"); //NOI18N
+        if (webappLocation == null) {
+            webappLocation = mavenProject.getBuild().getDirectory() + File.separator + mavenProject.getBuild().getFinalName();
         }
-        return FileUtil.toFileObject(file);
+        File webapp = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), webappLocation);
+        FileObject webappFO = FileUtil.toFileObject(webapp);
+        if (webappFO != null) {
+            webappFO.refresh();
+        }
+        return webappFO;
     }
 
     /**

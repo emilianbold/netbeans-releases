@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Utilities;
 
 /**
  * Utilities useful for {@link NbModuleProvider#getEffectiveSystemFilesystem}.
@@ -103,7 +104,7 @@ public class LayerUtil {
         String layer = mm.getLayer();
         String generatedLayer = mm.getGeneratedLayer();
         List<URL> urls = new ArrayList<URL>(2);
-        URI juri = jar.toURI();
+        URI juri = Utilities.toURI(jar);
         for (String path : new String[] {layer, generatedLayer}) {
             if (path != null) {
                 urls.add(new URL("jar:" + juri + "!/" + path));

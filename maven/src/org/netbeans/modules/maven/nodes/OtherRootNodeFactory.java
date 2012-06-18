@@ -76,6 +76,7 @@ public class OtherRootNodeFactory implements NodeFactory {
     public OtherRootNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return new NList(prj);
@@ -88,6 +89,7 @@ public class OtherRootNodeFactory implements NodeFactory {
             project = prj;
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();
@@ -100,6 +102,7 @@ public class OtherRootNodeFactory implements NodeFactory {
             }
         }
         
+        @Override
         public List<String> keys() {
             List<String> list = new ArrayList<String>();
             if (project.getOtherRoots(false).length > 0) {
@@ -111,6 +114,7 @@ public class OtherRootNodeFactory implements NodeFactory {
             return list;
         }
         
+        @Override
         public Node node(String key) {
             if (KEY_OTHER.equals(key)) {
                 File[] fls = project.getOtherRoots(false);
@@ -167,25 +171,31 @@ public class OtherRootNodeFactory implements NodeFactory {
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent arg0) {
             fireChange();
         }
 
+        @Override
         public void fileDataCreated(FileEvent arg0) {
         }
 
+        @Override
         public void fileChanged(FileEvent arg0) {
         }
 
+        @Override
         public void fileDeleted(FileEvent arg0) {
             fireChange();
             arg0.getFile().removeFileChangeListener(this);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent arg0) {
             fireChange();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent arg0) {
         }
     }

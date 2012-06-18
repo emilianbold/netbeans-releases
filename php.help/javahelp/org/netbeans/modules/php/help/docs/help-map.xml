@@ -23,6 +23,7 @@
     <mapID target="php_renaming" url="editor/renaming.html"/>
     <mapID target="php_codegen" url="editor/code-generators.html"/>
     <mapID target="def_var_in_comment" url="editor/def-var-in-comment.html"/>
+    <mapID target="php54" url="editor/php54.html"/>
     
     <!-- TOC debugging help -->
     <mapID target="php_debug_about" url="debug/debug_about.html"/>

@@ -88,6 +88,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -965,7 +966,7 @@ public final class ModuleList {
                 String res;
                 Document doc;
                 try {
-                    doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, EntityCatalog.getDefault());
+                    doc = XMLUtil.parse(new InputSource(Utilities.toURI(xml).toString()), false, false, null, EntityCatalog.getDefault());
                     if (xpe == null) {
                         xpe = XPathFactory.newInstance().newXPath().compile("module/param[@name='jar']/text()");
                     }
@@ -999,7 +1000,7 @@ public final class ModuleList {
             try {
                 xmlFilesParsed++;
                 timeSpentInXmlParsing -= System.currentTimeMillis();
-                doc = XMLUtil.parse(new InputSource(tracking.toURI().toString()), false, false, null, null);
+                doc = XMLUtil.parse(new InputSource(Utilities.toURI(tracking).toString()), false, false, null, null);
                 timeSpentInXmlParsing += System.currentTimeMillis();
             } catch (SAXException e) {
                 throw (IOException) new IOException(e.toString()).initCause(e);
@@ -1038,7 +1039,7 @@ public final class ModuleList {
         try {
             xmlFilesParsed++;
             timeSpentInXmlParsing -= System.currentTimeMillis();
-            doc = XMLUtil.parse(new InputSource(projectXml.toURI().toString()), false, true, null, null);
+            doc = XMLUtil.parse(new InputSource(Utilities.toURI(projectXml).toString()), false, true, null, null);
             timeSpentInXmlParsing += System.currentTimeMillis();
         } catch (SAXException e) {
             throw (IOException) new IOException(projectXml + ": " + e.toString()).initCause(e); // NOI18N

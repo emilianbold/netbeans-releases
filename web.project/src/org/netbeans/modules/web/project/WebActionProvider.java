@@ -214,14 +214,10 @@ class WebActionProvider extends BaseActionProvider {
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[]{"debug-fix"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[]{"verify"}); // NOI18N
         this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(
-            COMMAND_RUN_SINGLE,
-            COMMAND_PROFILE_SINGLE
+            COMMAND_RUN_SINGLE
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(
-            COMMAND_PROFILE,
-            COMMAND_PROFILE_SINGLE,
-            COMMAND_PROFILE_TEST_SINGLE,
             JavaProjectConstants.COMMAND_DEBUG_FIX
         ));
         setServerExecution(true);

@@ -189,9 +189,10 @@ public final class UpdateTracking {
         String user = System.getProperty ("netbeans.user");
         File userDir = null;
         if (user != null) {
+            // XXX cannot use FileUtil.normalizeFile from here
             userDir = new File (user);
             if (userDir.getPath ().startsWith ("\\\\")) {
-                // Do not use URI.normalize for UNC paths because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File)
+                // Could use URI.normalize but only on userDir.getPath().toUri() in JDK 7 (#4723726 breaks UNC for userDir.toURI())
                 try {
                     userDir = userDir.getCanonicalFile ();
                 } catch (IOException ex) {

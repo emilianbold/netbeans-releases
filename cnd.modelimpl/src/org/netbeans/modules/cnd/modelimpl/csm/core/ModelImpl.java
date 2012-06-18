@@ -43,15 +43,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import java.io.IOException;
 import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.model.*;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
@@ -59,27 +57,28 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryListener;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryNotifier;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
-import org.netbeans.modules.cnd.modelimpl.repository.KeyManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
@@ -294,7 +293,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     private void _closeProject2(ProjectBase csmProject, Object platformProjectKey, boolean cleanRepository) {
         ProjectBase prj = csmProject;
-        boolean cleanModel = false;
+        boolean cleanModel;
         synchronized (lock) {
             CsmUID<CsmProject> uid = platf2csm.remove(platformProjectKey);
             if (uid != null) {
@@ -733,7 +732,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         return (project != null) && (!project.isDisposing());
     }
 
-    public boolean isProjectDiabled(NativeProject id) {
+    public boolean isProjectDisabled(NativeProject id) {
         return disabledProjects.contains(id);
     }
 

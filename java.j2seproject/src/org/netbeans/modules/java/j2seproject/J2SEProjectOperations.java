@@ -52,6 +52,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -73,12 +75,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class J2SEProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
+    
+    private static final Logger LOG = Logger.getLogger(J2SEProjectOperations.class.getName());
     
     private final J2SEProject project;
     
@@ -153,12 +158,21 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         final AntTargetsProvider ap = project.getLookup().lookup(AntTargetsProvider.class);
         assert ap != null;
         String[] targetNames = ap.getTargetNames(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY, p, false);
-        FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
-
         assert targetNames != null;
         assert targetNames.length > 0;
-
-        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        
+        final FileObject buildXML = J2SEProjectUtil.getBuildXml(project);
+        if (buildXML != null) {
+            ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
+        } else {
+            LOG.log(
+                Level.INFO,
+                "Not cleaning the project: {0}, the build file: {1} does not exist.", //NOI18N
+                new Object[] {
+                    ProjectUtils.getInformation(project).getDisplayName(),
+                    J2SEProjectUtil.getBuildXmlName(project)
+                });
+        }
     }
     
     public void notifyDeleted() throws IOException {
@@ -334,7 +348,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         if (libraryPath != null) {
             File prjRoot = FileUtil.toFile(project.getProjectDirectory());
             libraryFile = PropertyUtils.resolveFile(prjRoot, libraryPath);
-            if (FileOwnerQuery.getOwner(libraryFile.toURI()) == project && 
+            if (FileOwnerQuery.getOwner(Utilities.toURI(libraryFile)) == project &&
                     libraryFile.getAbsolutePath().startsWith(prjRoot.getAbsolutePath())) {
                 //do not update the relative path if within the project..
                 libraryWithinProject = true;

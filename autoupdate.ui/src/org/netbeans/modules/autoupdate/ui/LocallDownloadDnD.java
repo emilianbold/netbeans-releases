@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 
 final class LocallDownloadDnD implements DropTargetListener {
 
@@ -126,7 +127,7 @@ final class LocallDownloadDnD implements DropTargetListener {
             if (value instanceof String) {
                 files = new ArrayList<File>();
                 for (String v : ((String) value).split("\n")) {
-                    File f = new File(new URI(((String) v).trim()));
+                    File f = Utilities.toFile(new URI(((String) v).trim()));
                     assert f.exists() : "File shall exist: " + f;
                     files.add(f);
                 }

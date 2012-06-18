@@ -278,7 +278,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                         long lastParsedTime = fileImpl.getLastParsedTime();
                         APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
                         if (apt != null) {
-                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlers();
+                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlersForParse();
                             if (handlers.isEmpty()) {
                                 DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
                                 return Collections.<CsmReference>emptyList();

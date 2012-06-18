@@ -45,9 +45,11 @@ import javax.swing.JComponent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -57,6 +59,7 @@ import org.openide.util.Lookup;
 public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
     @Override
+    @Messages("TIT_Run=Run")
     public Category createCategory(Lookup context) {
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
         NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
@@ -64,7 +67,7 @@ public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryP
         if (NbMavenProject.TYPE_JAR.equalsIgnoreCase(watcher.getPackagingType())) {
             return ProjectCustomizer.Category.create(
                     ModelHandle2.PANEL_RUN,
-                    org.openide.util.NbBundle.getMessage(RunJarPanelProvider.class, "TIT_Run"),
+                    TIT_Run(),
                     null);
         }
         return null;

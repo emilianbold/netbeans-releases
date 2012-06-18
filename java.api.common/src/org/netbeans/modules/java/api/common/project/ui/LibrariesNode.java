@@ -107,6 +107,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -903,7 +904,7 @@ public final class LibrariesNode extends AbstractNode {
                 }
                 else {
                     //No MimeResolver fallback
-                    return FileUtil.isArchiveFile(f.toURI().toURL());
+                    return FileUtil.isArchiveFile(Utilities.toURI(f).toURL());
                 }
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);                

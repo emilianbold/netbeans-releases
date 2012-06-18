@@ -42,22 +42,15 @@
 
 package org.netbeans.modules.cnd.remote.actions;
 
-import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.remote.actions.base.RemoteOpenActionBase;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -69,18 +62,14 @@ import org.openide.util.WeakListeners;
     //@ActionReference(path = "Menu/File", position = 520),
     @ActionReference(path = "Toolbars/Remote", position = 2000)
 })
-public class OpenRemoteProjectAction extends RemoteOpenActionBase implements PropertyChangeListener {
+public class OpenRemoteProjectAction extends RemoteOpenActionBase {
 
     private ImageIcon icon;
-    private static final boolean ALLOW_LOCAL = false;
     
     public OpenRemoteProjectAction() {
-        super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title"), ALLOW_LOCAL);
+        super(NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title")); //NOI18N
         icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/resources/openProject.png", false); //NOI18N
         putValue("iconBase","org/netbeans/modules/cnd/remote/resources/openProject.png"); //NOI18N
-        if (!ALLOW_LOCAL) {
-            ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, this));
-        }
     }
 
     @Override
@@ -89,38 +78,17 @@ public class OpenRemoteProjectAction extends RemoteOpenActionBase implements Pro
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        String actionCommand = e.getActionCommand();
-        if (actionCommand != null && !actionCommand.isEmpty()) {
-            super.actionPerformed(e);
-        } else {
-            ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
-            if (!ALLOW_LOCAL && executionEnvironment.isLocal()) {
-                return;
-            }
-            actionPerformed(executionEnvironment);
-        }
-    }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (ServerList.PROP_DEFAULT_RECORD.equals(evt.getPropertyName())){
-            setEnabled(!ServerList.getDefaultRecord().getExecutionEnvironment().isLocal());
-        }
-    }
-
-    @Override
-    protected void actionPerformed(ExecutionEnvironment env) {
-        RemoteOpenHelper.openProject(env);
-    }
-
-    @Override
     protected String getSubmenuTitle() {
-        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title");
+        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.submenu.title"); //NOI18N
     }
 
     @Override
-    protected String getItemTitle(ServerRecord record) {
-        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.item.title", record.getDisplayName());
+    protected String getItemTitle(String record) {
+        return NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenRemoteProjectAction.item.title", record); //NOI18N
     }        
+
+    @Override
+    protected String getPerformerID() {
+        return "CND/Toobar/Services/OpenRemoteProject"; //NOI18N
+    }
 }

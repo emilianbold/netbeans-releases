@@ -196,7 +196,13 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
 
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.runAsLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(hostnameLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.hostnameLabel.text")); // NOI18N
+
+        hostnameTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.portLabel.text")); // NOI18N
+
+        portTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(urlHintLabel, " "); // NOI18N
         Mnemonics.setLocalizedText(routerLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerLabel.text")); // NOI18N
 
@@ -230,7 +236,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                         .addComponent(urlHintLabel)
                         .addContainerGap())
                     .addComponent(runAsComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(hostnameTextField)
+                    .addComponent(hostnameTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))))

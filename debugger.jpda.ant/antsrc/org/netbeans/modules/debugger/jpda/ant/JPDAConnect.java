@@ -83,6 +83,8 @@ public class JPDAConnect extends Task {
     /** Explicit bootclasspath of the debugged process. */
     private Path bootclasspath = null;
         
+    private String listeningCP = null;
+    
     /** Name which will represent this debugging session in debugger UI.
      * If known in advance it should be name of the app which will be debugged.
      */
@@ -129,6 +131,10 @@ public class JPDAConnect extends Task {
         sourcepath = path;
     }
     
+    public void setListeningcp(String listeningCP) {
+        this.listeningCP = listeningCP;
+    }
+
     public void setTransport (String transport) {
         this.transport = transport;
     }
@@ -197,6 +203,7 @@ public class JPDAConnect extends Task {
         properties.put ("sourcepath", sourcePath); // NOI18N
         properties.put ("name", getName ()); // NOI18N
         properties.put ("jdksources", jdkSourcePath); // NOI18N
+        properties.put ("listeningCP", listeningCP); // NOI18N
         String workDir = getProject().getProperty("work.dir");
         File baseDir;
         if (workDir != null) {

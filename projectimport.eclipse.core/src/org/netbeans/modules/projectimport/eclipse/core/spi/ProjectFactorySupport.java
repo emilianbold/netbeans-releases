@@ -80,6 +80,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Misc helper methods for implementors of ProjectTypeFactory.
@@ -172,7 +173,7 @@ public class ProjectFactorySupport {
             for (DotClassPathEntry e : sources) {
                 String path;
                 try {
-                    path = new File(rootURLs[i].toURI()).getPath();
+                    path = Utilities.toFile(rootURLs[i].toURI()).getPath();
                 } catch (URISyntaxException ex) {
                     LOG.info("cannot convert '"+rootURLs[i].toExternalForm()+"' to file: "+ex.toString()); //NOI18N
                     continue;

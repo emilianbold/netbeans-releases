@@ -69,6 +69,7 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplement
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Adds module dependencies that seem to correspond to some more visible artifact.
@@ -199,7 +200,7 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
         // XXX handle >1 args
         String displayName = artifactElements.length > 0 ? artifactElements[0].toString() : "<nothing>";
         if (artifactElements.length > 0 && "file".equals(artifactElements[0].getScheme())) { // NOI18N
-            displayName = new File(artifactElements[0]).getAbsolutePath();
+            displayName = Utilities.toFile(artifactElements[0]).getAbsolutePath();
         }
         Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_jar", displayName));
         throw e;

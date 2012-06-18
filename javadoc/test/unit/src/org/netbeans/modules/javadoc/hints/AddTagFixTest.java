@@ -51,7 +51,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFixInEmptyJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -75,7 +75,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -99,7 +99,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFix2() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /** bla\n" +
@@ -121,7 +121,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFixInEmpty1LineJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /***/\n" +
@@ -142,7 +142,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFixIn1LineJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /** bla */\n" +
@@ -163,7 +163,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFixIn1LineJavadoc2() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /** @since 1.1 */\n" +
@@ -184,7 +184,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddReturnTagFixIn1LineJavadoc3() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /** bla {@link nekam} */\n" +
@@ -205,7 +205,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddParamTagFixInEmptyJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -227,7 +227,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddParamTagFixWithReturn() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -251,7 +251,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddParamTagFixWithReturn_115974() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -273,7 +273,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddParamTagFixAndParamOrder() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -301,7 +301,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddTypeParamTagFixInEmptyJavadoc() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -359,7 +359,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddTypeParamTagFixWithReturn() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -383,7 +383,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddTypeParamTagFixAndParamOrder() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -413,7 +413,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddThrowsTagFix() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
@@ -435,7 +435,7 @@ public class AddTagFixTest extends JavadocTestSupport {
     }
 
     public void testAddThrowsTagFix2() throws Exception {
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "import java.io.IOException;\n" +
                 "class Zima {\n" +
@@ -460,7 +460,7 @@ public class AddTagFixTest extends JavadocTestSupport {
 
     public void testAddThrowsTagFix_NestedClass_160414() throws Exception {
         // issue 160414
-        doFirstMemberFixTest(
+        doMemberFixTest(
                 "package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +

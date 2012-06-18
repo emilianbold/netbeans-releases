@@ -194,6 +194,7 @@ public class RefactoringPanel extends JPanel {
         if (!isQuery) {
             splitPane.setRightComponent(new JLabel(org.openide.util.NbBundle.getMessage(RefactoringPanel.class, "LBL_Preview_not_Available"), SwingConstants.CENTER));
         }
+        splitPane.setBorder(null);
         // add panel with buttons
         JButton[] buttons = getButtons();
         //if (buttons.length != 0) {
@@ -250,6 +251,7 @@ public class RefactoringPanel extends JPanel {
         refreshButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_refresh") // NOI18N
         );
+        refreshButton.setBorderPainted(false);
         refreshButton.addActionListener(getButtonListener());
         // expand button settings
         expandButton = new JToggleButton(
@@ -263,6 +265,7 @@ public class RefactoringPanel extends JPanel {
         expandButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_expandAll") // NOI18N
         );
+        expandButton.setBorderPainted(false);
         expandButton.addActionListener(getButtonListener());
         // create toolbar
         toolBar = new JToolBar(JToolBar.VERTICAL);
@@ -278,6 +281,7 @@ public class RefactoringPanel extends JPanel {
         logicalViewButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_logicalView") // NOI18N
         );
+        logicalViewButton.setBorderPainted(false);
         logicalViewButton.addActionListener(getButtonListener());
 
         physicalViewButton = new JToggleButton(
@@ -290,6 +294,7 @@ public class RefactoringPanel extends JPanel {
         physicalViewButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_physicalView") // NOI18N
         );
+        physicalViewButton.setBorderPainted(false);
         physicalViewButton.addActionListener(getButtonListener());
 
         if (!Utilities.isMac()) {
@@ -315,6 +320,7 @@ public class RefactoringPanel extends JPanel {
             customViewButton.setPreferredSize(dim);
             customViewButton.setSelected(currentView==GRAPHICAL);
             customViewButton.setToolTipText(((RefactoringCustomUI)ui).getCustomToolTip());
+            customViewButton.setBorderPainted(false);
             customViewButton.addActionListener(getButtonListener());
         }
         
@@ -327,6 +333,7 @@ public class RefactoringPanel extends JPanel {
         nextMatch.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_nextMatch") // NOI18N
         );
+        nextMatch.setBorderPainted(false);
         nextMatch.addActionListener(getButtonListener());
 
         prevMatch = new JButton(
@@ -338,6 +345,7 @@ public class RefactoringPanel extends JPanel {
         prevMatch.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_prevMatch") // NOI18N
         );
+        prevMatch.setBorderPainted(false);
         prevMatch.addActionListener(getButtonListener());
 
                 stopButton = new JButton(
@@ -349,6 +357,7 @@ public class RefactoringPanel extends JPanel {
         stopButton.setToolTipText(
             NbBundle.getMessage(RefactoringPanel.class, "HINT_stop") // NOI18N
         );
+        stopButton.setBorderPainted(false);
         stopButton.addActionListener(getButtonListener());
         
         
@@ -956,7 +965,12 @@ public class RefactoringPanel extends JPanel {
             tree.setToggleClickCount(0);
             tree.setTransferHandler(new TransferHandlerImpl());
             scrollPane = new JScrollPane(tree);
-            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            scrollPane.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1,
+                javax.swing.UIManager.getDefaults().getColor("Separator.background")),
+                javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1,
+                javax.swing.UIManager.getDefaults().getColor("Separator.foreground"))));
+        
             RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
             RefactoringPanel.this.validate();
         } else {

@@ -122,7 +122,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         }
 
         Set<FileObject> a = getRelevantFiles();
-        fireProgressListenerStart(ProgressEvent.START, a.size());
+        fireProgressListenerStart(AbstractRefactoring.PREPARE, a.size());
         TransformTask transform = new TransformTask(visitor, treePathHandle);
         Problem problem = createAndAddElements(a, transform, refactoringElements, refactoring, getClasspathInfo(a));
         fireProgressListenerStop();

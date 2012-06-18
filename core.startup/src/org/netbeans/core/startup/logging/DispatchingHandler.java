@@ -65,6 +65,11 @@ final class DispatchingHandler extends Handler implements Runnable {
         flush.setPriority(Thread.MIN_PRIORITY);
         this.delay = delay;
     }
+
+    @Override
+    public void setFormatter(Formatter newFormatter) throws SecurityException {
+        delegate.setFormatter(newFormatter);
+    }
     
     @Override
     public void publish(LogRecord record) {

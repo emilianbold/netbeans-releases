@@ -49,6 +49,7 @@ import junit.framework.*;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -89,7 +90,7 @@ public class GlobalSharabilityQueryImplTest extends TestCase {
         };
         
         for (int i = 0; i < all.length; i++) {
-            boolean isNotSharable = sq.getSharability(all[i].toURI()) == SharabilityQuery.Sharability.NOT_SHARABLE;
+            boolean isNotSharable = sq.getSharability(Utilities.toURI(all[i])) == SharabilityQuery.Sharability.NOT_SHARABLE;
             boolean isNotVisible = !vq.isVisible(all[i].getName());
             assertEquals(isNotSharable, isNotVisible);
         }

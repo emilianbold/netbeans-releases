@@ -55,6 +55,8 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,6 +85,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -138,6 +141,27 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
     }
     
+    protected final boolean compareSourceRoots(String sr1, String sr2) {
+        if (sr1.equals(sr2)) {
+            return true;
+        }
+        File f1 = new File(sr1);
+        File f2 = new File(sr2);
+        if (f1.isDirectory() && f2.isDirectory() ||
+            f1.isFile() && f2.isFile()) { // An archive file
+            
+            if (f1.equals(f2)) {
+                return true;
+            }
+            try {
+                f1 = f1.getCanonicalFile();
+                f2 = f2.getCanonicalFile();
+                return f1.equals(f2);
+            } catch (IOException ioex) {}
+        }
+        return false;
+    }
+    
     @Override
     protected void remove () {
         super.remove();
@@ -157,13 +181,13 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
         String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
         for (int i = 0; i < sourceRoots.length; i++) {
-            if (sourceRoot.equals(sourceRoots[i])) {
+            if (compareSourceRoots(sourceRoot, sourceRoots[i])) {
                 return true;
             }
         }
         String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
         for (int i = 0; i < projectSourceRoots.length; i++) {
-            if (sourceRoot.equals(projectSourceRoots[i])) {
+            if (compareSourceRoots(sourceRoot, projectSourceRoots[i])) {
                 setValidity(VALIDITY.INVALID,
                             NbBundle.getMessage(ClassBasedBreakpoint.class,
                                         "MSG_DisabledSourceRoot",
@@ -200,7 +224,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             return true;
         }
         preferredSourceRoot[0] = urlRoot;
-        return sourceRoot.equals(urlRoot);
+        return compareSourceRoots(sourceRoot, urlRoot);
     }
     
     protected void setClassRequests (

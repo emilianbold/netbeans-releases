@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.autoupdate.services.AutoupdateSettings;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -100,7 +101,7 @@ public final class AutoupdateCatalogCache {
             copy(original, cache, false);
 
             try {
-                url = cache.toURI ().toURL ();
+                url = Utilities.toURI (cache).toURL ();
             } catch (MalformedURLException ex) {
                 assert false : ex;
             }
@@ -126,7 +127,7 @@ public final class AutoupdateCatalogCache {
                 }
                 URL url = null;
                 try {
-                    url = cache.toURI().toURL();
+                    url = Utilities.toURI(cache).toURL();
                 } catch (MalformedURLException ex) {
                     assert false : ex;
                 }
@@ -263,7 +264,7 @@ public final class AutoupdateCatalogCache {
     }
     public String getLock(URL cache) throws IOException {
         try {
-            return getLock(new File(cache.toURI()));
+            return getLock(Utilities.toFile(cache.toURI()));
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }

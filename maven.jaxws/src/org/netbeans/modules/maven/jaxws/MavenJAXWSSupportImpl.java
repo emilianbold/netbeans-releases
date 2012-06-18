@@ -92,6 +92,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         this.prj = prj;
     }
 
+    @Override
     public void addService(JaxWsService service) {
         services.add(service);
 
@@ -136,10 +137,12 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         }
     }
 
+    @Override
     public List<JaxWsService> getServices() {
         return services;
     }
 
+    @Override
     public void removeService(JaxWsService service) {
         String localWsdl = service.getLocalWsdl();
         if (localWsdl != null) {
@@ -188,6 +191,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         }
     }
 
+    @Override
     public FileObject getDeploymentDescriptorFolder() {
         File wsdlDir = FileUtilities.resolveFilePath(
             FileUtil.toFile(prj.getProjectDirectory()), "src/main/webapp/WEB-INF"); //NOI18N
@@ -197,6 +201,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         return null;
     }
 
+    @Override
     public FileObject getWsdlFolder(boolean createFolder) {
         File wsdlDir = FileUtilities.resolveFilePath(
                 FileUtil.toFile(prj.getProjectDirectory()), "src/wsdl"); //NOI18N
@@ -211,6 +216,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         return null;
     }
 
+    @Override
     public FileObject getBindingsFolder(boolean createFolder) {
         File bindingsDir = FileUtilities.resolveFilePath(
                 FileUtil.toFile(prj.getProjectDirectory()), "src/jaxws-bindings"); //NOI18N
@@ -225,6 +231,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         return null;
     }
 
+    @Override
     public URL getCatalog() {
         File catalogFile = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), CATALOG_PATH);
         try {
@@ -234,6 +241,7 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
         }
     }
 
+    @Override
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         return WSUtils.getModuleProvider(prj).getJ2eeModule().getMetadataModel(
                 WebservicesMetadata.class);

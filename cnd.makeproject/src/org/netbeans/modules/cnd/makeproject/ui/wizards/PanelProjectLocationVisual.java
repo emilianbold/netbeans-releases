@@ -103,6 +103,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private static final Object FAKE_ITEM = new Object();
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
+    private char fsFileSeparator;
 
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel, String name, boolean showMakefileTextField, int type) {
@@ -581,26 +582,26 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
                 return false;
             }
-            FileObject makeFO = fileSystem.findResource(projectDirFO.getPath()+"/"+makefileTextField.getText());
+            FileObject makeFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + makefileTextField.getText());
             if (makeFO != null && makeFO.isValid()) {
                 // Folder exists and is not empty
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", makefileTextField.getText()));  // NOI18N
                 return false;
             }
-            FileObject nbFO = fileSystem.findResource(projectDirFO.getPath()+"/"+MakeConfiguration.NBPROJECT_FOLDER);
+            FileObject nbFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + MakeConfiguration.NBPROJECT_FOLDER);
             if (nbFO != null && nbFO.isValid()) {
                 // Folder exists and is not empty
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectfolderNotEmpty", MakeConfiguration.NBPROJECT_FOLDER)); // NOI18N
                 return false;
             }
             if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
-                FileObject destFO = fileSystem.findResource(projectDirFO.getPath()+"/"+MakeConfiguration.DIST_FOLDER);
+                FileObject destFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + MakeConfiguration.DIST_FOLDER);
                 if (destFO != null && destFO.isValid()) {
                     // Folder exists and is not empty
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
                     return false;
                 }
-                FileObject buildFO = fileSystem.findResource(projectDirFO.getPath()+"/"+MakeConfiguration.BUILD_FOLDER);
+                FileObject buildFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + MakeConfiguration.BUILD_FOLDER);
                 if (buildFO != null && buildFO.isValid()) {
                     // Folder exists and is not empty
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
@@ -742,7 +743,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             env = ExecutionEnvironmentFactory.getLocal();
             enabledHost = true;
         }
+
         fileSystem = FileSystemProvider.getFileSystem(env);
+        fsFileSeparator = FileSystemProvider.getFileSeparatorChar(fileSystem);
         
         FSPath projectLocationFSPath = (FSPath) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // File - SIC! for projects always local
         String projectName = null;
@@ -750,11 +753,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (projectLocationFSPath == null) {
             projectLocation = RemoteFileUtil.getProjectsFolder(env);
             if (projectLocation == null) {
-                projectLocation = getDefaultRemoteProjectDir(env);
+                projectLocation = getDefaultProjectDir(env);
             }
         } else {
             projectLocation = projectLocationFSPath.getPath();
-            int i = projectLocation.lastIndexOf('/');
+            int i = projectLocation.lastIndexOf(fsFileSeparator);
             if (i > 0) {
                 projectName = projectLocation.substring(i+1);
                 projectLocation = projectLocation.substring(0,i);
@@ -795,7 +798,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
             int baseCount = 1;
             String formater = name + "_{0}"; // NOI18N
-            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null) {
+            while ((projectName = validFreeProjectName(projectLocation, fsFileSeparator,
+                    formater, baseCount)) == null) {
                 baseCount++;
             }
             settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, Integer.valueOf(baseCount));
@@ -804,24 +808,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         this.projectNameTextField.selectAll();
     }
     
-    private String getDefaultRemoteProjectDir(ExecutionEnvironment env) {
-        String res;
+    private String getDefaultProjectDir(ExecutionEnvironment env) {
+        String res = null;
         try {
-            if (env.isRemote()) {
-                if (HostInfoUtils.isHostInfoAvailable(env)) {
-                    res = HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
-                } else {
-                    res = "/"; //NOI18N    
-                }
-            } else {
-                res = HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName();  //NOI18N
+            if (env.isLocal()) {
+                res = ProjectChooser.getProjectsFolder().getPath();
+            } else if (HostInfoUtils.isHostInfoAvailable(env)) {
+                res = HostInfoUtils.getHostInfo(env).getUserDir() + fsFileSeparator + ProjectChooser.getProjectsFolder().getName();
             }
         } catch (IOException ex) {
-            res = "/"; //NOI18N
         } catch (ConnectionManager.CancellationException ex) {
-            res = "/"; //NOI18N
         }
-        return res;
+        return res == null ? fileSystem.getRoot().getPath() : res;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -843,9 +841,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JLabel toolchainLabel;
     // End of variables declaration//GEN-END:variables
 
-    private String validFreeProjectName(String parentFolder, final String formater, final int index) {
+    private String validFreeProjectName(String parentFolder, final char fs, final String formater, final int index) {
         String projectName = MessageFormat.format(formater, new Object[]{Integer.valueOf(index)});
-        if (RemoteFileUtil.fileExists(parentFolder+"/"+projectName, env)) { //NOI18N
+        if (RemoteFileUtil.fileExists(parentFolder + fs + projectName, env)) { //NOI18N
             return null;
         }
         return projectName;
@@ -940,10 +938,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
             String projectName = projectNameTextField.getText().trim();
             String projectFolder = projectLocationTextField.getText().trim();
-            while (projectFolder.endsWith("/")) { // NOI18N
+            while (projectFolder.endsWith("/") || projectFolder.endsWith("\\")) { // NOI18N
                 projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
             }
-            createdFolderTextField.setText(projectFolder + "/" + projectName); // NOI18N
+            createdFolderTextField.setText(projectFolder + fsFileSeparator + projectName);
 
             if (!makefileNameChanged) {
                 // re-evaluate name of master project file.
@@ -956,7 +954,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 }
 
                 for (int count = 0;;) {
-                    String proposedMakefile = createdFolderTextField.getText() + "/" + makefileName; // NOI18N
+                    String proposedMakefile = createdFolderTextField.getText() + fsFileSeparator + makefileName;
                     CndFileUtils.isExistingFile(fileSystem, makefileName);
                     if (!CndFileUtils.isExistingFile(fileSystem, proposedMakefile)
                             && !CndFileUtils.isExistingFile(fileSystem, proposedMakefile.toLowerCase())

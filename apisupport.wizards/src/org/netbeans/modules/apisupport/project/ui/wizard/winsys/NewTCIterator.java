@@ -441,7 +441,7 @@ public final class NewTCIterator extends BasicWizardIterator {
                 public void run(FileSystem layer) throws IOException {
                     FileObject fo = FileUtil.createFolder(layer.getRoot(), "Windows2/Modes");
                     for (Map.Entry<String, String> entry : newModes.entrySet()) {
-                        FileObject wsmode = fo.createData(entry.getKey() + ".wsmode");
+                        FileObject wsmode = FileUtil.createData(fo, entry.getKey() + ".wsmode");
                         OutputStream os = wsmode.getOutputStream();
                         try {
                             os.write(entry.getValue().getBytes("UTF-8"));

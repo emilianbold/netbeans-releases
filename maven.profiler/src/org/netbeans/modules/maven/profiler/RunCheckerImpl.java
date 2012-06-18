@@ -149,6 +149,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             final ProfilerLauncher.Session s = session;
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     Profiler.getDefault().connectToStartedApp(s.getProfilingSettings(), s.getSessionSettings());
                 }

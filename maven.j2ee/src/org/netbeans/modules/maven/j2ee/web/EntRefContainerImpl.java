@@ -231,12 +231,14 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+            @Override
                 public void run(CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
                     TypeElement thisElement = elements.getTypeElement(referencingClass);
                     if (thisElement!=null)
                         isInjectionTarget[0] = InjectionTargetQuery.isInjectionTarget(controller, thisElement);
                 }
+            @Override
                 public void cancel() {}
         };
         JavaSource refFile = JavaSource.forFileObject(referencingFile);

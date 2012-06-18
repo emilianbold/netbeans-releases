@@ -49,9 +49,9 @@ import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -172,7 +172,9 @@ public final class WatchProjects {
                 tc.open();
                 tc.requestVisible();
                 tc.requestActive();
-                if (!("1.8".equals(System.getProperty("java.specification.version")))) {
+                String jVMversion = System.getProperty("java.specification.version");
+                System.out.println("Java.specification.version="+jVMversion);
+                if (!("1.8".equals(jVMversion))) {
                     try {
                         System.out.println("Cleaning well known static fields");
                         cleanWellKnownStaticFields();
@@ -186,34 +188,11 @@ public final class WatchProjects {
                 } catch (InterruptedException exc) {
                     Exceptions.printStackTrace(exc);
                 }
-                HotSpotDiagnosticMXBean hdmxb = null;
-                Method m = null;
-                Class c = null;
                 try {
-                    c = Class.forName("ManagementFactoryHelper");//NOI18N
-                } catch (ClassNotFoundException exc) {                    
-                    try {
-                        c = Class.forName("ManagementFactory");//NOI18N
-                    } catch (ClassNotFoundException ex1) {                        
-                    }
+                    Log.assertInstances("Are all documents GCed?", "TextDocument");
+                } finally {
+                    dumpHeap(null);
                 }
-                if (c!=null) {
-                    try {
-                        m= c.getMethod("getDiagnosticMXBean");//NOI18N
-                    } catch (NoSuchMethodException exc) {                        
-                    } catch (SecurityException exc) {                        
-                    }
-                }
-                if (m!=null) {
-                    try {
-                        int i = new Random().nextInt(1000);
-                        System.out.println("Creating heap dump in: "+System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpdoc"+i+".hprof");
-                        hdmxb.dumpHeap(System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpdoc"+i+".hprof", true);
-                    } catch (IOException ioe) {
-                        System.out.println("Taking of heap dump failed: " + ioe.getMessage());
-                    }
-                }                
-                Log.assertInstances("Are all documents GCed?", "TextDocument");
             }
         });
     }
@@ -232,7 +211,6 @@ public final class WatchProjects {
             public Lookup getLookup() {
                 return Lookup.EMPTY;
             }
-
         };
         try {
             OpenProjects.getDefault().open(new Project[] { p }, false);
@@ -281,37 +259,11 @@ public final class WatchProjects {
                         throw t;
                     }
                 } finally {
+                    dumpHeap(null);
                     try {
                         Thread.sleep(4000);
                     } catch (InterruptedException exc) {
                         Exceptions.printStackTrace(exc);
-                    }
-                    HotSpotDiagnosticMXBean hdmxb = null;
-                    Method m = null;
-                    Class c = null;
-                    try {
-                        c = Class.forName("ManagementFactoryHelper");//NOI18N
-                    } catch (ClassNotFoundException exc) {                    
-                        try {
-                            c = Class.forName("ManagementFactory");//NOI18N
-                        } catch (ClassNotFoundException ex1) {                        
-                        }
-                    }
-                    if (c!=null) {
-                        try {
-                            m= c.getMethod("getDiagnosticMXBean");//NOI18N
-                        } catch (NoSuchMethodException exc) {                        
-                        } catch (SecurityException exc) {                        
-                        }
-                    }
-                    if (m!=null) {
-                        try {
-                            int i = new Random().nextInt(1000);
-                            System.out.println("Creating heap dump in: "+System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpproj"+i+".hprof");
-                            hdmxb.dumpHeap(System.getProperty("nbjunit.workdir")+File.separator+"Heapdumpproj"+i+".hprof", true);
-                        } catch (IOException ioe) {
-                            System.out.println("Taking of heap dump failed: " + ioe.getMessage());
-                        }
                     }
                     try {
                         printTreeView(Frame.getFrames());
@@ -454,6 +406,54 @@ public final class WatchProjects {
             }
         }
         return ret;
+    }
+
+    private static void dumpHeap(String path) {
+        System.out.println("DUMPING HEAP");
+        Method m = null;
+        Class c = null;
+        HotSpotDiagnosticMXBean hdmxb=null;
+        try {
+            c = Class.forName("sun.management.ManagementFactoryHelper");//NOI18N
+        } catch (ClassNotFoundException exc) {
+            System.out.println(exc.getMessage());
+            try {
+                c = Class.forName("sun.management.ManagementFactory");//NOI18N
+            } catch (ClassNotFoundException ex1) {
+                System.out.println(ex1.getMessage());
+            }
+        }
+        if (c!=null) {
+            try {
+                m= c.getMethod("getDiagnosticMXBean");//NOI18N
+            } catch (NoSuchMethodException exc) {
+                System.out.println(exc.getMessage());
+            } catch (SecurityException exc) {
+                System.out.println(exc.getMessage());
+            }
+        }
+        if (m!=null) {
+            try {
+                hdmxb= (HotSpotDiagnosticMXBean)m.invoke(null);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            long i = System.currentTimeMillis();
+            if (path==null || "".equals(path)) {
+                path=System.getProperty("nbjunit.workdir")+File.separator+"Heapdump"+i+".hprof";
+            }
+            System.out.println("Creating heap dump, target directory="+path);
+            try {
+                hdmxb.dumpHeap(path, true);
+                System.out.println("Heap dump successfully created in: "+path);
+            } catch (IOException ioe) {
+                System.out.println(ioe.getMessage());
+            }
+        }
     }
 
     public static void waitScanFinished() {

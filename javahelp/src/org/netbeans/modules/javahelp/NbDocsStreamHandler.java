@@ -54,6 +54,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.URLStreamHandlerRegistration;
+import org.openide.util.Utilities;
 
 /** Handler & connection cribbed from NbResourceStreamHandler.
  * @author Jesse Glick
@@ -160,7 +161,7 @@ public final class NbDocsStreamHandler extends URLStreamHandler {
                     }
                     File f = InstalledFileLocator.getDefault().locate("docs/" + resource, host.isEmpty() ? null : host, true); // NOI18N
                     if (f != null) {
-                        target = f.toURI().toURL();
+                        target = Utilities.toURI(f).toURL();
                     } else {
                         IOException ioe = new IOException("cannot connect to " + url + ": " + mre);
                         ioe.initCause(mre);

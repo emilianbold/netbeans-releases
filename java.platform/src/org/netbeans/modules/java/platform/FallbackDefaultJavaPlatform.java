@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 
 /**
  * Basic impl in case no other providers can be found.
@@ -99,7 +100,7 @@ public final class FallbackDefaultJavaPlatform extends JavaPlatform {
             }
             URL u;
             try {
-                u = f.toURI().toURL();
+                u = Utilities.toURI(f).toURL();
             } catch (MalformedURLException x) {
                 throw new AssertionError(x);
             }

@@ -169,7 +169,7 @@ public final class ReadWriteUtils {
             output = new char[textLen + (textLen >>> 3) + 4]; // Add 1/8 to cover the "\r\n".
             int outputSafeLen = output.length - 2;
             for (int i = 0; i < textLen; i++) {
-                if (j == outputSafeLen) {
+                if (j >= outputSafeLen) {
                     char[] tmp = new char[output.length + (output.length >>> 1) + 4];
                     System.arraycopy(output, 0, tmp, 0, j);
                     output = tmp;

@@ -41,18 +41,7 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import javax.swing.Icon;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -69,17 +58,10 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.FindUsageSupport;
-import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.openide.filesystems.FileObject;
@@ -267,7 +249,7 @@ public final class WhereUsedSupport {
         if (modifier == null) {
             Set<Modifier> retval = Collections.emptySet();
             if (mElement != null && mElement.getInScope() instanceof TypeScope) {
-                retval = new HashSet<Modifier>();
+                retval = EnumSet.noneOf(Modifier.class);
                 if (mElement.getPhpModifiers().isPrivate()) {
                     retval.add(Modifier.PRIVATE);
                 } else if (mElement.getPhpModifiers().isProtected()) {
@@ -328,7 +310,10 @@ public final class WhereUsedSupport {
 
         private void addEntry(PhpElement decl) {
             Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
-            elements.add(WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()), icon));
+            WhereUsedElement whereUsedElement = WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()), icon);
+            if (whereUsedElement != null) {
+                elements.add(whereUsedElement);
+            }
         }
 
         private void addEntry(FileObject fo, Occurence occurence) {
@@ -346,7 +331,7 @@ public final class WhereUsedSupport {
         }
 
         public Collection<WhereUsedElement> getResultElements() {
-            return elements;
+            return Collections.unmodifiableCollection(elements);
         }
 
         public Collection<WarningFileElement> getWarningElements() {

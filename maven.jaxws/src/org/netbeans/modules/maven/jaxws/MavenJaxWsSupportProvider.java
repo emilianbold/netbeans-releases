@@ -76,6 +76,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
 
     private RequestProcessor.Task pomChangesTask = MAVEN_WS_RP.create(new Runnable() {
 
+        @Override
         public void run() {
             reactOnPomChanges();
         }
@@ -94,6 +95,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
 
         MAVEN_WS_RP.post(new Runnable() {
 
+            @Override
             public void run() {
                 registerPCL();
                 MetadataModel<WebservicesMetadata> model = 
@@ -110,6 +112,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         });
     }
 
+    @Override
     public JAXWSLightSupport findJAXWSSupport() {
         return jaxWsSupport;
     }
@@ -124,6 +127,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         try {
             wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
 
+                @Override
                 public Void run(final WebservicesMetadata metadata) {
                     Webservices webServices = metadata.getRoot();
                     if (pcl != null) {
@@ -164,6 +168,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         }
     }*/
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
             pomChangesTask.schedule(1000);
@@ -212,6 +217,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
 
         private RequestProcessor.Task updateJaxWsTask = MAVEN_WS_RP.create(new Runnable() {
 
+            @Override
             public void run() {
                 updateJaxWs();
             }
@@ -223,6 +229,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
             updateJaxWsTask.schedule(1000);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             //requestModelUpdate();
             updateJaxWsTask.schedule(1000);
@@ -233,6 +240,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
                 final Map<String, ServiceInfo> newServices = wsModel.runReadAction(
                         new MetadataModelAction<WebservicesMetadata, Map<String, ServiceInfo>>() {
 
+                    @Override
                     public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
                         Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
                         Webservices webServices = metadata.getRoot();

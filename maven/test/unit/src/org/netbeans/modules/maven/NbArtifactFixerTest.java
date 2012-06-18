@@ -41,6 +41,7 @@ package org.netbeans.modules.maven;
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
@@ -58,7 +59,7 @@ public class NbArtifactFixerTest extends NbTestCase {
         File pom = TestFileUtils.writeFile(new File(getWorkDir(), "pom.xml"), "<project xmlns='http://maven.apache.org/POM/4.0.0'><modelVersion>4.0.0</modelVersion>" +
             "<groupId>g</groupId><artifactId>a</artifactId><version>0</version>" +
             "</project>");
-        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("g", "a", "0", getWorkDir().toURI().toURL());
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("g", "a", "0", Utilities.toURI(getWorkDir()).toURL());
         assertEquals(pom, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:0")));
         assertEquals(null, new NbArtifactFixer().resolve(new DefaultArtifact("g:a:jar:0")));
         File fallback = new NbArtifactFixer().resolve(new DefaultArtifact("g:a:pom:1"));

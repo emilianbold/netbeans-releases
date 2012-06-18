@@ -97,6 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -211,7 +212,7 @@ public class BuildArtifactMapperImpl {
             File f = FileUtil.archiveOrDirForURL(u);
 
             try {
-                if (FileUtil.isArchiveFile(f.toURI().toURL())) {
+                if (FileUtil.isArchiveFile(Utilities.toURI(f).toURL())) {
                     continue;
                 }
             
@@ -663,7 +664,7 @@ public class BuildArtifactMapperImpl {
             }
             b.append("../"); // NOI18N
         }
-        URI u = base.toURI().relativize(file.toURI());
+        URI u = Utilities.toURI(base).relativize(Utilities.toURI(file));
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {

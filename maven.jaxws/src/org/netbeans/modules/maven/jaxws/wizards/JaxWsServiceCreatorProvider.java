@@ -60,6 +60,7 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
     public JaxWsServiceCreatorProvider() {
     }
     
+    @Override
     public ServiceCreator getServiceCreator(Project project, WizardDescriptor wiz) {
         if (JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory()) != null) {
             return new JaxWsServiceCreator(project, wiz, true);

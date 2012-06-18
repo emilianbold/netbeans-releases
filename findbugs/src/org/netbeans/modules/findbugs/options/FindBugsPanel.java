@@ -139,7 +139,10 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     }
     
     private synchronized void uiInit(OptionsFilter filter, TreeNode rootNode, final CustomizerContext<?, ?> cc) {
-        this.settings = new ModifiedPreferences(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
+        if (this.settings == null) { //might have already been set through setSettings method, do not reset!
+            this.settings = new ModifiedPreferences(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
+        }
+        
         initComponents();
         this.treeModel = new DefaultTreeModel(rootNode);
         if (filter != null) {
@@ -373,10 +376,25 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
     public void setSettings(Preferences settings) {
         this.settings = settings;
-        bugsTree.repaint();
+        if (bugsTree != null) {//prevent NPE when not initialized yet
+            bugsTree.repaint();
+        }
     }
 
-    void selectById(String id) {
+    void selectById(final String id) {
+        if (bugsTree == null) {
+            //when not initialized yet, wait for the initialization:
+            WORKER.post(new Runnable() {
+                @Override public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        selectById(id);
+                    } else {
+                        SwingUtilities.invokeLater(this);
+                    }
+                }
+            });
+            return ;
+        }
         TreePath toSelect = bug2Path.get(id);
 
         if (toSelect != null) {

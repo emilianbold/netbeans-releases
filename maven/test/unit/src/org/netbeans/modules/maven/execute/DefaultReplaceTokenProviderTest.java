@@ -50,6 +50,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 public class DefaultReplaceTokenProviderTest extends NbTestCase {
@@ -86,6 +87,12 @@ public class DefaultReplaceTokenProviderTest extends NbTestCase {
         // XXX test src/main/java selections
         // XXX test selections across groups, or outside groups
         // XXX test single methods
+        
+        //#213671
+        assertEquals(null, ActionProviderImpl.replacements(p, ActionProvider.COMMAND_RUN, Lookup.EMPTY).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
+        assertEquals(null, ActionProviderImpl.replacements(p, ActionProvider.COMMAND_RUN, Lookup.EMPTY).get(DefaultReplaceTokenProvider.CLASSNAME));
+        assertEquals(null, ActionProviderImpl.replacements(p, ActionProvider.COMMAND_RUN, Lookup.EMPTY).get(DefaultReplaceTokenProvider.CLASSNAME_EXT));
+        
     }
 
 }

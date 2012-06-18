@@ -588,6 +588,15 @@ public class JavaKit extends NbEditorKit {
                 return new JavaTypedBreakInterceptor();
             }
         }
+        
+        @MimeRegistration(mimeType = "text/x-java-character", service = TypedBreakInterceptor.Factory.class) //NOI18N
+        public static class JavaCharacterFactory implements TypedBreakInterceptor.Factory {
+
+            @Override
+            public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
+                return new JavaTypedBreakInterceptor();
+            }
+        }
     }
     
     
@@ -634,6 +643,15 @@ public class JavaKit extends NbEditorKit {
         
         @MimeRegistration(mimeType = "text/x-java-string", service = DeletedTextInterceptor.Factory.class) //NOI18N
         public static class JavaStringFactory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new JavaDeletedTextInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-character", service = DeletedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaCharacterFactory implements DeletedTextInterceptor.Factory {
 
             @Override
             public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
@@ -699,6 +717,15 @@ public class JavaKit extends NbEditorKit {
         
         @MimeRegistration(mimeType = "text/x-java-string", service = TypedTextInterceptor.Factory.class) //NOI18N
         public static class JavaStringFactory implements TypedTextInterceptor.Factory {
+
+            @Override
+            public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+                return new JavaTypedTextInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-character", service = TypedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaCharacterFactory implements TypedTextInterceptor.Factory {
 
             @Override
             public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {

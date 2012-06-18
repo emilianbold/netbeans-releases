@@ -207,8 +207,10 @@ public class AnalyzerImpl implements Analyzer {
                     
                     sizePerPart = new double[partSize.length];
                     
-                    for (int i = 0; i < sizePerPart.length; i++) {
-                        sizePerPart[i] = (double) size * ((double) partSize[i] / (double) total);
+                    if (total > 0) {
+                        for (int i = 0; i < sizePerPart.length; i++) {
+                            sizePerPart[i] = (double) size * ((double) partSize[i] / (double) total);
+                        }
                     }
                     
                     RunFindBugs.LOG.log(Level.FINE, "predictPassCount({0})", Arrays.toString(partSize));

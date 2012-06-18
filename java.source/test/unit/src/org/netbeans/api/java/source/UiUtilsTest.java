@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Zezula
@@ -159,7 +160,7 @@ public class UiUtilsTest extends NbTestCase {
         while (tk.hasMoreTokens()) {
             String token = tk.nextToken();
             File f = new File(token);
-            URL url = f.toURI().toURL();
+            URL url = Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
             } else if (!f.exists()) {

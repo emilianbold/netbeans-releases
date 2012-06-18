@@ -67,34 +67,6 @@ public class ActionsUtilTest extends NbTestCase {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-    }
-    
-    //due to use of weak references in ActionsUtil.LookupResultsCache this test fails
-    //(there are cache misses after GC, and there may be even cache miss during the
-    //first "assertTrue(result == ActionsUtil.getProjectsFromLookup(projects, null))"
-    //statement.
-//    public void testCacheWorks() throws Exception {
-//        Project prj1 = new DummyProject();
-//        Project prj2 = new DummyProject();
-//        Lookup projects = Lookups.fixed(new Object[] {
-//            prj1, prj2,
-//        });
-//        
-//        Project[] result = ActionsUtil.getProjectsFromLookup(projects, null);
-//        
-//        assertTrue(result == ActionsUtil.getProjectsFromLookup(projects, null));
-//        
-//        //make sure the cache lives as long as the projects lookup:
-//        //try hard to force gc:
-//        for (int i = 0; i < 5; i++) {
-//            System.gc();
-//            System.runFinalization();
-//        }
-//        
-//        assertTrue(result == ActionsUtil.getProjectsFromLookup(projects, null));
-//    }
-    
     private static final Object o = new Object();
     
     public void testCacheUpdatesCorrectly() throws Exception {

@@ -66,6 +66,7 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -212,12 +213,12 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 }
                 apt = true;
             }
-            final File sourceRoot = new File (sourceRootURL.toURI());
+            final File sourceRoot = Utilities.toFile(sourceRootURL.toURI());
             final File classCache = apt ?
-                new File (AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
+                Utilities.toFile(AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
                 JavaIndex.getClassFolder(sourceRoot);
             if (!genSources.isEmpty()) {
-                final File sourceFile = new File(forSource.toURI());
+                final File sourceFile = Utilities.toFile(forSource.toURI());
                 final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
                 final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
                 if (!cacheFile.getParentFile().exists()) {
@@ -237,7 +238,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 final StringBuilder sb = readResources(resFile, currentResources);
                 boolean changed = false;
                 for (javax.tools.FileObject file : genResources) {
-                    String resPath = FileObjects.getRelativePath(classCache.toURI().toURL(), file.toUri().toURL());
+                    String resPath = FileObjects.getRelativePath(Utilities.toURI(classCache).toURL(), file.toUri().toURL());
                     if (currentResources.add(resPath)) {
                         sb.append(resPath);
                         sb.append('\n');    //NOI18N

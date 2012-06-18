@@ -49,7 +49,6 @@ import javax.swing.Action;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import static org.netbeans.modules.maven.actions.Bundle.*;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;

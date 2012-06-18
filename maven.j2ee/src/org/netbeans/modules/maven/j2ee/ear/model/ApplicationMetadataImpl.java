@@ -61,6 +61,7 @@ public class ApplicationMetadataImpl implements ApplicationMetadata {
         this.application = application;
     }
 
+    @Override
     public Application getRoot() {
         return application;
     }

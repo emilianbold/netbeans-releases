@@ -148,31 +148,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         return hash;
     }
 
-    private CsmObject getTemplateParameterDefultValue(CsmTemplate declaration, CsmTemplateParameter param, int index) {
-        CsmObject res = param.getDefaultValue();
-        if (res != null) {
-            return res;
-        }
-        if (CsmKindUtilities.isClass(declaration)) {
-            CsmClass cls = (CsmClass) declaration;
-            CsmClassForwardDeclaration fdecl;
-            fdecl = findCsmClassForwardDeclaration(cls.getContainingFile(), cls);
-            if (fdecl != null) {
-                List<CsmTemplateParameter> templateParameters = ((CsmTemplate) fdecl).getTemplateParameters();
-                if (templateParameters.size() > index) {
-                    CsmTemplateParameter p = templateParameters.get(index);
-                    if (p != null) {
-                        res = p.getDefaultValue();
-                        if (res != null) {
-                            return res;
-                        }
-                    }
-                }
-            }
-        }
-        return res;
-    }
-
     private CsmClassForwardDeclaration findCsmClassForwardDeclaration(CsmScope scope, CsmClass cls) {
         if (scope != null) {
             if (CsmKindUtilities.isFile(scope)) {
@@ -1443,6 +1418,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         return resolved;
                     }
                 }
+                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember tdMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                        return resolved;
+                    }
+                }
             }
             return resolved;
         }
@@ -1612,6 +1594,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         return resolved;
                     }
                 }
+                if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember tdMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                        resolved = new Class((CsmClass)resolved, instantiation.getMapping());
+                        return resolved;
+                    }
+                }                
             }
             return resolved;
         }
@@ -1677,7 +1666,10 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                     sb.append(TypeImpl.getCanonicalText(((CsmTypeBasedSpecializationParameter) param).getType()));
                 }
                 if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
-                    sb.append(((CsmExpressionBasedSpecializationParameter) param).getText());
+                    sb.append(param.getText());
+                }
+                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                    sb.append(param.getText());
                 }
             }
             TemplateUtils.addGREATERTHAN(sb);

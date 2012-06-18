@@ -45,6 +45,8 @@ import com.sun.source.tree.Scope;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -79,7 +81,8 @@ import org.openide.windows.WindowManager;
  */
 @ServiceProvider(service = EditorSupportProvider.class)
 public class ProjectEditorSupportImpl extends EditorSupportProvider {
-
+    private static final Logger LOG = Logger.getLogger(ProjectEditorSupportImpl.class.getName());
+    
     private <T> T performOnAWT(final Callable<T> action) throws Exception {
         if (SwingUtilities.isEventDispatchThread()) {
             return action.call();
@@ -238,7 +241,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
 
             });
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.WARNING, null, e);
         }
         return -1;
     }
@@ -272,7 +275,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                 }
             });
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            LOG.log(Level.WARNING, null, e);
         }
         return -1;
     }
@@ -390,7 +393,7 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
 
     @NbBundle.Messages("TXT_Question=Question")
     private static StyledDocument getDocument(EditorCookie ec) throws IOException {
-        StyledDocument doc = null;
+        StyledDocument doc;
         try {
             doc = ec.openDocument();
         } catch (UserQuestionException uqe) {
