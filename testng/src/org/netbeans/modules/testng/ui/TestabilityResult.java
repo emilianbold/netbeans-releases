@@ -55,6 +55,14 @@ import org.openide.util.NbBundle;
  * not be considered testable, allows to combine the reasons and provide 
  * human-readable representation  of them.
  */
+@NbBundle.Messages({"TestabilityResult_OK=testable",
+"TestabilityResult_Private=private",
+"TestabilityResult_PkgPrivate=package-private",
+"TestabilityResult_ExceptionClass=an exception class",
+"TestabilityResult_NonstaticInnerClass=nonstatic nested",
+"TestabilityResult_AbstractClass=abstract",
+"TestabilityResult_TestClass=a test class",
+"TestabilityResult_NoTestableMethods=contains no testable methods"})
 final class TestabilityResult {
     // bitfield of reasons for skipping a class
     private long reason;
@@ -72,13 +80,13 @@ final class TestabilityResult {
 
     // bundle keys for reason descriptions
     private static final String [] reasonBundleKeys = {
-        "TestabilityResult_PkgPrivate", 
-        "TestabilityResult_NoTestableMethods",
-        "TestabilityResult_TestClass",
-        "TestabilityResult_AbstractClass",
-        "TestabilityResult_NonstaticInnerClass",
-        "TestabilityResult_ExceptionClass",
-        "TestabilityResult_Private"};
+        Bundle.TestabilityResult_PkgPrivate(),
+        Bundle.TestabilityResult_NoTestableMethods(),
+        Bundle.TestabilityResult_TestClass(),
+        Bundle.TestabilityResult_AbstractClass(),
+        Bundle.TestabilityResult_NonstaticInnerClass(),
+        Bundle.TestabilityResult_ExceptionClass(),
+        Bundle.TestabilityResult_Private()};
 
     private TestabilityResult(long reason) {
         this.reason = reason;
@@ -165,9 +173,8 @@ final class TestabilityResult {
      */
     public String getReason(String separ, String terminalSepar) {
         try {
-            ResourceBundle bundle = NbBundle.getBundle(TestCreator.class);
             if (reason == 0) {
-                return bundle.getString("TestabilityResult_OK");          //NOI18N
+                return Bundle.TestabilityResult_OK();
             } else {
                 String str = "";                                        //NOI18N
                 boolean lastPrep = true;
@@ -181,7 +188,7 @@ final class TestabilityResult {
                                 str = separ + str;
                             }
                         }
-                        str = bundle.getString(reasonBundleKeys[(int)i]) + str;
+                        str = reasonBundleKeys[(int)i] + str;
                     }
                 } 
                 return str;
