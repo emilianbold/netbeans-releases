@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <toolchain name="OracleSolarisStudio_12.3" display="Oracle Solaris Studio 12.3 Compiler Collection" family="SunStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/oracle/solstudio12.3/bin"/>
-        <platform os="sun_intel" directory="/opt/solstudio12.3/bin"/>
+        <platform os="linux" directory="/opt/oracle/solarisstudio12.3/bin"/>
+        <platform os="sun_intel" directory="/opt/solarisstudio12.3/bin"/>
     </default_locations>
 </toolchaindefinition>
