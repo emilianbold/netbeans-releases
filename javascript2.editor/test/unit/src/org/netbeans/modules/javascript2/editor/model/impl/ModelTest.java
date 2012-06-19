@@ -338,7 +338,7 @@ public class ModelTest extends JsTestBase {
         JsObject  object = model.getGlobalObject();
         assertEquals(3, object.getProperties().size());
         
-        object = object.getProperty("$function").getProperty("jQuery");
+        object = object.getProperty("_L2").getProperty("jQuery");
         assertEquals(true, object.isDeclared());
         assertEquals(1, object.getProperties().size());
         assertEquals(JsElement.Kind.OBJECT_LITERAL, object.getJSKind());
@@ -373,7 +373,7 @@ public class ModelTest extends JsTestBase {
         // TODO this is wrong, needs to be handled parameters
         assertEquals(3, object.getProperties().size());
         
-        object = object.getProperty("$function");
+        object = object.getProperty("_L1");
         assertEquals(true, object.isDeclared());
         assertEquals(true, ((JsFunction)object).isAnonymous());
         assertEquals(5, object.getProperties().size());
@@ -394,7 +394,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(false, object.isDeclared());
         assertNotNull(object.getProperty("println"));
         
-        object = global.getProperty("$function");
+        object = global.getProperty("_L1");
         assertEquals(true, object.isDeclared());
         assertEquals(true, ((JsFunction)object).isAnonymous());
         assertEquals(3, object.getProperties().size());
@@ -582,7 +582,7 @@ public class ModelTest extends JsTestBase {
         JsObject global = model.getGlobalObject();
         assertEquals(1, global.getProperties().size());
         
-        JsFunction function = (JsFunction)global.getProperty("$function");
+        JsFunction function = (JsFunction)global.getProperty("_L44");
         assertTrue(function.isAnonymous());
         assertEquals(3, function.getProperties().size());
         
@@ -598,7 +598,7 @@ public class ModelTest extends JsTestBase {
         JsObject global = model.getGlobalObject();
         assertEquals(2, global.getProperties().size());
         
-        JsFunctionImpl function = (JsFunctionImpl)global.getProperty("$function");
+        JsFunctionImpl function = (JsFunctionImpl)global.getProperty("_L1");
         assertTrue(function.isAnonymous());
         assertTrue(function.isDeclared());
         
