@@ -178,7 +178,7 @@ made subject to such option by the copyright holder.
         <antcall target="run">
             <reference refid="cluster.path.id"/>
             <param name="felix-sys-prop.org.osgi.framework.bootdelegation" value="org.netbeans.lib.profiler.*"/>
-            <param name="osgi.run.args.extra" value='"${run.args.ide}"'/>
+            <param name="osgi.run.args.extra" value="${run.args.ide}"/>
         </antcall>
     </target>
     
@@ -201,7 +201,7 @@ made subject to such option by the copyright holder.
             </rootspath>
         </nbprofiledirect>
         <antcall target="run">
-            <param name="osgi.run.args.extra" value='${profiler.jvmargs}'/>
+            <param name="osgi.run.args.extra" value="${profiler.jvmargs}"/>
             <param name="felix-sys-prop.org.osgi.framework.bootdelegation" value="org.netbeans.lib.profiler.*"/>
             <reference refid="cluster.path.id"/>
         </antcall>
