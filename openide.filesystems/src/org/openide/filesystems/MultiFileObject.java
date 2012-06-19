@@ -1369,6 +1369,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     */
     public FileObject copy(FileObject target, String name, String ext)
     throws IOException {
+        if (FileUtil.isParentOf(this, target)) {
+            throw new FSException(NbBundle.getMessage(FileObject.class, "EXC_CopyChild", this, target)); // NOI18N
+        }
         return leader.copy(target, name, ext);
     }
 
@@ -1384,6 +1387,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     */
     public FileObject move(FileLock lock, FileObject target, String name, String ext)
     throws IOException {
+        if (FileUtil.isParentOf(this, target)) {
+            throw new FSException(NbBundle.getMessage(FileObject.class, "EXC_MoveChild", this, target)); // NOI18N
+        }
         MultiFileSystem fs = getMultiFileSystem();
 
         try {
