@@ -62,7 +62,7 @@ import org.openide.filesystems.FileObject;
 public class PhpProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation,
         MoveOperationImplementation {
 
-    private PhpProject project;
+    private final PhpProject project;
 
     public PhpProjectOperations(PhpProject project) {
         assert project != null;
@@ -76,6 +76,7 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
 
     @Override
     public void notifyDeleting() throws IOException {
+        project.setDeleting();
     }
 
     @Override
