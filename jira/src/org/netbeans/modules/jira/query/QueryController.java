@@ -201,10 +201,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             setAsSaved();
         }
         
-        querySemaphore.acquireUninterruptibly();
-        Jira.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
-        
         if(modifiable) {
+            
+            querySemaphore.acquireUninterruptibly();
+            Jira.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
+            
             if(jiraFilter != null) {
                  assert jiraFilter instanceof FilterDefinition;
             }
@@ -1363,7 +1364,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                 } 
                 querySemaphore.release();
                 Jira.LOG.log(Level.FINE, "lock aquired for query {0} after {1}", new Object[]{query.getDisplayName(), System.currentTimeMillis() - t}); // NOI18N
-                if(!populated) {
+                if(modifiable && !populated) {
                     Jira.LOG.log(Level.WARNING, "Skipping refresh of query {0} because isn''t populated.", query.getDisplayName()); // NOI18N
                     // something went wrong during populate - skip execute
                     return;

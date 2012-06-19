@@ -102,6 +102,8 @@ final class NbEvents extends Events {
         "MSG_finish_auto_restore=Done loading modules.",
         "MSG_start_enable_modules=Turning on modules...",
         "TEXT_finish_enable_modules=Turning on modules:",
+        "# {0} = startlevel",
+        "MSG_startlevelinfo=, startlevel={0}",
         "MSG_finish_enable_modules=Turning on modules...done.",
         "MSG_start_disable_modules=Turning off modules...",
         "TEXT_finish_disable_modules=Turning off modules:",
@@ -334,6 +336,10 @@ final class NbEvents extends Events {
                 buf.append(bv);
             }
             buf.append(']'); // NOI18N
+            int startlevel = m.getStartLevel();
+            if (startlevel != -1) {
+                buf.append(MSG_startlevelinfo(startlevel));
+            }
             // #32331: use platform-specific newlines
             buf.append(lineSep);
         }

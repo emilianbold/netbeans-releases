@@ -850,7 +850,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            TypeNameResolver typeNameResolver = getBaseFunctionElement().getParameters().isEmpty() ? TypeNameResolverImpl.forNull() : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
+            TypeNameResolver typeNameResolver = getBaseFunctionElement().getParameters().isEmpty() || request == null ? TypeNameResolverImpl.forNull() : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
             template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration, typeNameResolver));
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N
