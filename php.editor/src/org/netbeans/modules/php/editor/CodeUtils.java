@@ -282,7 +282,13 @@ public class CodeUtils {
 
         @Override
         public void visit(Scalar node) {
-            name = node.getStringValue();
+            final String scalarName = node.getStringValue();
+            if ((scalarName.startsWith("'") && scalarName.endsWith("'"))
+                    || (scalarName.startsWith("\"") && scalarName.endsWith("\""))) { //NOI18N
+                name = scalarName.substring(1, scalarName.length() - 1);
+            } else {
+                name = scalarName;
+            }
         }
 
         @Override
