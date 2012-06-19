@@ -144,11 +144,13 @@ NetBeans_Page.prototype._loadPresets = function() {
         return this._presets.slice(0);
     }
     return [
-        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Desktop', '1440', '900', true, true),
-        new NetBeans_Preset(NetBeans_Preset.TABLET, 'Tablet Landscape', '1039', '768', true, true),
-        new NetBeans_Preset(NetBeans_Preset.TABLET, 'Tablet Portrait', '783', '1024', true, true),
-        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE, 'Smartphone Landscape', '495', '320', true, true),
-        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE, 'Smartphone Portrait', '335', '480', true, true)
+        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Widescreen', '1680', '1050', true, true),
+        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Desktop', '1280', '1024', true, true),
+        new NetBeans_Preset(NetBeans_Preset.NETBOOK, 'Netbook', '1024', '600', true, true),
+        new NetBeans_Preset(NetBeans_Preset.TABLET_LANDSCAPE, 'Tablet Landscape', '1024', '768', true, true),
+        new NetBeans_Preset(NetBeans_Preset.TABLET_PORTRAIT, 'Tablet Portrait', '768', '1024', true, true),
+        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE_LANDSCAPE, 'Smartphone Landscape', '480', '320', true, true),
+        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE_PORTRAIT, 'Smartphone Portrait', '320', '480', true, true)
     ];
 }
 // save presets to the central storage
@@ -188,19 +190,41 @@ NetBeans_Preset.DESKTOP = {
     ident: 'DESKTOP',
     title: 'Desktop' // XXX i18n
 };
-// preset type for Tablets
-NetBeans_Preset.TABLET = {
-    ident: 'TABLET',
-    title: 'Tablet'
+// preset type for Netbooks
+NetBeans_Preset.NETBOOK = {
+    ident: 'NETBOOK',
+    title: 'Netbook'
 };
-// preset type for Smartphones
-NetBeans_Preset.SMARTPHONE = {
-    ident: 'SMARTPHONE',
-    title: 'Smartphone'
+// preset type for Tablets (Landscape)
+NetBeans_Preset.TABLET_LANDSCAPE = {
+    ident: 'TABLET_LANDSCAPE',
+    title: 'Tablet Landscape'
+};
+// preset type for Tablets (Portrait)
+NetBeans_Preset.TABLET_PORTRAIT = {
+    ident: 'TABLET_PORTRAIT',
+    title: 'Tablet Portrait'
+};
+// preset type for Smartphones  (Landscape)
+NetBeans_Preset.SMARTPHONE_LANDSCAPE = {
+    ident: 'SMARTPHONE_LANDSCAPE',
+    title: 'Smartphone Landscape'
+};
+// preset type for Smartphones  (Portrait)
+NetBeans_Preset.SMARTPHONE_PORTRAIT = {
+    ident: 'SMARTPHONE_PORTRAIT',
+    title: 'Smartphone Portrait'
 };
 // get a list of all preset types
 NetBeans_Preset.allTypes = function() {
-    return [NetBeans_Preset.DESKTOP, NetBeans_Preset.TABLET, NetBeans_Preset.SMARTPHONE];
+    return [
+        NetBeans_Preset.DESKTOP,
+        NetBeans_Preset.NETBOOK,
+        NetBeans_Preset.TABLET_LANDSCAPE,
+        NetBeans_Preset.TABLET_PORTRAIT,
+        NetBeans_Preset.SMARTPHONE_LANDSCAPE,
+        NetBeans_Preset.SMARTPHONE_PORTRAIT
+    ];
 }
 // get preset type for the given ident, or null if not found
 NetBeans_Preset.typeForIdent = function(ident) {
