@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.test.lib;
 
 import java.io.File;
@@ -30,6 +29,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.jemmy.EventTool;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -47,10 +47,16 @@ public class DumpTokens {
     public DumpTokens(File file) {
         this.file = file;
     }
-
+    
+    /**
+     * Use <code>DumpTokens.printTokens()</code> instead for more accurate results (includes embedding)
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public String getTokenString() {
         if (str == null) {
-        Logger.getLogger(DumpTokens.class.getName()).info("Getting token string");
+            Logger.getLogger(DumpTokens.class.getName()).info("Getting token string");
             Iterator<Token> iterator = getTokens().iterator();
             while (iterator.hasNext()) {
                 Token token = iterator.next();
@@ -103,7 +109,7 @@ public class DumpTokens {
             } catch (InterruptedException interruptedException) {
                 interruptedException.printStackTrace();
             }
-            
+
         }
         try{
             Logger.getLogger(DumpTokens.class.getName()).info("Parsing token sequence");
@@ -114,7 +120,7 @@ public class DumpTokens {
         }
         return null;
     }
-    
+
     private List<Token> dumpTokens(TokenSequence ts){
         List<Token> result = null;
         if (ts == null) {
@@ -140,6 +146,30 @@ public class DumpTokens {
         }
         return result;
     }
-  
-    
+
+    public static String printTokens(File file) throws IOException {
+        Logger.getLogger(DumpTokens.class.getName()).info("Dumping tokens");
+        DataObject dataObj = DataObject.find(FileUtil.toFileObject(file));
+        EditorCookie ed = dataObj.getCookie(EditorCookie.class);
+        StyledDocument sDoc = ed.openDocument();
+        BaseDocument doc = (BaseDocument) sDoc;
+        TokenHierarchy th = null;
+        TokenSequence ts = null;
+        int roundCount = 0;
+        while ((th == null) || (ts == null)) {
+            th = TokenHierarchy.get(doc);
+            if (th != null) {
+                ts = th.tokenSequence();
+            }
+            roundCount++;
+            if (roundCount > 50) {
+                throw new AssertionError("Impossible to get token hierarchy " + roundCount + "times");
+            }
+            
+            new EventTool().waitNoEvent(1000);
+        }
+        
+           return ts.toString().replaceAll("(st=.*)*IHC=[0-9]*", "");// remove System.identityHashCode
+           
+    }
 }

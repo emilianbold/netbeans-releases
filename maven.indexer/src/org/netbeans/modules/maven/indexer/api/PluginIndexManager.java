@@ -63,6 +63,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -330,7 +331,7 @@ public class PluginIndexManager {
             online.resolve(art, Collections.<ArtifactRepository>emptyList(), online.getLocalRepository());
             File jar = art.getFile();
             if (jar.isFile()) {
-                Map<String, List<String>> phases = parsePhases("jar:" + jar.toURI() + "!/META-INF/plexus/components.xml", packaging);
+                Map<String, List<String>> phases = parsePhases("jar:" + Utilities.toURI(jar) + "!/META-INF/plexus/components.xml", packaging);
                 if (phases != null) {
                     return phases;
                 }
@@ -389,7 +390,7 @@ public class PluginIndexManager {
         }
         LOG.log(Level.FINER, "parsing plugin.xml from {0}", jar);
             try {
-            return XMLUtil.parse(new InputSource("jar:" + jar.toURI() + "!/META-INF/maven/plugin.xml"), false, false, XMLUtil.defaultErrorHandler(), null);
+            return XMLUtil.parse(new InputSource("jar:" + Utilities.toURI(jar) + "!/META-INF/maven/plugin.xml"), false, false, XMLUtil.defaultErrorHandler(), null);
         } catch (Exception x) {
             LOG.log(Level.FINE, "could not parse " + jar, x.toString());
             return null;

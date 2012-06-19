@@ -81,6 +81,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -368,7 +369,7 @@ public abstract class CsmResultItem implements CompletionItem {
                 Object ob = getAssociatedObject();
                 if (CsmKindUtilities.isCsmObject(ob)) {
                     // Bug 186954 - Included files are chaotically inserted
-                    if (!CsmClassifierResolver.getDefault().isForwardClass((CsmObject) ob)) {
+                    if (!CsmClassifierResolver.getDefault().isForwardClassifier((CsmObject) ob)) {
                         CsmFile currentFile = CsmUtilities.getCsmFile(doc, false, false);
                         if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
                             String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
@@ -972,19 +973,19 @@ public abstract class CsmResultItem implements CompletionItem {
                 mtdName = ctr.getName();
             }
             int i = 0;
-            for (Object prm : ctr.getParameters()) {
+            for (CsmParameter prm : ctr.getParameters()) {
                 if (prm == null) {
                     continue;
                 }
-                CsmType type = ((CsmParameter) prm).getType();
+                CsmType type = prm.getType();
                 if (type == null) {
                     // only var args parameters could have null types
                     assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
-                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
                 } else {
                     String typeName = getTypeName(type, instantiateTypes);
-                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
             }
@@ -1047,16 +1048,12 @@ public abstract class CsmResultItem implements CompletionItem {
             List<String> ret = new ArrayList<String>();
             for (Iterator<ParamStr> it = getParams().iterator(); it.hasNext();) {
                 StringBuilder sb = new StringBuilder();
-                ParamStr ps = it.next();
-                sb.append(ps.getSimpleTypeName());
+                ParamStr ps = it.next();                
                 if (ps.isVarArg()) {
+                    sb.append(ps.getSimpleTypeName());
                     sb.append("..."); // NOI18N
                 } else {
-                    String name = ps.getName();
-                    if (name != null && name.length() > 0) {
-                        sb.append(" "); // NOI18N
-                        sb.append(name);
-                    }
+                    sb.append(ps.getText());
                 }
                 if (it.hasNext()) {
                     sb.append(", "); // NOI18N
@@ -1620,6 +1617,57 @@ public abstract class CsmResultItem implements CompletionItem {
                 clsComponent.setFormatClassName(getName());
                 return clsComponent;
             }
+        }
+    }
+
+    public static class ForwardEnumResultItem extends CsmResultItem {
+
+        private CsmEnumForwardDeclaration enm;
+        private int classDisplayOffset;
+        private boolean displayFQN;
+        private static CsmPaintComponent.EnumPaintComponent enumComponent = null;
+
+        public ForwardEnumResultItem(CsmEnumForwardDeclaration cls, boolean displayFQN, int priotity) {
+            this(cls, 0, displayFQN, priotity);
+        }
+
+        public ForwardEnumResultItem(CsmEnumForwardDeclaration enm, int classDisplayOffset, boolean displayFQN, int priotity) {
+            super(enm, priotity);
+            this.enm = enm;
+            this.classDisplayOffset = classDisplayOffset;
+            this.displayFQN = displayFQN;
+        }
+
+        protected String getName() {
+            return enm.getName().toString();
+        }
+
+        @Override
+        protected String getReplaceText() {
+            String text = getItemText();
+            if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
+                text = text.substring(classDisplayOffset);
+            }
+            return text;
+        }
+
+        @Override
+        public String getItemText() {
+            return displayFQN ? enm.getQualifiedName().toString() : getName();
+        }
+
+        protected CsmPaintComponent.EnumPaintComponent createEnumPaintComponent() {
+            return new CsmPaintComponent.EnumPaintComponent();
+        }
+
+        @Override
+        public Component getPaintComponent(boolean isSelected) {
+            if (enumComponent == null) {
+                enumComponent = createEnumPaintComponent();
+            }
+            enumComponent.setSelected(isSelected);
+            enumComponent.setFormatEnumName(getName());
+            return enumComponent;
         }
     }
 

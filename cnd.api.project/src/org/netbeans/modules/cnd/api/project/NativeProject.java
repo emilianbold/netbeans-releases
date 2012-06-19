@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
-import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -107,12 +106,6 @@ public interface NativeProject {
       * @return the file item if found. Otherwise it returns null.
       */
      public NativeFileItem findFileItem(FileObject fileObject);
-
-     /***
-      * Searcher for find project file by name
-      * @return searcher
-      */
-     public NativeFileSearch getNativeFileSearch();
      
     /**
      * Returns a list <IncludeSearchPath> of compiler defined include paths used when parsing 'orpan' source files.
@@ -159,21 +152,6 @@ public interface NativeProject {
      * In this case NamedRunnable.getName() is used and its value is inserted instead of XXX
      */
     public abstract void runOnProjectReadiness(NamedRunnable task);
-
-    /**
-     * Execute a command from user's PATH in the context of the native project
-     * @param executable Executable name (not path)
-     * @param env Additional environment variables
-     * @param args Arguments
-     * @return NativeExitStatus
-     */
-    public NativeExitStatus execute(final String executable, final String[] env, final String... args) throws IOException;
-
-    /**
-     * Return the name of the development platform (Solaris-x86, Solaris-sparc, MacOSX, Windows, Linux-x86)
-     * @return development platform name
-     */
-    public String getPlatformName();
     
     /**
      * All native file items were changed. For example because tool collection system include paths were changed.

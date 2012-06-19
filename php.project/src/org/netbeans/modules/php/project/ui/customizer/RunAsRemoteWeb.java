@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -83,8 +85,6 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -264,7 +264,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     RunConfigRemote createRunConfig() {
         return RunConfigRemote.create()
                 .setUrl(urlTextField.getText())
-                .setIndexParentDir(FileUtil.toFile(getWebRoot()))
+                .setIndexParentDir(getWebRoot())
                 .setIndexRelativePath(indexFileTextField.getText())
                 .setArguments(argsTextField.getText())
                 .setRemoteConfiguration((RemoteConfiguration) remoteConnectionComboBox.getSelectedItem())
@@ -274,7 +274,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .setUploadDirectly(uploadDirectlyCheckBox.isSelected());
     }
 
-    private FileObject getWebRoot() {
+    private File getWebRoot() {
         return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
@@ -324,7 +324,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     void updateRemoteConnectionHint() {
-        remoteConnectionHintLabel.setText(createRunConfig().getRemoteConnectionHint());
+        String hint = createRunConfig().getRemoteConnectionHint();
+        remoteConnectionHintLabel.setText(hint != null ? "<html><body>" + hint : " "); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -361,17 +362,17 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(null);
-
         runAsLabel.setLabelFor(runAsComboBox);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RunAs")); // NOI18N
 
         urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
 
+        urlTextField.setColumns(20);
+
         indexFileLabel.setLabelFor(indexFileTextField);
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile"));
-        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse"));
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
@@ -379,17 +380,18 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         });
 
         argsLabel.setLabelFor(argsTextField);
+        Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Arguments")); // NOI18N
 
-        Mnemonics.setLocalizedText(argsLabel,NbBundle.getMessage(RunAsRemoteWeb.class,"LBL_Arguments"));
+        argsTextField.setColumns(20);
 
+        urlHintLabel.setEditable(false);
         urlHintLabel.setBackground(UIManager.getDefaults().getColor("Label.background"));
         urlHintLabel.setBorder(null);
-        urlHintLabel.setEditable(false);
         urlHintLabel.setFocusable(false);
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
-        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection"));
-        Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage"));
+        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection")); // NOI18N
+        Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 manageRemoteConnectionButtonActionPerformed(evt);
@@ -398,6 +400,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
         Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
+
+        uploadDirectoryTextField.setColumns(20);
 
         remoteConnectionHintLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy"); // NOI18N
@@ -408,16 +412,16 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadFilesHintLabel.setLabelFor(this);
 
         Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy"); // NOI18N
-        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text"));
+        Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text")); // NOI18N
 
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
 
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text"));
+        Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text")); // NOI18N
 
         uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
-        Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text"));
-        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text"));
+        Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 advancedButtonActionPerformed(evt);
@@ -429,20 +433,6 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(preservePermissionsCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(preservePermissionsLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(uploadDirectlyCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(uploadDirectlyLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(remoteConnectionLabel)
                     .addComponent(uploadDirectoryLabel)
@@ -453,28 +443,36 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .addComponent(argsLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(urlHintLabel, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
+                    .addComponent(urlHintLabel)
+                    .addComponent(urlTextField, Alignment.TRAILING)
+                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(indexFileTextField)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(indexFileBrowseButton))
+                    .addComponent(argsTextField, Alignment.TRAILING)
+                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(remoteConnectionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(manageRemoteConnectionButton))
+                    .addComponent(uploadDirectoryTextField)
+                    .addComponent(uploadFilesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(runAsComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(advancedButton, Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(remoteConnectionHintLabel)
-                        .addContainerGap())
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(remoteConnectionHintLabel)
+                            .addComponent(uploadFilesHintLabel))
+                        .addContainerGap())))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(preservePermissionsCheckBox)
+                    .addComponent(uploadDirectlyCheckBox)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                            .addComponent(urlTextField, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(indexFileTextField, GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(indexFileBrowseButton))
-                            .addComponent(argsTextField, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
-                            .addComponent(uploadFilesHintLabel, Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(remoteConnectionComboBox, 0, 236, Short.MAX_VALUE)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(manageRemoteConnectionButton))
-                            .addComponent(uploadDirectoryTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 348, Short.MAX_VALUE)
-                            .addComponent(uploadFilesComboBox, Alignment.LEADING, 0, 348, Short.MAX_VALUE)
-                            .addComponent(runAsComboBox, Alignment.LEADING, 0, 348, Short.MAX_VALUE)
-                            .addComponent(advancedButton))
-                        .addGap(0, 0, 0))))
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(preservePermissionsLabel)
+                            .addComponent(uploadDirectlyLabel))))
+                .addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {indexFileBrowseButton, manageRemoteConnectionButton});
@@ -596,8 +594,14 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
+    @NbBundle.Messages("RunAsRemoteWeb.webRoot.notFound=Web Root directory does not exist (see Sources).")
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getWebRoot(), indexFileTextField);
+        } catch (FileNotFoundException ex) {
+            category.setErrorMessage(Bundle.RunAsRemoteWeb_webRoot_notFound());
+            category.setValid(true);
+        }
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     private void advancedButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_advancedButtonActionPerformed

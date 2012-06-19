@@ -58,6 +58,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -148,8 +149,8 @@ public class TranslateClassPath extends Task {
                         continue;
                     }
 
-                    final Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL())
-                                               : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), getProject(), true, true);
+                    final Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(Utilities.toURI(sourceFile).toURL())
+                                               : BuildArtifactMapperImpl.ensureBuilt(Utilities.toURI(sourceFile).toURL(), getProject(), true, true);
                     if (bamiResult == null) {
                         appendEntry = true;
                         continue;

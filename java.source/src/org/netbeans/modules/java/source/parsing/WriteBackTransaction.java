@@ -213,6 +213,7 @@ class WriteBackTransaction extends FileManagerTransaction {
         File shadowFile = new File(shadowRoot, relPath);
         workDirs.add(shadowRoot);
         cfo = new CachedFileObject(this, file, pname, pkgNamePair[1], filter, encoding);
+        addFile(pname, cfo);        
         cfo.setShadowFile(shadowFile);
         if (!shadowRoot.mkdirs() && !shadowRoot.exists() && !shadowRoot.isDirectory()) {
             throw new IllegalStateException();
@@ -455,9 +456,6 @@ class WriteBackTransaction extends FileManagerTransaction {
 
         @Override
         public OutputStream openOutputStream() throws IOException {
-            if (writer != null) {
-                writer.addFile(getPackage(), this);
-            }
             if (delegate != null) {
                 return delegate.openOutputStream();
             } else {

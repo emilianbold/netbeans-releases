@@ -62,6 +62,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.SuitePropertiesTest
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -138,7 +139,7 @@ public class BrandingSupportTest extends TestBase {
         File newSource = createNewSource(bFile);
         assertEquals(0,instance.getBrandedFiles().size());
         
-        bFile.setBrandingSource(newSource.toURI().toURL());
+        bFile.setBrandingSource(Utilities.toURI(newSource).toURL());
         assertTrue(bFile.isModified());        
         
         assertEquals(0,instance.getBrandedFiles().size());

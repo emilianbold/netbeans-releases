@@ -47,8 +47,12 @@ package org.openide.util.actions;
 /** An action that can be toggled on or off.
 * The actual "performing" of the action is the toggle itself, so
 * this action should be used by listening to the {@link #PROP_BOOLEAN_STATE} property.
-* <p>The default value of the state is <code>true</code> (on).
-*
+* The default value of the state is <code>true</code> (on).
+* <p>
+* This action is not the most effective way to implement checkbox in
+* a menu. Consider using more modern alternative:
+* <a href="@org-openide-awt@/org/openide/awt/Actions.html#checkbox(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String,%20boolean)">
+* Actions.checkbox</a>.
 *
 * @author   Ian Formanek, Petr Hamernik
 */

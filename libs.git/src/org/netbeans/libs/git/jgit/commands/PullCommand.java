@@ -80,7 +80,7 @@ public class PullCommand extends TransportCommand {
     }
 
     @Override
-    protected void run () throws GitException.AuthorizationException, GitException {
+    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
         FetchCommand fetch = new FetchCommand(getRepository(), getClassFactory(), remote, refSpecs, monitor);
         fetch.setCredentialsProvider(getCredentialsProvider());
         fetch.run();

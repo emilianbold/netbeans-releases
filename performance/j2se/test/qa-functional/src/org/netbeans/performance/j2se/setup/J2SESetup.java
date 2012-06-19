@@ -87,10 +87,10 @@ public class J2SESetup extends PerformanceTestCase2 {
         }
     }
 
-
+   /* No longer active by default for J2SE projects
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
-    }
+    } */
 
 
     public void testCloseMemoryToolbar() {

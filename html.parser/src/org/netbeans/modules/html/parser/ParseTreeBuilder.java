@@ -105,8 +105,11 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
     private ModifiableOpenTag currentOpenTag;
     private ModifiableCloseTag currentCloseTag;
+    
+    private CharSequence sourceCode;
 
     public ParseTreeBuilder(CharSequence sourceCode) {
+        this.sourceCode = sourceCode;
         factory = new ElementsFactory(sourceCode);
         root = factory.createRoot();
     }
@@ -189,16 +192,26 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             match.setMatchingOpenTag(openTag);
 
             //set logical end of the paired open tag
-            openTag.setSemanticEndOffset(match.to());
+            int match_end = match.to();
+            if(match_end == -1) {
+                //the close delimiter not yet lexed so no tag end offset set yet!
+                //woraround - compute the end offset
+                match_end = match.from() + match.name().length() + 2 /* "/>".length() */;
+            }
+            openTag.setSemanticEndOffset(match_end);
         } else {
             //no match found, the open tag node's logical range should be set to something meaningful -
             //to the latest end tag found likely causing this element to be popped
             CloseTag latestEndTag = physicalEndTagsQueue.peek();
             if(latestEndTag != null) {
-                openTag.setSemanticEndOffset(latestEndTag.from());
+                if(latestEndTag.from() != -1) {
+                    openTag.setSemanticEndOffset(latestEndTag.from());
+                }
             } else if(startTag != null) {
-                //or to an open tag which implies this tag to be closed
-                openTag.setSemanticEndOffset(tag_lt_offset);
+                if(tag_lt_offset != -1) {
+                    //or to an open tag which implies this tag to be closed
+                    openTag.setSemanticEndOffset(tag_lt_offset);
+                }
             } else {
                 //the rest - simply current token offset
                 openTag.setSemanticEndOffset(offset);
@@ -295,6 +308,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                 //strange transition happening at the closing > char at the tag end:
                 //<style type=\"text/css\"> 
                 switch(from) {
+                    case ATTRIBUTE_VALUE_UNQUOTED:
                     case AFTER_ATTRIBUTE_VALUE_QUOTED:
                     case BEFORE_ATTRIBUTE_NAME:
                     case TAG_NAME:
@@ -315,6 +329,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
                     case BEFORE_ATTRIBUTE_VALUE:
                     case ATTRIBUTE_VALUE_UNQUOTED:
                     case NON_DATA_END_TAG_NAME:
+                    case SELF_CLOSING_START_TAG:
                         //+1 ... add the > char itself
                         tag_gt_offset = offset + 1;
                         break;
@@ -533,9 +548,24 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         for (int i = 0; i < attrs_count; i++) {
             //XXX I assume the attributes order is the same as in the source code
             AttrInfo attrInfo = attrs.elementAt(i);
+            
+            //check the name offset
+            if(attrInfo.nameOffset == -1 || attrInfo.nameOffset < node.from()) {
+                continue; //bad name offset
+            }
+            
+            //note: attrInfo.equalSignOffset and attrInfo.valueOffset can be null
+            //for attribute w/o a value
+            
             String attributeName = attributes.getLocalName(i);
             int attributeNameLength = attributeName.length();
             
+            //check attribute name length
+            int attrNameEndOffset = attrInfo.nameOffset + attributeNameLength;
+            if(attrNameEndOffset > sourceCode.length()) {
+                continue; //bad attribute
+            }
+                    
             int attributeValueLength;
             if(attrInfo.valueOffset == -1) {
                 //no value
@@ -579,7 +609,8 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
     private static class AttrInfo {
 
-        public int nameOffset, equalSignOffset;;
+        public int nameOffset = -1;
+        public int equalSignOffset = -1;
         public int valueOffset = -1;
         
         public ValueQuotation valueQuotationType;

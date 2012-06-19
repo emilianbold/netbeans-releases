@@ -992,14 +992,22 @@ public abstract class CsmPaintComponent extends JPanel {
         }
         
         protected void drawParameter(Graphics g, ParamStr prm, boolean strike) {
-            
-            //drawType
-            drawString(g, prm.getSimpleTypeName(), prm.getTypeColor(), null, strike);
-            
             String parmName = prm.getName();
-            if (parmName != null && parmName.length() > 0) {
-                drawString(g, " ", strike); // NOI18N
-                drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+            String simpleTypeName = prm.getSimpleTypeName();
+            int indexOfSqr = simpleTypeName.indexOf('['); // NOI18N
+            if(indexOfSqr == -1) {
+                drawString(g, simpleTypeName, prm.getTypeColor(), null, strike);
+                if (parmName != null && parmName.length() > 0) {
+                    drawString(g, " ", strike); // NOI18N
+                    drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+                }
+            } else {
+                drawString(g, simpleTypeName.substring(0, indexOfSqr), prm.getTypeColor(), null, strike);
+                if (parmName != null && parmName.length() > 0) {
+                    drawString(g, " ", strike); // NOI18N
+                    drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+                }
+                drawString(g, simpleTypeName.substring(indexOfSqr), prm.getTypeColor(), null, strike);
             }
         }
         
@@ -1061,16 +1069,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }    
         
         protected String toStringParameter(ParamStr prm) {
-            StringBuilder buf = new StringBuilder();
-            //type
-            buf.append(prm.getSimpleTypeName());
-            //name
-            String parmName = prm.getName();
-            if (parmName != null && parmName.length() > 0) {
-                buf.append(' '); // NOI18N
-                buf.append(prm.getName());
-            }
-            return buf.toString();
+            return prm.getText();
         }
         
         protected String toStringParameterList(List prmList) {

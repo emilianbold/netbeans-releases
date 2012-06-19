@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.search.ui.CNDSearchPanel.ValidationStatus;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.NotificationLineSupport;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -118,5 +119,10 @@ public final class CNDSearchPresenter extends Presenter {
         nls.setErrorMessage(status.error);
         return false;
 
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("FindinProject"); // NOI18N
     }
 }

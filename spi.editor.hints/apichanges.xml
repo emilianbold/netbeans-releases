@@ -108,6 +108,20 @@ is the proper place.
 
     <changes>
 
+        <change id="error-description-from-position-bounds">
+             <api name="EditorHintsSPI"/>
+             <summary>Added a new overload for ErrorDescriptionFactory.createErrorDescription taking PositionBounds</summary>
+             <version major="1" minor="24"/>
+             <date day="17" month="5" year="2012"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added several a new variant of ErrorDescriptionFactory.createErrorDescription
+                 taking PositionBounds to specify the span of the error/warning.
+             </description>
+             <class name="ErrorDescriptionFactory" package="org.netbeans.spi.editor.hints"/>
+             <issue number="212326"/>
+        </change>
         <change id="id-and-details">
              <api name="EditorHintsSPI"/>
              <summary>Added id and details to ErrorDescriptionFactory.createErrorDescription</summary>

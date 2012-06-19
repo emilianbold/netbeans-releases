@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -54,7 +54,6 @@ made subject to such option by the copyright holder.
         <mapID target="heapwalking" url="helppages/heapwalker.html"/>
         <mapID target="profile_attach" url="helppages/profile_attach.html"/>
 	<mapID target="profile_analyze_short" url="helppages/profile_analyze_short.html"/>
-        <mapID target="profile_freeform" url="helppages/profile_freeform.html"/>
 	<mapID target="profile_memory_short" url="helppages/profile_memory_short.html"/>
 	<mapID target="profile_monitor" url="helppages/profile_monitor.html"/>
         <mapID target="profile_points" url="helppages/profile_profilepoints.html"/>
@@ -73,6 +72,7 @@ made subject to such option by the copyright holder.
 	<mapID target="snapshots" url="helppages/snapshots.html"/>
         <mapID target="snap_taking" url="helppages/snap_taking.html"/>
         <mapID target="heapoql" url="helppages/oqlhelp.html"/>
+        
         
         <!-- begin CSH topics -->
         
@@ -116,13 +116,14 @@ made subject to such option by the copyright holder.
         <mapID target="PerformIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_5_performint.html"/>
         <mapID target="ReviewAdditionalStepsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_6_reviewadd.html"/>
         <mapID target="RemoteAttachSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_2_remote.html"/>
+        <mapID target="PIDSelectPanel.HelpCtx" url="helppages/csh/csh_attachwiz_selectprocess.html"/>
 
         <!-- CSH topics for Live Results windows -->
         <mapID target="LiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_liveresults.html"/>
         <mapID target="MemoryLiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_results_memory.html"/>
         <mapID target="CpuLiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_results_cpu.html"/>
         
-        <!--CSH ID for Options | Misc | Profiler :-->
+        <!--CSH ID for Options | Java | Profiler :-->
         <mapID target="ProfilerOptions.Help" url="helppages/csh/options_profiler.html"/>
         
         <!--CSH ID for selecting Java platform when calibrating profiler -->
@@ -178,9 +179,8 @@ made subject to such option by the copyright holder.
         
         
         <!-- ++++++ The following help ids and topics are not used by JDev ++++++ -->
-        <!-- TODO: see #211641, create CSH topic for this id -->
-        <!--CSH ID for select profiling task target dialog when profiling a freeform project -->
-        <mapID target="FreeFormProjectTypeProfiler.AntTaskSelectPanel.HelpCtx" url="helppages/profile_freeform.html"/>
+        <!-- TOC Help topic for Profiling a freeform project -->
+        <mapID target="profile_freeform" url="helppages/profile_freeform.html"/>
         <!-- CSH for DrillDown window in heap walker-->
         <mapID target="DrillDownWindow.HelpCtx" url="helppages/csh/view_drilldown.html"/>
        

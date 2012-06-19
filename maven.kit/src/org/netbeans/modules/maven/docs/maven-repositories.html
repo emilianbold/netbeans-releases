@@ -22,10 +22,10 @@
             The local repository usually only stores a subset of the files
             available in the remote repository and any temporary build artifacts.
             </li>
-            <li><strong>Remote repositories.</strong> A central repository
+            <li><strong>Remote repositories.</strong> A repository
             that contains all the Maven artifacts and plugins.
             The remote repository may be a third-party repository
-            (e.g. http://repo1.maven.org/),
+            (e.g. http://repo.maven.apache.org/),
             or it may be a private internal repository.</li>
         </ul>
 
@@ -50,7 +50,7 @@
             of remote repositories.
             When a project requires build artifacts that are not stored in the local repository,
             Maven downloads the required artifacts to the local repository from a remote repository.
-            The files in the local Maven repository are then shared by all your Maven projects.</li>
+            The files in the local Maven repository are then shared by all of your Maven projects.</li>
         </ul>
         
         <p>You can expand the repository nodes to view the indexed artifacts grouped by GroupId and ArtifactId,
@@ -58,7 +58,7 @@
         Depending on the metadata available, you can right-click an artifact to perform various actions.</p>
         <ul>
             <li><strong>View Details.</strong> Opens the Artifact Viewer tab in the editor window.</li>
-            <li><strong>Add As Dependency to.</strong> Choose this to add the library to an open project as a dependency.
+            <li><strong>Add As Dependency.</strong> Choose this to add the library to an open project as a dependency.
             The IDE automatically modifies the project's pom.</li>
             <li><strong>Find Usages.</strong> Choose this to view open projects and repository artifacts that use
             the selected library as a dependency.</li>
@@ -84,7 +84,7 @@
         <p>When you click OK the IDE will create a node for the search term (<img src="img/FindInRepo.png" alt="Find in repository">) 
             under the Maven Repositories node.
             Expand the search node to view a list of the artifacts that matched your search.
-            You can remove the search node by right-clicking the node and choosing Delete.
+            You can remove the search node by right-clicking the node and choosing Delete.</p>
             
        <p><strong>To add a repository:</strong></p>
         <ol>

@@ -75,6 +75,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
@@ -362,14 +363,24 @@ public final class FileImpl implements CsmFile,
     }
 
     public String getFileLanguageFlavor() {
-        if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
-            return APTLanguageSupport.FLAVOR_CPP11;
+        if(APTLanguageSupport.FORTRAN.equals(getFileLanguage())) {
+            try {
+                return CndLexerUtilities.detectFortranFormat(getBuffer().getText()) == CndLexerUtilities.FortranFormat.FIXED ? 
+                            APTLanguageSupport.FLAVOR_FORTRAN_FIXED : 
+                            APTLanguageSupport.FLAVOR_FORTRAN_FREE;
+            } catch (IOException ex) {
+                return APTLanguageSupport.FLAVOR_FORTRAN_FREE;
+            }
+        } else {
+            if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
+                return APTLanguageSupport.FLAVOR_CPP11;
+            }
+            NativeFileItem nativeFileItem = getNativeFileItem();
+            if(nativeFileItem != null) {
+                return Utils.getLanguageFlavor(nativeFileItem.getLanguageFlavor());
+            }
         }
-        NativeFileItem nativeFileItem = getNativeFileItem();
-        if(nativeFileItem != null) {
-            return Utils.getLanguageFlavor(nativeFileItem.getLanguageFlavor());
-        }
-        return APTLanguageSupport.FLAVOR_UNKNOWN;
+        return APTLanguageSupport.FLAVOR_UNKNOWN;        
     }
     
     public APTPreprocHandler getPreprocHandler(int offset) {
@@ -388,9 +399,9 @@ public final class FileImpl implements CsmFile,
         return projectImpl.getPreprocHandler(fileBuffer.getAbsolutePath(), statePair);
     }
 
-    public Collection<APTPreprocHandler> getPreprocHandlers() {
+    public Collection<APTPreprocHandler> getPreprocHandlersForParse() {
         final ProjectBase projectImpl = getProjectImpl(true);
-        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlers(this);
+        return projectImpl == null ? Collections.<APTPreprocHandler>emptyList() : projectImpl.getPreprocHandlersForParse(this);
     }
 
     public Collection<PreprocessorStatePair> getPreprocStatePairs() {
@@ -483,12 +494,10 @@ public final class FileImpl implements CsmFile,
             }
             FileContentSignature newSignature = null;
             FileContentSignature oldSignature = null;
-            boolean tryPartialReparse = false;
-            boolean triggerParsingActivity = true;
+            boolean tryPartialReparse = (handlers == PARTIAL_REPARSE_HANDLERS);
+            boolean triggerParsingActivity = (handlers != DUMMY_HANDLERS);
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
-                triggerParsingActivity = false;
-                tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
-                handlers = getPreprocHandlers();
+                handlers = getPreprocHandlersForParse();
             }
             long time;
             synchronized (stateLock) {
@@ -834,7 +843,7 @@ public final class FileImpl implements CsmFile,
         ChangedSegment changedSegment = null;
         try {
             if (full) {
-                fileAPT = APTDriver.findAPT(this.getBuffer(), getFileLanguage());
+                fileAPT = APTDriver.findAPT(this.getBuffer(), getFileLanguage(), getFileLanguageFlavor());
             } else {
                 fileAPT = APTDriver.findAPTLight(this.getBuffer());
             }

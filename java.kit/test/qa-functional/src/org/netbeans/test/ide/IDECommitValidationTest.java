@@ -68,7 +68,7 @@ public class IDECommitValidationTest extends IDEValidation {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDECommitValidationTest.class
         ).clusters(".*").enableModules(".*").honorAutoloadEager(true)
-        .failOnException(Level.INFO)
+        .failOnException(Level.WARNING)
         .failOnMessage(Level.SEVERE);
         
         

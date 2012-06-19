@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
@@ -60,6 +61,7 @@ import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -91,13 +93,18 @@ public class JsfSupportImpl implements JsfSupport {
 
     static JsfSupportImpl findForProject(Project project) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm == null) {
-            return null;
-        }
-	ClassPath classPath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        FileObject classpathBase = wm != null ? wm.getDocumentBase() : project.getProjectDirectory();
+	ClassPath classPath = ClassPath.getClassPath(classpathBase, ClassPath.COMPILE);
 	if(classPath == null) {
 	    return null;
 	}
+        
+        //fast fix: 214310 workaround
+	if(project.getLookup().lookup(ClassPathProvider.class)== null) {
+            //no CP provider, some suspicious project
+	    return null;
+	}
+        
 
         return new JsfSupportImpl(project, wm, classPath);
 
@@ -130,7 +137,7 @@ public class JsfSupportImpl implements JsfSupport {
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
 
-        ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm);
+        ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm != null ? getFileObject(wm) : project.getProjectDirectory());
         webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
 
         //init lookup
@@ -151,6 +158,9 @@ public class JsfSupportImpl implements JsfSupport {
         return classpath;
     }
 
+    /**
+     * @return can return null if this supports wraps a project of non-web type.
+     */
     @Override
     public WebModule getWebModule() {
         return wm;
@@ -178,7 +188,7 @@ public class JsfSupportImpl implements JsfSupport {
     //garbage methods below, needs cleanup!
     public synchronized JsfIndex getIndex() {
         if(index == null) {
-	    this.index = JsfIndex.create(wm);
+	    this.index = JsfIndex.create(getBaseFile());
         }
         return this.index;
     }
@@ -193,7 +203,35 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public String toString() {
-        return String.format("JsfSupportImpl[%s]", wm.getDocumentBase().toString()); //NOI18N
+        return String.format("JsfSupportImpl[%s]", getBaseFile().getPath()); //NOI18N
+    }
+
+    private FileObject getBaseFile() {
+        return wm != null ? wm.getDocumentBase() : project.getProjectDirectory();
+    }
+
+    private static FileObject getFileObject(WebModule module) {
+        FileObject fileObject = module.getDocumentBase();
+        if (fileObject != null) {
+            return fileObject;
+        }
+        fileObject = module.getDeploymentDescriptor();
+        if (fileObject != null) {
+            return fileObject;
+        }
+        fileObject = module.getWebInf();
+        if (fileObject != null) {
+            return fileObject;
+        }
+        FileObject[] fileObjects = module.getJavaSources();
+        if (fileObjects != null) {
+            for (FileObject source : fileObjects) {
+                if (source != null) {
+                    return source;
+                }
+            }
+        }
+        return null;
     }
     
 }

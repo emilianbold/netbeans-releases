@@ -51,6 +51,7 @@ import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -262,16 +263,18 @@ public class ActionMappings extends javax.swing.JPanel {
         addListeners();
         RP.post(new Runnable() {
             @Override public void run() {
+                final Set<String> strs = new HashSet<String>();
                 final GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
-                final Set<String> strs = provider.getAvailableGoals();
                 if (provider != null) {
-                    try {
-                        strs.addAll(EmbedderFactory.getProjectEmbedder().getLifecyclePhases());
-                    } catch (Exception e) {
-                        // oh wel just ignore..
-                        e.printStackTrace();
-                    }
+                    strs.addAll(provider.getAvailableGoals());
                 }
+                try {
+                    strs.addAll(EmbedderFactory.getProjectEmbedder().getLifecyclePhases());
+                } catch (RuntimeException e) { //TODO why do we catch?
+                    // oh wel just ignore..
+                    e.printStackTrace();
+                }
+                
                 List<String> allProfiles = null;
                 if (project != null) {
                     ProjectProfileHandler profileHandler = project.getLookup().lookup(ProjectProfileHandler.class);
@@ -281,9 +284,7 @@ public class ActionMappings extends javax.swing.JPanel {
 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
-                        if (provider != null) {
-                            goalcompleter.setValueList(strs, false); //do not bother about partial results, too many intermediate apis..
-                        }
+                        goalcompleter.setValueList(strs, false); //do not bother about partial results, too many intermediate apis..
                         if (profiles != null) {
                             profilecompleter.setValueList(profiles, false);
                         }
@@ -1198,6 +1199,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
 
     private static class NonEmptyInputLine extends NotifyDescriptor.InputLine implements DocumentListener {
 
+        @SuppressWarnings("LeakingThisInConstructor")
         NonEmptyInputLine(String text, String title) {
             super(text, title);
             textField.getDocument().addDocumentListener(this);

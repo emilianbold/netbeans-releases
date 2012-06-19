@@ -59,6 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -112,7 +113,7 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
                         // each repository artifact should have this structure
                         String artifact = parentParent.getName();
                         String version = parent.getName();
-                        File javadoc = new File(parent, artifact + "-" + version + "-javadoc.jar"); //NOI18N
+                        File javadoc = FileUtil.normalizeFile(new File(parent, artifact + "-" + version + "-javadoc.jar")); //NOI18N
                         if (javadoc.exists() || 
                            (jarFile.getName().startsWith(artifact) && jarFile.getName().contains(version))) { //#121657
                             return new DocResult(javadoc);
@@ -157,14 +158,14 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
                     URL[] url;
                     if (path != null) {
                         url = new URL[1];
-                        URL root = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        URL root = FileUtil.getArchiveRoot(Utilities.toURI(file).toURL());
                         if (!path.endsWith("/")) { //NOI18N
                             path = path + "/"; //NOI18N
                         }
                         url[0] = new URL(root, path);
                     } else {
                          url = new URL[1];
-                        url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        url[0] = FileUtil.getArchiveRoot(Utilities.toURI(file).toURL());
                     }
                     return url;
                 }
@@ -204,7 +205,7 @@ public class RepositoryJavadocForBinaryQueryImpl implements JavadocForBinaryQuer
                 try {
                     File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", "org.netbeans.modules.j2ee.platform", false); // NOI18N
                     if (j2eeDoc != null) {
-                        URL url = FileUtil.getArchiveRoot(j2eeDoc.toURI().toURL());
+                        URL url = FileUtil.getArchiveRoot(Utilities.toURI(j2eeDoc).toURL());
                         url = new URL(url + "docs/api/"); //NOI18N
                         return new URL[]{url};
                     }

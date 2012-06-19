@@ -7,7 +7,7 @@
 struct EMPTY_MACRO_FROM_OTHER_INCLUDE Struct202433* pGlobal202433;
 
 #ifdef MY_PLUS_PLUS
-class MyClass202433_One {
+struct MyClass202433_One {
     void foo();
 };
 #else

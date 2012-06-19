@@ -496,7 +496,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 if ("jar".equals(folderRoot.getProtocol())) {   //NOI18N
                     folderRoot = FileUtil.getArchiveFile (folderRoot);
                 }
-                srcPath = new File(URI.create(folderRoot.toExternalForm())).getAbsolutePath();
+                srcPath = Utilities.toFile(URI.create(folderRoot.toExternalForm())).getAbsolutePath();
             }
             else if (firstPass) {
                 for (FileObject folder : platform.getInstallFolders()) {
@@ -696,7 +696,7 @@ public class DetectPanel extends javax.swing.JPanel {
                 final File f = new File (path);
                 if (f.exists()) {
                     try {
-                        URL url = f.toURI().toURL();
+                        URL url = Utilities.toURI(f).toURL();
                         if (FileUtil.isArchiveFile(url)) {
                             url = FileUtil.getArchiveRoot(url);
                             FileObject fo = URLMapper.findFileObject(url);
@@ -744,7 +744,7 @@ public class DetectPanel extends javax.swing.JPanel {
                             final String innerPath = index+2 == token.length() ? "" : token.substring(index+2);
                             final File f = new File (outherPath);
                             if (f.exists()) {
-                                result.add (new URL (FileUtil.getArchiveRoot(f.toURI().toURL()).toExternalForm() + innerPath));
+                                result.add (new URL (FileUtil.getArchiveRoot(Utilities.toURI(f).toURL()).toExternalForm() + innerPath));
                             } else {
                                 throw new IllegalStateException();
                             }
@@ -785,7 +785,7 @@ public class DetectPanel extends javax.swing.JPanel {
                     }
                     final String protocol = url.getProtocol();
                     if (FILE.equals(protocol)){ //NOI18N
-                        userName = new File(url.toURI()).getAbsolutePath() + relative;
+                        userName = Utilities.toFile(url.toURI()).getAbsolutePath() + relative;
                     } else if (HTTP.equals(protocol) ||HTTPS.equals(protocol)) {
                         userName = extUrl;
                     } else {

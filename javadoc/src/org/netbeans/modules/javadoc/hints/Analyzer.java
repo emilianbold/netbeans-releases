@@ -90,10 +90,10 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.modules.javadoc.hints.JavadocUtilities.TagHandle;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -124,32 +124,28 @@ final class Analyzer {
     private static final String ERROR_IDENT = "<error>";
     private final CompilationInfo javac;
     private final SourceVersion spec;
-    private final FixAll fixAll = new FixAll();
     private final Document doc;
     private final FileObject file;
     private final Severity severity;
-    private final HintSeverity hintSeverity;
     private final TreePath currentPath;
     private final boolean createJavadocKind;
     private final Access access;
 
     Analyzer(CompilationInfo javac, Document doc, TreePath currentPath,
-            Severity severity, HintSeverity hintSeverity,
-            boolean createJavadocKind, Access access) {
+            Severity severity, boolean createJavadocKind, Access access) {
         
         this.javac = javac;
         this.doc = doc;
         this.file = javac.getFileObject();
         this.currentPath = currentPath;
         this.severity = severity;
-        this.hintSeverity = hintSeverity;
         this.spec = resolveSourceVersion(javac.getFileObject());
         this.createJavadocKind = createJavadocKind;
         this.access = access;
     }
 
     private ErrorDescription createErrorDescription(String message, LazyFixList fixes, Position[] positions) {
-        if (hintSeverity == HintSeverity.CURRENT_LINE_WARNING) {
+        if (severity == Severity.HINT) {
             return ErrorDescriptionFactory.createErrorDescription(severity,
                     message,
                     fixes,
@@ -302,7 +298,7 @@ final class Analyzer {
     private boolean isValid(TreePath path) {
         Tree leaf = path.getLeaf();
         int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
-        boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
+        boolean onLine = severity == Severity.HINT;
         switch (leaf.getKind()) {
         case ANNOTATION_TYPE:
         case CLASS:
@@ -737,7 +733,7 @@ final class Analyzer {
 
     JavadocLazyFixList createGenerateFixes(Element elm) {
         List<Fix> fixes = new ArrayList<Fix>(3);
-        ElementHandle handle = ElementHandle.create(elm);
+        TreePathHandle handle = TreePathHandle.create(javac.getTrees().getPath(elm), javac);
 
         String description;
         if (elm.getKind() == ElementKind.CONSTRUCTOR) {
@@ -746,11 +742,13 @@ final class Analyzer {
             description = elm.getSimpleName().toString();
         }
 
-        JavadocLazyFixList fixList = new JavadocLazyFixList(fixes, fixAll);
+        JavadocLazyFixList fixList = new JavadocLazyFixList(fixes);
 
-        GenerateJavadocFix jdFix = new GenerateJavadocFix(description, handle, javac.getFileObject(), this.spec);
+        GenerateJavadocFix javadocFix = new GenerateJavadocFix(description, handle, spec);
+        
+//        GenerateJavadocFix jdFix = new GenerateJavadocFix(description, handle, javac.getFileObject(), this.spec);
 
-        fixes.add(jdFix);
+        fixes.add(javadocFix.toEditorFix());
 //            fixAll.addFix(jdFix);
 
         // XXX add Inherit javadoc
@@ -857,11 +855,9 @@ final class Analyzer {
     private static final class JavadocLazyFixList implements LazyFixList {
         
         private List<Fix> contexFixes;
-        private FixAll fixAll;
         
-        public JavadocLazyFixList(List<Fix> contexFixes, FixAll fixAll) {
+        public JavadocLazyFixList(List<Fix> contexFixes) {
             this.contexFixes = contexFixes;
-            this.fixAll = fixAll;
         }
         
         public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -875,9 +871,6 @@ final class Analyzer {
         }
         
         public List<Fix> getFixes() {
-            if (fixAll.isReady()) {
-                contexFixes.add(fixAll);
-            }
             return contexFixes;
         }
         

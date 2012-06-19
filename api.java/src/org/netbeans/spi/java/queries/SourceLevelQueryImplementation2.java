@@ -89,7 +89,9 @@ public interface SourceLevelQueryImplementation2 {
         /**
          * Get the source level.
          * @return a source level of the Java file, e.g. "1.3", "1.4", "1.5"
-         * or null if the source level is unknown.
+         * or null if the source level is unknown. It is allowed to return source level synonyms
+         *    e.g. "5" for "1.5". These synonyms are always normalized by
+         * {@link SourceLevelQuery#getSourceLevel}.
          */
         @CheckForNull String getSourceLevel();
 

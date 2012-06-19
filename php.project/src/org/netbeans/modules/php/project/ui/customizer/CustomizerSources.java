@@ -157,14 +157,13 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         ItemListener defaultCheckBoxItemListener = new DefaultCheckBoxItemListener();
         shortTagsCheckBox.addItemListener(defaultCheckBoxItemListener);
         aspTagsCheckBox.addItemListener(defaultCheckBoxItemListener);
-
-        // check init values
-        validateFields();
     }
 
     @Override
     public void addNotify() {
         visible = true;
+        // validate data on focus
+        validateFields();
         super.addNotify();
     }
 
@@ -344,6 +343,9 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                 testPath = testDir.getAbsolutePath();
             }
             properties.setTestDir(testPath);
+        } else {
+            // test dir removed
+            properties.testDirRemoved();
         }
         String webRoot = PropertyUtils.relativizeFile(srcDir, webRootDir);
         assert webRoot != null && !webRoot.startsWith("../") : "WebRoot must be underneath Sources";
@@ -362,7 +364,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         if (!StringUtils.hasText(tests)) {
             return null;
         }
-        return new File(tests); // file already normalized
+        return FileUtil.normalizeFile(new File(tests));
     }
 
     private File getWebRootDir() {
@@ -441,8 +443,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         testFolderLabel.setLabelFor(testFolderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(testFolderLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.text")); // NOI18N
 
-        testFolderTextField.setEditable(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(testFolderButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderButton.text")); // NOI18N
         testFolderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -480,40 +480,35 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(projectFolderLabel)
+                        .addComponent(sourceFolderLabel)
+                        .addComponent(webRootLabel)
+                        .addComponent(encodingLabel)
+                        .addComponent(phpVersionLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(projectFolderTextField)
+                        .addComponent(sourceFolderTextField)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(testFolderTextField)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(testFolderButton))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(webRootTextField)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(webRootButton))
+                        .addComponent(encodingComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(phpVersionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(phpVersionInfoLabel)))
+                .addComponent(copyFilesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(projectFolderLabel)
-                            .addComponent(sourceFolderLabel)
-                            .addComponent(webRootLabel)
-                            .addComponent(encodingLabel)
-                            .addComponent(phpVersionLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(projectFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                            .addComponent(sourceFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(testFolderTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(testFolderButton))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(webRootTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(webRootButton))
-                            .addComponent(encodingComboBox, 0, 237, Short.MAX_VALUE)
-                            .addComponent(phpVersionComboBox, 0, 237, Short.MAX_VALUE)
-                            .addComponent(phpVersionInfoLabel)))
-                    .addComponent(copyFilesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(aspTagsCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(testFolderLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(shortTagsCheckBox)
+                    .addComponent(aspTagsCheckBox)
+                    .addComponent(testFolderLabel)
+                    .addComponent(shortTagsCheckBox))
                 .addContainerGap())
         );
 

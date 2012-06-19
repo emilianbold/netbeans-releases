@@ -55,6 +55,7 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -906,7 +907,7 @@ class SummaryCellRenderer implements ListCellRenderer {
         }
 
         private class MoreRevisionsHyperlink extends VCSHyperlinkSupport.Hyperlink {
-            private Map<Component, Rectangle> bounds;
+            private Map<Component, Rectangle> bounds = Collections.<Component, Rectangle>emptyMap();
 
             @Override
             public void computeBounds (JTextPane textPane) {
@@ -946,9 +947,8 @@ class SummaryCellRenderer implements ListCellRenderer {
     }
 
     private class ActionHyperlink extends VCSHyperlinkSupport.Hyperlink {
-        private Map<Component, Rectangle> bounds;
+        private Map<Component, Rectangle> bounds = Collections.<Component, Rectangle>emptyMap();
         private Map<Component, Action> labels;
-
 
         public ActionHyperlink () {
         }

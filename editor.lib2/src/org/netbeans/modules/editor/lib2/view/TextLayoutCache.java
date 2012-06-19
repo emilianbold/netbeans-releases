@@ -134,6 +134,9 @@ public final class TextLayoutCache {
      */
     void activate(ParagraphView paragraphView) {
         assert (paragraphView != null);
+//        DocumentView docView = paragraphView.getDocumentView();
+//        docView.checkDocumentLockedIfLogging();
+//        docView.checkMutexAcquiredIfLogging();
         Entry entry = paragraph2entry.get(paragraphView);
         if (entry == null) {
             entry = new Entry(paragraphView);
@@ -183,21 +186,35 @@ public final class TextLayoutCache {
     }
     
     String findIntegrityError() {
-        HashSet<Entry> entries = new HashSet<Entry>(paragraph2entry.values());
         Entry entry = head;
+        if (head != null) {
+            if (tail == null) {
+                return "Null tail but non-null head"; // NOI18N
+            }
+        } else {
+            if (tail != null) {
+                return "Null head but non-null tail"; // NOI18N
+            }
+        }
+        Entry lastEntry = entry;
+        HashSet<Entry> entriesCopy = new HashSet<Entry>(paragraph2entry.values());
         while (entry != null) {
             ParagraphView pView = entry.paragraphView;
-            if (!entries.remove(entry)) {
+            if (!entriesCopy.remove(entry)) {
                 return "TextLayoutCache: Chain entry not contained (or double contained) in map: " + // NOI18N 
                         pView + ", parent=" + pView.getParent(); // NOI18N
             }
             if (pView.getParent() == null) {
                 return "TextLayoutCache: Null parent for " + pView; // NOI18N
             }
+            lastEntry = entry;
             entry = entry.next;
         }
-        if (0 != entries.size()) {
-            return "TextLayoutCache: unchained entryCount=" + entries.size(); // NOI18N
+        if (lastEntry != tail) {
+            return "lastEntry=" + Entry.toString(lastEntry) + " != tail=" + Entry.toString(tail); // NOI18N
+        }
+        if (0 != entriesCopy.size()) {
+            return "TextLayoutCache: unchained entryCount=" + entriesCopy.size(); // NOI18N
         }
         return null;
     }
@@ -209,6 +226,7 @@ public final class TextLayoutCache {
             head = tail = entry;
             // Leave entry.previous == entry.next == null;
         } else {
+            assert (tail != null);
             entry.next = head;
             head.previous = entry;
             head = entry;
@@ -216,16 +234,16 @@ public final class TextLayoutCache {
     }
 
     private void removeChainEntry(Entry entry) {
-        if (entry.previous != null) {
+        if (entry != head) {
             entry.previous.next = entry.next;
-        } else {
-            assert (head == entry);
+        } else { // First entry
+            assert (entry.previous == null);
             head = entry.next;
         }
-        if (entry.next != null) {
+        if (entry != tail) {
             entry.next.previous = entry.previous;
-        } else {
-            assert (tail == entry);
+        } else { // Last entry
+            assert (entry.next == null);
             tail = entry.previous;
         }
         entry.previous = entry.next = null;

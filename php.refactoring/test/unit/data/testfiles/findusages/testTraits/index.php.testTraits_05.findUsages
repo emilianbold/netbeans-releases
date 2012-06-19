@@ -1,0 +1,19 @@
+Display text: <font color=#000000>trait </font><b>Bar</b><font color=#000000> {</font>
+File name: index.php
+Name: Bar
+Position: BEGIN: 54 END: 57
+
+Display text: <font color=#000000>use Foo, </font><b>Bar</b><font color=#000000>, Baz {</font>
+File name: index.php
+Name: Bar
+Position: BEGIN: 155 END: 158
+
+Display text: <font color=#000000>Foo::fnc insteadof </font><b>Bar</b><font color=#000000>, Baz;</font>
+File name: index.php
+Name: Bar
+Position: BEGIN: 193 END: 196
+
+Display text: <b>Bar</b><font color=#000000>::fnc as aliased;</font>
+File name: index.php
+Name: Bar
+Position: BEGIN: 211 END: 214

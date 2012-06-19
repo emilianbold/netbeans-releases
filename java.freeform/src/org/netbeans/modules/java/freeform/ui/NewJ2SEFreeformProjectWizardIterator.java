@@ -47,11 +47,13 @@ package org.netbeans.modules.java.freeform.ui;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -83,6 +85,7 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
+    private final AtomicBoolean hasNextCalled = new AtomicBoolean();
     
     public NewJ2SEFreeformProjectWizardIterator() {
     }
@@ -191,6 +194,11 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
     }
     
     public boolean hasNext() {
+        hasNextCalled.set(true);
+        return hasNextImpl();
+    }
+    //where
+    private boolean hasNextImpl() {
         if (current() instanceof SourceFoldersWizardPanel) {
             assert current().getComponent() instanceof SourceFoldersPanel;
             SourceFoldersPanel sfp = (SourceFoldersPanel)current().getComponent();
@@ -200,11 +208,21 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
         }
         return index < panels.length - 1;
     }
+    
     public boolean hasPrevious() {
         return index > 0;
     }
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        final boolean hnc = hasNextCalled.getAndSet(false);
+        if (!hasNextImpl()) {
+            throw new NoSuchElementException(
+               MessageFormat.format(
+                "index: {0}, panels: {1}, called has next: {2}",
+                index,
+                panels.length,
+                hnc
+                ));
+        }
         index++;
     }
     public void previousPanel() {

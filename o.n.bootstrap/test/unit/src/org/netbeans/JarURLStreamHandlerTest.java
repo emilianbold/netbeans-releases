@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -83,14 +84,14 @@ public class JarURLStreamHandlerTest extends NbTestCase {
     }
 
     public void testNormalHandler() throws Exception {
-        URL root = new URL("jar:" + jar.toURI() + "!/");
+        URL root = new URL("jar:" + Utilities.toURI(jar) + "!/");
         URL plain = new URL(root, "/fldr/plain.txt", ProxyURLStreamHandlerFactory.originalJarHandler());
         assertTrue("Contains the plain.txt part: " + plain, plain.toExternalForm().contains("fldr/plain.txt"));
         assertContent("Ahoj", plain);
     }
 
     public void testNbHandler() throws Exception {
-        URL root = new URL("jar:" + jar.toURI() + "!/");
+        URL root = new URL("jar:" + Utilities.toURI(jar) + "!/");
         URL plain = new URL(root, "/fldr/plain.txt", new JarClassLoader.JarURLStreamHandler(null));
         assertTrue("Contains the plain.txt part: " + plain, plain.toExternalForm().contains("fldr/plain.txt"));
         assertContent("Ahoj", plain);

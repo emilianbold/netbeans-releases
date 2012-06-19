@@ -65,7 +65,12 @@ public class ContentProviderTest extends NbTestCase {
     
     public static Test suite() {
         return NbModuleSuite.createConfiguration(ContentProviderTest.class)
-            .gui(false).suite();
+            .gui(false).addTest(
+                "testBeforeRest", 
+                "testUsingNbRepositoryAndInit",
+                "testCheckAFileFromOurLayer",
+                "testReturnEmptyLayers"
+            ).suite();
     }
     
     public void testBeforeRest() {

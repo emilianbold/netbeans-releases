@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -148,8 +149,8 @@ public final class JavaAntLoggerTest extends NbTestCase {
         private FileObject src, testSrc;
         
         public void setSimpleAppDir(File simpleAppDir) throws Exception {
-            buildClasses = slashify(new File(simpleAppDir, "build" + File.separatorChar + "classes").toURI().toURL());
-            buildTestClasses = slashify(new File(simpleAppDir, "build" + File.separatorChar + "test" + File.separatorChar + "classes").toURI().toURL());
+            buildClasses = slashify(Utilities.toURI(new File(simpleAppDir, "build" + File.separatorChar + "classes")).toURL());
+            buildTestClasses = slashify(Utilities.toURI(new File(simpleAppDir, "build" + File.separatorChar + "test" + File.separatorChar + "classes")).toURL());
             src = FileUtil.toFileObject(new File(simpleAppDir, "src"));
             testSrc = FileUtil.toFileObject(new File(simpleAppDir, "test"));
         }

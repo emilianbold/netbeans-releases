@@ -62,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 /** Test layer cache managers generally.
  * @author Jesse Glick
@@ -111,7 +112,7 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
     }
     
     protected URL loadResource(String name) throws IOException {
-        return new URL(new URL(getDataDir().toURI().toURL(), "layers/"), name);
+        return new URL(new URL(Utilities.toURI(getDataDir()).toURL(), "layers/"), name);
     }
     
     public void testCacheManager() throws Exception {

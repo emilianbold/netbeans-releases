@@ -47,6 +47,8 @@ import java.awt.EventQueue;
 import java.beans.*;
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.ChildFactory.Detachable;
@@ -57,9 +59,12 @@ import org.openide.util.NbBundle;
  * @author Tim Boudreau
  */
 public class ChildFactoryTest extends NbTestCase {
+    private Logger LOG;
+
     
     public ChildFactoryTest(String name) {
         super(name);
+        LOG = Logger.getLogger(ChildFactoryTest.class.getName() + name);
     }
     
     private ProviderImpl factory;
@@ -309,6 +314,42 @@ public class ChildFactoryTest extends NbTestCase {
         s1.release();
         s2.acquire();
         assertEquals(5, c.getNodesCount(true));
+    }
+
+    public void testBatchNodeRecreation() throws Exception { // #211847
+        final List<Integer> nodesCreated = new ArrayList<Integer>();
+        final AtomicInteger size = new AtomicInteger(3);
+        class F extends ChildFactory<Integer> {
+            @Override protected boolean createKeys(List<Integer> keys) {
+                List<Integer> arr = new ArrayList<Integer>();
+                for (int i = 1; i <= size.get(); i++) {
+                    arr.add(i);
+                }
+                keys.addAll(arr);
+                return true;
+            }
+            @Override protected Node createNodeForKey(Integer key) {
+                nodesCreated.add(key);
+                Node n = new AbstractNode(Children.LEAF);
+                n.setName(key.toString());
+                return n;
+            }
+            void refresh() {
+                refresh(false);
+            }
+        }
+        F f = new F();
+        Children c = Children.create(f, true);
+        Node root = new AbstractNode(c);
+        
+        assertEquals(3, root.getChildren().getNodes(true).length);
+        assertEquals("[1, 2, 3]", nodesCreated.toString());
+        LOG.info("Three elements in there!");
+        size.set(4);
+        f.refresh();
+        LOG.info("After refresh");
+        assertEquals(4, root.getChildren().getNodes(true).length);
+        assertEquals("[1, 2, 3, 4]", nodesCreated.toString());
     }
 
     static final class ProviderImpl extends ChildFactory <String> {

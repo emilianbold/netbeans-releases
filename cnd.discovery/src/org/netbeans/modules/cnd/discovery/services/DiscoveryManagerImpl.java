@@ -190,6 +190,10 @@ public final class DiscoveryManagerImpl {
         private void postModelTask() {
             final NativeProject np = project.getLookup().lookup(NativeProject.class);
             final CsmProject csmProject = CsmModelAccessor.getModel().getProject(np);
+            if (csmProject == null) {
+                ImportProject.logger.log(Level.INFO, "Can not post fix excluded header files; no associated CsmProject for {0}", np); //NOI18N
+                return;
+            }
             ImportProject.logger.log(Level.INFO, "Post fixing of excluded header files for project {0}", csmProject); //NOI18N
             CsmProgressListener listener = new CsmProgressAdapter() {
 

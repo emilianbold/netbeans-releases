@@ -45,6 +45,7 @@ import com.sun.el.parser.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -214,6 +215,27 @@ public final class ELTypeUtilities {
         return method.getReturnType();
     }
 
+    
+    private static List<Node> getMethodParameters(Node methodNode) {
+        assert NodeUtil.isMethodCall(methodNode);
+        
+        if (methodNode.jjtGetNumChildren() == 0) {
+            return Collections.emptyList();
+        }
+
+        Node firstChild = methodNode.jjtGetChild(0);
+        if (!(firstChild instanceof AstMethodArguments)) {
+            return Collections.emptyList();
+        }
+        
+        List<Node> parameters = new ArrayList<Node>();
+        for (int i = 0; i < firstChild.jjtGetNumChildren(); i++) {
+            parameters.add(firstChild.jjtGetChild(i));
+        }
+        return parameters;
+    }
+
+    
     /**
      * @return true if {@code methodNode} and {@code method} have matching parameters;
      * false otherwise.
@@ -225,9 +247,13 @@ public final class ELTypeUtilities {
             return false;
         }
         int methodParams = method.getParameters().size();
-        if (NodeUtil.isMethodCall(methodNode)
-                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
-            int methodNodeParams = ((Node) methodNode).jjtGetNumChildren();
+        if (NodeUtil.isMethodCall(methodNode) && 
+                (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+            //now we are in AstDotSuffix or AstBracketSuffix
+            
+            //lets check if the parameters are equal
+            List<Node> parameters = getMethodParameters(methodNode);
+            int methodNodeParams = parameters.size();
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
             }
@@ -237,11 +263,21 @@ public final class ELTypeUtilities {
         if (methodNode instanceof AstDotSuffix
                 && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
 
-            // for validators params are passed automatically (they are not present in EL)
-            if (isValidatorMethod(info, method)) {
+            if (methodNode.jjtGetNumChildren() > 0) {
+                for (int i = 0; i < method.getParameters().size(); i++) {
+                    final VariableElement methodParameter = method.getParameters().get(i);
+                    final Node methodNodeParameter = methodNode.jjtGetChild(i);
+                    
+                    if (!isSameType(info, methodNodeParameter, methodParameter)) {
+                        return false;
+                    }
+                }
+            }
+            
+            if (image.equals(methodName)) {
                 return true;
             }
-
+            
             return method.isVarArgs()
                     ? method.getParameters().size() == 1
                     : method.getParameters().isEmpty();
@@ -367,8 +403,9 @@ public final class ELTypeUtilities {
     }
 
     private static boolean haveSameParameters(CompilationContext info, Node methodNode, ExecutableElement method) {
-        for (int i = 0; i < methodNode.jjtGetNumChildren(); i++) {
-            Node paramNode = methodNode.jjtGetChild(i);
+        List<Node> methodNodeParameters = getMethodParameters(methodNode);
+        for (int i = 0; i < methodNodeParameters.size(); i++) {
+            Node paramNode = methodNodeParameters.get(i);
             if (!isSameType(info, paramNode, method.getParameters().get(i))) {
                 return false;
             }

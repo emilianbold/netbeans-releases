@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -103,7 +104,7 @@ public class RetoucheUtils {
         
         File f;
         try {
-            f = new File(url.toURI());
+            f = Utilities.toFile(url.toURI());
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex);
         }

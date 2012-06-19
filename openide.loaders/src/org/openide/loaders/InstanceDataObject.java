@@ -1362,7 +1362,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
 
         @Override
-        public Object instanceCreate () throws IOException, ClassNotFoundException {
+        public synchronized Object instanceCreate () throws IOException, ClassNotFoundException {
             FileObject fo = entry ().getFile ();
             boolean log = err.isLoggable(Level.FINER);
 

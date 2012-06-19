@@ -81,6 +81,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author David Konecny, Jesse Glick
@@ -783,7 +784,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
             if (f.isDirectory())
                 return true;            
             try {
-                return FileUtil.isArchiveFile(f.toURI().toURL());
+                return FileUtil.isArchiveFile(Utilities.toURI(f).toURL());
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify(mue);
                 return false;

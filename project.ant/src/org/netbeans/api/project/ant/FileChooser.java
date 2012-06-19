@@ -54,6 +54,7 @@ import org.netbeans.modules.project.ant.FileChooserAccessory;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 
 /**
@@ -82,7 +83,7 @@ public final class FileChooser extends JFileChooser {
         if (lm != null) {
             URL u = lm.getLocation();
             if (u != null) {
-                File libBase = new File(URI.create(u.toExternalForm())).getParentFile();
+                File libBase = Utilities.toFile(URI.create(u.toExternalForm())).getParentFile();
                 accessory = new FileChooserAccessory(this, FileUtil.toFile(helper.getProjectDirectory()), 
                     libBase, copyAllowed);
                 setAccessory(accessory);

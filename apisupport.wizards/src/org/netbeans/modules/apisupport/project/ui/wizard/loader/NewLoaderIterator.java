@@ -460,7 +460,14 @@ public final class NewLoaderIterator extends BasicWizardIterator {
                 assert false: ex;
             }
         }
-        replaceTokens.put("TEMPLATE_NAME", suffix);
+        if (annotationReadyObject) {
+            Map<String, Object> templateAttrs = new LinkedHashMap<String, Object>();
+            templateAttrs.put("folder", "Other");
+            templateAttrs.put("content", namePrefix + suffix);
+            fileChanges.add(fileChanges.packageInfo(packageName, Collections.singletonMap(TemplateRegistration.class.getCanonicalName(), templateAttrs)));
+        } else {
+            replaceTokens.put("TEMPLATE_NAME", suffix);
+        }
         
         boolean useTR = false;
         NbModuleProvider nbmp = model.getModuleInfo();

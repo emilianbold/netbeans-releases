@@ -97,6 +97,16 @@ public class GdbVersionPeculiarity {
             return "kill"; // NOI18N
         }
     }
+    
+    public String listChildrenCommand(String expr, int start, int end) {
+        String retVal = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
+        
+        if (version > 6.8) {
+            retVal = retVal + " " + start + " " + end; // NOI18N
+        }
+        
+        return retVal;
+    }
 
     private static final boolean DISABLE_PENDING = Boolean.getBoolean("gdb.breakpoints.pending.disabled"); //NOI18N
 

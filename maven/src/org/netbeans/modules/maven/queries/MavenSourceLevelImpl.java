@@ -58,6 +58,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -80,7 +81,7 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
             //#128609 something in jar?
             return null;
         }
-        URI uri = file.toURI();
+        URI uri = Utilities.toURI(file);
         assert "file".equals(uri.getScheme());
         String goal = "compile"; //NOI18N
         for (URI testuri : project.getLookup().lookup(NbMavenProjectImpl.class).getSourceRoots(true)) {

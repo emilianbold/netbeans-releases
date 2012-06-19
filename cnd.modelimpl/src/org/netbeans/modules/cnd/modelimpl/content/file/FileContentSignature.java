@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.TreeSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -69,22 +70,22 @@ import org.openide.util.CharSequences;
  */
 public final class FileContentSignature {
 
-    private final List<CharSequence> signature;
+    private final List<KindAndSignature> signature;
     private final CsmUID<CsmFile> file;
     private final int hashCode;
 
-    private FileContentSignature(List<CharSequence> signature, CsmUID<CsmFile> file) {
+    private FileContentSignature(List<KindAndSignature> signature, CsmUID<CsmFile> file) {
         this.signature = signature;
         this.file = file;
         this.hashCode = hash(signature);
     }
 
     public static FileContentSignature create(CsmFile file) {
-        List<CharSequence> signature = createFileSignature(file);
+        List<KindAndSignature> signature = createFileSignature(file);
         return new FileContentSignature(signature, UIDCsmConverter.fileToUID(file));
     }
 
-    private static List<CharSequence> createFileSignature(CsmFile csmFile) {
+    private static List<KindAndSignature> createFileSignature(CsmFile csmFile) {
         Collection<FileElement> fileElements = new TreeSet<FileElement>(PAIR_COMPARATOR);
         for (CsmInclude element : csmFile.getIncludes()) {
             // TODO: what about system vs user, shouldn't it be part of Utils.getCsmIncludeKindKey?
@@ -101,7 +102,7 @@ public final class FileContentSignature {
         for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
             addDeclarationAndNested(fileElements, element);
         }
-        ArrayList<CharSequence> out = new ArrayList<CharSequence>(fileElements.size());
+        ArrayList<KindAndSignature> out = new ArrayList<KindAndSignature>(fileElements.size());
         for (FileElement fe : fileElements) {
             out.add(fe.signature);
         }
@@ -165,6 +166,50 @@ public final class FileContentSignature {
         return true;
     }
 
+    public enum ComparisonResult {
+        SAME,
+        FILE_LOCAL_CHANGE,
+        CHANGE_CAN_AFFECT_INCLUDES,
+    }
+    
+    /**
+     * compare two signatures (associated file info is ignored).
+     * @param first first signature
+     * @param second second signature
+     * @return result of comparison
+     */
+    public static ComparisonResult compare(FileContentSignature first, FileContentSignature second) {
+        ListIterator<KindAndSignature> e1 = first.signature.listIterator();
+        ListIterator<KindAndSignature> e2 = second.signature.listIterator();
+        boolean changed = false;
+        boolean changeCanAffectIncludes = false;
+        char inclKind = Utils.getCsmIncludeKindKey().charAt(0);
+        while (e1.hasNext() && e2.hasNext()) {
+            KindAndSignature o1 = e1.next();
+            KindAndSignature o2 = e2.next();
+            if (!o1.equals(o2)) {
+                changed = true;
+            }
+            if (o1.getKind() == inclKind || o2.getKind() == inclKind) {
+                if (changed) {
+                    changeCanAffectIncludes = true;
+                }
+            }
+        }
+        ListIterator<KindAndSignature> remaining = e1.hasNext() ? e1 : e2;
+        while (remaining.hasNext()) {
+            KindAndSignature next = remaining.next();
+            changed = true;
+            if (next.getKind() == inclKind) {
+                changeCanAffectIncludes = true;
+            }
+        }
+        if (changed) {
+            return changeCanAffectIncludes ? ComparisonResult.CHANGE_CAN_AFFECT_INCLUDES : ComparisonResult.FILE_LOCAL_CHANGE;
+        }
+        return ComparisonResult.SAME;
+    }
+
     public static CharSequence testDifference(FileContentSignature first, FileContentSignature second) {
         StringBuilder out = new StringBuilder();
         if (!first.file.equals(second.file)) {
@@ -184,7 +229,7 @@ public final class FileContentSignature {
                 }
             }
         } else {
-            List<CharSequence> sigToDump;
+            List<KindAndSignature> sigToDump;
             if (first.signature.isEmpty()) {
                 out.append("FIRST is empty, content of the second:\n"); // NOI18N
                 sigToDump = first.signature;
@@ -192,14 +237,14 @@ public final class FileContentSignature {
                 out.append("SECOND is empty, content of the first:\n"); // NOI18N
                 sigToDump = second.signature;
             }
-            for (CharSequence sigElem : sigToDump) {
+            for (KindAndSignature sigElem : sigToDump) {
                 out.append(sigElem).append('\n');
             }
         }
         return out;
     }
 
-    private static int hash(List<CharSequence> signature) {
+    private static int hash(List<KindAndSignature> signature) {
         int hash = 7;
         for (CharSequence charSequence : signature) {
             hash = 89 * hash + charSequence.hashCode();

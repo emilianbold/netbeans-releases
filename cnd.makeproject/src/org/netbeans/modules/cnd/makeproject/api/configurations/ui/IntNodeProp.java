@@ -55,7 +55,7 @@ public class IntNodeProp extends Node.Property {
     private final String displayName;
     private final String description;
     private boolean canWrite;
-    IntEditor intEditor = null;
+    protected IntEditor intEditor = null;
 
     @SuppressWarnings("unchecked")
     public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String name, String displayName, String description) {
@@ -134,7 +134,7 @@ public class IntNodeProp extends Node.Property {
         return intEditor;
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    protected class IntEditor extends PropertyEditorSupport {
 
         @Override
         public String getJavaInitializationString() {

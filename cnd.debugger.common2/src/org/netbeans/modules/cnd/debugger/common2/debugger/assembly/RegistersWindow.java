@@ -66,6 +66,7 @@ import javax.swing.JTextArea;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.accessibility.AccessibleContext;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import org.openide.util.HelpCtx;
@@ -170,6 +171,8 @@ public final class RegistersWindow extends TopComponent
     }
     
     private void updateWindow() {
+        assert SwingUtilities.isEventDispatchThread();
+        
         //int hsbv, vsbv;
         int i, j, k, l, m, n, carpos;
         String s;
@@ -477,7 +480,12 @@ public final class RegistersWindow extends TopComponent
         current_regs.clear();
         current_regs.addAll(regs);
         
-        updateWindow();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                updateWindow();
+            }
+        });
     }
     
     protected void HideSelectedRegisters(String regs) {

@@ -115,7 +115,7 @@ import org.openide.util.Exceptions;
         Document doc = textComponent.getDocument();
         TokenHierarchy<Document> th = doc != null ? TokenHierarchy.get(doc) : null;
         List<TokenSequence<?>> embeddedSequences = th != null ? th.embeddedTokenSequences(offset, false) : null;
-        TokenSequence<?> seq = embeddedSequences != null ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
+        TokenSequence<?> seq = embeddedSequences != null && embeddedSequences.size() > 0 ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
 
         if (seq  != null) seq.move(offset);
 

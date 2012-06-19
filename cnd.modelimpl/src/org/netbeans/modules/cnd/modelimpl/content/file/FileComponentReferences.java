@@ -473,7 +473,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         public CsmObject getReferencedObject() {
             CsmObject out = UIDCsmConverter.UIDtoCsmObject(refObj);
             if (out == null) {
-                Logger.getLogger("xRef").log(Level.INFO, "how can we store nulls? {0}", refObj); // NOI18N
+                Logger.getLogger("xRef").log(Level.FINE, "how can we store nulls? {0}", refObj); // NOI18N
             }
             return out;
         }

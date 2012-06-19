@@ -46,14 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
  *
@@ -173,9 +166,8 @@ public class PHPDocCommentParser {
     }
 
     private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {
-        List<PHPDocTypeNode> docTypes = new ArrayList<PHPDocTypeNode>();
         if (type == PHPDocTag.Type.METHOD || PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
-            docTypes = findTypes(description, start, originalComment, originalCommentStart);
+            List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
             if (PHPDocVarTypeTags.contains(type)) {
                 String variable = getVaribleName(description);
                 PHPDocNode varibaleNode = null;

@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Debugging: Variables Window</title>
+	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Debugging: Variables Window</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+
+<p>The Variables window lists the local variables in the current call. By default, the Variables window opens automatically whenever you start a debugging session. You can open the Variables window by choosing Window &gt; Debugging &gt; Variables.</p>
+<p>If you open the Variables window when a debugging session is running, it closes automatically when you end the debugging session. If you open the window when no debugging session is running, it stays open until you close it.</p>
+<p>The information given for each variable includes the variable name, type, and value. 
+You can click the control to the left of the name to expand or collapse the variable. 
+If the object type is displayed in blue underlined text, clicking the text jumps to the object type in the source code. 
+You can click the Value cell to edit the value directly in the Variables window. </p>
+<p>In some cases, the debugger assigns a pound sign (#) and a number as the variable's value. This number is a unique identifier of the given instance. You can use this identifier to determine if a variable points to the same or to a different instance. You cannot edit this value. </p>
+
+<h3><a name="icons">Icons</a></h3>
+<p>The following table describes the icons displayed to the left of the object name.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Icon</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr>
+		<td><img src="../images/LocalVariable.gif" alt="Local variable icon"></td>
+		<td>Local variable</td>
+	</tr>
+	<tr>
+		<td><img src="../images/SuperVariable.gif" alt="Super variable icon"></td>
+		<td>Container for a superclass</td>
+	</tr>
+	<tr>
+		<td><img src="../images/StaticVariable.gif" alt="Static field icon"></td>
+		<td>Static field of an object</td>
+	</tr>
+	<tr>
+		<td><img src="../images/Field.gif" alt="Non-Static field icon"></td>
+		<td>Non-static field of an object</td>
+	</tr>
+        <!-- TODO -- find icons for these -->
+            <tr>
+		<td><img src="../images/Filter.gif" alt="Return values history icon"></td>
+		<td>The return values of executed methods when using expression step.</td>
+	</tr>
+        <tr>
+		<td><img src="../images/ExprArguments.gif" alt="Arguments to expression step icon"></td>
+		<td>Input values for next method when using expression step.</td>
+	</tr>
+    </table>
+
+<h3><a name="actions">Actions</a></h3>
+<p>If you right-click inside the Variables window, the pop-up menu displays the following choices:</p>
+<table border="1" cellpadding="5" cellspacing="0">
+	<tr align="left" valign="top">
+		<th scope="col">Menu Item</th>
+		<th scope="col">Description</th>
+	</tr>
+	<tr valign="top">
+		<td>New Watch... (Outside of rows only)</td>
+		<td>Opens a dialog where you enter the expression for a new watch</td>
+	</tr>
+	<tr valign="top">
+		<td>Filters</td>
+		<td>Opens a dialog where you select which variable types to show.</td>
+	</tr>
+        <tr valign="top">
+            <td>Show only rows where... (In Value column only)</td>
+            <td>Opens a dialog where you can set a filter on the Variables window. The
+            filter shows only the variables whose values are related to the value
+            of the selected variable according to the choice you make in the dialog 
+            (equal to, less than, more than, etc.). To remove a Show only rows where... filter,
+            open the dialog again and select No filter.</td>
+        </tr>
+    </table>
+
+<h3>Properties </h3>
+<p>By default, all properties are displayed directly in the Variables window, except for the <tt>toString()</tt> property.
+To display the <tt>toString()</tt> property in the Variables window, 
+ click the <img src="../images/ChangeColumn.gif" alt="Change Column">&nbsp;icon in the upper right corner of the window, 
+ or right-click in the window and choose List Options &gt; Change Visible Columns and then select the <tt>toString()</tt> checkbox in the dialog box.</p>
+
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="../debug_context.html">Current Context in the Debugger</a></dd>
+	<dd><a href="../debug_variables.html">Variables and Expressions in the IDE</a></dd>
+	<dd><a href="../debug_fix_watch.html">Creating a Fixed Watch</a></dd>
+	<dd><a href="debug_window.html">Debugger Windows</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

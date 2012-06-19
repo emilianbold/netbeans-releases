@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +67,7 @@ import javax.tools.Diagnostic;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.AnnotationProcessorTestUtils;
 import org.openide.util.test.TestFileUtils;
@@ -80,12 +82,16 @@ public class LayerBuilderTest extends NbTestCase {
 
     private Document doc;
     private LayerBuilder b;
+    private File src;
+    private File dest;
 
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         doc = XMLUtil.createDocument("filesystem", null, null, null);
         b = new LayerBuilder(doc, null, null);
         assertEquals("<filesystem/>", dump());
+        src = new File(getWorkDir(), "src");
+        dest = new File(getWorkDir(), "dest");
     }
 
     private String dump() throws IOException {
@@ -241,9 +247,7 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testSourcePath() throws Exception { // #181355
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#label\") public class C {}");
-        File dest = new File(getWorkDir(), "dest");
         TestFileUtils.writeFile(new File(dest, "p/Bundle.properties"), "label=hello");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         File layer = new File(dest, "META-INF/generated-layer.xml");
@@ -254,28 +258,22 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testMissingBundleError() throws Exception {
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#nonexistent\") public class C {}");
-        File dest = new File(getWorkDir(), "dest");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("p/Bundle.properties"));
     }
 
     public void testMissingBundleKeyError() throws Exception {
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#nonexistent\") public class C {}");
         TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "label=hello");
-        File dest = new File(getWorkDir(), "dest");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         assertTrue(err.toString(), err.toString().contains("nonexistent"));
     }
 
     public void testBundleKeyDefinedUsingMessages() throws Exception {
-        File src = new File(getWorkDir(), "src");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + A.class.getCanonicalName() + "(displayName=\"#k\") @org.openide.util.NbBundle.Messages(\"k=v\") public class C {}");
-        File dest = new File(getWorkDir(), "dest");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
         AnnotationProcessorTestUtils.makeSource(src, "p.C2", "public class C2 {@" + A.class.getCanonicalName() + "(displayName=\"#k2\") @org.openide.util.NbBundle.Messages(\"k2=v\") String f = null;}");
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, null));
@@ -302,38 +300,34 @@ public class LayerBuilderTest extends NbTestCase {
     }
 
     public void testAbsolutizeAndValidateResourcesExistent() throws Exception {
-        File src = new File(getWorkDir(), "src");
-        File dest = new File(getWorkDir(), "dest");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"other/x1\", r2=\"resources/x2\") public class C {}");
         File j = TestFileUtils.writeZipFile(new File(getWorkDir(), "cp.jar"), "other/x1:x1");
         TestFileUtils.writeFile(new File(src, "p/resources/x2"), "x2");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
+        boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, Utilities.toFile(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
         String msgs = err.toString();
         assertTrue(msgs, status);
         assertTrue(msgs, msgs.contains("r1=x1") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         assertTrue(msgs, msgs.contains("r2=x2"));
-        FileObject f = new XMLFileSystem(new File(dest, "META-INF/generated-layer.xml").toURI().toURL()).findResource("f");
+        FileObject f = new XMLFileSystem(Utilities.toURI(new File(dest, "META-INF/generated-layer.xml")).toURL()).findResource("f");
         assertNotNull(f);
         assertEquals("other/x1", f.getAttribute("r1"));
         assertEquals("p/resources/x2", f.getAttribute("r2"));
     }
 
     public void testValidateResourceNonexistent() throws Exception {
-        File src = new File(getWorkDir(), "src");
-        File dest = new File(getWorkDir(), "dest");
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"other/x1\", r2=\"resourcez/x2\") public class C {}");
         File j = TestFileUtils.writeZipFile(new File(getWorkDir(), "cp.jar"), "other/x1:x1");
         TestFileUtils.writeFile(new File(src, "p/resources/x2"), "x2");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
-        boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
+        boolean status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, Utilities.toFile(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
         String msgs = err.toString();
         assertFalse(msgs, status);
         assertTrue(msgs, msgs.contains("resourcez"));
         assertTrue(msgs, msgs.contains("r1=x1") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + V.class.getCanonicalName() + "(r1=\"othr/x1\", r2=\"resources/x2\") public class C {}");
         err = new ByteArrayOutputStream();
-        status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, new File(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
+        status = AnnotationProcessorTestUtils.runJavac(src, null, dest, new File[] {j, Utilities.toFile(LayerBuilderTest.class.getProtectionDomain().getCodeSource().getLocation().toURI())}, err);
         msgs = err.toString();
         assertFalse(msgs, status ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         assertTrue(msgs, msgs.contains("othr") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
@@ -373,6 +367,57 @@ public class LayerBuilderTest extends NbTestCase {
                 f.stringvalue("r1", v.r1());
                 f.stringvalue("r2", r2);
                 f.write();
+            }
+            return true;
+        }
+    }
+
+    public void testInstantiableClassOrMethod() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C {}");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("Serializable"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " class C implements java.io.Serializable {}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("public"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C implements java.io.Serializable {public C(int x) {}}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("constructor"));
+        // XXX no-arg ctor must be public
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public abstract class C implements java.io.Serializable {}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("abstract"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public interface C extends java.io.Serializable {}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("instance"));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "public class C {@" + I.class.getCanonicalName() + " public class N implements java.io.Serializable {}}");
+        err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("static"));
+        // XXX test factory methods
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "@" + I.class.getCanonicalName() + " public class C implements java.io.Serializable {}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+        AnnotationProcessorTestUtils.makeSource(src, "p.C", "public class C {@" + I.class.getCanonicalName() + " public static class N implements java.io.Serializable {}}");
+        assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, null));
+    }
+
+    public @interface I {}
+    @ServiceProvider(service=Processor.class)
+    @SupportedSourceVersion(SourceVersion.RELEASE_6)
+    public static class IP extends LayerGeneratingProcessor {
+        public @Override Set<String> getSupportedAnnotationTypes() {
+            return Collections.singleton(I.class.getCanonicalName());
+        }
+        protected @Override boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+            if (roundEnv.processingOver()) {
+                return false;
+            }
+            for (Element e : roundEnv.getElementsAnnotatedWith(I.class)) {
+                layer(e).instanceFile("stuff", null, Serializable.class).write();
             }
             return true;
         }

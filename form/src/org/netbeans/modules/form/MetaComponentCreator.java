@@ -903,7 +903,7 @@ public class MetaComponentCreator {
                 }
             }
             catch (RuntimeException ex) { // silently ignore, try again as non-container
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Logger.getLogger(MetaComponentCreator.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 newMetaComp = null;
                 newMetaCont = null;
                 continue;

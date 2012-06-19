@@ -58,6 +58,7 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.actions.TestAction;
+import org.openide.util.ImageUtilities;
 
 /**
  * ToolBar in the FormDesigner - by default it holds buttons for selection and
@@ -92,10 +93,8 @@ final class FormToolBar {
         listener = new Listener();
 
         // selection button
-        selectionButton = new JToggleButton(
-            new ImageIcon(getClass().getResource(
-                          "/org/netbeans/modules/form/resources/selection_mode.png")), // NOI18N
-            false);
+        selectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/form/resources/selection_mode.png", true)), // NOI18N
+                                            false);
         selectionButton.addActionListener(listener);
         selectionButton.addMouseListener(listener);
         selectionButton.setToolTipText(
@@ -105,10 +104,8 @@ final class FormToolBar {
         initButton(selectionButton);
 
         // connection button
-        connectionButton = new JToggleButton(
-            new ImageIcon(getClass().getResource(
-                          "/org/netbeans/modules/form/resources/connection_mode.png")), // NOI18N
-            false);
+        connectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/form/resources/connection_mode.png", true)), // NOI18N
+                                             false);
         connectionButton.addActionListener(listener);
         connectionButton.addMouseListener(listener);
         connectionButton.setToolTipText(

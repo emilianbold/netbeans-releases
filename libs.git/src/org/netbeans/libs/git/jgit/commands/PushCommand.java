@@ -89,7 +89,7 @@ public class PushCommand extends TransportCommand {
     }
 
     @Override
-    protected void run () throws GitException.AuthorizationException, GitException {
+    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
         List<RefSpec> specs = new ArrayList<RefSpec>(pushRefSpecs.size());
         for (String refSpec : pushRefSpecs) {
             RefSpec sp = new RefSpec(refSpec).setForceUpdate(false);

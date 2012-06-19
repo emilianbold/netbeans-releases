@@ -1,7 +1,7 @@
-Binary test distribution for NetBeans 7.1
+Binary test distribution for NetBeans
 -----------------------------------------
 
-The test distribution contains tests for NetBeans 7.1. There are two types
+The test distribution contains tests for NetBeans. There are two types
 of tests:
 
 unit tests - developed by development team

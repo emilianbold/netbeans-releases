@@ -571,6 +571,59 @@ public class CommentsTest extends GeneratorTestBase {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testAddJavaDoctoEnum() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "\n" +
+            "    SOME\n" +
+            "\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public enum Test {\n" +
+            "\n" +
+            "    SOME,\n" +
+            "    /**\n" +
+            "     * What's up?\n" +
+            "     */\n" +
+            "    THING\n" +
+            "\n" +
+            "}\n";
+
+        JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                int mods =  1<<14;
+                ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
+                VariableTree var = make.Variable(modifiers, "THING", make.Identifier("Test"), null);
+                int no = PositionEstimator.NOPOS;
+                make.addComment(var, Comment.create(Style.JAVADOC, no, no, no, "What's up?\n"), true);
+                ClassTree copy = make.addClassMember(clazz, var);
+                workingCopy.rewrite(clazz, copy);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     /*
      * http://www.netbeans.org/issues/show_bug.cgi?id=113315

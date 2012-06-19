@@ -44,6 +44,7 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
+import java.net.URI;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -80,4 +81,15 @@ public class FileBasedURLMapperTest extends NbTestCase {
         URL result = instance.getURL(fo, URLMapper.INTERNAL);
         assertTrue("Folder URL must always end with slash.", result.toExternalForm().endsWith("/"));
     }
+    
+    public void testSlashifyUNCPath() throws Exception {
+        String unc = "\\\\192.168.0.201\\data\\services\\web\\com_resource\\";
+        URI uri = FileBasedURLMapper.toURI(unc, true, '\\');
+        final URI norm = uri.normalize();
+
+        assertTrue("Is normalized: " + uri + " == " + norm, uri.equals(norm));
+        assertEquals("192.168.0.201", uri.getHost());
+        assertEquals("/data/services/web/com_resource/", uri.getPath());
+    }
+    
 }

@@ -78,6 +78,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -108,7 +109,7 @@ public class ClasspathInfoTest extends NbTestCase {
         IndexUtil.setCacheFolder(cacheFolder);
         TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
         rtJar = FileUtil.normalizeFile(new File( workDir, TestUtil.RT_JAR ));
-        URL url = FileUtil.getArchiveRoot (rtJar.toURI().toURL());
+        URL url = FileUtil.getArchiveRoot (Utilities.toURI(rtJar).toURL());
         this.bootPath = ClassPathSupport.createClassPath (new URL[] {url});
         this.classPath = ClassPathSupport.createClassPath(new URL[0]);
     }

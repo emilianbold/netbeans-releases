@@ -55,6 +55,7 @@ import java.util.Iterator;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -105,7 +106,7 @@ public class InstalledFileLocatorImpl extends InstalledFileLocator {
                 if (foundS.startsWith(prefix) && foundS.endsWith(suffix)) {
                     String infix = foundS.substring(prefix.length(), foundS.length() - suffix.length());
                     if (infix.startsWith("file:")) {
-                        File jar = new File(URI.create(infix));
+                        File jar = Utilities.toFile(URI.create(infix));
                         assert jar.isFile();
                         return jar;
                     }

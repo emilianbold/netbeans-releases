@@ -73,6 +73,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * Support for reading/writting classpath like properties.
@@ -167,16 +168,7 @@ public final class ClassPathSupport {
                     AntArtifact artifact = (AntArtifact)ret[0];
                     URI uri = (URI)ret[1];
                     File usedFile = antProjectHelper.resolveFile(evaluator.evaluate(pe[i]));
-                    /* Workaround for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
-                    File artifactFile = null;
-                    if(uri.isAbsolute()) {
-                        artifactFile = new File(uri);
-                    } else {
-                        artifactFile = new File(artifact.getScriptLocation().getParent(), uri.getPath());
-                    }
-                    artifactFile = FileUtil.normalizeFile(artifactFile);
-                    //File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
-                    /* End of UNC workaround */
+                    File artifactFile = Utilities.toFile(Utilities.toURI(artifact.getScriptLocation()).resolve(uri).normalize());
                     if (usedFile.equals(artifactFile)) {
                         item = Item.create( artifact, uri, pe[i]);
                     }

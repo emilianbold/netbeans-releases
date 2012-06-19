@@ -312,7 +312,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
     }
 
-    private void showPopup(MouseEvent e) {
+    private void showPopup(final MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         if (row != -1) {
             boolean makeRowSelected = true;
@@ -327,7 +327,15 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 table.getSelectionModel().setSelectionInterval(row, row);
             }
         }
-        showPopup(e.getPoint());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // invoke later so the selection on the table will be set first
+                if (table.isShowing()) {
+                    showPopup(e.getPoint());
+                }
+            }
+        });
     }
     
     private void showPopup(Point p) {

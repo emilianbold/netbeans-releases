@@ -94,7 +94,7 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
 //                        File pom = new File(parent, artifact + "-" + version + ".pom");
 //                        // maybe this condition is already overkill..
 //                        if (pom.exists()) {
-                            File srcs = new File(parent, artifact + "-" + version + "-sources.jar"); //NOI18N
+                            File srcs = FileUtil.normalizeFile(new File(parent, artifact + "-" + version + "-sources.jar")); //NOI18N
                             if (srcs.exists()) {
                                 return new SrcResult(srcs);
                             }

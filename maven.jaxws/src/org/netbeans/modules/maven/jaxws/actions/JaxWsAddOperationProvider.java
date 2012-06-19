@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=AddOperationActionProvider.class)
 public class JaxWsAddOperationProvider implements AddOperationActionProvider {
     
+    @Override
     public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
         JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(fileObject);
         if (support != null) {

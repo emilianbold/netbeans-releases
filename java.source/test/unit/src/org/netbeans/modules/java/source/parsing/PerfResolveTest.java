@@ -50,6 +50,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 /** Tests for basic JDK operations
  *
  * @author Petr Hrebejk
@@ -79,7 +80,7 @@ public class PerfResolveTest extends NbTestCase {
         workDir = getWorkDir();
         TestUtil.copyFiles( workDir, TestUtil.RT_JAR, "jdk/JTable.java" );
         rtJar = new File( workDir, TestUtil.RT_JAR );
-        URL url = FileUtil.getArchiveRoot (rtJar.toURI().toURL());
+        URL url = FileUtil.getArchiveRoot (Utilities.toURI(rtJar).toURL());
         this.bootPath = ClassPathSupport.createClassPath (new URL[] {url});
         this.classPath = ClassPathSupport.createClassPath(new URL[0]);
     }

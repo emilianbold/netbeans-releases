@@ -401,10 +401,6 @@ public class RulesManager implements FileChangeListener {
 
             if (result == null) return result;
 
-            Document doc = ctx.getInfo().getSnapshot().getSource().getDocument(true);
-
-            if (doc == null) return Collections.emptyList();
-
             Collection<ErrorDescription> wrapped = new LinkedList<ErrorDescription>();
             String id = tr instanceof AbstractHint ? ((AbstractHint) tr).getId() : "no-id";
             String description = tr instanceof AbstractHint ? ((AbstractHint) tr).getDescription() : null;
@@ -417,21 +413,14 @@ public class RulesManager implements FileChangeListener {
                 }
                 List<Fix> fixesForED = JavaFixImpl.Accessor.INSTANCE.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
 
-                try {
-                    ErrorDescription nue = createErrorDescription("text/x-java:" + id,
-                                                                  ed.getSeverity(),
-                                                                  ed.getDescription(),
-                                                                  description,
-                                                                  org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(fixesForED),
-                                                                  doc,
-                                                                  ed.getRange().getBegin().getPosition(),
-                                                                  ed.getRange().getEnd().getPosition());
-                    wrapped.add(nue);
-                } catch (IOException ex) {
-                    //XXX: can happen?
-                    LOG.log(Level.INFO, null, ex);
-                }
-
+                ErrorDescription nue = createErrorDescription("text/x-java:" + id,
+                                                              ed.getSeverity(),
+                                                              ed.getDescription(),
+                                                              description,
+                                                              org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(fixesForED),
+                                                              ed.getFile(),
+                                                              ed.getRange());
+                wrapped.add(nue);
             }
 
             return wrapped;

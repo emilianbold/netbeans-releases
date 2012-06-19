@@ -72,14 +72,14 @@ public class NbLoaderPoolTest extends NbTestCase {
 
         oldL = DataLoader.getLoader(OldStyleLoader.class);
         newL = DataLoader.getLoader(NewStyleLoader.class);
-        NbLoaderPool.doAdd(oldL, null);
-        NbLoaderPool.doAdd(newL, null);
+        NbLoaderPool.doAdd(oldL, null, NbLoaderPool.getNbLoaderPool());
+        NbLoaderPool.doAdd(newL, null, NbLoaderPool.getNbLoaderPool());
         NbLoaderPool.waitFinished();
     }
 
     protected @Override void tearDown() throws Exception {
-        NbLoaderPool.remove(oldL);
-        NbLoaderPool.remove(newL);
+        NbLoaderPool.remove(oldL, NbLoaderPool.getNbLoaderPool());
+        NbLoaderPool.remove(newL, NbLoaderPool.getNbLoaderPool());
     }
 
     public void testOldLoaderThatChangesActionsBecomesModified () throws Exception {

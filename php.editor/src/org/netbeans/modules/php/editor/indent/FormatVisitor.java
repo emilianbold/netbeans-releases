@@ -51,11 +51,11 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.indent.TokenFormatter.DocumentOptions;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.Exceptions;
 
@@ -80,8 +80,11 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
     private FormatToken.AssignmentAnchorToken previousGroupToken = null; //used for assignment alignment
+    private final int caretOffset;
+    private final int startOffset;
+    private final int endOffset;
 
-    public FormatVisitor(BaseDocument document) {
+    public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
         ts = LexUtilities.getPHPTokenSequence(document, 0);
         path = new LinkedList<ASTNode>();
@@ -91,6 +94,9 @@ public class FormatVisitor extends DefaultVisitor {
         tsTokenCount = ts == null ? 1 : ts.tokenCount();
         formatTokens = new ArrayList<FormatToken>(tsTokenCount * 2);
         maxFormattingRules = tsTokenCount * 3;
+        this.caretOffset = caretOffset;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
     }
@@ -118,7 +124,6 @@ public class FormatVisitor extends DefaultVisitor {
         if (node == null) {
             return;
         }
-        int indent = path.size();
 
         if (formatTokens.size() > maxFormattingRules) {
             showAssertionFor185063();
@@ -162,9 +167,7 @@ public class FormatVisitor extends DefaultVisitor {
                 includeWSBeforePHPDoc = false;
             } else if (node instanceof FieldsDeclaration) {
                 if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
-//                    if (beforeTokens.get(indexBeforeLastComment).getId() != FormatToken.Kind.LINE_COMMENT) {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
-//                    }
                 } else {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FIELDS, ts.offset()));
                 }
@@ -184,23 +187,18 @@ public class FormatVisitor extends DefaultVisitor {
             formatTokens.addAll(beforeTokens);
         }
 
-//	    addFormatToken(formatTokens);
-
         ts.movePrevious();
 
         path.addFirst(node);
         super.scan(node);
         path.removeFirst();
 
-//	if (ts.offset() <= node.getEndOffset()) {
         while (moveNext()
                 && lastIndex < ts.index()
                 && (ts.offset() + ts.token().length()) <= node.getEndOffset()) {
-            //xxSystem.out.println(indentS + ts.token().id() + "<" + ts.offset() + ", " + (ts.offset() + ts.token().length()) + ">, " + "After " + node.getClass().getSimpleName() + " [" + node.getStartOffset() + ", " + node.getEndOffset() + "]");
             addFormatToken(formatTokens);
         }
         ts.movePrevious();
-//	}
     }
 
     @Override
@@ -219,7 +217,6 @@ public class FormatVisitor extends DefaultVisitor {
             if (formatTokens.get(formatTokens.size() - 1).getId() == FormatToken.Kind.WHITESPACE_INDENT
                     || path.get(1) instanceof ArrayElement
                     || path.get(1) instanceof FormalParameter
-                    //		    || path.get(1) instanceof ReturnStatement
                     || path.get(1) instanceof CastExpression) {
                 // when the array is on the beginning of the line, indent items in normal way
                 delta = options.indentArrayItems;
@@ -400,8 +397,6 @@ public class FormatVisitor extends DefaultVisitor {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_OPEN_CLOSE_BRACES, ts.offset()));
                     }
 
-//		    boolean inludeSpaceBefore = (ts.movePrevious() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) ? true : false;
-//		    ts.moveNext();
                     if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                         if (includeWSBeforePHPDoc) {
                             formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_RIGHT_BRACE, ts.offset()));
@@ -409,9 +404,7 @@ public class FormatVisitor extends DefaultVisitor {
                         addFormatToken(formatTokens);
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS, ts.offset() + ts.token().length()));
                     } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
-                        //if (!includeWBC) {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE, ts.offset()));
-                        //}
                         addFormatToken(formatTokens);
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FUNCTION, ts.offset() + ts.token().length()));
                     } else if (parent instanceof IfStatement) {
@@ -695,7 +688,6 @@ public class FormatVisitor extends DefaultVisitor {
         }
         if (index == statements.size() - 1
                 || ((index < statements.size() - 1) && !(statements.get(index + 1) instanceof FieldsDeclaration))) {
-            //addAllUntilOffset(statements.get(index).getEndOffset() + 1);
             addRestOfLine();
             formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_FIELDS, ts.offset() + ts.token().length()));
         }
@@ -811,8 +803,7 @@ public class FormatVisitor extends DefaultVisitor {
             }
             ts.movePrevious();
         }
-        scan(node.getFunctionName());    // scan the name
-        // scan the parameters
+        scan(node.getFunctionName());
         List<FormalParameter> parameters = node.getFormalParameters();
         if (parameters != null && parameters.size() > 0) {
             while (ts.moveNext() && ts.offset() < parameters.get(0).getStartOffset()
@@ -831,7 +822,7 @@ public class FormatVisitor extends DefaultVisitor {
                 addUnbreakalbeSequence(parameters.get(i), false);
             }
         }
-        scan(node.getBody()); // scan the body of the function
+        scan(node.getBody());
     }
 
     @Override
@@ -871,9 +862,6 @@ public class FormatVisitor extends DefaultVisitor {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_IN_ARGUMENT_LIST, ts.offset() + ts.token().length()));
                 addUnbreakalbeSequence(parameters.get(i), false);
             }
-//            if (ts.token().id() == PHPTokenId.WHITESPACE) {
-//                addFormatToken(formatTokens);
-//            }
             if (addIndentation) {
                 List<FormatToken> removed = new ArrayList<FormatToken>();
                 FormatToken ftoken = formatTokens.get(formatTokens.size() - 1);
@@ -901,15 +889,6 @@ public class FormatVisitor extends DefaultVisitor {
             }
         }
         addAllUntilOffset(node.getEndOffset());
-
-//	if (node.getParameters() != null && node.getParameters().size() > 0) {
-//	    formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
-//	    scan(node.getParameters());
-//	    formatTokens.add(new FormatToken.IndentToken(node.getParameters().get(node.getParameters().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
-//	    addAllUntilOffset(node.getEndOffset());
-//	} else {
-//	    super.visit(node);
-//	}
     }
 
     @Override
@@ -1085,7 +1064,6 @@ public class FormatVisitor extends DefaultVisitor {
                 && ((ts.offset() + ts.token().length()) <= node.getEndOffset())) {
             addFormatToken(formatTokens);
         }
-        // add return
         if (ts.token().id() == PHPTokenId.PHP_RETURN) {
             addFormatToken(formatTokens);
             formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
@@ -1286,14 +1264,7 @@ public class FormatVisitor extends DefaultVisitor {
         lastIndex = ts.index();
         switch (ts.token().id()) {
             case WHITESPACE:
-                int countNewLines = countOfNewLines(ts.token().text());
-                if (countNewLines > 1) {
-                    // reset group alignment, if there is an empty line
-                    previousGroupToken = null;
-                }
-                tokens.add(countNewLines > 0
-                        ? new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, ts.offset(), ts.token().text().toString())
-                        : new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset(), ts.token().text().toString()));
+                tokens.addAll(resolveWhitespaceTokens());
                 break;
             case PHP_LINE_COMMENT:
                 String text = ts.token().text().toString();
@@ -1305,8 +1276,7 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                     if (ts.moveNext()) {
                         if (ts.token().id() == PHPTokenId.WHITESPACE) {
-                            countNewLines = countOfNewLines(ts.token().text());
-                            if (countNewLines > 0) {
+                            if (countOfNewLines(ts.token().text()) > 0) {
                                 // reset group alignment, if there is an empty line
                                 previousGroupToken = null;
                             }
@@ -1332,15 +1302,12 @@ public class FormatVisitor extends DefaultVisitor {
             case T_OPEN_TAG_WITH_ECHO:
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_OPEN_PHP_TAG, ts.offset()));
                 tokens.add(new FormatToken(FormatToken.Kind.OPEN_TAG, ts.offset(), ts.token().text().toString()));
-//		tokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.initialIndent));
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OPEN_PHP_TAG, ts.offset() + ts.token().length()));
                 break;
             case PHP_CLOSETAG:
-//		tokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.initialIndent));
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLOSE_PHP_TAG, ts.offset()));
                 tokens.add(new FormatToken(FormatToken.Kind.CLOSE_TAG, ts.offset(), ts.token().text().toString()));
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLOSE_PHP_TAG, ts.offset() + ts.token().length()));
-
                 break;
             case PHP_COMMENT_START:
                 tokens.add(new FormatToken(FormatToken.Kind.COMMENT_START, ts.offset(), ts.token().text().toString()));
@@ -1488,7 +1455,6 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                 } else if (parent instanceof ConditionalExpression
                         && ("?".equals(text) || ":".equals(text))) {
-                    //tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_TERNARY_OP, ts.offset() + ts.token().length()));
                 } else if (",".equals(text)) {
@@ -1525,10 +1491,7 @@ public class FormatVisitor extends DefaultVisitor {
                 } else if ("++".equals(text) || "--".equals(text)) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                    //if (ts.moveNext() && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ")".equals(ts.token().text().toString()))) {
                     tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                    //}
-//		    ts.movePrevious();
                 } else {
                     tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 }
@@ -1567,7 +1530,7 @@ public class FormatVisitor extends DefaultVisitor {
                 if (!token.hasHTML() && !isWhitespace(ts.token().text())) {
                     token.setHasHTML(true);
                 }
-                int startOffset = ts.offset();
+                int tokenStartOffset = ts.offset();
                 StringBuilder sb = new StringBuilder(ts.token().text());
                 // merge all html following tokens to one format token;
                 while (ts.moveNext() && ts.token().id() == PHPTokenId.T_INLINE_HTML) {
@@ -1577,7 +1540,7 @@ public class FormatVisitor extends DefaultVisitor {
                 if (ts.moveNext()) {
                     ts.movePrevious();
                     ts.movePrevious();
-                    tokens.add(new FormatToken(FormatToken.Kind.HTML, startOffset, sb.toString()));
+                    tokens.add(new FormatToken(FormatToken.Kind.HTML, tokenStartOffset, sb.toString()));
                 } else {
                     // this is the last token in the document
                     lastIndex--;
@@ -1586,6 +1549,35 @@ public class FormatVisitor extends DefaultVisitor {
             default:
                 tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
         }
+    }
+
+    private List<FormatToken> resolveWhitespaceTokens() {
+        final List<FormatToken> result = new LinkedList<FormatToken>();
+        int countNewLines = countOfNewLines(ts.token().text());
+        if (countNewLines > 1) {
+            // reset group alignment, if there is an empty line
+            previousGroupToken = null;
+        }
+        String tokenText = ts.token().text().toString();
+        int tokenStartOffset = ts.offset();
+        if (countNewLines > 0) {
+            result.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, tokenStartOffset, tokenText));
+        } else {
+            int tokenEndOffset = tokenStartOffset + ts.token().length();
+            if (GsfUtilities.isCodeTemplateEditing(document) && caretOffset > tokenStartOffset && caretOffset < tokenEndOffset && tokenStartOffset > startOffset && tokenEndOffset < endOffset) {
+                int devideIndex = caretOffset - tokenStartOffset;
+                if (tokenText == null) {
+                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
+                } else {
+                    String firstTextPart = tokenText.substring(0, devideIndex);
+                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
+                    result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
+                }
+            } else {
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
+            }
+        }
+        return result;
     }
 
     private void addAllUntilOffset(int offset) {
@@ -1615,10 +1607,6 @@ public class FormatVisitor extends DefaultVisitor {
         } else {
             ts.movePrevious();
         }
-    }
-
-    private int getIndentSize() {
-        return options.initialIndent + indentLevel * options.indentSize;
     }
 
     /**
@@ -1672,18 +1660,10 @@ public class FormatVisitor extends DefaultVisitor {
     private void addUnbreakalbeSequence(ASTNode node, boolean addAnchor) {
         formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length(), null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_START));
         addAllUntilOffset(node.getStartOffset());
-//	while (ts.moveNext() && ts.offset() < endOffset) {
-//	    if (positionOfAnchor > 0 && ts.offset() == positionOfAnchor) {
-//		formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
-//	    }
-//	    addFormatToken(formatTokens);  // add all until the end offset
-//	}
         if (addAnchor) {
             formatTokens.add(new FormatToken.AnchorToken(ts.offset() + ts.token().length()));
         }
         scan(node);
-//	ts.movePrevious();
-        // add , whitespaces and comments
         while (ts.moveNext()
                 && (ts.token().id() == PHPTokenId.WHITESPACE
                 || isComment(ts.token())

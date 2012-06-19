@@ -41,16 +41,18 @@
  */
 package org.netbeans.modules.maven.apisupport;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
+import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -159,12 +161,19 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
                 assert rc != null;
                 rc.setPreExecution(RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, rc.getTaskDisplayName(), Collections.singletonList("package")));
                 MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-                String outputDir = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR, "directory", "jar"); // NOI18N
-                if (outputDir == null) {
-                    outputDir = "target"; // NOI18N
+                String nbmBuildDir = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "nbmBuildDir", "nbm");
+                if (nbmBuildDir == null) {
+                    Build build = prj.getBuild();
+                    String directory = build != null ? build.getDirectory() : null;
+                    nbmBuildDir = (directory != null ? directory : "target") + "/nbm";
                 }
-                // XXX why does getPluginProperty(prj, GROUP_APACHE_PLUGINS, PLUGIN_JAR, "finalName", "jar") not work?
-                rc.setProperty("module", "'" + FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), outputDir + "/" + prj.getArtifactId() + "-" + prj.getVersion() + ".jar") + "'"); // NOI18N
+                String cluster = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "cluster", "nbm");
+                if (cluster == null) {
+                    cluster = "extra";
+                }
+                String codeNameBase = project.getLookup().lookup(NbModuleProvider.class).getCodeNameBase();
+                File module = FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), nbmBuildDir + "/netbeans/" + cluster + "/modules/" + codeNameBase.replace('.', '-') + ".jar");
+                rc.setProperty("module", "'" + module + "'"); // NOI18N
                 return rc;
             } else {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbmActionGoalProvider_no_app_found(), NotifyDescriptor.WARNING_MESSAGE));

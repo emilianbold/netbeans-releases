@@ -119,10 +119,13 @@ public class ExecuteCommand {
             CompilerSet compilerSet = getCompilerSet();
             if (compilerSet != null) {
                 Tool findTool = compilerSet.findTool(PredefinedToolKind.MakeTool);
-                if (findTool != null) {
+                if (findTool != null && findTool.getPath() != null && findTool.getPath().length() > 0) {
                     make = findTool.getPath();
                     if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
-                        make = WindowsSupport.getInstance().convertToShellPath(make);
+                        String aMake = WindowsSupport.getInstance().convertToShellPath(make);
+                        if (aMake != null && aMake.length() > 0) {
+                            make = aMake;
+                        }
                     }
                 }
             }

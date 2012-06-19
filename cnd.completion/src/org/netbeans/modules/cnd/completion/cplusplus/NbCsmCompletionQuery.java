@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -274,6 +275,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         @Override
         public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN){
             return new NbCsmResultItem.NbForwardClassResultItem(cls, classDisplayOffset, displayFQN, CLASS_PRIORITY);
+        }
+        @Override
+        public CsmResultItem.ForwardEnumResultItem createForwardEnumResultItem(CsmEnumForwardDeclaration cls, int classDisplayOffset, boolean displayFQN) {
+            return new NbCsmResultItem.NbForwardEnumResultItem(cls, classDisplayOffset, displayFQN, ENUM_PRIORITY);
         }
         @Override
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN) {

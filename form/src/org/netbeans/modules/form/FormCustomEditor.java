@@ -251,16 +251,23 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
             }
         });
 
-        updateHelpAndAccessibleDescription();
         editorsCombo.getAccessibleContext().setAccessibleDescription(
             FormUtils.getBundleString("ACSD_EditingMode")); // NOI18N
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        updateHelpAndAccessibleDescription(); // hack: called here not to show Help button
+    }
+
     
     private void updateHelpAndAccessibleDescription() {
+        HelpCtx.setHelpIDString(this, null);
         int i = editorsCombo.getSelectedIndex();
         HelpCtx helpCtx = i < 0 ? null : HelpCtx.findHelp(cardPanel.getComponent(i));
-        String helpID = helpCtx != null ? helpCtx.getHelpID() : ""; // NOI18N
-        HelpCtx.setHelpIDString(FormCustomEditor.this, helpID);
+        String helpID = helpCtx != null && helpCtx != HelpCtx.DEFAULT_HELP ? helpCtx.getHelpID() : "f1_mat_prop_html"; // NOI18N
+        HelpCtx.setHelpIDString(this, helpID);
 
         updateAccessibleDescription(i < 0 ? null : cardPanel.getComponent(i));
     }

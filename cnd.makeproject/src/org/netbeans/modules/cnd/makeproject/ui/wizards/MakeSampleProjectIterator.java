@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
@@ -53,9 +52,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
-import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.MakeSamplePanel;
+import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -110,12 +111,16 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
         String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
         String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
 
-        panel = new PanelConfigureProject(name, -1, wizardTitle, wizardTitleACSD, false);
+        panel = getPanel(-1, name, wizardTitle, wizardTitleACSD, false);
         String[] steps = new String[1];
             JComponent jc = (JComponent) panel.getComponent();
-            steps[i] = ((Name) panel).getName();
+            steps[i] = ((NamedPanel) panel).getName();
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+    }
+    
+    public static MakeSamplePanel<WizardDescriptor> getPanel(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
+        return new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, fullRemote);
     }
 
     @Override
@@ -138,9 +143,12 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
     
     @Override
     public Set<DataObject> instantiate() throws IOException {
-        File projectLocation = (File) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        FSPath projectLocation = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String name = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        if (wiz.getProperty(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV) != null) {
+            hostUID = ExecutionEnvironmentFactory.toUniqueID(ExecutionEnvironmentFactory.getLocal());
+        }
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);

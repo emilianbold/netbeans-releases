@@ -45,11 +45,13 @@
 
 package org.netbeans.core.multiview;
 
+import java.io.Serializable;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup;
 
 import org.openide.windows.*;
 
@@ -86,6 +88,18 @@ public class MultiViewsTest extends NbTestCase {
 
     }
 
+    public void testNonExistingMimeType() throws Exception {
+        final Lookup lkp = Lookup.EMPTY;
+        
+        class L implements Lookup.Provider, Serializable {
+            @Override
+            public Lookup getLookup() {
+                return lkp;
+            }
+        }
+        TopComponent tc = MultiViews.createMultiView("text/x-does-not-exist", new L());
+        tc.open();
+    }
     
 }
 

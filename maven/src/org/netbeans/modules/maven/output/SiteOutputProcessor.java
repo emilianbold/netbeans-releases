@@ -52,6 +52,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -71,21 +72,26 @@ public class SiteOutputProcessor implements OutputProcessor {
         this.project = prj;
     }
     
+    @Override
     public String[] getRegisteredOutputSequences() {
         return SITEGOALS;
     }
     
+    @Override
     public void processLine(String line, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
     }
     
+    @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         visitor.setLine("     View Generated Project Site"); //NOI18N shows up in maven output.
         visitor.setOutputListener(new Listener(project), false);
     }
     
+    @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
     }
     
@@ -94,16 +100,18 @@ public class SiteOutputProcessor implements OutputProcessor {
         private Listener(Project prj) {
             this.prj = prj;
         }
+        @Override
         public void outputLineSelected(OutputEvent arg0) {
             
         }
         
         @Messages({"# {0} - file name", "SiteOutputProcessor.not_found=No site index created at {0}"})
+        @Override
         public void outputLineAction(OutputEvent arg0) {
             File html = new File(FileUtil.toFile(prj.getProjectDirectory()), "target/site/index.html");
             if (html.isFile()) {
                 try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(html.toURI().toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(html).toURL());
                 } catch (MalformedURLException x) {
                     assert false : x;
                 }
@@ -112,6 +120,7 @@ public class SiteOutputProcessor implements OutputProcessor {
             }
         }
         
+        @Override
         public void outputLineCleared(OutputEvent arg0) {
         }
     }

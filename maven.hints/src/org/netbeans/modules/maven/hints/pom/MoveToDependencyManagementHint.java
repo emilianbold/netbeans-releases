@@ -153,6 +153,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
             }
             
             PomModelUtils.implementInTransaction(mdl, new Runnable() {
+                @Override
                 public void run() {
                     File fl = mdl.getModelSource().getLookup().lookup(File.class);
                     if (fl == null) {

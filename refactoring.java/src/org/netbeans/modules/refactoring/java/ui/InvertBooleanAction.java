@@ -71,7 +71,7 @@ public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
 
     @Override
     protected boolean enable(Lookup context) {
-        return ContextAnalyzer.canRefactorSingle(context, true);
+        return ContextAnalyzer.canRefactorSingle(context, true, false);
     }
 
 

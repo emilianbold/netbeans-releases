@@ -85,6 +85,7 @@ import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.maven.classpath.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 
 /**
  * Implementation of Sources interface for maven projects.
@@ -234,21 +235,21 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                 FileObject fo = FileUtilities.convertURItoFileObject(u);
                 if (fo == null) {
                     virtuals.add(u);
-                } else {
+                } else if (fo.isFolder()) {
                     existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
                         SG_Project_Resources(), null, null));
                 }
             }
             if (create && existing.isEmpty()) {
-                File root = new File(virtuals.get(0));
-                FileObject fo=null;
+                File root = Utilities.toFile(virtuals.get(0));
                 try {
-                    fo = FileUtil.createFolder(root);
+                    FileObject fo = FileUtil.createFolder(root);
+                    existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
+                            SG_Project_Resources(), null, null));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                existing.add(GenericSources.group(proj, fo, "resources",  //NOI18N
-                    SG_Project_Resources(), null, null));
+                
             }
             //TODO we should probably add includes/excludes to source groups.
             return existing.toArray(new SourceGroup[0]);
@@ -265,17 +266,17 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private boolean checkSourceGroupCache(@NullAllowed File rootF, String name, String displayName, Map<String, SourceGroup> groups, NbMavenProject watcher) {
         FileObject root;
         if (rootF != null) {
-            watcher.addWatchedPath(rootF.toURI());
+            watcher.addWatchedPath(Utilities.toURI(rootF));
             root = FileUtil.toFileObject(rootF);
         } else {
             root = null;
         }
         SourceGroup group = groups.get(name);
-        if (root == null && group != null) {
+        if ((root == null || root.isData()) && group != null) {
             groups.remove(name);
             return true;
         }
-        if (root == null) {
+        if (root == null || root.isData()) {
             return false;
         }
         boolean changed = false;
@@ -299,7 +300,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         List<File> checked = new ArrayList<File>();
         for (boolean test : new boolean[] {false, true}) {
             for (URI u : project().getGeneratedSourceRoots(test)) {
-                File file = FileUtil.normalizeFile(new File(u));
+                File file = FileUtil.normalizeFile(Utilities.toFile(u));
                 FileObject folder = FileUtil.toFileObject(file);
                 changed |= checkGeneratedGroupCache(folder, file, file.getName(), test);
                 checked.add(file);
@@ -325,11 +326,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     })
     private boolean checkGeneratedGroupCache(FileObject root, File rootFile, String nameSuffix, boolean test) {
         SourceGroup group = genSrcGroup.get(rootFile);
-        if (root == null && group != null) {
+        if ((root == null || root.isData()) && group != null) {
             genSrcGroup.remove(rootFile);
             return true;
         }
-        if (root == null) {
+        if (root == null || root.isData()) {
             return false;
         }
         boolean changed = false;
@@ -357,7 +358,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         URI[] res = project().getResources(test);
         Set<File> resources = new HashSet<File>();
         for (URI ur : res) {
-            resources.add(new File(ur));
+            resources.add(Utilities.toFile(ur));
         }
 
         for (File f : roots) {
