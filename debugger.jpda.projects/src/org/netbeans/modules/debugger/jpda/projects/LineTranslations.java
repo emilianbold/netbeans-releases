@@ -440,7 +440,9 @@ class LineTranslations {
         public void destroy() {
             detach();
             DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
-            des.removePropertyChangeListener(this);
+            if (des != null) {
+                des.removePropertyChangeListener(this);
+            }
         }
 
         private void update(Line l) {
