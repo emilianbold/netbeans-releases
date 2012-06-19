@@ -1894,6 +1894,10 @@ public final class FileUtil extends Object {
 
         try {
             retVal = file.getCanonicalFile();
+            if (retVal.getName().equals(".")) { // NOI18Ny
+                // try one more time
+                retVal = retVal.getCanonicalFile();
+            }
         } catch (IOException e) {
             String path = file.getPath();
             // report only other than UNC path \\ or \\computerName because these cannot be canonicalized
