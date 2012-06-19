@@ -61,6 +61,7 @@ import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -97,6 +98,13 @@ public class JsfSupportImpl implements JsfSupport {
 	if(classPath == null) {
 	    return null;
 	}
+        
+        //fast fix: 214310 workaround
+	if(project.getLookup().lookup(ClassPathProvider.class)== null) {
+            //no CP provider, some suspicious project
+	    return null;
+	}
+        
 
         return new JsfSupportImpl(project, wm, classPath);
 
