@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
-import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
@@ -71,8 +70,9 @@ public class SplitShiftRightTokenFilter  implements APTTokenStream, TokenStream 
             if (ret == null) {
                 ret = (APTToken) orig.nextToken();
                 if (ret.getType() == APTTokenTypes.SHIFTRIGHT) {
-                    nextGTToken = new APTBaseLanguageFilter.FilterToken(ret, APTTokenTypes.GREATERTHAN);
-                    ret = nextGTToken;
+                    nextGTToken = APTUtils.createAPTToken(ret, APTTokenTypes.GREATERTHAN);
+                    ret = APTUtils.createAPTToken(ret, APTTokenTypes.GREATERTHAN);
+                    ret.setText(""); // NOI18N
                 }
             }
             return ret;
