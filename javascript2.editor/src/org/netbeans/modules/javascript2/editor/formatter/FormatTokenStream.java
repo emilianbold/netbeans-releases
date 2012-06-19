@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 
 /**
  *
@@ -61,7 +61,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
     private FormatTokenStream() {
     }   
     
-    public static FormatTokenStream create(TokenSequence<? extends JsTokenId> ts, int start, int end) {
+    public static FormatTokenStream create(TokenSequence<? extends CommonTokenId> ts, int start, int end) {
         FormatTokenStream ret = new FormatTokenStream();
         int diff = ts.move(start);
         if (diff <= 0) {
@@ -70,8 +70,8 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         ret.addToken(FormatToken.forFormat(FormatToken.Kind.SOURCE_START));
 
         while (ts.moveNext() && ts.offset() < end) {
-            Token<? extends JsTokenId> token = ts.token();
-            JsTokenId id = token.id();
+            Token<? extends CommonTokenId> token = ts.token();
+            CommonTokenId id = token.id();
             switch (id) {
                 case EOL:
                     ret.addToken(FormatToken.forAny(FormatToken.Kind.EOL, ts.offset(), token.text()));

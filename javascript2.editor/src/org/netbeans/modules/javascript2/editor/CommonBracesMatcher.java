@@ -49,7 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -60,19 +60,19 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
  * @author Petr Hejl
  */
 // major portion copied from java
-public class JsBracesMatcher implements BracesMatcher {
+public class CommonBracesMatcher implements BracesMatcher {
 
     private static final char [] PAIRS = new char [] { '(', ')', '[', ']', '{', '}' }; //NOI18N
 
-    private static final JsTokenId [] PAIR_TOKEN_IDS = new JsTokenId [] {
-        JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN,
-        JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET,
-        JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY
+    private static final CommonTokenId [] PAIR_TOKEN_IDS = new CommonTokenId [] {
+        CommonTokenId.BRACKET_LEFT_PAREN, CommonTokenId.BRACKET_RIGHT_PAREN,
+        CommonTokenId.BRACKET_LEFT_BRACKET, CommonTokenId.BRACKET_RIGHT_BRACKET,
+        CommonTokenId.BRACKET_LEFT_CURLY, CommonTokenId.BRACKET_RIGHT_CURLY
     };
 
     private final MatcherContext context;
 
-    private final Language<JsTokenId> language;
+    private final Language<CommonTokenId> language;
 
     private int originOffset;
     private char originChar;
@@ -80,7 +80,7 @@ public class JsBracesMatcher implements BracesMatcher {
     private boolean backward;
     private List<TokenSequence<?>> sequences;
 
-    public JsBracesMatcher(MatcherContext context, Language<JsTokenId> language) {
+    public CommonBracesMatcher(MatcherContext context, Language<CommonTokenId> language) {
         this.context = context;
         this.language = language;
     }
@@ -110,12 +110,12 @@ public class JsBracesMatcher implements BracesMatcher {
                     TokenSequence<?> seq = sequences.get(sequences.size() - 1);
                     seq.move(originOffset);
                     if (seq.moveNext()) {
-                        if (seq.token().id() == JsTokenId.BLOCK_COMMENT
-                                || seq.token().id() == JsTokenId.DOC_COMMENT
-                                || seq.token().id() == JsTokenId.LINE_COMMENT
+                        if (seq.token().id() == CommonTokenId.BLOCK_COMMENT
+                                || seq.token().id() == CommonTokenId.DOC_COMMENT
+                                || seq.token().id() == CommonTokenId.LINE_COMMENT
                                 // remove once we have a lagueage
-                                || seq.token().id() == JsTokenId.REGEXP
-                                || seq.token().id() == JsTokenId.STRING) {
+                                || seq.token().id() == CommonTokenId.REGEXP
+                                || seq.token().id() == CommonTokenId.STRING) {
                             return null;
                         }
                     }
@@ -145,8 +145,8 @@ public class JsBracesMatcher implements BracesMatcher {
                     list = th.tokenSequenceList(seq.languagePath(), originOffset + 1, context.getDocument().getLength());
                 }
 
-                JsTokenId originId = getTokenId(originChar);
-                JsTokenId lookingForId = getTokenId(matchingChar);
+                CommonTokenId originId = getTokenId(originChar);
+                CommonTokenId lookingForId = getTokenId(matchingChar);
                 int counter = 0;
 
                 for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
@@ -186,7 +186,7 @@ public class JsBracesMatcher implements BracesMatcher {
         return sequences;
     }
 
-    private JsTokenId getTokenId(char ch) {
+    private CommonTokenId getTokenId(char ch) {
         for(int i = 0; i < PAIRS.length; i++) {
             if (PAIRS[i] == ch) {
                 return PAIR_TOKEN_IDS[i];
@@ -197,22 +197,22 @@ public class JsBracesMatcher implements BracesMatcher {
 
 
 
-    @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
+    @MimeRegistration(mimeType = CommonTokenId.JAVASCRIPT_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
     public static class JsBracesMatcherFactory implements BracesMatcherFactory {
 
         @Override
         public BracesMatcher createMatcher(MatcherContext context) {
-            return new JsBracesMatcher(context, JsTokenId.javascriptLanguage());
+            return new CommonBracesMatcher(context, CommonTokenId.javascriptLanguage());
         }
 
     }
 
-    @MimeRegistration(mimeType = JsTokenId.JSON_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
+    @MimeRegistration(mimeType = CommonTokenId.JSON_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
     public static class JsonBracesMatcherFactory implements BracesMatcherFactory {
 
         @Override
         public BracesMatcher createMatcher(MatcherContext context) {
-            return new JsBracesMatcher(context, JsTokenId.jsonLanguage());
+            return new CommonBracesMatcher(context, CommonTokenId.jsonLanguage());
         }
 
     }

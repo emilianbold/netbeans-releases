@@ -46,7 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -222,7 +222,7 @@ public class JsParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
                         context.getSnapshot(), 0);
                 if (ts != null) {
                     ts.move(offset);
@@ -244,18 +244,18 @@ public class JsParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
                         context.getSnapshot(), 0);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext()) {
                         int start = -1;
                         while (ts.movePrevious()) {
-                            if (ts.token().id() != JsTokenId.WHITESPACE
-                                    && ts.token().id() != JsTokenId.EOL
-                                    && ts.token().id() != JsTokenId.DOC_COMMENT
-                                    && ts.token().id() != JsTokenId.LINE_COMMENT
-                                    && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
+                            if (ts.token().id() != CommonTokenId.WHITESPACE
+                                    && ts.token().id() != CommonTokenId.EOL
+                                    && ts.token().id() != CommonTokenId.DOC_COMMENT
+                                    && ts.token().id() != CommonTokenId.LINE_COMMENT
+                                    && ts.token().id() != CommonTokenId.BLOCK_COMMENT) {
 
                                 start = ts.offset();
                                 break;

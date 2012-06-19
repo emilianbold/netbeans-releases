@@ -52,7 +52,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 
@@ -72,7 +72,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         // Boolean b = ((Boolean) Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
         // return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
+        EditorOptions options = EditorOptions.get(CommonTokenId.JAVASCRIPT_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
         }
@@ -94,7 +94,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return;
         }
 
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
 
         if (ts == null) {
             return;
@@ -106,13 +106,13 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return;
         }
 
-        Token<?extends JsTokenId> token = ts.token();
+        Token<? extends CommonTokenId> token = ts.token();
         TokenId id = token.id();
 
         // Insert a missing }
         boolean insertRightBrace = isEndMissing(doc, offset);
 
-        if (id != JsTokenId.UNKNOWN && insertMatching && insertRightBrace) {
+        if (id != CommonTokenId.UNKNOWN && insertMatching && insertRightBrace) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
@@ -149,7 +149,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return;
         }
 
-        if (id == JsTokenId.UNKNOWN) {
+        if (id == CommonTokenId.UNKNOWN) {
             // See if it's a block comment opener
             String text = token.text().toString();
             if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
@@ -171,30 +171,30 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (id == JsTokenId.STRING ||
-                (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+        if (id == CommonTokenId.STRING ||
+                (id == CommonTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
             //int indent = GsfUtilities.getLineIndent(doc, offset);
-            //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+            //int delimiterOffset = id == CommonTokenId.STRING_END ? ts.offset() : ts.offset()-1;
             //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
             //doc.insertString(offset, delimiter + " + " + delimiter, null);
             //caret.setDot(offset+3);
             //return offset + 5 + indent;
-            String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+            String str = (id != CommonTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
             context.setText(str, -1, str.length());
             return;
         }
 
 
 
-        if (id == JsTokenId.REGEXP ||
-                (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
+        if (id == CommonTokenId.REGEXP ||
+                (id == CommonTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
             // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
             //int indent = GsfUtilities.getLineIndent(doc, offset);
             //doc.insertString(offset, "/ + /", null);
             //caret.setDot(offset+3);
             //return offset + 5 + indent;
-            String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+            String str = (id != CommonTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
             context.setText(str, -1, str.length());
             return;
         }
@@ -212,12 +212,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // (in that case we'd notice the brace imbalance, and insert the closing
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
-        if ((id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET) && offset > 0) {
-            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+        if ((id == CommonTokenId.BRACKET_RIGHT_CURLY || id == CommonTokenId.BRACKET_RIGHT_BRACKET) && offset > 0) {
+            Token<? extends CommonTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
             if (prevToken != null) {
-                JsTokenId prevTokenId = prevToken.id();
-                if (id == JsTokenId.BRACKET_RIGHT_CURLY && prevTokenId == JsTokenId.BRACKET_LEFT_CURLY ||
-                        id == JsTokenId.BRACKET_RIGHT_BRACKET && prevTokenId == JsTokenId.BRACKET_LEFT_BRACKET) {
+                CommonTokenId prevTokenId = prevToken.id();
+                if (id == CommonTokenId.BRACKET_RIGHT_CURLY && prevTokenId == CommonTokenId.BRACKET_LEFT_CURLY ||
+                        id == CommonTokenId.BRACKET_RIGHT_BRACKET && prevTokenId == CommonTokenId.BRACKET_LEFT_BRACKET) {
                     int indent = GsfUtilities.getLineIndent(doc, offset);
                     StringBuilder sb = new StringBuilder();
                     // XXX On Windows, do \r\n?
@@ -234,7 +234,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (id == JsTokenId.WHITESPACE) {
+        if (id == CommonTokenId.WHITESPACE) {
             // Pressing newline in the whitespace before a comment
             // should be identical to pressing newline with the caret
             // at the beginning of the comment
@@ -243,14 +243,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 ts.move(begin);
                 if (ts.moveNext()) {
                     id = ts.token().id();
-                    if (id == JsTokenId.LINE_COMMENT) {
+                    if (id == CommonTokenId.LINE_COMMENT) {
                         offset = begin;
                     }
                 }
             }
         }
 
-        if ((id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT)
+        if ((id == CommonTokenId.BLOCK_COMMENT || id == CommonTokenId.DOC_COMMENT)
                 && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
             // Continue *'s
             int begin = Utilities.getRowFirstNonWhite(doc, offset);
@@ -289,9 +289,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        boolean isComment = id == JsTokenId.LINE_COMMENT;
-        if (id == JsTokenId.EOL) {
-            if (ts.movePrevious() && ts.token().id() == JsTokenId.LINE_COMMENT) {
+        boolean isComment = id == CommonTokenId.LINE_COMMENT;
+        if (id == CommonTokenId.EOL) {
+            if (ts.movePrevious() && ts.token().id() == CommonTokenId.LINE_COMMENT) {
                 //ts.moveNext();
                 isComment = true;
             }
@@ -312,8 +312,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (rowStart > 0) {
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart - 1);
                 if (prevBegin != -1) {
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
-                    if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
+                    Token<? extends CommonTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
+                    if (firstToken != null && firstToken.id() == CommonTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
                     }
                 }
@@ -322,8 +322,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (rowEnd < doc.getLength()) {
                 int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd + 1);
                 if (nextBegin != -1) {
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
-                    if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
+                    Token<? extends CommonTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
+                    if (firstToken != null && firstToken.id() == CommonTokenId.LINE_COMMENT) {
                         nextLineIsComment = true;
                     }
                 }
@@ -343,8 +343,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 } else if (CONTINUE_COMMENTS) {
                     // See if the "continue comments" options is turned on, and this is a line that
                     // contains only a comment (after leading whitespace)
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, begin);
-                    if (firstToken.id() == JsTokenId.LINE_COMMENT) {
+                    Token<? extends CommonTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                    if (firstToken.id() == CommonTokenId.LINE_COMMENT) {
                         continueComment = true;
                     }
                 }
@@ -355,8 +355,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     if (nextLine < doc.getLength()) {
                         int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
                         if (nextLineFirst != -1) {
-                            Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
-                            if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
+                            Token<? extends CommonTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                            if (firstToken != null && firstToken.id() == CommonTokenId.LINE_COMMENT) {
                                 continueComment = true;
                             }
                         }
@@ -429,12 +429,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     && !LexUtilities.isCommentOnlyLine(doc, currentOffset)) {
                 indent = GsfUtilities.getLineIndent(doc, currentOffset);
                 int parenBalance = LexUtilities.getLineBalance(doc, currentOffset,
-                        JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
+                        CommonTokenId.BRACKET_LEFT_PAREN, CommonTokenId.BRACKET_RIGHT_PAREN);
                 if (parenBalance < 0) {
                     break;
                 }
                 int curlyBalance = LexUtilities.getLineBalance(doc, currentOffset,
-                        JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
+                        CommonTokenId.BRACKET_LEFT_CURLY, CommonTokenId.BRACKET_RIGHT_CURLY);
                 if (curlyBalance > 0) {
                     indent += IndentUtils.indentLevelSize(doc);
                 }
@@ -458,14 +458,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         // FIXME performance
         int curlyBalance = LexUtilities.getTokenBalance(doc,
-                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, offset);
+                CommonTokenId.BRACKET_LEFT_CURLY, CommonTokenId.BRACKET_RIGHT_CURLY, offset);
 
         if (curlyBalance <= 0) {
             return false;
         }
 
         int parenBalance = LexUtilities.getLineBalance(doc, 
-                offset, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
+                offset, CommonTokenId.BRACKET_LEFT_PAREN, CommonTokenId.BRACKET_RIGHT_PAREN);
 
         if ((curlyBalance == 1) && parenBalance >= 0) {
             // There is one more opening token on the line than a corresponding
@@ -476,7 +476,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         return false;
     }
 
-    @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    @MimeRegistration(mimeType = CommonTokenId.JAVASCRIPT_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
     public static class Factory implements TypedBreakInterceptor.Factory {
 
         @Override

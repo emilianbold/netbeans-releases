@@ -8,7 +8,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %public
 %final
 %class JavaScriptColoringLexer
-%type JsTokenId
+%type CommonTokenId
 %unicode
 %char
 
@@ -43,19 +43,19 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.canFollowLiteral = state.canFollowLiteral;
     }
 
-    public JsTokenId nextToken() throws java.io.IOException {
-        JsTokenId token = yylex();
-        if (token != null && !JsTokenId.UNKNOWN.equals(token)
-                && !JsTokenId.WHITESPACE.equals(token)
-                && !JsTokenId.LINE_COMMENT.equals(token)
-                && !JsTokenId.BLOCK_COMMENT.equals(token)
-                && !JsTokenId.DOC_COMMENT.equals(token)) {
+    public CommonTokenId nextToken() throws java.io.IOException {
+        CommonTokenId token = yylex();
+        if (token != null && !CommonTokenId.UNKNOWN.equals(token)
+                && !CommonTokenId.WHITESPACE.equals(token)
+                && !CommonTokenId.LINE_COMMENT.equals(token)
+                && !CommonTokenId.BLOCK_COMMENT.equals(token)
+                && !CommonTokenId.DOC_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
         }
         return token;
     }
 
-    private static boolean canFollowLiteral(JsTokenId token) {
+    private static boolean canFollowLiteral(CommonTokenId token) {
         if ("operator".equals(token.primaryCategory())) {
             return true;
         }
@@ -185,68 +185,68 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 <YYINITIAL> {
 
   /* keywords 7.6.1.1 */
-  "break"                        { return JsTokenId.KEYWORD_BREAK; }
-  "case"                         { return JsTokenId.KEYWORD_CASE; }
-  "catch"                        { return JsTokenId.KEYWORD_CATCH; }
-  "continue"                     { return JsTokenId.KEYWORD_CONTINUE; }
-  "debugger"                     { return JsTokenId.KEYWORD_DEBUGGER; }
-  "default"                      { return JsTokenId.KEYWORD_DEFAULT; }
-  "delete"                       { return JsTokenId.KEYWORD_DELETE; }
-  "do"                           { return JsTokenId.KEYWORD_DO; }
-  "else"                         { return JsTokenId.KEYWORD_ELSE; }
-  "finally"                      { return JsTokenId.KEYWORD_FINALLY; }
-  "for"                          { return JsTokenId.KEYWORD_FOR; }
-  "function"                     { return JsTokenId.KEYWORD_FUNCTION; }
-  "if"                           { return JsTokenId.KEYWORD_IF; }
-  "in"                           { return JsTokenId.KEYWORD_IN; }
-  "instanceof"                   { return JsTokenId.KEYWORD_INSTANCEOF; }
-  "new"                          { return JsTokenId.KEYWORD_NEW; }
-  "return"                       { return JsTokenId.KEYWORD_RETURN; }
-  "switch"                       { return JsTokenId.KEYWORD_SWITCH; }
-  "this"                         { return JsTokenId.KEYWORD_THIS; }
-  "throw"                        { return JsTokenId.KEYWORD_THROW; }
-  "try"                          { return JsTokenId.KEYWORD_TRY; }
-  "typeof"                       { return JsTokenId.KEYWORD_TYPEOF; }
-  "var"                          { return JsTokenId.KEYWORD_VAR; }
-  "void"                         { return JsTokenId.KEYWORD_VOID; }
-  "while"                        { return JsTokenId.KEYWORD_WHILE; }
-  "with"                         { return JsTokenId.KEYWORD_WITH; }
+  "break"                        { return CommonTokenId.KEYWORD_BREAK; }
+  "case"                         { return CommonTokenId.KEYWORD_CASE; }
+  "catch"                        { return CommonTokenId.KEYWORD_CATCH; }
+  "continue"                     { return CommonTokenId.KEYWORD_CONTINUE; }
+  "debugger"                     { return CommonTokenId.KEYWORD_DEBUGGER; }
+  "default"                      { return CommonTokenId.KEYWORD_DEFAULT; }
+  "delete"                       { return CommonTokenId.KEYWORD_DELETE; }
+  "do"                           { return CommonTokenId.KEYWORD_DO; }
+  "else"                         { return CommonTokenId.KEYWORD_ELSE; }
+  "finally"                      { return CommonTokenId.KEYWORD_FINALLY; }
+  "for"                          { return CommonTokenId.KEYWORD_FOR; }
+  "function"                     { return CommonTokenId.KEYWORD_FUNCTION; }
+  "if"                           { return CommonTokenId.KEYWORD_IF; }
+  "in"                           { return CommonTokenId.KEYWORD_IN; }
+  "instanceof"                   { return CommonTokenId.KEYWORD_INSTANCEOF; }
+  "new"                          { return CommonTokenId.KEYWORD_NEW; }
+  "return"                       { return CommonTokenId.KEYWORD_RETURN; }
+  "switch"                       { return CommonTokenId.KEYWORD_SWITCH; }
+  "this"                         { return CommonTokenId.KEYWORD_THIS; }
+  "throw"                        { return CommonTokenId.KEYWORD_THROW; }
+  "try"                          { return CommonTokenId.KEYWORD_TRY; }
+  "typeof"                       { return CommonTokenId.KEYWORD_TYPEOF; }
+  "var"                          { return CommonTokenId.KEYWORD_VAR; }
+  "void"                         { return CommonTokenId.KEYWORD_VOID; }
+  "while"                        { return CommonTokenId.KEYWORD_WHILE; }
+  "with"                         { return CommonTokenId.KEYWORD_WITH; }
 
   /* reserved keywords 7.6.1.2 */
-  "class"                        { return JsTokenId.RESERVED_CLASS; }
-  "const"                        { return JsTokenId.RESERVED_CONST; }
-  "enum"                         { return JsTokenId.RESERVED_ENUM; }
-  "export"                       { return JsTokenId.RESERVED_EXPORT; }
-  "extends"                      { return JsTokenId.RESERVED_EXTENDS; }
-  "import"                       { return JsTokenId.RESERVED_IMPORT; }
-  "super"                        { return JsTokenId.RESERVED_SUPER; }
+  "class"                        { return CommonTokenId.RESERVED_CLASS; }
+  "const"                        { return CommonTokenId.RESERVED_CONST; }
+  "enum"                         { return CommonTokenId.RESERVED_ENUM; }
+  "export"                       { return CommonTokenId.RESERVED_EXPORT; }
+  "extends"                      { return CommonTokenId.RESERVED_EXTENDS; }
+  "import"                       { return CommonTokenId.RESERVED_IMPORT; }
+  "super"                        { return CommonTokenId.RESERVED_SUPER; }
 
-  "implements"                   { return JsTokenId.RESERVED_IMPLEMENTS; }
-  "interface"                    { return JsTokenId.RESERVED_INTERFACE; }
-  "let"                          { return JsTokenId.RESERVED_LET; }
-  "package"                      { return JsTokenId.RESERVED_PACKAGE; }
-  "private"                      { return JsTokenId.RESERVED_PRIVATE; }
-  "protected"                    { return JsTokenId.RESERVED_PROTECTED; }
-  "public"                       { return JsTokenId.RESERVED_PUBLIC; }
-  "static"                       { return JsTokenId.RESERVED_STATIC; }
-  "yield"                        { return JsTokenId.RESERVED_YIELD; }
+  "implements"                   { return CommonTokenId.RESERVED_IMPLEMENTS; }
+  "interface"                    { return CommonTokenId.RESERVED_INTERFACE; }
+  "let"                          { return CommonTokenId.RESERVED_LET; }
+  "package"                      { return CommonTokenId.RESERVED_PACKAGE; }
+  "private"                      { return CommonTokenId.RESERVED_PRIVATE; }
+  "protected"                    { return CommonTokenId.RESERVED_PROTECTED; }
+  "public"                       { return CommonTokenId.RESERVED_PUBLIC; }
+  "static"                       { return CommonTokenId.RESERVED_STATIC; }
+  "yield"                        { return CommonTokenId.RESERVED_YIELD; }
 
 
   /* boolean literals */
-  "true"                         { return JsTokenId.KEYWORD_TRUE; }
-  "false"                        { return JsTokenId.KEYWORD_FALSE; }
+  "true"                         { return CommonTokenId.KEYWORD_TRUE; }
+  "false"                        { return CommonTokenId.KEYWORD_FALSE; }
 
   /* null literal */
-  "null"                         { return JsTokenId.KEYWORD_NULL; }
+  "null"                         { return CommonTokenId.KEYWORD_NULL; }
 
-  "/"[*]                         { return JsTokenId.UNKNOWN; }
+  "/"[*]                         { return CommonTokenId.UNKNOWN; }
   "/"
                                  {
                                      if (canFollowLiteral) {
                                        yybegin(REGEXP);
-                                       return JsTokenId.REGEXP_BEGIN;
+                                       return CommonTokenId.REGEXP_BEGIN;
                                      } else {
-                                       return JsTokenId.OPERATOR_DIVISION;
+                                       return CommonTokenId.OPERATOR_DIVISION;
                                      }
                                  }
   "/="
@@ -254,69 +254,69 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      if (canFollowLiteral) {
                                        yypushback(1);
                                        yybegin(REGEXP);
-                                       return JsTokenId.REGEXP_BEGIN;
+                                       return CommonTokenId.REGEXP_BEGIN;
                                      } else {
-                                       return JsTokenId.OPERATOR_DIVISION_ASSIGNMENT;
+                                       return CommonTokenId.OPERATOR_DIVISION_ASSIGNMENT;
                                      }
                                  }
   /* operators */
 
-  "("                            { return JsTokenId.BRACKET_LEFT_PAREN; }
-  ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
-  "{"                            { return JsTokenId.BRACKET_LEFT_CURLY; }
-  "}"                            { return JsTokenId.BRACKET_RIGHT_CURLY; }
-  "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
-  "]"                            { return JsTokenId.BRACKET_RIGHT_BRACKET; }
-  ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
-  ","                            { return JsTokenId.OPERATOR_COMMA; }
-  "."                            { return JsTokenId.OPERATOR_DOT; }
-  "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
-  ">"                            { return JsTokenId.OPERATOR_GREATER; }
-  "<"                            { return JsTokenId.OPERATOR_LOWER; }
-  "!"                            { return JsTokenId.OPERATOR_NOT; }
-  "~"                            { return JsTokenId.OPERATOR_BITWISE_NOT; }
-  "?"                            { return JsTokenId.OPERATOR_TERNARY; }
-  ":"                            { return JsTokenId.OPERATOR_COLON; }
-  "=="                           { return JsTokenId.OPERATOR_EQUALS; }
-  "==="                          { return JsTokenId.OPERATOR_EQUALS_EXACTLY; }
-  "<="                           { return JsTokenId.OPERATOR_LOWER_EQUALS; }
-  ">="                           { return JsTokenId.OPERATOR_GREATER_EQUALS; }
-  "!="                           { return JsTokenId.OPERATOR_NOT_EQUALS; }
-  "!=="                          { return JsTokenId.OPERATOR_NOT_EQUALS_EXACTLY; }
-  "&&"                           { return JsTokenId.OPERATOR_AND; }
-  "||"                           { return JsTokenId.OPERATOR_OR; }
-  "++"                           { return JsTokenId.OPERATOR_INCREMENT; }
-  "--"                           { return JsTokenId.OPERATOR_DECREMENT; }
-  "+"                            { return JsTokenId.OPERATOR_PLUS; }
-  "-"                            { return JsTokenId.OPERATOR_MINUS; }
-  "*"                            { return JsTokenId.OPERATOR_MULTIPLICATION; }
-  "&"                            { return JsTokenId.OPERATOR_BITWISE_AND; }
-  "|"                            { return JsTokenId.OPERATOR_BITWISE_OR; }
-  "^"                            { return JsTokenId.OPERATOR_BITWISE_XOR; }
-  "%"                            { return JsTokenId.OPERATOR_MODULUS; }
-  "<<"                           { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC; }
-  ">>"                           { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC; }
-  ">>>"                          { return JsTokenId.OPERATOR_RIGHT_SHIFT; }
-  "+="                           { return JsTokenId.OPERATOR_PLUS_ASSIGNMENT; }
-  "-="                           { return JsTokenId.OPERATOR_MINUS_ASSIGNMENT; }
-  "*="                           { return JsTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT; }
-  "&="                           { return JsTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT; }
-  "|="                           { return JsTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT; }
-  "^="                           { return JsTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT; }
-  "%="                           { return JsTokenId.OPERATOR_MODULUS_ASSIGNMENT; }
-  "<<="                          { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT; }
-  ">>="                          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT; }
-  ">>>="                         { return JsTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT; }
+  "("                            { return CommonTokenId.BRACKET_LEFT_PAREN; }
+  ")"                            { return CommonTokenId.BRACKET_RIGHT_PAREN; }
+  "{"                            { return CommonTokenId.BRACKET_LEFT_CURLY; }
+  "}"                            { return CommonTokenId.BRACKET_RIGHT_CURLY; }
+  "["                            { return CommonTokenId.BRACKET_LEFT_BRACKET; }
+  "]"                            { return CommonTokenId.BRACKET_RIGHT_BRACKET; }
+  ";"                            { return CommonTokenId.OPERATOR_SEMICOLON; }
+  ","                            { return CommonTokenId.OPERATOR_COMMA; }
+  "."                            { return CommonTokenId.OPERATOR_DOT; }
+  "="                            { return CommonTokenId.OPERATOR_ASSIGNMENT; }
+  ">"                            { return CommonTokenId.OPERATOR_GREATER; }
+  "<"                            { return CommonTokenId.OPERATOR_LOWER; }
+  "!"                            { return CommonTokenId.OPERATOR_NOT; }
+  "~"                            { return CommonTokenId.OPERATOR_BITWISE_NOT; }
+  "?"                            { return CommonTokenId.OPERATOR_TERNARY; }
+  ":"                            { return CommonTokenId.OPERATOR_COLON; }
+  "=="                           { return CommonTokenId.OPERATOR_EQUALS; }
+  "==="                          { return CommonTokenId.OPERATOR_EQUALS_EXACTLY; }
+  "<="                           { return CommonTokenId.OPERATOR_LOWER_EQUALS; }
+  ">="                           { return CommonTokenId.OPERATOR_GREATER_EQUALS; }
+  "!="                           { return CommonTokenId.OPERATOR_NOT_EQUALS; }
+  "!=="                          { return CommonTokenId.OPERATOR_NOT_EQUALS_EXACTLY; }
+  "&&"                           { return CommonTokenId.OPERATOR_AND; }
+  "||"                           { return CommonTokenId.OPERATOR_OR; }
+  "++"                           { return CommonTokenId.OPERATOR_INCREMENT; }
+  "--"                           { return CommonTokenId.OPERATOR_DECREMENT; }
+  "+"                            { return CommonTokenId.OPERATOR_PLUS; }
+  "-"                            { return CommonTokenId.OPERATOR_MINUS; }
+  "*"                            { return CommonTokenId.OPERATOR_MULTIPLICATION; }
+  "&"                            { return CommonTokenId.OPERATOR_BITWISE_AND; }
+  "|"                            { return CommonTokenId.OPERATOR_BITWISE_OR; }
+  "^"                            { return CommonTokenId.OPERATOR_BITWISE_XOR; }
+  "%"                            { return CommonTokenId.OPERATOR_MODULUS; }
+  "<<"                           { return CommonTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC; }
+  ">>"                           { return CommonTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC; }
+  ">>>"                          { return CommonTokenId.OPERATOR_RIGHT_SHIFT; }
+  "+="                           { return CommonTokenId.OPERATOR_PLUS_ASSIGNMENT; }
+  "-="                           { return CommonTokenId.OPERATOR_MINUS_ASSIGNMENT; }
+  "*="                           { return CommonTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT; }
+  "&="                           { return CommonTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT; }
+  "|="                           { return CommonTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT; }
+  "^="                           { return CommonTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT; }
+  "%="                           { return CommonTokenId.OPERATOR_MODULUS_ASSIGNMENT; }
+  "<<="                          { return CommonTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT; }
+  ">>="                          { return CommonTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT; }
+  ">>>="                         { return CommonTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT; }
 
   /* string literal */
   \"                             {
                                     yybegin(STRING);
-                                    return JsTokenId.STRING_BEGIN;
+                                    return CommonTokenId.STRING_BEGIN;
                                  }
 
   \'                             {
                                     yybegin(SSTRING);
-                                    return JsTokenId.STRING_BEGIN;
+                                    return CommonTokenId.STRING_BEGIN;
                                  }
 
   /* numeric literals */
@@ -332,28 +332,28 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
   {FloatLiteral}                 |
   {DoubleLiteral}                |
-  {DoubleLiteral}[dD]            { return JsTokenId.NUMBER; }
+  {DoubleLiteral}[dD]            { return CommonTokenId.NUMBER; }
 
   /* comments */
-  {DocumentationComment}         { return JsTokenId.DOC_COMMENT; }
+  {DocumentationComment}         { return CommonTokenId.DOC_COMMENT; }
 
   /* comments */
-  {TraditionalComment}           { return JsTokenId.BLOCK_COMMENT; }
+  {TraditionalComment}           { return CommonTokenId.BLOCK_COMMENT; }
 
   /* comments */
   {EndOfLineComment}             {
                                    yybegin(LCOMMENTEND);
-                                   return JsTokenId.LINE_COMMENT;
+                                   return CommonTokenId.LINE_COMMENT;
                                  }
 
   /* whitespace */
-  {WhiteSpace}                   { return JsTokenId.WHITESPACE; }
+  {WhiteSpace}                   { return CommonTokenId.WHITESPACE; }
 
   /* whitespace */
-  {LineTerminator}               { return JsTokenId.EOL; }
+  {LineTerminator}               { return CommonTokenId.EOL; }
 
   /* identifiers */
-  {Identifier}                   { return JsTokenId.IDENTIFIER; }
+  {Identifier}                   { return CommonTokenId.IDENTIFIER; }
 }
 
 <STRING> {
@@ -361,7 +361,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(STRINGEND);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.STRING;
+                                         return CommonTokenId.STRING;
                                      }
                                  }
 
@@ -376,7 +376,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return CommonTokenId.UNKNOWN;
                                      }
                                  }
 }
@@ -384,7 +384,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 <STRINGEND> {
   \"                             {
                                      yybegin(YYINITIAL);
-                                     return JsTokenId.STRING_END;
+                                     return CommonTokenId.STRING_END;
                                  }
 }
 
@@ -393,7 +393,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(SSTRINGEND);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.STRING;
+                                         return CommonTokenId.STRING;
                                      }
                                  }
 
@@ -408,7 +408,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength -1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return CommonTokenId.UNKNOWN;
                                      }
                                  }
 }
@@ -416,7 +416,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 <SSTRINGEND> {
   \'                             {
                                      yybegin(YYINITIAL);
-                                     return JsTokenId.STRING_END;
+                                     return CommonTokenId.STRING_END;
                                  }
 }
 
@@ -426,7 +426,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(REGEXPEND);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.REGEXP;
+                                         return CommonTokenId.REGEXP;
                                      }
                                  }
   .                              {
@@ -438,7 +438,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 <REGEXPEND> {
   "/"{IdentifierPart}*           {
                                      yybegin(YYINITIAL);
-                                     return JsTokenId.REGEXP_END;
+                                     return CommonTokenId.REGEXP_END;
                                  }
   .                              {
                                      yypushback(1);
@@ -450,7 +450,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return CommonTokenId.UNKNOWN;
                                      }
                                  }
 }
@@ -459,19 +459,19 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   {LineTerminator}?              {
                                      yybegin(YYINITIAL);
                                      if (tokenLength > 0) {
-                                         return JsTokenId.EOL;
+                                         return CommonTokenId.EOL;
                                      }
                                  }
 }
 
 /* error fallback */
-.|\n                             { return JsTokenId.UNKNOWN; }
+.|\n                             { return CommonTokenId.UNKNOWN; }
 <<EOF>>                          {
     if (input.readLength() > 0) {
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JsTokenId.UNKNOWN;
+        return CommonTokenId.UNKNOWN;
     } else {
         return null;
     }

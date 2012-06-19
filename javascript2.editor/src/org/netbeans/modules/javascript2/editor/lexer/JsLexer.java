@@ -56,31 +56,31 @@ import org.netbeans.spi.lexer.TokenFactory;
  *
  * @author Petr Hejl
  */
-public class JsLexer implements Lexer<JsTokenId> {
+public class JsLexer implements Lexer<CommonTokenId> {
 
     private static final Logger LOGGER = Logger.getLogger(JsLexer.class.getName());
 
     private final JavaScriptColoringLexer scanner;
 
-    private TokenFactory<JsTokenId> tokenFactory;
+    private TokenFactory<CommonTokenId> tokenFactory;
 
-    private JsLexer(LexerRestartInfo<JsTokenId> info) {
+    private JsLexer(LexerRestartInfo<CommonTokenId> info) {
         scanner = new JavaScriptColoringLexer(info);
         tokenFactory = info.tokenFactory();
     }
 
-    public static JsLexer create(LexerRestartInfo<JsTokenId> info) {
+    public static JsLexer create(LexerRestartInfo<CommonTokenId> info) {
         synchronized(JsLexer.class) {
             return new JsLexer(info);
         }
     }
 
     @Override
-    public Token<JsTokenId> nextToken() {
+    public Token<CommonTokenId> nextToken() {
         try {
-            JsTokenId tokenId = scanner.nextToken();
+            CommonTokenId tokenId = scanner.nextToken();
             LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsTokenId> token = null;
+            Token<CommonTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
             }

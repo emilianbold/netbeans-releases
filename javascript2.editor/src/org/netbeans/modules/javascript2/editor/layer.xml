@@ -48,7 +48,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.JsTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.CommonTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
@@ -123,7 +123,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.JsTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript.editing.lexer.CommonTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 

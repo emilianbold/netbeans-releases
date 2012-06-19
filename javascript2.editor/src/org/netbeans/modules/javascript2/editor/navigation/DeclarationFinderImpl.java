@@ -47,7 +47,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -77,10 +77,10 @@ public class DeclarationFinderImpl implements DeclarationFinder{
     @Override
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         OffsetRange result = OffsetRange.NONE;
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
         if (ts != null) {
             ts.move(caretOffset);
-            if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
+            if (ts.moveNext() && ts.token().id() == CommonTokenId.IDENTIFIER) {
                 result =  new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
         }

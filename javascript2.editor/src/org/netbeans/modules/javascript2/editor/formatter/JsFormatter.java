@@ -53,7 +53,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -92,7 +92,7 @@ public class JsFormatter implements Formatter {
 
                 FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
                 
-                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
                         compilationInfo.getSnapshot(), context.startOffset());
                 
                 FormatTokenStream tokenStream = FormatTokenStream.create(
@@ -549,8 +549,8 @@ public class JsFormatter implements Formatter {
         FormatToken nonVirtualNext = getNextNonVirtual(next);
         if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
             String nextText = nonVirtualNext.getText().toString();
-            if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)
-                    || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
+            if(CommonTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)
+                    || CommonTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
                 return false;
             }
         }
@@ -585,10 +585,10 @@ public class JsFormatter implements Formatter {
         }
 
         String text = result.getText().toString();
-        return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
-                || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
+        return !(CommonTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
+                || CommonTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
                 // this is just safeguard literal offsets should be fixed
-                || JsTokenId.OPERATOR_SEMICOLON.fixedText().equals(text));
+                || CommonTokenId.OPERATOR_SEMICOLON.fixedText().equals(text));
 
     }
 

@@ -47,14 +47,14 @@ package org.netbeans.modules.javascript2.editor;
 import javax.swing.text.BadLocationException;
 
 /**
- * Test for JsBracesMatcher
+ * Test for CommonBracesMatcher
  * 
  * @author Marek Slama
  *
  */
-public class JsBracesMatcherTest extends JsTestBase {
+public class CommonBracesMatcherTest extends JsTestBase {
     
-    public JsBracesMatcherTest(String testName) {
+    public CommonBracesMatcherTest(String testName) {
         super(testName);
     }
     

@@ -54,7 +54,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
@@ -65,11 +65,11 @@ import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     /** Tokens which indicate that we're within a regexp string */
-    // XXX What about JsTokenId.REGEXP_BEGIN?
-    private static final TokenId[] REGEXP_TOKENS = { JsTokenId.REGEXP, JsTokenId.REGEXP_END };
+    // XXX What about CommonTokenId.REGEXP_BEGIN?
+    private static final TokenId[] REGEXP_TOKENS = { CommonTokenId.REGEXP, CommonTokenId.REGEXP_END };
 
     /** Tokens which indicate that we're within a literal string */
-    private final static TokenId[] STRING_TOKENS = { JsTokenId.STRING, JsTokenId.STRING_END };
+    private final static TokenId[] STRING_TOKENS = { CommonTokenId.STRING, CommonTokenId.STRING_END };
 
     /** When != -1, this indicates that we previously adjusted the indentation of the
      * line to the given offset, and if it turns out that the user changes that token,
@@ -91,7 +91,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         // Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
         // return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
+        EditorOptions options = EditorOptions.get(CommonTokenId.JAVASCRIPT_MIME_TYPE);
         if (options != null) {
             return options.getMatchBrackets();
         }
@@ -116,10 +116,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         char ch = context.getText().charAt(0);
 
 //        if (REFLOW_COMMENTS) {
-//            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
+//            Token<?extends CommonTokenId> token = LexUtilities.getToken(doc, dotPos);
 //            if (token != null) {
 //                TokenId id = token.id();
-//                if (id == JsTokenId.LINE_COMMENT || id == JsTokenId.DOCUMENTATION) {
+//                if (id == CommonTokenId.LINE_COMMENT || id == CommonTokenId.DOCUMENTATION) {
 //                    new ReflowParagraphAction().reflowEditedComment(target);
 //                }
 //            }
@@ -133,7 +133,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 // Revert indentation iff the character at the insert position does
                 // not start a new token (e.g. the previous token that we reindented
                 // was not complete)
-                TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, dotPos);
+                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, dotPos);
 
                 if (ts != null) {
                     ts.move(dotPos);
@@ -151,13 +151,13 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         switch (ch) {
 //        case '#': {
 //            // Automatically insert #{^} when typing "#" in a quoted string or regexp
-//            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
+//            Token<?extends CommonTokenId> token = LexUtilities.getToken(doc, dotPos);
 //            if (token == null) {
 //                return true;
 //            }
 //            TokenId id = token.id();
 //
-//            if (id == JsTokenId.QUOTED_STRING_LITERAL || id == JsTokenId.REGEXP_LITERAL) {
+//            if (id == CommonTokenId.QUOTED_STRING_LITERAL || id == CommonTokenId.REGEXP_LITERAL) {
 //                document.insertString(dotPos+1, "{}", null);
 //                // Skip the "{" to place the caret between { and }
 //                caret.setDot(dotPos+2);
@@ -176,32 +176,32 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
 
 
-            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<? extends CommonTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return;
             }
             TokenId id = token.id();
 
-//            if (id == JsTokenId.ANY_OPERATOR) {
+//            if (id == CommonTokenId.ANY_OPERATOR) {
 //                int length = token.length();
 //                String s = token.text().toString();
 //                if ((length == 2) && "[]".equals(s) || "[]=".equals(s)) { // Special case
-//                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
+//                    skipClosingBracket(doc, caret, ch, CommonTokenId.BRACKET_RIGHT_BRACKET);
 //
 //                    return;
 //                }
 //            }
 
-            if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1)) ||
-                    (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET) ||
-                    (id == JsTokenId.BRACKET_LEFT_CURLY) || (id == JsTokenId.BRACKET_RIGHT_CURLY) ||
-                    (id == JsTokenId.BRACKET_LEFT_PAREN) || (id == JsTokenId.BRACKET_RIGHT_PAREN)) {
+            if (((id == CommonTokenId.IDENTIFIER) && (token.length() == 1)) ||
+                    (id == CommonTokenId.BRACKET_LEFT_BRACKET) || (id == CommonTokenId.BRACKET_RIGHT_BRACKET) ||
+                    (id == CommonTokenId.BRACKET_LEFT_CURLY) || (id == CommonTokenId.BRACKET_RIGHT_CURLY) ||
+                    (id == CommonTokenId.BRACKET_LEFT_PAREN) || (id == CommonTokenId.BRACKET_RIGHT_PAREN)) {
                 if (ch == ']') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
+                    skipClosingBracket(doc, caret, ch, CommonTokenId.BRACKET_RIGHT_BRACKET);
                 } else if (ch == ')') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_PAREN);
+                    skipClosingBracket(doc, caret, ch, CommonTokenId.BRACKET_RIGHT_PAREN);
                 } else if (ch == '}') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_CURLY);
+                    skipClosingBracket(doc, caret, ch, CommonTokenId.BRACKET_RIGHT_CURLY);
                 } else if ((ch == '[') || (ch == '(') || (ch == '{')) {
                     completeOpeningBracket(doc, dotPos, caret, ch);
                 }
@@ -209,9 +209,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
             // Reindent blocks (won't do anything if } is not at the beginning of a line
             if (ch == '}') {
-                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_CURLY, caret);
+                reindent(doc, dotPos, CommonTokenId.BRACKET_RIGHT_CURLY, caret);
             } else if (ch == ']') {
-                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_BRACKET, caret);
+                reindent(doc, dotPos, CommonTokenId.BRACKET_RIGHT_BRACKET, caret);
             }
         }
 
@@ -219,21 +219,21 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
 //        case 'e':
 //            // See if it's the end of an "else" or an "ensure" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.ELSE, caret);
-//            reindent(doc, dotPos, JsTokenId.ENSURE, caret);
-//            reindent(doc, dotPos, JsTokenId.RESCUE, caret);
+//            reindent(doc, dotPos, CommonTokenId.ELSE, caret);
+//            reindent(doc, dotPos, CommonTokenId.ENSURE, caret);
+//            reindent(doc, dotPos, CommonTokenId.RESCUE, caret);
 //
 //            break;
 //
 //        case 'f':
 //            // See if it's the end of an "else" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.ELSIF, caret);
+//            reindent(doc, dotPos, CommonTokenId.ELSIF, caret);
 //
 //            break;
 //
 //        case 'n':
 //            // See if it's the end of an "when" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.WHEN, caret);
+//            reindent(doc, dotPos, CommonTokenId.WHEN, caret);
 //
 //            break;
 
@@ -245,12 +245,12 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            TokenSequence<?extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            TokenSequence<? extends CommonTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
             if (ts != null) {
                 Token token = ts.token();
                 TokenId id = token.id();
 
-                if (id == JsTokenId.LINE_COMMENT) {
+                if (id == CommonTokenId.LINE_COMMENT) {
                     // Did you just type "//" - make sure this didn't turn into ///
                     // where typing the first "/" inserted "//" and the second "/" appended
                     // another "/" to make "///"
@@ -261,9 +261,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         return;
                     }
                 }
-                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
+                if (id == CommonTokenId.REGEXP_BEGIN || id == CommonTokenId.REGEXP_END) {
                     TokenId[] stringTokens = REGEXP_TOKENS;
-                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
+                    TokenId beginTokenId = CommonTokenId.REGEXP_BEGIN;
 
                     boolean inserted =
                         completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
@@ -315,8 +315,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
-                        if (ts != null && ts.token().id() != JsTokenId.STRING) { // Not inside strings!
+                        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        if (ts != null && ts.token().id() != CommonTokenId.STRING) { // Not inside strings!
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
                             if (selection.length() > 1 &&
@@ -342,7 +342,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
         }
 
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
 
         if (ts == null) {
             return false;
@@ -354,12 +354,12 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         }
 
-        Token<?extends JsTokenId> token = ts.token();
+        Token<? extends CommonTokenId> token = ts.token();
         TokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
 
-        if (ch == '*' && id == JsTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
+        if (ch == '*' && id == CommonTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
             // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
             // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
             // Remove the auto-matched /.
@@ -370,35 +370,35 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"' || ch == '\'') {
             stringTokens = STRING_TOKENS;
-            beginTokenId = JsTokenId.STRING_BEGIN;
-        } else if (id == JsTokenId.UNKNOWN) {
+            beginTokenId = CommonTokenId.STRING_BEGIN;
+        } else if (id == CommonTokenId.UNKNOWN) {
             //String text = token.text().toString();
 
             ts.movePrevious();
 
             TokenId prevId = ts.token().id();
 
-            if (prevId == JsTokenId.STRING_BEGIN) {
+            if (prevId == CommonTokenId.STRING_BEGIN) {
                 stringTokens = STRING_TOKENS;
                 beginTokenId = prevId;
-            } else if (prevId == JsTokenId.REGEXP_BEGIN) {
+            } else if (prevId == CommonTokenId.REGEXP_BEGIN) {
                 stringTokens = REGEXP_TOKENS;
-                beginTokenId = JsTokenId.REGEXP_BEGIN;
+                beginTokenId = CommonTokenId.REGEXP_BEGIN;
             }
-        } else if ((id == JsTokenId.STRING_BEGIN) &&
+        } else if ((id == CommonTokenId.STRING_BEGIN) &&
                 (caretOffset == (ts.offset() + 1))) {
             if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
                 stringTokens = STRING_TOKENS;
                 beginTokenId = id;
             }
-        } else if (((id == JsTokenId.STRING_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-                (id == JsTokenId.STRING_END)) {
+        } else if (((id == CommonTokenId.STRING_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
+                (id == CommonTokenId.STRING_END)) {
             stringTokens = STRING_TOKENS;
-            beginTokenId = JsTokenId.STRING_BEGIN;
-        } else if (((id == JsTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-                (id == JsTokenId.REGEXP_END)) {
+            beginTokenId = CommonTokenId.STRING_BEGIN;
+        } else if (((id == CommonTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
+                (id == CommonTokenId.REGEXP_END)) {
             stringTokens = REGEXP_TOKENS;
-            beginTokenId = JsTokenId.REGEXP_BEGIN;
+            beginTokenId = CommonTokenId.REGEXP_BEGIN;
         }
 
         if (stringTokens != null) {
@@ -427,7 +427,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
 
         if (ts != null) {
             ts.move(offset);
@@ -436,7 +436,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 return;
             }
 
-            Token<?extends JsTokenId> token = ts.token();
+            Token<? extends CommonTokenId> token = ts.token();
 
             if ((token.id() == id)) {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
@@ -455,10 +455,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
                 OffsetRange begin = OffsetRange.NONE;
 
-                if (id == JsTokenId.BRACKET_RIGHT_CURLY) {
-                    begin = LexUtilities.findBwd(doc, ts, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
-                } else if (id == JsTokenId.BRACKET_RIGHT_BRACKET) {
-                    begin = LexUtilities.findBwd(doc, ts, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET);
+                if (id == CommonTokenId.BRACKET_RIGHT_CURLY) {
+                    begin = LexUtilities.findBwd(doc, ts, CommonTokenId.BRACKET_LEFT_CURLY, CommonTokenId.BRACKET_RIGHT_CURLY);
+                } else if (id == CommonTokenId.BRACKET_RIGHT_BRACKET) {
+                    begin = LexUtilities.findBwd(doc, ts, CommonTokenId.BRACKET_LEFT_BRACKET, CommonTokenId.BRACKET_RIGHT_BRACKET);
                 }
 
                 if (begin != OffsetRange.NONE) {
@@ -509,7 +509,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         }
 
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, dotPos);
+        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, dotPos);
 
         if (ts == null) {
             return false;
@@ -521,8 +521,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         }
 
-        Token<?extends JsTokenId> token = ts.token();
-        Token<?extends JsTokenId> previousToken = null;
+        Token<? extends CommonTokenId> token = ts.token();
+        Token<? extends CommonTokenId> previousToken = null;
 
         if (ts.movePrevious()) {
             previousToken = ts.token();
@@ -533,15 +533,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         // eol - true if the caret is at the end of line (ignoring whitespaces)
         boolean eol = lastNonWhite < dotPos;
 
-        if ((token.id() == JsTokenId.BLOCK_COMMENT)
-                || (token.id() == JsTokenId.DOC_COMMENT)
-                || (token.id() == JsTokenId.LINE_COMMENT)) {
+        if ((token.id() == CommonTokenId.BLOCK_COMMENT)
+                || (token.id() == CommonTokenId.DOC_COMMENT)
+                || (token.id() == CommonTokenId.LINE_COMMENT)) {
             return false;
-        } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
+        } else if ((token.id() == CommonTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
             token = LexUtilities.getToken(doc, dotPos - 1);
 
-            if (token.id() == JsTokenId.LINE_COMMENT) {
+            if (token.id() == CommonTokenId.LINE_COMMENT) {
                 return false;
             }
         }
@@ -558,15 +558,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
         }
 
-        if ((id == JsTokenId.UNKNOWN) && (previousToken != null) &&
+        if ((id == CommonTokenId.UNKNOWN) && (previousToken != null) &&
                 (previousToken.id() == beginToken)) {
             insideString = true;
         }
 
-        if (id == JsTokenId.EOL && previousToken != null) {
+        if (id == CommonTokenId.EOL && previousToken != null) {
             if (previousToken.id() == beginToken) {
                 insideString = true;
-            } else if (previousToken.id() == JsTokenId.UNKNOWN) {
+            } else if (previousToken.id() == CommonTokenId.UNKNOWN) {
                 if (ts.movePrevious()) {
                     if (ts.token().id() == beginToken) {
                         insideString = true;
@@ -578,11 +578,11 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         if (!insideString) {
             // check if the caret is at the very end of the line and there
             // is an unterminated string literal
-            if ((token.id() == JsTokenId.WHITESPACE) && eol) {
+            if ((token.id() == CommonTokenId.WHITESPACE) && eol) {
                 if ((dotPos - 1) > 0) {
                     token = LexUtilities.getToken(doc, dotPos - 1);
                     // XXX TODO use language embedding to handle this
-                    insideString = (token.id() == JsTokenId.STRING);
+                    insideString = (token.id() == CommonTokenId.STRING);
                 }
             }
         }
@@ -709,7 +709,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         boolean skipClosingBracket = false; // by default do not remove
 
-        TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
 
         if (ts == null) {
             return false;
@@ -723,19 +723,19 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         }
 
-        Token<?extends JsTokenId> token = ts.token();
+        Token<? extends CommonTokenId> token = ts.token();
 
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (token.id() == bracketId)) {
             int bracketIntId = bracketId.ordinal();
             int leftBracketIntId =
-                (bracketIntId == JsTokenId.BRACKET_RIGHT_PAREN.ordinal()) ? JsTokenId.BRACKET_LEFT_PAREN.ordinal()
-                                                               : JsTokenId.BRACKET_LEFT_BRACKET.ordinal();
+                (bracketIntId == CommonTokenId.BRACKET_RIGHT_PAREN.ordinal()) ? CommonTokenId.BRACKET_LEFT_PAREN.ordinal()
+                                                               : CommonTokenId.BRACKET_LEFT_BRACKET.ordinal();
 
             // Skip all the brackets of the same type that follow the last one
             ts.moveNext();
 
-            Token<?extends JsTokenId> nextToken = ts.token();
+            Token<? extends CommonTokenId> nextToken = ts.token();
             boolean endOfJs = false;
             while ((nextToken != null) && (nextToken.id() == bracketId)) {
                 token = nextToken;
@@ -753,7 +753,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = 0; // balance of the brackets or parenthesis
-            Token<?extends JsTokenId> lastRBracket = token;
+            Token<? extends CommonTokenId> lastRBracket = token;
             if (!endOfJs) {
                 // move on the las bracket || parent
                 ts.movePrevious();
@@ -765,7 +765,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             while (!finished && (token != null)) {
                 int tokenIntId = token.id().ordinal();
 
-                if ((token.id() == JsTokenId.BRACKET_LEFT_PAREN) || (token.id() == JsTokenId.BRACKET_LEFT_BRACKET)) {
+                if ((token.id() == CommonTokenId.BRACKET_LEFT_PAREN) || (token.id() == CommonTokenId.BRACKET_LEFT_BRACKET)) {
                     if (tokenIntId == leftBracketIntId) {
                         bracketBalance++;
 
@@ -785,18 +785,18 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                             finished = true;
                         }
                     }
-                } else if ((token.id() == JsTokenId.BRACKET_RIGHT_PAREN) ||
-                        (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET)) {
+                } else if ((token.id() == CommonTokenId.BRACKET_RIGHT_PAREN) ||
+                        (token.id() == CommonTokenId.BRACKET_RIGHT_BRACKET)) {
                     if (tokenIntId == bracketIntId) {
                         bracketBalance--;
                     }
-                } else if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                } else if (token.id() == CommonTokenId.BRACKET_LEFT_CURLY) {
                     braceBalance++;
 
                     if (braceBalance > 0) { // stop on extra left brace
                         finished = true;
                     }
-                } else if (token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                } else if (token.id() == CommonTokenId.BRACKET_RIGHT_CURLY) {
                     braceBalance--;
                 }
 
@@ -808,7 +808,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
 
             if (bracketBalance != 0
-                    || (bracketId ==  JsTokenId.BRACKET_RIGHT_CURLY && braceBalance < 0)) { // not found matching bracket
+                    || (bracketId ==  CommonTokenId.BRACKET_RIGHT_CURLY && braceBalance < 0)) { // not found matching bracket
                                        // Remove the typed bracket as it's unmatched
                 skipClosingBracket = true;
             } else { // the bracket is matched
@@ -832,12 +832,12 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
                 while (!finished && (token != null)) {
                     //int tokenIntId = token.getTokenID().getNumericID();
-                    if ((token.id() == JsTokenId.BRACKET_LEFT_PAREN) || (token.id() == JsTokenId.BRACKET_LEFT_BRACKET)) {
+                    if ((token.id() == CommonTokenId.BRACKET_LEFT_PAREN) || (token.id() == CommonTokenId.BRACKET_LEFT_BRACKET)) {
                         if (token.id().ordinal() == leftBracketIntId) {
                             bracketBalance++;
                         }
-                    } else if ((token.id() == JsTokenId.BRACKET_RIGHT_PAREN) ||
-                            (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET)) {
+                    } else if ((token.id() == CommonTokenId.BRACKET_RIGHT_PAREN) ||
+                            (token.id() == CommonTokenId.BRACKET_RIGHT_BRACKET)) {
                         if (token.id().ordinal() == bracketIntId) {
                             bracketBalance--;
 
@@ -856,9 +856,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                                 finished = true;
                             }
                         }
-                    } else if (token.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                    } else if (token.id() == CommonTokenId.BRACKET_LEFT_CURLY) {
                         braceBalance++;
-                    } else if (token.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                    } else if (token.id() == CommonTokenId.BRACKET_RIGHT_CURLY) {
                         braceBalance--;
 
                         if (braceBalance < 0) { // stop on extra right brace
@@ -929,7 +929,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
     }
 
-    @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
+    @MimeRegistration(mimeType = CommonTokenId.JAVASCRIPT_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
     public static class Factory implements TypedTextInterceptor.Factory {
 
         @Override

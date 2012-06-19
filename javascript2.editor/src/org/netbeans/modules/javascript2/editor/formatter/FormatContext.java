@@ -53,7 +53,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -90,7 +90,7 @@ public final class FormatContext {
             regions.add(new Region(region.getStartOffset(), region.getEndOffset()));
         }
         
-        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath());
+        this.embedded = !CommonTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath());
         
         /*
          * What we do here is fix for case like this:
@@ -112,15 +112,15 @@ public final class FormatContext {
                 int endOffset = region.getOriginalEnd();
                 try {
                     int lineOffset = context.lineStartOffset(endOffset);
-                    TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
+                    TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
                         snapshot, region.getOriginalStart());
                     if (ts != null) {
                         int embeddedOffset = snapshot.getEmbeddedOffset(lineOffset);
                         if (embeddedOffset >= 0) {
                             ts.move(embeddedOffset);
                             if (ts.moveNext()) {
-                                Token<? extends JsTokenId> token = ts.token();
-                                if (token.id() == JsTokenId.WHITESPACE) {
+                                Token<? extends CommonTokenId> token = ts.token();
+                                if (token.id() == CommonTokenId.WHITESPACE) {
                                     region.setOriginalEnd(lineOffset);
                                 }
                             }

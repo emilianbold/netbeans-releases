@@ -8,7 +8,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %public
 %final
 %class JsonColoringLexer
-%type JsTokenId
+%type CommonTokenId
 %unicode
 %char
 
@@ -39,7 +39,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzLexicalState = state.zzLexicalState;
     }
 
-    public JsTokenId nextToken() throws java.io.IOException {
+    public CommonTokenId nextToken() throws java.io.IOException {
         return yylex();
     }
 
@@ -116,34 +116,34 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 <YYINITIAL> {
 
   /* boolean literals */
-  "true"                         { return JsTokenId.KEYWORD_TRUE; }
-  "false"                        { return JsTokenId.KEYWORD_FALSE; }
+  "true"                         { return CommonTokenId.KEYWORD_TRUE; }
+  "false"                        { return CommonTokenId.KEYWORD_FALSE; }
 
   /* null literal */
-  "null"                         { return JsTokenId.KEYWORD_NULL; }
+  "null"                         { return CommonTokenId.KEYWORD_NULL; }
 
   /* operators */
-  "{"                            { return JsTokenId.BRACKET_LEFT_CURLY; }
-  "}"                            { return JsTokenId.BRACKET_RIGHT_CURLY; }
-  "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
-  "]"                            { return JsTokenId.BRACKET_RIGHT_BRACKET; }
-  ","                            { return JsTokenId.OPERATOR_COMMA; }
-  ":"                            { return JsTokenId.OPERATOR_COLON; }
+  "{"                            { return CommonTokenId.BRACKET_LEFT_CURLY; }
+  "}"                            { return CommonTokenId.BRACKET_RIGHT_CURLY; }
+  "["                            { return CommonTokenId.BRACKET_LEFT_BRACKET; }
+  "]"                            { return CommonTokenId.BRACKET_RIGHT_BRACKET; }
+  ","                            { return CommonTokenId.OPERATOR_COMMA; }
+  ":"                            { return CommonTokenId.OPERATOR_COLON; }
   
   /* string literal */
   \"                             {
                                     yybegin(STRING);
-                                    return JsTokenId.STRING_BEGIN;
+                                    return CommonTokenId.STRING_BEGIN;
                                  }
 
   /* numeric literals */
-  {NumberLiteral}                { return JsTokenId.NUMBER; }
+  {NumberLiteral}                { return CommonTokenId.NUMBER; }
 
   /* whitespace */
-  {WhiteSpace}                   { return JsTokenId.WHITESPACE; }
+  {WhiteSpace}                   { return CommonTokenId.WHITESPACE; }
 
   /* whitespace */
-  {LineTerminator}               { return JsTokenId.EOL; }
+  {LineTerminator}               { return CommonTokenId.EOL; }
 
 }
 
@@ -152,7 +152,7 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
                                      yypushback(1);
                                      yybegin(STRINGEND);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.STRING;
+                                         return CommonTokenId.STRING;
                                      }
                                  }
 
@@ -167,7 +167,7 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return CommonTokenId.UNKNOWN;
                                      }
                                  }
 }
@@ -175,7 +175,7 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 <STRINGEND> {
   \"                             {
                                      yybegin(YYINITIAL);
-                                     return JsTokenId.STRING_END;
+                                     return CommonTokenId.STRING_END;
                                  }
 }
 
@@ -185,19 +185,19 @@ StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
                                      yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return JsTokenId.UNKNOWN;
+                                         return CommonTokenId.UNKNOWN;
                                      }
                                  }
 }
 
 /* error fallback */
-.|\n                             { return JsTokenId.UNKNOWN; }
+.|\n                             { return CommonTokenId.UNKNOWN; }
 <<EOF>>                          {
     if (input.readLength() > 0) {
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JsTokenId.UNKNOWN;
+        return CommonTokenId.UNKNOWN;
     } else {
         return null;
     }

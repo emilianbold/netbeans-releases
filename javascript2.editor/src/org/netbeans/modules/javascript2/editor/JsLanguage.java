@@ -45,7 +45,7 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
 import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
 import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
@@ -70,7 +70,7 @@ public class JsLanguage extends DefaultLanguageConfig {
     @MIMEResolver.ExtensionRegistration(
         extension={ "js", "sdoc" },
         displayName="#JsResolver",
-        mimeType=JsTokenId.JAVASCRIPT_MIME_TYPE,
+        mimeType=CommonTokenId.JAVASCRIPT_MIME_TYPE,
         position=190
     )
     @NbBundle.Messages("JsResolver=JavaScript Files")
@@ -78,7 +78,7 @@ public class JsLanguage extends DefaultLanguageConfig {
         iconBase = "org/netbeans/modules/javascript2/editor/resources/javascript.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "javascript.source",
-        mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE,
+        mimeType = CommonTokenId.JAVASCRIPT_MIME_TYPE,
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
@@ -92,7 +92,7 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public org.netbeans.api.lexer.Language getLexerLanguage() {
-        return JsTokenId.javascriptLanguage();
+        return CommonTokenId.javascriptLanguage();
     }
 
     @Override
