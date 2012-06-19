@@ -87,7 +87,7 @@ public final class LexUtilities {
 
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
-        TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an HTML file
@@ -95,7 +95,7 @@ public final class LexUtilities {
             List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
 
             for (TokenSequence t : list) {
-                if (t.language() == JsTokenId.language()) {
+                if (t.language() == JsTokenId.javascriptLanguage()) {
                     ts = t;
 
                     break;
@@ -106,7 +106,7 @@ public final class LexUtilities {
                 list = th.embeddedTokenSequences(offset, false);
 
                 for (TokenSequence t : list) {
-                    if (t.language() == JsTokenId.language()) {
+                    if (t.language() == JsTokenId.javascriptLanguage()) {
                         ts = t;
 
                         break;

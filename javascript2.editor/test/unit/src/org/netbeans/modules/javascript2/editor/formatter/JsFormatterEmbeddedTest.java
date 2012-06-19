@@ -68,7 +68,7 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
 
-        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), JsTokenId.language());
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), JsTokenId.javascriptLanguage());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
     }

@@ -31,6 +31,19 @@
                 </folder>
                 
             </folder>
+            <folder name="x-json">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.Bundle"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+            </folder>
 <!--            <folder name="javascript">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
 
@@ -248,9 +261,9 @@
                     </file>
                 </folder>            
             </folder>
-<!--            <folder name="x-json">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/javascript.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/javascript/editing/javascript.png"/>
+            <folder name="x-json">
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/javascript2/editor/resources/javascript.png"/>
                 <folder name="Actions">
                     <file name="CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -319,7 +332,7 @@
                         <attr name="position" intvalue="1500"/>
                     </file>
                 </folder>
-            </folder>-->
+            </folder>
         </folder>
     </folder>
 
@@ -333,14 +346,14 @@
                 <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.html"/>
             </file>
-<!--            <file name="json.json" url="jsontemplate.json">
+            <file name="json.json" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jsontemplate.json">
                 <attr name="position" intvalue="450"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/json.html"/>
-            </file>-->
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/json.html"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

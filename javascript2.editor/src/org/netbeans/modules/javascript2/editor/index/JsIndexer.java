@@ -49,7 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -62,8 +61,6 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -73,15 +70,8 @@ public class JsIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(JsIndexer.class.getName());
 
-    @MIMEResolver.ExtensionRegistration(
-        extension={ "js", "sdoc" },
-        displayName="#JsResolver",
-        mimeType=JsTokenId.JAVASCRIPT_MIME_TYPE,
-        position=190
-    )
-    @NbBundle.Messages("JsResolver=JavaScript Files")
     private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList("js", "sdoc");
-    
+
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
         LOG.log(Level.FINE, "Indexing: {0}, fullPath: {1}", new Object[]{indexable.getRelativePath(), result.getSnapshot().getSource().getFileObject().getPath()});

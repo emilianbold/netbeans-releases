@@ -39,19 +39,10 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
-import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
-import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
-import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
-import org.netbeans.modules.javascript2.editor.parser.JsParser;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
@@ -60,31 +51,31 @@ import org.openide.windows.TopComponent;
 
 /**
  *
- * @author Petr Pisl, Tor Norbye
+ * @author Petr Hejl
  */
 
-@LanguageRegistration(mimeType="text/javascript", useMultiview = true) //NOI18N
-@PathRecognizerRegistration(mimeTypes="text/javascript", libraryPathIds=ClassPathProviderImpl.BOOT_CP, binaryLibraryPathIds={})
-public class JsLanguage extends DefaultLanguageConfig {
+@LanguageRegistration(mimeType="text/x-json", useMultiview = true) //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/x-json", libraryPathIds=ClassPathProviderImpl.BOOT_CP, binaryLibraryPathIds={})
+public class JsonLanguage extends DefaultLanguageConfig {
 
     @MIMEResolver.ExtensionRegistration(
-        extension={ "js", "sdoc" },
-        displayName="#JsResolver",
-        mimeType=JsTokenId.JAVASCRIPT_MIME_TYPE,
-        position=190
+        extension={ "json" },
+        displayName="#JsonResolver",
+        mimeType=JsTokenId.JSON_MIME_TYPE,
+        position=200
     )
-    @NbBundle.Messages("JsResolver=JavaScript Files")
-    @MultiViewElement.Registration(displayName = "#LBL_JsEditorTab",
+    @NbBundle.Messages("JsonResolver=JSON Files")
+    @MultiViewElement.Registration(displayName = "#LBL_JsonEditorTab",
         iconBase = "org/netbeans/modules/javascript2/editor/resources/javascript.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-        preferredID = "javascript.source",
-        mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE,
+        preferredID = "json.source",
+        mimeType = JsTokenId.JSON_MIME_TYPE,
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
 
-    public JsLanguage() {
+    public JsonLanguage() {
         super();
         // has to be done here since JS hasn't its own project, also see issue #165915
         ClassPathProviderImpl.registerJsClassPathIfNeeded();
@@ -92,78 +83,78 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public org.netbeans.api.lexer.Language getLexerLanguage() {
-        return JsTokenId.javascriptLanguage();
+        return JsTokenId.jsonLanguage();
     }
 
     @Override
     public String getDisplayName() {
-        return "JavaScript"; //NOI18N
+        return "JSON"; //NOI18N
     }
 
-    @Override
-    public Parser getParser() {
-        return new JsParser();
-    }
+//    @Override
+//    public Parser getParser() {
+//        return new JsParser();
+//    }
 
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
+//    @Override
+//    public boolean hasStructureScanner() {
+//        return true;
+//    }
 
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new JsStructureScanner();
-    }
+//    @Override
+//    public StructureScanner getStructureScanner() {
+//        return new JsStructureScanner();
+//    }
 
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new JsSemanticAnalyzer();
-    }
+//    @Override
+//    public SemanticAnalyzer getSemanticAnalyzer() {
+//        return new JsSemanticAnalyzer();
+//    }
 
-    @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return new DeclarationFinderImpl();
-    }
+//    @Override
+//    public DeclarationFinder getDeclarationFinder() {
+//        return new DeclarationFinderImpl();
+//    }
 
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return true;
-    }
+//    @Override
+//    public boolean hasOccurrencesFinder() {
+//        return true;
+//    }
+//
+//    @Override
+//    public OccurrencesFinder getOccurrencesFinder() {
+//        return new OccurrencesFinderImpl();
+//    }
 
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return new OccurrencesFinderImpl();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new JsCodeCompletion();
-    }
-
-    @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        return new JsIndexer.Factory();
-    }
+//    @Override
+//    public CodeCompletionHandler getCompletionHandler() {
+//        return new JsCodeCompletion();
+//    }
+//
+//    @Override
+//    public EmbeddingIndexerFactory getIndexerFactory() {
+//        return new JsIndexer.Factory();
+//    }
 
     @Override
     public String getLineCommentPrefix() {
         return "//";    //NOI18N
     }
 
-    @Override
-    public Formatter getFormatter() {
-        return new JsFormatter();
-    }
+//    @Override
+//    public Formatter getFormatter() {
+//        return new JsFormatter();
+//    }
 
-    @Override
-    public boolean hasFormatter() {
-        return true;
-    }
+//    @Override
+//    public boolean hasFormatter() {
+//        return true;
+//    }
 
-    @Override
-    public InstantRenamer getInstantRenamer() {
-        return new JsInstantRenamer();
-    }
+//    @Override
+//    public InstantRenamer getInstantRenamer() {
+//        return new JsInstantRenamer();
+//    }
 
-    
+
 }

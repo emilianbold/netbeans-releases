@@ -72,7 +72,7 @@ public class JsDocParser {
     public static Map<Integer, JsDocBlock> parse(Snapshot snapshot) {
         Map<Integer, JsDocBlock> blocks = new HashMap<Integer, JsDocBlock>();
 
-        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.language());
+        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
         if (tokenSequence == null) {
             return blocks;
         }

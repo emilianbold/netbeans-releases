@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
 
@@ -145,7 +144,7 @@ public class JsStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
          
         TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
-        TokenSequence ts = th.tokenSequence(JsTokenId.language());
+        TokenSequence ts = th.tokenSequence(JsTokenId.javascriptLanguage());
         List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
         List<FoldingItem> stack = new ArrayList<FoldingItem>();
 

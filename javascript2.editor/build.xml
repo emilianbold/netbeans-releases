@@ -24,15 +24,24 @@
     </target>
 
     <!-- JavaScript section - generating JavaScript lexer -->
-    <target name="-gen-lexer" depends="-prepare-jflex">
+    <target name="-gen-js-lexer" depends="-prepare-jflex">
         <jflex file="tools/JavaScriptColoringScanner.flex" destdir="src" nobak="true"/>
     </target>
-    <target name="-patch-lexer">
-        <patch patchfile="tools/lexer.patch"
+    <target name="-patch-js-lexer">
+        <patch patchfile="tools/lexer-js.patch"
                dir="src/org/netbeans/modules/javascript2/editor/lexer"/>
     </target>
-    <target name="gen-lexer" depends="-gen-lexer,-patch-lexer"/>
+    <target name="gen-js-lexer" depends="-gen-js-lexer,-patch-js-lexer"/>
 
+    <!-- JSON section - generating JSON lexer -->
+    <target name="-gen-json-lexer" depends="-prepare-jflex">
+        <jflex file="tools/JsonColoringScanner.flex" destdir="src" nobak="true"/>
+    </target>
+    <target name="-patch-json-lexer">
+        <patch patchfile="tools/lexer-json.patch"
+               dir="src/org/netbeans/modules/javascript2/editor/lexer"/>
+    </target>
+    <target name="gen-json-lexer" depends="-gen-json-lexer,-patch-json-lexer"/>
 
     <!-- JSDoc section - generating JSDoc lexer -->
     <target name="-gen-jsdoc-lexer" depends="-prepare-jflex">

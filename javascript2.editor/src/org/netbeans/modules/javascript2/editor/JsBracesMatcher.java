@@ -72,14 +72,17 @@ public class JsBracesMatcher implements BracesMatcher {
 
     private final MatcherContext context;
 
+    private final Language<JsTokenId> language;
+
     private int originOffset;
     private char originChar;
     private char matchingChar;
     private boolean backward;
     private List<TokenSequence<?>> sequences;
 
-    public JsBracesMatcher (MatcherContext context) {
+    public JsBracesMatcher(MatcherContext context, Language<JsTokenId> language) {
         this.context = context;
+        this.language = language;
     }
 
     @Override
@@ -100,7 +103,7 @@ public class JsBracesMatcher implements BracesMatcher {
                 backward = origin[2] < 0;
 
                 TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-                sequences = getEmbeddedTokenSequences(th, originOffset, backward, JsTokenId.language());
+                sequences = getEmbeddedTokenSequences(th, originOffset, backward, language);
 
                 if (!sequences.isEmpty()) {
                     // Check special tokens
@@ -199,7 +202,17 @@ public class JsBracesMatcher implements BracesMatcher {
 
         @Override
         public BracesMatcher createMatcher(MatcherContext context) {
-            return new JsBracesMatcher(context);
+            return new JsBracesMatcher(context, JsTokenId.javascriptLanguage());
+        }
+
+    }
+
+    @MimeRegistration(mimeType = JsTokenId.JSON_MIME_TYPE, service = BracesMatcherFactory.class, position=0)
+    public static class JsonBracesMatcherFactory implements BracesMatcherFactory {
+
+        @Override
+        public BracesMatcher createMatcher(MatcherContext context) {
+            return new JsBracesMatcher(context, JsTokenId.jsonLanguage());
         }
 
     }
