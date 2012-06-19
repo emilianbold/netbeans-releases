@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -60,6 +61,7 @@ public class FeatureOnDemandWizardIteratorTest extends NbTestCase {
         return 10000;
     }
     
+    @RandomlyFails  
     public void testIteratorCreatesUI() throws Exception {
         assertFalse("No EDT", EventQueue.isDispatchThread());
         

@@ -64,6 +64,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -151,6 +152,7 @@ public class FeaturesOffDemandWithDepsTest extends NbTestCase implements Propert
         assertEquals("Empty", 0, OpenProjects.getDefault().getOpenProjects().length);
     }
 
+    @RandomlyFails
     public void testFoDModuleFilesAreAnnotatedWithAttributes() throws Exception {
         FileObject sub = FileUtil.getConfigFile("Modules/org-netbeans-modules-java-kit.xml");
         assertNotNull("Module config file found", sub);
