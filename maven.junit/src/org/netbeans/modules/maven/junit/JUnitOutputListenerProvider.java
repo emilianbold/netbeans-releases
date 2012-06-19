@@ -52,6 +52,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.jdom.Document;
@@ -192,7 +195,21 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                             public @Override
                             boolean enabled(RerunType type) {
                                 //TODO debug doesn't property update debug port in runconfig..
-                                return (RerunType.ALL.equals(type) || RerunType.CUSTOM.equals(type)) && fType.equals(TestSession.SessionType.TEST);
+                                if (fType.equals(TestSession.SessionType.TEST)) {
+                                    if (RerunType.ALL.equals(type)) {
+                                        return true;
+                                    }
+                                    if (RerunType.CUSTOM.equals(type)) {
+                                        if (usingTestNG(config.getMavenProject())) { //#214334 test for testng has to come first, as itself depends on junit
+                                            return usingSurefire28(config.getMavenProject());
+                                        } 
+                                        else 
+                                        if (usingJUnit4(config.getMavenProject())) { //#214334
+                                            return usingSurefire213(config.getMavenProject());
+                                        } 
+                                    }
+                                }
+                                return false;
                             }
 
                             public @Override
@@ -210,6 +227,37 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             }
         }
     }
+    
+    private boolean usingSurefire213(MavenProject prj) {
+        String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.13")) >= 0;
+    }
+    
+    private boolean usingSurefire28(MavenProject prj) {
+        String v = PluginPropertyUtils.getPluginVersion(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE);
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("2.8")) >= 0;
+    } 
+    
+     private boolean usingTestNG(MavenProject prj) {
+        for (Artifact a : prj.getArtifacts()) {
+            if ("org.testng".equals(a.getGroupId()) && "testng".equals(a.getArtifactId())) {
+                return true;
+            }
+        }
+        return false;
+    }   
+
+    private boolean usingJUnit4(MavenProject prj) { // SUREFIRE-724
+        for (Artifact a : prj.getArtifacts()) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
+                String version = a.getVersion();
+                if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }    
 
     public @Override void sequenceEnd(String sequenceId, OutputVisitor visitor) {
         if (session == null) {

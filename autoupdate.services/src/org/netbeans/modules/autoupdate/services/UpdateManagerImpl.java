@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -88,6 +88,7 @@ public class UpdateManagerImpl extends Object {
         synchronized(UpdateManagerImpl.Cache.class) {
             cacheReference = null;
             source2UpdateUnitProvider = null;
+            Utilities.writeFirstClassModule(null);
         }
     }    
     
@@ -118,7 +119,7 @@ public class UpdateManagerImpl extends Object {
     }
     
     public Collection<ModuleInfo> getInstalledProviders (String token) {
-        Collection<ModuleInfo> res = null;
+        Collection<ModuleInfo> res;
         final Cache c = getCache ();
         Collection<ModuleInfo> providers = c.createMapToken2InstalledProviders ().get (token);
         if (providers == null || providers.isEmpty ()) {
@@ -134,7 +135,7 @@ public class UpdateManagerImpl extends Object {
     }
             
     public Collection<ModuleInfo> getAvailableProviders (String token) {
-        Collection<ModuleInfo> res = null;
+        Collection<ModuleInfo> res;
         final Cache c = getCache ();
         Collection<ModuleInfo> providers = c.createMapToken2AvailableProviders ().get (token);
         if (providers == null || providers.isEmpty ()) {
