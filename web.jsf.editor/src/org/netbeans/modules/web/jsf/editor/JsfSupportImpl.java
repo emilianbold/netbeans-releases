@@ -41,20 +41,16 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import javax.swing.text.Document;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
@@ -137,8 +133,7 @@ public class JsfSupportImpl implements JsfSupport {
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
 
-        ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm != null ? getFileObject(wm) : project.getProjectDirectory());
-        webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+        webBeansModel = new MetaModelSupport(project).getMetaModel();
 
         //init lookup
         //TODO do it lazy so it creates the web beans model lazily once looked up
