@@ -1310,6 +1310,16 @@ public class Utilities {
         storeKeyStore (ks);
     }
 
+    public static void writeFirstClassModule(String moduleCodeName) {
+        if (moduleCodeName == null) {
+            getPreferences().put(PLUGIN_MANAGER_FIRST_CLASS_MODULES, "");
+            return ;
+        }
+        String names = getPreferences().get(PLUGIN_MANAGER_FIRST_CLASS_MODULES, "");
+        names = names.isEmpty() ? moduleCodeName : names + "," + moduleCodeName;
+        getPreferences().put(PLUGIN_MANAGER_FIRST_CLASS_MODULES, names);
+    }
+
     private static File getCacheDirectory () {
         return Places.getCacheSubdirectory("catalogcache");
     }
