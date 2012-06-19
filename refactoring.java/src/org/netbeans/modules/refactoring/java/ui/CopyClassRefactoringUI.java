@@ -224,6 +224,10 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
             }
         }
         
+        if(info == null) {
+            return new CopyClassRefactoringUI(handles[0].getFileObject(), tar);
+        }
+        
         TreePathHandle selectedElement = handles[0];
         Element e = selectedElement.resolveElement(info);
         if (e == null) {

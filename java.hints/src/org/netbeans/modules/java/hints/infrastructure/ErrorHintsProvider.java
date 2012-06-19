@@ -326,7 +326,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.err.cant.resolve",
             "compiler.err.cant.resolve.location",
             "compiler.err.cant.resolve.location.args",
-            "compiler.err.doesnt.exist"
+            "compiler.err.doesnt.exist",
+            "compiler.err.type.error"
     ));
     
     private static final Set<String> UNDERLINE_IDENTIFIER = new HashSet<String>(Arrays.asList(

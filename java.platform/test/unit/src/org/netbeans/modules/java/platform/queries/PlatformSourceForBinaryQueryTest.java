@@ -45,11 +45,25 @@
 package org.netbeans.modules.java.platform.queries;
 
 import java.io.File;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.platform.TestJavaPlatformProvider;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Utilities;
 
 /**
  * @author Tomas Zezula
@@ -63,6 +77,9 @@ public class PlatformSourceForBinaryQueryTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockServices.setServices(
+            PlatformSourceForBinaryQuery.class,
+            TestJavaPlatformProvider.class);
     }
 
     public void testUnregisteredPlatform() throws Exception {
@@ -90,8 +107,145 @@ public class PlatformSourceForBinaryQueryTest extends NbTestCase {
         assertNull(result);
     }
 
+    public void testTwoPlatformsoverSameSDKSourcesChange() throws Exception {
+        final File binDir = new File(getWorkDir(),"boot");  //NOI18N
+        binDir.mkdir();
+        final File jdocFile1 = new File(getWorkDir(),"src1");   //NOI18N
+        jdocFile1.mkdir();
+        final File jdocFile2 = new File(getWorkDir(),"src2");  //NOI18N
+        jdocFile2.mkdir();
+        final TestJavaPlatformProvider provider = TestJavaPlatformProvider.getDefault();
+        provider.reset();
+        final URL binRoot = Utilities.toURI(binDir).toURL();
+        final ClassPath bootCp = ClassPathSupport.createClassPath(binRoot);
+        final ClassPath src1 = ClassPathSupport.createClassPath(Utilities.toURI(jdocFile1).toURL());
+        final ClassPath src2 = ClassPathSupport.createClassPath(Utilities.toURI(jdocFile2).toURL());
+        final TestJavaPlatform platform1 = new TestJavaPlatform("platform1", bootCp);   //NOI18N
+        final TestJavaPlatform platform2 = new TestJavaPlatform("platform2", bootCp);   //NOI18N
+        platform2.setSources(src2);
+        provider.addPlatform(platform1);
+        provider.addPlatform(platform2);
+
+        final SourceForBinaryQuery.Result result1 = SourceForBinaryQuery.findSourceRoots(binRoot);
+        assertEquals(Arrays.asList(src2.getRoots()), Arrays.asList(result1.getRoots()));
+
+        platform1.setSources(src1);
+        assertEquals(Arrays.asList(src1.getRoots()), Arrays.asList(result1.getRoots()));
+
+        final SourceForBinaryQuery.Result result2 = SourceForBinaryQuery.findSourceRoots(binRoot);
+        assertEquals(Arrays.asList(src1.getRoots()), Arrays.asList(result2.getRoots()));
+
+        platform1.setSources(ClassPath.EMPTY);
+        assertEquals(Arrays.asList(src2.getRoots()), Arrays.asList(result1.getRoots()));
+        assertEquals(Arrays.asList(src2.getRoots()), Arrays.asList(result2.getRoots()));
+    }
+
+    public void testTwoPlatformsoverSameSDKPlatformChange() throws Exception {
+        final File binDir = new File(getWorkDir(),"boot");  //NOI18N
+        binDir.mkdir();
+        final File jdocFile1 = new File(getWorkDir(),"src1");   //NOI18N
+        jdocFile1.mkdir();
+        final File jdocFile2 = new File(getWorkDir(),"src2");  //NOI18N
+        jdocFile2.mkdir();
+        final TestJavaPlatformProvider provider = TestJavaPlatformProvider.getDefault();
+        provider.reset();
+        final URL binRoot = Utilities.toURI(binDir).toURL();
+        final ClassPath bootCp = ClassPathSupport.createClassPath(binRoot);
+        final ClassPath src1 = ClassPathSupport.createClassPath(Utilities.toURI(jdocFile1).toURL());
+        final ClassPath src2 = ClassPathSupport.createClassPath(Utilities.toURI(jdocFile2).toURL());
+        final TestJavaPlatform platform1 = new TestJavaPlatform("platform1", bootCp);   //NOI18N
+        final TestJavaPlatform platform2 = new TestJavaPlatform("platform2", bootCp);   //NOI18N
+        platform1.setSources(src1);
+        platform2.setSources(src2);
+        provider.addPlatform(platform1);
+        provider.addPlatform(platform2);
+
+        final SourceForBinaryQuery.Result result1 = SourceForBinaryQuery.findSourceRoots(binRoot);
+        assertEquals(Arrays.asList(src1.getRoots()), Arrays.asList(result1.getRoots()));
+
+        provider.removePlatform(platform1);
+        assertEquals(Arrays.asList(src2.getRoots()), Arrays.asList(result1.getRoots()));
+
+        final SourceForBinaryQuery.Result result2 = SourceForBinaryQuery.findSourceRoots(binRoot);
+        assertEquals(Arrays.asList(src2.getRoots()), Arrays.asList(result2.getRoots()));
+
+        provider.insertPlatform(platform2, platform1);
+        assertEquals(Arrays.asList(src1.getRoots()), Arrays.asList(result1.getRoots()));
+        assertEquals(Arrays.asList(src1.getRoots()), Arrays.asList(result2.getRoots()));
+    }
+    
+
     private static FileObject createSrcZip (FileObject pf) throws Exception {
         return TestFileUtils.writeZipFile(pf, "src.zip", "Test.java:class Test {}");
+    }
+
+    private static class TestJavaPlatform extends JavaPlatform {
+
+        private final String name;
+        private final ClassPath boot;
+        private volatile ClassPath sources;
+
+        TestJavaPlatform(final String name, final ClassPath boot) {
+            this.name = name;
+            this.boot = boot;
+            this.sources = ClassPath.EMPTY;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return name;
+        }
+
+        @Override
+        public Map<String, String> getProperties() {
+            return Collections.<String,String>emptyMap();
+        }
+
+        @Override
+        public ClassPath getBootstrapLibraries() {
+            return boot;
+        }
+
+        @Override
+        public ClassPath getStandardLibraries() {
+            return ClassPath.EMPTY;
+        }
+
+        @Override
+        public String getVendor() {
+            return "Oracle";    //NOI18N
+        }
+
+        @Override
+        public Specification getSpecification() {
+            return new Specification("j2se", new SpecificationVersion("1,5"));
+        }
+
+        @Override
+        public Collection<FileObject> getInstallFolders() {
+            return Collections.<FileObject>emptySet();
+        }
+
+        @Override
+        public FileObject findTool(String toolName) {
+            return null;
+        }
+
+        @Override
+        public ClassPath getSourceFolders() {
+            return sources;
+        }
+
+        @Override
+        public List<URL> getJavadocFolders() {
+            return Collections.<URL>emptyList();
+        }
+
+        void setSources(final ClassPath cp) {
+            sources = cp;
+            firePropertyChange(PROP_SOURCE_FOLDER, null, null);
+        }
+
     }
 
 }

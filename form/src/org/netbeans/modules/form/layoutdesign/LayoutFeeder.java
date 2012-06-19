@@ -356,7 +356,9 @@ class LayoutFeeder implements LayoutConstants {
                             inclusion1.newSubGroup = true; // expanding in parallel
                         } // opposite case (from parallel to sequential combination) is strange here
                     } else if (origP.isParallel() && foundP.isSequential()) {
-                        if (originalPos1.neighbor != null && foundP.isParentOf(origP) && LayoutUtils.contentOverlap(addingInterval, originalPos1.neighbor, dim)) {
+                        if (originalPos1.neighbor != null && foundP.isParentOf(origP)
+                                && LayoutUtils.contentOverlap(addingInterval, originalPos1.neighbor, dim)
+                                && !LayoutUtils.contentOverlap(addingInterval, originalPos1.neighbor, dim^1)) {
                             inclusion1.neighbor = null; // expanding in parallel
                         } else if (originalPos1.neighbor == null && origP.isParentOf(foundP) && !found.newSubGroup) {
                             inclusion1.parent = foundP; // reducing to sequence
