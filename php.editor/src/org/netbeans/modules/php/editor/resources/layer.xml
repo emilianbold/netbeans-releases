@@ -94,11 +94,11 @@
                     </file>
                 </folder>
                 <folder name="RefactoringActions">
-		    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
-			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
-			<attr name="position" intvalue="430"/>
-		    </file>
-		</folder>
+                    <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.instance"/>
+                        <attr name="position" intvalue="430"/>
+                    </file>
+                </folder>
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
@@ -141,9 +141,9 @@
                         </file>
                     </folder>
                     <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
-			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-			<attr name="position" intvalue="680"/>
-		    </file>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="680"/>
+                    </file>
                     <file name="fix-uses">
                         <attr name="position" intvalue="880"/>
                     </file>
@@ -213,7 +213,7 @@
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
-			<file name="Alignment.instance">
+                        <file name="Alignment.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtAlignment.getController"/>
                             <attr name="position" intvalue="200"/>
@@ -224,25 +224,25 @@
                             <attr name="position" intvalue="300"/>
                         </file>
                         <file name="BlankLines.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtBlankLines.getController"/>
-                          <attr name="position" intvalue="500"/>
-                      </file>
-                      <file name="Spaces.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtSpaces.getController"/>
-                          <attr name="position" intvalue="700"/>
-                      </file>
-		      <file name="Wrapping.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtWrapping.getController"/>
-                          <attr name="position" intvalue="750"/>
-                      </file>
-                      <file name="Uses.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtUses.getController"/>
-                          <attr name="position" intvalue="850"/>
-                      </file>
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtBlankLines.getController"/>
+                            <attr name="position" intvalue="500"/>
+                        </file>
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtSpaces.getController"/>
+                            <attr name="position" intvalue="700"/>
+                        </file>
+                        <file name="Wrapping.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtWrapping.getController"/>
+                            <attr name="position" intvalue="750"/>
+                        </file>
+                        <file name="Uses.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtUses.getController"/>
+                            <attr name="position" intvalue="850"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
