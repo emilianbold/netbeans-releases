@@ -568,14 +568,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
             debugLog("Init view 3="+(System.currentTimeMillis() - start) + " ms"); // NOI18N
         }
         
-        // Shows main window
-        hierarchy.getMainWindow().setVisible(true);
-        
         if(wsa.getEditorAreaState() == Constants.EDITOR_AREA_JOINED) {
             hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateJoined());
         } else {
             hierarchy.getMainWindow().setExtendedState(wsa.getMainWindowFrameStateSeparated());
         }
+
+        // Shows main window
+        hierarchy.getMainWindow().setVisible(true);
         
         hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
 
