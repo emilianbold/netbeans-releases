@@ -65,6 +65,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.openide.util.Enumerations;
+import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
 
 /** This is the base for all implementations of file objects on a filesystem.
@@ -134,6 +135,9 @@ public abstract class FileObject extends Object implements Serializable {
     public FileObject copy(FileObject target, String name, String ext)
     throws IOException {
         if (isFolder()) {
+            if (FileUtil.isParentOf(this, target)) {
+                throw new FSException(NbBundle.getMessage(FileObject.class, "EXC_OperateChild", this, target)); // NOI18N
+            }
             FileObject peer = target.createFolder(name);
             FileUtil.copyAttributes(this, peer);
             for (FileObject fo : getChildren()) {
