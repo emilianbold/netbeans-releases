@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Map.Entry;
 import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -1405,7 +1406,7 @@ class OccurenceBuilder {
                 PhpDocTypeTagInfo nodeInfo = entry.getKey();
                 final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 final String name = nodeInfo.getName();
-                if (name != null && !name.trim().isEmpty() && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName())
+                if (StringUtils.hasText(name) && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName())
                         && NameKind.exact(qualifiedName).matchesName(phpElement)) {
                     if (qualifiedName.getKind().isUnqualified()) {
                         occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
