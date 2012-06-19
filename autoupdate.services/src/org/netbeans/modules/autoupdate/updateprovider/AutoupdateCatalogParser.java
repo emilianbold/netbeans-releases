@@ -554,6 +554,10 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             isEager = Boolean.parseBoolean (eager);
             isAutoload = Boolean.parseBoolean (autoload);
             isPreferredUpdate = Boolean.parseBoolean(preferred);
+            
+            if (isPreferredUpdate) {
+                Utilities.writeFirstClassModule(moduleCodeName);
+            }
                         
             String licName = module.getValue (MODULE_ATTR_LICENSE);
             lic = UpdateLicense.createUpdateLicense (licName, null);
