@@ -65,13 +65,10 @@ public class CodeGenerationUtils {
         Collection<CsmParameter> params = fun.getParameters();
         int i = 0;
         for (CsmParameter param : params) {
-            String paramName = param.getName().toString();
-            String paramType = param.getType().getText().toString();
             if (i != 0) {
                 functionDecl.append(", "); // NOI18N
             }
-            functionDecl.append(paramType) // NOI18N
-                    .append(((paramName != null && !paramName.isEmpty()) ? " " + paramName : "")); // NOI18N
+            functionDecl.append(param.getText().toString()); // NOI18N
             i++;
         }
         functionDecl.append(");"); // NOI18N
@@ -79,14 +76,22 @@ public class CodeGenerationUtils {
     }
 
     public static String generateParameterDeclaration(CsmParameter param, int paramNumber) {
-        String paramName = param.getName().toString();
-        String paramType = param.getType().getText().toString();
         StringBuilder paramDecl = new StringBuilder(""); // NOI18N
-        paramDecl.append(paramType) // NOI18N
-                .append(" ") // NOI18N
-                .append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + paramNumber)) // NOI18N
+        paramDecl.append(generateCanonicalParameterTypeAndName(param, paramNumber))
                 .append(";"); // NOI18N
         return paramDecl.toString();
+    }
+    
+    private static String generateCanonicalParameterTypeAndName(CsmParameter param, int paramNumber) {
+        String paramName = param.getName().toString();
+        if(paramName == null || paramName.isEmpty()) {
+            paramName = "p" + paramNumber; // NOI18N
+        }
+        StringBuilder paramTypeAndName = new StringBuilder(""); // NOI18N
+        String paramType = param.getType().getCanonicalText().toString();
+        paramTypeAndName.append(paramType) // NOI18N
+                .append(" ").append(paramName); // NOI18N
+        return paramTypeAndName.toString();
     }
 
     public static String generateFunctionCall(CsmFunction fun) {
