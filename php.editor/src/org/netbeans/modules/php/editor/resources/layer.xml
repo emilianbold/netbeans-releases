@@ -144,6 +144,9 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
                         <attr name="position" intvalue="680"/>
                     </file>
+                    <file name="generate-code">
+                        <attr name="position" intvalue="780"/>
+                    </file>
                     <file name="fix-uses">
                         <attr name="position" intvalue="880"/>
                     </file>
