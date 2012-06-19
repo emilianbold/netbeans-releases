@@ -53,6 +53,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
@@ -758,6 +759,10 @@ public final class DocumentViewOp
         if (newDefaultColoring != null) {
             defaultColoring = newDefaultColoring;
             renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
+        } else {
+            Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+            renderingHints = desktopHints;
+
         }
         Color textLimitLineColorOrig = textLimitLineColor;
         AttributeSet textLimitLineColoring = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
