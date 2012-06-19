@@ -41,11 +41,17 @@ package org.netbeans.installer.products.nb.javase;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaFXUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -106,5 +112,69 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                         e);
             }
         }
+        
+        // register JavaFX if installed
+        final Product product = getProduct();
+        File location = getProduct().getInstallationLocation();        
+        File sdkLocation = getInstalledFXSDKLocation(product);
+        File runtimeLocation = getInstalledFXRuntimeLocation(product);
+        
+        try {
+            if (location != null && sdkLocation != null && runtimeLocation != null) {
+                registerJavaFX(location, sdkLocation, runtimeLocation);
+            }
+        } catch (IOException ex) {
+            LogManager.log("... cannot execute commad to register JavaFX", ex);
+        }
+    }
+    
+    private boolean registerJavaFX(File nbLocation, File sdkLocation, File reLocation) throws IOException {
+        File javaExe = JavaUtils.getExecutable(new File(System.getProperty("java.home")));
+        String [] cp = {
+            "platform/core/core.jar",
+            "platform/lib/boot.jar",
+            "platform/lib/org-openide-modules.jar",
+            "platform/core/org-openide-filesystems.jar",
+            "platform/lib/org-openide-util.jar",
+            "platform/lib/org-openide-util-lookup.jar",
+            "javafx/modules/org-netbeans-modules-javafx2-platform.jar"
+        };
+        for(String c : cp) {
+            File f = new File(nbLocation, c);
+            if(!FileUtils.exists(f)) {
+                LogManager.log("... cannot find jar required for JavaFX integration: " + f);
+                return false;
+            }
+        }
+        String mainClass = "org.netbeans.modules.javafx2.platform.registration.AutomaticRegistration";
+        List <String> commands = new ArrayList <String> ();
+        File nbCluster = new File(nbLocation, "nb");
+        commands.add(javaExe.getAbsolutePath());
+        commands.add("-cp");
+        commands.add(StringUtils.asString(cp, File.pathSeparator));
+        commands.add(mainClass);        
+        commands.add(nbCluster.getAbsolutePath());     
+        commands.add(sdkLocation.getAbsolutePath());
+        commands.add(reLocation.getAbsolutePath());
+        
+        return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
+    }
+    
+    private File getInstalledFXSDKLocation (Product product) {
+        String sdkPath = JavaFXUtils.getJavaFXSDKInstallationPath(product.getPlatforms().get(0));
+        File sdkLocation = null;
+        if (sdkPath != null) {
+            sdkLocation = new File(sdkPath);
+        }
+        return sdkLocation;
+    }
+    
+    private File getInstalledFXRuntimeLocation (Product product) {
+        String runtimePath = JavaFXUtils.getJavaFXRuntimeInstallationPath(product.getPlatforms().get(0));
+        File runtimeLocation = null;
+        if (runtimePath != null) {
+            runtimeLocation = new File(runtimePath);
+        }
+        return runtimeLocation;
     }
 }
