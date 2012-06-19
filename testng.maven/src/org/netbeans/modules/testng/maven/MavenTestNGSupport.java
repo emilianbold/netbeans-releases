@@ -52,6 +52,10 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.netbeans.modules.testng.spi.TestConfig;
 import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
@@ -59,6 +63,7 @@ import org.netbeans.modules.testng.spi.XMLSuiteSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -90,10 +95,29 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
         ClassPath cp = ClassPath.getClassPath(createdFile, ClassPath.COMPILE);
         FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
         if (ng == null) {
-            Project p = FileOwnerQuery.getOwner(createdFile);
+            final Project p = FileOwnerQuery.getOwner(createdFile);
             FileObject pom = p.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            ModelUtils.addDependency(pom, "org.testng", "testng", "6.5.2", null, "test", null, true);
+            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public @Override
+                void performOperation(POMModel model) {
+                    String groupID = "org.testng"; //NOI18N
+                    String artifactID = "testng"; //NOI18N
+                    if (!ModelUtils.hasModelDependency(model, groupID, artifactID)) {
+                        Dependency dep = ModelUtils.checkModelDependency(model, groupID, artifactID, true);
+                        dep.setVersion("6.5.2"); //NOI18N
+                        dep.setScope("test"); //NOI18N
+                    }
+                }
+            };
+            Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
             MavenModelUtils.addProfile(pom, "target/nb-private/testng-suite.xml"); //NOI18N
+            RequestProcessor RP = new RequestProcessor("Configure TestNG project task", 1, true); //NOI18N
+            RP.post(new Runnable() {
+
+                public void run() {
+                    p.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(true);
+                }
+            });
         }
     }
 
