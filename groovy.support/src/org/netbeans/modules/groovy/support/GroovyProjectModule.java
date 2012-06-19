@@ -47,6 +47,7 @@ import javax.swing.Action;
 import static org.netbeans.modules.groovy.support.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -68,7 +69,7 @@ public class GroovyProjectModule {
     public static Action compile() {
         return FileSensitiveActions.fileCommandAction(
                 ActionProvider.COMMAND_COMPILE_SINGLE,
-                LBL_CompileFile_Action(), // NOI18N
+                LBL_CompileFile_Action(),
                 null);
     }
 
@@ -82,7 +83,7 @@ public class GroovyProjectModule {
     public static Action run() {
         return FileSensitiveActions.fileCommandAction(
                 ActionProvider.COMMAND_RUN_SINGLE,
-                LBL_RunFile_Action(), // NOI18N
+                LBL_RunFile_Action(),
                 null);
     }
 
@@ -96,7 +97,7 @@ public class GroovyProjectModule {
     public static Action debug() {
         return FileSensitiveActions.fileCommandAction(
                 ActionProvider.COMMAND_DEBUG_SINGLE,
-                LBL_DebugFile_Action(), // NOI18N
+                LBL_DebugFile_Action(),
                 null);
     }
 
@@ -110,7 +111,7 @@ public class GroovyProjectModule {
     public static Action test() {
         return FileSensitiveActions.fileCommandAction(
                 ActionProvider.COMMAND_TEST_SINGLE,
-                LBL_TestFile_Action(), // NOI18N
+                LBL_TestFile_Action(),
                 null);
     }
 
@@ -124,7 +125,7 @@ public class GroovyProjectModule {
     public static Action debugTest() {
         return FileSensitiveActions.fileCommandAction(
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE,
-                LBL_DebugTestFile_Action(), // NOI18N
+                LBL_DebugTestFile_Action(),
                 null);
     }
 }
