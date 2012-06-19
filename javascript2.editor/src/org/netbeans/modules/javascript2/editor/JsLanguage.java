@@ -152,7 +152,7 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-        return new JsFormatter();
+        return new JsFormatter(CommonTokenId.javascriptLanguage());
     }
 
     @Override

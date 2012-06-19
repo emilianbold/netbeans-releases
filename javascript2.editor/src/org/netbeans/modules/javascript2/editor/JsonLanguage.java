@@ -39,10 +39,14 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.parser.JsonParser;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
@@ -91,10 +95,10 @@ public class JsonLanguage extends DefaultLanguageConfig {
         return "JSON"; //NOI18N
     }
 
-//    @Override
-//    public Parser getParser() {
-//        return new JsParser();
-//    }
+    @Override
+    public Parser getParser() {
+        return new JsonParser();
+    }
 
 //    @Override
 //    public boolean hasStructureScanner() {
@@ -137,19 +141,14 @@ public class JsonLanguage extends DefaultLanguageConfig {
 //    }
 
     @Override
-    public String getLineCommentPrefix() {
-        return "//";    //NOI18N
+    public Formatter getFormatter() {
+        return new JsFormatter(CommonTokenId.jsonLanguage());
     }
 
-//    @Override
-//    public Formatter getFormatter() {
-//        return new JsFormatter();
-//    }
-
-//    @Override
-//    public boolean hasFormatter() {
-//        return true;
-//    }
+    @Override
+    public boolean hasFormatter() {
+        return true;
+    }
 
 //    @Override
 //    public InstantRenamer getInstantRenamer() {

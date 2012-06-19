@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
@@ -64,6 +65,12 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 public class JsFormatter implements Formatter {
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
+
+    private final Language<CommonTokenId> language;
+
+    public JsFormatter(Language<CommonTokenId> language) {
+        this.language = language;
+    }
 
     @Override
     public int hangingIndentSize() {
@@ -92,8 +99,8 @@ public class JsFormatter implements Formatter {
 
                 FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot());
                 
-                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
-                        compilationInfo.getSnapshot(), context.startOffset());
+                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getTokenSequence(
+                        compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
                 
                 FormatTokenStream tokenStream = FormatTokenStream.create(
                         ts, context.startOffset(), context.endOffset());

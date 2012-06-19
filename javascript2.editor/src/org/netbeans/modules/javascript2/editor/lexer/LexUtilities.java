@@ -47,6 +47,7 @@ import java.util.List;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
 
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
@@ -77,17 +78,22 @@ public final class LexUtilities {
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        return getJsTokenSequence(th, offset);
+        return getTokenSequence(th, offset, CommonTokenId.javascriptLanguage());
     }
-
+    
     public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(Snapshot snapshot, int offset) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
-        return getJsTokenSequence(th, offset);
+        return getTokenSequence(th, offset, CommonTokenId.javascriptLanguage());
+    }
+
+    public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
+        return getTokenSequence(th, offset, CommonTokenId.javascriptLanguage());
     }
 
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
-    public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
-        TokenSequence<? extends CommonTokenId> ts = th.tokenSequence(CommonTokenId.javascriptLanguage());
+    public static TokenSequence<? extends CommonTokenId> getTokenSequence(TokenHierarchy<?> th,
+            int offset, Language<CommonTokenId> language) {
+        TokenSequence<? extends CommonTokenId> ts = th.tokenSequence(language);
 
         if (ts == null) {
             // Possibly an embedding scenario such as an HTML file
@@ -95,7 +101,7 @@ public final class LexUtilities {
             List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
 
             for (TokenSequence t : list) {
-                if (t.language() == CommonTokenId.javascriptLanguage()) {
+                if (t.language() == language) {
                     ts = t;
 
                     break;
@@ -106,7 +112,7 @@ public final class LexUtilities {
                 list = th.embeddedTokenSequences(offset, false);
 
                 for (TokenSequence t : list) {
-                    if (t.language() == CommonTokenId.javascriptLanguage()) {
+                    if (t.language() == language) {
                         ts = t;
 
                         break;
