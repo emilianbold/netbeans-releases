@@ -43,8 +43,6 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.Collections;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +54,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -93,7 +93,7 @@ public final class CompleteElementHandler {
 
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(
+    public Map<MethodSignature, CompletionItem> getMethods(
             ClassNode source, ClassNode node, String prefix, int anchor, boolean nameOnly) {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
@@ -105,7 +105,7 @@ public final class CompleteElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(
+    public Map<FieldSignature, CompletionItem> getFields(
             ClassNode source, ClassNode node, String prefix, int anchor) {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
