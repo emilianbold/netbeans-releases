@@ -215,8 +215,16 @@ public class JsonParser extends Parser {
         }
         
         int end = expect(source, JsTokenId.BRACKET_RIGHT_CURLY, ts, errorManager);
-        Block context = new Block(source, Token.toDesc(TokenType.LBRACE, start, 1), end, null, null);
-        return new ObjectNode(source, Token.toDesc(TokenType.LBRACE, start, 1), end, context, members);
+        Block context = new Block(source,
+                Token.toDesc(TokenType.LBRACE, start, 1),
+                end + 1,
+                null,
+                null);
+        return new ObjectNode(source,
+                Token.toDesc(TokenType.LBRACE, start, 1),
+                end + 1,
+                context,
+                members);
     }
     
     private List<Node> parseMembers(Source source, TokenSequence<? extends JsTokenId> ts,
@@ -237,15 +245,25 @@ public class JsonParser extends Parser {
     private PropertyNode parsePair(Source source, TokenSequence<? extends JsTokenId> ts,
             JsErrorManager errorManager) {
         int start = expect(source, JsTokenId.STRING_BEGIN, ts, errorManager);
-        expect(source, JsTokenId.STRING, ts, errorManager);
-        String val = ts.token().text().toString();
+        String val = "";
+        if (nextToken(ts)) {
+            if (ts.token().id() == JsTokenId.STRING) {
+                val = ts.token().text().toString();
+            } else {
+                ts.movePrevious();
+            }
+        }
         int end = expect(source, JsTokenId.STRING_END, ts, errorManager);
         
         PropertyKeyNode key = LiteralNode.newInstance(source, Token.toDesc(TokenType.STRING, start + 1, val.length()), end, val);
         expect(source, JsTokenId.OPERATOR_COLON, ts, errorManager);
         
         Node value = parseValue(source, ts, errorManager);
-        return new PropertyNode(source, start, value != null ? value.getFinish() : -1, key, value);
+        return new PropertyNode(source,
+                Token.toDesc(TokenType.STRING, start + 1, val.length()),
+                value != null ? value.getFinish() : -1,
+                key,
+                value);
     }
     
     private Node parseValue(Source source, TokenSequence<? extends JsTokenId> ts,
@@ -259,12 +277,18 @@ public class JsonParser extends Parser {
         
         if (id == JsTokenId.KEYWORD_TRUE) {
             return LiteralNode.newInstance(source,
-                    Token.toDesc(TokenType.TRUE, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length(), true);
+                    Token.toDesc(TokenType.TRUE, ts.offset(), id.fixedText().length()),
+                    ts.offset() + id.fixedText().length(),
+                    true);
         } else if (id == JsTokenId.KEYWORD_FALSE) {
             return LiteralNode.newInstance(source,
-                    Token.toDesc(TokenType.FALSE, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length(), false);
+                    Token.toDesc(TokenType.FALSE, ts.offset(), id.fixedText().length()),
+                    ts.offset() + id.fixedText().length(),
+                    false);
         } else if (id == JsTokenId.KEYWORD_NULL) {
-            return LiteralNode.newInstance(source, Token.toDesc(TokenType.NULL, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length());
+            return LiteralNode.newInstance(source,
+                    Token.toDesc(TokenType.NULL, ts.offset(), id.fixedText().length()),
+                    ts.offset() + id.fixedText().length());
         } else if (id == JsTokenId.STRING_BEGIN) {
             int start = ts.offset();
             String val = "";
@@ -276,9 +300,14 @@ public class JsonParser extends Parser {
                 }
             }
             int end = expect(source, JsTokenId.STRING_END, ts, errorManager);
-            return LiteralNode.newInstance(source, Token.toDesc(TokenType.STRING, start + 1, val.length()), end, val);
+            return LiteralNode.newInstance(source,
+                    Token.toDesc(TokenType.STRING, start + 1, val.length()),
+                    end,
+                    val);
         } else if (id == JsTokenId.NUMBER) {
-            return LiteralNode.newInstance(source, Token.toDesc(TokenType.FLOATING, ts.offset(), ts.token().text().length()), ts.offset() + ts.token().text().length(),
+            return LiteralNode.newInstance(source,
+                    Token.toDesc(TokenType.FLOATING, ts.offset(), ts.token().text().length()),
+                    ts.offset() + ts.token().text().length(),
                     Double.valueOf(ts.token().text().toString()));
         } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
             ts.movePrevious();
@@ -305,7 +334,10 @@ public class JsonParser extends Parser {
         }
         
         int end = expect(source, JsTokenId.BRACKET_RIGHT_BRACKET, ts, errorManager);
-        return LiteralNode.newInstance(source, Token.toDesc(TokenType.LBRACKET, start, start + 1), end, values);
+        return LiteralNode.newInstance(source,
+                Token.toDesc(TokenType.LBRACKET, start, start + 1),
+                end,
+                values);
     }
     
     private List<Node> parseValues(Source source, TokenSequence<? extends JsTokenId> ts,
