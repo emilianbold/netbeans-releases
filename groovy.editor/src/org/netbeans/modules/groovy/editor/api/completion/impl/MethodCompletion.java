@@ -151,7 +151,7 @@ public class MethodCompletion extends BaseCompletion {
             }
         }
 
-        Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
+        Map<MethodSignature, CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
                     .getMethods(ContextHelper.getSurroundingClassNode(request), request.declaringClass, request.prefix, anchor,
                     request.dotContext != null && request.dotContext.isMethodsOnly());
