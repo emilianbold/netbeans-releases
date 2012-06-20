@@ -419,7 +419,8 @@ public class JsFormatter implements Formatter {
                                 }
                                 i++;
                             }
-                            if (indentationEnd != null && indentationEnd.getKind() != FormatToken.Kind.EOL) {
+                            if (indentationEnd != null
+                                    && indentationEnd.getKind() != FormatToken.Kind.EOL) {
                                 int indentationSize = initialIndent + indentationLevel * IndentUtils.indentLevelSize(doc);
                                 if (isContinuation(tokens, index)) {
                                     indentationSize += continuationIndent;

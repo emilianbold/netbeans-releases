@@ -215,9 +215,10 @@ public class JsonParser extends Parser {
         }
         
         int end = expect(source, JsTokenId.BRACKET_RIGHT_CURLY, ts, errorManager);
+        // this is dummy block needed to prevent NPE in visitors
         Block context = new Block(source,
                 Token.toDesc(TokenType.LBRACE, start, 1),
-                end + 1,
+                start,
                 null,
                 null);
         return new ObjectNode(source,
