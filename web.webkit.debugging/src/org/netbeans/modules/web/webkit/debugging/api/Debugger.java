@@ -159,7 +159,7 @@ public final class Debugger {
             l.resumed();
         }
     }
-
+    
     private List<CallFrame> createCallStack(JSONArray callFrames) {
         List<CallFrame> callStack = new ArrayList<CallFrame>();
         for (Object cf : callFrames) {
@@ -345,6 +345,13 @@ public final class Debugger {
                         }
                     }
                     if (internalSuspend) {
+                        
+                        if (webkit.isNetBeansDOMChange()) {
+                            // ignore this DOM change:
+                            resume();
+                            return;
+                        }
+                        
                         final JSONArray callStack = (JSONArray)params.get("callFrames");
                         final boolean finalAttachDOMListeners = attachDOMListeners;
                         RequestProcessor.getDefault().post(new Runnable() {
