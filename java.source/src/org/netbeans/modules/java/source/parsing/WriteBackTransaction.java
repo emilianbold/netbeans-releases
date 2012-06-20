@@ -66,6 +66,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.util.Iterators;
 import org.openide.util.Utilities;
 
@@ -213,8 +214,8 @@ class WriteBackTransaction extends FileManagerTransaction {
         File shadowFile = new File(shadowRoot, relPath);
         workDirs.add(shadowRoot);
         cfo = new CachedFileObject(this, file, pname, pkgNamePair[1], filter, encoding);
-        addFile(pname, cfo);        
         cfo.setShadowFile(shadowFile);
+        addFile(pname, cfo);        
         if (!shadowRoot.mkdirs() && !shadowRoot.exists() && !shadowRoot.isDirectory()) {
             throw new IllegalStateException();
         }
@@ -323,18 +324,21 @@ class WriteBackTransaction extends FileManagerTransaction {
 
         private static final byte[] NOTHING = new byte[0];
         
-        byte[] content = NOTHING;
-        WriteBackTransaction   writer;
-        FileObjects.FileBase    delegate;
+        private byte[] content = NOTHING;
+        private WriteBackTransaction   writer;
+        private Pair<FileObjects.FileBase,Boolean> delegate;
 
         /**
          * The final file, after the tx is committed
          */
-        File shadowFile;
+        private File shadowFile;
         
         public CachedFileObject(WriteBackTransaction wb, File file, String pkgName, String name, JavaFileFilterImplementation filter, Charset encoding) {
             super(file, pkgName, name, filter, encoding);
             this.writer = wb;
+            delegate = Pair.<FileObjects.FileBase,Boolean>of(
+                (FileObjects.FileBase)FileObjects.fileFileObject(f, getRootFile(getFile(), getPackage()), filter, encoding),
+                Boolean.FALSE);
         }
         
         /**
@@ -356,11 +360,15 @@ class WriteBackTransaction extends FileManagerTransaction {
         
         private JavaFileObject createDelegate() {
             if (wasCommitted()) {
-                delegate = (FileObjects.FileBase)FileObjects.fileFileObject(f, getRootFile(getFile(), getPackage()), filter, encoding);
+                delegate = Pair.<FileObjects.FileBase,Boolean>of(
+                        (FileObjects.FileBase)FileObjects.fileFileObject(f, getRootFile(getFile(), getPackage()), filter, encoding),
+                        Boolean.TRUE);
             } else if (wasFlushed()) {
-                delegate = (FileObjects.FileBase)FileObjects.fileFileObject(shadowFile, getRootFile(shadowFile, getPackage()), filter, encoding);
+                delegate = Pair.<FileObjects.FileBase,Boolean>of(
+                        (FileObjects.FileBase)FileObjects.fileFileObject(shadowFile, getRootFile(shadowFile, getPackage()), filter, encoding),
+                        Boolean.TRUE);
             }
-            return delegate;
+            return delegate.first;
         }
         
         public File getCurrentFile() {
@@ -376,22 +384,28 @@ class WriteBackTransaction extends FileManagerTransaction {
             if (wasFlushed()) {
                 return;
             }
+            if (delegate != null && delegate.second == Boolean.FALSE) {
+                if (inCommit) {
+                    shadowFile = this.f;
+                    release();
+                }
+            } else {
+                // create directories up to the parent
+                if (inCommit) {
+                    shadowFile = this.f;
+                }
 
-            // create directories up to the parent
-            if (inCommit) {
-                shadowFile = this.f;
-            }
-            
-            File f = getCurrentFile();
-            if (!f.getParentFile().mkdirs() && !f.getParentFile().exists()) {
-                throw new IOException();
-            }
-            final FileOutputStream out = new FileOutputStream(f);
-            try {
-                out.write(content);
-                release();
-            } finally {
-                out.close();
+                File f = getCurrentFile();
+                if (!f.getParentFile().mkdirs() && !f.getParentFile().exists()) {
+                    throw new IOException();
+                }
+                final FileOutputStream out = new FileOutputStream(f);
+                try {
+                    out.write(content);
+                    release();
+                } finally {
+                    out.close();
+                }
             }
         }
         
@@ -408,7 +422,7 @@ class WriteBackTransaction extends FileManagerTransaction {
         }
         
         void commit() throws IOException {
-            if (wasCommitted()) {
+            if (wasCommitted() ) {
                 return;
             }
             flush(true);
@@ -435,8 +449,8 @@ class WriteBackTransaction extends FileManagerTransaction {
 
         @Override
         public boolean delete() {
-            if (delegate != null) {
-                return delegate.delete();
+            if (delegate != null && delegate.second == Boolean.TRUE) {
+                return delegate.first.delete();
             } else {
                 if (writer != null) {
                     writer.delete(toFile(this));
@@ -448,7 +462,7 @@ class WriteBackTransaction extends FileManagerTransaction {
         @Override
         public InputStream openInputStream() throws IOException {
             if (delegate != null) {
-                return delegate.openInputStream();
+                return delegate.first.openInputStream();
             } else {
                 return new ByteArrayInputStream(content);
             }
@@ -456,8 +470,9 @@ class WriteBackTransaction extends FileManagerTransaction {
 
         @Override
         public OutputStream openOutputStream() throws IOException {
+            modify();
             if (delegate != null) {
-                return delegate.openOutputStream();
+                return delegate.first.openOutputStream();
             } else {
                 return new ByteArrayOutputStream() {
                     boolean closed;
@@ -474,6 +489,12 @@ class WriteBackTransaction extends FileManagerTransaction {
                         writer.maybeFlush();
                     }
                 };
+            }
+        }
+
+        private void modify() {
+            if (delegate != null && delegate.second == Boolean.FALSE) {
+                delegate = null;
             }
         }
     }
