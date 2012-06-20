@@ -431,15 +431,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
                     sb.append("*"); // NOI18N
                 }
-                if( variableNameToInsert != null ) {
+                if (variableNameToInsert != null && !(variableNameToInsert.length() == 0)) {
                     sb.append(' ');
                     sb.append(variableNameToInsert);
                 }
             } else {
-                if( variableNameToInsert != null ) {
+                if (variableNameToInsert != null && !(variableNameToInsert.length() == 0)) {
                     sb.append(' ');
                     sb.append(variableNameToInsert);
-                }                
+                }              
                 for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
                     sb.append("[]"); // NOI18N
                 }

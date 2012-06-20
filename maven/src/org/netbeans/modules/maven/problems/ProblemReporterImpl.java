@@ -104,7 +104,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
 
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
     private final Set<Artifact> missingArtifacts;
     private final File projectPOMFile;
@@ -152,11 +152,15 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     public void addChangeListener(ChangeListener list) {
-        listeners.add(list);
+        synchronized (listeners) {
+            listeners.add(list);
+        }
     }
     
     public void removeChangeListener(ChangeListener list) {
-        listeners.remove(list);
+         synchronized (listeners) {
+             listeners.remove(list);
+         }
     }
     
     @Override public void addReport(ProblemReport report) {
@@ -186,8 +190,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     private void fireChange() {
-        for (ChangeListener list : listeners) {
-            list.stateChanged(new ChangeEvent(this));
+        ArrayList<ChangeListener> list;
+        synchronized (listeners) {        
+            list = new ArrayList<ChangeListener>(listeners);
+        }
+        for (ChangeListener li : list) {
+            li.stateChanged(new ChangeEvent(this));
         }
     }
 
