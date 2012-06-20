@@ -266,8 +266,15 @@ public class JsonParser extends Parser {
         } else if (id == CommonTokenId.KEYWORD_NULL) {
             return LiteralNode.newInstance(source, Token.toDesc(TokenType.NULL, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length());
         } else if (id == CommonTokenId.STRING_BEGIN) {
-            int start = expect(source, CommonTokenId.STRING, ts, errorManager);
-            String val = ts.token().text().toString();
+            int start = ts.offset();
+            String val = "";
+            if (nextToken(ts)) {
+                if (ts.token().id() == CommonTokenId.STRING) {
+                    val = ts.token().text().toString();
+                } else {
+                    ts.movePrevious();
+                }
+            }
             int end = expect(source, CommonTokenId.STRING_END, ts, errorManager);
             return LiteralNode.newInstance(source, Token.toDesc(TokenType.STRING, start + 1, val.length()), end, val);
         } else if (id == CommonTokenId.NUMBER) {
@@ -276,10 +283,43 @@ public class JsonParser extends Parser {
         } else if (id == CommonTokenId.BRACKET_LEFT_CURLY) {
             ts.movePrevious();
             return parseObject(source, ts, errorManager);
+        } else if (id == CommonTokenId.BRACKET_LEFT_BRACKET) {
+            ts.movePrevious();
+            return parseArray(source, ts, errorManager);
         }
         errorManager.error(source.getName() + ":" + "0:0:" + ts.offset()
                 + ": Expected value but " + ts.token().text().toString() + " found");          
         return null;
+    }
+    
+    private LiteralNode<List<Node>> parseArray(Source source, TokenSequence<? extends CommonTokenId> ts,
+                JsErrorManager errorManager) {
+        int start = expect(source, CommonTokenId.BRACKET_LEFT_BRACKET, ts, errorManager);
+        List<Node> values = Collections.emptyList();
+        if (nextToken(ts)) {
+            CommonTokenId id = ts.token().id();
+            ts.movePrevious();
+            if (id != CommonTokenId.BRACKET_RIGHT_BRACKET) {
+                values = parseValues(source, ts, errorManager);
+            }
+        }
+        
+        int end = expect(source, CommonTokenId.BRACKET_RIGHT_BRACKET, ts, errorManager);
+        return LiteralNode.newInstance(source, Token.toDesc(TokenType.LBRACKET, start, start + 1), end, values);
+    }
+    
+    private List<Node> parseValues(Source source, TokenSequence<? extends CommonTokenId> ts,
+                JsErrorManager errorManager) {
+        List<Node> ret = new ArrayList<Node>();
+        ret.add(parseValue(source, ts, errorManager));
+        if (nextToken(ts)) {
+            if (ts.token().id() == CommonTokenId.OPERATOR_COMMA) {
+                ret.addAll(parseValues(source, ts, errorManager));
+            } else {
+                ts.movePrevious();
+            }
+        }
+        return ret;
     }
 
     private int expect(Source source, CommonTokenId expected,
