@@ -72,6 +72,8 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -143,6 +145,8 @@ public final class DocumentViewOp
     private static final int AVAILABLE_WIDTH_VALID              = 256;
     
     private static final int NON_PRINTABLE_CHARACTERS_VISIBLE   = 512;
+    
+    private static final int UPDATE_VISIBLE_DIMENSION_PENDING   = 1024;
     
     private final DocumentView docView;
 
@@ -247,7 +251,11 @@ public final class DocumentViewOp
     
     private int textZoom;
 
-    
+    /**
+     * Extra height of 1/3 of viewport's window height added to the real views' allocation.
+     */
+    private float extraVirtualHeight;
+
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
         textLayoutCache = new TextLayoutCache();
@@ -382,9 +390,18 @@ public final class DocumentViewOp
         if (isAnyStatusBit(ALLOCATION_WIDTH_CHANGE)) {
             docView.setAllocationWidth(newAllocationWidth);
             // Updating of visible dimension can only be performed in EDT (acquires AWT treelock)
-            if (SwingUtilities.isEventDispatchThread()) {
-                clearStatusBits(ALLOCATION_WIDTH_CHANGE);
-                updateVisibleDimension();
+            // and the AWT treelock must precede VH lock.
+            if (!isAnyStatusBit(UPDATE_VISIBLE_DIMENSION_PENDING)) {
+                setStatusBits(UPDATE_VISIBLE_DIMENSION_PENDING);
+                if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+                    ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DVOp.logCheck: invokeLater(updateVisibleDimension())\n");
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateVisibleDimension(true);
+                    }
+                });
             }
         }
     }
@@ -480,6 +497,7 @@ public final class DocumentViewOp
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
+        updateVisibleDimension(false);
         if (ViewHierarchyImpl.REPAINT_LOG.isLoggable(Level.FINE)) {
             DebugRepaintManager.register(textComponent);
         }
@@ -495,7 +513,6 @@ public final class DocumentViewOp
     
     void checkViewsInited() { // Must be called under mutex
         if (!isChildrenValid() && docView.getTextComponent() != null) {
-            updateVisibleDimension();
             checkSettingsInfo();
             // checkSettingsInfo() might called component.setFont() which might
             // lead to BasicTextUI.modelChanged() and new DocumentView creation
@@ -592,11 +609,16 @@ public final class DocumentViewOp
         return isAnyStatusBit(ACCURATE_SPAN);
     }
 
-    void updateVisibleDimension() { // Called only with textComponent != null
-        // Must be called under mutex and in EDT (getViewRect() acquires AWT treelock)
+    void updateVisibleDimension(final boolean clearAllocationWidthChange) {
+        // Must be called without VH mutex since viewport.getViewRect() acquires AWT treelock
+        // and since e.g. paint is called with AWT treelock acquired there would otherwise be a deadlock.
+//        assert SwingUtilities.isEventDispatchThread() : "Must be called in EDT"; // NOI18N
         JTextComponent textComponent = docView.getTextComponent();
+        if (textComponent == null) { // No longer active view
+            return;
+        }
         Component parent = textComponent.getParent();
-        Rectangle newRect;
+        final Rectangle newVisibleRect;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             if (listeningOnViewport != viewport) {
@@ -616,24 +638,62 @@ public final class DocumentViewOp
                     listeningOnViewport.getParent().addMouseWheelListener(this);
                 }
             }
-            newRect = viewport.getViewRect();
+            newVisibleRect = viewport.getViewRect(); // acquires AWT treelock
 
         } else { // No parent viewport
             uninstallFromViewport();
             Dimension size = textComponent.getSize();
-            newRect = new Rectangle(0, 0, size.width, size.height);
+            newVisibleRect = new Rectangle(0, 0, size.width, size.height);
         }
 
-        docView.updateExtraVirtualHeight(listeningOnViewport);
-        boolean widthDiffers = (newRect.width != visibleRect.width);
-        visibleRect = newRect;
-        if (widthDiffers) {
-            clearStatusBits(AVAILABLE_WIDTH_VALID);
-            docView.markChildrenLayoutInvalid();
+        final float extraHeight;
+        if (!DocumentView.DISABLE_END_VIRTUAL_SPACE && listeningOnViewport != null) {
+            // Compute same value regardless whether there's a horizontal scrollbar visible or not.
+            // This is important to avoid flickering caused by vertical shrinking of the text component
+            // so that vertical scrollbar appears and then appearing of a horizontal scrollbar
+            // (in case there was a line nearly wide as viewport's width without Vscrollbar)\
+            // which in turn causes viewport's height to decrease and triggers recomputation again etc.
+            float eHeight = listeningOnViewport.getExtentSize().height;
+            if ((parent = listeningOnViewport.getParent()) instanceof JScrollPane) {
+                JScrollBar hScrollBar = ((JScrollPane)parent).getHorizontalScrollBar();
+                if (hScrollBar != null && hScrollBar.isVisible()) {
+                    eHeight += hScrollBar.getHeight();
+                }
+            }
+            extraHeight = eHeight / 3; // One third of viewport's extent height
+        } else {
+            extraHeight = 0f;
         }
+
+        // No document read lock necessary
+        docView.runTransaction(new Runnable() {
+            @Override
+            public void run() {
+                boolean widthDiffers = (newVisibleRect.width != visibleRect.width);
+                if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+                    ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DVOp.updateVisibleDimension: widthDiffers=" + widthDiffers + // NOI18N
+                            ", newVisibleRect=" + newVisibleRect + // NOI18N
+                            ", extraHeight=" + extraHeight + "\n"); // NOI18N
+                }
+                if (clearAllocationWidthChange) {
+                    clearStatusBits(ALLOCATION_WIDTH_CHANGE | UPDATE_VISIBLE_DIMENSION_PENDING);
+                }
+                extraVirtualHeight = extraHeight;
+                visibleRect = newVisibleRect;
+                if (widthDiffers) {
+                    clearStatusBits(AVAILABLE_WIDTH_VALID);
+                    docView.markChildrenLayoutInvalid();
+                }
+            }
+        });
+    }
+    
+    float getExtraVirtualHeight() {
+        return extraVirtualHeight;
     }
     
     private void uninstallFromViewport() {
+//        assert SwingUtilities.isEventDispatchThread() : "Must be called in EDT"; // NOI18N
         if (listeningOnViewport != null) {
             // Assume JViewport's parent JScrollPane won't change without viewport change as well
             listeningOnViewport.getParent().removeMouseWheelListener(this);
@@ -648,15 +708,10 @@ public final class DocumentViewOp
     @Override
     public void stateChanged(ChangeEvent e) {
         // First lock document and then monitor
-        docView.runReadLockTransaction(new Runnable() {
-            @Override
-            public void run() {
-                JTextComponent textComponent = docView.getTextComponent();
-                if (textComponent != null) {
-                    updateVisibleDimension();
-                }
-            }
-        });
+        JTextComponent textComponent = docView.getTextComponent();
+        if (textComponent != null) {
+            updateVisibleDimension(false);
+        }
     }
 
     private void checkSettingsInfo() {

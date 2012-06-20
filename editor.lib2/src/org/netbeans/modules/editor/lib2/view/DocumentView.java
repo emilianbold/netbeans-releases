@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -192,11 +191,6 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      */
     private Rectangle2D.Float allocation = new Rectangle2D.Float();
     
-    /**
-     * Extra height of 1/3 of viewport's window height added to the real views' allocation.
-     */
-    private float extraVirtualHeight;
-
     private final TabExpander tabExpander;
     
     /**
@@ -261,7 +255,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 if (axis == View.X_AXIS) {
                     span = preferredWidth;
                 } else { // Y_AXIS
-                    span = preferredHeight + extraVirtualHeight;
+                    span = preferredHeight + op.getExtraVirtualHeight();
                 }
                 return span;
             } finally {
@@ -472,29 +466,6 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      */
     public Rectangle2D.Double getAllocationCopy() {
         return new Rectangle2D.Double(0d, 0d, allocation.getWidth(), allocation.getHeight());
-    }
-
-    void updateExtraVirtualHeight(JViewport viewport) {
-        float extraHeight;
-        if (!DISABLE_END_VIRTUAL_SPACE && viewport != null) {
-            // Compute same value regardless whether there's a horizontal scrollbar visible or not.
-            // This is important to avoid flickering caused by vertical shrinking of the text component
-            // so that vertical scrollbar appears and then appearing of a horizontal scrollbar
-            // (in case there was a line nearly wide as viewport's width without Vscrollbar)\
-            // which in turn causes viewport's height to decrease and triggers recomputation again etc.
-            extraHeight = viewport.getExtentSize().height;
-            Component parent;
-            if ((parent = viewport.getParent()) instanceof JScrollPane) {
-                JScrollBar hScrollBar = ((JScrollPane)parent).getHorizontalScrollBar();
-                if (hScrollBar != null && hScrollBar.isVisible()) {
-                    extraHeight += hScrollBar.getHeight();
-                }
-            }
-            extraHeight /= 3; // One third of viewport's extent height
-        } else {
-            extraHeight = 0f;
-        }
-        this.extraVirtualHeight = extraHeight;
     }
 
     /**
