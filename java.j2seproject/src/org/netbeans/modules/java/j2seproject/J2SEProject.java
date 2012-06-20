@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -57,9 +58,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -72,6 +75,8 @@ import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -81,6 +86,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.Roots;
@@ -144,6 +151,9 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.URLMapper;
+import org.openide.modules.SpecificationVersion;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -688,6 +698,10 @@ public final class J2SEProject implements Project {
                     }
                 }
             });
+
+            //Update per project CopyLibs if needed
+            new UpdateCopyLibs(J2SEProject.this).run();
+            
         }
 
         @Override
@@ -966,6 +980,83 @@ public final class J2SEProject implements Project {
             }
 
         }
+    }
+
+    private static final class UpdateCopyLibs implements Runnable {
+
+        private static final String LIB_COPY_LIBS = "CopyLibs"; //NOI18N
+        private static final String PROP_VERSION = "version";   //NOI18N
+        private static final String VOL_CP = "classpath";       //NOI18N
+
+        private final ReferenceHelper refHelper;
+
+        private UpdateCopyLibs(@NonNull final J2SEProject project) {
+            this.refHelper = project.refHelper;
+        }
+
+        @Override
+        public void run() {
+            final LibraryManager projLibManager = refHelper.getProjectLibraryManager();
+            if (projLibManager == null) {
+                return;
+            }
+            final Library globalCopyLibs = LibraryManager.getDefault().getLibrary(LIB_COPY_LIBS);
+            final Library projectCopyLibs = projLibManager.getLibrary(LIB_COPY_LIBS);
+            if (globalCopyLibs == null || projectCopyLibs == null) {
+                return;
+            }
+            final String globalStr = globalCopyLibs.getProperties().get(PROP_VERSION);
+            if (globalStr == null) {
+                return;
+            }
+            try {
+                final SpecificationVersion globalVersion = new SpecificationVersion(globalStr);
+                final String projectStr = projectCopyLibs.getProperties().get(PROP_VERSION);
+                if (projectStr != null && globalVersion.compareTo(new SpecificationVersion(projectStr)) <= 0) {
+                    return;
+                }
+
+                final List<URL> content = projectCopyLibs.getContent(VOL_CP);
+                projLibManager.removeLibrary(projectCopyLibs);
+                final FileObject projLibLoc = URLMapper.findFileObject(projLibManager.getLocation());
+                if (projLibLoc != null) {
+                    final FileObject libFolder = projLibLoc.getParent();
+                    boolean canDelete = libFolder.canWrite();
+                    FileObject container = null;
+                    for (URL u : content) {
+                        FileObject fo = toFile(u);
+                        canDelete &= fo.canWrite();
+                        if (container == null) {
+                            container = fo.getParent();
+                            canDelete &= container.canWrite();
+                            canDelete &= LIB_COPY_LIBS.equals(container.getName());
+                            canDelete &= libFolder.equals(container.getParent());
+                        } else {
+                            canDelete &= container.equals(fo.getParent());
+                        }
+                    }
+                    if (canDelete) {
+                        container.delete();
+                    }
+                }
+                refHelper.copyLibrary(globalCopyLibs);
+                
+            } catch (IllegalArgumentException iae) {
+                LOG.log(
+                    Level.WARNING,
+                    "Cannot update {0} due to invalid version.",    //NOI18N
+                    projectCopyLibs.getDisplayName());
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        @CheckForNull
+        private static FileObject toFile(@NonNull final URL url) {
+            final URL file = FileUtil.getArchiveFile(url);
+            return URLMapper.findFileObject(file != null ? file : url);
+        }
+
     }
 
 }
