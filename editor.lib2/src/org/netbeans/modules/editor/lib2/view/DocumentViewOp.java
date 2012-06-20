@@ -810,9 +810,6 @@ public final class DocumentViewOp
         if (textComponent == null) {
             return;
         }
-        if (asTextField) {
-            return;
-        }
         AttributeSet defaultColoringOrig = defaultColoring;
         FontColorSettings fcs = result.allInstances().iterator().next();
         AttributeSet newDefaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
@@ -823,7 +820,9 @@ public final class DocumentViewOp
         } else {
             Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
             renderingHints = desktopHints;
-
+        }
+        if (asTextField) {
+            return;
         }
         Color textLimitLineColorOrig = textLimitLineColor;
         AttributeSet textLimitLineColoring = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
