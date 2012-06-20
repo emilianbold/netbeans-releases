@@ -546,7 +546,7 @@ public class CodeCompletionPanel extends JPanel {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(CodeCompletionPanel.class);
+            return new HelpCtx(CodeCompletionPanel.class.getName());
         }
 
         @Override
