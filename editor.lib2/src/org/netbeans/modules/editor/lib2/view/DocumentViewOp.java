@@ -53,6 +53,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
@@ -758,6 +759,10 @@ public final class DocumentViewOp
         if (newDefaultColoring != null) {
             defaultColoring = newDefaultColoring;
             renderingHints = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
+        } else {
+            Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+            renderingHints = desktopHints;
+
         }
         Color textLimitLineColorOrig = textLimitLineColor;
         AttributeSet textLimitLineColoring = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
@@ -813,8 +818,10 @@ public final class DocumentViewOp
         // #183797 - most likely seeing a non-nb document during the editor pane creation
         Integer dllw = (Integer) doc.getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
         int textLimitLineColumn = (dllw != null) ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
-        boolean drawTextLimitLine = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
-        textLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
+        if (prefs != null) {
+            boolean drawTextLimitLine = prefs.getBoolean(SimpleValueNames.TEXT_LIMIT_LINE_VISIBLE, true);
+            textLimitLineX = drawTextLimitLine ? (int) (textLimitLineColumn * defaultCharWidth) : -1;
+        }
     }
     
     private void updateLineWrapType() {

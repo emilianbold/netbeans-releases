@@ -145,7 +145,7 @@
                         <attr name="position" intvalue="680"/>
                     </file>
                     <file name="generate-code">
-                        <attr name="position" intvalue="780"/>
+                        <attr name="position" intvalue="790"/>
                     </file>
                     <file name="fix-uses">
                         <attr name="position" intvalue="880"/>

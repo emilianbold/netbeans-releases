@@ -55,7 +55,7 @@ import org.netbeans.modules.java.platform.JavaPlatformProvider;
  *
  * @author  tom
  */
-public class JavaPlatformProviderImpl implements JavaPlatformProvider {
+public final class JavaPlatformProviderImpl implements JavaPlatformProvider {
 
 
     private PropertyChangeSupport support;
@@ -69,25 +69,35 @@ public class JavaPlatformProviderImpl implements JavaPlatformProvider {
         this.addPlatform (this.createDefaultPlatform());
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.support.addPropertyChangeListener(listener);
     }    
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.support.removePropertyChangeListener (listener);
     }    
     
     public void addPlatform (JavaPlatform platform) {
         this.platforms.add (platform);
+        this.support.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
     }
     
     public void removePlatform (JavaPlatform platform) {
-        this.platforms.add (platform);        
+        this.platforms.add (platform);
+        this.support.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
     }
         
+    @Override
     public JavaPlatform[] getInstalledPlatforms() {
         return this.platforms.toArray(new JavaPlatform[this.platforms.size()]);
-    }    
+    }
+
+    @Override
+    public JavaPlatform getDefaultPlatform() {
+        return createDefaultPlatform ();
+    }
     
     private synchronized JavaPlatform createDefaultPlatform () {
         if (this.defaultPlatform == null) {
@@ -96,10 +106,5 @@ public class JavaPlatformProviderImpl implements JavaPlatformProvider {
         }
         return defaultPlatform;
     }
-    
-    public JavaPlatform getDefaultPlatform() {
-        return createDefaultPlatform ();
-    }    
-    
-    
+
 }

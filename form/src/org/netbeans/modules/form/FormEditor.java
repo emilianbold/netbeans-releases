@@ -118,7 +118,7 @@ public class FormEditor {
     /** Persistence manager responsible for saving the form */
     private PersistenceManager persistenceManager;
     private String prefetchedSuperclassName;
-    
+
     /** An indicator whether the form has been loaded (from the .form file) */
     private boolean formLoaded = false;
     
@@ -714,6 +714,8 @@ public class FormEditor {
                 floatingWindows = null;
             }
         }
+        ClassPathUtils.releaseFormClassLoader(formDataObject.getPrimaryFile());
+        ClassPathUtils.releaseFormClassLoader(formDataObject.getFormFile());
         // cleanup just for sure
         formRootNode = null;
         formDesigner = null;
