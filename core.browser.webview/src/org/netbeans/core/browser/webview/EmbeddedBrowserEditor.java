@@ -51,6 +51,7 @@ package org.netbeans.core.browser.webview;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyEditor;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +99,7 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
         }
         checkAnotherBrowser.addItemListener(this);
         comboBrowsers.addItemListener(this);
+        txtRuntimeLocation.setText( new DefaultJFXRuntimeProvider().getJFXRuntimePath() );
     }
 
     /** This method is called from within the constructor to
@@ -111,8 +113,22 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
 
         checkAnotherBrowser = new javax.swing.JCheckBox();
         comboBrowsers = new javax.swing.JComboBox();
+        lblRuntimeLocation = new javax.swing.JLabel();
+        txtRuntimeLocation = new javax.swing.JTextField();
+        btnBrowser = new javax.swing.JButton();
 
         checkAnotherBrowser.setText(NbBundle.getMessage(EmbeddedBrowserEditor.class, "EmbeddedBrowserEditor.checkAnotherBrowser.text")); // NOI18N
+
+        lblRuntimeLocation.setText(NbBundle.getMessage(EmbeddedBrowserEditor.class, "EmbeddedBrowserEditor.lblRuntimeLocation.text")); // NOI18N
+
+        txtRuntimeLocation.setEditable(false);
+
+        btnBrowser.setText(NbBundle.getMessage(EmbeddedBrowserEditor.class, "EmbeddedBrowserEditor.btnBrowser.text")); // NOI18N
+        btnBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBrowserActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -123,8 +139,16 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(21, 21, 21)
-                        .addComponent(comboBrowsers, 0, 402, Short.MAX_VALUE))
-                    .addComponent(checkAnotherBrowser))
+                        .addComponent(comboBrowsers, 0, 398, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(txtRuntimeLocation)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnBrowser))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(checkAnotherBrowser)
+                            .addComponent(lblRuntimeLocation))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -134,16 +158,34 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
                 .addComponent(checkAnotherBrowser)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(comboBrowsers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblRuntimeLocation)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtRuntimeLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBrowser))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnBrowserActionPerformed( java.awt.event.ActionEvent evt ) {//GEN-FIRST:event_btnBrowserActionPerformed
+        File f = RuntimePathPanel.browseRuntimeFolder();
+        if( null != f ) {
+            txtRuntimeLocation.setText( f.getAbsolutePath() );
+            DefaultJFXRuntimeProvider.setJFXRuntimePath( f );
+        }
+    }//GEN-LAST:event_btnBrowserActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBrowser;
     private javax.swing.JCheckBox checkAnotherBrowser;
     private javax.swing.JComboBox comboBrowsers;
+    private javax.swing.JLabel lblRuntimeLocation;
+    private javax.swing.JTextField txtRuntimeLocation;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void itemStateChanged(ItemEvent e) {
         comboBrowsers.setEnabled(checkAnotherBrowser.isSelected());
         storeSettings();
@@ -154,7 +196,7 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
             DataObject dob = browsers.get(comboBrowsers.getSelectedIndex());
             HtmlBrowser.Factory newBrowser = null;
             try {
-                newBrowser = (Factory) dob.getCookie(InstanceCookie.class).instanceCreate();
+                newBrowser = (Factory) dob.getLookup().lookup(InstanceCookie.class).instanceCreate();
                 Lookup.Result<HtmlBrowser.Factory> res = Lookup.getDefault ().lookupResult (HtmlBrowser.Factory.class);
                 java.util.Iterator<? extends HtmlBrowser.Factory> it = res.allInstances ().iterator ();
                 while (it.hasNext ()) {
@@ -187,7 +229,7 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
 
             for (DataObject browserSetting : browserSettings) {
 
-                InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);
+                InstanceCookie cookie = browserSetting.getLookup().lookup(InstanceCookie.class);
                 FileObject primaryFile = browserSetting.getPrimaryFile();
                 if( "EmbeddedBrowser.settings".equals(primaryFile.getNameExt()) ) {
                     continue;
@@ -205,7 +247,7 @@ public class EmbeddedBrowserEditor extends javax.swing.JPanel implements ItemLis
         int selIndex = -1;
         for( int i=0; i<browsers.size(); i++ ) {
             DataObject dob = browsers.get(i);
-            InstanceCookie cookie = dob.getCookie(InstanceCookie.class);
+            InstanceCookie cookie = dob.getLookup().lookup(InstanceCookie.class);
             try {
                 if( browser.equals(cookie.instanceCreate()) ) {
                     selIndex = i;

@@ -59,13 +59,19 @@ import org.w3c.dom.Document;
  */
 class NoWebBrowserImpl extends WebBrowser {
 
-    private final JLabel component;
+    private final Component component;
+    private String url;
     
     public NoWebBrowserImpl(String cause) {
-        component = new JLabel(NbBundle.getMessage(NoWebBrowserImpl.class, "Err_CannotCreateBrowser", cause));
-        component.setEnabled( false );
-        component.setHorizontalAlignment( JLabel.CENTER );
-        component.setVerticalAlignment( JLabel.CENTER );
+        JLabel lbl = new JLabel(NbBundle.getMessage(NoWebBrowserImpl.class, "Err_CannotCreateBrowser", cause));
+        lbl.setEnabled( false );
+        lbl.setHorizontalAlignment( JLabel.CENTER );
+        lbl.setVerticalAlignment( JLabel.CENTER );
+        component = lbl;
+    }
+
+    public NoWebBrowserImpl(Component content) {
+        this.component = content;
     }
     
     @Override
@@ -85,12 +91,12 @@ class NoWebBrowserImpl extends WebBrowser {
 
     @Override
     public void setURL( String url ) {
-        //NOOP
+        this.url = url;
     }
 
     @Override
     public String getURL() {
-        return null;
+        return url;
     }
 
     @Override
