@@ -98,7 +98,7 @@ class RuntimePathPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnBrowseActionPerformed( java.awt.event.ActionEvent evt ) {//GEN-FIRST:event_btnBrowseActionPerformed
-        File runtimePath = browserRuntimeFolder();
+        File runtimePath = browseRuntimeFolder();
         if( null != runtimePath ) {
             DefaultJFXRuntimeProvider.setJFXRuntimePath( runtimePath );
             TopComponent parent = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, this );
@@ -116,7 +116,7 @@ class RuntimePathPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblRuntime;
     // End of variables declaration//GEN-END:variables
 
-    static File browserRuntimeFolder() {
+    static File browseRuntimeFolder() {
         FileChooserBuilder fcb = new FileChooserBuilder( RuntimePathPanel.class );
         fcb.setDirectoriesOnly( true );
         fcb.setTitle( NbBundle.getMessage(RuntimePathPanel.class, "Title_BrowserRuntime") );
