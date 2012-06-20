@@ -42,7 +42,9 @@
 package org.netbeans.modules.css.lib.api;
 
 /**
- * This enum must keep in sync with the ANTLR grammar set of rules.
+ * Node types for all the CSS3 ANTLR grammar elements.
+ * 
+ * This enum must keep in sync with the ANTLR grammar set of rules!!!
  *
  * @author mfukala@netbeans.org
  */

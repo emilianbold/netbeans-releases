@@ -44,6 +44,9 @@ package org.netbeans.modules.css.lib.api.properties;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 
 /**
+ * A token serves as an input to the GrammarParser. 
+ * 
+ * Represents a lexical token of a property value.
  *
  * @author marekfukala
  */

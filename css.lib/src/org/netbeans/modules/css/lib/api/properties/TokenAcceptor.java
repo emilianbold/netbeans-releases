@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.Token;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;

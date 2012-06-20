@@ -46,8 +46,10 @@ import org.netbeans.modules.css.lib.api.properties.Node.AbstractNode;
 import org.netbeans.modules.css.lib.api.properties.*;
 
 /**
- * Parse tree builder based on {@link GrammarResolverListener}
+ * Css property value parse tree builder based on {@link GrammarResolverListener}.
  *
+ * Creates a parse tree for css property values.
+ * 
  * @author marekfukala
  */
 public class GrammarParseTreeBuilder implements GrammarResolverListener {

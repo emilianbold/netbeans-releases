@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.api;
 
 /**
+ * Representation of an error in css source.
  *
  * @author marekfukala
  */

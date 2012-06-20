@@ -44,8 +44,7 @@ package org.netbeans.modules.css.lib.api.properties;
 import java.io.PrintWriter;
 
 /**
- * temporary - to be removed
- * 
+ * Utility methods for the css property value parse trees.
  * 
  * @author marekfukala
  */

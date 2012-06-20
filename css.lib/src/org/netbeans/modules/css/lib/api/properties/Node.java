@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
+ * Node of the css property value parse tree.
  *
  * @author mfukala@netbeans.org
  */

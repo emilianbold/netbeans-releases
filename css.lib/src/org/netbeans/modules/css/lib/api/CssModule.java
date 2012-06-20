@@ -42,15 +42,23 @@
 package org.netbeans.modules.css.lib.api;
 
 /**
+ * Representation of CSS modules in terms of the w3c.org specifications.
+ * 
+ * Typically an instance of this class represents whole css3 spefication module.
+ * 
+ * see http://www.w3.org/Style/CSS/ for more information.
  *
  * @author mfukala@netbeans.org
  */
 public interface CssModule {
 
+    /** system id of the module. */
     public String getName();
 
+    /** display name of the module - may be presented to users */
     public String getDisplayName();
 
+    /** link to the css3 module specification. */
     public String getSpecificationURL();
 
 }

@@ -97,10 +97,6 @@ public class GroupGrammarElement extends GrammarElement {
     private List<GrammarElement> elements = new ArrayList<GrammarElement>(5);
     private Type type;
 
-    @Override
-    public GrammarElementKind getKind() {
-        return GrammarElementKind.GROUP;
-    }
     
     public Type getType() {
         return type;

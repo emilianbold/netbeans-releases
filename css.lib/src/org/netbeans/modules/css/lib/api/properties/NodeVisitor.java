@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.api.properties;
 
 /**
+ * Visitor for css property values parse trees.
  *
  * @author marekfukala
  */
