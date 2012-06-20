@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -60,6 +61,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -90,6 +92,11 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  */
 class JSClientGenerator {
+    
+    enum MethodType {
+        GET,
+        SET
+    }
     
     private static final String SLASH = "/";                        // NOI18N
 
@@ -291,7 +298,7 @@ class JSClientGenerator {
             TypeMirror returnType = method.getReturnType();
             Element returnElement = controller.getTypes().asElement( returnType );
             if ( returnElement instanceof TypeElement ){
-                // TODO: return type could be a promitive type. How it should be handled ?
+                // TODO: return type could be a primitive type. How it should be handled ?
                 if ( getAnnotation( returnElement, XML_ROOT_ELEMENT) == null ){
                     /* TODO : here is only @XmlRootElement annotated elements
                      * are considered as JSON serializable ( that's true for
@@ -333,7 +340,7 @@ class JSClientGenerator {
         myContent.append("\"");                                 // NOI18N
         String parsedData = parse(entity, controller);
         if ( parsedData != null ){
-            myContent.append(",\n");                              // NOI18N
+            myContent.append(",");                              // NOI18N
             myContent.append(parsedData);
         }
         myContent.append("\n});\n\n");                          // NOI18N
@@ -368,46 +375,41 @@ class JSClientGenerator {
          *  2) primitive attributes if any
          *  3) do not include attributes with complex type  
          */
-        List<VariableElement> fields = ElementFilter.fieldsIn(entity.getEnclosedElements());
+        Set<String> attributes = parseBeanMethods( entity , controller );
+        
+        List<VariableElement> fields = ElementFilter.fieldsIn(
+                controller.getElements().getAllMembers(entity));
         VariableElement id = null;
         for (VariableElement field : fields) {
             if ( getAnnotation(field, ID) != null ){
-                TypeMirror fieldType = field.asType();
-                if ( fieldType.getKind().isPrimitive() ){
+                boolean has = attributes.remove(field.getSimpleName().toString());
+                if ( has ){
                     id = field;
                     break;
-                }
-                Element fieldTypeElement = controller.getTypes().asElement(fieldType);
-                TypeElement stringElement = controller.getElements().
-                    getTypeElement(String.class.getName());
-                if ( stringElement != null && stringElement.equals( fieldTypeElement)){
-                    id = field;
-                    break;
-                }
-                
-                PackageElement pack = controller.getElements().getPackageOf(
-                        fieldTypeElement);
-                if ( pack.getQualifiedName().contentEquals("java.lang")){      // NOI18N
-                    try {
-                        if ( controller.getTypes().unboxedType(fieldType) != null ){
-                            id = field;
-                            break;
-                        }
-                    }
-                    catch(IllegalArgumentException e){
-                        // just skip field
-                    }
                 }
             }
         }
         StringBuilder builder = new StringBuilder();
         if ( id != null ){
             String idAttr = id.getSimpleName().toString();
-            builder.append("idAttribute : '");                          // NO18N
+            builder.append("\nidAttribute : '");                        // NOI18N
             builder.append(idAttr);
-            builder.append("'");                                        // NO18N
+            builder.append("'");                                        // NOI18N
+            if ( attributes.size() >0 ){
+                builder.append(",\n");                                  // NOI18N
+            }
         }
         
+        if (attributes.size() > 0) {
+            builder.append("defaults: {");                              // NOI18N
+            for (String attribute : attributes) {
+                builder.append("\n");                                   // NOI18N
+                builder.append(attribute);
+                builder.append(": \"\",");                              // NOI18N
+            }
+            builder.deleteCharAt(builder.length()-1);
+            builder.append("\n}");                                      // NOI18N
+        }
         
         if ( builder.length() >0 ){
             return builder.toString();
@@ -417,6 +419,131 @@ class JSClientGenerator {
         }
     }
 
+    private Set<String> parseBeanMethods( TypeElement entity,
+            CompilationController controller )
+    {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                controller.getElements().getAllMembers(entity));
+        Set<String> result = new HashSet<String>();
+        Map<String,TypeMirror> getAttrs = new HashMap<String, TypeMirror>();
+        Map<String,TypeMirror> setAttrs = new HashMap<String, TypeMirror>();
+        for (ExecutableElement method : methods) {
+            if ( !method.getModifiers().contains( Modifier.PUBLIC)){
+                continue;
+            }
+            
+            Object[] attribute = getAttrName( method , controller);
+            if ( attribute == null ){
+                continue;
+            }
+            String name = (String)attribute[1];
+            TypeMirror type = (TypeMirror)attribute[2];
+            if ( attribute[0] == MethodType.GET ){
+                if ( findAccessor(name, type, getAttrs, setAttrs, controller)){
+                    result.add(name);
+                }
+            }
+            else {
+                if ( findAccessor(name, type, setAttrs, getAttrs, controller)){
+                    result.add(name);
+                }
+            }
+        }
+        return result;
+    }
+    
+    private boolean findAccessor(String name, TypeMirror type, 
+            Map<String,TypeMirror> map1, Map<String,TypeMirror> map2, 
+            CompilationController controller)
+    {
+        TypeMirror typeMirror = map2.remove(name);
+        if ( typeMirror!= null && 
+                controller.getTypes().isSameType(typeMirror, type))
+        {
+            return true;
+        }
+        else {
+            map1.put(name, type);
+        }
+        return false;
+    }
+
+    private Object[] getAttrName( ExecutableElement method,
+            CompilationController controller )
+    {
+        String name = method.getSimpleName().toString();
+        if ( name.startsWith("set") ){                               // NOI18N
+            TypeMirror returnType = method.getReturnType();
+            if ( returnType.getKind()!= TypeKind.VOID){
+                return null;
+            }
+            List<? extends VariableElement> parameters = method.getParameters();
+            if ( parameters.size() !=1 ){
+                return null;
+            }
+            VariableElement param = parameters.get(0);
+            TypeMirror type = param.asType();
+            if ( isSimple(type, controller)){
+                return new Object[]{MethodType.SET, name.substring(3).
+                        toLowerCase(Locale.ENGLISH), type};
+            }
+            else {
+                return null;
+            }
+        }
+        int start =0;
+        if ( name.startsWith("get")){                                   // NOI18N
+            start =3;
+        }
+        else if ( name.startsWith( "is")){                              // NOI18N
+            start =2;
+        }
+        if ( start > 0){
+            List<? extends VariableElement> parameters = method.getParameters();
+            if ( parameters.size() !=0 ){
+                return null;
+            }
+            TypeMirror returnType = method.getReturnType();
+            if ( isSimple(returnType, controller)){
+                return new Object[]{ MethodType.GET, name.substring(start).
+                        toLowerCase(Locale.ENGLISH) , returnType};
+            }
+            else {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /*
+     * returns true if type is primitive or String
+     */
+    private boolean isSimple(TypeMirror typeMirror, CompilationController controller){
+        if ( typeMirror.getKind().isPrimitive() ){
+            return true;
+        }
+        Element fieldTypeElement = controller.getTypes().asElement(typeMirror);
+        TypeElement stringElement = controller.getElements().
+            getTypeElement(String.class.getName());
+        if ( stringElement != null && stringElement.equals( fieldTypeElement)){
+            return true;
+        }
+        
+        PackageElement pack = controller.getElements().getPackageOf(
+                fieldTypeElement);
+        if ( pack.getQualifiedName().contentEquals("java.lang")){      // NOI18N
+            try {
+                if ( controller.getTypes().unboxedType(typeMirror) != null ){
+                    return true;
+                }
+            }
+            catch(IllegalArgumentException e){
+                // just skip field
+            }
+        }
+        return false;
+    }
+    
     private String getUrl( String relativePath ) throws IOException {
         Project project = FileOwnerQuery.getOwner(myDescription.getFile());
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
