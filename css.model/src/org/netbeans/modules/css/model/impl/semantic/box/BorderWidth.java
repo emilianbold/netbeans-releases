@@ -45,7 +45,7 @@ import org.netbeans.modules.css.model.api.semantic.box.BorderWidthItem;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.NodeModel;
 
 /**
  *
@@ -58,7 +58,7 @@ public class BorderWidth extends BorderEachEdgeBase implements BoxProvider {
     }
 
     @Override
-    protected Class getModelClassForSubNode(String nodeName) {
+    public Class getModelClassForSubNode(String nodeName) {
         if (nodeName.equals("@border-width-item")) { //NOI18N
             return BorderWidthItem.class;
         }

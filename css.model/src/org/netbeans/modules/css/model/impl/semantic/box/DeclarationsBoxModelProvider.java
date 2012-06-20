@@ -42,8 +42,8 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.model.impl.semantic.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.model.impl.semantic.NodeModel;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.SemanticModel;
 import org.netbeans.modules.css.model.impl.semantic.PropertyModelId;
 import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;

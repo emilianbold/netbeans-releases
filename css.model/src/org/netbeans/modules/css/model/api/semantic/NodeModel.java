@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic;
+package org.netbeans.modules.css.model.api.semantic;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class NodeModel  {
      * override the {@link #setSubmodel()} method not to try to set the field but
      * instead to save the given model in another (custom) way.
      */
-    protected Class getModelClassForSubNode(String nodeName) {
+    public Class getModelClassForSubNode(String nodeName) {
         return null;
     }
     

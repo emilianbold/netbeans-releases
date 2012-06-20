@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic;
+package org.netbeans.modules.css.model.api.semantic;
 
 /**
  *

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
+import org.netbeans.modules.css.model.api.semantic.NodeModel;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.openide.util.Lookup;

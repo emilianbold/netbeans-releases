@@ -45,7 +45,7 @@ package org.netbeans.modules.css.model.api;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.SemanticModel;
 
 /**
  *

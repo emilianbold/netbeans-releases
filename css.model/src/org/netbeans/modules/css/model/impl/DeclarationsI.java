@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.SemanticModel;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;

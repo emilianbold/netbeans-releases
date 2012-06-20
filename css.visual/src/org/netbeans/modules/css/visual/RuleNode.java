@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.SemanticModel;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;

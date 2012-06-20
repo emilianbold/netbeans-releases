@@ -50,7 +50,7 @@ import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.NodeModel;
 
 /**
  *
@@ -65,7 +65,7 @@ public class Margin extends NodeModel implements BoxProvider {
     }
 
     @Override
-    protected Class getModelClassForSubNode(String nodeName) {
+    public  Class getModelClassForSubNode(String nodeName) {
         if (nodeName.equals("@box-edge-size")) { //NOI18N
             return BoxEdgeSize.class;
         }

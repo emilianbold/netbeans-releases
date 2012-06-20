@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.SemanticModel;
 import org.openide.nodes.Node.Property;
 
 /**

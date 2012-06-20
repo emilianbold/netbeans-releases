@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import org.netbeans.modules.css.model.impl.semantic.CustomModelFactory;
-import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.NodeModel;
 import org.openide.util.lookup.ServiceProvider;
 
 /**

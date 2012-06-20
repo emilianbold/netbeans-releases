@@ -135,6 +135,8 @@
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <package>org.netbeans.modules.css.model.api</package>
+                <package>org.netbeans.modules.css.model.api.semantic</package>
+                <package>org.netbeans.modules.css.model.api.semantic.box</package>
             </friend-packages>
         </data>
     </configuration>
