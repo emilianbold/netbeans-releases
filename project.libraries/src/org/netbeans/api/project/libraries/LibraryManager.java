@@ -312,6 +312,32 @@ public final class LibraryManager {
             @NullAllowed final String displayName,
             @NullAllowed final String description,
             @NonNull final Map<String,List<URL>> contents) throws IOException {
+        return createLibrary(type, name, displayName, description, contents, Collections.<String,String>emptyMap());
+    }
+
+    /**
+     * Creates a new library definition and adds it to the list.
+     * @param type the type of library, as in {@link LibraryTypeProvider#getLibraryType} or {@link LibraryImplementation#getType}
+     * @param name the identifying name of the new library (must not duplicate a name already in use by a library in this manager)
+     * @param displayName the display name of the library. If null the identifying name is used
+     * @param description the library description
+     * @param contents the initial contents of the library's volumes, as a map from volume type to volume content
+     * @param properties the optional properties associated with the library.
+     * @return a newly created library
+     * @throws IOException if the new definition could not be stored
+     * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
+     *                                  or if a library of the same name already exists in this manager
+     * @see ArealLibraryProvider#createLibrary
+     * @since org.netbeans.modules.project.libraries/1 1.38
+     */
+    public Library createLibrary(
+            @NonNull final  String type,
+            @NonNull final String name,
+            @NullAllowed final String displayName,
+            @NullAllowed final String description,
+            @NonNull final Map<String,List<URL>> contents,
+            @NonNull final Map<String,String> properties) throws IOException {
+        Parameters.notNull("properties", properties);   //NOI18N
         if (getLibrary(name) != null) {
             throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
         }
@@ -375,6 +401,32 @@ public final class LibraryManager {
             @NullAllowed final String displayName,
             @NullAllowed final String description,
             @NonNull final Map<String,List<URI>> contents) throws IOException {
+        return createURILibrary(type, name, displayName, description, contents, Collections.<String,String>emptyMap());
+    }
+
+    /**
+     * Creates a new library definition and adds it to the list.
+     * @param type the type of library, as in {@link LibraryTypeProvider#getLibraryType} or {@link LibraryImplementation#getType}
+     * @param name the identifying name of the new library (must not duplicate a name already in use by a library in this manager)
+     * @param displayName the display name of the library. If null the identifying name is used
+     * @param description the library description
+     * @param contents the initial contents of the library's volumes, as a map from volume type to volume content
+     * @return a newly created library
+     * @param properties the optional properties associated with the library.
+     * @throws IOException if the new definition could not be stored
+     * @throws IllegalArgumentException if the library type or one of the content volume types is not supported,
+     *                                  or if a library of the same name already exists in this manager
+     * @see ArealLibraryProvider#createLibrary
+     * @since org.netbeans.modules.project.libraries/1 1.38
+     */
+    public Library createURILibrary(
+            @NonNull final String type,
+            @NonNull final String name,
+            @NullAllowed final String displayName,
+            @NullAllowed final String description,
+            @NonNull final Map<String,List<URI>> contents,
+            @NonNull final Map<String,String> properties) throws IOException {
+        Parameters.notNull("properties", properties);   //NOI18N
         if (getLibrary(name) != null) {
             throw new IllegalArgumentException("Name already in use: " + name); // NOI18N
         }
@@ -387,6 +439,7 @@ public final class LibraryManager {
             impl = ltp.createLibrary();
             impl.setName(name);
             Util.setDisplayName(impl, displayName);
+            Util.setProperties(impl, properties);
             for (Map.Entry<String,List<URI>> entry : contents.entrySet()) {
                 impl.setContent(entry.getKey(), LibrariesModel.convertURIsToURLs(entry.getValue()));
             }
@@ -394,6 +447,7 @@ public final class LibraryManager {
         } else {
             impl = LibraryAccessor.createLibrary(alp, type, name, area, contents);
             Util.setDisplayName(impl, displayName);
+            Util.setProperties(impl, properties);
         }        
         return new Library(impl, this);
     }
