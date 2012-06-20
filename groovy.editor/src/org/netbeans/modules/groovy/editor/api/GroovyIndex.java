@@ -114,7 +114,8 @@ public final class GroovyIndex {
         String classFqn = null;
 
         if (name != null) {
-            if (name.endsWith(".")) {
+            // CamelCase check is here because of issue #212878
+            if (name.endsWith(".") && (QuerySupport.Kind.CAMEL_CASE != kind)) {
                 // User has typed something like "Test." and wants completion on
                 // for something like Test.Unit
                 classFqn = name.substring(0, name.length() - 1);
