@@ -457,7 +457,7 @@ implements TokenHierarchyListener, ChangeListener {
                                 int headLen = embeddedTSInfo.tokenOffset - hiEndOffset;
                                 if (headLen > 0) {
                                     state = S_EMBEDDED_HEAD;
-                                    done = assignHighlightOrPart(embeddedTSInfo.tokenOffset, embeddedTSInfo.tokenAttrs);
+                                    done = assignHighlightOrPart(embeddedTSInfo.tokenOffset, tsInfo.tokenAttrs);
                                     if (log) {
                                         LOG.fine(" S_TOKEN -> S_EMBEDDED_HEAD, token<" + tsInfo.tokenOffset + // NOI18N
                                                 "," + tsInfo.tokenEndOffset + "> headLen=" + headLen + "\n"); // NOI18N
