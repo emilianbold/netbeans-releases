@@ -60,7 +60,7 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
  * @author Petr Hejl
  */
 // major portion copied from java
-public class CommonBracesMatcher implements BracesMatcher {
+public class JsBracesMatcher implements BracesMatcher {
 
     private static final char [] PAIRS = new char [] { '(', ')', '[', ']', '{', '}' }; //NOI18N
 
@@ -80,7 +80,7 @@ public class CommonBracesMatcher implements BracesMatcher {
     private boolean backward;
     private List<TokenSequence<?>> sequences;
 
-    public CommonBracesMatcher(MatcherContext context, Language<JsTokenId> language) {
+    public JsBracesMatcher(MatcherContext context, Language<JsTokenId> language) {
         this.context = context;
         this.language = language;
     }
@@ -202,7 +202,7 @@ public class CommonBracesMatcher implements BracesMatcher {
 
         @Override
         public BracesMatcher createMatcher(MatcherContext context) {
-            return new CommonBracesMatcher(context, JsTokenId.javascriptLanguage());
+            return new JsBracesMatcher(context, JsTokenId.javascriptLanguage());
         }
 
     }
@@ -212,7 +212,7 @@ public class CommonBracesMatcher implements BracesMatcher {
 
         @Override
         public BracesMatcher createMatcher(MatcherContext context) {
-            return new CommonBracesMatcher(context, JsTokenId.jsonLanguage());
+            return new JsBracesMatcher(context, JsTokenId.jsonLanguage());
         }
 
     }
