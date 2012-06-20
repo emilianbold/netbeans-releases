@@ -143,19 +143,16 @@ public class JUnitLibraryInstaller {
         for (UpdateElement req : oc.add(jUnitElement).getRequiredElements()) {
             oc.add(req);
         }
-        // Commented so far, better is to do not show any messages to user 
-        // and silently try to installl JUnit to NB installation folder 
-        // and if it was unsuccessful install it into userdir.
-        //if (silent) {
-        try {
-            install(oc, jUnitElement, jUnitLib, false);
-        } catch (OperationException ex) {
-            LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
-            if (OperationException.ERROR_TYPE.WRITE_PERMISSION.equals(ex.getErrorType())) {
-                notifyWarning(oc, jUnitElement, jUnitLib); 
+        if (silent) {
+            try {
+                install(oc, jUnitElement, jUnitLib, true);
+            } catch (OperationException ex) {
+                LOG.log(Level.INFO, "While installing " + jUnitLib + " thrown " + ex, ex);
+                if (OperationException.ERROR_TYPE.WRITE_PERMISSION.equals(ex.getErrorType())) {
+                    notifyWarning(oc, jUnitElement, jUnitLib); 
+                }
             }
-        }
-        /*} else {
+        } else {
             Confirmation question = new NotifyDescriptor.Confirmation(
                                             download_question(),
                                             download_title(),
@@ -168,7 +165,7 @@ public class JUnitLibraryInstaller {
             } else {
                 LOG.info("user denied JUnit installation");
             }
-        }*/
+        }
     }
     
     private static void install(OperationContainer<InstallSupport> oc, UpdateElement jUnitElement, UpdateUnit jUnitLib, boolean useUserdirAsFallback) throws OperationException {
