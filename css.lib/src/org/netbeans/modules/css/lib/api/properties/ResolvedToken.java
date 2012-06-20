@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.api.properties;
 
 /**
+ * Represents a resolved {@link Token} after a property value parsing.
  *
  * @author marekfukala
  */

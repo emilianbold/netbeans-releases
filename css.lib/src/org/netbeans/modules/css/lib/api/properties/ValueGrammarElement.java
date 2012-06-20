@@ -61,11 +61,6 @@ public class ValueGrammarElement extends GrammarElement {
         return value();
     }
 
-    @Override
-    public GrammarElementKind getKind() {
-        return GrammarElementKind.VALUE;
-    }
-
     /** true for 'unit' values like length, angle etc. Simply for those which has no fixed value. */
     public boolean isUnit() {
         return isUnit;

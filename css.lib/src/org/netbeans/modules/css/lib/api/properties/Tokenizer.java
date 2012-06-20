@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.Token;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -49,19 +48,21 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 
 /**
- * TODO possibly expose the lexer's token instead of the wrappers
+ * Splits the input source to tokens.
+ * 
+ * Internally it uses nb lexer.
+ * 
+ * XXX possibly expose the lexer's token instead of the wrappers
  *
  * @author mfukala@netbeans.org
  */
 public final class Tokenizer {
     
-    private CharSequence input;
     private List<Token> tokens;
     private int currentToken;
     
     private Tokenizer(List<Token> tokens, CharSequence input) {
         this.tokens = tokens;
-        this.input = input;        
     }
     
     public Tokenizer(CharSequence input) {

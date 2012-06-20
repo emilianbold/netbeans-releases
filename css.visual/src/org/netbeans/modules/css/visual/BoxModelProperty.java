@@ -43,7 +43,7 @@ package org.netbeans.modules.css.visual;
 
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.openide.nodes.Node;
 
 /**

@@ -41,17 +41,15 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 /**
- * the object is in fact immutable since the setMinimum/MaximumOccurrences is
+ * An element of the parsed css property value grammar.
+ * 
+ * Note: the object is in fact immutable since the setMinimum/MaximumOccurrences is
  * called only just after its creation.
- */
-/**
- *
+ * 
  * @author mfukala@netbeans.org
  */
 public abstract class GrammarElement {
@@ -72,7 +70,6 @@ public abstract class GrammarElement {
         this.parent = parent;
     }
 
-    public abstract GrammarElementKind getKind();
     private int minimum_occurances = 1;
     private int maximum_occurances = 1;
 

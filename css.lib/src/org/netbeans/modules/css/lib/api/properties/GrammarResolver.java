@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import java.util.Map.Entry;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +52,9 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 
 /**
+ * Resolves a css property value against its grammar.
+ * 
+ * @see PropertyDefinition for more information about the property grammar.
  *
  * @author marekfukala
  */
@@ -294,21 +297,18 @@ public class GrammarResolver {
             log(String.format("+ entering %s, %s", e.path(), createInputState()));
         }
         boolean resolves;
-        switch (e.getKind()) {
-            case GROUP:
+        if(e instanceof GroupGrammarElement) {
                 GroupGrammarElement group = (GroupGrammarElement) e;
                 fireEntering(group);
                 resolves = processGroup(group);
                 fireExited(group, resolves);
-                break;
-            case VALUE:
+        } else if(e instanceof ValueGrammarElement) {
                 ValueGrammarElement value = (ValueGrammarElement) e;
                 fireEntering(value);
                 resolves = processValue(value);
                 fireExited(value, resolves ? resolvedTokens.get(resolvedTokens.size() - 1) : null);
-                break;
-            default:
-                throw new IllegalStateException();
+        } else {
+            throw new IllegalStateException();
         }
         if (LOG) {
             log(String.format("- leaving %s, resolved: %s, %s", e.path(), resolves, createInputState()));

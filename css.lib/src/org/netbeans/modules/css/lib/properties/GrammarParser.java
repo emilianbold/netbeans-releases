@@ -54,12 +54,12 @@ import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
 
 /**
+ * Parser of the semi-grammar expressions taken from the w3c.org css specifications.
+ * 
  * @author mfukala@netbeans.org
  */
 public class GrammarParser {
     
-    
-
     public static GroupGrammarElement parse(String expresssion) {
         return parse(expresssion, null);
     }

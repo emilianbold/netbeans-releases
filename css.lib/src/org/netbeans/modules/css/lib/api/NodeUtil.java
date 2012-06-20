@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.css.lib.TokenNode;
 
 /**
+ * Utility methods to work with the css source parse trees.
  *
  * @author mfukala@netbeans.org
  */

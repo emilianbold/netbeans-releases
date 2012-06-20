@@ -46,16 +46,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.properties.model.BoxType;
-import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PlainElement;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModelBase;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModelProvider;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginModel;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsPaddingModel;
+import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelBase;
+import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelProvider;
+import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsMarginModel;
+import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsPaddingModel;
 
 /**
  *

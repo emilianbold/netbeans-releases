@@ -45,7 +45,7 @@ import org.netbeans.modules.css.lib.api.CssModule;
 
 
 /**
- * Described a CSS property.
+ * Describes a CSS property.
  * 
  * Description of the grammar defining the property values:
  * (the grammar is *almost* the same as used for the property values definitions in the w3c.org specifications)
