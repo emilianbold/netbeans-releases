@@ -39,62 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.impl.semantic.ModelBuilderNodeVisitor;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public class ModelBuilderNodeVisitorTest extends NbTestCase {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    public ModelBuilderNodeVisitorTest(String name) {
+        super(name);
     }
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    public void testGetModelClassNameForNodeName() {
+        assertEquals("Margin", ModelBuilderNodeVisitor.getModelClassNameForNodeName("Margin"));
+        assertEquals("Margin", ModelBuilderNodeVisitor.getModelClassNameForNodeName("margin"));
+        assertEquals("MarginTop", ModelBuilderNodeVisitor.getModelClassNameForNodeName("margin-top"));
+        assertEquals("MarginT", ModelBuilderNodeVisitor.getModelClassNameForNodeName("margin_t"));
+        assertEquals("MarginTb", ModelBuilderNodeVisitor.getModelClassNameForNodeName("margin_tb"));
     }
 
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
-    
 }
+

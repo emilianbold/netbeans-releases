@@ -39,62 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.api.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.api.semantic.Color;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public interface BoxElementFactory {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
+    public BoxElement createBoxElement(CharSequence text);
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
-    
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
-    }
+    public static class Factory {
 
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
+        public static BoxElementFactory getFactory(final BoxType boxType) {
+            return new BoxElementFactory() {
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
+                @Override
+                public BoxElement createBoxElement(CharSequence text) {
+                    switch (boxType) {
+                        case BORDER_COLOR:
+                            return Color.parseValue(text);
+                        case BORDER_STYLE:
+                            return BorderStyleItem.parseValue(text);
+                        case BORDER_WIDTH:
+                            return BorderWidthItem.parseValue(text);
+                        case MARGIN:
+                            return BoxEdgeSize.parseValue(text);
+                        default:
+                            return null;
+                    }
+                }
+            };
 
-    @Override
-    public boolean canWrite() {
-        return true;
+        }
     }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
-    
 }

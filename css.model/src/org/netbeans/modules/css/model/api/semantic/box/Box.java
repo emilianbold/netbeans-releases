@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,80 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
-
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+package org.netbeans.modules.css.model.api.semantic.box;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public interface Box {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
+    public BoxElement getEdge(Edge edge);
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    public static class SameEdges implements Box {
+
+        private BoxElement value;
+
+        public SameEdges(BoxElement value) {
+            this.value = value;
+        }
+        
+        @Override
+        public BoxElement getEdge(Edge edge) {
+            return value;
+        }
+        
     }
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
-    }
+    public static class EachEdge implements Box {
 
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
+        private BoxElement top, right, bottom, left;
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
+        public EachEdge(BoxElement top, BoxElement right, BoxElement bottom, BoxElement left) {
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+            this.left = left;
+        }
+
+        @Override
+        public BoxElement getEdge(Edge edge) {
+            switch(edge) {
+                case TOP:
+                    return top;
+                case RIGHT:
+                    return right;
+                case BOTTOM:
+                    return bottom;
+                case LEFT:
+                    return left;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
+        
     }
     
-    @Override
-    public boolean canRead() {
-        return true;
-    }
+    public static class SingleEdge implements Box {
 
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
+        private BoxElement value;
+        private Edge edge;
 
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
+        public SingleEdge(BoxElement value, Edge e) {
+            this.value = value;
+            this.edge = e;
+        }
 
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
+        @Override
+        public BoxElement getEdge(Edge edge) {
+            return this.edge == edge ? value : null;
+        }
+        
     }
-
+    
+    
+    
     
 }

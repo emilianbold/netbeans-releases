@@ -39,61 +39,77 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
+import java.util.Collection;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxEdgeSize;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+@NbBundle.Messages({
+    "CTL_MarginDisplayName=Margin", // NOI18N
+    "CTL_MarginDescription=Margin Box Model", // NOI18N
+    "CTL_MarginCategory=Box" //NOI18N
+})
+public class DeclarationsMarginModel extends DeclarationsBoxModelBase implements SemanticModel {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
+    private static final String NAME = "margin"; //NOI18N
+    
+    public DeclarationsMarginModel(Model model, 
+            Declarations element, 
+            Collection<Declaration> involved, 
+            Box box) {
+        super(model, element, involved, box);
+    }
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    @Override
+    protected String getPropertyName() {
+        return NAME;
+    }
+
+    @Override
+    protected String getPropertyName(Edge edge) {
+        StringBuilder b = new StringBuilder();
+        b.append(getPropertyName());
+        b.append('-');
+        b.append(edge.name().toLowerCase());
+        
+        return b.toString();
     }
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    @Override
+    public String getDisplayName() {
+        return Bundle.CTL_MarginDisplayName();
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
+    public String getDescription() {
+        return Bundle.CTL_MarginDescription();
     }
 
     @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
+    public String getCategoryName() {
+        return Bundle.CTL_MarginCategory();
     }
 
     @Override
-    public boolean canWrite() {
-        return true;
+    public String getName() {
+        return NAME;
     }
 
     @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
+    public BoxElement createElement(CharSequence text) {
+        return BoxEdgeSize.parseValue(text);
     }
 
     

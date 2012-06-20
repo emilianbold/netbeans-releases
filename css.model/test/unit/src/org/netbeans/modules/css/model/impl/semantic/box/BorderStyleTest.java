@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public class BorderStyleTest extends BoxTestBase {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
+    public BorderStyleTest(String name) {
+        super(name);
+    }
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    public void testBoxOneArg() {
+        assertBox("border-style", "solid", BoxType.BORDER_STYLE, "solid");
     }
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
+    public void testBoxTwoArgs() {
+        assertBox("border-style", "solid dotted", BoxType.BORDER_STYLE, "solid", "dotted", "solid", "dotted");
     }
     
-    @Override
-    public boolean canRead() {
-        return true;
+    public void testBoxThreeArgs() {
+        assertBox("border-style", "solid dotted none", BoxType.BORDER_STYLE, "solid", "dotted", "none", "dotted");
     }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
     
+    public void testBoxFourArgs() {
+        assertBox("border-style", "solid dotted none dashed", BoxType.BORDER_STYLE, "solid", "dotted", "none", "dashed");
+    }
+
 }

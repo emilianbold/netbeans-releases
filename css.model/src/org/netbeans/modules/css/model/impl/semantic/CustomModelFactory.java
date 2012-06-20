@@ -39,62 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import java.util.Collection;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public interface CustomModelFactory {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
+    public NodeModel createModel(Node node);
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    public static class Query {
+        
+        private static Collection<? extends CustomModelFactory> getFactories() {
+            return Lookup.getDefault().lookupAll(CustomModelFactory.class);
+        }
+        
+        public static NodeModel createModel(Node node) {
+            for(CustomModelFactory cmf : getFactories()) {
+                NodeModel model = cmf.createModel(node);
+                if(model != null) {
+                    return model;
+                }
+            }
+            return null;
+        }
+        
     }
-    
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
-    
 }

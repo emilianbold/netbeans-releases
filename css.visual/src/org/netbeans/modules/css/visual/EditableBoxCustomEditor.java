@@ -50,9 +50,9 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
-import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.model.api.semantic.box.BoxEdgeSize;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 
 /**
  *

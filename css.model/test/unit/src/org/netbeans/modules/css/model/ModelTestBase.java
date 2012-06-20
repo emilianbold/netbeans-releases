@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.css.model;
 
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.properties.model.*;
+
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModelProvider;
+import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelProvider;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 /**

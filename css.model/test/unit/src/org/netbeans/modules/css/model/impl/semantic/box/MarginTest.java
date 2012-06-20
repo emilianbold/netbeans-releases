@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public class MarginTest extends BoxTestBase {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    public MarginTest(String name) {
+        super(name);
+    }
+  
+    public void testSingleEdge() {
+        assertBox("margin-top", "2px", BoxType.MARGIN, "2px", null, null, null); 
+        assertBox("margin-right", "2px", BoxType.MARGIN, null, "2px", null, null); 
+        assertBox("margin-bottom", "2px", BoxType.MARGIN, null, null, "2px", null); 
+        assertBox("margin-left", "2px", BoxType.MARGIN, null, null, null, "2px"); 
     }
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    public void testMarginBox() {
+        assertBox("margin", "2px", BoxType.MARGIN, "2px"); 
+        assertBox("margin", "30% 50%", BoxType.MARGIN, "30%", "50%", "30%", "50%"); 
+        assertBox("margin", "30% auto 50%", BoxType.MARGIN, "30%", "auto", "50%", "auto"); 
+        assertBox("margin", "1px 2px 3px 4px", BoxType.MARGIN, "1px", "2px", "3px", "4px");
     }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
     
 }

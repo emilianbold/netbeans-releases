@@ -39,62 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.impl.semantic.CustomModelFactory;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+@ServiceProvider(service = CustomModelFactory.class)
+public class BorderSingleEdgeModelFactory implements CustomModelFactory {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
+    private static final Pattern PATTERN = Pattern.compile("border-(\\w*)-(\\w*)");
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    private Map<String, Edge> EDGE_NAMES = new HashMap<String, Edge>();
+
+    public BorderSingleEdgeModelFactory() {
+        for (Edge e : Edge.values()) {
+            EDGE_NAMES.put(e.name().toLowerCase(), e);
+        }
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
+    public NodeModel createModel(Node node) {
+        String nodeName = node.name().toLowerCase(Locale.ENGLISH);
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
+        Matcher matcher = PATTERN.matcher(nodeName);
+        if(matcher.find()) {
+            String edgeName = matcher.group(1);
+            Edge edge = EDGE_NAMES.get(edgeName);
+            if (edge == null) {
+                return null;
+            }
 
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
+            String typeName = matcher.group(2);
+            if("color".equals(typeName)) {
+                return new BorderSingleEdgeColor(edge, node);
+            } else if("style".equals(typeName)) {
+                return new BorderSingleEdgeStyle(edge, node);
+            } else if("width".equals(typeName)) {
+                return new BorderSingleEdgeWidth(edge, node);
+            }
 
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
+        }
 
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
+        return null;
     }
-
-    
 }

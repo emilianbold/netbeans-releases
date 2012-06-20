@@ -39,62 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.api.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+@NbBundle.Messages({
+    "CTL_Margin_DN=Margin", // NOI18N
+    "CTL_Padding_DN=Padding", // NOI18N
+    "CTL_BorderColor_DN=Border Color", // NOI18N
+    "CTL_BorderWidth_DN=Border Width", // NOI18N
+    "CTL_BorderStyle_DN=Border Style" // NOI18N  
+})
+public enum BoxType {
+    
+    MARGIN(Bundle.CTL_Margin_DN()), 
+    PADDING(Bundle.CTL_Padding_DN()), 
+    BORDER_COLOR(Bundle.CTL_BorderColor_DN()),
+    BORDER_STYLE(Bundle.CTL_BorderStyle_DN()),
+    BORDER_WIDTH(Bundle.CTL_BorderWidth_DN()); 
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    private String displayName;
+    
+    private BoxType(String displayName) {
+        this.displayName = displayName;
     }
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    public String getDisplayName() {
+        return displayName;
     }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
     
 }

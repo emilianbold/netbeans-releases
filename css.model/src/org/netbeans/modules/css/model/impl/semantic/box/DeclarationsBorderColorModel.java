@@ -39,62 +39,81 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
+import java.util.Collection;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.semantic.Color;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+@NbBundle.Messages({
+    "CTL_BorderColorDisplayName=Border Color", // NOI18N
+    "CTL_BorderColorDescription=Border Color Box Model", // NOI18N
+    "CTL_BorderColorCategory=Box" //NOI18N
+})
+public class DeclarationsBorderColorModel extends DeclarationsBoxModelBase implements SemanticModel {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
+    private static final String PROPERTY_NAME_PREFIX = "border"; //NOI18N
+    private static final String PROPERTY_NAME_POSTFIX = "color"; //NOI18N
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    private static final String PROPERTY_NAME = PROPERTY_NAME_PREFIX + "-" + PROPERTY_NAME_POSTFIX;
+
+    public DeclarationsBorderColorModel(Model model,
+            Declarations element,
+            Collection<Declaration> involved,
+            Box box) {
+        super(model, element, involved, box);
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
+    protected String getPropertyName() {
+        return PROPERTY_NAME;
     }
 
     @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
+    protected String getPropertyName(Edge edge) {
+        StringBuilder b = new StringBuilder();
+        b.append(PROPERTY_NAME_PREFIX);
+        b.append('-');
+        b.append(edge.name().toLowerCase());
+        b.append('-');
+        b.append(PROPERTY_NAME_POSTFIX);
+
+        return b.toString();
     }
 
     @Override
-    public boolean canWrite() {
-        return true;
+    public String getDisplayName() {
+        return Bundle.CTL_BorderColorDisplayName();
     }
 
     @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
+    public String getDescription() {
+        return Bundle.CTL_BorderColorDescription();
     }
 
     @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
+    public String getCategoryName() {
+        return Bundle.CTL_BorderColorCategory();
     }
 
-    
+    @Override
+    public String getName() {
+        return PROPERTY_NAME;
+    }
+
+    @Override
+    public BoxElement createElement(CharSequence text) {
+        return Color.parseValue(text);
+    }
 }

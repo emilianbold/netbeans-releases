@@ -39,62 +39,66 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public class BoxPropertySupport {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    /** returns the parameter index for the give edge.
+     * 
+     * used to decode the box 1 to 4 value properties (like padding, border-color,...)
+     * 
+     * @param parameters number of property values 
+     * @param edge
+     * @return index of the parameter which represents the value of the given edge.
+     */
+    public static int getParameterIndex(int parameters, Edge edge) {
+        switch (parameters) {
+            case 0:
+                return -1;
+            case 1:
+                //all edges
+                return 0;
+            case 2:
+                //first == TB, second ==LR
+                switch (edge) {
+                    case TOP:
+                    case BOTTOM:
+                        return 0;
+                    case LEFT:
+                    case RIGHT:
+                        return 1;
+                }
+            case 3:
+                //first == T, second == R, L, third == B
+                switch (edge) {
+                    case TOP:
+                        return 0;
+                    case BOTTOM:
+                        return 2;
+                    case LEFT:
+                    case RIGHT:
+                        return 1;
+                }
+            case 4:
+                //each edge has its own value
+                switch (edge) {
+                    case TOP:
+                        return 0;
+                    case RIGHT:
+                        return 1;
+                    case BOTTOM:
+                        return 2;
+                    case LEFT:
+                        return 3;
+                }
+            default:
+                throw new IllegalStateException("Invalid number of parameters"); //NOI18N
+        }
     }
-    
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
-    
 }

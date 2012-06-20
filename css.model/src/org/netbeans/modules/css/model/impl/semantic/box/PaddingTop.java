@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.impl.semantic.SemanticModel;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.api.semantic.box.BoxEdgeSize;
+import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.lib.api.properties.Node;
+
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
+public class PaddingTop extends NodeModel implements BoxProvider {
 
-    private SemanticModel model;
-    private RuleNode ruleNode;
+    public BoxEdgeSize boxEdgeSize;
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
-    
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
+    public PaddingTop(Node node) {
+        super(node);
     }
 
     @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
+    public Box getBox(BoxType boxType) {
+        if (boxType == BoxType.PADDING) {
+            return new Box.SingleEdge(boxEdgeSize, Edge.TOP);
+        } else {
+            return null;
+        }
     }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
-    
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
-    
 }
