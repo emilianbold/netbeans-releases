@@ -57,7 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -191,7 +191,7 @@ public class JsonParser extends Parser {
         com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
         
         com.oracle.nashorn.ir.FunctionNode node = null;
-        TokenSequence<? extends CommonTokenId> ts = snapshot.getTokenHierarchy().tokenSequence(CommonTokenId.jsonLanguage());
+        TokenSequence<? extends JsTokenId> ts = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.jsonLanguage());
         if (ts != null) {
             ObjectNode object = parseObject(source, ts, errorManager);
             node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
@@ -201,31 +201,31 @@ public class JsonParser extends Parser {
         return node;
     }
     
-    private ObjectNode parseObject(Source source, TokenSequence<? extends CommonTokenId> ts,
+    private ObjectNode parseObject(Source source, TokenSequence<? extends JsTokenId> ts,
             JsErrorManager errorManager) {
 
-        int start = expect(source, CommonTokenId.BRACKET_LEFT_CURLY, ts, errorManager);
+        int start = expect(source, JsTokenId.BRACKET_LEFT_CURLY, ts, errorManager);
         List<Node> members = Collections.emptyList();
         if (nextToken(ts)) {
-            CommonTokenId id = ts.token().id();
+            JsTokenId id = ts.token().id();
             ts.movePrevious();
-            if (id != CommonTokenId.BRACKET_RIGHT_CURLY) {
+            if (id != JsTokenId.BRACKET_RIGHT_CURLY) {
                 members = parseMembers(source, ts, errorManager);
             }
         }
         
-        int end = expect(source, CommonTokenId.BRACKET_RIGHT_CURLY, ts, errorManager);
+        int end = expect(source, JsTokenId.BRACKET_RIGHT_CURLY, ts, errorManager);
         Block context = new Block(source, Token.toDesc(TokenType.LBRACE, start, 1), end, null, null);
         return new ObjectNode(source, Token.toDesc(TokenType.LBRACE, start, 1), end, context, members);
     }
     
-    private List<Node> parseMembers(Source source, TokenSequence<? extends CommonTokenId> ts,
+    private List<Node> parseMembers(Source source, TokenSequence<? extends JsTokenId> ts,
             JsErrorManager errorManager) {
         
         List<Node> ret = new ArrayList<Node>();
         ret.add(parsePair(source, ts, errorManager));
         if (nextToken(ts)) {
-            if (ts.token().id() == CommonTokenId.OPERATOR_COMMA) {
+            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
                 ret.addAll(parseMembers(source, ts, errorManager));
             } else {
                 ts.movePrevious();
@@ -234,56 +234,56 @@ public class JsonParser extends Parser {
         return ret;
     }
     
-    private PropertyNode parsePair(Source source, TokenSequence<? extends CommonTokenId> ts,
+    private PropertyNode parsePair(Source source, TokenSequence<? extends JsTokenId> ts,
             JsErrorManager errorManager) {
-        int start = expect(source, CommonTokenId.STRING_BEGIN, ts, errorManager);
-        expect(source, CommonTokenId.STRING, ts, errorManager);
+        int start = expect(source, JsTokenId.STRING_BEGIN, ts, errorManager);
+        expect(source, JsTokenId.STRING, ts, errorManager);
         String val = ts.token().text().toString();
-        int end = expect(source, CommonTokenId.STRING_END, ts, errorManager);
+        int end = expect(source, JsTokenId.STRING_END, ts, errorManager);
         
         PropertyKeyNode key = LiteralNode.newInstance(source, Token.toDesc(TokenType.STRING, start + 1, val.length()), end, val);
-        expect(source, CommonTokenId.OPERATOR_COLON, ts, errorManager);
+        expect(source, JsTokenId.OPERATOR_COLON, ts, errorManager);
         
         Node value = parseValue(source, ts, errorManager);
         return new PropertyNode(source, start, value != null ? value.getFinish() : -1, key, value);
     }
     
-    private Node parseValue(Source source, TokenSequence<? extends CommonTokenId> ts,
+    private Node parseValue(Source source, TokenSequence<? extends JsTokenId> ts,
                 JsErrorManager errorManager) {
         if (!nextToken(ts)) {
             errorManager.error(source.getName() + ":" + "0:0:" + ts.offset()
                     + ": Expected value but eof found");
             return null;
         }
-        CommonTokenId id = ts.token().id();
+        JsTokenId id = ts.token().id();
         
-        if (id == CommonTokenId.KEYWORD_TRUE) {
+        if (id == JsTokenId.KEYWORD_TRUE) {
             return LiteralNode.newInstance(source,
                     Token.toDesc(TokenType.TRUE, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length(), true);
-        } else if (id == CommonTokenId.KEYWORD_FALSE) {
+        } else if (id == JsTokenId.KEYWORD_FALSE) {
             return LiteralNode.newInstance(source,
                     Token.toDesc(TokenType.FALSE, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length(), false);
-        } else if (id == CommonTokenId.KEYWORD_NULL) {
+        } else if (id == JsTokenId.KEYWORD_NULL) {
             return LiteralNode.newInstance(source, Token.toDesc(TokenType.NULL, ts.offset(), id.fixedText().length()), ts.offset() + id.fixedText().length());
-        } else if (id == CommonTokenId.STRING_BEGIN) {
+        } else if (id == JsTokenId.STRING_BEGIN) {
             int start = ts.offset();
             String val = "";
             if (nextToken(ts)) {
-                if (ts.token().id() == CommonTokenId.STRING) {
+                if (ts.token().id() == JsTokenId.STRING) {
                     val = ts.token().text().toString();
                 } else {
                     ts.movePrevious();
                 }
             }
-            int end = expect(source, CommonTokenId.STRING_END, ts, errorManager);
+            int end = expect(source, JsTokenId.STRING_END, ts, errorManager);
             return LiteralNode.newInstance(source, Token.toDesc(TokenType.STRING, start + 1, val.length()), end, val);
-        } else if (id == CommonTokenId.NUMBER) {
+        } else if (id == JsTokenId.NUMBER) {
             return LiteralNode.newInstance(source, Token.toDesc(TokenType.FLOATING, ts.offset(), ts.token().text().length()), ts.offset() + ts.token().text().length(),
                     Double.valueOf(ts.token().text().toString()));
-        } else if (id == CommonTokenId.BRACKET_LEFT_CURLY) {
+        } else if (id == JsTokenId.BRACKET_LEFT_CURLY) {
             ts.movePrevious();
             return parseObject(source, ts, errorManager);
-        } else if (id == CommonTokenId.BRACKET_LEFT_BRACKET) {
+        } else if (id == JsTokenId.BRACKET_LEFT_BRACKET) {
             ts.movePrevious();
             return parseArray(source, ts, errorManager);
         }
@@ -292,28 +292,28 @@ public class JsonParser extends Parser {
         return null;
     }
     
-    private LiteralNode<List<Node>> parseArray(Source source, TokenSequence<? extends CommonTokenId> ts,
+    private LiteralNode<List<Node>> parseArray(Source source, TokenSequence<? extends JsTokenId> ts,
                 JsErrorManager errorManager) {
-        int start = expect(source, CommonTokenId.BRACKET_LEFT_BRACKET, ts, errorManager);
+        int start = expect(source, JsTokenId.BRACKET_LEFT_BRACKET, ts, errorManager);
         List<Node> values = Collections.emptyList();
         if (nextToken(ts)) {
-            CommonTokenId id = ts.token().id();
+            JsTokenId id = ts.token().id();
             ts.movePrevious();
-            if (id != CommonTokenId.BRACKET_RIGHT_BRACKET) {
+            if (id != JsTokenId.BRACKET_RIGHT_BRACKET) {
                 values = parseValues(source, ts, errorManager);
             }
         }
         
-        int end = expect(source, CommonTokenId.BRACKET_RIGHT_BRACKET, ts, errorManager);
+        int end = expect(source, JsTokenId.BRACKET_RIGHT_BRACKET, ts, errorManager);
         return LiteralNode.newInstance(source, Token.toDesc(TokenType.LBRACKET, start, start + 1), end, values);
     }
     
-    private List<Node> parseValues(Source source, TokenSequence<? extends CommonTokenId> ts,
+    private List<Node> parseValues(Source source, TokenSequence<? extends JsTokenId> ts,
                 JsErrorManager errorManager) {
         List<Node> ret = new ArrayList<Node>();
         ret.add(parseValue(source, ts, errorManager));
         if (nextToken(ts)) {
-            if (ts.token().id() == CommonTokenId.OPERATOR_COMMA) {
+            if (ts.token().id() == JsTokenId.OPERATOR_COMMA) {
                 ret.addAll(parseValues(source, ts, errorManager));
             } else {
                 ts.movePrevious();
@@ -322,14 +322,14 @@ public class JsonParser extends Parser {
         return ret;
     }
 
-    private int expect(Source source, CommonTokenId expected,
-            TokenSequence<? extends CommonTokenId> ts, JsErrorManager errorManager) {
+    private int expect(Source source, JsTokenId expected,
+            TokenSequence<? extends JsTokenId> ts, JsErrorManager errorManager) {
         if (!nextToken(ts)) {
             errorManager.error(source.getName() + ":" + "0:0:" + (source.getLength() - 1)
                     + ": Expected " + (expected.fixedText() != null ? expected.fixedText() : expected.toString()) + " but eof found");
             return -1;
         }
-        CommonTokenId id = ts.token().id();
+        JsTokenId id = ts.token().id();
         if (id != expected) {
             errorManager.error(source.getName() + ":" + "0:0:" + ts.offset()
                     + ": Expected " + (expected.fixedText() != null ? expected.fixedText() : expected.toString())  + " but " + ts.token().text().toString() + " found");          
@@ -338,10 +338,10 @@ public class JsonParser extends Parser {
         return ts.offset();
     }
     
-    private boolean nextToken(TokenSequence<? extends CommonTokenId> ts) {
+    private boolean nextToken(TokenSequence<? extends JsTokenId> ts) {
         boolean ret = false;
         while (ret = ts.moveNext()) {
-            if (ts.token().id() != CommonTokenId.WHITESPACE && ts.token().id() != CommonTokenId.EOL) {
+            if (ts.token().id() != JsTokenId.WHITESPACE && ts.token().id() != JsTokenId.EOL) {
                 break;
             }
         }
@@ -389,7 +389,7 @@ public class JsonParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                         context.getSnapshot(), 0);
                 if (ts != null) {
                     ts.move(offset);
@@ -411,18 +411,18 @@ public class JsonParser extends Parser {
             if (!errors.isEmpty()) {
                 org.netbeans.modules.csl.api.Error error = errors.get(0);
                 int offset = error.getStartPosition();
-                TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                         context.getSnapshot(), 0);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext()) {
                         int start = -1;
                         while (ts.movePrevious()) {
-                            if (ts.token().id() != CommonTokenId.WHITESPACE
-                                    && ts.token().id() != CommonTokenId.EOL
-                                    && ts.token().id() != CommonTokenId.DOC_COMMENT
-                                    && ts.token().id() != CommonTokenId.LINE_COMMENT
-                                    && ts.token().id() != CommonTokenId.BLOCK_COMMENT) {
+                            if (ts.token().id() != JsTokenId.WHITESPACE
+                                    && ts.token().id() != JsTokenId.EOL
+                                    && ts.token().id() != JsTokenId.DOC_COMMENT
+                                    && ts.token().id() != JsTokenId.LINE_COMMENT
+                                    && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
 
                                 start = ts.offset();
                                 break;

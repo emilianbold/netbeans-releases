@@ -50,7 +50,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
@@ -161,18 +161,18 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
 
     private int getEndOffsetOfAssociatedComment(int offset) {
         TokenHierarchy<?> tokenHierarchy = parserResult.getSnapshot().getTokenHierarchy();
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
         if (ts != null) {
             ts.move(offset);
 
             // get to first EOL
             while (ts.movePrevious() 
-                    && ts.token().id() != CommonTokenId.EOL
-                    && ts.token().id() != CommonTokenId.OPERATOR_SEMICOLON);
+                    && ts.token().id() != JsTokenId.EOL
+                    && ts.token().id() != JsTokenId.OPERATOR_SEMICOLON);
 
             // search for DOC_COMMENT
             while (ts.movePrevious()) {
-                if (ts.token().id() == CommonTokenId.DOC_COMMENT) {
+                if (ts.token().id() == JsTokenId.DOC_COMMENT) {
                     return ts.token().offset(tokenHierarchy) + ts.token().length();
                 } else if (isWhitespaceToken(ts.token())) {
                     continue;
@@ -185,10 +185,10 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return -1;
     }
 
-    private boolean isWhitespaceToken(Token<? extends CommonTokenId> token) {
-        return token.id() == CommonTokenId.EOL || token.id() == CommonTokenId.WHITESPACE
-                || token.id() == CommonTokenId.BLOCK_COMMENT || token.id() == CommonTokenId.DOC_COMMENT
-                || token.id() == CommonTokenId.LINE_COMMENT;
+    private boolean isWhitespaceToken(Token<? extends JsTokenId> token) {
+        return token.id() == JsTokenId.EOL || token.id() == JsTokenId.WHITESPACE
+                || token.id() == JsTokenId.BLOCK_COMMENT || token.id() == JsTokenId.DOC_COMMENT
+                || token.id() == JsTokenId.LINE_COMMENT;
     }
 
 }

@@ -76,24 +76,24 @@ public final class LexUtilities {
     }
 
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
-    public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(Document doc, int offset) {
+    public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Document doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
-        return getTokenSequence(th, offset, CommonTokenId.javascriptLanguage());
+        return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
     
-    public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(Snapshot snapshot, int offset) {
+    public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Snapshot snapshot, int offset) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
-        return getTokenSequence(th, offset, CommonTokenId.javascriptLanguage());
+        return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
 
-    public static TokenSequence<? extends CommonTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
-        return getTokenSequence(th, offset, CommonTokenId.javascriptLanguage());
+    public static TokenSequence<? extends JsTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
+        return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
 
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
-    public static TokenSequence<? extends CommonTokenId> getTokenSequence(TokenHierarchy<?> th,
-            int offset, Language<CommonTokenId> language) {
-        TokenSequence<? extends CommonTokenId> ts = th.tokenSequence(language);
+    public static TokenSequence<? extends JsTokenId> getTokenSequence(TokenHierarchy<?> th,
+            int offset, Language<JsTokenId> language) {
+        TokenSequence<? extends JsTokenId> ts = th.tokenSequence(language);
 
         if (ts == null) {
             // Possibly an embedding scenario such as an HTML file
@@ -125,12 +125,12 @@ public final class LexUtilities {
     }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(Document doc, TokenSequence<? extends CommonTokenId> ts, TokenId up,
+    public static OffsetRange findFwd(Document doc, TokenSequence<? extends JsTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
         while (ts.moveNext()) {
-            Token<? extends CommonTokenId> token = ts.token();
+            Token<? extends JsTokenId> token = ts.token();
             TokenId id = token.id();
             
             if (id == up) {
@@ -147,12 +147,12 @@ public final class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static OffsetRange findBwd(Document doc, TokenSequence<? extends CommonTokenId> ts, TokenId up,
+    public static OffsetRange findBwd(Document doc, TokenSequence<? extends JsTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
         while (ts.movePrevious()) {
-            Token<? extends CommonTokenId> token = ts.token();
+            Token<? extends JsTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == up) {
@@ -169,8 +169,8 @@ public final class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static Token<? extends CommonTokenId> getToken(Document doc, int offset) {
-        TokenSequence<? extends CommonTokenId> ts = getPositionedSequence(doc, offset);
+    public static Token<? extends JsTokenId> getToken(Document doc, int offset) {
+        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset);
 
         if (ts != null) {
             return ts.token();
@@ -180,7 +180,7 @@ public final class LexUtilities {
     }
 
     public static char getTokenChar(Document doc, int offset) {
-        Token<? extends CommonTokenId> token = getToken(doc, offset);
+        Token<? extends JsTokenId> token = getToken(doc, offset);
 
         if (token != null) {
             String text = token.text().toString();
@@ -202,7 +202,7 @@ public final class LexUtilities {
      */
     public static int getTokenBalance(Document doc, TokenId open, TokenId close, int offset)
         throws BadLocationException {
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, 0);
         if (ts == null) {
             return 0;
         }
@@ -243,9 +243,9 @@ public final class LexUtilities {
             return false; // whitespace only
         }
 
-        Token<? extends CommonTokenId> token = LexUtilities.getToken(doc, begin);
+        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin);
         if (token != null) {
-            return token.id() == CommonTokenId.LINE_COMMENT;
+            return token.id() == JsTokenId.LINE_COMMENT;
         }
 
         return false;
@@ -257,7 +257,7 @@ public final class LexUtilities {
             int begin = Utilities.getRowStart(doc, offset);
             int end = Utilities.getRowEnd(doc, offset);
 
-            TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -271,7 +271,7 @@ public final class LexUtilities {
             int balance = 0;
 
             do {
-                Token<? extends CommonTokenId> token = ts.token();
+                Token<? extends JsTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (id == up) {
@@ -289,23 +289,23 @@ public final class LexUtilities {
         }
     }
 
-    public static TokenSequence<? extends CommonTokenId> getPositionedSequence(Document doc, int offset) {
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc, int offset) {
         return getPositionedSequence(doc, offset, true);
     }
 
-    public static TokenSequence<? extends CommonTokenId> getPositionedSequence(Snapshot snapshot, int offset) {
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset) {
         return getPositionedSequence(snapshot, offset, true);
     }
 
-    public static TokenSequence<? extends CommonTokenId> getPositionedSequence(Document doc, int offset, boolean lookBack) {
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Document doc, int offset, boolean lookBack) {
         return _getPosSeq(getJsTokenSequence(doc, offset), offset, lookBack);
     }
 
-    public static TokenSequence<? extends CommonTokenId> getPositionedSequence(Snapshot snapshot, int offset, boolean lookBack) {
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(Snapshot snapshot, int offset, boolean lookBack) {
         return _getPosSeq(getJsTokenSequence(snapshot, offset), offset, lookBack);
     }
 
-    private static TokenSequence<? extends CommonTokenId> _getPosSeq(TokenSequence<? extends CommonTokenId> ts, int offset, boolean lookBack) {
+    private static TokenSequence<? extends JsTokenId> _getPosSeq(TokenSequence<? extends JsTokenId> ts, int offset, boolean lookBack) {
         if (ts != null) {
             ts.move(offset);
 
@@ -344,7 +344,7 @@ public final class LexUtilities {
      * @param ignores list of ignored tokens
      * @return 
      */
-    public static Token<? extends CommonTokenId> findNext(TokenSequence<? extends CommonTokenId> ts, List<CommonTokenId> ignores) {
+    public static Token<? extends JsTokenId> findNext(TokenSequence<? extends JsTokenId> ts, List<JsTokenId> ignores) {
         if (ignores.contains(ts.token().id())) {
             while (ts.moveNext() && ignores.contains(ts.token().id())) {}
         }
@@ -357,7 +357,7 @@ public final class LexUtilities {
      * @param ignores
      * @return 
      */
-    public static Token<? extends CommonTokenId> findPrevious(TokenSequence<? extends CommonTokenId> ts, List<CommonTokenId> ignores) {
+    public static Token<? extends JsTokenId> findPrevious(TokenSequence<? extends JsTokenId> ts, List<JsTokenId> ignores) {
         if (ignores.contains(ts.token().id())) {
             while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
         }
@@ -370,7 +370,7 @@ public final class LexUtilities {
      * @param lookfor
      * @return 
      */
-    public static Token<? extends CommonTokenId> findNextToken(TokenSequence<? extends CommonTokenId> ts, List<CommonTokenId> lookfor) {
+    public static Token<? extends JsTokenId> findNextToken(TokenSequence<? extends JsTokenId> ts, List<JsTokenId> lookfor) {
         if (!lookfor.contains(ts.token().id())) {
             while (ts.moveNext() && !lookfor.contains(ts.token().id())) {}
         }
@@ -383,7 +383,7 @@ public final class LexUtilities {
      * @param lookfor
      * @return 
      */
-    public static Token<? extends CommonTokenId> findPreviousToken(TokenSequence<? extends CommonTokenId> ts, List<CommonTokenId> lookfor) {
+    public static Token<? extends JsTokenId> findPreviousToken(TokenSequence<? extends JsTokenId> ts, List<JsTokenId> lookfor) {
         if (!lookfor.contains(ts.token().id())) {
             while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {}
         }

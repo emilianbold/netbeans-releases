@@ -52,7 +52,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -72,13 +72,13 @@ public class JsDocParser {
     public static Map<Integer, JsDocBlock> parse(Snapshot snapshot) {
         Map<Integer, JsDocBlock> blocks = new HashMap<Integer, JsDocBlock>();
 
-        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(CommonTokenId.javascriptLanguage());
+        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
         if (tokenSequence == null) {
             return blocks;
         }
 
         while (tokenSequence.moveNext()) {
-            if (tokenSequence.token().id() == CommonTokenId.DOC_COMMENT) {
+            if (tokenSequence.token().id() == JsTokenId.DOC_COMMENT) {
                 JsDocCommentType commentType = getCommentType(tokenSequence.token().text());
                 LOGGER.log(Level.FINEST, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
                     tokenSequence.offset(), tokenSequence.offset() + tokenSequence.token().length(), commentType, tokenSequence.token().text()});

@@ -711,19 +711,19 @@ public final class JavaScriptColoringLexer {
         this.canFollowLiteral = state.canFollowLiteral;
     }
 
-    public CommonTokenId nextToken() throws java.io.IOException {
-        CommonTokenId token = yylex();
-        if (token != null && !CommonTokenId.UNKNOWN.equals(token)
-                && !CommonTokenId.WHITESPACE.equals(token)
-                && !CommonTokenId.LINE_COMMENT.equals(token)
-                && !CommonTokenId.BLOCK_COMMENT.equals(token)
-                && !CommonTokenId.DOC_COMMENT.equals(token)) {
+    public JsTokenId nextToken() throws java.io.IOException {
+        JsTokenId token = yylex();
+        if (token != null && !JsTokenId.UNKNOWN.equals(token)
+                && !JsTokenId.WHITESPACE.equals(token)
+                && !JsTokenId.LINE_COMMENT.equals(token)
+                && !JsTokenId.BLOCK_COMMENT.equals(token)
+                && !JsTokenId.DOC_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
         }
         return token;
     }
 
-    private static boolean canFollowLiteral(CommonTokenId token) {
+    private static boolean canFollowLiteral(JsTokenId token) {
         if ("operator".equals(token.primaryCategory())) {
             return true;
         }
@@ -1021,7 +1021,7 @@ public final class JavaScriptColoringLexer {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public CommonTokenId yylex() throws java.io.IOException {
+  public JsTokenId yylex() throws java.io.IOException {
     int zzInput;
     int zzAction;
 
@@ -1082,271 +1082,271 @@ public final class JavaScriptColoringLexer {
       switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
         case 40: 
           { yybegin(YYINITIAL);
-                                     return CommonTokenId.REGEXP_END;
+                                     return JsTokenId.REGEXP_END;
           }
         case 114: break;
         case 16: 
-          { return CommonTokenId.BRACKET_LEFT_PAREN;
+          { return JsTokenId.BRACKET_LEFT_PAREN;
           }
         case 115: break;
         case 25: 
-          { return CommonTokenId.OPERATOR_BITWISE_NOT;
+          { return JsTokenId.OPERATOR_BITWISE_NOT;
           }
         case 116: break;
         case 55: 
-          { return CommonTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_BITWISE_AND_ASSIGNMENT;
           }
         case 117: break;
         case 89: 
-          { return CommonTokenId.KEYWORD_THROW;
+          { return JsTokenId.KEYWORD_THROW;
           }
         case 118: break;
         case 35: 
           { yypushback(1);
                                      yybegin(STRINGEND);
                                      if (tokenLength - 1 > 0) {
-                                         return CommonTokenId.STRING;
+                                         return JsTokenId.STRING;
                                      }
           }
         case 119: break;
         case 68: 
-          { return CommonTokenId.KEYWORD_VAR;
+          { return JsTokenId.KEYWORD_VAR;
           }
         case 120: break;
         case 93: 
-          { return CommonTokenId.DOC_COMMENT;
+          { return JsTokenId.DOC_COMMENT;
           }
         case 121: break;
         case 88: 
-          { return CommonTokenId.RESERVED_SUPER;
+          { return JsTokenId.RESERVED_SUPER;
           }
         case 122: break;
         case 110: 
-          { return CommonTokenId.RESERVED_INTERFACE;
+          { return JsTokenId.RESERVED_INTERFACE;
           }
         case 123: break;
         case 43: 
-          { return CommonTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_MULTIPLICATION_ASSIGNMENT;
           }
         case 124: break;
         case 24: 
-          { return CommonTokenId.OPERATOR_NOT;
+          { return JsTokenId.OPERATOR_NOT;
           }
         case 125: break;
         case 12: 
           { yybegin(SSTRING);
-                                    return CommonTokenId.STRING_BEGIN;
+                                    return JsTokenId.STRING_BEGIN;
           }
         case 126: break;
         case 76: 
-          { return CommonTokenId.KEYWORD_ELSE;
+          { return JsTokenId.KEYWORD_ELSE;
           }
         case 127: break;
         case 81: 
-          { return CommonTokenId.KEYWORD_WITH;
+          { return JsTokenId.KEYWORD_WITH;
           }
         case 128: break;
         case 72: 
-          { return CommonTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT;
           }
         case 129: break;
         case 49: 
-          { return CommonTokenId.OPERATOR_EQUALS;
+          { return JsTokenId.OPERATOR_EQUALS;
           }
         case 130: break;
         case 27: 
-          { return CommonTokenId.OPERATOR_COLON;
+          { return JsTokenId.OPERATOR_COLON;
           }
         case 131: break;
         case 45: 
-          { return CommonTokenId.OPERATOR_MINUS_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_MINUS_ASSIGNMENT;
           }
         case 132: break;
         case 18: 
-          { return CommonTokenId.BRACKET_LEFT_CURLY;
+          { return JsTokenId.BRACKET_LEFT_CURLY;
           }
         case 133: break;
         case 66: 
-          { return CommonTokenId.KEYWORD_FOR;
+          { return JsTokenId.KEYWORD_FOR;
           }
         case 134: break;
         case 29: 
-          { return CommonTokenId.OPERATOR_BITWISE_OR;
+          { return JsTokenId.OPERATOR_BITWISE_OR;
           }
         case 135: break;
         case 67: 
-          { return CommonTokenId.RESERVED_LET;
+          { return JsTokenId.RESERVED_LET;
           }
         case 136: break;
         case 20: 
-          { return CommonTokenId.OPERATOR_SEMICOLON;
+          { return JsTokenId.OPERATOR_SEMICOLON;
           }
         case 137: break;
         case 83: 
-          { return CommonTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT;
           }
         case 138: break;
         case 53: 
-          { return CommonTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC;
+          { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC;
           }
         case 139: break;
         case 96: 
-          { return CommonTokenId.RESERVED_STATIC;
+          { return JsTokenId.RESERVED_STATIC;
           }
         case 140: break;
         case 77: 
-          { return CommonTokenId.KEYWORD_CASE;
+          { return JsTokenId.KEYWORD_CASE;
           }
         case 141: break;
         case 26: 
-          { return CommonTokenId.OPERATOR_TERNARY;
+          { return JsTokenId.OPERATOR_TERNARY;
           }
         case 142: break;
         case 15: 
-          { return CommonTokenId.OPERATOR_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_ASSIGNMENT;
           }
         case 143: break;
         case 79: 
-          { return CommonTokenId.KEYWORD_THIS;
+          { return JsTokenId.KEYWORD_THIS;
           }
         case 144: break;
         case 92: 
-          { return CommonTokenId.KEYWORD_WHILE;
+          { return JsTokenId.KEYWORD_WHILE;
           }
         case 145: break;
         case 113: 
-          { return CommonTokenId.RESERVED_IMPLEMENTS;
+          { return JsTokenId.RESERVED_IMPLEMENTS;
           }
         case 146: break;
         case 95: 
-          { return CommonTokenId.RESERVED_EXPORT;
+          { return JsTokenId.RESERVED_EXPORT;
           }
         case 147: break;
         case 1: 
           { yybegin(YYINITIAL);
                                      if (tokenLength > 0) {
-                                         return CommonTokenId.EOL;
+                                         return JsTokenId.EOL;
                                      }
           }
         case 148: break;
         case 108: 
-          { return CommonTokenId.KEYWORD_DEBUGGER;
+          { return JsTokenId.KEYWORD_DEBUGGER;
           }
         case 149: break;
         case 98: 
-          { return CommonTokenId.KEYWORD_TYPEOF;
+          { return JsTokenId.KEYWORD_TYPEOF;
           }
         case 150: break;
         case 28: 
-          { return CommonTokenId.OPERATOR_BITWISE_AND;
+          { return JsTokenId.OPERATOR_BITWISE_AND;
           }
         case 151: break;
         case 105: 
-          { return CommonTokenId.RESERVED_PRIVATE;
+          { return JsTokenId.RESERVED_PRIVATE;
           }
         case 152: break;
         case 22: 
-          { return CommonTokenId.OPERATOR_GREATER;
+          { return JsTokenId.OPERATOR_GREATER;
           }
         case 153: break;
         case 87: 
-          { return CommonTokenId.RESERVED_CLASS;
+          { return JsTokenId.RESERVED_CLASS;
           }
         case 154: break;
         case 17: 
-          { return CommonTokenId.BRACKET_RIGHT_PAREN;
+          { return JsTokenId.BRACKET_RIGHT_PAREN;
           }
         case 155: break;
         case 64: 
-          { return CommonTokenId.KEYWORD_TRY;
+          { return JsTokenId.KEYWORD_TRY;
           }
         case 156: break;
         case 63: 
           { yypushback(1);
                                      yybegin(REGEXPEND);
                                      if (tokenLength - 1 > 0) {
-                                         return CommonTokenId.REGEXP;
+                                         return JsTokenId.REGEXP;
                                      }
           }
         case 157: break;
         case 61: 
-          { return CommonTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_BITWISE_XOR_ASSIGNMENT;
           }
         case 158: break;
         case 21: 
-          { return CommonTokenId.OPERATOR_COMMA;
+          { return JsTokenId.OPERATOR_COMMA;
           }
         case 159: break;
         case 69: 
-          { return CommonTokenId.OPERATOR_EQUALS_EXACTLY;
+          { return JsTokenId.OPERATOR_EQUALS_EXACTLY;
           }
         case 160: break;
         case 50: 
-          { return CommonTokenId.OPERATOR_GREATER_EQUALS;
+          { return JsTokenId.OPERATOR_GREATER_EQUALS;
           }
         case 161: break;
         case 54: 
-          { return CommonTokenId.OPERATOR_NOT_EQUALS;
+          { return JsTokenId.OPERATOR_NOT_EQUALS;
           }
         case 162: break;
         case 78: 
-          { return CommonTokenId.KEYWORD_TRUE;
+          { return JsTokenId.KEYWORD_TRUE;
           }
         case 163: break;
         case 56: 
-          { return CommonTokenId.OPERATOR_AND;
+          { return JsTokenId.OPERATOR_AND;
           }
         case 164: break;
         case 4: 
-          { return CommonTokenId.WHITESPACE;
+          { return JsTokenId.WHITESPACE;
           }
         case 165: break;
         case 60: 
-          { return CommonTokenId.OPERATOR_INCREMENT;
+          { return JsTokenId.OPERATOR_INCREMENT;
           }
         case 166: break;
         case 103: 
-          { return CommonTokenId.KEYWORD_DEFAULT;
+          { return JsTokenId.KEYWORD_DEFAULT;
           }
         case 167: break;
         case 73: 
-          { return CommonTokenId.OPERATOR_NOT_EQUALS_EXACTLY;
+          { return JsTokenId.OPERATOR_NOT_EQUALS_EXACTLY;
           }
         case 168: break;
         case 58: 
-          { return CommonTokenId.OPERATOR_OR;
+          { return JsTokenId.OPERATOR_OR;
           }
         case 169: break;
         case 84: 
-          { return CommonTokenId.KEYWORD_BREAK;
+          { return JsTokenId.KEYWORD_BREAK;
           }
         case 170: break;
         case 37: 
           { yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength -1 > 0) {
-                                         return CommonTokenId.UNKNOWN;
+                                         return JsTokenId.UNKNOWN;
                                      }
           }
         case 171: break;
         case 101: 
-          { return CommonTokenId.RESERVED_PUBLIC;
+          { return JsTokenId.RESERVED_PUBLIC;
           }
         case 172: break;
         case 82: 
-          { return CommonTokenId.KEYWORD_VOID;
+          { return JsTokenId.KEYWORD_VOID;
           }
         case 173: break;
         case 19: 
-          { return CommonTokenId.BRACKET_RIGHT_CURLY;
+          { return JsTokenId.BRACKET_RIGHT_CURLY;
           }
         case 174: break;
         case 48: 
-          { return CommonTokenId.KEYWORD_DO;
+          { return JsTokenId.KEYWORD_DO;
           }
         case 175: break;
         case 46: 
-          { return CommonTokenId.KEYWORD_IN;
+          { return JsTokenId.KEYWORD_IN;
           }
         case 176: break;
         case 39: 
@@ -1355,216 +1355,216 @@ public final class JavaScriptColoringLexer {
           }
         case 177: break;
         case 23: 
-          { return CommonTokenId.OPERATOR_LOWER;
+          { return JsTokenId.OPERATOR_LOWER;
           }
         case 178: break;
         case 62: 
-          { return CommonTokenId.OPERATOR_MODULUS_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_MODULUS_ASSIGNMENT;
           }
         case 179: break;
         case 71: 
-          { return CommonTokenId.OPERATOR_RIGHT_SHIFT;
+          { return JsTokenId.OPERATOR_RIGHT_SHIFT;
           }
         case 180: break;
         case 44: 
-          { return CommonTokenId.OPERATOR_DECREMENT;
+          { return JsTokenId.OPERATOR_DECREMENT;
           }
         case 181: break;
         case 107: 
-          { return CommonTokenId.KEYWORD_CONTINUE;
+          { return JsTokenId.KEYWORD_CONTINUE;
           }
         case 182: break;
         case 31: 
-          { return CommonTokenId.OPERATOR_BITWISE_XOR;
+          { return JsTokenId.OPERATOR_BITWISE_XOR;
           }
         case 183: break;
         case 51: 
-          { return CommonTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC;
+          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC;
           }
         case 184: break;
         case 75: 
-          { return CommonTokenId.RESERVED_ENUM;
+          { return JsTokenId.RESERVED_ENUM;
           }
         case 185: break;
         case 11: 
           { yybegin(STRING);
-                                    return CommonTokenId.STRING_BEGIN;
+                                    return JsTokenId.STRING_BEGIN;
           }
         case 186: break;
         case 85: 
-          { return CommonTokenId.KEYWORD_CATCH;
+          { return JsTokenId.KEYWORD_CATCH;
           }
         case 187: break;
         case 102: 
-          { return CommonTokenId.RESERVED_EXTENDS;
+          { return JsTokenId.RESERVED_EXTENDS;
           }
         case 188: break;
         case 70: 
-          { return CommonTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT;
           }
         case 189: break;
         case 36: 
           { yybegin(YYINITIAL);
-                                     return CommonTokenId.STRING_END;
+                                     return JsTokenId.STRING_END;
           }
         case 190: break;
         case 109: 
-          { return CommonTokenId.KEYWORD_FUNCTION;
+          { return JsTokenId.KEYWORD_FUNCTION;
           }
         case 191: break;
         case 5: 
           { if (canFollowLiteral) {
                                        yybegin(REGEXP);
-                                       return CommonTokenId.REGEXP_BEGIN;
+                                       return JsTokenId.REGEXP_BEGIN;
                                      } else {
-                                       return CommonTokenId.OPERATOR_DIVISION;
+                                       return JsTokenId.OPERATOR_DIVISION;
                                      }
           }
         case 192: break;
         case 30: 
-          { return CommonTokenId.OPERATOR_PLUS;
+          { return JsTokenId.OPERATOR_PLUS;
           }
         case 193: break;
         case 42: 
           { if (canFollowLiteral) {
                                        yypushback(1);
                                        yybegin(REGEXP);
-                                       return CommonTokenId.REGEXP_BEGIN;
+                                       return JsTokenId.REGEXP_BEGIN;
                                      } else {
-                                       return CommonTokenId.OPERATOR_DIVISION_ASSIGNMENT;
+                                       return JsTokenId.OPERATOR_DIVISION_ASSIGNMENT;
                                      }
           }
         case 194: break;
         case 112: 
-          { return CommonTokenId.KEYWORD_INSTANCEOF;
+          { return JsTokenId.KEYWORD_INSTANCEOF;
           }
         case 195: break;
         case 74: 
-          { return CommonTokenId.BLOCK_COMMENT;
+          { return JsTokenId.BLOCK_COMMENT;
           }
         case 196: break;
         case 6: 
-          { return CommonTokenId.OPERATOR_MULTIPLICATION;
+          { return JsTokenId.OPERATOR_MULTIPLICATION;
           }
         case 197: break;
         case 7: 
-          { return CommonTokenId.IDENTIFIER;
+          { return JsTokenId.IDENTIFIER;
           }
         case 198: break;
         case 80: 
-          { return CommonTokenId.KEYWORD_NULL;
+          { return JsTokenId.KEYWORD_NULL;
           }
         case 199: break;
         case 8: 
-          { return CommonTokenId.NUMBER;
+          { return JsTokenId.NUMBER;
           }
         case 200: break;
         case 94: 
-          { return CommonTokenId.KEYWORD_RETURN;
+          { return JsTokenId.KEYWORD_RETURN;
           }
         case 201: break;
         case 100: 
-          { return CommonTokenId.KEYWORD_DELETE;
+          { return JsTokenId.KEYWORD_DELETE;
           }
         case 202: break;
         case 52: 
-          { return CommonTokenId.OPERATOR_LOWER_EQUALS;
+          { return JsTokenId.OPERATOR_LOWER_EQUALS;
           }
         case 203: break;
         case 47: 
-          { return CommonTokenId.KEYWORD_IF;
+          { return JsTokenId.KEYWORD_IF;
           }
         case 204: break;
         case 111: 
-          { return CommonTokenId.RESERVED_PROTECTED;
+          { return JsTokenId.RESERVED_PROTECTED;
           }
         case 205: break;
         case 57: 
-          { return CommonTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_BITWISE_OR_ASSIGNMENT;
           }
         case 206: break;
         case 3: 
-          { return CommonTokenId.EOL;
+          { return JsTokenId.EOL;
           }
         case 207: break;
         case 106: 
-          { return CommonTokenId.RESERVED_PACKAGE;
+          { return JsTokenId.RESERVED_PACKAGE;
           }
         case 208: break;
         case 97: 
-          { return CommonTokenId.KEYWORD_SWITCH;
+          { return JsTokenId.KEYWORD_SWITCH;
           }
         case 209: break;
         case 41: 
           { yybegin(LCOMMENTEND);
-                                   return CommonTokenId.LINE_COMMENT;
+                                   return JsTokenId.LINE_COMMENT;
           }
         case 210: break;
         case 9: 
-          { return CommonTokenId.OPERATOR_DOT;
+          { return JsTokenId.OPERATOR_DOT;
           }
         case 211: break;
         case 90: 
-          { return CommonTokenId.KEYWORD_FALSE;
+          { return JsTokenId.KEYWORD_FALSE;
           }
         case 212: break;
         case 104: 
-          { return CommonTokenId.KEYWORD_FINALLY;
+          { return JsTokenId.KEYWORD_FINALLY;
           }
         case 213: break;
         case 65: 
-          { return CommonTokenId.KEYWORD_NEW;
+          { return JsTokenId.KEYWORD_NEW;
           }
         case 214: break;
         case 38: 
           { yypushback(1);
                                      yybegin(SSTRINGEND);
                                      if (tokenLength - 1 > 0) {
-                                         return CommonTokenId.STRING;
+                                         return JsTokenId.STRING;
                                      }
           }
         case 215: break;
         case 32: 
-          { return CommonTokenId.OPERATOR_MODULUS;
+          { return JsTokenId.OPERATOR_MODULUS;
           }
         case 216: break;
         case 99: 
-          { return CommonTokenId.RESERVED_IMPORT;
+          { return JsTokenId.RESERVED_IMPORT;
           }
         case 217: break;
         case 13: 
-          { return CommonTokenId.BRACKET_LEFT_BRACKET;
+          { return JsTokenId.BRACKET_LEFT_BRACKET;
           }
         case 218: break;
         case 86: 
-          { return CommonTokenId.RESERVED_CONST;
+          { return JsTokenId.RESERVED_CONST;
           }
         case 219: break;
         case 14: 
-          { return CommonTokenId.BRACKET_RIGHT_BRACKET;
+          { return JsTokenId.BRACKET_RIGHT_BRACKET;
           }
         case 220: break;
         case 10: 
-          { return CommonTokenId.OPERATOR_MINUS;
+          { return JsTokenId.OPERATOR_MINUS;
           }
         case 221: break;
         case 59: 
-          { return CommonTokenId.OPERATOR_PLUS_ASSIGNMENT;
+          { return JsTokenId.OPERATOR_PLUS_ASSIGNMENT;
           }
         case 222: break;
         case 91: 
-          { return CommonTokenId.RESERVED_YIELD;
+          { return JsTokenId.RESERVED_YIELD;
           }
         case 223: break;
         case 2: 
-          { return CommonTokenId.UNKNOWN;
+          { return JsTokenId.UNKNOWN;
           }
         case 224: break;
         case 34: 
           { yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return CommonTokenId.UNKNOWN;
+                                         return JsTokenId.UNKNOWN;
                                      }
           }
         case 225: break;
@@ -1580,7 +1580,7 @@ public final class JavaScriptColoringLexer {
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return CommonTokenId.UNKNOWN;
+        return JsTokenId.UNKNOWN;
     } else {
         return null;
     }

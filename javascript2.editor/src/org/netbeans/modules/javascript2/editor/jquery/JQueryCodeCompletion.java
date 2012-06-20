@@ -61,7 +61,7 @@ import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
@@ -110,7 +110,7 @@ public class JQueryCodeCompletion {
     }
 
     private int findParamIndex(ParserResult parserResult, int offset) {
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
         if (ts == null) {
             return -1;
         }
@@ -118,26 +118,26 @@ public class JQueryCodeCompletion {
         if (!(ts.moveNext() && ts.movePrevious())) {
             return -1;
         }
-        Token<? extends CommonTokenId> token = LexUtilities.findNext(ts, Arrays.asList(CommonTokenId.WHITESPACE));
+        Token<? extends JsTokenId> token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
         // count index of parameters
         int paramIndex = 0;
-        while(token.id() != CommonTokenId.EOL && token.id() != CommonTokenId.BRACKET_LEFT_PAREN) {
-            if (token.id() == CommonTokenId.OPERATOR_COMMA) {
+        while(token.id() != JsTokenId.EOL && token.id() != JsTokenId.BRACKET_LEFT_PAREN) {
+            if (token.id() == JsTokenId.OPERATOR_COMMA) {
                 paramIndex ++;
-            } else if (token.id() == CommonTokenId.OPERATOR_DOT) {
+            } else if (token.id() == JsTokenId.OPERATOR_DOT) {
                 // we are not inside ()
                 return -1;
             }
-            token = LexUtilities.findNext(ts, Arrays.asList(CommonTokenId.WHITESPACE));
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
         }
-        if (token.id() == CommonTokenId.BRACKET_LEFT_PAREN) {
+        if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
             return paramIndex;
         }
         return -1;
     }
     
     private String findFunctionName(ParserResult parserResult, int offset) {
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
         if (ts == null) {
             return null;
         }
@@ -145,17 +145,17 @@ public class JQueryCodeCompletion {
         if (!(ts.moveNext() && ts.movePrevious())) {
             return null;
         }
-        Token<? extends CommonTokenId> token = LexUtilities.findNext(ts, Arrays.asList(CommonTokenId.WHITESPACE));
-        while(token.id() != CommonTokenId.EOL && token.id() != CommonTokenId.BRACKET_LEFT_PAREN) {
-            if (token.id() == CommonTokenId.OPERATOR_DOT) {
+        Token<? extends JsTokenId> token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+        while(token.id() != JsTokenId.EOL && token.id() != JsTokenId.BRACKET_LEFT_PAREN) {
+            if (token.id() == JsTokenId.OPERATOR_DOT) {
                 // we are not inside ()
                 return null;
             }
-            token = LexUtilities.findNext(ts, Arrays.asList(CommonTokenId.WHITESPACE));
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
         }
-        if (token.id() == CommonTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
-            token = LexUtilities.findNext(ts, Arrays.asList(CommonTokenId.WHITESPACE));
-            if (token.id() == CommonTokenId.IDENTIFIER){
+        if (token.id() == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
+            token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE));
+            if (token.id() == JsTokenId.IDENTIFIER){
                 return token.text().toString();
             }
         }
@@ -163,7 +163,7 @@ public class JQueryCodeCompletion {
     }
     
     private boolean isJQuery(ParserResult parserResult, int offset) {
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
         if (ts == null) {
             return false;
         }
@@ -171,17 +171,17 @@ public class JQueryCodeCompletion {
         if (!(ts.moveNext() && ts.movePrevious())) {
             return false;
         }
-        Token<? extends CommonTokenId> lastToken = ts.token();
-        Token<? extends CommonTokenId> token = lastToken;
-        CommonTokenId tokenId = token.id();
-        while (tokenId != CommonTokenId.EOL
-                && tokenId != CommonTokenId.WHITESPACE
+        Token<? extends JsTokenId> lastToken = ts.token();
+        Token<? extends JsTokenId> token = lastToken;
+        JsTokenId tokenId = token.id();
+        while (tokenId != JsTokenId.EOL
+                && tokenId != JsTokenId.WHITESPACE
                 && ts.movePrevious()) {
             lastToken = token;
             token = ts.token();
             tokenId = token.id();
         }
-        return (lastToken.id() == CommonTokenId.IDENTIFIER 
+        return (lastToken.id() == JsTokenId.IDENTIFIER 
                 && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
                 || (!ts.movePrevious() 
                 && ("$".equals(token.text().toString()) || "jQuery".equals(lastToken.text().toString()))));
@@ -319,7 +319,7 @@ public class JQueryCodeCompletion {
          * $('p[title="Hello"]') // P tags with title "Hello"
          * $('p[title^="H"]') // P tags title starting with H
          */
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
         if (ts == null) {
             return;
         }
@@ -330,12 +330,12 @@ public class JQueryCodeCompletion {
         String wrapup = "";
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
-        if (!(ts.token().id() == CommonTokenId.STRING || ts.token().id() == CommonTokenId.STRING_END || ts.token().id() == CommonTokenId.STRING_BEGIN)) {
+        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
             wrapup = "'";
-            if (ts.token().id() == CommonTokenId.IDENTIFIER) {
+            if (ts.token().id() == JsTokenId.IDENTIFIER) {
                 ts.movePrevious();
             }
-            if(ts.token().id() == CommonTokenId.OPERATOR_COLON) {
+            if(ts.token().id() == JsTokenId.OPERATOR_COLON) {
                 prefixText = ":" + prefixText;
                 anchorOffsetDelta = prefix.isEmpty() ? 0 : -1;
             } else {

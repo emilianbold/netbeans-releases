@@ -51,7 +51,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -120,11 +120,11 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case PROPERTY_GETTER:
                 case PROPERTY_SETTER:
                     int offset = object.getDeclarationName().getOffsetRange().getStart();
-                    TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), offset);
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), offset);
                     ts.move(offset);
                     if (ts.moveNext() && ts.movePrevious()) {
-                        Token token = LexUtilities.findPrevious(ts, Arrays.asList(CommonTokenId.WHITESPACE, CommonTokenId.BLOCK_COMMENT, CommonTokenId.DOC_COMMENT));
-                        if (token.id() == CommonTokenId.IDENTIFIER && token.length() == 3) {
+                        Token token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                        if (token.id() == JsTokenId.IDENTIFIER && token.length() == 3) {
                             highlights.put(new OffsetRange(ts.offset(), ts.offset() + token.length()), ColoringAttributes.METHOD_SET);
                         }
                     }

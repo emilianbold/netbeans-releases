@@ -54,7 +54,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -225,10 +225,10 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     //depend on both lexers instead of these string dependencies.
 
                     if (state.in_inlined_javascript || state.in_javascript) {
-                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                        embeddings.add(snapshot.create("/*", CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                        embeddings.add(snapshot.create(tokenSequence.offset(), token.length() , CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                        embeddings.add(snapshot.create("*/", CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create(tokenSequence.offset(), token.length() , JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }
@@ -266,7 +266,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                 } else if (token.id().primaryCategory().equals("expression-language") ) { // NOI18N
                     if (state.in_inlined_javascript || state.in_javascript) {
-                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }
@@ -317,7 +317,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     }
 
                     if (wasInPhp) {
-                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }
@@ -379,7 +379,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         }
 
                         if (wasInTpl && !wasInLiteral) {
-                            embeddings.add(snapshot.create(GENERATED_IDENTIFIER, CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
                         }
                     }
                 }
@@ -493,10 +493,10 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         int sourceStart = tokenSequence.offset();
                         int sourceEnd = sourceStart + token.length();
 
-                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                        embeddings.add(snapshot.create("/*", CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                        embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                        embeddings.add(snapshot.create("*/", CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                        embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
                 }
             }
@@ -561,11 +561,11 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     }
                 }
 
-                embeddings.add(snapshot.create(sourceStart, text.length(), CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                embeddings.add(snapshot.create(sourceStart, text.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
 // XXX: need better support in parsing api for this
-//                embeddings.add(snapshot.create("/*", CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CommonTokenId.JAVASCRIPT_MIME_TYPE));
-//                embeddings.add(snapshot.create("*/", CommonTokenId.JAVASCRIPT_MIME_TYPE));
+//                embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
+//                embeddings.add(snapshot.create("*/", JsTokenId.JAVASCRIPT_MIME_TYPE));
 
 //                int generatedStart = buffer.length();
 //                buffer.append(text);
@@ -631,13 +631,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
                             // Insert a file link
                             String insertText = NETBEANS_IMPORT_FILE + "('" + src + "');\n"; // NOI18N
-                            embeddings.add(snapshot.create(insertText, CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(insertText, JsTokenId.JAVASCRIPT_MIME_TYPE));
                         }
                     }
                 }
 
             } else if (state.in_javascript && htmlId == HTMLTokenId.TEXT) {
-                embeddings.add(snapshot.create(ts.offset(), htmlToken.length(), CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                embeddings.add(snapshot.create(ts.offset(), htmlToken.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
             } else if (htmlId == HTMLTokenId.VALUE_JAVASCRIPT) {
 
                 int sourceStart = ts.offset();
@@ -660,13 +660,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     // Add a function context around the event handler
                     // such that it gets proper function context (e.g.
                     // it can return values, the way event handlers can)
-                    embeddings.add(snapshot.create(";function(){\n", CommonTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                    embeddings.add(snapshot.create(";function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
                 }
 
                 state.in_inlined_javascript = true;
 
                 state.lastInlinedJavascriptToken = ts.token();
-                state.lastInlinedJavscriptEmbedding = snapshot.create(sourceStart, sourceEnd - sourceStart, CommonTokenId.JAVASCRIPT_MIME_TYPE);
+                state.lastInlinedJavscriptEmbedding = snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE);
 
                 //add the embedding
                 embeddings.add(state.lastInlinedJavscriptEmbedding);
@@ -706,7 +706,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                             assert removed;
 
                             //2. create new embedding with the adjusted length
-                            embeddings.add(snapshot.create(sourceStart, sourceLength, CommonTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(sourceStart, sourceLength, JsTokenId.JAVASCRIPT_MIME_TYPE));
                         }
                     }
                 }
@@ -719,10 +719,10 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 state.inlined_javascript_pieces = 0;
 
                 // Finish the surrounding function context
-                embeddings.add(snapshot.create("\n}\n", CommonTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                embeddings.add(snapshot.create("\n}\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
 
             } else if (htmlId == HTMLTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
-                embeddings.add(snapshot.create("\n", CommonTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
             } else {
                 // TODO - stash some other DOM stuff into the JavaScript
                 // file such that I can refer to them from within JavaScript

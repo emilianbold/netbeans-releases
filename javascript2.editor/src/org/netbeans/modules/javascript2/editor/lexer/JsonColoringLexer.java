@@ -276,7 +276,7 @@ public final class JsonColoringLexer {
         this.zzLexicalState = state.zzLexicalState;
     }
 
-    public CommonTokenId nextToken() throws java.io.IOException {
+    public JsTokenId nextToken() throws java.io.IOException {
         return yylex();
     }
 
@@ -554,7 +554,7 @@ public final class JsonColoringLexer {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public CommonTokenId yylex() throws java.io.IOException {
+  public JsTokenId yylex() throws java.io.IOException {
     int zzInput;
     int zzAction;
 
@@ -617,78 +617,78 @@ public final class JsonColoringLexer {
           { yypushback(1);
                                      yybegin(YYINITIAL);
                                      if (tokenLength - 1 > 0) {
-                                         return CommonTokenId.UNKNOWN;
+                                         return JsTokenId.UNKNOWN;
                                      }
           }
         case 19: break;
         case 8: 
-          { return CommonTokenId.BRACKET_LEFT_BRACKET;
+          { return JsTokenId.BRACKET_LEFT_BRACKET;
           }
         case 20: break;
         case 4: 
-          { return CommonTokenId.NUMBER;
+          { return JsTokenId.NUMBER;
           }
         case 21: break;
         case 17: 
-          { return CommonTokenId.KEYWORD_NULL;
+          { return JsTokenId.KEYWORD_NULL;
           }
         case 22: break;
         case 11: 
-          { return CommonTokenId.OPERATOR_COLON;
+          { return JsTokenId.OPERATOR_COLON;
           }
         case 23: break;
         case 9: 
-          { return CommonTokenId.BRACKET_RIGHT_BRACKET;
+          { return JsTokenId.BRACKET_RIGHT_BRACKET;
           }
         case 24: break;
         case 14: 
           { yypushback(1);
                                      yybegin(STRINGEND);
                                      if (tokenLength - 1 > 0) {
-                                         return CommonTokenId.STRING;
+                                         return JsTokenId.STRING;
                                      }
           }
         case 25: break;
         case 15: 
           { yybegin(YYINITIAL);
-                                     return CommonTokenId.STRING_END;
+                                     return JsTokenId.STRING_END;
           }
         case 26: break;
         case 5: 
           { yybegin(STRING);
-                                    return CommonTokenId.STRING_BEGIN;
+                                    return JsTokenId.STRING_BEGIN;
           }
         case 27: break;
         case 6: 
-          { return CommonTokenId.BRACKET_LEFT_CURLY;
+          { return JsTokenId.BRACKET_LEFT_CURLY;
           }
         case 28: break;
         case 3: 
-          { return CommonTokenId.WHITESPACE;
+          { return JsTokenId.WHITESPACE;
           }
         case 29: break;
         case 18: 
-          { return CommonTokenId.KEYWORD_FALSE;
+          { return JsTokenId.KEYWORD_FALSE;
           }
         case 30: break;
         case 10: 
-          { return CommonTokenId.OPERATOR_COMMA;
+          { return JsTokenId.OPERATOR_COMMA;
           }
         case 31: break;
         case 2: 
-          { return CommonTokenId.EOL;
+          { return JsTokenId.EOL;
           }
         case 32: break;
         case 7: 
-          { return CommonTokenId.BRACKET_RIGHT_CURLY;
+          { return JsTokenId.BRACKET_RIGHT_CURLY;
           }
         case 33: break;
         case 1: 
-          { return CommonTokenId.UNKNOWN;
+          { return JsTokenId.UNKNOWN;
           }
         case 34: break;
         case 16: 
-          { return CommonTokenId.KEYWORD_TRUE;
+          { return JsTokenId.KEYWORD_TRUE;
           }
         case 35: break;
         case 12: 
@@ -703,7 +703,7 @@ public final class JsonColoringLexer {
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return CommonTokenId.UNKNOWN;
+        return JsTokenId.UNKNOWN;
     } else {
         return null;
     }

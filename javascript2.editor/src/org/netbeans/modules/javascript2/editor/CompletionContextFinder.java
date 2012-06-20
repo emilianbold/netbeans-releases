@@ -48,7 +48,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 
 /**
@@ -65,18 +65,18 @@ public class CompletionContextFinder {
         GLOBAL
     } 
    
-    private static final List<CommonTokenId> WHITESPACES_TOKENS = Arrays.asList(CommonTokenId.WHITESPACE, CommonTokenId.EOL);
+    private static final List<JsTokenId> WHITESPACES_TOKENS = Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL);
     
-    private static final List<CommonTokenId> CHANGE_CONTEXT_TOKENS = Arrays.asList(
-            CommonTokenId.OPERATOR_SEMICOLON, CommonTokenId.BRACKET_LEFT_CURLY, CommonTokenId.BRACKET_RIGHT_CURLY);
+    private static final List<JsTokenId> CHANGE_CONTEXT_TOKENS = Arrays.asList(
+            JsTokenId.OPERATOR_SEMICOLON, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
     private static final List<Object[]> OBJECT_PROPERTY_TOKENCHAINS = Arrays.asList(
-        new Object[]{CommonTokenId.OPERATOR_DOT},
-        new Object[]{CommonTokenId.OPERATOR_DOT, CommonTokenId.IDENTIFIER}
+        new Object[]{JsTokenId.OPERATOR_DOT},
+        new Object[]{JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
     
     private static final List<Object[]> OBJECT_THIS_TOKENCHAINS = Arrays.asList(
-        new Object[]{CommonTokenId.KEYWORD_THIS, CommonTokenId.OPERATOR_DOT},
-        new Object[]{CommonTokenId.KEYWORD_THIS, CommonTokenId.OPERATOR_DOT, CommonTokenId.IDENTIFIER}
+        new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
+        new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
     
     @NonNull
@@ -85,7 +85,7 @@ public class CompletionContextFinder {
         if (th == null) {
             return CompletionContext.NONE;
         }
-        TokenSequence<CommonTokenId> ts = th == null ? null : th.tokenSequence(CommonTokenId.javascriptLanguage());
+        TokenSequence<JsTokenId> ts = th == null ? null : th.tokenSequence(JsTokenId.javascriptLanguage());
         if (ts == null) {
             return CompletionContext.NONE;
         }
@@ -95,22 +95,22 @@ public class CompletionContextFinder {
             return CompletionContext.NONE;
         }
         
-        Token<? extends CommonTokenId> token = ts.token();
-        CommonTokenId tokenId =token.id();
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId =token.id();
         int tokenOffset = ts.offset();
         
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
         }
-        if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, tokenId != CommonTokenId.OPERATOR_DOT)) {
+        if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {
             return CompletionContext.OBJECT_PROPERTY;
         }
         
-        if (tokenId == CommonTokenId.EOL && ts.movePrevious()) {
+        if (tokenId == JsTokenId.EOL && ts.movePrevious()) {
             token = ts.token();
             tokenId = token.id();
         }
-        if (tokenId == CommonTokenId.IDENTIFIER || WHITESPACES_TOKENS.contains(tokenId)) {
+        if (tokenId == JsTokenId.IDENTIFIER || WHITESPACES_TOKENS.contains(tokenId)) {
             ts.movePrevious();
             token = LexUtilities.findPrevious(ts, WHITESPACES_TOKENS);
         }
@@ -143,7 +143,7 @@ public class CompletionContextFinder {
                 break;
             }
 
-           if (tokenID instanceof CommonTokenId) {
+           if (tokenID instanceof JsTokenId) {
                 if (tokenSequence.token().id() == tokenID){
                     moreTokens = tokenSequence.movePrevious();
                 } else {

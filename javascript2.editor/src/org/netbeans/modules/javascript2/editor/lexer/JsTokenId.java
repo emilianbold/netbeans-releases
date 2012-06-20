@@ -57,7 +57,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Petr Pisl
  * @author Petr Hejl
  */
-public enum CommonTokenId implements TokenId {
+public enum JsTokenId implements TokenId {
 
     UNKNOWN(null, "error"), // NOI18N
 
@@ -187,7 +187,7 @@ public enum CommonTokenId implements TokenId {
 
     private final String primaryCategory;
 
-    CommonTokenId(String fixedText, String primaryCategory) {
+    JsTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
@@ -205,34 +205,34 @@ public enum CommonTokenId implements TokenId {
         return "keyword".equals(primaryCategory); //NOI18N
     }
 
-    private static final Language<CommonTokenId> JAVASCRIPT_LANGUAGE =
-            new LanguageHierarchy<CommonTokenId>() {
+    private static final Language<JsTokenId> JAVASCRIPT_LANGUAGE =
+            new LanguageHierarchy<JsTokenId>() {
                 @Override
                 protected String mimeType() {
-                    return CommonTokenId.JAVASCRIPT_MIME_TYPE;
+                    return JsTokenId.JAVASCRIPT_MIME_TYPE;
                 }
 
                 @Override
-                protected Collection<CommonTokenId> createTokenIds() {
-                    return EnumSet.allOf(CommonTokenId.class);
+                protected Collection<JsTokenId> createTokenIds() {
+                    return EnumSet.allOf(JsTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<CommonTokenId>> createTokenCategories() {
-                    Map<String, Collection<CommonTokenId>> cats =
-                            new HashMap<String, Collection<CommonTokenId>>();
+                protected Map<String, Collection<JsTokenId>> createTokenCategories() {
+                    Map<String, Collection<JsTokenId>> cats =
+                            new HashMap<String, Collection<JsTokenId>>();
                     return cats;
                 }
 
                 @Override
-                protected Lexer<CommonTokenId> createLexer(LexerRestartInfo<CommonTokenId> info) {
+                protected Lexer<JsTokenId> createLexer(LexerRestartInfo<JsTokenId> info) {
                     return JsLexer.create(info);
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<CommonTokenId> token,
+                protected LanguageEmbedding<?> embedding(Token<JsTokenId> token,
                         LanguagePath languagePath, InputAttributes inputAttributes) {
-                    CommonTokenId id = token.id();
+                    JsTokenId id = token.id();
 
                     // TODO - JsDoc is embedded directly for now. Should be created layer for
                     // detection and embedding specific documenting tool (like ScriptDoc, JSDoc etc.)
@@ -244,36 +244,36 @@ public enum CommonTokenId implements TokenId {
                 }
             }.language();
 
-    private static final Language<CommonTokenId> JSON_LANGUAGE =
-            new LanguageHierarchy<CommonTokenId>() {
+    private static final Language<JsTokenId> JSON_LANGUAGE =
+            new LanguageHierarchy<JsTokenId>() {
                 @Override
                 protected String mimeType() {
-                    return CommonTokenId.JSON_MIME_TYPE;
+                    return JsTokenId.JSON_MIME_TYPE;
                 }
 
                 @Override
-                protected Collection<CommonTokenId> createTokenIds() {
-                    return EnumSet.allOf(CommonTokenId.class);
+                protected Collection<JsTokenId> createTokenIds() {
+                    return EnumSet.allOf(JsTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<CommonTokenId>> createTokenCategories() {
-                    Map<String, Collection<CommonTokenId>> cats =
-                            new HashMap<String, Collection<CommonTokenId>>();
+                protected Map<String, Collection<JsTokenId>> createTokenCategories() {
+                    Map<String, Collection<JsTokenId>> cats =
+                            new HashMap<String, Collection<JsTokenId>>();
                     return cats;
                 }
 
                 @Override
-                protected Lexer<CommonTokenId> createLexer(LexerRestartInfo<CommonTokenId> info) {
+                protected Lexer<JsTokenId> createLexer(LexerRestartInfo<JsTokenId> info) {
                     return JsonLexer.create(info);
                 }
             }.language();
 
-    public static Language<CommonTokenId> javascriptLanguage() {
+    public static Language<JsTokenId> javascriptLanguage() {
         return JAVASCRIPT_LANGUAGE;
     }
 
-    public static Language<CommonTokenId> jsonLanguage() {
+    public static Language<JsTokenId> jsonLanguage() {
         return JSON_LANGUAGE;
     }
 }

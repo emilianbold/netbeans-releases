@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.openide.filesystems.FileObject;
 
@@ -124,7 +124,7 @@ public abstract class JsElementImpl implements JsElement {
 
     @Override
     public String getMimeType() {
-        return CommonTokenId.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 
     @Override

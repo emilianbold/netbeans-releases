@@ -44,7 +44,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.JsonParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -65,7 +65,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
     @MIMEResolver.ExtensionRegistration(
         extension={ "json" },
         displayName="#JsonResolver",
-        mimeType=CommonTokenId.JSON_MIME_TYPE,
+        mimeType=JsTokenId.JSON_MIME_TYPE,
         position=200
     )
     @NbBundle.Messages("JsonResolver=JSON Files")
@@ -73,7 +73,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
         iconBase = "org/netbeans/modules/javascript2/editor/resources/javascript.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID = "json.source",
-        mimeType = CommonTokenId.JSON_MIME_TYPE,
+        mimeType = JsTokenId.JSON_MIME_TYPE,
         position = 1)
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
@@ -87,7 +87,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public org.netbeans.api.lexer.Language getLexerLanguage() {
-        return CommonTokenId.jsonLanguage();
+        return JsTokenId.jsonLanguage();
     }
 
     @Override
@@ -142,7 +142,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-        return new JsFormatter(CommonTokenId.jsonLanguage());
+        return new JsFormatter(JsTokenId.jsonLanguage());
     }
 
     @Override

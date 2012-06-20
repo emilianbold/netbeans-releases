@@ -59,7 +59,7 @@ import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -300,7 +300,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
 
 
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return null;
@@ -318,18 +318,18 @@ class JsCodeCompletion implements CodeCompletionHandler {
             ts.movePrevious();
         }
 
-        Token<? extends CommonTokenId> token = ts.token();
+        Token<? extends JsTokenId> token = ts.token();
 
-        if (token != null && token.id() != CommonTokenId.EOL) {
-            CommonTokenId id = token.id();
-            if (id == CommonTokenId.STRING_END && ts.movePrevious()) {
+        if (token != null && token.id() != JsTokenId.EOL) {
+            JsTokenId id = token.id();
+            if (id == JsTokenId.STRING_END && ts.movePrevious()) {
                 token = ts.token();
                 id = token.id();
-                if (id == CommonTokenId.STRING_BEGIN) {
+                if (id == JsTokenId.STRING_BEGIN) {
                     return "";
                 }
             }
-            if (id == CommonTokenId.IDENTIFIER || id.isKeyword() || id == CommonTokenId.STRING) {
+            if (id == JsTokenId.IDENTIFIER || id.isKeyword() || id == JsTokenId.STRING) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
@@ -422,7 +422,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
-        TokenSequence<? extends CommonTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
 
 
         if (ts == null){
@@ -431,31 +431,31 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
         ts.move(request.anchor);
         if (ts.movePrevious() && ts.moveNext()) {
-            if (ts.token().id() != CommonTokenId.OPERATOR_DOT) {
+            if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
             }
-            Token<? extends CommonTokenId> token = ts.token();
+            Token<? extends JsTokenId> token = ts.token();
             int parenBalancer = 0;
             boolean methodCall = false;
             List<String> exp = new ArrayList();
             
-            while (token.id() != CommonTokenId.WHITESPACE && token.id() != CommonTokenId.OPERATOR_SEMICOLON
-                    && token.id() != CommonTokenId.BRACKET_RIGHT_CURLY && token.id() != CommonTokenId.BRACKET_LEFT_CURLY
-                    && token.id() != CommonTokenId.BRACKET_LEFT_PAREN
-                    && token.id() != CommonTokenId.BLOCK_COMMENT
-                    && token.id() != CommonTokenId.LINE_COMMENT) {
+            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
+                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
+                    && token.id() != JsTokenId.BRACKET_LEFT_PAREN
+                    && token.id() != JsTokenId.BLOCK_COMMENT
+                    && token.id() != JsTokenId.LINE_COMMENT) {
                 
-                if (token.id() != CommonTokenId.EOL) {
-                    if (token.id() != CommonTokenId.OPERATOR_DOT) {
-                        if (token.id() == CommonTokenId.BRACKET_RIGHT_PAREN) {
+                if (token.id() != JsTokenId.EOL) {
+                    if (token.id() != JsTokenId.OPERATOR_DOT) {
+                        if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
                             parenBalancer++;
                             methodCall = true;
                             while (parenBalancer > 0 && ts.movePrevious()) {
                                 token = ts.token();
-                                if (token.id() == CommonTokenId.BRACKET_RIGHT_PAREN) {
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
                                     parenBalancer++;
                                 } else {
-                                    if (token.id() == CommonTokenId.BRACKET_LEFT_PAREN) {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
                                         parenBalancer--;
                                     }
                                 }

@@ -50,7 +50,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
@@ -144,7 +144,7 @@ public class JsStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
          
         TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
-        TokenSequence ts = th.tokenSequence(CommonTokenId.javascriptLanguage());
+        TokenSequence ts = th.tokenSequence(JsTokenId.javascriptLanguage());
         List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
         List<FoldingItem> stack = new ArrayList<FoldingItem>();
 
@@ -152,24 +152,24 @@ public class JsStructureScanner implements StructureScanner {
             ts = tsi.getSequence();
 
             TokenId tokenId;
-            CommonTokenId lastContextId = null;
+            JsTokenId lastContextId = null;
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
-                if (tokenId == CommonTokenId.DOC_COMMENT) {
+                if (tokenId == JsTokenId.DOC_COMMENT) {
                     getRanges(folds, FOLD_JSDOC).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
-                } else if (tokenId == CommonTokenId.BLOCK_COMMENT) {
+                } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
                     getRanges(folds, FOLD_COMMENT).add(new OffsetRange(ts.offset(), ts.offset() + ts.token().length()));
-                } else if (((CommonTokenId) tokenId).isKeyword()) {
-                    lastContextId = (CommonTokenId) tokenId;
-                } else if (tokenId == CommonTokenId.BRACKET_LEFT_CURLY) {
+                } else if (((JsTokenId) tokenId).isKeyword()) {
+                    lastContextId = (JsTokenId) tokenId;
+                } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
                     String kind;
-                    if (lastContextId == CommonTokenId.KEYWORD_FUNCTION) {
+                    if (lastContextId == JsTokenId.KEYWORD_FUNCTION) {
                         kind = FOLD_FUNCTION;
                     } else {
                         kind = FOLD_OTHER_CODE_BLOCKS;
                     }
                     stack.add(new FoldingItem(kind, ts.offset()));
-                } else if (tokenId == CommonTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
+                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
                     FoldingItem fromStack = stack.remove(stack.size() - 1);
                     getRanges(folds, fromStack.kind).add(new OffsetRange(
                             info.getSnapshot().getOriginalOffset(fromStack.start),

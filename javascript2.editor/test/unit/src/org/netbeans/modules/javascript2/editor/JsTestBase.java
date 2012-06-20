@@ -60,7 +60,7 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.test.MockLookup;
 
@@ -88,7 +88,7 @@ public abstract class JsTestBase extends CslTestBase {
     
     @Override
     protected String getPreferredMimeType() {
-        return CommonTokenId.JAVASCRIPT_MIME_TYPE;
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
     
     public static class TestJsLanguage extends JsLanguage {
@@ -141,7 +141,7 @@ public abstract class JsTestBase extends CslTestBase {
 //            preferences = new IndentPrefs(4,4);
 //        }
 //
-//        Preferences prefs = MimeLookup.getLookup(MimePath.get(CommonTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
+//        Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
 //        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
 //
 //        JsFormatter formatter = new JsFormatter();
@@ -158,8 +158,8 @@ public abstract class JsTestBase extends CslTestBase {
 //    // test infrastructure.
 //    public static BaseDocument getDocumentFor(FileObject fo) {
 //        BaseDocument doc = GsfTestBase.createDocument(read(fo));
-//        doc.putProperty(org.netbeans.api.lexer.Language.class, CommonTokenId.language());
-//        doc.putProperty("mimeType", CommonTokenId.JAVASCRIPT_MIME_TYPE);
+//        doc.putProperty(org.netbeans.api.lexer.Language.class, JsTokenId.language());
+//        doc.putProperty("mimeType", JsTokenId.JAVASCRIPT_MIME_TYPE);
 //
 //        return doc;
 //    }

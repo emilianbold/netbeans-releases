@@ -47,7 +47,7 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.lexer.CommonTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -202,15 +202,15 @@ public class ModelUtils {
     }
     
     
-    private static final Collection<CommonTokenId> CTX_DELIMITERS = Arrays.asList(
-            CommonTokenId.BRACKET_LEFT_CURLY, CommonTokenId.BRACKET_RIGHT_CURLY,
-            CommonTokenId.OPERATOR_SEMICOLON);
+    private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
+            JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
+            JsTokenId.OPERATOR_SEMICOLON);
     
     private enum State {
         INIT
     }
     
-    private static String getSemiType(TokenSequence<CommonTokenId> ts, int offset) {
+    private static String getSemiType(TokenSequence<JsTokenId> ts, int offset) {
         
         String result = "UNKNOWN";
         ts.move(offset);
@@ -220,11 +220,11 @@ public class ModelUtils {
     
         State state = State.INIT;
         while (ts.movePrevious()) {
-            Token<CommonTokenId> token = ts.token();
+            Token<JsTokenId> token = ts.token();
             if (!CTX_DELIMITERS.contains(token.id())){
                 switch (state) {
                     case INIT:
-                        if (token.id() == CommonTokenId.IDENTIFIER)
+                        if (token.id() == JsTokenId.IDENTIFIER)
                         break;
                 }
             }
