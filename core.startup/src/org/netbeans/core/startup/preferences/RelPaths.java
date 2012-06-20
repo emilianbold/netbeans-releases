@@ -72,21 +72,17 @@ public final class RelPaths {
             return null;
         }
         String[] ret = {null, null};
-        if (testWritePath(path, System.getProperty("netbeans.user"), "user", ret)) {
-            return ret;
-        }
+        testWritePath(path, System.getProperty("netbeans.user"), "user", ret); // NOI18N
         int cnt = 0;
         for (String p : dirs()) {
-            if (testWritePath(path, p, "" + cnt, ret)) {
-                return ret;
-            }
+            testWritePath(path, p, "" + cnt, ret);
             cnt++;
         }
-        if (testWritePath(path, System.getProperty("netbeans.home"), "home", ret)) {
-            return ret;
+        testWritePath(path, System.getProperty("netbeans.home"), "home", ret); // NOI18N
+        if (ret[1] == null) {
+            ret[0] = "abs"; // NOI18N
+            ret[1] = path;
         }
-        ret[0] = "abs";
-        ret[1] = path;
         return ret;
     }
     
@@ -144,8 +140,17 @@ public final class RelPaths {
             return false;
         }
         if (path.startsWith(prefix)) {
-            ret[0] = codeName;
-            ret[1] = path.substring(prefix.length());
+            String relPath = path.substring(prefix.length());
+            while (relPath.startsWith("/")) {
+                relPath = relPath.substring(1);
+            }
+            if (
+                ret[1] == null || 
+                ret[1].length() > relPath.length()
+            ) {
+                ret[0] = codeName;
+                ret[1] = relPath;
+            }
             return true;
         }
         return false;
@@ -154,7 +159,7 @@ public final class RelPaths {
     private static synchronized String[] dirs() {
         if (dirs == null) {
             List<String> tmp = new ArrayList<String>();
-            String nbdirs = System.getProperty("netbeans.dirs");
+            String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
             if (nbdirs != null) {
                 StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
                 while (tok.hasMoreTokens()) {
@@ -164,5 +169,9 @@ public final class RelPaths {
             dirs = tmp.toArray(new String[tmp.size()]);
         }
         return dirs;
+    }
+    
+    static synchronized void assignDirs(String... arr) {
+        dirs = arr;
     }
 }

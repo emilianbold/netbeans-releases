@@ -266,10 +266,10 @@ final class BinaryFS extends FileSystem implements DataInput {
     }
     private static String toAbsoluteURL(String relURL) {
         if (relURL.startsWith("home@")) {
-            return "jar:" + Utilities.toURI(new File(System.getProperty("netbeans.home"))) + relURL.substring(5);
+            return toJarURI(System.getProperty("netbeans.home")) + relURL.substring(5);
         }
         if (relURL.startsWith("user@")) {
-            return "jar:" + Utilities.toURI(new File(System.getProperty("netbeans.user"))) + relURL.substring(5);
+            return toJarURI(System.getProperty("netbeans.user")) + relURL.substring(5);
         }
         if (relURL.startsWith("abs@")) {
             return "jar:file:" + relURL.substring(4);
@@ -279,7 +279,33 @@ final class BinaryFS extends FileSystem implements DataInput {
             return relURL;
         }
         int cluster = Integer.parseInt(relURL.substring(0, indx));
-        return "jar:" + Utilities.toURI(new File(RelPaths.cluster(cluster))) + relURL.substring(indx + 1);
+        return toJarURI(RelPaths.cluster(cluster)) + relURL.substring(indx + 1);
+    }
+
+    private static String toJarURI(String path) {
+        class DirFile extends File {
+            public DirFile(String pathname) {
+                super(pathname);
+            }
+
+            @Override
+            public boolean isDirectory() {
+                return true;
+            }
+
+            @Override
+            public boolean isFile() {
+                return false;
+            }
+
+            @Override
+            public File getAbsoluteFile() {
+                return this;
+            }
+        }
+        String ret = "jar:" + Utilities.toURI(new DirFile(path)).toString(); // NOI18N
+        assert !ret.contains("//") : ret;
+        return ret;
     }
     
     @Override
