@@ -432,9 +432,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     @Override
     public void setSize(float width, float height) {
-        // Currently the view is not designed to possibly shrink/extend its size according to the given size.
+        // This method is called outside of VH lock
         if (width != allocation.width) {
             op.markAllocationWidthChange(width);
+            // Update visible dimension early to avoid a visible "double resizing"
+            if (SwingUtilities.isEventDispatchThread()) {
+                op.updateVisibleDimension(false);
+            }
         }
         if (height != allocation.height) {
             op.markAllocationHeightChange(height);
