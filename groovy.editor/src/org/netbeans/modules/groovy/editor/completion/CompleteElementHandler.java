@@ -43,9 +43,11 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -122,7 +124,35 @@ public final class CompleteElementHandler {
         boolean leaf = (level == 0);
         Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
 
-        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        Map<MethodSignature, CompletionItem> result = new TreeMap<MethodSignature, CompletionItem>(new Comparator<MethodSignature>() {
+
+            @Override
+            public int compare(MethodSignature method1, MethodSignature method2) {
+                // Different method name --> just compare as normal Strings
+                if (!method1.getName().equals(method2.getName())) {
+                    return method1.getName().compareTo(method2.getName());
+                }
+                // Method with lower 'parameter count' should be always first
+                if (method1.getParameters().length < method2.getParameters().length) {
+                    return -1;
+                }
+                if (method1.getParameters().length > method2.getParameters().length) {
+                    return 1;
+                }
+                // Same number of parameters --> compare param by param as normal Strings
+                for (int i = 0; i < method1.getParameters().length; i++) {
+                    String param1 = method1.getParameters()[i];
+                    String param2 = method2.getParameters()[i];
+                    
+                    int comparedValue = param1.compareTo(param2);
+                    if (comparedValue != 0) {
+                        return comparedValue;
+                    }
+                }
+                // This should happened only if there are two absolutely identical methods
+                return 0;
+            }
+        });
         ClassDefinition definition = loadDefinition(node);
         ClassNode typeNode = definition.getNode();
 
