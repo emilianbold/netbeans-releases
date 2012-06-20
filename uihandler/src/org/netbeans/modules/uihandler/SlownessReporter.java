@@ -45,6 +45,7 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.LinkedList;
@@ -60,6 +61,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.openide.awt.HtmlRenderer;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
@@ -204,8 +206,7 @@ class SlownessReporter {
         }
 
         private JButton createDetails(String text) {
-            text = "<html><u>" + text; //NOI18N
-            JButton btn = new JButton(text);
+            JButton btn = new HtmlButton(text);
             btn.setFocusable(false);
             btn.setBorder(BorderFactory.createEmptyBorder());
             btn.setBorderPainted(false);
@@ -221,6 +222,22 @@ class SlownessReporter {
         @Override
         public void run() {
             Installer.displaySummary("ERROR_URL", true, false, true, data); // NOI18N
+        }
+
+        private static class HtmlButton extends JButton {
+            
+            public HtmlButton(String text) {
+                super(text);
+            }
+            
+            @Override
+            protected void paintComponent(Graphics g) {
+                HtmlRenderer.renderString("<html><u>" + getText() + "</u></html>",  // NOI18N
+                        g, 0, getBaseline(Integer.MAX_VALUE, getFont().getSize()),
+                        Integer.MAX_VALUE, getFont().getSize(),
+                        getFont(), getForeground(), HtmlRenderer.STYLE_CLIP, true);
+            }
+
         }
     }
 }

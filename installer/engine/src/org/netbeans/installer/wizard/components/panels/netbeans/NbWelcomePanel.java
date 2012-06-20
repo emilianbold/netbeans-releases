@@ -1153,8 +1153,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         if(product.getUid().equals("jdk")) {
             return JavaUtils.findJDKHome(product.getVersion())!= null;
         } else if(product.getUid().equals("javafxsdk")) {
-            return JavaFXUtils.getJavaFXSDKInstallationPath(product.getPlatforms().get(0),
-                    product.getVersion()) != null;
+            return JavaFXUtils.getJavaFXSDKInstallationPath(product.getPlatforms().get(0)) != null;
         } else if(product.getUid().equals("weblogic")) {
             return false; // research if it is possible to know if WL is already installed by standalone installer
         }        

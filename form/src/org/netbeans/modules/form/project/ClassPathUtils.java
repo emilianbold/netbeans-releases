@@ -72,7 +72,18 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 public class ClassPathUtils {
 
+    /**
+     * Cache the classloader instance related to the project (shared for all
+     * forms from the project).
+     */
     private static Map<Project,Reference<FormClassLoader>> loaders = new WeakHashMap<Project,Reference<FormClassLoader>>();
+
+    /**
+     * Make sure the project-related classloader is not forgotten by the weak
+     * cache during the time a form is opened (same instance used all the time,
+     * for the form, if not changed otherwise, e.g. due to project CP change).
+     */
+    private static Map<FileObject, FormClassLoader> formLoaders = new HashMap<FileObject,FormClassLoader>();
 
     /**
      * Class loading type for a class to be always loaded by the IDE's system
@@ -117,6 +128,10 @@ public class ClassPathUtils {
         loaders.remove(p);
     }
 
+    public static void releaseFormClassLoader(FileObject fileInPoject) {
+        formLoaders.remove(fileInPoject);
+    }
+
     private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
         Reference<FormClassLoader> ref = loaders.get(p);
@@ -126,6 +141,7 @@ public class ClassPathUtils {
                                      fileInProject, existingProjectCL);
         if (fcl == null || newProjectCL != existingProjectCL) {
             fcl = new FormClassLoader(newProjectCL);
+            formLoaders.put(fileInProject, fcl);
             loaders.put(p, new WeakReference<FormClassLoader>(fcl));
         }
         return fcl;

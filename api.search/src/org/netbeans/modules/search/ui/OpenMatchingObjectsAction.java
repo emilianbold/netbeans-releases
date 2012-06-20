@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.project.api;
+package org.netbeans.modules.search.ui;
 
-import javax.swing.ComboBoxModel;
-import javax.swing.ListCellRenderer;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.javafx2.project.J2SEProjectType;
-import org.netbeans.modules.javafx2.project.JFXProjectUtils;
-import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
+import org.netbeans.modules.search.MatchingObject;
+import org.openide.cookies.EditCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
- * 
- * @author Anton Chechel
+ * Action that opens currently selected matching objects in editor.
+ *
+ * @author jhavlin
  */
-public final class JavaFXProjectUtils {
+public class OpenMatchingObjectsAction extends NodeAction {
 
-    public static final String PROP_JAVA_PLATFORM_NAME = "java.platform.name"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE;
-
-    private JavaFXProjectUtils() {
-    }
-    
-    public static boolean isJavaFxEnabled(Project prj) {
-        return JFXProjectUtils.isFXProject(prj);
+    @Override
+    public String getName() {
+        return UiUtils.getText("LBL_EditAction");                       //NOI18N
     }
 
-    public static ComboBoxModel createPlatformComboBoxModel() {
-        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel("default_platform")); // NOI18N
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
-    public static ListCellRenderer createPlatformListCellRenderer() {
-        return PlatformUiSupport.createPlatformListCellRenderer();
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+
+        for (Node n : activatedNodes) {
+            MatchingObject mo = n.getLookup().lookup(
+                    MatchingObject.class);
+            if (mo != null) {
+                DataObject dob = mo.getDataObject();
+                if (dob != null) {
+                    EditCookie editCookie = dob.getLookup().lookup(
+                            EditCookie.class);
+                    if (editCookie != null) {
+                        editCookie.edit();
+                    }
+                }
+            }
+        }
     }
 
-    public static JavaPlatform getPlatform(Object platformKey) {
-        return PlatformUiSupport.getPlatform(platformKey);
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return activatedNodes != null && activatedNodes.length > 0;
     }
 }

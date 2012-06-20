@@ -234,7 +234,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
     }
     
     private static String createPreloaderProjectName(final String projectName) {
-        return projectName + "-Preloader"; // NOI18N
+        return projectName + "-" + NbBundle.getMessage(PanelOptionsVisual.class, "TXT_FileNamePreloaderPostfix"); // NOI18N
     }
     
     private static String createMainClassName(final String projectName, final WizardType type) {
