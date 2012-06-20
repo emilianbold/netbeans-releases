@@ -44,18 +44,23 @@
 
 package org.netbeans.editor;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -145,6 +150,44 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     
     protected List<Mark> visibleMarks = new ArrayList<Mark>();
     
+    /**
+     * Mouse moved point, possibly {@code null}. Set from mouse-moved, mouse-entered
+     * handlers, so that painting will paint this fold in bold. Null, if mouse is not
+     * in the sidebar region. The value is used to compute highlighted portions of the 
+     * folding outline.
+     */
+    private int   mousePoint;
+    
+    /**
+     * if true, the {@link #mousePoint} has been already used to make a PaintInfo active.
+     * The flag is tested by {@link #traverseForward} and {@link #traverseBackward} after children
+     * of the current fold are processed and cleared if the {@link #mousePoint} falls to the fold area -
+     * fields of PaintInfo are set accordingly.
+     * It's also used to compute (current) mouseBoundary, so mouse movement does not trigger 
+     * refreshes eagerly
+     */
+    private boolean mousePointConsumed;
+    
+    /**
+     * Boundaries of the current area under the mouse. Can be eiher the span of the
+     * current fold (or part of it), or the span not occupied by any fold. Serves as an optimization
+     * for mouse handler, which does not trigger painting (refresh) unless mouse 
+     * leaves this region.
+     */
+    private Rectangle   mouseBoundary;
+    
+    /**
+     * Y-end of the nearest fold that ends above the {@link #mousePoint}. Undefined if mousePoint is null.
+     * These two variables are initialized at each level of folds, and help to compute {@link #mouseBoundary} for
+     * the case the mousePointer is OUTSIDE all children (or outside all folds). 
+     */
+    private int lowestAboveMouse = -1;
+
+    /**
+     * Y-begin of the nearest fold, which starts below the {@link #mousePoint}. Undefined if mousePoint is null
+     */
+    private int topmostBelowMouse = Integer.MAX_VALUE;
+    
     /** Paint operations */
     public static final int PAINT_NOOP             = 0;
     /**
@@ -166,6 +209,22 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
      * Single-line marker, both start and end
      */
     public static final int SINGLE_PAINT_MARK      = 4;
+    
+    /**
+     * Marker value for {@link #mousePoint} indicating that mouse is outside the Component.
+     */
+    private static final int NO_MOUSE_POINT = -1;
+    
+    /**
+     * Stroke used to draw inactive (regular) fold outlines.
+     */
+    private static Stroke LINE_DASHED = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
+            1f, new float[] { 1f, 1f }, 0f);
+    
+    /**
+     * Stroke used to draw outlines for 'active' fold
+     */
+    private static final Stroke LINE_BOLD = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
     
     private final Preferences prefs;
     private final PreferenceChangeListener prefsListener = new PreferenceChangeListener() {
@@ -212,6 +271,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         this.component = component;
 
         addMouseListener(listener);
+        addMouseMotionListener(listener);
 
         FoldHierarchy foldHierarchy = FoldHierarchy.get(component);
         foldHierarchy.addFoldHierarchyListener(WeakListeners.create(FoldHierarchyListener.class, listener, foldHierarchy));
@@ -297,6 +357,27 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     ) throws BadLocationException {
         //never called
     }
+
+    /**
+     * Adjust lowest/topmost boundaries from the Fold range y1-y2.
+     * @param y1
+     * @param y2
+     * @param level 
+     */
+    private void setMouseBoundaries(int y1, int y2, int level) {
+        if (!hasMousePoint() || mousePointConsumed) {
+            return;
+        }
+        int y = mousePoint;
+        if (y2 < y && lowestAboveMouse < y2) {
+            LOG.log(Level.FINEST, "lowestAbove at {1}: {0}", new Object[] { y2, level });
+            lowestAboveMouse = y2;
+        }
+        if (y1 > y && topmostBelowMouse > y1) {
+            LOG.log(Level.FINEST, "topmostBelow at {1}: {0}", new Object[] { y1, level });
+            topmostBelowMouse = y1;
+        }
+    }
     
     /*
      * Even collapsed fold MAY contain a continuation line, IF one of folds on the same line is NOT collapsed. Such a fold should
@@ -313,7 +394,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         if (bdoc == null) {
             return Collections.<PaintInfo>emptyList();
         }
-
+        mousePointConsumed = false;
+        mouseBoundary = null;
+        topmostBelowMouse = Integer.MAX_VALUE;
+        lowestAboveMouse = -1;
         bdoc.readLock();
         try {
             int startPos = baseTextUI.getPosFromY(clip.y);
@@ -344,7 +428,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                      * This is because several folds may occupy the same line, while only one + sign is displayed,
                      * and affect the last fold in the row.
                      */
-                    Map<Integer, PaintInfo> map = new TreeMap<Integer, PaintInfo>();
+                    NavigableMap<Integer, PaintInfo> map = new TreeMap<Integer, PaintInfo>();
                     // search backwards
                     for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
                         Fold fold = foldList.get(i);
@@ -360,11 +444,21 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                             break;
                         }
                     }
-
+                    
                     if (map.isEmpty() && foldList.size() > 0) {
                         assert foldList.size() == 1;
-                        return Collections.singletonList(new PaintInfo(PAINT_LINE, 0, clip.y, clip.height, -1, -1));
+                        PaintInfo pi = new PaintInfo(PAINT_LINE, 0, clip.y, clip.height, -1, -1);
+                        mouseBoundary = new Rectangle(0, 0, 0, clip.height);
+                        LOG.log(Level.FINEST, "Mouse boundary for full side line set to: {0}", mouseBoundary);
+                        if (hasMousePoint()) {
+                            pi.markActive(true, true, true);
+                        }
+                        return Collections.singletonList(pi);
                     } else {
+                        if (mouseBoundary == null) {
+                            mouseBoundary = makeMouseBoundary(clip.y, clip.y + clip.height);
+                            LOG.log(Level.FINEST, "Mouse boundary not set, defaulting to: {0}", mouseBoundary);
+                        }
                         return new ArrayList<PaintInfo>(map.values());
                     }
                 } else {
@@ -392,7 +486,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         infos.put(yOffset, nextInfo);
     }
 
-    private boolean traverseForward(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary,int level,  Map<Integer, PaintInfo> infos) throws BadLocationException {
+    private boolean traverseForward(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary,int level,  NavigableMap<Integer, PaintInfo> infos) throws BadLocationException {
 //        System.out.println("~~~ traverseForward<" + lowerBoundary + ", " + upperBoundary
 //                + ">: fold=<" + f.getStartOffset() + ", " + f.getEndOffset() + "> "
 //                + (f.getStartOffset() > upperBoundary ? ", f.gSO > uB" : "")
@@ -407,51 +501,137 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         int y1 = btui.getYFromPos(lineStartOffset1);
         int h = btui.getEditorUI().getLineHeight();
         int y2 = btui.getYFromPos(lineStartOffset2);
-
+         
+        // the 'active' flags can be set only after children are processed; highlights
+        // correspond to the innermost expanded child.
+        boolean activeMark = false;
+        boolean activeIn = false;
+        boolean activeOut = false;
+        PaintInfo spi;
+        boolean activated;
+        
         if (y1 == y2) {
             // whole fold is on a single line
-            addPaintInfo(infos, y1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+            spi = new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2);
+            if (activated = isActivated(y1, y1 + h)) {
+                activeMark = true;
+            }
+            addPaintInfo(infos, y1, spi);
         } else {
             // fold spans multiple lines
-            addPaintInfo(infos, y1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+            spi = new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2);
+            if (activated = isActivated(y1, y2 + h / 2)) {
+                activeMark = true;
+                activeOut = true;
+            }
+            addPaintInfo(infos, y1, spi);
         }
+
+        setMouseBoundaries(y1, y2 + h / 2, level);
 
         // Handle end mark after possible inner folds were processed because
         // otherwise if there would be two nested folds both ending at the same line
         // then the end mark for outer one would be replaced by an end mark for inner one
         // (same key in infos map) and the painting code would continue to paint line marking a fold
         // until next fold is reached (or end of doc).
+        PaintInfo epi = null;
         if (y1 != y2 && !f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
-            addPaintInfo(infos, y2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
+            epi = new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2);
+            addPaintInfo(infos, y2, epi);
         }
 
-        if (!f.isCollapsed()) {
-            Object [] arr = getFoldList(f, lowerBoundary, upperBoundary);
-            @SuppressWarnings("unchecked")
-            List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
-            int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
+        // save the topmost/lowest information, reset for child processing
+        int topmost = topmostBelowMouse;
+        int lowest = lowestAboveMouse;
+        topmostBelowMouse = y2 + h / 2;
+        lowestAboveMouse = y1;
 
-            // search backwards
-            for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
-                Fold fold = foldList.get(i);
-                if (!traverseBackwards(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
-                    break;
+        try {
+            if (!f.isCollapsed()) {
+                Object [] arr = getFoldList(f, lowerBoundary, upperBoundary);
+                @SuppressWarnings("unchecked")
+                List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
+                int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
+
+                // search backwards
+                for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
+                    Fold fold = foldList.get(i);
+                    if (!traverseBackwards(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                        break;
+                    }
+                }
+
+                // search forward
+                for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
+                    Fold fold = foldList.get(i);
+                    if (!traverseForward(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                        return false;
+                    }
                 }
             }
-
-            // search forward
-            for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
-                Fold fold = foldList.get(i);
-                if (!traverseForward(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
-                    return false;
+            if (!mousePointConsumed && activated) {
+                mousePointConsumed = true;
+                mouseBoundary = makeMouseBoundary(y1, y2 + h);
+                LOG.log(Level.FINEST, "Mouse boundary set to: {0}", mouseBoundary);
+                spi.markActive(activeMark, activeIn, activeOut);
+                if (epi != null) {
+                    epi.markActive(true, true, false);
                 }
+                markDeepChildrenActive(infos, y1, y2, level);
             }
+        } finally {
+            topmostBelowMouse = topmost;
+            lowestAboveMouse = lowest;
         }
-        
         return true;
     }
+     
+    /**
+     * Sets outlines of all children to 'active'. Assuming yFrom and yTo are from-to Y-coordinates of the parent
+     * fold, it finds all nested folds (folds, which are in between yFrom and yTo) and changes their in/out lines
+     * as active.
+     * The method returns Y start coordinate of the 1st child found.
+     * 
+     * @param infos fold infos collected so far
+     * @param yFrom upper Y-coordinate of the parent fold
+     * @param yTo lower Y-coordinate of the parent fold
+     * @param level level of the parent fold
+     * @return Y-coordinate of the 1st child.
+     */
+    private int markDeepChildrenActive(NavigableMap<Integer, PaintInfo> infos, int yFrom, int yTo, int level) {
+        int result = Integer.MAX_VALUE;
+        Map<Integer, PaintInfo> m = infos.subMap(yFrom, yTo);
+        for (Map.Entry<Integer, PaintInfo> me : m.entrySet()) {
+            PaintInfo pi = me.getValue();
+            int y = pi.getPaintY();
+            if (y > yFrom && y < yTo) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.log(Level.FINEST, "Marking chind as active: {0}", pi);
+                }
+                pi.markActive(false, true, true);
+                if (y < result) {
+                    y = result;
+                }
+            }
+        }
+        return result;
+    }
     
-    private boolean traverseBackwards(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary, int level, Map<Integer, PaintInfo> infos) throws BadLocationException {
+    /**
+     * Returns stroke appropriate for painting (in)active outlines
+     * @param s the default stroke
+     * @param active true for active outlines
+     * @return value of 's' or a Stroke which should be used to paint the outline.
+     */
+    private static Stroke getStroke(Stroke s, boolean active) {
+        if (active) {
+            return LINE_BOLD;
+        } else {
+            return s;
+        }
+    }
+    
+    private boolean traverseBackwards(Fold f, BaseDocument doc, BaseTextUI btui, int lowerBoundary, int upperBoundary, int level, NavigableMap<Integer, PaintInfo> infos) throws BadLocationException {
 //        System.out.println("~~~ traverseBackwards<" + lowerBoundary + ", " + upperBoundary
 //                + ">: fold=<" + f.getStartOffset() + ", " + f.getEndOffset() + "> "
 //                + (f.getEndOffset() < lowerBoundary ? ", f.gEO < lB" : "")
@@ -465,47 +645,112 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         int lineStartOffset2 = Utilities.getRowStart(doc, f.getEndOffset());
         int h = btui.getEditorUI().getLineHeight();
 
+        boolean activeMark = false;
+        boolean activeIn = false;
+        boolean activeOut = false;
+        PaintInfo spi = null;
+        PaintInfo epi = null;
+        boolean activated = false;
+        int y1 = 0;
+        int y2 = 0;
+        
         if (lineStartOffset1 == lineStartOffset2) {
             // whole fold is on a single line
-            int y1 = btui.getYFromPos(lineStartOffset1);
-            addPaintInfo(infos, y1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset1));
+            y2 = y1 = btui.getYFromPos(lineStartOffset1);
+            spi = new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset1);
+            if (activated = isActivated(y1, y1 + h)) {
+                activeMark = true;
+            }
+            addPaintInfo(infos, y1, spi);
         } else {
+            y2 = btui.getYFromPos(lineStartOffset2);
             // fold spans multiple lines
+            y1 = btui.getYFromPos(lineStartOffset1);
+            activated = isActivated(y1, y2 + h / 2);
             if (f.getStartOffset() >= upperBoundary) {
-                int y1 = btui.getYFromPos(lineStartOffset1);
-                addPaintInfo(infos, y1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
+                spi = new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2);
+                if (activated) {
+                    activeMark = true;
+                    activeOut = true;
+                }
+                addPaintInfo(infos, y1, spi);
             }
 
             if (!f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
-                int y2 = btui.getYFromPos(lineStartOffset2);
-                addPaintInfo(infos, y2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
+                activated |= isActivated(y1, y2 + h / 2);
+                epi = new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2);
+                addPaintInfo(infos, y2, epi);
             }
         }
+        
+        setMouseBoundaries(y1, y2 + h / 2, level);
 
-        if (!f.isCollapsed()) {
-            Object [] arr = getFoldList(f, lowerBoundary, upperBoundary);
-            @SuppressWarnings("unchecked")
-            List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
-            int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
+        // save the topmost/lowest information, reset for child processing
+        int topmost = topmostBelowMouse;
+        int lowest = lowestAboveMouse;
+        topmostBelowMouse = y2 + h /2;
+        lowestAboveMouse = y1;
 
-            // search backwards
-            for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
-                Fold fold = foldList.get(i);
-                if (!traverseBackwards(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
-                    return false;
+        try {
+            if (!f.isCollapsed()) {
+                Object [] arr = getFoldList(f, lowerBoundary, upperBoundary);
+                @SuppressWarnings("unchecked")
+                List<? extends Fold> foldList = (List<? extends Fold>) arr[0];
+                int idxOfFirstFoldStartingInsideClip = (Integer) arr[1];
+
+                // search backwards
+                for(int i = idxOfFirstFoldStartingInsideClip - 1; i >= 0; i--) {
+                    Fold fold = foldList.get(i);
+                    if (!traverseBackwards(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                        return false;
+                    }
+                }
+
+                // search forward
+                for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
+                    Fold fold = foldList.get(i);
+                    if (!traverseForward(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
+                        break;
+                    }
                 }
             }
-
-            // search forward
-            for(int i = idxOfFirstFoldStartingInsideClip; i < foldList.size(); i++) {
-                Fold fold = foldList.get(i);
-                if (!traverseForward(fold, doc, btui, lowerBoundary, upperBoundary, level + 1, infos)) {
-                    break;
+            if (!mousePointConsumed && activated) {
+                mousePointConsumed = true;
+                mouseBoundary = makeMouseBoundary(y1, y2 + h);
+                LOG.log(Level.FINEST, "Mouse boundary set to: {0}", mouseBoundary);
+                if (spi != null) {
+                    spi.markActive(activeMark, activeIn, activeOut);
+                }
+                if (epi != null) {
+                    epi.markActive(true, true, false);
+                }
+                int lowestChild = markDeepChildrenActive(infos, y1, y2, level);
+                if (lowestChild < Integer.MAX_VALUE && lineStartOffset1 < upperBoundary) {
+                    // the fold starts above the screen clip region, and is 'activated'. We need to setup instructions to draw activated line up to the
+                    // 1st child marker.
+                    epi = new PaintInfo(PAINT_LINE, level, y1, y2 - y1, false, lineStartOffset1, lineStartOffset2);
+                    epi.markActive(true, true, false);
+                    addPaintInfo(infos, y1, epi);
                 }
             }
+        } finally {
+            topmostBelowMouse = topmost;
+            lowestAboveMouse = lowest;
         }
-
         return true;
+    }
+    
+    private Rectangle makeMouseBoundary(int y1, int y2) {
+        if (!hasMousePoint()) {
+            return null;
+        }
+        if (topmostBelowMouse < Integer.MAX_VALUE) {
+            y2 = topmostBelowMouse;
+        }
+        if (lowestAboveMouse  > -1) {
+            y1 = lowestAboveMouse;
+        }
+        return new Rectangle(0, y1, 0, y2 - y1);
     }
     
     protected EditorUI getEditorUI(){
@@ -579,9 +824,19 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                 nextY = textUI.getYFromPos(nextLineOffset);
 
                 if (mouseY >= startY && mouseY <= nextY) {
-                    LOG.log(Level.FINEST, "End line clicked, ignoring. MouseY={0}, startY={1}, nextY={2}",
-                            new Object[] { mouseY, startY, nextY });
-                    return;
+                    // the mouse can be positioned above the marker (the fold found above), or
+                    // below it; in that case, the immediate enclosing fold should be used - should be the fold
+                    // that corresponds to the nextLineOffset, if any
+                    int h2 = (startY + nextY) / 2;
+                    if (mouseY >= h2) {
+                        Fold f2 = f;
+                        
+                        f = FoldUtilities.findOffsetFold(hierarchy, nextLineOffset);
+                        if (f != f2.getParent()) {
+                            throw new IllegalStateException("non-parent fold without fold mark");
+                        }
+                    }
+                    
                 }
                 
                 LOG.log(Level.FINEST, "Collapsing fold: {0}", f);
@@ -642,6 +897,22 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         return -1;
     }
     
+    private boolean hasMousePoint() {
+        return mousePoint >= 0;
+    }
+    
+    private boolean isActivated(int y1, int y2) {
+        return hasMousePoint() && 
+               (mousePoint >= y1 && mousePoint < y2);
+    }
+    
+    private void drawFoldLine(Graphics2D g2d, boolean active, int x1, int y1, int x2, int y2) {
+        Stroke origStroke = g2d.getStroke();
+        g2d.setStroke(getStroke(origStroke, active));
+        g2d.drawLine(x1, y1, x2, y2);
+        g2d.setStroke(origStroke);
+    }
+    
     protected @Override void paintComponent(Graphics g) {
         if (!enabled) {
             return;
@@ -669,6 +940,9 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             LOG.fine("CFSBar: PAINT START ------\n");
             int descent = g.getFontMetrics(defFont).getDescent();
             PaintInfo previousInfo = null;
+            Graphics2D g2d = (Graphics2D)g;
+            LOG.log(Level.FINEST, "MousePoint: {0}", mousePoint);
+
             for(PaintInfo paintInfo : ps) {
                 boolean isFolded = paintInfo.isCollapsed();
                 int y = paintInfo.getPaintY();
@@ -681,16 +955,16 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("prevInfo=NULL; y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                         }
-                        g.drawLine(lineX, clip.y, lineX, y);
+                        drawFoldLine(g2d, paintInfo.lineInActive, lineX, clip.y, lineX, y);
                     }
                 } else {
-                    if (previousInfo.hasLineOut()) {
+                    if (previousInfo.hasLineOut() || paintInfo.hasLineIn()) {
                         // Draw middle vertical line
                         int prevY = previousInfo.getPaintY();
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "prevInfo={0}; y=" + y + ", PI:" + paintInfo + "\n", previousInfo); // NOI18N
                         }
-                        g.drawLine(lineX, prevY + previousInfo.getPaintHeight(), lineX, y);
+                        drawFoldLine(g2d, previousInfo.lineOutActive || paintInfo.lineInActive, lineX, prevY + previousInfo.getPaintHeight(), lineX, y);
                     }
                 }
 
@@ -710,12 +984,12 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                         }
                     }
                     if (paintInfo.hasLineIn()) { //[PENDING]
-                        g.drawLine(lineX, y, lineX, markY);
+                        drawFoldLine(g2d, paintInfo.lineInActive, lineX, y, lineX, markY);
                     }
                     if (paintInfo.hasLineOut()) {
                         // This is an error in case there's a next paint info at the same y which is an end mark
                         // for this mark (it must be cleared explicitly).
-                        g.drawLine(lineX, markY + markSize, lineX, y + height);
+                        drawFoldLine(g2d, paintInfo.lineOutActive, lineX, markY + markSize, lineX, y + height);
                     }
                     visibleMarks.add(new Mark(markX, markY, markSize, isFolded));
 
@@ -723,20 +997,20 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine("PAINT_LINE: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                     }
-                    g.drawLine(lineX, y, lineX, y + height );
-
+                    // FIXME !!
+                    drawFoldLine(g2d, paintInfo.signActive, lineX, y, lineX, y + height );
                 } else if (paintOperation == PAINT_END_MARK) {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.fine("PAINT_END_MARK: y=" + y + ", PI:" + paintInfo + "\n"); // NOI18N
                     }
                     if (previousInfo == null || y != previousInfo.getPaintY()) {
-                        g.drawLine(lineX, y, lineX, y + height / 2);
-                        g.drawLine(lineX, y + height / 2, lineX + halfMarkSize, y + height / 2);
+                        drawFoldLine(g2d, paintInfo.lineInActive, lineX, y, lineX, y + height / 2);
+                        drawFoldLine(g2d, paintInfo.signActive, lineX, y + height / 2, lineX + halfMarkSize, y + height / 2);
                         if (paintInfo.getInnerLevel() > 0) {//[PENDING]
                             if (LOG.isLoggable(Level.FINE)) {
                                 LOG.fine("  PAINT middle-line\n"); // NOI18N
                             }
-                            g.drawLine(lineX, y + height / 2, lineX, y + height);
+                            drawFoldLine(g2d, paintInfo.lineOutActive, lineX, y + height / 2, lineX, y + height);
                         }
                     }
                 }
@@ -748,7 +1022,8 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                 (previousInfo.getInnerLevel() > 0 ||
                  (previousInfo.getPaintOperation() == PAINT_MARK && !previousInfo.isCollapsed()))
             ) {
-                g.drawLine(lineX, previousInfo.getPaintY() + previousInfo.getPaintHeight(), lineX, clip.y + clip.height);
+                drawFoldLine(g2d, previousInfo.lineOutActive, 
+                        lineX, previousInfo.getPaintY() + previousInfo.getPaintHeight(), lineX, clip.y + clip.height);
             }
 
         } catch (BadLocationException ble) {
@@ -758,7 +1033,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             adoc.readUnlock();
         }
     }
-
+    
     private static Object [] getFoldList(Fold parentFold, int start, int end) {
         List<Fold> ret = new ArrayList<Fold>();
 
@@ -828,6 +1103,20 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
          */
         boolean lineOut;
         
+        /**
+         * The 'incoming' (upper) line should be painted as active
+         */
+        boolean lineInActive;
+        
+        /**
+         * The 'outgoing' (down) line should be painted as active
+         */
+        boolean lineOutActive;
+        
+        /**
+         * The sign/marker itself should be painted as active
+         */
+        boolean signActive;
         
         public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight, boolean isCollapsed, int startOffset, int endOffset){
             this.paintOperation = paintOperation;
@@ -858,6 +1147,18 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                     lineIn = lineOut = true;
                     break;
             }
+        }
+        
+        /**
+         * Sets active flags on inidivual parts of the mark
+         * @param mark
+         * @param lineIn
+         * @param lineOut S
+         */
+        void markActive(boolean mark, boolean lineIn, boolean lineOut) {
+            this.signActive |= mark;
+            this.lineInActive |= lineIn;
+            this.lineOutActive |= lineOut;
         }
         
         boolean hasLineIn() {
@@ -976,6 +1277,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             this.lineIn |= lineIn;
             this.lineOut |= lineOut;
             
+            this.signActive |= prevInfo.signActive;
+            this.lineInActive |= prevInfo.lineInActive;
+            this.lineOutActive |= prevInfo.lineOutActive;
+            
             LOG.log(Level.FINE, "Merged result: {0}", this);
         }
     }
@@ -1062,6 +1367,36 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
                 e.consume();
             }
         }
+
+        private void refreshIfMouseOutside(Point pt) {
+            mousePoint = (int)pt.getY();
+            if (LOG.isLoggable(Level.FINEST)) {
+                if (mouseBoundary == null) {
+                    LOG.log(Level.FINEST, "Mouse boundary not set, refreshing: {0}", mousePoint);
+                } else {
+                    LOG.log(Level.FINEST, "Mouse {0} inside known mouse boundary: {1}-{2}", 
+                            new Object[] { mousePoint, mouseBoundary.y, mouseBoundary.getMaxY() });
+                }
+            }
+            if (mouseBoundary == null || mousePoint < mouseBoundary.y || mousePoint > mouseBoundary.getMaxY()) {
+                refresh();
+            }
+        }
+        
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            refreshIfMouseOutside(e.getPoint());
+        }
+        
+        public void mouseEntered(MouseEvent e) {
+            refreshIfMouseOutside(e.getPoint());
+        }
+        
+        public void mouseExited(MouseEvent e) {
+            mousePoint = NO_MOUSE_POINT;
+            refresh();
+        }
+        
 
         // --------------------------------------------------------------------
         // private implementation

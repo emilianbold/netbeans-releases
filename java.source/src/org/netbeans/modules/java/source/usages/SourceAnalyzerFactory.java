@@ -46,6 +46,8 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
@@ -522,11 +524,13 @@ public final class SourceAnalyzerFactory {
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
                             addUsage (owner, activeClass.peek(),p,ClassIndexImpl.UsageType.FIELD_REFERENCE);
                         }
+                        recordTypeUsage(sym.asType(), p);
                     } else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
                         final Symbol owner = sym.getEnclosingElement();
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
                             addUsage (owner, activeClass.peek(), p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
                         }
+                        recordTypeUsage(((MethodSymbol) sym).getReturnType(), p);
                     }
                 }
             } else {
@@ -949,6 +953,28 @@ public final class SourceAnalyzerFactory {
             }
             return null;
         }
+        
+        private void recordTypeUsage(final TypeMirror type, final Map<Pair<String, String>, Data> p) {
+            List<TypeMirror> types = new LinkedList<TypeMirror>();
+            types.add(type);
+            while (!types.isEmpty()) {
+                TypeMirror currentType = types.remove(0);
+                if (currentType == null) continue;
+                switch (currentType.getKind()) {
+                    case DECLARED:
+                        final Symbol typeSym = ((Type) currentType).tsym;
+                        if (typeSym != null && (typeSym.getKind().isClass() || typeSym.getKind().isInterface())) {
+                            addUsage (typeSym, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
+                        types.addAll(((DeclaredType) currentType).getTypeArguments());
+                        break;
+                    case ARRAY:
+                        types.add(((ArrayType) currentType).getComponentType());
+                        break;
+                }
+            }
+        }
+
     }
     
 }

@@ -47,9 +47,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -60,6 +64,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 
@@ -85,20 +90,26 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
      * @param binaryRoot the URL of a classpath root (platform supports file and jar protocol)
      * @return FileObject[], never returns null
      */
+    @Override
     public SourceForBinaryQueryImplementation2.Result findSourceRoots2(URL binaryRoot) {
         SourceForBinaryQueryImplementation2.Result res = this.cache.get (binaryRoot);
         if (res != null) {
             return res;
         }
-        JavaPlatformManager mgr = JavaPlatformManager.getDefault();
-        for (JavaPlatform platform : mgr.getInstalledPlatforms()) {
-            for (ClassPath.Entry entry : platform.getBootstrapLibraries().entries()) {
-                if (entry.getURL().equals (binaryRoot)) {
-                    res = new Result(platform);
-                    this.cache.put (binaryRoot, res);
-                    return res;
-                }
+        final JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+        final Collection<JavaPlatform> candidates = new ArrayDeque<JavaPlatform>();
+        for (JavaPlatform platform : jpm.getInstalledPlatforms()) {
+            if (contains(platform, binaryRoot)) {
+                candidates.add(platform);
             }
+        }
+        if (!candidates.isEmpty()) {
+            res = new Result(
+                jpm,
+                binaryRoot,
+                candidates);
+            this.cache.put (binaryRoot, res);
+            return res;
         }
         String binaryRootS = binaryRoot.toExternalForm();
         if (binaryRootS.startsWith(JAR_FILE)) {
@@ -119,64 +130,138 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         return null;
     }
     
+    @Override
     public SourceForBinaryQuery.Result findSourceRoots (URL binaryRoot) {
         return this.findSourceRoots2(binaryRoot);
     }
+
+    static boolean contains(
+        @NonNull final JavaPlatform platform,
+        @NonNull final URL artifact) {
+        for (ClassPath.Entry entry : platform.getBootstrapLibraries().entries()) {
+            if (entry.getURL().equals (artifact)) {
+                return true;
+            }
+        }
+        return false;
+    }
     
-    private static class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
-                        
-        private JavaPlatform platform;
+    private static final class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
+
+        private final JavaPlatformManager jpm;
+        private final URL artifact;
         private final ChangeSupport cs = new ChangeSupport(this);
+        //@GuardedBy("this")
+        private Map<JavaPlatform,PropertyChangeListener> platforms;
+        
                         
-        public Result (JavaPlatform platform) {
-            this.platform = platform;
-            this.platform.addPropertyChangeListener(WeakListeners.create(PropertyChangeListener.class, this, platform));
+        public Result (
+            @NonNull final JavaPlatformManager jpm,
+            @NonNull final URL artifact,
+            @NonNull final Collection<? extends JavaPlatform> platforms) {
+            Parameters.notNull("jpm", jpm); //NOI18N
+            Parameters.notNull("artifact", artifact);   //NOI18N
+            Parameters.notNull("platforms", platforms); //NOI18N
+            this.jpm = jpm;
+            this.artifact = artifact;
+            synchronized (this) {
+                this.platforms = new LinkedHashMap<JavaPlatform, PropertyChangeListener>();
+                for (JavaPlatform platform : platforms) {
+                    final PropertyChangeListener l = WeakListeners.propertyChange(this, platform);
+                    platform.addPropertyChangeListener(l);
+                    this.platforms.put(platform, l);
+                }
+                this.jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, this.jpm));
+            }
         }
                         
+        @Override
+        @NonNull
         public FileObject[] getRoots () {       //No need for caching, platforms does.
-            ClassPath sources = this.platform.getSourceFolders();
-            return sources.getRoots();
+            for (JavaPlatform platform : platforms.keySet()) {
+                final ClassPath sourcePath = platform.getSourceFolders();
+                final FileObject[] sourceRoots = sourcePath.getRoots();
+                if (sourceRoots.length > 0) {
+                    return sourceRoots;
+                }
+            }
+            return new FileObject[0];
         }
                         
-        public void addChangeListener (ChangeListener l) {
-            assert l != null : "Listener can not be null";  //NOI18N
-            cs.addChangeListener(l);
+        @Override
+        public void addChangeListener (@NonNull final ChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            cs.addChangeListener(listener);
         }
                         
-        public void removeChangeListener (ChangeListener l) {
-            assert l != null : "Listener can not be null";  //NOI18N
-            cs.removeChangeListener(l);
+        @Override
+        public void removeChangeListener (@NonNull final ChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            cs.removeChangeListener(listener);
         }
         
-        public void propertyChange (PropertyChangeEvent event) {
+        @Override
+        public void propertyChange (@NonNull final PropertyChangeEvent event) {
             if (JavaPlatform.PROP_SOURCE_FOLDER.equals(event.getPropertyName())) {
                 cs.fireChange();
+            } else if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(event.getPropertyName())) {
+                if (updateCandidates()) {
+                    cs.fireChange();
+                }
             }
         }
 
+        @Override
         public boolean preferSources() {
             return false;
+        }
+
+        private synchronized boolean updateCandidates() {
+            boolean affected = false;
+            final JavaPlatform[] newPlatforms = jpm.getInstalledPlatforms();
+            final Map<JavaPlatform, PropertyChangeListener> oldPlatforms = new HashMap<JavaPlatform,PropertyChangeListener>(platforms);
+            final Map<JavaPlatform, PropertyChangeListener> newState = new LinkedHashMap<JavaPlatform, PropertyChangeListener>(newPlatforms.length);
+            for (JavaPlatform jp : newPlatforms) {
+                PropertyChangeListener l;
+                if ((l=oldPlatforms.remove(jp))!=null) {
+                    newState.put(jp,l);
+                } else if (contains(jp,artifact)) {
+                    affected = true;
+                    l = WeakListeners.propertyChange(this, this.jpm);
+                    jp.addPropertyChangeListener(l);
+                    newState.put(jp,l);
+                }
+            }
+            for (Map.Entry<JavaPlatform,PropertyChangeListener> e : oldPlatforms.entrySet()) {
+                affected = true;
+                e.getKey().removePropertyChangeListener(e.getValue());
+            }
+            platforms = newState;
+            return affected;
         }
         
     }
     
     private static class UnregisteredPlatformResult implements SourceForBinaryQueryImplementation2.Result {
         
-        private FileObject srcRoot;
+        private final FileObject srcRoot;
         
         private UnregisteredPlatformResult (FileObject fo) {
-            assert fo != null;
+            Parameters.notNull("fo", fo);   //NOI18N
             srcRoot = fo;
         }
     
+        @Override
         public FileObject[] getRoots() {            
             return srcRoot.isValid() ? new FileObject[] {srcRoot} : new FileObject[0];
         }
         
+        @Override
         public void addChangeListener(ChangeListener l) {
             //Not supported, no listening.
         }
         
+        @Override
         public void removeChangeListener(ChangeListener l) {
             //Not supported, no listening.
         }
