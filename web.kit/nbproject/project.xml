@@ -6,6 +6,20 @@
             <code-name-base>org.netbeans.modules.web.kit</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cloud.amazon</code-name-base>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.cloud.oracle</code-name-base>
+                    <run-dependency>
+                        <release-version>0</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
                     <run-dependency>
                         <release-version>0-1</release-version>
@@ -104,8 +118,8 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.beans</code-name-base>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -172,20 +186,6 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.web.refactoring</code-name-base>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cloud.amazon</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cloud.oracle</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
