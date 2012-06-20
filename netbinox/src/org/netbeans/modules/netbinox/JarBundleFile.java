@@ -145,7 +145,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
                     }
                 };
             } catch (IOException ex) {
-                NetbinoxFactory.LOG.log(Level.WARNING, "Error creating delegate for {0}", getBaseFile());
+                NetbinoxFactory.LOG.log(Level.WARNING, "Error creating delegate for {0} because of {1}", new Object[] { getBaseFile(), data.getLocation() });
                 delegate = EmptyBundleFile.EMPTY;
             }
         }
