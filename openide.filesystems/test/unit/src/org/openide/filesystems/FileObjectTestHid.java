@@ -602,6 +602,51 @@ public class FileObjectTestHid extends TestBaseHid {
         assertEquals("kid", created.getNameExt());
         assertTrue("is data", created.isData());
     }
+    
+    public void  testMoveIntoItself() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        for (int i = 0; i < 100; i++) {
+            fold1.createData("akid." + i);
+        }
+        FileObject target = fold1.createFolder("dest");
+        FileLock lock = fold1.lock();
+        try {
+            FileObject toMove2 = fold1.move(lock, target, target.getName(), target.getExt());
+            fail("This move should not succeed! But it returned: " + toMove2);
+        } catch (IOException ex) {
+            // OK, cannot move folder into own children
+        } finally {
+            lock.releaseLock();
+        }
+        List<FileObject> arr = Arrays.asList(target.getChildren());
+        assertTrue("No children should be created in target folder: " + arr, arr.isEmpty());
+    }
+    
+    public void  testCopyIntoItself() throws IOException {
+        checkSetUp();
+        if (fs.isReadOnly()) return;
+        FileObject fold = getTestFolder1(root);
+
+        FileObject fold1 = fold.createFolder("A");
+
+        for (int i = 0; i < 100; i++) {
+            fold1.createData("akid." + i);
+        }
+        FileObject target = fold1.createFolder("dest");
+        try {
+            FileObject toMove2 = fold1.copy(target, target.getName(), target.getExt());
+            fail("This move should not succeed! But it returned: " + toMove2);
+        } catch (IOException ex) {
+            // OK, cannot move folder into own children
+        }
+        List<FileObject> arr = Arrays.asList(target.getChildren());
+        assertTrue("No children should be created in target folder: " + arr, arr.isEmpty());
+    }
 
     /** Test of move method, of class org.openide.filesystems.FileObject. */
     public void  testMove1_Fs() throws IOException {

@@ -82,6 +82,11 @@ public class DelayFSEventsTest extends NbTestCase implements FileChangeListener 
         super(testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         
