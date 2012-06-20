@@ -207,8 +207,8 @@ public class ConstructorPanel extends JPanel {
         cbMethodGeneration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleDescription")); // NOI18N
 
         cbGenerateDoc.setMnemonic('e');
+        cbGenerateDoc.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "LBL_Generate_Documentation")); // NOI18N
         cbGenerateDoc.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        cbGenerateDoc.setLabel(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "LBL_Generate_Documentation")); // NOI18N
         cbGenerateDoc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbGenerateDocActionPerformed(evt);

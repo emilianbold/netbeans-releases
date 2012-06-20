@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseAction;
+import java.io.File;
+import java.util.Enumeration;
 import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
 @Messages("CTL_GotoDomainClassAction=Go to Grails Domain class")
@@ -59,19 +60,52 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Editors/text/x-groovy/Popup/goto", position = 125),
     @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 125)
 })
-public final class GotoDomainClassAction extends BaseAction {
+/*
+ * @author Martin Janicek
+ */
+public final class GotoDomainClassAction extends GotoBaseAction {
 
     public GotoDomainClassAction() {
         super(CTL_GotoDomainClassAction()); // NOI18N
     }
 
     @Override
-    public boolean isEnabled() {
-        return NavigationSupport.isActionEnabled(this);
+    protected FileObject getTargetFO(String fileName, FileObject sourceFO) {
+        if (isGspFO(sourceFO)) {
+            String parentName = sourceFO.getParent().getName();
+            fileName = parentName.substring(0, 1).toUpperCase() + parentName.substring(1);
+
+            File file = new File(getExtendedBaseDir(sourceFO, "domain"));
+            FileObject domainDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            Enumeration<? extends FileObject> children = domainDirFO.getChildren(true);
+
+            while (children.hasMoreElements()) {
+                FileObject child = children.nextElement();
+                if (fileName.equals(child.getName())) {
+                    fileName = findPackagePath(child) + File.separator + fileName;
+                    break;
+                }
+            }
+        } else {
+            fileName = findPackagePath(sourceFO) + File.separator + fileName;
+        }
+        
+        File targetFile = new File(getTargetFilePath(fileName, sourceFO));
+        FileObject targetFO = FileUtil.toFileObject(FileUtil.normalizeFile(targetFile));
+        // do not navigate to itself
+        if (sourceFO.equals(targetFO)) {
+            return null;
+        }
+
+        return targetFO;
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        NavigationSupport.openArtifact(this, target);
+    protected String getTargetFilePath(String filename, FileObject sourceFO) {
+        // this needs to be done if we are moving from controller
+        if (filename.endsWith("Controller")) {
+            filename = filename.replaceAll("Controller$", "");
+        }
+        return getExtendedBaseDir(sourceFO, "domain") + filename + ".groovy"; //NOI18N
     }
 }

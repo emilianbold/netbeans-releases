@@ -79,16 +79,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.wizard.EntityClosure;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -112,6 +110,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     public static final String TABLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/table.ftl"; // NOI18N
 
     private Project project;
+    private MetaModelSupport metaModelSupport;
     private boolean collection;
     private boolean dummyBean = false;
     private Dialog dialog;
@@ -140,6 +139,7 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
             }
         });
         this.project = project;
+        this.metaModelSupport = new MetaModelSupport(project);
         this.collection = collection;
         readOnlyCheckBox.setVisible(enableReadOnly);
         hint.setVisible(false);
@@ -387,36 +387,39 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     // End of variables declaration//GEN-END:variables
 
 
-    public List<String> getPropertyNames(Project project, String entityClass, boolean collection) {
-        List<String> res = new ArrayList<String>();
+    public List<String> getPropertyNames(final Project project, final String entityClass, final boolean collection) {
+        final List<String> res = new ArrayList<String>();
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         assert wm != null;
         List<FacesManagedBean> beans = JSFBeanCache.getBeans(project);
         for (FacesManagedBean b : beans) {
             res.addAll(getManagedBeanPropertyNames(project, b.getManagedBeanClass(), entityClass, b.getManagedBeanName(), collection));
         }
-        //check web beans
-        List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(getWebBeansModel(wm));
-        for (WebBean bean : namedElements) {
-            String beanName = bean.getName();
-            String className = bean.getBeanClassName();
-            if ((beanName != null)) {
-                res.addAll(getManagedBeanPropertyNames(project, className, entityClass, beanName, collection));
-            }
+        try {
+            //check web beans
+            metaModelSupport.getMetaModel().runReadAction(new MetadataModelAction<WebBeansModel, Void>() {
+                @Override
+                public Void run(WebBeansModel metadata) throws Exception {
+                    for (Element bean : metadata.getNamedElements()) {
+                        if (bean == null) {
+                            continue;
+                        }
+                        String beanName = metadata.getName(bean);
+                        String className = bean.asType().toString();
+                        if ((beanName != null)) {
+                            res.addAll(getManagedBeanPropertyNames(project, className, entityClass, beanName, collection));
+                        }
+                    }
+                    return Void.TYPE.newInstance();
+                }
+            });
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-
 
         return res;
-    }
-
-    private MetadataModel<WebBeansModel> webBeansModel;
-    
-    public synchronized MetadataModel<WebBeansModel> getWebBeansModel(WebModule wm) {
-        if(webBeansModel == null) {
-            ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm);
-            webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
-        }
-        return webBeansModel;
     }
 
     public List<String> getManagedBeanPropertyNames(Project project,

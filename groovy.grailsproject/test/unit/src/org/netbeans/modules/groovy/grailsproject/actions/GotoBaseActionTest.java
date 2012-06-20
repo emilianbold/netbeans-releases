@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.netbeans.modules.groovy.grailsproject.actions.NavigationSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -54,10 +53,29 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Janicek
  */
-public class NavigationSupportTest {
+public class GotoBaseActionTest {
 
+    private static class GotoBaseActionImpl extends GotoBaseAction {
 
-    public NavigationSupportTest() {
+        public GotoBaseActionImpl(String name) {
+            super(name);
+        }
+
+        @Override
+        protected FileObject getTargetFO(String fileName, FileObject sourceFO) {
+            return null;
+        }
+
+        @Override
+        protected String getTargetFilePath(String filename, FileObject sourceFO) {
+            return null;
+        }
+    }
+
+    private static final GotoBaseAction gotoAction = new GotoBaseActionImpl("GotoBaseActionTest");
+
+    
+    public GotoBaseActionTest() {
     }
 
     @Test
@@ -69,7 +87,7 @@ public class NavigationSupportTest {
         setupTestFile(file);
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); //NOI18N
 
-        assertEquals("packagename", NavigationSupport.findPackagePath(fo));
+        assertEquals("packagename", gotoAction.findPackagePath(fo));
     }
 
     @Test
@@ -81,7 +99,7 @@ public class NavigationSupportTest {
         setupTestFile(file);
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file)); //NOI18N
 
-        assertEquals("packagename/secondarypkg", NavigationSupport.findPackagePath(fo));
+        assertEquals("packagename/secondarypkg", gotoAction.findPackagePath(fo));
     }
 
     private void setupFolder(File folder) {
