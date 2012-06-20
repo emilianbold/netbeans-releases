@@ -804,9 +804,6 @@ public final class DocumentViewOp
         if (textComponent == null) {
             return;
         }
-        if (Boolean.TRUE.equals(textComponent.getClientProperty("AsTextField"))) {
-            return;
-        }
         AttributeSet defaultColoringOrig = defaultColoring;
         FontColorSettings fcs = result.allInstances().iterator().next();
         AttributeSet newDefaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
@@ -817,7 +814,9 @@ public final class DocumentViewOp
         } else {
             Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
             renderingHints = desktopHints;
-
+        }
+        if (Boolean.TRUE.equals(textComponent.getClientProperty("AsTextField"))) {
+            return;
         }
         Color textLimitLineColorOrig = textLimitLineColor;
         AttributeSet textLimitLineColoring = fcs.getFontColors(FontColorNames.TEXT_LIMIT_LINE_COLORING);
