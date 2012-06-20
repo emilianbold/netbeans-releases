@@ -6,17 +6,16 @@
 <#if package?? && package != "">
 package ${package}
 
-import junit.framework.TestCase;
+import groovy.util.GroovyTestCase
 
 </#if>
 /**
  *
  * @author ${user}
  */
-class ${name} extends TestCase {
+class ${name} extends GroovyTestCase {
 
-    public ${name}(String testName) {
-        super(testName);
+    public ${name}() {
     }
 
     @Override
@@ -31,4 +30,3 @@ class ${name} extends TestCase {
     // TODO add test methods here. The name must begin with 'test'. For example:
     // public void testHello() {}
 }
-
