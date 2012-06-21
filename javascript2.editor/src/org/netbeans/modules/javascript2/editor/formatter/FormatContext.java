@@ -90,7 +90,8 @@ public final class FormatContext {
             regions.add(new Region(region.getStartOffset(), region.getEndOffset()));
         }
         
-        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath());
+        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath())
+                && !JsTokenId.JSON_MIME_TYPE.equals(context.mimePath());
         
         /*
          * What we do here is fix for case like this:
