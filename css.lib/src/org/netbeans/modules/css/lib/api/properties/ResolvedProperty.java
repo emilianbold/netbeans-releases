@@ -64,7 +64,7 @@ public class ResolvedProperty {
     }
     
     public ResolvedProperty(PropertyModel propertyModel, CharSequence value) {
-        this(GrammarParser.parse(propertyModel.getGrammar(), propertyModel.getPropertyName()), filterComments(value));
+        this(propertyModel.getGrammarElement(), filterComments(value));
         this.propertyModel = propertyModel;
     }
    
