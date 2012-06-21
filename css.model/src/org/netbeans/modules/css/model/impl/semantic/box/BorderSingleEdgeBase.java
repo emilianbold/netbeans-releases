@@ -42,15 +42,12 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.api.semantic.Color;
-import org.netbeans.modules.css.model.api.semantic.box.BorderStyleItem;
-import org.netbeans.modules.css.model.api.semantic.box.BorderWidthItem;
+import org.netbeans.modules.css.model.impl.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 
 /**
  *
@@ -72,11 +69,11 @@ public abstract class BorderSingleEdgeBase extends NodeModel implements BoxProvi
     public Box getBox(BoxType boxType) {
         switch (boxType) {
             case BORDER_COLOR:
-                return new Box.SingleEdge(color == null ? BoxElement.EMPTY : color, getDefiningEdge());
+                return new BoxWithSingleEdge(color == null ? BoxElement.EMPTY : color, getDefiningEdge());
             case BORDER_STYLE:
-                return new Box.SingleEdge(borderStyleItem == null ? BoxElement.EMPTY : borderStyleItem, getDefiningEdge());
+                return new BoxWithSingleEdge(borderStyleItem == null ? BoxElement.EMPTY : borderStyleItem, getDefiningEdge());
             case BORDER_WIDTH:
-                return new Box.SingleEdge(borderWidthItem == null ? BoxElement.EMPTY : borderWidthItem, getDefiningEdge());
+                return new BoxWithSingleEdge(borderWidthItem == null ? BoxElement.EMPTY : borderWidthItem, getDefiningEdge());
             default:
                 return null;
         }

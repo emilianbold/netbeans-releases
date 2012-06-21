@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 
 /**
  *
  * @author marekfukala
  */
-public class CascadedBox implements Box {
-
-    protected List<Box> boxes = new ArrayList<Box>();
-
-    public void addBox(Box box) {
-        boxes.add(box);
-    }
+public interface BoxProvider {
     
-    public List<Box> getBoxes() {
-        return boxes;
-    }
-
-    @Override
-    public BoxElement getEdge(Edge edge) {
-        BoxElement val = null;
-        for (Box box : boxes) {
-            BoxElement v = box.getEdge(edge);
-            if(v != null) {
-                val = v;
-            } 
-        }
-        return val;
-    }
-    
+    public Box getBox(BoxType boxType);
+     
 }

@@ -45,12 +45,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
-import org.netbeans.modules.css.model.api.semantic.box.BoxEdgeSize;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 
 /**
  *
@@ -82,7 +80,7 @@ public class Margin extends NodeModel implements BoxProvider {
     @Override
     public Box getBox(BoxType boxType) {
         if (boxType == BoxType.MARGIN) {
-            return new Box.EachEdge(getElement(Edge.TOP), getElement(Edge.RIGHT),
+            return new BoxWithDifferentEdges(getElement(Edge.TOP), getElement(Edge.RIGHT),
                     getElement(Edge.BOTTOM), getElement(Edge.LEFT));
         } else {
             return null;

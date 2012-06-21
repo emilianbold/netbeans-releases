@@ -42,10 +42,9 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.api.semantic.Color;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
+import org.netbeans.modules.css.model.impl.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**

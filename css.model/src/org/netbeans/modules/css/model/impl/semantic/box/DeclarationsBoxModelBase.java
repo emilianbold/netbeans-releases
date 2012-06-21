@@ -116,7 +116,7 @@ public abstract class DeclarationsBoxModelBase implements EditableBox {
         BoxElement l = map.get(Edge.LEFT);
 
         //reinitialize the box
-        box = new Box.EachEdge(t, r, b, l);
+        box = new BoxWithDifferentEdges(t, r, b, l);
         
         if (t == null || r == null || b == null || l == null) {
             //use single properties

@@ -39,40 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import org.netbeans.modules.css.model.api.semantic.Color;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 
 /**
  *
  * @author marekfukala
  */
-public interface BoxElementFactory {
+public class BoxWithDifferentEdges implements Box {
+    
+    private BoxElement top;
+    private BoxElement right;
+    private BoxElement bottom;
+    private BoxElement left;
 
-    public BoxElement createBoxElement(CharSequence text);
+    public BoxWithDifferentEdges(BoxElement top, BoxElement right, BoxElement bottom, BoxElement left) {
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+        this.left = left;
+    }
 
-    public static class Factory {
-
-        public static BoxElementFactory getFactory(final BoxType boxType) {
-            return new BoxElementFactory() {
-
-                @Override
-                public BoxElement createBoxElement(CharSequence text) {
-                    switch (boxType) {
-                        case BORDER_COLOR:
-                            return Color.parseValue(text);
-                        case BORDER_STYLE:
-                            return BorderStyleItem.parseValue(text);
-                        case BORDER_WIDTH:
-                            return BorderWidthItem.parseValue(text);
-                        case MARGIN:
-                            return BoxEdgeSize.parseValue(text);
-                        default:
-                            return null;
-                    }
-                }
-            };
-
+    @Override
+    public BoxElement getEdge(Edge edge) {
+        switch (edge) { 
+            case TOP:
+                return top;
+            case RIGHT:
+                return right;
+            case BOTTOM:
+                return bottom;
+            case LEFT:
+                return left;
+            default:
+                throw new IllegalArgumentException();
         }
     }
+    
 }

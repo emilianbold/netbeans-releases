@@ -42,15 +42,13 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.model.impl.semantic.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 import org.netbeans.modules.css.model.api.semantic.SemanticModel;
 import org.netbeans.modules.css.model.impl.semantic.PropertyModelId;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import java.util.ArrayList;
 import java.util.Collection;

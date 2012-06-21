@@ -39,16 +39,13 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.Token;
-import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
-import org.netbeans.modules.css.lib.api.properties.Tokenizer;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
-import org.netbeans.modules.css.model.impl.semantic.box.Length;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.impl.semantic.box.TokenNodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
@@ -56,51 +53,45 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class BorderWidthItem extends NodeModel implements BoxElement {
+public class BorderStyleItem extends NodeModel implements BoxElement {
 
-    public Length length;
     private TokenNodeModel fixedValue;
 
-    public static enum FixedValue {
-
-        medium, thin, thick;
+    public enum FixedValue {
+        
+        none,
+        hidden,
+        dotted,
+        dashed,
+        solid,
+        _double,
+        groove,
+        ridge,
+        inset,
+        outset;
 
         public String getValue() {
-            return name();
+            return name().charAt(0) == '_' ? name().substring(1) : name();
         }
     }
 
-    public BorderWidthItem(Node node) {
+    public BorderStyleItem(Node node) {
         super(node);
     }
 
-    private BorderWidthItem(FixedValue fixedValue) {
+    private BorderStyleItem(FixedValue fixedValue) {
         super();
         this.fixedValue = createText(fixedValue.getValue());
-    }
-
-    private BorderWidthItem(Length length) {
-        super();
-        this.length = length;
     }
 
     private static TokenNodeModel createText(CharSequence text) {
         return new TokenNodeModel(text);
     }
 
-    public static BorderWidthItem parseValue(CharSequence tokenImage) {
-        TokenAcceptor lengthTokenAcceptor = TokenAcceptor.getAcceptor("length"); //NOI18N
-
-        Tokenizer tokenizer = new Tokenizer(tokenImage);
-        Token token = tokenizer.token();
-
-        if (lengthTokenAcceptor.accepts(token)) {
-            return new BorderWidthItem(new Length(createText(tokenImage)));
-        }
-
+    public static BorderStyleItem parseValue(CharSequence tokenImage) {
         FixedValue fixedValue = getFixedValue(tokenImage);
         if (fixedValue != null) {
-            return new BorderWidthItem(fixedValue);
+            return new BorderStyleItem(fixedValue);
         }
 
         return null;
@@ -108,15 +99,11 @@ public class BorderWidthItem extends NodeModel implements BoxElement {
 
     private static FixedValue getFixedValue(CharSequence sequence) {
         for (FixedValue fv : FixedValue.values()) {
-            if (LexerUtils.equals(fv.getValue(), sequence, true, true)) {
+            if (LexerUtils.equals(fv.getValue(), sequence, true, false)) {
                 return fv;
             }
         }
         return null;
-    }
-
-    public Length getLength() {
-        return length;
     }
 
     @Override
@@ -137,14 +124,10 @@ public class BorderWidthItem extends NodeModel implements BoxElement {
 
     @Override
     public String asText() {
-        if (getLength() != null) {
-            return getLength().getLength().getValue().toString();
-        } else {
-            for (FixedValue fv : FixedValue.values()) {
-                TokenNodeModel tnm = getFixedValueModel(fv);
-                if (tnm != null) {
-                    return tnm.getValue().toString();
-                }
+        for (FixedValue fv : FixedValue.values()) {
+            TokenNodeModel tnm = getFixedValueModel(fv);
+            if (tnm != null) {
+                return tnm.getValue().toString();
             }
         }
         return INVALID_VALUE;
@@ -158,16 +141,18 @@ public class BorderWidthItem extends NodeModel implements BoxElement {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final BorderWidthItem other = (BorderWidthItem) obj;
-
+        final BorderStyleItem other = (BorderStyleItem) obj;
+        
         return asText().equals(other.asText());
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 47 * hash + (this.length != null ? this.length.hashCode() : 0);
-        hash = 47 * hash + (this.fixedValue != null ? this.fixedValue.hashCode() : 0);
+        int hash = 7;
+        hash = 97 * hash + (this.fixedValue != null ? this.fixedValue.hashCode() : 0);
         return hash;
     }
+    
+    
+    
 }

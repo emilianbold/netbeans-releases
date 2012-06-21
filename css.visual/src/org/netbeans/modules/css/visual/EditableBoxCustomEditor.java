@@ -50,9 +50,10 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import org.netbeans.modules.css.model.api.semantic.box.BoxEdgeSize;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 
 /**
  *
@@ -211,11 +212,11 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
     private void setEdge(Edge e) {
         JComboBox cb = getJComboBoxForEdge(e);
         String value = cb.getModel().getSelectedItem().toString();
-        BoxEdgeSize mw = null;
         if(value.length() > 0) {
-            mw = BoxEdgeSize.parseValue(value);
+            EditableBox editableBox = editor.editableBox;
+            BoxElement boxElement = editableBox.createElement(value);
+            editor.editableBox.setEdge(e, boxElement);
         }
-        editor.editableBox.setEdge(e, mw);
     }
     
     private void topActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_topActionPerformed

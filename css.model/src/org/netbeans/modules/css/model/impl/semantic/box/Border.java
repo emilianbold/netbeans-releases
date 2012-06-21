@@ -42,19 +42,16 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.api.semantic.Color;
-import org.netbeans.modules.css.model.api.semantic.box.BorderStyleItem;
-import org.netbeans.modules.css.model.api.semantic.box.BorderWidthItem;
+import org.netbeans.modules.css.model.impl.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 
 
 
 /**
- *
+ * 
  * @author marekfukala
  */
 public class Border extends NodeModel implements BoxProvider {
@@ -71,11 +68,11 @@ public class Border extends NodeModel implements BoxProvider {
     public Box getBox(BoxType boxType) {
         switch(boxType) {
             case BORDER_COLOR:
-                return new Box.SameEdges(color == null ? BoxElement.EMPTY : color);
+                return new BoxWithSameEdges(color == null ? BoxElement.EMPTY : color);
             case BORDER_STYLE:
-                return new Box.SameEdges(borderStyleItem == null ? BoxElement.EMPTY : borderStyleItem);
+                return new BoxWithSameEdges(borderStyleItem == null ? BoxElement.EMPTY : borderStyleItem);
             case BORDER_WIDTH:
-                return new Box.SameEdges(borderWidthItem == null ? BoxElement.EMPTY : borderWidthItem);
+                return new BoxWithSameEdges(borderWidthItem == null ? BoxElement.EMPTY : borderWidthItem);
             default:
                 return null;
         }

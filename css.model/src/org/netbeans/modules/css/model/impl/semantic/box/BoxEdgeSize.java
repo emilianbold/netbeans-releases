@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.model.impl.semantic.box.TokenNodeModel;
 import org.netbeans.modules.css.model.impl.semantic.box.Text;
@@ -48,7 +48,8 @@ import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.Tokenizer;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**

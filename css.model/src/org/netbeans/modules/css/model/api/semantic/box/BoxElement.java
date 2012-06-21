@@ -46,16 +46,14 @@ package org.netbeans.modules.css.model.api.semantic.box;
  * @author marekfukala
  */
 public interface BoxElement {
-    
+
     public String asText();
     
     public static final BoxElement EMPTY = new BoxElement() {
-
         @Override
         public String asText() {
             return null;
         }
-
     };
-        
+
 }

@@ -39,97 +39,71 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
-import org.netbeans.modules.css.model.impl.semantic.box.TokenNodeModel;
-import org.netbeans.modules.web.common.api.LexerUtils;
+
 
 /**
  *
  * @author marekfukala
  */
-public class BorderStyleItem extends NodeModel implements BoxElement {
+public class Color extends NodeModel implements BoxElement {
 
-    private TokenNodeModel fixedValue;
+    private String value; //user set value
 
-    public enum FixedValue {
-        
-        none,
-        hidden,
-        dotted,
-        dashed,
-        solid,
-        _double,
-        groove,
-        ridge,
-        inset,
-        outset;
-
-        public String getValue() {
-            return name().charAt(0) == '_' ? name().substring(1) : name();
-        }
+    public Color(String value) {
+        this.value = value;
     }
-
-    public BorderStyleItem(Node node) {
+    
+    public Color(Node node) {
         super(node);
     }
-
-    private BorderStyleItem(FixedValue fixedValue) {
-        super();
-        this.fixedValue = createText(fixedValue.getValue());
+    
+    public static Color parseValue(CharSequence text) {
+        return new Color(text.toString());
     }
-
-    private static TokenNodeModel createText(CharSequence text) {
-        return new TokenNodeModel(text);
-    }
-
-    public static BorderStyleItem parseValue(CharSequence tokenImage) {
-        FixedValue fixedValue = getFixedValue(tokenImage);
-        if (fixedValue != null) {
-            return new BorderStyleItem(fixedValue);
+    
+    public String getValue() {
+        if(value != null) {
+            return value;
         }
+        
+        //just gather all token nodes and join to an image
+        final StringBuilder builder = new StringBuilder();
 
-        return null;
-    }
+        getNode().accept(new NodeVisitor() {
 
-    private static FixedValue getFixedValue(CharSequence sequence) {
-        for (FixedValue fv : FixedValue.values()) {
-            if (LexerUtils.equals(fv.getValue(), sequence, true, false)) {
-                return fv;
+            @Override
+            public boolean visit(Node node) {
+                if(node instanceof Node.ResolvedTokenNode) {
+                    Node.ResolvedTokenNode tokenNode = (Node.ResolvedTokenNode)node;
+                    builder.append(tokenNode.image());
+                }
+                return true;
             }
-        }
-        return null;
-    }
 
-    @Override
-    protected TokenNodeModel getTokenNode(CharSequence image) {
-        if (fixedValue != null) {
-            if (LexerUtils.equals(fixedValue.getValue(), image, true, false)) {
-                return fixedValue;
+            @Override
+            public void unvisit(Node node) {
             }
-        }
-
-        //use the value from submodels
-        return super.getTokenNode(image);
-    }
-
-    public TokenNodeModel getFixedValueModel(FixedValue fixedValue) {
-        return getTokenNode(fixedValue.getValue());
+        });
+        
+        return builder.toString();
     }
 
     @Override
     public String asText() {
-        for (FixedValue fv : FixedValue.values()) {
-            TokenNodeModel tnm = getFixedValueModel(fv);
-            if (tnm != null) {
-                return tnm.getValue().toString();
-            }
-        }
-        return INVALID_VALUE;
+        return getValue();
+    }
+
+ 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + (this.value != null ? this.value.hashCode() : 0);
+        return hash;
     }
 
     @Override
@@ -140,18 +114,14 @@ public class BorderStyleItem extends NodeModel implements BoxElement {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final BorderStyleItem other = (BorderStyleItem) obj;
-        
-        return asText().equals(other.asText());
+        final Color other = (Color) obj;
+        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
+            return false;
+        }
+        return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.fixedValue != null ? this.fixedValue.hashCode() : 0);
-        return hash;
-    }
     
-    
+
     
 }
