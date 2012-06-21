@@ -66,7 +66,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -123,6 +122,7 @@ public class GroovyActionProvider implements ActionProvider {
         supportedActions.put(COMMAND_RUN_SINGLE, new GroovyAntAction(new String[] {"run-single"}, true)); // NOI18N
         supportedActions.put(COMMAND_TEST_SINGLE, new GroovyAntAction(new String[] {"test-single"}, true)); // NOI18N
         supportedActions.put(COMMAND_DEBUG_TEST_SINGLE, new GroovyAntAction(new String[] {"debug-test"}, true)); // NOI18N
+        supportedActions.put(COMMAND_TEST, new GroovyAntAction(new String[] {"test"}, true)); // NOI18N
     };
 
 
@@ -193,19 +193,15 @@ public class GroovyActionProvider implements ActionProvider {
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (supportedActions.keySet().contains(command)) {
+            if (COMMAND_TEST.equals(command)) {
+                return true;
+            }
+
             FileObject[] testSources = findTestSources(context);
             FileObject[] sources = findSources(context);
 
             // Action invoked on file from "test" folder
-            if (testSources != null && testSources.length == 1) {
-                // Currently there is a problem with ant build script integration
-                // We need to improve build.xml to enable running groovy tests together with java tests
-                // See issue #159256 - Groovy Unit tests cannot be run
-                // And related issue #170252 - Allow execution of non-java test cases
-
-                if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_TEST_SINGLE)) {
-                    return false;
-                }
+            if (testSources != null) {
                 return true;
             }
 
@@ -222,6 +218,10 @@ public class GroovyActionProvider implements ActionProvider {
 
     private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         if (supportedActions.keySet().contains(command)) {
+            if (command.equals(COMMAND_TEST)) {
+                return new String[] {"test-with-groovy"}; // NOI18N
+            }
+
             FileObject[] testSources = findTestSources(context);
             if (testSources != null) {
                 if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_TEST_SINGLE)) {
@@ -376,9 +376,9 @@ public class GroovyActionProvider implements ActionProvider {
         FileObject root = getRoot(testSrcPath, files[0]);
         String path = FileUtil.getRelativePath(root, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
-        p.setProperty("test.includes", path.substring(0, path.length() - 7).replace('/', '.')); // NOI18N
+        p.setProperty("test.includes", path.substring(0, path.length() - 7) + ".class"); // NOI18N
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"test-single"}; // NOI18N
+        return new String[] {"test-single-groovy"}; // NOI18N
     }
 
     private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
