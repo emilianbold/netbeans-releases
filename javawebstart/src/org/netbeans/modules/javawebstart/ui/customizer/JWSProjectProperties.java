@@ -323,7 +323,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return lastIsWebStartEnabled || enabledModel.isSelected();
     }
 
-    private void resetWebStartChanged() {
+    void resetWebStartChanged() {
         lastIsWebStartEnabled = isWebStart(evaluator);
     }
     
@@ -382,6 +382,22 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     boolean isJWSEnabled() {
         return !jnlpImplOldOrModified && enabledModel.isSelected();
+    }
+
+    /**
+     * Checks if the JWS was just activated.
+     * @return true if the JWS was activated in current properties run.
+     */
+    boolean wasJWSActivated() {
+        return !lastIsWebStartEnabled && isJWSEnabled();
+    }
+
+    /**
+     * Checks if the JWS was just deactivated.
+     * @return true if the JWS was deactivated in current properties run.
+     */
+    boolean wasJWSDeactivated() {
+        return lastIsWebStartEnabled && !enabledModel.isSelected();
     }
     
     public DescType getDescTypeProp() {
@@ -623,7 +639,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         } 
-        resetWebStartChanged();
     }
 
     public static void updateOnOpen(final Project project, final PropertyEvaluator eval) throws IOException {
