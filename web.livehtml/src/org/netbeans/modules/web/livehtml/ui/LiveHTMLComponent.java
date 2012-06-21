@@ -49,11 +49,13 @@ import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.livehtml.LiveHTMLImpl;
 import org.netbeans.modules.web.livehtml.Model;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 public class LiveHTMLComponent extends javax.swing.JPanel {
@@ -106,6 +108,7 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
         assert !Model.isLiveHTMLEnabled(fo.toURL());
         model = Model.enableLiveHTML(fo.toURL());
         showRealContent();
+        notifyStart(fo.toURL());
         loadFileInBrowser();
     }
 
@@ -119,6 +122,7 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
         }
         model = Model.enableLiveHTML(url);
         showRealContent();
+        notifyStart(fo.toURL());
         try {
             File f = File.createTempFile("livehtml", "dummy");
             FileObject fo = FileUtil.toFileObject(f);
@@ -128,10 +132,19 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
         }
     }
     
+    private void notifyStart(URL url) {
+        LiveHTMLImpl impl = Lookup.getDefault().lookup(LiveHTMLImpl.class);
+        assert impl != null;
+        impl.fireStart(url);
+    }
+    
     void stop() {
         if (fo != null) {
             assert Model.isLiveHTMLEnabled(fo.toURL());
             Model.releaseModel(fo.toURL());
+            LiveHTMLImpl impl = Lookup.getDefault().lookup(LiveHTMLImpl.class);
+            assert impl != null;
+            impl.fireStop(fo.toURL());
         }
     }
 

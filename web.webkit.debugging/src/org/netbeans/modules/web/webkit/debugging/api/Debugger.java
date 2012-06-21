@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
+import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.openide.util.RequestProcessor;
@@ -77,6 +79,8 @@ public final class Debugger {
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
     private boolean disablePageAndNetwork = false;
+    private LiveHTMLImplementation.Listener liveHTMLListener;
+    private Boolean liveHTMLStopped = null;
 
     Debugger(TransportHelper transport, WebKitDebugging webkit) {
         this.transport = transport;
@@ -89,6 +93,8 @@ public final class Debugger {
         Response response = transport.sendBlockingCommand(new Command("Debugger.enable"));
 
         if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL())) {
+            liveHTMLListener = new LiveHTMLListener(this);
+            LiveHTML.getDefault().addListener(liveHTMLListener);
             webkit.getPage().enable();
             webkit.getNetwork().enable();
             disablePageAndNetwork = true;
@@ -273,6 +279,13 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
     }
     
+    public void removeDOMBreakpoint(Node node, String type) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId());
+        params.put("type", type);
+        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeDOMBreakpoint", params));
+    }
+    
     // TODO: this method is used only internally so far and it needs to be revisisted
     public void addXHRBreakpoint(String urlSubstring) {
         JSONObject params = new JSONObject();
@@ -312,9 +325,26 @@ public final class Debugger {
         LiveHTML.getDefault().storeDocumentVersion(transport.getConnectionURL(), timeStamp, content, callStack2.toJSONString());
         resume();
     }
- 
-    public static final AtomicBoolean INTERNAL_PAUSE = new AtomicBoolean(false);
     
+    private void startRecordingLiveHTMLChange() {
+        if (liveHTMLStopped == Boolean.TRUE) {
+            liveHTMLStopped = Boolean.FALSE;
+            // in this case it means that LIVE HTML was previously stopped and 
+            // now was restarted; Debugger is still enabled but DOM breakpoints needs
+            // to be readded:
+            initDOMLister = true;
+            addEventBreakpoint("DOMContentLoaded");
+            addEventBreakpoint("load");
+        }
+    }
+ 
+    private void stopRecordingLiveHTMLChange() {
+        // disable DOM breakpoint; the rest is handled by LiveHTML.getDefault().isEnabledFor() method
+        liveHTMLStopped = Boolean.TRUE;
+        Node n = webkit.getDOM().getDocument();
+        removeDOMBreakpoint(n, Debugger.DOM_BREAKPOINT_SUBTREE);
+    }
+ 
     private class Callback implements ResponseCallback {
 
         @Override
@@ -331,7 +361,7 @@ public final class Debugger {
 
                     boolean internalSuspend = false;
                     boolean attachDOMListeners = false;
-                    if ("DOM".equals(params.get("reason")) || INTERNAL_PAUSE.getAndSet(false)) {
+                    if ("DOM".equals(params.get("reason"))) {
                         internalSuspend = true;
                     }
                     if ("EventListener".equals(params.get("reason"))) {
@@ -354,7 +384,7 @@ public final class Debugger {
                         
                         final JSONArray callStack = (JSONArray)params.get("callFrames");
                         final boolean finalAttachDOMListeners = attachDOMListeners;
-                        RequestProcessor.getDefault().post(new Runnable() {
+                        transport.getRequestProcessor().post(new Runnable() {
                             @Override
                             public void run() {
                                 recordDocumentChange(timestamp, callStack, finalAttachDOMListeners);
@@ -372,4 +402,35 @@ public final class Debugger {
         }
         
     }
+    
+    private static class LiveHTMLListener implements LiveHTMLImplementation.Listener {
+
+        private Debugger debugger;
+
+        public LiveHTMLListener(Debugger debugger) {
+            this.debugger = debugger;
+        }
+        
+        @Override
+        public void startRecordingChange(URL connectionURL) {
+            debugger.transport.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    debugger.startRecordingLiveHTMLChange();
+                }
+            });
+        }
+        
+        @Override
+        public void stopRecordingChange(URL connectionURL) {
+            debugger.transport.getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    debugger.stopRecordingLiveHTMLChange();
+                }
+            });
+        }
+        
+    }
+
 }

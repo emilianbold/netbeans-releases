@@ -77,4 +77,15 @@ public interface LiveHTMLImplementation {
      */
     public void storeDataEvent(URL connectionURL, long timeStamp, String data);
 
+    public void addListener(Listener l);
+    
+    public void removeListener(Listener l);
+
+    /**
+     * Listener through which implementation of Live HTML can notify backend.
+     */
+    public static interface Listener {
+        void startRecordingChange(URL connectionURL);
+        void stopRecordingChange(URL connectionURL);
+    }
 }

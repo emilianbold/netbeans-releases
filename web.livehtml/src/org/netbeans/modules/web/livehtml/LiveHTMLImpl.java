@@ -43,12 +43,16 @@
 package org.netbeans.modules.web.livehtml;
 
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=LiveHTMLImplementation.class)
 public class LiveHTMLImpl implements LiveHTMLImplementation {
 
+    private List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    
     @Override
     public boolean isEnabledFor(URL connectionURL) {
         return Model.isLiveHTMLEnabled(connectionURL);
@@ -64,4 +68,25 @@ public class LiveHTMLImpl implements LiveHTMLImplementation {
         Model.getModel(connectionURL).storeDataEvent(timeStamp, data);
     }
 
+    @Override
+    public void addListener(Listener l) {
+        listeners.add(l);
+    }
+
+    @Override
+    public void removeListener(Listener l) {
+        listeners.remove(l);
+    }
+
+    public void fireStart(URL connectionURL) {
+        for (Listener l : listeners) {
+            l.startRecordingChange(connectionURL);
+        }
+    }
+    
+    public void fireStop(URL connectionURL) {
+        for (Listener l : listeners) {
+            l.stopRecordingChange(connectionURL);
+        }
+    }
 }
