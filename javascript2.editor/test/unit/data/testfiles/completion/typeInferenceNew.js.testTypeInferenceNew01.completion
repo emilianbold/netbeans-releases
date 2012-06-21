@@ -1,0 +1,34 @@
+Code completion result for source line:
+|formatter.println("Car:");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO $()                             [PUBLIC]   jquery-api.xml
+CONSTRUCTO Address(street, town, country)  [PUBLIC]   typeInferenceNew.js
+CONSTRUCTO Car(color, maker): Car          [PUBLIC]   typeInferenceNew.js
+CONSTRUCTO jQuery()                        [PUBLIC]   jquery-api.xml
+CLASS      Context                         [PUBLIC]   typeInferenceNew.js
+CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
+VARIABLE   object                          [PUBLIC]   typeInferenceNew.js
+KEYWORD    break                                      null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    continue                                   null
+KEYWORD    default                                    null
+KEYWORD    delete                                     null
+KEYWORD    do                                         null
+KEYWORD    else                                       null
+KEYWORD    finally                                    null
+KEYWORD    for                                        null
+KEYWORD    function                                   null
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    new                                        null
+KEYWORD    return                                     null
+KEYWORD    switch                                     null
+KEYWORD    throw                                      null
+KEYWORD    try                                        null
+KEYWORD    typeof                                     null
+KEYWORD    var                                        null
+KEYWORD    while                                      null
+KEYWORD    with                                       null
