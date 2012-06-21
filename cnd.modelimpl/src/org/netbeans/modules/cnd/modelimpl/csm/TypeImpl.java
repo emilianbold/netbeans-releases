@@ -267,17 +267,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     private static AST getLastNode(AST first) {
         AST last = first;
-        for( AST token = last; token != null; token = token.getNextSibling() ) {
-            switch( token.getType() ) {
-                case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-                case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
-                case CPPTokenTypes.CSM_QUALIFIED_ID:
-                case CPPTokenTypes.CSM_ARRAY_DECLARATION:
-                    return AstUtil.getLastChildRecursively(last);
-                default:
-                    last = token;
+        if(last != null) {
+            for( AST token = last.getNextSibling(); token != null; token = token.getNextSibling() ) {
+                switch( token.getType() ) {
+                    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                    case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                        return AstUtil.getLastChildRecursively(last);
+                    default:
+                        last = token;
+                }
             }
-        }        
+        }
         return null;
     }
 
