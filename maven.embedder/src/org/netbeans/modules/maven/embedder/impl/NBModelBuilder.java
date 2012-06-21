@@ -41,36 +41,56 @@
  */
 package org.netbeans.modules.maven.embedder.impl;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.plugin.internal.PluginDependenciesResolver;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManagerFactory;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
-import org.sonatype.guice.plexus.config.Roles;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.InputSource;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Profile;
+import org.apache.maven.model.building.DefaultModelBuilder;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingResult;
 
 /**
- * this module is meant to be used by the project embedder only
+ * take the results from the default implementation of ModelBuild and record the 
+ * profile ids from all raw models, for use in configurations..
  * @author mkleint
  */
-public class ExtensionModule implements Module {
+public class NBModelBuilder extends DefaultModelBuilder {
 
-    public ExtensionModule() {
-    }
-
+    private static final String NETBEANS_PROFILES = "____netbeans.profiles";
+    
     @Override
-    public void configure(Binder binder) {
-        binder.bind(PluginDependenciesResolver.class).to(NbPluginDependenciesResolver.class);
-        binder.bind(Roles.componentKey(RepositoryConnectorFactory.class, "offline")).to(OfflineConnector.class);
-        //#212214 the EnhancedLocalRepositoryManager will claim artifact is not locally present even if file is there but some metadata is missing
-        //we just replace it with the simple variant that relies on file's presence only. 
-        //I'm a bit afraid to remove the binding altogether, that's why we map simple to enhanced.
-        binder.bind(Roles.componentKey(LocalRepositoryManagerFactory.class, "enhanced")).to(SimpleLocalRepositoryManagerFactory.class);
-        
-        //exxperimental only.
-//        binder.bind(InheritanceAssembler.class).to(NbInheritanceAssembler.class);
-        binder.bind(ModelBuilder.class).to(NBModelBuilder.class);
+    public ModelBuildingResult build(ModelBuildingRequest request) throws ModelBuildingException {
+        ModelBuildingResult toRet = super.build(request);
+        Model eff = toRet.getEffectiveModel();
+        InputSource source = new InputSource();
+        source.setLocation("");
+        InputLocation location = new InputLocation(-1, -1, source);
+        eff.setLocation(NETBEANS_PROFILES, location);
+        for (String id : toRet.getModelIds()) {
+            Model mdl = toRet.getRawModel(id);
+            for (Profile p : mdl.getProfiles()) {
+                source.setLocation(source.getLocation() + "|" + p.getId());
+            }
+        }
+        return toRet;
+    }
+    
+    public static Set<String> getAllProfiles(Model mdl) {
+        InputLocation location = mdl.getLocation(NETBEANS_PROFILES);
+        HashSet<String> toRet = new HashSet<String>();
+        if (location != null) {
+            String s = location.getSource().getLocation();
+            if (!s.isEmpty()) {
+                s = s.substring(1);
+                toRet.addAll(Arrays.asList(s.split("\\|")));
+            }
+            return toRet;
+        }
+        return null;
     }
     
 }

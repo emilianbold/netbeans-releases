@@ -82,6 +82,7 @@ import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.plugin.LegacySupport;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
@@ -103,6 +104,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.embedder.impl.NBModelBuilder;
 import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -450,4 +452,15 @@ public final class MavenEmbedder {
         lookupComponent(LegacySupport.class).setSession(new MavenSession(getPlexus(), session, mavenExecutionRequest, new DefaultMavenExecutionResult()));
     }
 
+    
+    /**
+     * during creation of the MAvenProject instance, the list of all profiles available in
+     * the pom inheritance chain.
+     * @param mp
+     * @return list of available profiles or null if something went wrong..
+     * @since 2.29
+     */
+    public static Set<String> getAllProjectProfiles(MavenProject mp) {
+        return NBModelBuilder.getAllProfiles(mp.getModel());
+    }
 }
