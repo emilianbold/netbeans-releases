@@ -1,29 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Templates">
         <folder name="Groovy">
             <attr name="position" intvalue="1350"/>
-            <file name="GroovyScript.groovy" url="GroovyScript.groovy">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
-                <attr name="position" intvalue="110"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="groovy, java-main-class"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyScript.html"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
-            </file>
-            <file name="GroovyClass.groovy" url="GroovyClass.groovy">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
-                <attr name="position" intvalue="100"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="groovy, java-main-class"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyClass.html"/>
-                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
-            </file>
         </folder>
     </folder>
     <folder name="Editors">

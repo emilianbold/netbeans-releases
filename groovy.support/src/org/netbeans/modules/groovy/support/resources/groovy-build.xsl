@@ -63,7 +63,8 @@ made subject to such option by the copyright holder.
 *** GENERATED FROM project.xml - DO NOT EDIT  ***
 ***         EDIT ../build.xml INSTEAD         ***
 
-        ]]></xsl:comment>
+        ]]>
+        </xsl:comment>
 
         <xsl:variable name="name" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:name"/>
         <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
@@ -227,8 +228,30 @@ made subject to such option by the copyright holder.
                     </sequential>
                 </macrodef>
             </target>
-        </project>
 
+            <!--                    -->
+            <!--    Test project    -->
+            <!--                    -->
+            <target depends="init,compile-test,-pre-test-run" if="have.tests" name="-do-test-run-with-groovy">
+                <j2seproject3:test testincludes="**/*Test.class" excludes="**/*$*"/>
+            </target>
+            <target depends="init,compile-test,-pre-test-run,-do-test-run-with-groovy" if="have.tests" name="-post-test-run-with-groovy">
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
+            </target>
+            <target depends="init,compile-test,-pre-test-run,-do-test-run-with-groovy,test-report,-post-test-run-with-groovy,-test-browse" description="Run unit tests." name="test-with-groovy"/>
+
+            <!--                                        -->
+            <!--    Single groovy file test runner      -->
+            <!--                                        -->
+            <target depends="init,compile-test-single,-pre-test-run-single" if="have.tests" name="-do-test-run-single-groovy">
+                <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
+                <j2seproject3:test includes="${{test.includes}}" testincludes="${{test.includes}}" excludes="**/*$*" />
+            </target>
+            <target depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single-groovy" if="have.tests" name="-post-test-run-single-groovy">
+                <fail if="tests.failed" unless="ignore.failing.tests">Some tests failed; see details above.</fail>
+            </target>
+            <target depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single-groovy,-post-test-run-single-groovy" description="Run single unit test." name="test-single-groovy"/>
+        </project>
     </xsl:template>
 
     <xsl:template name="createPath">

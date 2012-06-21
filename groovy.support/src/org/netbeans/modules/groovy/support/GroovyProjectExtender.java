@@ -204,7 +204,10 @@ public class GroovyProjectExtender implements GroovyFeature {
                 Sources sources = ProjectUtils.getSources(project);
                 SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 for (SourceGroup sourceGroup : sourceGroups) {
-                    ProjectClassPathModifier.addLibraries(new Library[]{groovyAllLib}, sourceGroup.getRootFolder(), ClassPath.COMPILE);
+                    // We want to have groovy-all only in source compile classpath
+                    if (!sourceGroup.getRootFolder().getName().equals("test")) {
+                        ProjectClassPathModifier.addLibraries(new Library[]{groovyAllLib}, sourceGroup.getRootFolder(), ClassPath.COMPILE);
+                    }
                 }
                 return true;
             } catch (IOException ex) {
