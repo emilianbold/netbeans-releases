@@ -1139,111 +1139,112 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     }
                     if (annotations != null) {
                         for (AnnotationTree annTree : annotations) {
-                            Name nm = ((IdentifierTree) annTree.getAnnotationType()).getName();
-                            if (nm.contentEquals("Column")) {//NOI18N
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                        existingColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), member);
-                                        break;
-                                    }
-                                }
-                            } else if (nm.contentEquals("EmbeddedId")) {//NOI18N
-                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                existingEmbeddedId = tm.toString();
-                                if (pkProperty != null) {
-                                    //currently unsupported update
-                                    properties.remove(pkProperty);
-                                }
-                            } else if (nm.contentEquals("JoinTable")) {//NOI18N
-                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                ArrayList<String> columns = new ArrayList<String>();
-                                String tableName = null;
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    Name nm2 = ((IdentifierTree) (aTree).getVariable()).getName();
-                                    ExpressionTree value = aTree.getExpression();
-                                    if (nm2.contentEquals("joinColumns")) {//NOI18N
-                                        NewArrayTree columnsArrayTree = (NewArrayTree) value;
-                                        //---TODO: this code is duplicated in this class.
-                                        List<? extends ExpressionTree> inis = columnsArrayTree.getInitializers();
-                                        for (ExpressionTree eT : inis) {
-                                            if (eT instanceof AnnotationTree) {
-                                                AnnotationTree aT = (AnnotationTree) eT;
-                                                Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
-                                                if (aN.contentEquals("JoinColumn")) {//NOI18N
-                                                    for (ExpressionTree expTree : aT.getArguments()) {
-                                                        AssignmentTree asTree = (AssignmentTree) expTree;
-                                                        if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                                            columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        Collections.sort(columns);
-                                        //--- END TODO.
-                                    } else if (nm2.contentEquals("name")) {//NOI18N
-                                        tableName = ((LiteralTree) value).getValue().toString();
-                                    }
-                                }
-                                existingJoinTables.put(tableName, columns);
-                            } else if (nm.contentEquals("JoinColumns")) {//NOI18N
-                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                ArrayList<String> columns = new ArrayList<String>();
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    ExpressionTree value = aTree.getExpression();
-                                    if (value instanceof NewArrayTree) {
-                                        NewArrayTree arrTree = (NewArrayTree) value;
-                                        List<? extends ExpressionTree> inis = arrTree.getInitializers();
-                                        for (ExpressionTree eT : inis) {
-                                            if (eT instanceof AnnotationTree) {
-                                                AnnotationTree aT = (AnnotationTree) eT;
-                                                Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
-                                                if (aN.contentEquals("JoinColumn")) {//NOI18N
-                                                    for (ExpressionTree expTree : aT.getArguments()) {
-                                                        AssignmentTree asTree = (AssignmentTree) expTree;
-                                                        if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                                            columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        Collections.sort(columns);
-
-                                        break;
-                                    }
-                                }
-                                existingJoinColumnss.put(tm, columns);
-                            } else if (nm.contentEquals("JoinColumn")) {//NOI18N
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                        existingJoinColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), annTree);
-                                        break;
-                                    }
-                                }
-                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany") || nm.contentEquals("ManyToMany")) {//NOI18
-                                //may be relation with mappedTo
-                                for (ExpressionTree expression : annTree.getArguments()) {
-                                    if (expression instanceof AssignmentTree) {
-                                        AssignmentTree aTree = (AssignmentTree) expression;
-                                        if (aTree.getVariable().toString().equals("mappedBy")) {//NOI18N
-                                            TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                            existingMappings.put(tm.toString(), expression);
+                            if(annTree.getAnnotationType() instanceof IdentifierTree) {
+                                Name nm = ((IdentifierTree) annTree.getAnnotationType()).getName();
+                                if (nm.contentEquals("Column")) {//NOI18N
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                            existingColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), member);
                                             break;
                                         }
                                     }
-                                }
-                                continue;
-                            } else {//NOI18N
-                                continue;
-                            }
+                                } else if (nm.contentEquals("EmbeddedId")) {//NOI18N
+                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                    existingEmbeddedId = tm.toString();
+                                    if (pkProperty != null) {
+                                        //currently unsupported update
+                                        properties.remove(pkProperty);
+                                    }
+                                } else if (nm.contentEquals("JoinTable")) {//NOI18N
+                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                    ArrayList<String> columns = new ArrayList<String>();
+                                    String tableName = null;
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        Name nm2 = ((IdentifierTree) (aTree).getVariable()).getName();
+                                        ExpressionTree value = aTree.getExpression();
+                                        if (nm2.contentEquals("joinColumns")) {//NOI18N
+                                            NewArrayTree columnsArrayTree = (NewArrayTree) value;
+                                            //---TODO: this code is duplicated in this class.
+                                            List<? extends ExpressionTree> inis = columnsArrayTree.getInitializers();
+                                            for (ExpressionTree eT : inis) {
+                                                if (eT instanceof AnnotationTree) {
+                                                    AnnotationTree aT = (AnnotationTree) eT;
+                                                    Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
+                                                    if (aN.contentEquals("JoinColumn")) {//NOI18N
+                                                        for (ExpressionTree expTree : aT.getArguments()) {
+                                                            AssignmentTree asTree = (AssignmentTree) expTree;
+                                                            if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                                                columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Collections.sort(columns);
+                                            //--- END TODO.
+                                        } else if (nm2.contentEquals("name")) {//NOI18N
+                                            tableName = ((LiteralTree) value).getValue().toString();
+                                        }
+                                    }
+                                    existingJoinTables.put(tableName, columns);
+                                } else if (nm.contentEquals("JoinColumns")) {//NOI18N
+                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                    ArrayList<String> columns = new ArrayList<String>();
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        ExpressionTree value = aTree.getExpression();
+                                        if (value instanceof NewArrayTree) {
+                                            NewArrayTree arrTree = (NewArrayTree) value;
+                                            List<? extends ExpressionTree> inis = arrTree.getInitializers();
+                                            for (ExpressionTree eT : inis) {
+                                                if (eT instanceof AnnotationTree) {
+                                                    AnnotationTree aT = (AnnotationTree) eT;
+                                                    Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
+                                                    if (aN.contentEquals("JoinColumn")) {//NOI18N
+                                                        for (ExpressionTree expTree : aT.getArguments()) {
+                                                            AssignmentTree asTree = (AssignmentTree) expTree;
+                                                            if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                                                columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Collections.sort(columns);
 
+                                            break;
+                                        }
+                                    }
+                                    existingJoinColumnss.put(tm, columns);
+                                } else if (nm.contentEquals("JoinColumn")) {//NOI18N
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                            existingJoinColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), annTree);
+                                            break;
+                                        }
+                                    }
+                                } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany") || nm.contentEquals("ManyToMany")) {//NOI18
+                                    //may be relation with mappedTo
+                                    for (ExpressionTree expression : annTree.getArguments()) {
+                                        if (expression instanceof AssignmentTree) {
+                                            AssignmentTree aTree = (AssignmentTree) expression;
+                                            if (aTree.getVariable().toString().equals("mappedBy")) {//NOI18N
+                                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                                existingMappings.put(tm.toString(), expression);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                } else {//NOI18N
+                                    continue;
+                                }
+                            }
                         }
                     }
                 }
