@@ -71,6 +71,8 @@ import java.net.URL;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -240,7 +242,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     }
     
     //Like DefaultLibraryTypeProvider but in addition checks '/' on the end of folder URLs.
-    private static class J2SELibraryImpl implements NamedLibraryImplementation {
+    private static class J2SELibraryImpl implements LibraryImplementation3 {
         private String description;
 
         private Map<String,List<URL>> contents;
@@ -252,6 +254,8 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
 
         private String localizingBundle;
 
+        private Map<String,String> properties;
+
         private List<PropertyChangeListener> listeners;
 
         /**
@@ -262,6 +266,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             for (String vtype : VOLUME_TYPES) {
                 this.contents.put(vtype, Collections.<URL>emptyList());
             }
+            this.properties = Collections.<String,String>emptyMap();
         }
 
 
@@ -392,6 +397,18 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             for (PropertyChangeListener l : ls) {
                 l.propertyChange(event);
             }
+        }
+
+        @Override
+        @NonNull
+        public Map<String, String> getProperties() {
+            return Collections.<String,String>unmodifiableMap(properties);
+        }
+
+        @Override
+        public void setProperties(@NonNull final Map<String, String> properties) {
+            this.properties = new HashMap<String, String>(properties);
+            this.firePropertyChange(PROP_CONTENT,null,null);
         }
     }
     

@@ -107,6 +107,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
 
+        <change id="create-library-with-properties">
+        <api name="general"/>
+        <summary>Added methods to create a new <code>Library</code> with properties</summary>
+        <version major="1" minor="38"/>
+        <date day="19" month="6" year="2011"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added new factory methods into <code>LibraryManager</code> to create a <code>Library</code>
+            with associated properties.
+        </description>
+        <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
+        <issue number="205380"/>
+    </change>
     <change id="library-properties-name">
         <api name="general"/>
         <summary>Added a name of the properties property into LibraryImplementation3</summary>
