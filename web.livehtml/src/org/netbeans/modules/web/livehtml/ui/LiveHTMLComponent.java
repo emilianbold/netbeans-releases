@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 public class LiveHTMLComponent extends javax.swing.JPanel {
@@ -65,6 +66,7 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
     private Model model;
     private boolean beautify = false;
     private RealContent realContent;
+    private LiveHTMLToolbar toolbar;
     
     /**
      * Creates new form LiveHTMLComponent
@@ -73,6 +75,10 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
         this.fo = fo;
         initComponents();
         showEmptyContent();
+    }
+    
+    void setToolbar(LiveHTMLToolbar toolbar) {
+        this.toolbar = toolbar;
     }
     
     private void showEmptyContent() {
@@ -108,34 +114,59 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
         assert !Model.isLiveHTMLEnabled(fo.toURL());
         model = Model.enableLiveHTML(fo.toURL());
         showRealContent();
-        notifyStart(fo.toURL());
-        loadFileInBrowser();
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                // run notifyStart from non-AWT thread other it would get rescheduled out
+                // of AWT thread and run asynchronously and too late for loadFileInBrowser()
+                notifyStart(fo.toURL());
+                loadFileInBrowser();
+            }
+        });
     }
 
     void go(String address) {
-        URL url = null;
+        URL url_ = null;
         try {
-            url = new URL(address);
+            url_ = new URL(address);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
             return;
         }
+        final URL url = url_;
         model = Model.enableLiveHTML(url);
         showRealContent();
-        notifyStart(fo.toURL());
-        try {
-            File f = File.createTempFile("livehtml", "dummy");
-            FileObject fo = FileUtil.toFileObject(f);
-            BrowserSupport.getDefault().load(url, fo);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    notifyStart(fo.toURL());
+                    File f = File.createTempFile("livehtml", "dummy");
+                    FileObject fo = FileUtil.toFileObject(f);
+                    BrowserSupport.getDefault().load(url, fo);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
     
     private void notifyStart(URL url) {
         LiveHTMLImpl impl = Lookup.getDefault().lookup(LiveHTMLImpl.class);
         assert impl != null;
-        impl.fireStart(url);
+        impl.fireStart(url, new Runnable() {
+            @Override
+            public void run() {
+                debuggerStopped();
+            }
+
+        });
+    }
+    
+    private void debuggerStopped() {
+        assert fo != null;
+        assert Model.isLiveHTMLEnabled(fo.toURL());
+        toolbar.liveHTMLWasStopped();
     }
     
     void stop() {

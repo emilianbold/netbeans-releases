@@ -45,8 +45,10 @@ package org.netbeans.modules.web.livehtml;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.web.livehtml.ui.LiveHTMLComponent;
 import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
 
 @ServiceProvider(service=LiveHTMLImplementation.class)
 public class LiveHTMLImpl implements LiveHTMLImplementation {
@@ -78,9 +80,9 @@ public class LiveHTMLImpl implements LiveHTMLImplementation {
         listeners.remove(l);
     }
 
-    public void fireStart(URL connectionURL) {
+    public void fireStart(URL connectionURL, Runnable stopCallback) {
         for (Listener l : listeners) {
-            l.startRecordingChange(connectionURL);
+            l.startRecordingChange(connectionURL, stopCallback);
         }
     }
     
@@ -89,4 +91,5 @@ public class LiveHTMLImpl implements LiveHTMLImplementation {
             l.stopRecordingChange(connectionURL);
         }
     }
+
 }

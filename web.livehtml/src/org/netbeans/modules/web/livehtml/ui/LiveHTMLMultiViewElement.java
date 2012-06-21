@@ -65,6 +65,7 @@ public class LiveHTMLMultiViewElement implements MultiViewElement {
 
     private FileObject fo;
     private LiveHTMLComponent component;
+    private LiveHTMLToolbar toolbar;
     
     public LiveHTMLMultiViewElement(Lookup lookup) {
         fo = lookup.lookup(FileObject.class);
@@ -75,13 +76,17 @@ public class LiveHTMLMultiViewElement implements MultiViewElement {
     public JComponent getVisualRepresentation() {
         if (component == null) {
             component = new LiveHTMLComponent(fo);
+            ((LiveHTMLComponent)component).setToolbar((LiveHTMLToolbar)getToolbarRepresentation());
         }
         return component;
     }
 
     @Override
     public JComponent getToolbarRepresentation() {
-        return new LiveHTMLToolbar(component, false);
+        if (toolbar == null) {
+            toolbar = new LiveHTMLToolbar(component, false);
+        }
+        return toolbar;
     }
 
     @Override
