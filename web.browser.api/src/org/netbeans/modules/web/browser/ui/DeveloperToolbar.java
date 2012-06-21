@@ -45,7 +45,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 import javax.swing.*;
+import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -79,37 +81,21 @@ public class DeveloperToolbar {
 
         ButtonGroup group = new ButtonGroup();
 
-        AbstractButton button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_DESKTOP"),
-                1280, 1024, context );
+        List<ResizeOption> options = ResizeOption.loadAll();
+        for( ResizeOption ro : options ) {
+            if( !ro.isShowInToolbar() )
+                continue;
+            AbstractButton button = BrowserResizeButton.create( ro, context );
+            group.add( button );
+            bar.add( button );
+        }
+
+        AbstractButton button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_AUTO"), context );
+        button.setSelected( true );
         group.add( button );
         bar.add( button );
 
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_TABLET_LANDSCAPE"),
-                1024, 768, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_TABLET_PORTRAIT"),
-                768, 1024, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_SMARTPHONE_LANDSCAPE"),
-                480, 320, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_SMARTPHONE_PORTRAIT"),
-                320, 480, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_AUTO"),
-                -1, -1, context, true );
-        group.add( button );
-        bar.add( button );
-
-        bar.addSeparator(new Dimension(10,5));
+        bar.addSeparator();
 
         //ZOOM combo box
         DefaultComboBoxModel zoomModel = new DefaultComboBoxModel();
