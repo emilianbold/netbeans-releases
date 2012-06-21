@@ -52,7 +52,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 
 /**
- * Value class describing a single button to resize web browser window.
+ * Immutable value class describing a single button to resize web browser window.
  *
  * @author S. Aubrecht
  */
@@ -78,13 +78,11 @@ public final class ResizeOption {
         CUSTOM;
     }
 
-    private ResizeOption( Type type, String dipslayName, int width, int height, boolean showInToolbar, boolean isDefault ) {
-        Parameters.notEmpty( "displayName", dipslayName ); //NOI18N
+    private ResizeOption( Type type, String displayName, int width, int height, boolean showInToolbar, boolean isDefault ) {
+        Parameters.notEmpty( "displayName", displayName ); //NOI18N
         Parameters.notNull( "type", type ); //NOI18N
-        if( width <= 0 || height <= 0 )
-            throw new IllegalArgumentException( "Invalid screen dimensions: " + width + " x " + height ); //NOI18N
         this.type = type;
-        this.displayName = dipslayName;
+        this.displayName = displayName;
         this.width = width;
         this.height = height;
         this.showInToolbar = showInToolbar;
@@ -102,8 +100,16 @@ public final class ResizeOption {
      * @return New instance.
      */
     public static ResizeOption create( Type type, String displayName, int width, int height, boolean showInToolbar, boolean isDefault ) {
+        if( width <= 0 || height <= 0 )
+            throw new IllegalArgumentException( "Invalid screen dimensions: " + width + " x " + height ); //NOI18N
         return new ResizeOption( type, displayName, width, height, showInToolbar, isDefault );
     }
+
+    /**
+     * An extra option to size the browser content to fit its window.
+     */
+    public static final ResizeOption SIZE_TO_FIT = new ResizeOption( Type.CUSTOM, 
+            NbBundle.getMessage(ResizeOption.class, "Lbl_AUTO"), -1, -1, true, true );
 
     /**
      * Loads all instances from persistent storage.
@@ -200,7 +206,7 @@ public final class ResizeOption {
         return width;
     }
 
-    public int getHeigh() {
+    public int getHeight() {
         return height;
     }
 
@@ -218,6 +224,8 @@ public final class ResizeOption {
     }
 
     public String getToolTip() {
+        if( width < 0 || height < 0 )
+            return displayName;
         StringBuilder sb = new StringBuilder();
         sb.append( width );
         sb.append( " x " ); //NOI18N
@@ -230,5 +238,47 @@ public final class ResizeOption {
 
     private static Preferences getPreferences() {
         return NbPreferences.forModule( ResizeOption.class ).node( "resize_options" ); //NOI18N
+    }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if( obj == null ) {
+            return false;
+        }
+        if( getClass() != obj.getClass() ) {
+            return false;
+        }
+        final ResizeOption other = ( ResizeOption ) obj;
+        if( this.type != other.type ) {
+            return false;
+        }
+        if( (this.displayName == null) ? (other.displayName != null) : !this.displayName.equals( other.displayName ) ) {
+            return false;
+        }
+        if( this.width != other.width ) {
+            return false;
+        }
+        if( this.height != other.height ) {
+            return false;
+        }
+        if( this.showInToolbar != other.showInToolbar ) {
+            return false;
+        }
+        if( this.isDefault != other.isDefault ) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 11 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 11 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
+        hash = 11 * hash + this.width;
+        hash = 11 * hash + this.height;
+        hash = 11 * hash + (this.showInToolbar ? 1 : 0);
+        hash = 11 * hash + (this.isDefault ? 1 : 0);
+        return hash;
     }
 }
