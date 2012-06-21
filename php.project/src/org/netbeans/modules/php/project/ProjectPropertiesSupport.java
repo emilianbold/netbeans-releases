@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -67,7 +68,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Helper class for getting <b>all</b> the properties of a PHP project.
@@ -76,7 +76,6 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
-    private static final RequestProcessor RP = new RequestProcessor(ProjectPropertiesSupport.class);
 
     private ProjectPropertiesSupport() {
     }
@@ -134,7 +133,6 @@ public final class ProjectPropertiesSupport {
                 File tests = new File(panel.getTestSources());
                 assert tests.isDirectory();
                 testsDirectory = FileUtil.toFileObject(tests);
-                project.setTestsDirectory(testsDirectory);
                 saveTestSources(project, PhpProjectProperties.TEST_SRC_DIR, tests);
             }
         }
@@ -155,7 +153,6 @@ public final class ProjectPropertiesSupport {
                 File selenium = new File(panel.getTestSources());
                 assert selenium.isDirectory();
                 seleniumDirectory = FileUtil.toFileObject(selenium);
-                project.setSeleniumDirectory(seleniumDirectory);
                 saveTestSources(project, PhpProjectProperties.SELENIUM_SRC_DIR, selenium);
             }
         }
@@ -521,8 +518,9 @@ public final class ProjectPropertiesSupport {
         return project.getHelper().resolveFile(file);
     }
 
+    @NbBundle.Messages("ProjectPropertiesSupport.project.metadata.saving=Saving project metadata...")
     private static void saveTestSources(final PhpProject project, final String propertyName, final File testDir) {
-        RP.post(new Runnable() {
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -552,6 +550,7 @@ public final class ProjectPropertiesSupport {
                     Exceptions.printStackTrace((IOException) e.getException());
                 }
             }
-        });
+        }, Bundle.ProjectPropertiesSupport_project_metadata_saving());
     }
+
 }
