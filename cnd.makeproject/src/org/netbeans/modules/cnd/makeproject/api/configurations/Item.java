@@ -870,9 +870,21 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                             return LanguageFlavor.CPP;
                     }
                 }
+            }            
+        }
+        
+        if (flavor == LanguageFlavor.UNKNOWN) {
+            if (makeConfiguration != null) {
+                CCCompilerConfiguration ccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+                    if(ccCompilerConfiguration != null) {
+                        switch (ccCompilerConfiguration.getInheritedCppStandard()) {
+                            case CCCompilerConfiguration.STANDARD_CPP11:
+                                return LanguageFlavor.CPP11;
+                    }
+                }
             }
         }
-
+        
         return flavor;
     }
 
