@@ -75,6 +75,7 @@ public class BugzillaConfig {
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
     private static final String CHECK_UPDATES       = "jira.check_updates";         // NOI18N
+    private static final String ATTACH_LOG          = "bugzilla.attach_log";            // NOI18N;
     private static final String TASKLISTISSUES_STORAGE_FILE = "tasklistissues.data"; //NOI18N
     private static final Level LOG_LEVEL = BugzillaUtil.isAssertEnabled() ? Level.SEVERE : Level.INFO;
 
@@ -127,6 +128,14 @@ public class BugzillaConfig {
         return getPreferences().getBoolean(CHECK_UPDATES, true);
     }
 
+    public boolean getAttachLogFile() {
+        return getPreferences().getBoolean(ATTACH_LOG, true);
+    }
+    
+    public void putAttachLogFile(boolean attach) {
+        getPreferences().putBoolean(ATTACH_LOG, attach);
+    }
+    
     public void putQuery(BugzillaRepository repository, BugzillaQuery query) {
         getPreferences().put(
                 getQueryKey(repository.getID(), query.getDisplayName()),
