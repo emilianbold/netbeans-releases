@@ -53,6 +53,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -66,9 +68,12 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
 import org.openide.windows.TopComponent;
@@ -548,7 +553,7 @@ public class LocalHistory {
                 return Collections.EMPTY_LIST;
             } else {
                 try {
-                    return Utils.hasOpenedEditorPanes(tcDataObject) ? getFiles(tcDataObject) : Collections.EMPTY_LIST;
+                    return hasOpenedEditorPanes(tcDataObject) ? getFiles(tcDataObject) : Collections.EMPTY_LIST;
                 } catch (InterruptedException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (InvocationTargetException ex) {
@@ -612,12 +617,12 @@ public class LocalHistory {
                     return;
                 }
                 if(LOG.isLoggable(Level.FINER)) {
-                    LOG.log(Level.FINER, "  looking resut changed for {0} ", new Object[]{ref.get()});
+                    LOG.log(Level.FINER, "  looking result changed for {0} ", new Object[]{ref.get()});
                 }
                 DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
                 if(tcDataObject != null) {
                     try {
-                        if(Utils.hasOpenedEditorPanes(tcDataObject)) {
+                        if(hasOpenedEditorPanes(tcDataObject)) {
                             addOpenedFiles(getFiles(tcDataObject));
                         }
                     } catch (InterruptedException ex) {
@@ -632,6 +637,60 @@ public class LocalHistory {
                 }
             }
         }
+        
+        /**
+         * Determines if the given DataObject has an opened editor
+         * @param dataObject
+         * @return true if the given DataObject has an opened editor. Otherwise false.
+         * @throws InterruptedException
+         * @throws InvocationTargetException 
+         */
+        private boolean hasOpenedEditorPanes(final DataObject dataObject) throws InterruptedException, InvocationTargetException {
+            final boolean[] hasEditorPanes = new boolean[] {false};
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    final EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+                    if(cookie != null) {
+                        // hack - care only about dataObjects with opened editors.
+                        // otherwise we won't assume it's file were opened to be edited
+                        JEditorPane pane = NbDocument.findRecentEditorPane(cookie);
+                        if(pane == null) {
+                            if(cookie instanceof EditorCookie.Observable) {
+                                final EditorCookie.Observable o = (EditorCookie.Observable) cookie;
+                                PropertyChangeListener l = new PropertyChangeListener() {
+                                    @Override
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        if(EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                            addOpenedFiles(getFiles(dataObject));
+                                            o.removePropertyChangeListener(this);
+                                        }
+                                    }
+                                };
+                                o.addPropertyChangeListener(l);
+                                pane = NbDocument.findRecentEditorPane(cookie);
+                                if(pane != null) {
+                                    hasEditorPanes[0] = true;
+                                    o.removePropertyChangeListener(l);
+                                }
+                            } else {
+                                JEditorPane[] panes = cookie.getOpenedPanes();
+                                hasEditorPanes[0] = panes != null && panes.length > 0;
+                            }
+                        } else {
+                            hasEditorPanes[0] = true;
+                        }
+                    }
+                }
+            };
+            if(SwingUtilities.isEventDispatchThread()) { 
+                r.run();
+            } else {
+                SwingUtilities.invokeAndWait(r);
+            }
+            return hasEditorPanes[0];
+        }          
+
     }
     
 }
