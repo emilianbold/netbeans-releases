@@ -52,6 +52,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
@@ -169,10 +170,11 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
 
     private void extractProfiles(Set<String> profileIds) {
-        for (Profile profile : nmp.getOriginalMavenProject().getModel().getProfiles()) {
-            profileIds.add(profile.getId());
+        Set<String> mod = MavenEmbedder.getAllProjectProfiles(nmp.getOriginalMavenProject());
+        if (mod != null) {
+            profileIds.addAll(mod);
         }
-            }
+    }
 
     private List<String> retrieveActiveProfiles(AuxiliaryConfiguration ac, boolean shared) {
 
