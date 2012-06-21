@@ -101,10 +101,8 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     public boolean isVisible(VCSFileProxy file) {
         VersioningSystem[] systems = VersioningManager.getInstance().getVersioningSystems();
         for (VersioningSystem versioningSystem : systems) {
-            if(versioningSystem instanceof DelegatingVCS) {
-                if(((DelegatingVCS)versioningSystem).isMetadataFile(file)) {
-                    return false;
-                }
+            if(versioningSystem.isMetadataFile(file)) {
+                return false;
             }
         }
         if(isHiddenMetadata(file)) {
