@@ -931,6 +931,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug161749.c", 10, 44, "bug161749.c", 10, 19);
         performTest("bug161749.c", 11, 44, "bug161749.c", 11, 19);
     }
+    
+    public void testBug210996() throws Exception {
+        // Bug 210996 - forward class is colored as field
+        performTest("bug210996.cpp", 5, 13, "bug210996.cpp", 8, 1);
+    }    
 
     public static class Failed extends HyperlinkBaseTestCase {
 
