@@ -41,14 +41,21 @@
  */
 package org.netbeans.modules.web.inspect;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -106,6 +113,7 @@ public class PageInspectorImpl extends PageInspector {
                     messageListener = new InspectionMessageListener(pageModel);
                     messageDispatcher.addMessageListener(messageListener);
                 }
+                initSelectionMode(pageContext.lookup(JToolBar.class), pageModel);
             } else {
                 pageModel = null;
                 messageDispatcher = null;
@@ -113,6 +121,47 @@ public class PageInspectorImpl extends PageInspector {
             }
         }
         firePropertyChange(PROP_MODEL, null, null);
+    }
+
+    /**
+     * Adds 'Selection Mode' toggle-button into the specified toolbar.
+     *
+     * @param toolBar toolbar to insert the toggle-button into (can be {@code null}).
+     * @param pageModel mode that the inserted toggle-button should affect.
+     */
+    private void initSelectionMode(JToolBar toolBar, final PageModel pageModel) {
+        if (toolBar != null) {
+            String selectionModeTxt = NbBundle.getMessage(PageInspectorImpl.class, "PageInspectorImpl.selectionMode"); // NOI18N
+            final JToggleButton selectionModeButton = new JToggleButton(selectionModeTxt);
+            selectionModeButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    final boolean selectionMode = selectionModeButton.isSelected();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pageModel.setSelectionMode(selectionMode);
+                        }
+                    });
+                }
+            });
+            pageModel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propName = evt.getPropertyName();
+                    if (PageModel.PROP_SELECTION_MODE.equals(propName)) {
+                        final boolean selectionMode = pageModel.isSelectionMode();
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                selectionModeButton.setSelected(selectionMode);
+                            }
+                        });
+                    }
+                }
+            });
+            toolBar.add(selectionModeButton);
+        }
     }
 
     /**

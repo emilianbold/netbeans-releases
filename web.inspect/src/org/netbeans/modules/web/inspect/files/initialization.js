@@ -62,9 +62,6 @@ NetBeans.ATTR_HIGHLIGHTED = ':netbeans_highlighted';
 // ID of canvas element that serves as a glass-pane
 NetBeans.GLASSPANE_ID = 'netbeans_glasspane';
 
-// ID of check-box for selection mode
-NetBeans.SELECTION_MODE_ID = 'selectionModeCheckbox';
-
 // Name of the parameter (in query string)
 // that is used to force reload of some resource
 NetBeans.RELOAD_PARAM = 'netbeans_reload';
@@ -698,46 +695,15 @@ NetBeans.insertGlassPane = function() {
 
     document.body.appendChild(canvas);
 
-    if (window.top === window) {
-    // Selection Mode checkbox
-    var toolbox = document.createElement('div');
-    toolbox.setAttribute(this.ATTR_ARTIFICIAL, true);
-    toolbox.style.position = 'fixed';
-    toolbox.style.top = 0;
-    toolbox.style.right = 0;
-    toolbox.style.zIndex = zIndex;
-    var selectionMode = document.createElement('input');
-    selectionMode.type = 'checkbox';
-    selectionMode.id = this.SELECTION_MODE_ID;
-    selectionMode.setAttribute(this.ATTR_ARTIFICIAL, true);
-    selectionMode.addEventListener('click', this.switchSelectionMode);
-    toolbox.appendChild(selectionMode);
-    var selectionText = document.createTextNode('Selection Mode');
-    toolbox.appendChild(selectionText);
-    document.body.appendChild(toolbox);
-    }
-
     window.addEventListener('scroll', this.repaintGlassPane);
     window.addEventListener('resize', this.repaintGlassPane);
     this.repaintGlassPane();
-}
-
-// Updates the selection mode according to the 'Select Mode' check-box
-NetBeans.switchSelectionMode = function(event) {
-    var selectionMode = event.currentTarget;
-    var checked = selectionMode.checked;
-    // Notify IDE about the change
-    selectionMode.setAttribute('selection_mode', checked);
 }
 
 NetBeans.setSelectionMode = function(selectionMode) {
     var value = selectionMode ? 'auto' : 'none';
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
     canvas.style.pointerEvents = value;
-    var checkbox = document.getElementById(NetBeans.SELECTION_MODE_ID);
-    if (checkbox != null) {
-        checkbox.checked = selectionMode;
-    }
 }
 
 // Repaints the glass-pane
