@@ -49,6 +49,7 @@ import java.awt.event.ItemListener;
 import javax.swing.AbstractButton;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
+import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.spi.Resizable;
 import org.openide.util.Lookup;
 
@@ -62,13 +63,17 @@ class BrowserResizeButton {
     private BrowserResizeButton() {
     }
 
-    static AbstractButton create( String label, int width, int height, Lookup context ) {
-        return create( label, width, height, context, false );
+    static AbstractButton create( ResizeOption resizeOption, Lookup context ) {
+        return create( new DummyIcon(), resizeOption.getToolTip(), resizeOption.getWidth(),
+                resizeOption.getHeigh(), context );
     }
 
-    static AbstractButton create( String label, final int width, final int height, final Lookup context, boolean selected ) {
-        Icon icon = new DummyIcon();
-        JToggleButton res = new JToggleButton( icon, selected );
+    static AbstractButton create( String label, Lookup context ) {
+        return create( new DummyIcon(), label, -1, -1, context );
+    }
+
+    private static AbstractButton create( Icon icon, String label, final int width, final int height, final Lookup context ) {
+        JToggleButton res = new JToggleButton( icon );
         res.setToolTipText( label );
         res.setEnabled( null != context.lookup( Resizable.class ) );
         res.addItemListener( new ItemListener() {
