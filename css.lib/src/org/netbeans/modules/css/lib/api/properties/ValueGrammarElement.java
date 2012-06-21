@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.api.properties;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class ValueGrammarElement extends GrammarElement {
+public abstract class ValueGrammarElement extends GrammarElement {
 
-    private boolean isUnit;
-    private String value;
-    
-    public ValueGrammarElement(GroupGrammarElement parent, String value, boolean isUnit) {
+    public ValueGrammarElement(GroupGrammarElement parent) {
         super(parent);
-        this.value = value;
-        this.isUnit = isUnit;
     }
-
-    @Override
-    public String getName() {
-        return value();
-    }
-
-    /** true for 'unit' values like length, angle etc. Simply for those which has no fixed value. */
-    public boolean isUnit() {
-        return isUnit;
-    }
-
-    public String value() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return (isUnit() ? "!" : "") + value() + super.toString(); //NOI18N
-    }
+ 
+    public abstract boolean accepts(Token token);
     
 }

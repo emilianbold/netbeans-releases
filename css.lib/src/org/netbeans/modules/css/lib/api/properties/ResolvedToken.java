@@ -51,9 +51,9 @@ public class ResolvedToken {
     private Token token;
     private ValueGrammarElement grammarElement;
 
-    public ResolvedToken(Token token, ValueGrammarElement GrammarElement) {
+    public ResolvedToken(Token token, ValueGrammarElement grammarElement) {
         this.token = token;
-        this.grammarElement = GrammarElement;
+        this.grammarElement = grammarElement;
     }
 
     public Token token() {

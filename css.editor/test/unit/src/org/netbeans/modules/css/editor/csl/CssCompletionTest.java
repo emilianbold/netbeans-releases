@@ -184,9 +184,9 @@ public class CssCompletionTest extends CssModuleTestBase {
     }
 
     public void testCompletionInMozillaSpecificAtRule() throws ParseException {
-        checkCC(" @-moz-document url(http://www.w3.org/) { | }", arr("color"), Match.CONTAINS);
-        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | }", arr("color"), Match.CONTAINS);
-        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("color"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { | }", arr("div"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | }", arr("div"), Match.CONTAINS);
+        checkCC(" @-moz-document url(http://www.w3.org/) { p { } | div { } }", arr("div"), Match.CONTAINS);
     }
 
     //Bug 204128 - CC stops work after # in a color attribute 
@@ -240,8 +240,8 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testPropertyValueFontFamilyProblem2() throws ParseException {
         //completion doesn't offer items that can immediatelly follow
         //a valid token
-        checkCC("div { font-family: fantasy |}", arr(",", "identifier"), Match.EXACT);
-        checkCC("div { font-family: fantasy|}", arr(",", "identifier"), Match.EXACT);
+        checkCC("div { font-family: fantasy |}", arr(",", "!identifier"), Match.EXACT);
+        checkCC("div { font-family: fantasy|}", arr(",", "!identifier"), Match.EXACT);
     }
     
     public void testPropertyValueJustAfterRGB() throws ParseException {

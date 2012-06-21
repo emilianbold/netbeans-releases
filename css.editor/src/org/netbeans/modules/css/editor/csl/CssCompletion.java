@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import java.awt.Color;
@@ -68,10 +69,10 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.*;
-import org.netbeans.modules.css.model.api.Property;
+import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
@@ -234,7 +235,7 @@ public class CssCompletion implements CodeCompletionHandler {
         Map<String, Collection<ValueGrammarElement>> value2GrammarElement =
                 new HashMap<String, Collection<ValueGrammarElement>>();
         for (ValueGrammarElement element : props) {
-            String elementValue = element.value();
+            String elementValue = element.getName().toString();
             Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
             if (col == null) {
                 col = new LinkedList<ValueGrammarElement>();
@@ -253,8 +254,8 @@ public class CssCompletion implements CodeCompletionHandler {
             Collection<ValueGrammarElement> elements = entry.getValue();
             ValueGrammarElement element = elements.iterator().next();
 
-            if (element.isUnit()) {
-                proposals.add(CssCompletionItem.createUnitCompletionItem(element));
+            if(element instanceof UnitGrammarElement) {
+                proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement)element));
                 continue;
             }
 
@@ -774,8 +775,8 @@ public class CssCompletion implements CodeCompletionHandler {
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
 
-        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body)
-                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body)) {
+        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document)
+                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document)) {
             /*
              * somewhere between rules, in an empty or very broken file, between
              * rules
@@ -1165,7 +1166,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //test the situation when completion is invoked just after a valid token
                     //like color: rgb| or font-family: cursive|
                     for (ValueGrammarElement vge : filteredByPrefix) {
-                        if (vge.value().equals(prefix)) {
+                        if (vge.getName().toString().equals(prefix)) {
                             includePrefixInTheExpression = true;
                             break;
                         }

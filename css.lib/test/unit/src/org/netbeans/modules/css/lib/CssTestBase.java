@@ -52,9 +52,10 @@ import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 
 /**
  *
@@ -222,8 +223,7 @@ public class CssTestBase extends CslTestBase {
     private Collection<String> convert(Set<ValueGrammarElement> toto) {
         Collection<String> x = new HashSet<String>();
         for (ValueGrammarElement e : toto) {
-            String strVal = (e.isUnit() ? "!" : "") + e.value();
-            x.add(strVal);
+            x.add(e.getName().toString());
         }
         return x;
     }

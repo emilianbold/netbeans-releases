@@ -39,42 +39,43 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic.box;
-
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.api.semantic.Color;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
-import org.netbeans.modules.web.common.api.LexerUtils;
+package org.netbeans.modules.css.lib.api.properties;
 
 /**
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class BorderColor extends BorderEachEdgeBase implements BoxProvider {
+public class UnitGrammarElement extends ValueGrammarElement {
 
-    public BorderColor(Node node) {
-        super(node);
+    private final TokenAcceptor tokenAcceptor;
+    private final String name;
+    
+    public UnitGrammarElement(GroupGrammarElement parent, TokenAcceptor tokenAcceptor) {
+        super(parent);
+        this.tokenAcceptor = tokenAcceptor;
+        this.name = new StringBuilder().append('!').append(getTokenAcceptorId()).toString();
+    }
+    
+    public final String getTokenAcceptorId() {
+        return tokenAcceptor.id();
+    }
+    
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
-    public  Class getModelClassForSubNode(String nodeName) {
-        if (LexerUtils.equals("color", nodeName, true, true)) { //NOI18N
-            return Color.class;
-        }
-        return null;
+    public boolean accepts(Token token) {
+        return tokenAcceptor.accepts(token);
     }
-
+    
     @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
+    public String toString() {
+        return new StringBuilder()
+                .append(getName())
+                .append(super.toString())
+                .toString();
     }
-
-    @Override
-    protected BoxType getBoxType() {
-        return BoxType.BORDER_COLOR;
-    }
+    
 }
