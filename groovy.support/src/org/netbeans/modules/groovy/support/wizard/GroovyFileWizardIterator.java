@@ -72,18 +72,23 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Martin Janicek
  */
+@Messages(value = {
+    "LBL_DisplayName_GroovyScript=Groovy Script",
+    "LBL_DisplayName_GroovyClass=Groovy Class"
+})
 @TemplateRegistrations(value = {
     @TemplateRegistration(
         folder = "Groovy",
         position = 110,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyScript.groovy",
         scriptEngine = "freemarker",
-        displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyScript.groovy",
+        displayName = "#LBL_DisplayName_GroovyScript",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyScript.html",
         category = {"groovy", "java-main-class"}),
@@ -93,7 +98,7 @@ import org.openide.util.NbBundle;
         position = 100,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyClass.groovy",
         scriptEngine = "freemarker",
-        displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyClass.groovy",
+        displayName = "#LBL_DisplayName_GroovyClass",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyClass.html",
         category = {"groovy", "java-main-class"})
