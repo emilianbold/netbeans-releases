@@ -62,6 +62,16 @@ import org.openide.util.NbBundle.Messages;
  */
 public class GroovyProjectModule {
 
+    @Messages("LBL_TestProject_Action=Test")
+    @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.test.project", category = "Groovy")
+    @ActionRegistration(lazy = false, displayName = "#LBL_TestProject_Action")
+    public static Action testProject() {
+        return ProjectSensitiveActions.projectCommandAction(
+                ActionProvider.COMMAND_TEST,
+                LBL_TestProject_Action(),
+                null);
+    }
+
     @Messages("LBL_CompileFile_Action=Compile File")
     @ActionID(id = "org.netbeans.modules.groovy.support.GroovyProjectModule.compile", category = "Groovy")
     @ActionRegistration(lazy = false, displayName = "#LBL_CompileFile_Action")
