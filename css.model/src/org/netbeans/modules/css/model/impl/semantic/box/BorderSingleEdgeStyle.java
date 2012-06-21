@@ -42,12 +42,10 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.api.semantic.box.BorderStyleItem;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 
 /**
  *
@@ -67,7 +65,7 @@ public class BorderSingleEdgeStyle extends NodeModel implements BoxProvider {
     @Override
     public Box getBox(BoxType boxType) {
         if(boxType == BoxType.BORDER_STYLE) {
-            return new Box.SingleEdge(borderStyleItem, edge);
+            return new BoxWithSingleEdge(borderStyleItem, edge);
         } else {
             return null;
         }

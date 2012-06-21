@@ -39,14 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.box;
+
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 
 /**
  *
  * @author marekfukala
  */
-public interface BoxProvider {
+public interface EditableBoxProvider {
     
-    public Box getBox(BoxType boxType);
+    public EditableBox getBox(BoxType boxType);
      
 }

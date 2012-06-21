@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl.semantic.box;
 
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.box.BoxEdgeSize;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
@@ -83,7 +81,7 @@ public class Padding extends NodeModel implements BoxProvider {
     @Override
     public Box getBox(BoxType boxType) {
         if (boxType == BoxType.PADDING) {
-            return new Box.EachEdge(getElement(Edge.TOP), getElement(Edge.RIGHT),
+            return new BoxWithDifferentEdges(getElement(Edge.TOP), getElement(Edge.RIGHT),
                     getElement(Edge.BOTTOM), getElement(Edge.LEFT));
         } else {
             return null;

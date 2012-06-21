@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic;
+package org.netbeans.modules.css.model.impl.semantic;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

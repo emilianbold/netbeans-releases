@@ -41,17 +41,14 @@
  */
 package org.netbeans.modules.css.model.impl.semantic.box;
 
-import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelProvider;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.box.BoxElementFactory;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-
 import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 
 /**
  *
@@ -159,7 +156,7 @@ public class DeclarationsBoxModelTest extends ModelTestBase {
                 box = dmodel.getBox(BoxType.MARGIN);
                 assertBox(box, "3px", "3px", "3px", "3px");
                 
-                BoxElement be = BoxElementFactory.Factory.getFactory(BoxType.MARGIN).createBoxElement("5cm");
+                BoxElement be = box.createElement("5cm");
                 box.setEdge(Edge.TOP, be);
                 
             }

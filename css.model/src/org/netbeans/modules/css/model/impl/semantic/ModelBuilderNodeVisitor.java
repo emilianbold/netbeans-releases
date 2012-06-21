@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
 import org.netbeans.modules.css.model.impl.semantic.box.TokenNodeModel;
 
 /**

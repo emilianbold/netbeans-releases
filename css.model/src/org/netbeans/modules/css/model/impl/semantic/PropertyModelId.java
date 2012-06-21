@@ -59,9 +59,8 @@ import org.netbeans.modules.css.model.impl.semantic.box.PaddingTop;
 import org.netbeans.modules.css.model.impl.semantic.box.PaddingRight;
 import org.netbeans.modules.css.model.impl.semantic.box.MarginLeft;
 import org.netbeans.modules.css.model.impl.semantic.box.BorderTop;
-import org.netbeans.modules.css.model.api.semantic.Color;
-import org.netbeans.modules.css.model.api.semantic.box.BorderWidthItem;
-import org.netbeans.modules.css.model.api.semantic.box.BorderStyleItem;
+import org.netbeans.modules.css.model.impl.semantic.box.BorderWidthItem;
+import org.netbeans.modules.css.model.impl.semantic.box.BorderStyleItem;
 
 /**
  *

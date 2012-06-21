@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,91 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic;
+package org.netbeans.modules.css.model.impl.semantic.box;
 
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 
 /**
  *
  * @author marekfukala
  */
-public class Color extends NodeModel implements BoxElement {
+public class BoxWithSingleEdge implements Box {
+    private BoxElement value;
+    private Edge edge;
 
-    private String value; //user set value
-
-    public Color(String value) {
+    public BoxWithSingleEdge(BoxElement value, Edge e) {
         this.value = value;
-    }
-    
-    public Color(Node node) {
-        super(node);
-    }
-    
-    public static Color parseValue(CharSequence text) {
-        return new Color(text.toString());
-    }
-    
-    public String getValue() {
-        if(value != null) {
-            return value;
-        }
-        
-        //just gather all token nodes and join to an image
-        final StringBuilder builder = new StringBuilder();
-
-        getNode().accept(new NodeVisitor() {
-
-            @Override
-            public boolean visit(Node node) {
-                if(node instanceof Node.ResolvedTokenNode) {
-                    Node.ResolvedTokenNode tokenNode = (Node.ResolvedTokenNode)node;
-                    builder.append(tokenNode.image());
-                }
-                return true;
-            }
-
-            @Override
-            public void unvisit(Node node) {
-            }
-        });
-        
-        return builder.toString();
+        this.edge = e;
     }
 
     @Override
-    public String asText() {
-        return getValue();
+    public BoxElement getEdge(Edge edge) {
+        return this.edge == edge ? value : null;
     }
-
- 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + (this.value != null ? this.value.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Color other = (Color) obj;
-        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
-            return false;
-        }
-        return true;
-    }
-
-    
-
     
 }

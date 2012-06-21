@@ -39,14 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.box;
+
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.Edge;
 
 /**
  *
  * @author marekfukala
  */
-public interface EditableBoxProvider {
+public class BoxWithSameEdges implements Box {
+    private BoxElement value;
+
+    public BoxWithSameEdges(BoxElement value) {
+        this.value = value;
+    }
+
+    @Override
+    public BoxElement getEdge(Edge edge) {
+        return value;
+    }
     
-    public EditableBox getBox(BoxType boxType);
-     
 }
