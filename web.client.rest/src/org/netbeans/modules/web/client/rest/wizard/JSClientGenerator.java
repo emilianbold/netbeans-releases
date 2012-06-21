@@ -44,6 +44,8 @@ package org.netbeans.modules.web.client.rest.wizard;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -96,6 +98,12 @@ class JSClientGenerator {
     enum MethodType {
         GET,
         SET
+    }
+    
+    enum HttpRequests {
+        POST,
+        PUT,
+        DELETE
     }
     
     private static final String SLASH = "/";                        // NOI18N
@@ -277,10 +285,31 @@ class JSClientGenerator {
             ExecutableElement method = entry.getValue();
             
             TypeMirror returnType = method.getReturnType();
+            Element returnElement = controller.getTypes().asElement( returnType );
             TypeMirror entityCollectionType = getCollectionType(returnType, controller);
-            if ( entityCollectionType == null ){
-                // just plain entity
-                
+            if ( entityCollectionType == null && 
+                    returnElement instanceof TypeElement)           // skip primitives ( consider just type element )
+            {
+                if ( getAnnotation( returnElement, XML_ROOT_ELEMENT) == null ){
+                    /* TODO : here is only @XmlRootElement annotated elements
+                     * are considered as JSON serializable ( that's true for
+                     * NB generated entities ) but there could be probably
+                     * other ways to serialize ( read/write REST providers )
+                     * POJO classes     
+                     */
+                    continue;
+                }
+                EnumMap<HttpRequests, String> paths = 
+                    new EnumMap<HttpRequests, String>(HttpRequests.class);
+                paths.put(HttpRequests.POST, parsePath(postMethods, 
+                        returnType, controller ));
+                paths.put(HttpRequests.PUT, parsePath(putMethods , 
+                        returnType , controller));
+                paths.put(HttpRequests.DELETE, parsePath(deleteMethods,
+                        returnType, controller ));
+                generateBackendModel( (TypeElement)returnElement , path , 
+                        null, paths , Collections.<HttpRequests, Boolean>emptyMap(), 
+                        controller );
             }
             else {
                 // collection of entities
@@ -310,14 +339,51 @@ class JSClientGenerator {
                 }
                 String fqn = ((TypeElement)returnElement).getQualifiedName().toString();
                 String collectionPath = fqn2Path.get(fqn);
+                EnumMap<HttpRequests, String> paths = 
+                    new EnumMap<HttpRequests, String>(HttpRequests.class);
+                EnumMap<HttpRequests, Boolean> ids = 
+                    new EnumMap<HttpRequests, Boolean>(HttpRequests.class);
                 generateBackendModel( (TypeElement)returnElement , path , 
-                        collectionPath, controller );
+                        collectionPath, paths, ids, controller );
             }
         }
     }
     
+    private String parsePath( List<ExecutableElement> methods , 
+            TypeMirror type , CompilationController controller) 
+    {
+        for (ExecutableElement method : methods) {
+            List<? extends VariableElement> parameters = method.getParameters();
+            boolean mathches = false;
+            if ( parameters.size() == 0 ){
+                mathches = true;
+            }
+            else if ( parameters.size() == 1){
+                VariableElement param = parameters.get(0);
+                if ( controller.getTypes().isSameType(param.asType(),type)){
+                    mathches = true;
+                }
+            }
+            else {
+                continue;
+            }
+            if ( mathches ){
+                AnnotationMirror annotation = getAnnotation(method, PATH);
+                if ( annotation == null ){
+                    return "";
+                }
+                else {
+                    return getValue(annotation);
+                }
+            }
+        }
+        return null;
+    }
+
     private void generateBackendModel( TypeElement entity, String path,
-            String collectionPath, CompilationController controller ) throws IOException
+            String collectionPath, Map<HttpRequests, String> httpPaths ,
+            Map<HttpRequests, Boolean> useIds,
+            CompilationController controller ) throws IOException
     {
         String fqn = entity.getQualifiedName().toString();
         String name = entity.getSimpleName().toString();
@@ -332,16 +398,25 @@ class JSClientGenerator {
         }
         myContent.append(" entity\n");                          // NOI18N
         
+        String url = getUrl( path );
+        
         myContent.append("window.");
         myContent.append(modelName);
         myContent.append(" = Backbone.Model.extend({\n");       // NOI18N
         myContent.append("urlRoot : \"");                       // NOI18N
-        myContent.append( getUrl( path ));
+        myContent.append( url );
         myContent.append("\"");                                 // NOI18N
         String parsedData = parse(entity, controller);
         if ( parsedData != null ){
-            myContent.append(",");                              // NOI18N
+            myContent.append(',');                              
             myContent.append(parsedData);
+            myContent.append(','); 
+        }
+        String sync = overrideSync( url, httpPaths , useIds ); 
+        if ( sync != null ){
+            myContent.append("\n");                             // NOI18N
+            myContent.append(sync);
+            myContent.append("\n");                             // NOI18N
         }
         myContent.append("\n});\n\n");                          // NOI18N
         
@@ -366,6 +441,46 @@ class JSClientGenerator {
         myContent.append( getUrl( collectionPath ));
         myContent.append("\"\n"); 
         myContent.append("});\n\n");                             // NOI18N
+    }
+
+    private String overrideSync( String url,
+            Map<HttpRequests, String> httpPaths,
+            Map<HttpRequests, Boolean> useIds ) throws IOException 
+    {
+        StringBuilder builder = new StringBuilder();
+        for( Entry<HttpRequests,String> entry : httpPaths.entrySet() ){
+            overrideMethod(url, entry.getValue(), 
+                    useIds.get(entry.getKey()), entry.getKey(), builder);
+        }
+        if ( builder.length()>0 ){
+            builder.insert(0, "sync: function(method, model, options){\n");
+            builder.append("return Backbone.sync(method, model, options);\n}\n");
+        }
+        return builder.toString();
+    }
+    
+    private void overrideMethod(String url, String path, Boolean useId, 
+            HttpRequests request, StringBuilder builder ) throws IOException
+    {
+        if ( path == null ){
+            builder.append("if(method=='");
+            builder.append(request.toString());
+            builder.append("'){\n");
+            builder.append("return false;\n}\n");
+        }
+        else {
+            path = getUrl(path);
+            if ( !url.equals(path) || ( useId!= null && useId )){
+                if ( !path.endsWith("/")){
+                    path = path +"/";
+                }
+                builder.append("if(method=='");
+                builder.append(request.toString());
+                builder.append("'){\n");
+                builder.append("options.url = path+id;\n");
+                builder.append("}\n");
+            }
+        }
     }
 
     private String parse( TypeElement entity, CompilationController controller ) {
@@ -396,12 +511,12 @@ class JSClientGenerator {
             builder.append(idAttr);
             builder.append("'");                                        // NOI18N
             if ( attributes.size() >0 ){
-                builder.append(",\n");                                  // NOI18N
+                builder.append(",");                                  // NOI18N
             }
         }
         
         if (attributes.size() > 0) {
-            builder.append("defaults: {");                              // NOI18N
+            builder.append("\ndefaults: {");                              // NOI18N
             for (String attribute : attributes) {
                 builder.append("\n");                                   // NOI18N
                 builder.append(attribute);
