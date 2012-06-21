@@ -63,7 +63,7 @@ NetBeans.ATTR_HIGHLIGHTED = ':netbeans_highlighted';
 NetBeans.GLASSPANE_ID = 'netbeans_glasspane';
 
 // ID of check-box for selection mode
-NetBeans.SELECTION_MODE_ID = 'netbeans_selection_mode';
+NetBeans.SELECTION_MODE_ID = 'selectionModeCheckbox';
 
 // Name of the parameter (in query string)
 // that is used to force reload of some resource
@@ -724,10 +724,10 @@ NetBeans.insertGlassPane = function() {
 
 // Updates the selection mode according to the 'Select Mode' check-box
 NetBeans.switchSelectionMode = function(event) {
-    var checked = event.currentTarget.checked;
-    var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
+    var selectionMode = event.currentTarget;
+    var checked = selectionMode.checked;
     // Notify IDE about the change
-    canvas.setAttribute(':netbeans_selection_mode', checked);
+    selectionMode.setAttribute('selection_mode', checked);
 }
 
 NetBeans.setSelectionMode = function(selectionMode) {

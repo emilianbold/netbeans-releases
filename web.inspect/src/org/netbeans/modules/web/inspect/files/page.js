@@ -105,6 +105,11 @@ NetBeans_Page.prototype.setPresets = function(presets) {
 NetBeans_Page.prototype.redrawPresets = function() {
     this._showPresets();
 }
+// udpates Selection Mode checkbox in the toolbar
+NetBeans_Page.prototype.setSelectionMode = function(checked) {
+    var selectionMode = document.getElementById('selectionModeCheckbox');
+    selectionMode.checked = checked;
+}
 /*** ~Private ***/
 // register events
 NetBeans_Page.prototype._registerEvents = function() {
@@ -115,6 +120,20 @@ NetBeans_Page.prototype._registerEvents = function() {
     document.getElementById('presetMenuButton').addEventListener('click', function() {
         that.showPresetMenu();
     }, false);
+    var selectionModeCheckBox = document.getElementById('selectionModeCheckbox');
+    selectionModeCheckBox.setAttribute(':netbeans_generated', 'true');
+    var selectionModeDiv = document.getElementById('selectionModeDiv');
+    selectionModeDiv.addEventListener('click', function(e) {
+        if (e.target !== selectionModeCheckBox) {
+            selectionModeCheckBox.checked = !selectionModeCheckBox.checked;
+        }
+        that._updateSelectionMode();
+    }, false);
+}
+// notifies IDE about Selection Mode modification
+NetBeans_Page.prototype._updateSelectionMode = function() {
+    var selectionMode = document.getElementById('selectionModeCheckbox');
+    selectionMode.setAttribute('selection_mode', selectionMode.checked);
 }
 // show presets in the toolbar
 NetBeans_Page.prototype._showPresets = function() {

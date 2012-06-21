@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -125,15 +126,11 @@ public class WebKitPageModel extends PageModel {
         webKitNode = convertNode(webKitNode);
         Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
         if (attr == null) {
-            // init
-            final String initScript = Files.getScript("initialization"); // NOI18N
-            webKit.runNetBeansDOMChanges(new Runnable() {
-                @Override
-                public void run() {
-                    webKit.getRuntime().evaluate(initScript);
-                }
-            });
-            if (!hasNativeToolbar) {
+            if (hasNativeToolbar) {
+                // init
+                String initScript = Files.getScript("initialization"); // NOI18N
+                webKit.getRuntime().evaluate(initScript);
+            } else {
                 // frame
                 String pageScript = Files.getScript("page"); // NOI18N
                 webKit.getRuntime().evaluate(pageScript);
@@ -218,6 +215,7 @@ public class WebKitPageModel extends PageModel {
             public void documentUpdated() {
                 synchronized(WebKitPageModel.this) {
                     nodes.clear();
+                    contentDocumentMap.clear();
                     documentNode = null;
                     RP.post(new Runnable() {
                         @Override
@@ -258,21 +256,19 @@ public class WebKitPageModel extends PageModel {
                         return;
                     }
 
-                    // Notifications via attribute modification of the glass-pane
+                    // Notifications via attribute modification of injected nodes
                     if (node.isInjectedByNetBeans()) {
                         Node.Attribute attr = node.getAttribute("id"); // NOI18N
-                        if (attr != null && "netbeans_glasspane".equals(attr.getValue())) { // NOI18N
-                            // Attribute modifications that represent selection mode switching
-                            if (":netbeans_selection_mode".equals(attrName)) { // NOI18N
-                                attr = node.getAttribute(attrName);
-                                final boolean mode = "true".equals(attr.getValue()); // NOI18N
-                                RP.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        setSelectionMode(mode);
-                                    }
-                                });
-                            }
+                        // Attribute modifications that represent selection mode switching
+                        if (attr != null && "selectionModeCheckbox".equals(attr.getValue()) && "selection_mode".equals(attrName)) { // NOI18N
+                            attr = node.getAttribute(attrName);
+                            final boolean mode = "true".equals(attr.getValue()); // NOI18N
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setSelectionMode(mode);
+                                }
+                            });
                         }
                         return;
                     }
@@ -341,7 +337,8 @@ public class WebKitPageModel extends PageModel {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    final String initScript = Files.getScript("initialization"); // NOI18N
+                    final String initScript = Files.getScript("initialization") // NOI18N
+                        + "\nNetBeans.setSelectionMode("+selectionMode+");"; // NOI18N
                     final RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
                     webKit.runNetBeansDOMChanges(new Runnable() {
                         @Override
@@ -457,12 +454,19 @@ public class WebKitPageModel extends PageModel {
      * @param script script to invoke.
      */
     void invokeInAllDocuments(String script) {
-        // Main document
-        webKit.getRuntime().evaluate(script);
+        if (hasNativeToolbar) {
+            // Main document
+            webKit.getRuntime().evaluate(script);
+        }
 
         // Content documents
         script = "function() {\n" + script + "\n}"; // NOI18N
-        for (RemoteObject contentDocument : contentDocumentMap.values()) {
+        List<RemoteObject> documents;
+        synchronized (this) {
+            documents = new ArrayList<RemoteObject>(contentDocumentMap.size());
+            documents.addAll(contentDocumentMap.values());
+        }
+        for (RemoteObject contentDocument : documents) {
             webKit.getRuntime().callFunctionOn(contentDocument, script);
         }
     }
@@ -559,10 +563,15 @@ public class WebKitPageModel extends PageModel {
             } 
         }
 
-        private void updateSelectionMode() {
+        private synchronized void updateSelectionMode() {
             boolean selectionMode = isSelectionMode();
-            String code = "NetBeans.setSelectionMode("+selectionMode+")"; // NOI18N
-            webKit.getRuntime().evaluate(code);
+            if (!hasNativeToolbar) {
+                // Update checkbox in Chrome toolbar
+                String code = "NetBeans_Page.setSelectionMode("+selectionMode+")"; // NOI18N
+                webKit.getRuntime().evaluate(code);                
+            }
+            // Activate/deactivate (observation of mouse events over) canvas
+            invokeInAllDocuments("NetBeans.setSelectionMode("+selectionMode+")"); // NOI18N
         }
 
     }
