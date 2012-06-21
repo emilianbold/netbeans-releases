@@ -71,6 +71,7 @@ import javafx.util.Callback;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.core.browser.api.WebBrowser;
@@ -110,6 +111,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private String currentTitle = null;
     private boolean isBackward = false;
     private boolean isForward = false;
+    //toolbar for extra buttons (e.g. for developer tools)
+    private final JToolBar toolbar = new JToolBar();
 
     /**
      * Creates a new {@code WebBrowserImpl}.
@@ -166,7 +169,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 new ScriptExecutorImpl(this),
                 transport,
                 Factory.createWebKitDebugging(transport),
-                new ZoomAndResizeImpl(this)
+                new ZoomAndResizeImpl(this),
+                toolbar
         );
         return l;
     }

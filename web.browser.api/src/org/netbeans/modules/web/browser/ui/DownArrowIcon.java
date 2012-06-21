@@ -41,72 +41,40 @@
  */
 package org.netbeans.modules.web.browser.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
+import java.awt.*;
 import javax.swing.Icon;
-import javax.swing.JToggleButton;
-import org.netbeans.modules.web.browser.api.ResizeOption;
 
 /**
- * Button to resize the browser window.
- * 
+ *
  * @author S. Aubrecht
  */
-class BrowserResizeButton extends JToggleButton {
+class DownArrowIcon implements Icon {
 
-    private final ResizeOption resizeOption;
-
-    private BrowserResizeButton( ResizeOption resizeOption ) {
-        this.resizeOption = resizeOption;
-        setIcon( toIcon( resizeOption.getType() ) );
-        setToolTipText( resizeOption.getToolTip() );
+    private static final int SIZE = 16;
+    @Override
+    public void paintIcon( Component c, Graphics g, int x, int y ) {
+        if( g instanceof Graphics2D ) {
+            Graphics2D g2d = ( Graphics2D ) g;
+            g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+        }
+        g.setColor( c.getForeground() );
+        Polygon p = new Polygon();
+        final int arrowSize = 8;
+        p.addPoint( x+(SIZE-arrowSize)/2, y+(SIZE-arrowSize)/2 );
+        p.addPoint( x+SIZE-(SIZE-arrowSize)/2, y+(SIZE-arrowSize)/2 );
+        p.addPoint( x+SIZE/2, y+SIZE - (SIZE-arrowSize)/2 );
+        p.addPoint( x+(SIZE-arrowSize)/2, y+(SIZE-arrowSize)/2 );
+        g.fillPolygon( p );
     }
 
-    ResizeOption getResizeOption() {
-        return resizeOption;
+    @Override
+    public int getIconWidth() {
+        return SIZE;
     }
 
-    static BrowserResizeButton create( ResizeOption resizeOption ) {
-        return new BrowserResizeButton( resizeOption );
+    @Override
+    public int getIconHeight() {
+        return SIZE;
     }
 
-    static Icon toIcon( ResizeOption.Type type ) {
-        switch( type ) {
-            case DESKTOP: return new DummyIcon( Color.red );
-            case CUSTOM: return new DummyIcon( Color.yellow );
-            case NETBOOK: return new DummyIcon( Color.green );
-            case SMARTPHONE_LANDSCAPE: return new DummyIcon( Color.pink );
-            case SMARTPHONE_PORTRAIT: return new DummyIcon( Color.orange );
-            case TABLET_LANDSCAPE: return new DummyIcon( Color.cyan );
-            case TABLET_PORTRAIT: return new DummyIcon( Color.magenta );
-            case WIDESCREEN: return new DummyIcon( Color.blue );
-        }
-        return new DummyIcon( Color.black );
-    }
-
-    private static class DummyIcon implements Icon {
-
-        private final Color color;
-
-        private DummyIcon( Color color ) {
-            this.color = color;
-        }
-
-        @Override
-        public void paintIcon( Component c, Graphics g, int x, int y ) {
-            g.setColor( color );
-            g.fillRect( x, y, getIconWidth(), getIconHeight() );
-        }
-
-        @Override
-        public int getIconWidth() {
-            return 16;
-        }
-
-        @Override
-        public int getIconHeight() {
-            return 16;
-        }
-    }
 }

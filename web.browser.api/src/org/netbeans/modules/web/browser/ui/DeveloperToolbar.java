@@ -42,10 +42,16 @@
 package org.netbeans.modules.web.browser.ui;
 
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import org.netbeans.modules.web.browser.api.ResizeOption;
+import org.netbeans.modules.web.browser.spi.Resizable;
 import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -57,13 +63,31 @@ import org.openide.util.NbBundle;
  */
 public class DeveloperToolbar {
 
-    private final JToolBar bar;
+    private final JPanel panel;
     private Lookup context;
+    private ResizeOption currentSize = ResizeOption.SIZE_TO_FIT;
+    private final JToolBar resizeBar;
+    private final ArrayList<BrowserResizeButton> resizeButtons;
+    private final ItemListener resizeListener;
+    private boolean ignoreSelectionChanges;
 
     private DeveloperToolbar() {
-        bar = new JToolBar();
-        bar.setFloatable( false );
-        bar.setFocusable( false );
+        panel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
+        resizeBar = new JToolBar();
+        resizeBar.setFloatable( false );
+        resizeBar.setFocusable( false );
+        panel.add( resizeBar );
+        resizeButtons = new ArrayList<BrowserResizeButton>( 15 );
+        resizeListener = new ItemListener() {
+            @Override
+            public void itemStateChanged( ItemEvent e ) {
+                if( ignoreSelectionChanges )
+                    return;
+                if( e.getSource() instanceof BrowserResizeButton ) {
+                    setBrowserSize( ((BrowserResizeButton)e.getSource()).getResizeOption() );
+                }
+            }
+        };
     }
 
     public static DeveloperToolbar create() {
@@ -71,45 +95,20 @@ public class DeveloperToolbar {
     }
 
     public Component getComponent() {
-        return bar;
+        return panel;
     }
 
     public void intialize( Lookup context ) {
         this.context = context;
+        JToolBar bar = context.lookup( JToolBar.class );
+        if( null == bar ) {
+            bar = new JToolBar();
+        }
+        bar.setFloatable( false );
+        bar.setFocusable( false );
+        panel.add( bar );
 
-        ButtonGroup group = new ButtonGroup();
-
-        AbstractButton button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_DESKTOP"),
-                1280, 1024, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_TABLET_LANDSCAPE"),
-                1024, 768, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_TABLET_PORTRAIT"),
-                768, 1024, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_SMARTPHONE_LANDSCAPE"),
-                480, 320, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_SMARTPHONE_PORTRAIT"),
-                320, 480, context );
-        group.add( button );
-        bar.add( button );
-
-        button = BrowserResizeButton.create( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_AUTO"),
-                -1, -1, context, true );
-        group.add( button );
-        bar.add( button );
-
-        bar.addSeparator(new Dimension(10,5));
+        fillResizeBar();
 
         //ZOOM combo box
         DefaultComboBoxModel zoomModel = new DefaultComboBoxModel();
@@ -159,5 +158,101 @@ public class DeveloperToolbar {
             //ignore
         }
         return null;
+    }
+
+    private void fillResizeBar() {
+        resizeBar.removeAll();
+        resizeButtons.clear();
+
+        final boolean resizingEnabled = null != context.lookup( Resizable.class );
+        List<ResizeOption> options = ResizeOption.loadAll();
+        options.add( ResizeOption.SIZE_TO_FIT );
+        for( ResizeOption ro : options ) {
+            if( !ro.isShowInToolbar() )
+                continue;
+            BrowserResizeButton button = BrowserResizeButton.create( ro );
+            resizeBar.add( button );
+            button.setSelected( ro.equals( currentSize ) );
+            button.addItemListener( resizeListener );
+            resizeButtons.add( button );
+            button.setEnabled( resizingEnabled );
+        }
+
+        final JButton btnDropDown = new JButton( new DownArrowIcon() );
+        resizeBar.add( btnDropDown );
+        btnDropDown.setEnabled( resizingEnabled );
+        btnDropDown.addActionListener( new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                JPopupMenu popup = buildResizePopup();
+                popup.show( btnDropDown, 0, btnDropDown.getHeight() );
+            }
+        });
+
+        resizeBar.addSeparator();
+    }
+
+    private void setBrowserSize( ResizeOption resizeOption ) {
+        ignoreSelectionChanges = true;
+        boolean doResize = !resizeOption.equals( currentSize );
+        this.currentSize = resizeOption;
+        for( BrowserResizeButton b : resizeButtons ) {
+            b.setSelected( b.getResizeOption().equals( resizeOption ) );
+        }
+        ignoreSelectionChanges = false;
+        if( doResize ) {
+            doResize( resizeOption.getWidth(), resizeOption.getHeight() );
+        }
+    }
+
+    private JPopupMenu buildResizePopup() {
+        JPopupMenu res = new JPopupMenu();
+
+        List<ResizeOption> options = ResizeOption.loadAll();
+        options.add( ResizeOption.SIZE_TO_FIT );
+        for( ResizeOption ro : options ) {
+            final ResizeOption size = ro;
+            JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem( ro.getToolTip() );
+            res.add( menuItem );
+            menuItem.addItemListener( new ItemListener() {
+                @Override
+                public void itemStateChanged( ItemEvent e ) {
+                    setBrowserSize( size );
+                }
+            });
+            menuItem.setSelected( size.equals( currentSize ) );
+            menuItem.setIcon( BrowserResizeButton.toIcon( ro.getType() ) );
+        }
+        res.addSeparator();
+        
+        JMenuItem menu = new JMenuItem( NbBundle.getMessage(DeveloperToolbar.class, "Lbl_CUSTOMIZE") );
+        menu.addActionListener( new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                ResizeOptionsCustomizer customizer = new ResizeOptionsCustomizer();
+                if( customizer.showCustomizer() ) {
+                    List<ResizeOption> newOptions = customizer.getResizeOptions();
+                    ResizeOption.saveAll( newOptions );
+                    fillResizeBar();
+                }
+            }
+        });
+        res.add( menu );
+
+        return res;
+    }
+
+    void doResize( final int width, final int height ) {
+        Resizable resizable = context.lookup( Resizable.class );
+        if( null == resizable )
+            return;
+
+        if( width < 0 || height < 0 ) {
+            resizable.autofit();
+        } else {
+            resizable.resize( width, height );
+        }
     }
 }

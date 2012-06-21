@@ -120,6 +120,7 @@ class RuntimePathPanel extends javax.swing.JPanel {
         FileChooserBuilder fcb = new FileChooserBuilder( RuntimePathPanel.class );
         fcb.setDirectoriesOnly( true );
         fcb.setTitle( NbBundle.getMessage(RuntimePathPanel.class, "Title_BrowserRuntime") );
+        final boolean[] appendRT = new boolean[1];
         fcb.setSelectionApprover( new FileChooserBuilder.SelectionApprover() {
 
             @Override
@@ -129,7 +130,13 @@ class RuntimePathPanel extends javax.swing.JPanel {
                     return false;
                 }
 
+                appendRT[0] = false;
                 WebBrowser browser = WebBrowserImplProvider.createBrowser( selection[0] );
+                if( null == browser || browser instanceof NoWebBrowserImpl ) {
+                    selection[0] = new File( selection[0], "rt" ); //NOI18N
+                    browser = WebBrowserImplProvider.createBrowser( selection[0] );
+                    appendRT[0] = true;
+                }
                 if( null == browser || browser instanceof NoWebBrowserImpl ) {
                     DialogDisplayer.getDefault().notifyLater( new NotifyDescriptor.Message( NbBundle.getMessage(RuntimePathPanel.class, "Err_NoRuntimeFolder")) );
                     return false;
@@ -144,6 +151,8 @@ class RuntimePathPanel extends javax.swing.JPanel {
         if( res != JFileChooser.APPROVE_OPTION )
             return null;
         File runtimePath = chooser.getSelectedFile();
+        if( appendRT[0] )
+            runtimePath = new File( runtimePath, "rt" ); //NOI18N
         return runtimePath;
     }
 
