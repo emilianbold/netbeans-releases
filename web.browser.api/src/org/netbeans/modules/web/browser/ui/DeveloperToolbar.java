@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.browser.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
@@ -59,13 +60,11 @@ import org.openide.util.NbBundle;
  */
 public class DeveloperToolbar {
 
-    private final JToolBar bar;
+    private final JPanel panel;
     private Lookup context;
 
     private DeveloperToolbar() {
-        bar = new JToolBar();
-        bar.setFloatable( false );
-        bar.setFocusable( false );
+        panel = new JPanel( new BorderLayout( 5, 0 ) );
     }
 
     public static DeveloperToolbar create() {
@@ -73,11 +72,18 @@ public class DeveloperToolbar {
     }
 
     public Component getComponent() {
-        return bar;
+        return panel;
     }
 
     public void intialize( Lookup context ) {
         this.context = context;
+        JToolBar bar = context.lookup( JToolBar.class );
+        if( null == bar ) {
+            bar = new JToolBar();
+        }
+        bar.setFloatable( false );
+        bar.setFocusable( false );
+        panel.add( bar, BorderLayout.WEST );
 
         ButtonGroup group = new ButtonGroup();
 

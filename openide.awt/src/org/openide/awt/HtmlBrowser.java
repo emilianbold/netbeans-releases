@@ -373,7 +373,7 @@ public class HtmlBrowser extends JPanel {
         head.add(bReload, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,4), 0, 0));
         head.add(bStop, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
         if( null != extraToolbar ) {
-            head.add(extraToolbar, new GridBagConstraints(0, 1, 5, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,0,0,0), 0, 0));
+            head.add(extraToolbar, new GridBagConstraints(0, 1, 5, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(3,0,0,0), 0, 0));
         }
 
         head.setBorder( BorderFactory.createEmptyBorder(8, 10, null == extraToolbar ? 8 : 3, 10));
