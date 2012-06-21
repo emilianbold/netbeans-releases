@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -85,8 +86,12 @@ public final class TestMethodUtil {
     }
 
     static boolean canHandle(Node activatedNode) {
-        FileObject fileO = getFileObjectFromNode(activatedNode);
-        if (fileO != null) {
+        FileObject fo = getFileObjectFromNode(activatedNode);
+        if (fo != null) {
+            if (!isGroovyFile(fo)) {
+                return false;
+            }
+
             EditorCookie ec = activatedNode.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 JEditorPane pane = NbDocument.findRecentEditorPane(ec);
@@ -115,5 +120,9 @@ public final class TestMethodUtil {
             return df.getPrimaryFile();
         }
         return null;
+    }
+
+    private static boolean isGroovyFile(FileObject fileObj) {
+        return "groovy".equals(fileObj.getExt()) || "text/x-groovy".equals(FileUtil.getMIMEType(fileObj)); //NOI18N
     }
 }
