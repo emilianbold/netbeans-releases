@@ -44,7 +44,7 @@ package org.netbeans.modules.css.lib.api.properties;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 
 /**
  * Allow to listen on GrammarResolver parsing.
@@ -55,10 +55,10 @@ import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
  */
 public interface GrammarResolverListener {
     
-    /** Called before the parsing starts */
+    /** Called before the parsing starts. */
     public void starting();
     
-    /** Called after the parsing finishes */
+    /** Called after the parsing finishes. */
     public void finished();
     
     /** Called before entering the group rule. */
@@ -73,12 +73,12 @@ public interface GrammarResolverListener {
     /** Called before entering the value rule. */
     public void entering(ValueGrammarElement value);
     
-    /** Called when the group rule is accepted (consumed some input). */    
+    /** Called when the value text is accepted (consumed some input). */    
     public void accepted(ValueGrammarElement value, ResolvedToken group);
     
-    /** Called when the group rule is rejected (consumed NO input). */
+    /** Called when the value fixed text is rejected (consumed NO input). */
     public void rejected(ValueGrammarElement group);
-    
+
     /**
      * Often multiple grammar branches are evaluated to find out
      * which is most appropriate (due to the non deterministic grammars)

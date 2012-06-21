@@ -39,42 +39,41 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic.box;
+package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.api.semantic.Color;
-import org.netbeans.modules.css.model.api.semantic.box.BoxProvider;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
+ * Represents a fixed value in the property grammar.
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org
  */
-public class BorderColor extends BorderEachEdgeBase implements BoxProvider {
+public class FixedTextGrammarElement extends ValueGrammarElement {
 
-    public BorderColor(Node node) {
-        super(node);
+    private CharSequence value;
+    
+    public FixedTextGrammarElement(GroupGrammarElement parent, CharSequence value) {
+        super(parent);
+        this.value = value;
     }
 
     @Override
-    public  Class getModelClassForSubNode(String nodeName) {
-        if (LexerUtils.equals("color", nodeName, true, true)) { //NOI18N
-            return Color.class;
-        }
-        return null;
+    public boolean accepts(Token token) {
+        return LexerUtils.equals(value, token.image(), true, false);
+    }
+    
+    @Override
+    public String getName() {
+        return value.toString();
     }
 
     @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
+    public String toString() {
+        return new StringBuilder()
+                .append(getName())
+                .append(super.toString())
+                .toString();
     }
 
-    @Override
-    protected BoxType getBoxType() {
-        return BoxType.BORDER_COLOR;
-    }
+    
 }

@@ -41,17 +41,18 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
-import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.GrammarElement;
-import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinitionProvider;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
+import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  * Parser of the semi-grammar expressions taken from the w3c.org css specifications.
@@ -196,7 +197,7 @@ public class GrammarParser {
                                 propertyName, unitName, input.readText())); //NOI18N
                     }
                     
-                    last = new ValueGrammarElement(parent, unitName, true);
+                    last = new UnitGrammarElement(parent, acceptor);
                     parent.addElement(last);
                     break;
 
@@ -271,10 +272,9 @@ public class GrammarParser {
                         c = input.read(); //also include the char from main loop
 
                     }
-                    String image = buf.toString();
 
-                    if (!(ignoreInherits && "inherit".equalsIgnoreCase(image))) { //NOI18N
-                        last = new ValueGrammarElement(parent, image, false);
+                    if (!(ignoreInherits && LexerUtils.equals("inherit", buf, true, true))) { //NOI18N
+                        last = new FixedTextGrammarElement(parent, buf);
                         parent.addElement(last);
                     }
                     break;

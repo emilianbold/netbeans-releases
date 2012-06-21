@@ -53,39 +53,60 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public abstract class TokenAcceptor {
 
-    private static final Map<String, TokenAcceptor> ACCEPTORS =
+    private static final Collection<TokenAcceptor> ACCEPTORS = 
+            new ArrayList<TokenAcceptor>();
+    private static final Map<String, TokenAcceptor> ACCEPTORS_MAP = 
             new LinkedHashMap<String, TokenAcceptor> ();
 
     static {
-        ACCEPTORS.put("resolution", new Resolution());
-        ACCEPTORS.put("angle", new Angle());
-        ACCEPTORS.put("percentage", new Percentage());
-        ACCEPTORS.put("length", new Length());
-        ACCEPTORS.put("hash_color_code", new HashColor());
-        ACCEPTORS.put("string", new StringAcceptor());
-        ACCEPTORS.put("non-negative-integer", new NonNegativeInteger());
-        ACCEPTORS.put("integer", new Integer());
-        ACCEPTORS.put("number", new Number());
-        ACCEPTORS.put("identifier", new Identifier());
-        ACCEPTORS.put("time", new Time());
-        ACCEPTORS.put("date", new Date());
-        ACCEPTORS.put("frequency", new Frequency());
-        ACCEPTORS.put("semitones", new Semitones());
-        ACCEPTORS.put("decibel", new Decibel());
-        ACCEPTORS.put("relative-length", new RelativeLength());
-        ACCEPTORS.put("uri", new Uri());
-        ACCEPTORS.put("anything", new Anything()); 
+        ACCEPTORS.add(new Resolution("resolution"));
+        ACCEPTORS.add(new Angle("angle"));
+        ACCEPTORS.add(new Percentage("percentage"));
+        ACCEPTORS.add(new Length("length"));
+        ACCEPTORS.add(new HashColor("hash_color_code"));
+        ACCEPTORS.add(new StringAcceptor("string"));
+        ACCEPTORS.add(new NonNegativeInteger("non-negative-integer"));
+        ACCEPTORS.add(new Integer("integer"));
+        ACCEPTORS.add(new Number("number"));
+        ACCEPTORS.add(new Identifier("identifier"));
+        ACCEPTORS.add(new Time("time"));
+        ACCEPTORS.add(new Date("date"));
+        ACCEPTORS.add(new Frequency("frequency"));
+        ACCEPTORS.add(new Semitones("semitones"));
+        ACCEPTORS.add(new Decibel("decibel"));
+        ACCEPTORS.add(new RelativeLength("relative-length"));
+        ACCEPTORS.add(new Uri("uri"));
+        ACCEPTORS.add(new Anything("anything")); 
+        
+        for(TokenAcceptor ta : ACCEPTORS) {
+            ACCEPTORS_MAP.put(ta.id(), ta);
+        }
+        
     } //NOI18N
 
     public static TokenAcceptor getAcceptor(String name) {
-        return ACCEPTORS.get(name.toLowerCase());
+        return ACCEPTORS_MAP.get(name.toLowerCase());
     }
 
+    private String id;
+
+    public TokenAcceptor(String id) {
+        this.id = id;
+    }
+    
+    public final String id() {
+        return id;
+    }
+    
     public abstract boolean accepts(Token token);
     
     private static class Resolution extends NumberPostfixAcceptor {
 
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi", "dppx", "dpcm"}); //NOI18N
+
+        public Resolution(String id) {
+            super(id);
+        }
 
         @Override
         public List<String> postfixes() {
@@ -97,6 +118,10 @@ public abstract class TokenAcceptor {
 
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"deg", "rad", "grad", "turn"}); //NOI18N
 
+        public Angle(String id) {
+            super(id);
+        }
+
         @Override
         public List<String> postfixes() {
             return POSTFIXES;
@@ -105,6 +130,10 @@ public abstract class TokenAcceptor {
 
     private static class Anything extends TokenAcceptor {
 
+        public Anything(String id) {
+            super(id);
+        }
+
         @Override
         public boolean accepts(Token token) {
             return true;
@@ -112,6 +141,10 @@ public abstract class TokenAcceptor {
     }
 
     private static class Date extends TokenImageAcceptor {
+
+        public Date(String id) {
+            super(id);
+        }
 
         @Override
         public boolean accepts(String token) {
@@ -126,6 +159,10 @@ public abstract class TokenAcceptor {
 
     private static class Decibel extends NumberPostfixAcceptor {
 
+        public Decibel(String id) {
+            super(id);
+        }
+
         private static final List<String> POSTFIXES = Collections.singletonList("dB"); //NOI18N
 
         @Override
@@ -135,6 +172,10 @@ public abstract class TokenAcceptor {
     }
 
     private static class Frequency extends TokenImageAcceptor {
+
+        public Frequency(String id) {
+            super(id);
+        }
 
         @Override
         public boolean accepts(String token) {
@@ -155,6 +196,10 @@ public abstract class TokenAcceptor {
 
     private static class HashColor extends TokenAcceptor {
 
+        public HashColor(String id) {
+            super(id);
+        }
+
         @Override
         public boolean accepts(Token token) {
             int len = token.image().length();
@@ -164,6 +209,10 @@ public abstract class TokenAcceptor {
 
     private static class Identifier extends TokenAcceptor {
 
+        public Identifier(String id) {
+            super(id);
+        }
+
         @Override
         public boolean accepts(Token token) {
             return token.tokenId() == CssTokenId.IDENT 
@@ -172,6 +221,10 @@ public abstract class TokenAcceptor {
     }
 
     private static class Integer extends TokenImageAcceptor {
+
+        public Integer(String id) {
+            super(id);
+        }
 
         @Override
         public boolean accepts(String token) {
@@ -206,6 +259,10 @@ public abstract class TokenAcceptor {
          */
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "ex", "em", "in", "gd", "rem", "vw", "vh", "vm", "ch", "cm", "mm", "pt", "pc"}); //NOI18N
 
+        public Length(String id) {
+            super(id);
+        }
+
         @Override
         public List<String> postfixes() {
             return POSTFIXES;
@@ -224,6 +281,10 @@ public abstract class TokenAcceptor {
 
     private static class NonNegativeInteger extends TokenImageAcceptor {
 
+        public NonNegativeInteger(String id) {
+            super(id);
+        }
+
         @Override
         public boolean accepts(String token) {
             try {
@@ -237,6 +298,10 @@ public abstract class TokenAcceptor {
 
     private static class Number extends TokenImageAcceptor {
 
+        public Number(String id) {
+            super(id);
+        }
+
         @Override
         public boolean accepts(String token) {
             try {
@@ -249,6 +314,10 @@ public abstract class TokenAcceptor {
     }
 
     public abstract static class NumberPostfixAcceptor extends TokenImageAcceptor {
+
+        public NumberPostfixAcceptor(String id) {
+            super(id);
+        }
 
         protected abstract List<String> postfixes();
 
@@ -270,8 +339,12 @@ public abstract class TokenAcceptor {
     }
 
     private static class Percentage extends NumberPostfixAcceptor {
-
+        
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"%"}); //NOI18N
+
+        public Percentage(String id) {
+            super(id);
+        }
 
         @Override
         public List<String> postfixes() {
@@ -283,6 +356,10 @@ public abstract class TokenAcceptor {
 
         private static final List<String> POSTFIXES = Collections.singletonList("*"); //NOI18N
 
+        public RelativeLength(String id) {
+            super(id);
+        }
+
         @Override
         protected List<String> postfixes() {
             return POSTFIXES;
@@ -293,6 +370,10 @@ public abstract class TokenAcceptor {
 
         private static final List<String> POSTFIXES = Collections.singletonList("st"); //NOI18N
 
+        public Semitones(String id) {
+            super(id);
+        }
+
         @Override
         protected List<String> postfixes() {
             return POSTFIXES;
@@ -300,6 +381,10 @@ public abstract class TokenAcceptor {
     }
 
     private static class StringAcceptor extends TokenImageAcceptor {
+
+        public StringAcceptor(String id) {
+            super(id);
+        }
 
         @Override
         public boolean accepts(String token) {
@@ -315,6 +400,10 @@ public abstract class TokenAcceptor {
     }
 
     private static class Time extends TokenImageAcceptor {
+
+        public Time(String id) {
+            super(id);
+        }
 
         @Override
         public boolean accepts(String token) {
@@ -335,6 +424,10 @@ public abstract class TokenAcceptor {
 
     private static abstract class TokenImageAcceptor extends TokenAcceptor {
 
+        public TokenImageAcceptor(String id) {
+            super(id);
+        }
+
         public abstract boolean accepts(String valueImage);
 
         @Override
@@ -345,6 +438,10 @@ public abstract class TokenAcceptor {
     }
 
     private static class Uri extends TokenAcceptor {
+
+        public Uri(String id) {
+            super(id);
+        }
 
         @Override
         public boolean accepts(Token token) {

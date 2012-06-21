@@ -43,9 +43,9 @@ package org.netbeans.modules.css.lib.properties;
 
 import java.util.List;
 import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 
 /**
  *
@@ -66,10 +66,10 @@ public class GrammarParserTest extends CssTestBase {
         assertEquals(1, children.size());
         
         GrammarElement ge = children.get(0);
-        assertTrue(ge instanceof ValueGrammarElement);
+        assertTrue(ge instanceof FixedTextGrammarElement);
         
-        ValueGrammarElement value = (ValueGrammarElement)ge;
-        assertEquals(" a | b ", value.value());
+        FixedTextGrammarElement value = (FixedTextGrammarElement)ge;
+        assertEquals(" a | b ", value.getName());
     }
     
 }

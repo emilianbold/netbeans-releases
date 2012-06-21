@@ -44,11 +44,9 @@ package org.netbeans.modules.css.lib.api.properties;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.netbeans.modules.css.lib.api.properties.GrammarResolver.Log.*;
 import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 
 /**
@@ -528,7 +526,7 @@ public class GrammarResolver {
                             Collection<GrammarElement> consumedUnit = new LinkedList<GrammarElement>();
                             for (Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
                                 ResolvedToken token = entry.getValue().consumed.get(j);
-                                if (token.getGrammarElement().isUnit()) {
+                                if (token.getGrammarElement() instanceof UnitGrammarElement) {
                                     //unit value
                                     consumedUnit.add(entry.getKey());
                                 }
@@ -551,7 +549,9 @@ public class GrammarResolver {
                         
                         if (bestBranches.size() > 1) {
                             //there're more branches consumed the same input length - we need to decide which one to use
-                            log(String.format("! more branches (%s) which consumed same input lenght found!", bestBranches.size()));
+                            if(LOG) {
+                                log(String.format("! more branches (%s) which consumed same input lenght found!", bestBranches.size()));
+                            }
                             
                             //try to continue in the group processing accepting each of the alternative branch
                             for (Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
@@ -602,7 +602,9 @@ public class GrammarResolver {
 
                         if (bestMatchElement == null) {
                             //all alternative tried, no success
-                            log(String.format("! all %s alternative branches tried", bestBranches.size()));
+                            if(LOG) {
+                                log(String.format("! all %s alternative branches tried", bestBranches.size()));
+                            }
                         } else {
                             
                             if (bestBranches.size() > 1) {
@@ -610,13 +612,15 @@ public class GrammarResolver {
                                 //state before the first alternative try
                                 if (branchAlternativesGrammarElementsToProcess != null) {
                                     // <editor-fold defaultstate="collapsed" desc="Logging">  
-                                    StringBuilder b = new StringBuilder();
-                                    b.append("  restoring grammar elements to process: ");
-                                    for (GrammarElement e : branchAlternativesGrammarElementsToProcess) {
-                                        b.append(e);
-                                        b.append(',');
+                                    if(LOG) {
+                                        StringBuilder b = new StringBuilder();
+                                        b.append("  restoring grammar elements to process: ");
+                                        for (GrammarElement e : branchAlternativesGrammarElementsToProcess) {
+                                            b.append(e);
+                                            b.append(',');
+                                        }
+                                        log(b.toString());
                                     }
-                                    log(b.toString());
                                     // </editor-fold>
                                     grammarElementsToProcess = new ArrayList<GrammarElement>(branchAlternativesGrammarElementsToProcess);
                                 }
@@ -626,7 +630,9 @@ public class GrammarResolver {
                             alreadyTriedAlternativeBranches.add(bestMatchElement);
 
                             successState = branchesResults.get(bestMatchElement);
-                            log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+                            if(LOG) {
+                                log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
+                            }
 
                             fireRuleChoosen(group, bestMatchElement);
                             
@@ -722,38 +728,19 @@ public class GrammarResolver {
         }
         
         Token token = tokenizer.token();
-        CharSequence tokenImg = token.image();
-        if (ve.isUnit()) {
-            String unitName = ve.value();
-            TokenAcceptor acceptor = TokenAcceptor.getAcceptor(unitName);
-            if (acceptor != null) {
-                if (acceptor.accepts(token)) {
-                    //consumed
-                    consumeValueGrammarElement(token, ve);
-                    if (LOG) {
-                        log(VALUES, String.format("eaten unit %s", token));
-                    }
-                    return true;
-                }
-
-            } else {
-                LOGGER.log(Level.WARNING, String.format("Cannot find unit acceptor '%s'!", ve.value())); //NOI18N
-            }
-
-        } else if (LexerUtils.equals(tokenImg, ve.value(), true, false)) {
+        if(ve.accepts(token)) {
             //consumed
             consumeValueGrammarElement(token, ve);
             if (LOG) {
-                log(VALUES, String.format("eaten value %s", token));
+                log(VALUES, String.format("eaten unit %s", token));
             }
             return true;
-        }
-        
-        //backup the read token
-        tokenizer.movePrevious();
-        
-        return false;
+        } else {
+            //backup the read token
+            tokenizer.movePrevious();
 
+            return false;
+        }
     }
 
     private void consumeValueGrammarElement(Token token, ValueGrammarElement element) {

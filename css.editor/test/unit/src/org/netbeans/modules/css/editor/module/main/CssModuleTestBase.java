@@ -48,7 +48,7 @@ import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,6 +71,7 @@ import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -213,8 +214,7 @@ public class CssModuleTestBase extends CslTestBase {
     private Collection<String> convert(Set<ValueGrammarElement> toto) {
         Collection<String> x = new HashSet<String>();
         for (ValueGrammarElement e : toto) {
-            String strVal = (e.isUnit() ? "!" : "") + e.value();
-            x.add(strVal);
+            x.add(e.getName().toString());
         }
         return x;
     }

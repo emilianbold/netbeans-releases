@@ -43,11 +43,6 @@ package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
-import org.netbeans.modules.css.lib.api.properties.Token;
-import org.netbeans.modules.css.lib.api.properties.Tokenizer;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 
 /**
  *

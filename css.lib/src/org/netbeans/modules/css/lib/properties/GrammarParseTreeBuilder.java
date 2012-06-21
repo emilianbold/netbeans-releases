@@ -42,8 +42,8 @@
 package org.netbeans.modules.css.lib.properties;
 
 import java.util.*;
-import org.netbeans.modules.css.lib.api.properties.Node.AbstractNode;
 import org.netbeans.modules.css.lib.api.properties.*;
+import org.netbeans.modules.css.lib.api.properties.Node.AbstractNode;
 
 /**
  * Css property value parse tree builder based on {@link GrammarResolverListener}.
@@ -120,7 +120,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
     }
 
     @Override
-    public void entering(ValueGrammarElement element) {
+    public  void entering(ValueGrammarElement element) {
         Node.AbstractNode node = new Node.ResolvedTokenNode();
         if (root == null) {
             root = node;
@@ -128,13 +128,12 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
         Entry e = new Entry(element, node);
         stack.push(e);
     }
-
+    
     @Override
     public void accepted(ValueGrammarElement value, ResolvedToken resolvedToken) {
         if (DEBUG) {
-            System.out.println(String.format("%s * '%s' token accepted", getIndent(), value));
+            System.out.println(String.format("%s * '%s' value token accepted", getIndent(), value));
         }
-
         Entry pop = stack.pop();
 
         Node.ResolvedTokenNode node = (Node.ResolvedTokenNode) pop.node;
@@ -144,17 +143,14 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
         Node.GrammarElementNode gnode = (Node.GrammarElementNode) peek.node;
         peek.childrenMap.put(pop.grammarElement, node);
         gnode.addChild(node);
+        
     }
-
+    
     @Override
     public void rejected(ValueGrammarElement value) {
-        if (DEBUG) {
-            //System.out.println(String.format("%s- %s", getIndent(), value));
-        }
-
         stack.pop();
     }
-
+    
     @Override
     public void ruleChoosen(GroupGrammarElement base, GrammarElement element) {
         Entry peek = stack.peek();

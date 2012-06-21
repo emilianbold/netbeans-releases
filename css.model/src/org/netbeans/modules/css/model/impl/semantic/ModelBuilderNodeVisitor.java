@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import org.netbeans.modules.css.model.api.semantic.NodeModel;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -49,8 +48,8 @@ import java.util.Collection;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.NodeModel;
 import org.netbeans.modules.css.model.impl.semantic.box.TokenNodeModel;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -94,7 +93,7 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
         for (int i = 0; i < nodeName.length(); i++) {
             char c = nodeName.charAt(i);
 
-            if (i == 0 && c == '@') {
+            if (i == 0 && ( c == '@' || c == '!')) {
                 //skip
                 continue;
             }
@@ -133,6 +132,9 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
         }
         
         String modelClassName = getModelClassNameForNodeName(nodeName);
+        
+        System.out.println("model class for node " + node + ": " + modelClassName);
+        
         if (current.isEmpty()) {
             //first try custom model 
             currentModel = createModelInstance(node);

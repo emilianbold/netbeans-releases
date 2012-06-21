@@ -64,6 +64,7 @@ import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.util.NbBundle;
@@ -91,7 +92,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ValueCompletionItem(element, value.value(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ValueCompletionItem(element, value.getName().toString(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
     
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
@@ -165,7 +166,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
     
-    public static CompletionProposal createUnitCompletionItem(ValueGrammarElement element) {
+    public static CompletionProposal createUnitCompletionItem(UnitGrammarElement element) {
         return new UnitItem(element);
     }
     
@@ -515,9 +516,9 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     static class UnitItem extends DefaultCompletionProposal {
 
-        private ValueGrammarElement element;
+        private UnitGrammarElement element;
 
-        private UnitItem(ValueGrammarElement element) {
+        private UnitItem(UnitGrammarElement element) {
             this.element = element;
         }
 
@@ -538,12 +539,12 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            return element.value();
+            return element.getName().toString();
         }
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            return "<font color=#aaaaaa>" + element.value() + "</font>"; //NOI18N
+            return "<font color=#aaaaaa>" + element.getTokenAcceptorId() + "</font>"; //NOI18N
         }
 
          @Override
