@@ -65,7 +65,7 @@ public interface LiveHTMLImplementation {
      *   single callframe has following attributes: lineNumber(type:Number), 
      *   columnNumber(type:Number), function(type:String), script(type:String)
      */
-    public void storeDocumentVersion(URL connectionURL, long timeStamp, String content, String callStack);
+    void storeDocumentVersion(URL connectionURL, long timeStamp, String content, String callStack);
 
     /**
      * If Live HTML is enabled for the given URL connection then any data received from
@@ -75,6 +75,18 @@ public interface LiveHTMLImplementation {
      * @param timeStamp a timestamp, eg. System.currentTimeMillis();
      * @param data data serialized into String; can be anything
      */
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data);
+    void storeDataEvent(URL connectionURL, long timeStamp, String data);
 
+    void addListener(Listener l);
+    
+    void removeListener(Listener l);
+
+    /**
+     * Listener through which implementation of Live HTML can talk back 
+     * to WebKit Debugging protocol.
+     */
+    public static interface Listener {
+        void startRecordingChange(URL connectionURL, Runnable stopCallback);
+        void stopRecordingChange(URL connectionURL);
+    }
 }

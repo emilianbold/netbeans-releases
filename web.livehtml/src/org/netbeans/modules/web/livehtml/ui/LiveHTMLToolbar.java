@@ -118,4 +118,9 @@ public class LiveHTMLToolbar extends JToolBar implements ActionListener {
         }
     }
 
+    void liveHTMLWasStopped() {
+        onState = false;
+        updateButtonIcons();
+    }
+
 }

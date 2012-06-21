@@ -126,8 +126,13 @@ public class WebKitPageModel extends PageModel {
         Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
         if (attr == null) {
             // init
-            String initScript = Files.getScript("initialization"); // NOI18N
-            webKit.getRuntime().evaluate(initScript);
+            final String initScript = Files.getScript("initialization"); // NOI18N
+            webKit.runNetBeansDOMChanges(new Runnable() {
+                @Override
+                public void run() {
+                    webKit.getRuntime().evaluate(initScript);
+                }
+            });
             if (!hasNativeToolbar) {
                 // frame
                 String pageScript = Files.getScript("page"); // NOI18N
@@ -336,9 +341,14 @@ public class WebKitPageModel extends PageModel {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    String initScript = Files.getScript("initialization"); // NOI18N
-                    RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
-                    webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
+                    final String initScript = Files.getScript("initialization"); // NOI18N
+                    final RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
+                    webKit.runNetBeansDOMChanges(new Runnable() {
+                        @Override
+                        public void run() {
+                            webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
+                        }
+                    });
                     synchronized (WebKitPageModel.this) {
                         contentDocumentMap.put(contentDocument.getNodeId(), remote);
                     }

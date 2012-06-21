@@ -56,6 +56,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -69,6 +70,8 @@ public class TransportHelper {
 
     public static final String OBJECT_GROUP_NAME = "netbeans-debugger-objects";
     
+    private final RequestProcessor RP = new RequestProcessor();
+
     public TransportHelper(TransportImplementation impl) {
         this.impl = impl;
         this.callback = new Callback();
@@ -137,6 +140,10 @@ public class TransportHelper {
 
     private synchronized Handle removeHandle(int id) {
         return map.remove(id);
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return RP;
     }
     
     private static class Handle {

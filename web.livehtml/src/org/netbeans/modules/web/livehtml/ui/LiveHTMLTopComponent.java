@@ -68,6 +68,7 @@ public final class LiveHTMLTopComponent extends TopComponent {
         setToolTipText(Bundle.HINT_LiveHTMLTopComponent());
         component = new LiveHTMLComponent(null);
         toolbar = new LiveHTMLToolbar(component, true);
+        component.setToolbar(toolbar);
         add(toolbar, BorderLayout.NORTH);
         add(component, BorderLayout.CENTER);
     }

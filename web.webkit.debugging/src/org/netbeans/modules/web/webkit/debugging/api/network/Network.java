@@ -60,8 +60,6 @@ public class Network {
     private WebKitDebugging webKit;
     private int numberOfClients = 0;
     
-    private static final RequestProcessor RP = new RequestProcessor();
-
     public Network(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
         this.callback = new Callback();
@@ -114,7 +112,7 @@ public class Network {
                         "XHR".equals(response.getParams().get("type"))) {
                     final long timeStamp = System.currentTimeMillis();
                     final String id = (String)response.getParams().get("requestId");
-                    RP.post(new Runnable() {
+                    transport.getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
                             recordDataEvent(timeStamp, id);
