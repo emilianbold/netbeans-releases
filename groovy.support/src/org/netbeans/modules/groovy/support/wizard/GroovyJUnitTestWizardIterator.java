@@ -66,7 +66,6 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.groovy.support.wizard.ant.AntProjectTypeStrategy;
-import org.netbeans.modules.groovy.support.wizard.maven.AddJUnitDependencyOperation;
 import org.netbeans.modules.groovy.support.wizard.maven.MavenProjectTypeStrategy;
 import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -97,14 +96,13 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Janicek
  */
-
 @TemplateRegistrations(value = {
     @TemplateRegistration(
         folder = "Groovy",
         position = 120,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.groovy",
         scriptEngine = "freemarker",
-        displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyJUnitTest.groovy",
+        displayName = "Groovy JUnit Test",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
         category = {"groovy", "java-main-class"}),
@@ -114,7 +112,6 @@ import org.openide.util.NbBundle;
         position = 130,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnit3Test.groovy",
         scriptEngine = "freemarker",
-        displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyJUnitTest.groovy",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
         category = "invisible"),
@@ -124,7 +121,6 @@ import org.openide.util.NbBundle;
         position = 140,
         content = "/org/netbeans/modules/groovy/support/resources/GroovyJUnit4Test.groovy",
         scriptEngine = "freemarker",
-        displayName = "org.netbeans.modules.groovy.support.resources.Bundle#Templates/Groovy/GroovyJUnitTest.groovy",
         iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
         category = "invisible")
