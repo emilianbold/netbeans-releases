@@ -4,7 +4,7 @@
     <welcome file="Welcome.html"></welcome>
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
-    <options allow-external-scripts="no" customize="allow" rootVolumeOnly="false" hostArchitectures="i386"></options>
+    <options allow-external-scripts="yes" customize="allow" rootVolumeOnly="false" hostArchitectures="i386"></options>
     <installation-check script="checkMemsize()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
     <script>
@@ -60,8 +60,16 @@ function checkSystemversion() {
 		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
 	} else {
 		try {
-                    result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
+                    if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
+                       var res = system.runOnce("/usr/libexec/java_home");
+                       result = (0 == res);
+                    }
 		} catch (e) {}
+		if(!result) {
+                    try {
+                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
+                    } catch (e) {}		
+                }
 		if(!result) {
 		    try {
                         result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0') == true;
