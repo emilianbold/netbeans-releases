@@ -489,8 +489,8 @@ public class JsonParser extends Parser {
     private boolean sanitizeLine(Sanitize sanitizing, Context context, int offset) {
         if (offset > -1) {
             String source = context.getOriginalSource();
-            int start = offset - 1;
-            int end = offset;
+            int start = offset > 0 ? offset - 1 : offset;
+            int end = start + 1;
             // fix until new line or }
             char c = source.charAt(start);
             while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
