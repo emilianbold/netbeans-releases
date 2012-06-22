@@ -52,15 +52,20 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.php.api.doc.PhpDocs;
+import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.actions.RunCommandAction;
@@ -87,6 +92,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -95,7 +101,10 @@ import org.openide.util.lookup.Lookups;
  * @author ads, Tomas Mysik
  */
 public class PhpLogicalViewProvider implements LogicalViewProvider {
+
     private static final Logger LOGGER = Logger.getLogger(PhpLogicalViewProvider.class.getName());
+
+    static final RequestProcessor RP = new RequestProcessor(PhpLogicalViewProvider.class);
 
     final PhpProject project;
 
@@ -106,7 +115,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     @Override
     public Node createLogicalView() {
-        return new PhpLogicalViewRootNode(project);
+        return PhpLogicalViewRootNode.createForProject(project);
     }
 
     @Override
@@ -206,40 +215,60 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     //~ Inner classes
 
-    private static class PhpLogicalViewRootNode extends AbstractNode {
+    private static final class PhpLogicalViewRootNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
-        final PhpProject project;
-        private final PropertyChangeListener propertyChangeListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
-                    fireIconChange();
-                    fireOpenedIconChange();
-                }
-            }
-        };
+        private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
 
-        public PhpLogicalViewRootNode(PhpProject project) {
+        private final PhpProject project;
+        private final ProjectInformation projectInfo;
+
+
+        private PhpLogicalViewRootNode(PhpProject project) {
             super(createChildren(project), Lookups.singleton(project));
             this.project = project;
-            setIconBaseWithExtension("org/netbeans/modules/php/project/ui/resources/phpProject.png"); // NOI18N
+            projectInfo = ProjectUtils.getInformation(project);
+            // ui
+            setIconBaseWithExtension(PhpProject.PROJECT_ICON);
             setName(ProjectUtils.getInformation(project).getDisplayName());
+        }
 
-            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, propertyChangeListener);
+        public static PhpLogicalViewRootNode createForProject(PhpProject project) {
+            PhpLogicalViewRootNode rootNode = new PhpLogicalViewRootNode(project);
+            rootNode.addListeners();
+            return rootNode;
         }
 
         @Override
         public Image getIcon(int type) {
-            return getIcon();
+            return annotateImage(super.getIcon(type));
         }
 
         @Override
         public Image getOpenedIcon(int type) {
-            return getIcon();
+            return annotateImage(super.getOpenedIcon(type));
         }
 
-        private Image getIcon() {
-            return ImageUtilities.icon2Image(ProjectUtils.getInformation(project).getIcon());
+        private void addListeners() {
+            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, this);
+            projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
+        }
+
+        private Image annotateImage(Image image) {
+            Image badged = image;
+            boolean first = true;
+            for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
+                BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
+                if (badgeIcon != null) {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
+                    if (first) {
+                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
+                        first = false;
+                    }
+                } else {
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE, frameworkProvider.getName()));
+                }
+            }
+            return badged;
         }
 
         @Override
@@ -345,6 +374,34 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             } else {
                 actions.add(new DocumentationMenu(phpModule, projectDocProviders));
             }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
+                }
+            });
+        }
+
+        @Override
+        public void propertyChange(final PropertyChangeEvent evt) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (PhpProject.PROP_FRAMEWORKS.equals(evt.getPropertyName())) {
+                        fireIconChange();
+                        fireOpenedIconChange();
+                    } else {
+                        fireNameChange(null, null);
+                        fireDisplayNameChange(null, null);
+                    }
+                }
+            });
         }
 
         //~ Inner classes
