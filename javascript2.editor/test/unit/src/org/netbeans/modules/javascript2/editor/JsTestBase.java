@@ -44,25 +44,12 @@
 
 package org.netbeans.modules.javascript2.editor;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
-import org.junit.BeforeClass;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.test.MockLookup;
 
 /**
  * @author Tor Norbye
