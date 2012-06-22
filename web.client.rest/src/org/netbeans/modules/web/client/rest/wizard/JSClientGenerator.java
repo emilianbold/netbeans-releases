@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -138,7 +139,7 @@ class JSClientGenerator {
         if ( restSource == null ){
             return;
         }
-        myContent = new StringBuilder("$(function(){\n");
+        myContent = new StringBuilder("$(function(){\n");               // NOI18N
         JavaSource javaSource = JavaSource.forFileObject( restSource);
         final String restClass = myDescription.getClassName();
         Task<CompilationController> task = new Task<CompilationController>(){
@@ -159,6 +160,10 @@ class JSClientGenerator {
                 for (ExecutableElement method : methods) {
                     List<? extends AnnotationMirror> annotations = 
                         method.getAnnotationMirrors();
+                    if ( getAnnotation( annotations , DELETE)!= null ){
+                        deleteMethods.add( method );
+                        continue;
+                    }
                     if ( !hasJsonMedia( annotations) ){
                         continue;
                     }
@@ -170,9 +175,6 @@ class JSClientGenerator {
                     }
                     else if ( getAnnotation( annotations , PUT)!= null ){
                         putMethods.add( method );
-                    }
-                    else if ( getAnnotation( annotations , DELETE)!= null ){
-                        deleteMethods.add( method );
                     }
                 }
                 
@@ -263,7 +265,7 @@ class JSClientGenerator {
             
             AnnotationMirror annotation = getAnnotation(method, PATH);
             String path = getValue( annotation );
-            if ( parameters.size() == 0 ){
+            if ( parameters.isEmpty() ){
                 if ( path == null ){
                     path = "";
                 }
@@ -301,11 +303,11 @@ class JSClientGenerator {
                 }
                 EnumMap<HttpRequests, String> paths = 
                     new EnumMap<HttpRequests, String>(HttpRequests.class);
-                paths.put(HttpRequests.POST, parsePath(postMethods, 
+                paths.put(HttpRequests.POST, parseNoIdPath(postMethods, 
                         returnType, controller ));
-                paths.put(HttpRequests.PUT, parsePath(putMethods , 
+                paths.put(HttpRequests.PUT, parseNoIdPath(putMethods , 
                         returnType , controller));
-                paths.put(HttpRequests.DELETE, parsePath(deleteMethods,
+                paths.put(HttpRequests.DELETE, parseNoIdPath(deleteMethods,
                         returnType, controller ));
                 generateBackendModel( (TypeElement)returnElement , path , 
                         null, paths , Collections.<HttpRequests, Boolean>emptyMap(), 
@@ -343,31 +345,37 @@ class JSClientGenerator {
                     new EnumMap<HttpRequests, String>(HttpRequests.class);
                 EnumMap<HttpRequests, Boolean> ids = 
                     new EnumMap<HttpRequests, Boolean>(HttpRequests.class);
+                parsePath(postMethods, returnType, paths, ids, 
+                        HttpRequests.POST, controller );
+                parsePath(putMethods, returnType, paths, ids, 
+                        HttpRequests.PUT, controller );
+                parsePath(deleteMethods, returnType, paths, ids, 
+                        HttpRequests.DELETE, controller );
                 generateBackendModel( (TypeElement)returnElement , path , 
                         collectionPath, paths, ids, controller );
             }
         }
     }
     
-    private String parsePath( List<ExecutableElement> methods , 
+    private String parseNoIdPath( List<ExecutableElement> methods , 
             TypeMirror type , CompilationController controller) 
     {
         for (ExecutableElement method : methods) {
             List<? extends VariableElement> parameters = method.getParameters();
-            boolean mathches = false;
+            boolean matches = false;
             if ( parameters.size() == 0 ){
-                mathches = true;
+                matches = true;
             }
             else if ( parameters.size() == 1){
                 VariableElement param = parameters.get(0);
                 if ( controller.getTypes().isSameType(param.asType(),type)){
-                    mathches = true;
+                    matches = true;
                 }
             }
             else {
                 continue;
             }
-            if ( mathches ){
+            if ( matches ){
                 AnnotationMirror annotation = getAnnotation(method, PATH);
                 if ( annotation == null ){
                     return "";
@@ -378,6 +386,65 @@ class JSClientGenerator {
             }
         }
         return null;
+    }
+    
+    private void parsePath( List<ExecutableElement> methods , TypeMirror type ,
+            EnumMap<HttpRequests, String> paths, 
+            EnumMap<HttpRequests, Boolean> ids, HttpRequests request,
+            CompilationController controller) 
+    {
+        for (ExecutableElement method : methods) {
+            List<? extends VariableElement> parameters = method.getParameters();
+            boolean matches = false;
+            String pathParam = null;
+            if ( parameters.size() == 1){
+                VariableElement param = parameters.get(0);
+                if ( controller.getTypes().isSameType(param.asType(),type)){
+                    matches = true;
+                }
+                else if ( getAnnotation(param, PATH_PARAM) != null ){
+                    pathParam = getValue(getAnnotation(param, PATH_PARAM));
+                    matches = true;
+                    ids.put(request, Boolean.TRUE);
+                }
+            }
+            else if (parameters.size() == 2) {
+                VariableElement param1 = parameters.get(0);
+                VariableElement param2 = parameters.get(1);
+                if ( getAnnotation(param1, PATH_PARAM) != null ){
+                    pathParam = getValue(getAnnotation(param1, PATH_PARAM));
+                    if ( controller.getTypes().isSameType(param2.asType(),type)){
+                        matches = true;
+                    }
+                }
+                else if ( controller.getTypes().isSameType(param1.asType(),type)){
+                    if ( getAnnotation(param2, PATH_PARAM) != null ){
+                        pathParam = getValue(getAnnotation(param2, PATH_PARAM));
+                        matches = true;
+                    }
+                }
+                if ( matches ){
+                    ids.put(request, Boolean.TRUE);
+                }
+            }
+            else {
+                continue;
+            }
+            if ( matches ){
+                AnnotationMirror annotation = getAnnotation(method, PATH);
+                if ( annotation == null ){
+                    paths.put(request, "") ;
+                }
+                else {
+                    String path = getValue(annotation);
+                    if ( pathParam != null ){
+                        path = removeParamTemplate(path, pathParam);
+                    }
+                    paths.put(request,path);
+                }
+                break;
+            }
+        }
     }
 
     private void generateBackendModel( TypeElement entity, String path,
@@ -400,7 +467,7 @@ class JSClientGenerator {
         
         String url = getUrl( path );
         
-        myContent.append("window.");
+        myContent.append("window.");                            // NOI18N
         myContent.append(modelName);
         myContent.append(" = Backbone.Model.extend({\n");       // NOI18N
         myContent.append("urlRoot : \"");                       // NOI18N
@@ -410,11 +477,10 @@ class JSClientGenerator {
         if ( parsedData != null ){
             myContent.append(',');                              
             myContent.append(parsedData);
-            myContent.append(','); 
         }
         String sync = overrideSync( url, httpPaths , useIds ); 
-        if ( sync != null ){
-            myContent.append("\n");                             // NOI18N
+        if ( sync != null && sync.length()>0 ){
+            myContent.append(",\n");                             // NOI18N
             myContent.append(sync);
             myContent.append("\n");                             // NOI18N
         }
@@ -430,7 +496,7 @@ class JSClientGenerator {
         else {
             myContent.append( entity.getQualifiedName().toString() );
         }
-        myContent.append(" entities\n");                         // NOI18N
+        myContent.append(" entities\n");                        // NOI18N
         myContent.append("window.");
         myContent.append(modelName);
         myContent.append("Collection");                         // NOI18N
@@ -439,8 +505,8 @@ class JSClientGenerator {
         myContent.append(modelName);
         myContent.append(",\nurl : \"");                        // NOI18N
         myContent.append( getUrl( collectionPath ));
-        myContent.append("\"\n"); 
-        myContent.append("});\n\n");                             // NOI18N
+        myContent.append("\"\n");                               // NOI18N
+        myContent.append("});\n\n");                            // NOI18N
     }
 
     private String overrideSync( String url,
@@ -452,9 +518,14 @@ class JSClientGenerator {
             overrideMethod(url, entry.getValue(), 
                     useIds.get(entry.getKey()), entry.getKey(), builder);
         }
+        EnumSet<HttpRequests> set = EnumSet.allOf(HttpRequests.class);
+        set.removeAll( httpPaths.keySet());
+        for( HttpRequests request : set  ){
+            overrideMethod(url, null, null, request, builder);
+        }
         if ( builder.length()>0 ){
-            builder.insert(0, "sync: function(method, model, options){\n");
-            builder.append("return Backbone.sync(method, model, options);\n}\n");
+            builder.insert(0, "sync: function(method, model, options){\n");         // NOI18N
+            builder.append("return Backbone.sync(method, model, options);\n}\n");   // NOI18N
         }
         return builder.toString();
     }
@@ -463,22 +534,24 @@ class JSClientGenerator {
             HttpRequests request, StringBuilder builder ) throws IOException
     {
         if ( path == null ){
-            builder.append("if(method=='");
+            builder.append("if(method=='");                              // NOI18N
             builder.append(request.toString());
-            builder.append("'){\n");
-            builder.append("return false;\n}\n");
+            builder.append("'){\n");                                     // NOI18N
+            builder.append("return false;\n}\n");                        // NOI18N
         }
         else {
             path = getUrl(path);
             if ( !url.equals(path) || ( useId!= null && useId )){
-                if ( !path.endsWith("/")){
-                    path = path +"/";
+                if ( !path.endsWith("/")){                              // NOI18N
+                    path = path +'/';
                 }
-                builder.append("if(method=='");
+                builder.append("if(method=='");                         // NOI18N
                 builder.append(request.toString());
-                builder.append("'){\n");
-                builder.append("options.url = path+id;\n");
-                builder.append("}\n");
+                builder.append("'){\n");                                // NOI18N
+                builder.append("options.url = '");                      // NOI18N
+                builder.append(path);
+                builder.append("'+id;\n");                              // NOI18N
+                builder.append("}\n");                                  // NOI18N
             }
         }
     }
@@ -511,12 +584,12 @@ class JSClientGenerator {
             builder.append(idAttr);
             builder.append("'");                                        // NOI18N
             if ( attributes.size() >0 ){
-                builder.append(",");                                  // NOI18N
+                builder.append(',');                                  
             }
         }
         
         if (attributes.size() > 0) {
-            builder.append("\ndefaults: {");                              // NOI18N
+            builder.append("\ndefaults: {");                            // NOI18N
             for (String attribute : attributes) {
                 builder.append("\n");                                   // NOI18N
                 builder.append(attribute);
