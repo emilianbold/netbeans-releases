@@ -108,6 +108,10 @@ public final class APTConditionResolver {
             APTExprParser parser = new APTExprParser(expandedTS, callback);
             long r = parser.expr();
 
+            if (parser.areBigValuesUsed()) {
+                // #214618: Overflow on macro evalution
+                // we should switch to BigInteger based expression parser
+            }
             if (APT_EXPR_TRACE) {
                 System.out.println("Value is " + r); // NOI18N
             }
