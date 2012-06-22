@@ -75,8 +75,9 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     @Override public String getName() {
         //always return the same value, never skip in AWT, used in quite some places relying on 
         //consistency for some reason..
-        final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
-        return nb.getMavenProject().getId().replace(':', '_');
+        //For performance reasons, never dig into the MavenProject model here.
+        //used from nodes all over the place
+        return project.getProjectDirectory().toURL().toExternalForm();
     }
 
     @Messages({
