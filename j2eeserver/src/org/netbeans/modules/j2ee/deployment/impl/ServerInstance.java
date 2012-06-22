@@ -72,6 +72,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
@@ -181,7 +182,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     
     private final ChangeSupport managerChangeSupport = new ChangeSupport(this);
     
-    private volatile static ServerInstance profiledServerInstance;
+    private static AtomicReference<ServerInstance> profiledServerInstance = new AtomicReference<ServerInstance>();
     
     private final DebuggerStateListener debuggerStateListener;
     
@@ -376,7 +377,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 try {
                     int oldState = getServerState();
                     setServerState(STATE_WAITING);
-                    if (ServerInstance.this == profiledServerInstance) {
+                    if (ServerInstance.this == profiledServerInstance.get()) {
                         updateStateFromProfiler();
                         return;
                     }
@@ -1107,7 +1108,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     throws ServerException {
         // check whether another server not already running in profile mode
         // and ask whether it is ok to stop it
-        ServerInstance tmpProfiledServerInstance = profiledServerInstance;
+        ServerInstance tmpProfiledServerInstance = profiledServerInstance.get();
         if (tmpProfiledServerInstance != null && tmpProfiledServerInstance != this) {
             String msg = NbBundle.getMessage(
                                     ServerInstance.class,
@@ -1138,7 +1139,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
             setServerState(STATE_WAITING);
             boolean inDebug = isDebuggable(null);
-            boolean inProfile = profiledServerInstance == this;
+            boolean inProfile = profiledServerInstance.get() == this;
             boolean stopped = true;
             
             if (inProfile || isReallyRunning() || isSuspended()) {
@@ -1166,7 +1167,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public void stop(ProgressUI ui) throws ServerException {
         try {
             setServerState(STATE_WAITING);
-            if (profiledServerInstance == this || isReallyRunning() || isSuspended()) {
+            if (profiledServerInstance.get() == this || isReallyRunning() || isSuspended()) {
                 _stop(ui);
             }
             debugInfo.clear();
@@ -1488,19 +1489,20 @@ public class ServerInstance implements Node.Cookie, Comparable {
                                     Target target, 
                                     boolean forceRestart,
                                     ProgressUI ui) throws ServerException {
-        ServerInstance tmpProfiledServerInstance = profiledServerInstance;
+        ServerInstance tmpProfiledServerInstance = profiledServerInstance.get();
         if (tmpProfiledServerInstance == this && !forceRestart) {
             return; // server is already runnning in profile mode, no need to restart the server
         }
         if (tmpProfiledServerInstance != null && tmpProfiledServerInstance != this) {
             // another server currently running in profiler mode
             tmpProfiledServerInstance.stop(ui);
-            profiledServerInstance = null;
+            boolean done = profiledServerInstance.compareAndSet(tmpProfiledServerInstance, null);
+            assert done : "Unxpected profiled instance " + profiledServerInstance.get();
         }
-        if (profiledServerInstance == this || isReallyRunning() || isDebuggable(target)) {
+        if (profiledServerInstance.get() == this || isReallyRunning() || isDebuggable(target)) {
             _stop(ui);
             debugInfo.clear();
-            profiledServerInstance = null;
+            //profiledServerInstance = null;
         }
         
         final Profiler profiler = ServerRegistry.getProfiler();
@@ -1510,13 +1512,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
         
         final ScheduledExecutorService statusUpdater = Executors.newSingleThreadScheduledExecutor();
-        statusUpdater.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                updateStateFromProfiler();
-            }
-        }, 50, 100, TimeUnit.MILLISECONDS);
         
         final StateListener l = new StateListener() {
 
@@ -1525,14 +1520,24 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 if (oldState != newState && newState == STATE_STOPPED) {
                     ServerInstance.this.removeStateListener(this);
                     statusUpdater.shutdownNow();
-                    profiledServerInstance = null;
+                    ServerInstance.this.refresh();
+                    boolean done = profiledServerInstance.compareAndSet(ServerInstance.this, null);
+                    assert done : "Unxpected profiled instance " + profiledServerInstance.get();
                 }
             }
         };
         
         this.addStateListener(l);
-        
         profiler.notifyStarting();
+        
+        statusUpdater.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                updateStateFromProfiler();
+            }
+        }, 50, 100, TimeUnit.MILLISECONDS);
+        
         ProgressObject po = getStartServer().startProfiling(target);
         try {
             boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, DEFAULT_TIMEOUT);
@@ -1543,7 +1548,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_StartProfileTimeout", getDisplayName());
             throw new ServerException(msg);
         }
-        profiledServerInstance = this;
+        profiledServerInstance.set(this);
         synchronized (this) {
             managerStartedByIde = true;
 //            coTarget = null;
@@ -1573,9 +1578,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     // stopDeploymentManager
     private void _stop(ProgressUI ui) throws ServerException {
         // if the server is started in profile mode, deattach profiler first
-        if (profiledServerInstance == this) {
+        if (profiledServerInstance.get() == this) {
             shutdownProfiler(ui);
-            profiledServerInstance = null;
+            boolean done = profiledServerInstance.compareAndSet(this, null);
+            assert done : "Unxpected profiled instance " + profiledServerInstance.get();
         }
         synchronized (this) {
             // if the server is suspended, the debug session has to be terminated first
@@ -1728,6 +1734,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     private void fireStateChanged(int oldState, int newState) {
+        if (oldState == newState) {
+            return;
+        }
         StateListener[] listeners;
         synchronized (stateListeners) {
             listeners = (StateListener[])stateListeners.toArray(new StateListener[stateListeners.size()]);
