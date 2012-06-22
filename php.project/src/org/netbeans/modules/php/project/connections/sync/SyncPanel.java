@@ -771,7 +771,6 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         if (selectedItems.size() == 1) {
             return selectedItems.get(0);
         }
-        assert false : "Any row should be selected";
         return null;
     }
 
