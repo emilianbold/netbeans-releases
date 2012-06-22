@@ -312,6 +312,11 @@ public class ConnectDisconnectTest extends NbTestCase {
         public VCSHistoryProvider getVCSHistoryProvider() {
             return null;
         }
+
+        @Override
+        public boolean isMetadataFile(VCSFileProxy file) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
         
     }
     private static void awakeDelegates() {

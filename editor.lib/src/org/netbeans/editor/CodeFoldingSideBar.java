@@ -152,11 +152,11 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
     
     /**
      * Mouse moved point, possibly {@code null}. Set from mouse-moved, mouse-entered
-     * handlers, so that painting will paint this fold in bold. Null, if mouse is not
+     * handlers, so that painting will paint this fold in bold. -1, if mouse is not
      * in the sidebar region. The value is used to compute highlighted portions of the 
      * folding outline.
      */
-    private int   mousePoint;
+    private int   mousePoint = -1;
     
     /**
      * if true, the {@link #mousePoint} has been already used to make a PaintInfo active.

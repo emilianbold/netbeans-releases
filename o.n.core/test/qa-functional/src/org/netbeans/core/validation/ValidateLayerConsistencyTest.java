@@ -963,7 +963,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         if (libs != null) {
             for (FileObject lib : libs.getChildren()) {
-                Document doc = XMLUtil.parse(new InputSource(lib.toURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
+                Document doc = XMLUtil.parse(new InputSource(lib.toURL().toString()), false, true, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
                 NodeList nl = doc.getElementsByTagName("resource");
                 for (int i = 0; i < nl.getLength(); i++) {
                     Element resource = (Element) nl.item(i);

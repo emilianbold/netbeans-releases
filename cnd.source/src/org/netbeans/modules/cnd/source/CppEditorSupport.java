@@ -282,7 +282,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
 
     private static Filter<?> getDefaultFilter(Language<?> language, Document doc) {
         if (language == CppTokenId.languageHeader()) {
-            return CndLexerUtilities.getHeaderFilter();
+            return CndLexerUtilities.getHeaderCppFilter();
         } else if (language == CppTokenId.languageC()) {
             return CndLexerUtilities.getGccCFilter();
         } else if (language == CppTokenId.languagePreproc()) {
