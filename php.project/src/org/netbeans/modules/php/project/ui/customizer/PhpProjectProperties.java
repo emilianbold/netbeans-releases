@@ -546,6 +546,44 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
     }
 
+    /**
+     * Add or replace project and/or private properties of the given project.
+     * @param project project to be saved
+     * @param projectProperties project properties to be added (replaced) to the current project properties
+     * @param privateProperties private properties to be added (replaced) to the current private properties
+     */
+    public static void save(final PhpProject project, final Map<String, String> projectProperties, final Map<String, String> privateProperties) {
+        assert !projectProperties.isEmpty() || !privateProperties.isEmpty() : "Neither project nor private properties to be saved";
+        try {
+            // store properties
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws IOException {
+                    AntProjectHelper helper = project.getHelper();
+
+                    mergeProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    mergeProperties(helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+
+                    ProjectManager.getDefault().saveProject(project);
+                    return null;
+                }
+
+                private void mergeProperties(AntProjectHelper helper, String path, Map<String, String> properties) {
+                    if (properties.isEmpty()) {
+                        return;
+                    }
+                    EditableProperties currentProperties = helper.getProperties(path);
+                    for (Map.Entry<String, String> entry : properties.entrySet()) {
+                        currentProperties.put(entry.getKey(), entry.getValue());
+                    }
+                    helper.putProperties(path, currentProperties);
+                }
+            });
+        } catch (MutexException e) {
+            Exceptions.printStackTrace((IOException) e.getException());
+        }
+    }
+
     void saveProperties() throws IOException {
         AntProjectHelper helper = project.getHelper();
 
