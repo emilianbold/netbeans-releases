@@ -48,7 +48,6 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,7 +77,7 @@ import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
-import org.netbeans.modules.glassfish.spi.GlassfishModule2;
+import org.netbeans.modules.glassfish.spi.GlassfishModule3;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.modules.glassfish.spi.VMIntrospector;
 import org.openide.DialogDisplayer;
@@ -93,7 +92,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Peter Williams
  */
-public class CommonServerSupport implements GlassfishModule2, RefreshModulesCookie {
+public class CommonServerSupport implements GlassfishModule3, RefreshModulesCookie {
 
     private final transient Lookup lookup;
     private final Map<String, String> properties =
@@ -424,6 +423,7 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
         return task;
     }
 
+    
     @Override
     public Future<OperationState> restartServer(OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, "CSS.restartServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N

@@ -177,8 +177,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (scopeHasBeenModified) {
             modelBuilder.reset();
         }
-        MethodScopeImpl methodScope = MethodScopeImpl.createElement(currentScope, node);
-        modelBuilder.setCurrentScope(methodScope);
+        if (currentScope instanceof TypeScope) {
+            MethodScopeImpl methodScope = MethodScopeImpl.createElement(currentScope, node);
+            modelBuilder.setCurrentScope(methodScope);
+        } else {
+            modelBuilder.setCurrentScope((ScopeImpl) currentScope);
+        }
         super.visit(node);
         modelBuilder.reset();
     }
