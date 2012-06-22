@@ -74,6 +74,25 @@ public class AttachmentPanel extends javax.swing.JPanel {
         fileTypeCombo.setModel(model);
     }
 
+    void setAttachment(File f, String description, String conntentType) {
+        descriptionField.setText(description);
+        
+        fileField.setText(f.getAbsolutePath());
+        int c = fileTypeCombo.getItemCount();
+        if(conntentType != null) {
+            for (int i = 0; i < c; i++) {
+                Object o = fileTypeCombo.getItemAt(i);
+                if(o instanceof FileType) {
+                    String ct = ((FileType)o).contentType;
+                    if(ct != null && ct.equals(conntentType)) {
+                        fileTypeCombo.setSelectedItem(o);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
     public File getFile() {
         File file = null;
         if (!isDeleted()) {
