@@ -140,15 +140,24 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
             @Override
             public void run() {
                 try {
-                    notifyStart(fo.toURL());
+                    notifyStart(url);
                     File f = File.createTempFile("livehtml", "dummy");
                     FileObject fo = FileUtil.toFileObject(f);
-                    BrowserSupport.getDefault().load(url, fo);
+                    getPrivateBrowserSupport().load(url, fo);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         });
+    }
+    
+    private static BrowserSupport bs;
+    private static BrowserSupport getPrivateBrowserSupport() {
+        if (bs == null) {
+            bs = BrowserSupport.create();
+            bs.disablePageInspector();
+        }
+        return bs;
     }
     
     private void notifyStart(URL url) {

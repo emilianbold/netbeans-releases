@@ -123,6 +123,10 @@ public final class BrowserSupport {
         this.browser = browser;
     }
     
+    public void disablePageInspector() {
+        getWebBrowserPane().disablePageInspector();
+    }
+    
     private synchronized WebBrowserPane getWebBrowserPane() {
         if (pane == null) {
             if (browser == null) {

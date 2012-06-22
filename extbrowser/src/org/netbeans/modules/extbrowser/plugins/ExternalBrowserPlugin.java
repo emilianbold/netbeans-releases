@@ -584,7 +584,7 @@ public final class ExternalBrowserPlugin {
             session = factory.createDebuggingSession(webkitDebugger);
             
             PageInspector inspector = PageInspector.getDefault();
-            if (inspector != null) {
+            if (inspector != null && !browserImpl.isDisablePageInspector()) {
                 inspector.inspectPage(browserImpl.getLookup());
             }
         }

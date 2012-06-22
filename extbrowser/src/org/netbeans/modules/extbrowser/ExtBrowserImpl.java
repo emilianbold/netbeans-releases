@@ -90,6 +90,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     
     private boolean enhancedMode;
     
+    private boolean disablePageInspector = false;
+    
     private boolean running = false;
     
     /** Default constructor. 
@@ -113,6 +115,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     @Override
     public void setEnhancedMode( boolean mode ) {
         enhancedMode = mode;
+    }
+    
+    @Override
+    public void disablePageInspector() {
+        this.disablePageInspector = true;
+    }
+
+    public boolean isDisablePageInspector() {
+        return disablePageInspector;
     }
     
     private Lookup createLookup() {

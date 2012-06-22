@@ -53,4 +53,5 @@ public interface EnhancedBrowser {
     
     void setEnhancedMode( boolean mode );
 
+    void disablePageInspector();
 }
