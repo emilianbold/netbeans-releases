@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.php.project;
 
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -63,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -74,7 +74,6 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
@@ -84,7 +83,6 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -146,7 +144,11 @@ import org.w3c.dom.Text;
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class PhpProject implements Project {
+
     static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
+
+    @StaticResource
+    public static final String PROJECT_ICON = "org/netbeans/modules/php/project/ui/resources/phpProject.png"; // NOI18N
 
     final AntProjectHelper helper;
     final UpdateHelper updateHelper;
@@ -727,23 +729,8 @@ public final class PhpProject implements Project {
     }
 
     private final class Info implements ProjectInformation {
-        private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
 
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-        public Info() {
-            PhpProject.this.propertyChangeSupport.addPropertyChangeListener(PhpProject.PROP_FRAMEWORKS, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    firePropertyChange(ProjectInformation.PROP_ICON);
-                }
-            });
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener  listener) {
-            propertyChangeSupport.addPropertyChangeListener(listener);
-        }
 
         @Override
         public String getDisplayName() {
@@ -752,7 +739,7 @@ public final class PhpProject implements Project {
 
         @Override
         public Icon getIcon() {
-            return ImageUtilities.image2Icon(annotateImage(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png"))); // NOI18N
+            return ImageUtilities.image2Icon(ImageUtilities.loadImage(PROJECT_ICON));
         }
 
         @Override
@@ -766,6 +753,11 @@ public final class PhpProject implements Project {
         }
 
         @Override
+        public void addPropertyChangeListener(PropertyChangeListener  listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
+        }
+
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             propertyChangeSupport.removePropertyChangeListener(listener);
         }
@@ -774,23 +766,6 @@ public final class PhpProject implements Project {
             propertyChangeSupport.firePropertyChange(prop , null, null);
         }
 
-        private Image annotateImage(Image image) {
-            Image badged = image;
-            boolean first = true;
-            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
-                BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
-                if (badgeIcon != null) {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
-                    if (first) {
-                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
-                        first = false;
-                    }
-                } else {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE, frameworkProvider.getName()));
-                }
-            }
-            return badged;
-        }
     }
 
     private final class PhpOpenedHook extends ProjectOpenedHook {
