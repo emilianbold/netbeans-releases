@@ -30,13 +30,13 @@ NAMESPACE DEFINITOIN iz146560 [1:1/0-15:2/265] SCOPE: iz146560.cc
         RETURNS void TEXT=void  [8:5/91-8:9/95]
         STATEMENT COMPOUND  [8:17/103-13:6/262] SCOPE: test 
             STATEMENT DECLARATION  [9:9/113-9:38/142] SCOPE: Stmt  [8:17/103-13:6/262]
-                VARIABLE pa [9:9/113-9:38/142]  TYPE: *iz146560::A TEXT=A*  [9:15/119-9:16/120]  INIT: text='new class A[1]'  SCOPE: Stmt  [8:17/103-13:6/262]
+                VARIABLE pa [9:9/113-9:38/142]  TYPE: *iz146560::A TEXT=A*  [9:15/119-9:17/121]  INIT: text='new class A[1]'  SCOPE: Stmt  [8:17/103-13:6/262]
             STATEMENT DECLARATION  [10:9/151-10:40/182] SCOPE: Stmt  [8:17/103-13:6/262]
-                VARIABLE pb [10:9/151-10:40/182]  TYPE: *iz146560::B TEXT=B*  [10:16/158-10:17/159]  INIT: text='new struct B[2]'  SCOPE: Stmt  [8:17/103-13:6/262]
+                VARIABLE pb [10:9/151-10:40/182]  TYPE: *iz146560::B TEXT=B*  [10:16/158-10:18/160]  INIT: text='new struct B[2]'  SCOPE: Stmt  [8:17/103-13:6/262]
             STATEMENT DECLARATION  [11:9/191-11:36/218] SCOPE: Stmt  [8:17/103-13:6/262]
                 VARIABLE pc [11:9/191-11:36/218]  TYPE: *iz146560::C TEXT=C*  [11:14/196-11:16/198]  INIT: text='new enum C[3]'  SCOPE: Stmt  [8:17/103-13:6/262]
             STATEMENT DECLARATION  [12:9/227-12:38/256] SCOPE: Stmt  [8:17/103-13:6/262]
-                VARIABLE pd [12:9/227-12:38/256]  TYPE: *iz146560::D TEXT=D*  [12:15/233-12:16/234]  INIT: text='new union D[4]'  SCOPE: Stmt  [8:17/103-13:6/262]
+                VARIABLE pd [12:9/227-12:38/256]  TYPE: *iz146560::D TEXT=D*  [12:15/233-12:17/235]  INIT: text='new union D[4]'  SCOPE: Stmt  [8:17/103-13:6/262]
 
 ========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITIONS for iz146560 (iz146560) 
@@ -60,11 +60,11 @@ NAMESPACE iz146560 (iz146560)
         RETURNS void TEXT=void  [8:5/91-8:9/95]
         STATEMENT COMPOUND  [8:17/103-13:6/262] SCOPE: test 
             STATEMENT DECLARATION  [9:9/113-9:38/142] SCOPE: Stmt  [8:17/103-13:6/262]
-                VARIABLE pa [9:9/113-9:38/142]  TYPE: *iz146560::A TEXT=A*  [9:15/119-9:16/120]  INIT: text='new class A[1]'  SCOPE: Stmt  [8:17/103-13:6/262]
+                VARIABLE pa [9:9/113-9:38/142]  TYPE: *iz146560::A TEXT=A*  [9:15/119-9:17/121]  INIT: text='new class A[1]'  SCOPE: Stmt  [8:17/103-13:6/262]
             STATEMENT DECLARATION  [10:9/151-10:40/182] SCOPE: Stmt  [8:17/103-13:6/262]
-                VARIABLE pb [10:9/151-10:40/182]  TYPE: *iz146560::B TEXT=B*  [10:16/158-10:17/159]  INIT: text='new struct B[2]'  SCOPE: Stmt  [8:17/103-13:6/262]
+                VARIABLE pb [10:9/151-10:40/182]  TYPE: *iz146560::B TEXT=B*  [10:16/158-10:18/160]  INIT: text='new struct B[2]'  SCOPE: Stmt  [8:17/103-13:6/262]
             STATEMENT DECLARATION  [11:9/191-11:36/218] SCOPE: Stmt  [8:17/103-13:6/262]
                 VARIABLE pc [11:9/191-11:36/218]  TYPE: *iz146560::C TEXT=C*  [11:14/196-11:16/198]  INIT: text='new enum C[3]'  SCOPE: Stmt  [8:17/103-13:6/262]
             STATEMENT DECLARATION  [12:9/227-12:38/256] SCOPE: Stmt  [8:17/103-13:6/262]
-                VARIABLE pd [12:9/227-12:38/256]  TYPE: *iz146560::D TEXT=D*  [12:15/233-12:16/234]  INIT: text='new union D[4]'  SCOPE: Stmt  [8:17/103-13:6/262]
+                VARIABLE pd [12:9/227-12:38/256]  TYPE: *iz146560::D TEXT=D*  [12:15/233-12:17/235]  INIT: text='new union D[4]'  SCOPE: Stmt  [8:17/103-13:6/262]
 

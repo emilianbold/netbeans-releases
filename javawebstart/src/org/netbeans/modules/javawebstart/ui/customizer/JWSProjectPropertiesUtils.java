@@ -257,25 +257,27 @@ public final class JWSProjectPropertiesUtils {
         }
     }
 
-    public static void savePropsAndUpdateMetaFiles(JWSProjectProperties props, Project proj) {
+    public static void savePropsAndUpdateMetaFiles(JWSProjectProperties props, Project proj) {        
         try {
-            props.store();
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-        final ProjectConfigurationProvider<?> configProvider =
+            try {
+                props.store();
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            final ProjectConfigurationProvider<?> configProvider =
                 proj.getLookup().lookup(ProjectConfigurationProvider.class);
-        try {
-            if (props.isJWSEnabled()) {
+            if (props.wasJWSActivated()) {
                 setActiveConfig(configProvider, NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart")); // NOI18N
                 copyTemplate(proj);
                 modifyBuildXml(proj);
                 copyJWSAntTasksLibrary(proj);
-            } else {
+            } else if (props.wasJWSDeactivated()){
                 setActiveConfig(configProvider, NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_Default")); // NOI18N
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        } finally {
+            props.resetWebStartChanged();
         }
     }
 

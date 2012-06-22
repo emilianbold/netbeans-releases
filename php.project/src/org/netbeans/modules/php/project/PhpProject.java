@@ -162,10 +162,6 @@ public final class PhpProject implements Project {
     // #165136
     // @GuardedBy("this")
     private FileObject sourcesDirectory;
-    // @GuardedBy("this")
-    private FileObject testsDirectory;
-    // @GuardedBy("this")
-    private FileObject seleniumDirectory;
     // ok to read it more times
     volatile FileObject webRootDirectory;
 
@@ -173,10 +169,6 @@ public final class PhpProject implements Project {
     volatile boolean sourcesDirectoryInvalid = false;
     // true if project is being deleted; do not warn about invalid sources then
     private volatile boolean deleting;
-
-    // try to restore missing test folders just once
-    volatile boolean testsDirectoryResolved = false;
-    volatile boolean seleniumDirectoryResolved = false;
 
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
@@ -400,54 +392,23 @@ public final class PhpProject implements Project {
     /**
      * @return tests directory or <code>null</code>
      */
-    synchronized FileObject getTestsDirectory() {
-        if (testsDirectory == null) {
-            if (testsDirectoryResolved) {
-                return null;
-            }
-            testsDirectoryResolved = true;
-            testsDirectory = resolveDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderTemporaryToProjectDirectory"); // NOI18N
+    FileObject getTestsDirectory() {
+        for (FileObject root : testRoots.getRoots()) {
+            // return the first one
+            return root;
         }
-        return testsDirectory;
-    }
-
-    synchronized void resetTestsDirectory() {
-        testsDirectory = null;
-        testsDirectoryResolved = false;
-        testRoots.fireChange();
-    }
-
-    synchronized void setTestsDirectory(FileObject testsDirectory) {
-        assert testsDirectory != null && testsDirectory.isValid();
-        this.testsDirectory = testsDirectory;
-        testsDirectoryResolved = false;
+        return null;
     }
 
     /**
      * @return selenium tests directory or <code>null</code>
      */
-    synchronized FileObject getSeleniumDirectory() {
-        if (seleniumDirectory == null) {
-            if (seleniumDirectoryResolved) {
-                return null;
-            }
-            seleniumDirectoryResolved = true;
-            seleniumDirectory = resolveDirectory(PhpProjectProperties.SELENIUM_SRC_DIR, "MSG_SeleniumFolderTemporaryToProjectDirectory"); // NOI18N
+    FileObject getSeleniumDirectory() {
+        for (FileObject root : seleniumRoots.getRoots()) {
+            // return the first one
+            return root;
         }
-        return seleniumDirectory;
-    }
-
-    synchronized void resetSeleniumDirectory() {
-        seleniumDirectory = null;
-        seleniumDirectoryResolved = false;
-        seleniumRoots.fireChange();
-    }
-
-    synchronized void setSeleniumDirectory(FileObject seleniumDirectory) {
-        assert this.seleniumDirectory == null : "Project selenium directory already set to " + this.seleniumDirectory;
-        assert seleniumDirectory != null && seleniumDirectory.isValid();
-        this.seleniumDirectory = seleniumDirectory;
-        seleniumDirectoryResolved = false;
+        return null;
     }
 
     private FileObject resolveDirectory(final String propertyName, final String messageKey) {
@@ -913,15 +874,11 @@ public final class PhpProject implements Project {
             // clear references to ensure that all the dirs are read again
             sourcesDirectoryInvalid = false;
             resetSourcesDirectory();
-            resetTestsDirectory();
-            resetSeleniumDirectory();
             webRootDirectory = null;
             resetIgnoredFolders();
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
-            getTestsDirectory();
-            getSeleniumDirectory();
             getWebRootDirectory();
             getIgnoredFiles();
         }
@@ -983,8 +940,6 @@ public final class PhpProject implements Project {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
                 fireIgnoredFilesChange();
-            } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
-                resetTestsDirectory();
             } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)) {
                 FileObject oldWebRoot = webRootDirectory;
                 webRootDirectory = null;

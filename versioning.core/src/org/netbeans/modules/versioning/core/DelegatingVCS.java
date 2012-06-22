@@ -220,7 +220,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         return true;
     }
     
-    boolean isMetadataFile(VCSFileProxy file) {
+    public boolean isMetadataFile(VCSFileProxy file) {
         return getMetadataFolderNames().contains(file.getName());
     }
 

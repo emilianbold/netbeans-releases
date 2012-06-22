@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,40 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.embedder.impl;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.plugin.internal.PluginDependenciesResolver;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManagerFactory;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
-import org.sonatype.guice.plexus.config.Roles;
+package org.netbeans.modules.bugzilla.util;
 
 /**
- * this module is meant to be used by the project embedder only
- * @author mkleint
+ *
+ * @author Tomas Stupka
  */
-public class ExtensionModule implements Module {
-
-    public ExtensionModule() {
-    }
-
-    @Override
-    public void configure(Binder binder) {
-        binder.bind(PluginDependenciesResolver.class).to(NbPluginDependenciesResolver.class);
-        binder.bind(Roles.componentKey(RepositoryConnectorFactory.class, "offline")).to(OfflineConnector.class);
-        //#212214 the EnhancedLocalRepositoryManager will claim artifact is not locally present even if file is there but some metadata is missing
-        //we just replace it with the simple variant that relies on file's presence only. 
-        //I'm a bit afraid to remove the binding altogether, that's why we map simple to enhanced.
-        binder.bind(Roles.componentKey(LocalRepositoryManagerFactory.class, "enhanced")).to(SimpleLocalRepositoryManagerFactory.class);
-        
-        //exxperimental only.
-//        binder.bind(InheritanceAssembler.class).to(NbInheritanceAssembler.class);
-        binder.bind(ModelBuilder.class).to(NBModelBuilder.class);
-    }
-    
+public interface NbBugzillaConstants {
+    public static final String NB_LOG_FILE_PATH = "var/log/messages.log";       // NOI18N
+    public static final String NB_LOG_FILE_ATT_CONT_TYPE = "text/plain";        // NOI18N
 }

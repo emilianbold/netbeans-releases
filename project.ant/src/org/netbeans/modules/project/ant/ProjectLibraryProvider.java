@@ -76,6 +76,7 @@ import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -90,9 +91,9 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
-import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -134,6 +135,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private static final String EL_LIBRARIES = "libraries"; // NOI18N
     private static final String EL_DEFINITIONS = "definitions"; // NOI18N
     private static final String SFX_DISPLAY_NAME = "displayName";   //NOI18N
+    private static final String PROP_PREFIX = "prop-";  //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private AntProjectListener apl;
@@ -502,6 +504,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             String description = null;
             String displayName = null;
             Map<String,List<URI>> contents = new HashMap<String,List<URI>>();
+            Map<String,String> properties = new HashMap<String, String>();
             for (Map.Entry<String,String> subentry : entry.getValue().entrySet()) {
                 String k = subentry.getKey();
                 if (k.equals("type")) { // NOI18N
@@ -512,6 +515,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     description = subentry.getValue();
                 } else if (k.equals(SFX_DISPLAY_NAME)) {  //NOI18N
                     displayName = subentry.getValue();
+                } else if (k.startsWith(PROP_PREFIX)) {
+                    properties.put(k.substring(PROP_PREFIX.length()), subentry.getValue());  //NOI18N
                 } else {
                     final String[] path = sanitizeHttp(subentry.getKey(), PropertyUtils.tokenizePath(subentry.getValue()));
                     List<URI> volume = new ArrayList<URI>(path.length);
@@ -551,7 +556,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     name,
                     description,
                     displayName,
-                    contents));
+                    contents,
+                    properties));
         }
         return libs;
     }
@@ -661,7 +667,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return result.toArray(new String[result.size()]);
     }
     
-    static final class ProjectLibraryImplementation implements LibraryImplementation2, NamedLibraryImplementation {
+    static final class ProjectLibraryImplementation implements LibraryImplementation2,LibraryImplementation3 {
 
         final File mainPropertiesFile, privatePropertiesFile;
         final String type;
@@ -669,6 +675,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String description;
         String displayName;
         Map<String,List<URI>> contents;
+        private Map<String,String> properties;
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         static Field libraryImplField;
@@ -702,7 +709,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 String name,
                 final @NullAllowed String description,
                 final @NullAllowed String displayName,
-                Map<String,List<URI>> contents) {
+                final @NonNull Map<String,List<URI>> contents,
+                final @NonNull Map<String,String> properties) {
             this.mainPropertiesFile = mainPropertiesFile;
             this.privatePropertiesFile = privatePropertiesFile;
             this.type = type;
@@ -710,6 +718,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             this.description = description;
             this.displayName = displayName;
             this.contents = contents;
+            this.properties = properties;
         }
 
         public String getType() {
@@ -857,7 +866,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             } catch (IOException x) {
                 throw new IllegalArgumentException(x);
             }
-            pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, oldDisplayName, displayName);
+            pcs.firePropertyChange(PROP_DISPLAY_NAME, oldDisplayName, displayName);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -871,6 +880,37 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         @Override
         public String toString() {
             return "ProjectLibraryImplementation[name=" + name + ",file=" + mainPropertiesFile + ",contents=" + contents + "]"; // NOI18N
+        }
+
+        @Override
+        public Map<String, String> getProperties() {
+            return Collections.<String,String>unmodifiableMap(properties);
+        }
+
+        @Override
+        public void setProperties(Map<String, String> properties) {
+            if (Utilities.compareObjects(this.properties, properties)) {
+                return;
+            }
+            final Map<String,String> oldProperties = this.properties;
+            this.properties = new HashMap<String, String>(properties);
+            try {
+                for (Map.Entry<String,String> e : this.properties.entrySet()) {
+                    final String key = String.format(
+                        "libs.%s.%s%s",    //NOI18N
+                        name,
+                        PROP_PREFIX,
+                        e.getKey());
+                    replaceProperty(
+                        mainPropertiesFile,
+                        false,
+                        key,
+                        e.getValue());
+                }
+            } catch (IOException x) {
+                throw new IllegalArgumentException(x);
+            }
+            pcs.firePropertyChange(PROP_PROPERTIES, oldProperties, this.properties);
         }
 
     }
@@ -1224,7 +1264,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         //No need to set displayName when it's same as name
                         displayName = null;
                     }
-                    return man.createURILibrary(lib.getType(), name, displayName, lib.getDescription(), content);
+                    return man.createURILibrary(lib.getType(), name, displayName, lib.getDescription(), content, lib.getProperties());
                 }
             });
         } catch (MutexException ex) {
