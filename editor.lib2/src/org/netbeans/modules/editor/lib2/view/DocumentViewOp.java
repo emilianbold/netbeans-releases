@@ -245,16 +245,18 @@ public final class DocumentViewOp
      * By default it's 1.0. All the ascents, descent and leadings of all fonts
      * are multiplied by the constant.
      */
-    private float lineHeightCorrection;
+    private float lineHeightCorrection = 1.0f;
     
     private MouseWheelListener origMouseWheelListener;
     
     private int textZoom;
-
+    
     /**
      * Extra height of 1/3 of viewport's window height added to the real views' allocation.
      */
     private float extraVirtualHeight;
+    
+    boolean asTextField;
 
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
@@ -494,6 +496,7 @@ public final class DocumentViewOp
         updateTextZoom(textComponent);
         viewUpdates = new ViewUpdates(docView);
         viewUpdates.initFactories();
+        asTextField = Boolean.TRUE.equals(textComponent.getClientProperty("AsTextField"));
         textComponent.addPropertyChangeListener(this);
         viewHierarchyImpl = ViewHierarchyImpl.get(textComponent);
         viewHierarchyImpl.setDocumentView(docView);
@@ -647,7 +650,7 @@ public final class DocumentViewOp
         }
 
         final float extraHeight;
-        if (!DocumentView.DISABLE_END_VIRTUAL_SPACE && listeningOnViewport != null) {
+        if (!DocumentView.DISABLE_END_VIRTUAL_SPACE && listeningOnViewport != null && !asTextField) {
             // Compute same value regardless whether there's a horizontal scrollbar visible or not.
             // This is important to avoid flickering caused by vertical shrinking of the text component
             // so that vertical scrollbar appears and then appearing of a horizontal scrollbar
@@ -670,6 +673,7 @@ public final class DocumentViewOp
             @Override
             public void run() {
                 boolean widthDiffers = (newVisibleRect.width != visibleRect.width);
+                boolean heightDiffers = (newVisibleRect.height != visibleRect.height);
                 if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
                     ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DVOp.updateVisibleDimension: widthDiffers=" + widthDiffers + // NOI18N
                             ", newVisibleRect=" + newVisibleRect + // NOI18N
@@ -683,6 +687,9 @@ public final class DocumentViewOp
                 if (widthDiffers) {
                     clearStatusBits(AVAILABLE_WIDTH_VALID);
                     docView.markChildrenLayoutInvalid();
+                }
+                if (asTextField && heightDiffers) {
+                    docView.updateBaseY();
                 }
             }
         });
@@ -786,8 +793,7 @@ public final class DocumentViewOp
         // Line height correction
         float lineHeightCorrectionOrig = lineHeightCorrection;
         lineHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, 1.0f);
-        boolean updateMetrics = nonInitialUpdate &&
-                 (lineHeightCorrection != lineHeightCorrectionOrig);
+        boolean updateMetrics = (lineHeightCorrection != lineHeightCorrectionOrig);
         boolean releaseChildren = nonInitialUpdate && 
                 ((nonPrintableCharactersVisible != nonPrintableCharactersVisibleOrig) ||
                  (lineHeightCorrection != lineHeightCorrectionOrig)); 
@@ -815,7 +821,7 @@ public final class DocumentViewOp
             Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
             renderingHints = desktopHints;
         }
-        if (Boolean.TRUE.equals(textComponent.getClientProperty("AsTextField"))) {
+        if (asTextField) {
             return;
         }
         Color textLimitLineColorOrig = textLimitLineColor;
@@ -892,7 +898,7 @@ public final class DocumentViewOp
         if (lwt != null) {
             lineWrapType = LineWrapType.fromSettingValue(lwt);
         }
-        if (lineWrapType == null) {
+        if (asTextField || lineWrapType == null) {
             lineWrapType = LineWrapType.NONE;
         }
         clearStatusBits(AVAILABLE_WIDTH_VALID);
@@ -1231,6 +1237,11 @@ public final class DocumentViewOp
                 updateTextZoom(textComponent);
                 releaseChildren = true;
                 updateFonts = true;
+            } else if ("AsTextField".equals(propName)) {
+                asTextField = Boolean.TRUE.equals(textComponent.getClientProperty("AsTextField"));
+                updateLineWrapType();
+                docView.updateBaseY();
+                releaseChildren = true;
             }
         }
         if (releaseChildren) {
