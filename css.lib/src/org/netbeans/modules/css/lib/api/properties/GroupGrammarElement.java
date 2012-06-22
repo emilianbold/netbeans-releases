@@ -106,6 +106,15 @@ public class GroupGrammarElement extends GrammarElement {
         this.type = type;
     }
 
+    @Override
+    public void accept(GrammarElementVisitor visitor) {
+        visitor.visit(this);
+        for(GrammarElement child : elements()) {
+            child.accept(visitor);
+        }
+    }
+
+    
     /**
      * 
      * @return List of children elements
@@ -140,6 +149,14 @@ public class GroupGrammarElement extends GrammarElement {
         }
         return all;
     }
+    
+    /**
+     * Checks if the property is a visible property (not '@' prefixed)
+     */
+    public boolean isVisible() {
+        return getName() != null && getName().charAt(0) != GrammarElement.INVISIBLE_PROPERTY_PREFIX;
+    }
+        
     
     @Override
     public String getName() {

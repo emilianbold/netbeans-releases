@@ -75,5 +75,10 @@ public class FixedTextGrammarElement extends ValueGrammarElement {
                 .toString();
     }
 
+    @Override
+    public void accept(GrammarElementVisitor visitor) {
+        visitor.visit(this);
+    }
+
     
 }

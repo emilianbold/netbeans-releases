@@ -42,6 +42,8 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -51,6 +53,7 @@ import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
@@ -63,6 +66,12 @@ public class Utilities {
 
     private Utilities() {
     }
+    
+    /**
+     * Name of the meta property defining property category. 
+     * See description.txt in the o.n.m.css.editor.module.main.properties
+     */
+    public static final String CATEGORY_META_PROPERTY_NAME = "$category"; //NOI18N
     
     /**
      * Creates a generic mark occurrences node visitor for given node types. 
@@ -163,17 +172,36 @@ public class Utilities {
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
         Enumeration<String> keys = bundle.getKeys();
+        PropertyCategory category = PropertyCategory.OTHER;
         while (keys.hasMoreElements()) {
             String name = keys.nextElement();
             String value = bundle.getString(name);
+            
+            if(name.startsWith("$")) {
+                //property category
+                if(CATEGORY_META_PROPERTY_NAME.equalsIgnoreCase(name)) {
+                    try {
+                        category = PropertyCategory.valueOf(value.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        Logger.getAnonymousLogger().log(Level.INFO, 
+                                String.format("Unknown property category name %s in %s properties definition file. Served by %s css module.", value, sourcePath, module.getSpecificationURL()),
+                                e);
+                    }
+                } else {
+                    //unknown meta property
+                    Logger.getAnonymousLogger().log(Level.INFO, null, 
+                            new IllegalArgumentException(String.format("Unknown meta property %s in %s properties definition file. Served by %s css module.", name, sourcePath, module.getSpecificationURL())));
+                }
+                
+            } else {
+                //parse bundle key - there might be more properties separated by semicolons
+                StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
 
-            //parse bundle key - there might be more properties separated by semicolons
-            StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
-
-            while (nameTokenizer.hasMoreTokens()) {
-                String parsed_name = nameTokenizer.nextToken().trim();
-                PropertyDefinition prop = new PropertyDefinition(parsed_name, value, module);
-                properties.add(prop);
+                while (nameTokenizer.hasMoreTokens()) {
+                    String parsed_name = nameTokenizer.nextToken().trim();
+                    PropertyDefinition prop = new PropertyDefinition(parsed_name, value, category, module);
+                    properties.add(prop);
+                }
             }
 
         }

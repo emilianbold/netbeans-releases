@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -130,6 +133,35 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         
         //ok - so the minus "-" is still in the alternatives (which is correct),
         //but finally filtered out in the code completion result by the "_operator" postfix
+    }
+    
+    public void testPropertyCategory() {
+        Collection<PropertyDefinition> pds = Properties.getProperties("border-width");
+        assertNotNull(pds);
+        assertEquals(1, pds.size());
+        
+        PropertyDefinition pd = pds.iterator().next();
+        assertNotNull(pd);
+        
+        assertEquals(PropertyCategory.BOX, pd.getPropertyCategory());
+        
+    }
+    
+    public void testSubProperties() {
+        Collection<PropertyDefinition> pds = Properties.getProperties("background");
+        assertNotNull(pds);
+        assertEquals(1, pds.size());
+        
+        PropertyDefinition pd = pds.iterator().next();
+        assertNotNull(pd);
+        
+        Collection<PropertyDefinition> subs = pd.getSubProperties();
+        assertNotNull(subs);
+        
+        for(PropertyDefinition s : subs) {
+            System.out.println(s.getName());
+        }
+        
     }
     
 }
