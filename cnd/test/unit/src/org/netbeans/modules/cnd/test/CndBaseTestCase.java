@@ -74,6 +74,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -339,17 +341,25 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
             File goldenFile = getGoldenFile(goldenFilename);
             File testFile = new File(getWorkDir(),testFilename);
             
-            if (CndCoreTestUtils.diff(testFile, goldenFile, null)) {
-                // copy golden
-                File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
-                CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
+            if(goldenFile.exists()) {
+                if (CndCoreTestUtils.diff(testFile, goldenFile, null)) {
+                    // copy golden
+                    File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
+                    CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
 
-                StringBuilder buf = new StringBuilder("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy);
-                File diffErrorFile = new File(testFile.getAbsolutePath() + ".diff");
-                CndCoreTestUtils.diff(testFile, goldenFile, diffErrorFile);
-                showDiff(diffErrorFile, buf);
-                fail(buf.toString());
-            }             
+                    StringBuilder buf = new StringBuilder("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy);
+                    File diffErrorFile = new File(testFile.getAbsolutePath() + ".diff");
+                    CndCoreTestUtils.diff(testFile, goldenFile, diffErrorFile);
+                    showDiff(diffErrorFile, buf);
+                    fail(buf.toString());
+                }            
+            } else {
+                if (testFile.length() != 0) {
+                    StringBuilder buf = new StringBuilder("Files differ; " +testFile.getAbsolutePath()+ " and no golden file");
+                    showDiff(testFile, buf);
+                    fail(buf.toString());
+                }                
+            }
         } catch (IOException ioe) {
             fail("Error comparing files: " + ioe); // NOI18N
         }
