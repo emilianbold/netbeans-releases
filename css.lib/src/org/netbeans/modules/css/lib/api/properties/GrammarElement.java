@@ -70,6 +70,8 @@ public abstract class GrammarElement {
         this.parent = parent;
     }
 
+    public abstract void accept(GrammarElementVisitor visitor);
+    
     private int minimum_occurances = 1;
     private int maximum_occurances = 1;
 

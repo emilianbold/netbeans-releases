@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 
 /**
@@ -75,19 +78,51 @@ import org.netbeans.modules.css.lib.api.CssModule;
 public class PropertyDefinition {
     
     private String name, valueGrammar;
-    
     private CssModule cssModule;
+    private PropertyCategory propertyCategory;
 
+    /**
+     * Creates an instance of PropertyDefinition with the PropertyCategory.OTHER property category.
+     * 
+     * @param name name of the property
+     * @param valueGrammar grammar of the property value
+     * @param module CssModule serving this property definition
+     */
     public PropertyDefinition(String name, String valueGrammar, CssModule module) {
+        this(name, valueGrammar, PropertyCategory.OTHER, module);
+    }
+    
+    /**
+     * Creates an instance of PropertyDefinition.
+     * 
+     * @param name name of the property
+     * @param valueGrammar grammar of the property value
+     * @param module CssModule serving this property definition
+     * @param propertyCategory category of the property
+     */
+    public PropertyDefinition(String name, String valueGrammar, PropertyCategory propertyCategory, CssModule module) {
         this.name = name;
         this.valueGrammar = valueGrammar;
+        this.propertyCategory = propertyCategory;
         this.cssModule = module;
     }
 
+    /**
+     * Gets the {@link CssModule} serving this property definition.
+     * 
+     * @return instance of {@link CssModule}
+     */
     public CssModule getCssModule() {
         return cssModule;
     }
     
+    /**
+     * Gets the property category this property definition belongs to
+     * 
+     */
+    public PropertyCategory getPropertyCategory() {
+        return propertyCategory;
+    }
     
     /**
      * @return The property name.
@@ -97,11 +132,41 @@ public class PropertyDefinition {
     }
 
     /**
-     * @return  Definition of the value in a form of semi-grammar.
+     * Gets the property value grammar.
+     * 
+     * See the {@link PropertyDefinition} class documentation for more info about the grammar form.
+     * 
+     * @return definition of the value in a form of the semi-grammar. 
+     * 
      */
     public String getValueGrammar() {
         return valueGrammar;
     }
+    
+    /**
+     * experimental
+     * 
+     * @return list of properties set by this (aggregated) property
+     */
+    public Collection<PropertyDefinition> getSubProperties() {
+        GroupGrammarElement root = GrammarParser.parse(getValueGrammar(), getName());
+        
+        final Collection<PropertyDefinition> subs = new ArrayList<PropertyDefinition>();
+        root.accept(new GrammarElementVisitor() {
+
+            @Override
+            public void visit(GroupGrammarElement element) {
+                if(element.isVisible()) {
+                    Collection<PropertyDefinition> props = Properties.getProperties(element.getName());
+                    subs.addAll(props);
+                }
+                
+            }
+            
+        });
+        return subs;
+    }
+    
     
     @Override
     public boolean equals(Object obj) {

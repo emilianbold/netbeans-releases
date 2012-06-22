@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,67 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import org.netbeans.modules.css.lib.api.CssModule;
+
 /**
+ * Represents a category of css properties.
  *
- * @author mfukala@netbeans.org
+ * For example: font, background, color, ...
+ *
+ * In theory the {@link CssModule} could serve as the category identificator.
+ * Quite often however the css specification (module) contains groups of
+ * logically separated properties - for example the specification "CSS Borders
+ * and Backgrounds" provides two groups of properties serving to quite different
+ * purpose: border and background;
+ *
+ * @author marekfukala
  */
-public class UnitGrammarElement extends ValueGrammarElement {
+//TODO I18N
+//TODO defined the displaynames and descriptions
+public enum PropertyCategory {
 
-    private final TokenAcceptor tokenAcceptor;
-    private final String name;
+    BOX,
+    BACKGROUND,
+    OTHER; 
     
-    public UnitGrammarElement(GroupGrammarElement parent, TokenAcceptor tokenAcceptor) {
-        super(parent);
-        this.tokenAcceptor = tokenAcceptor;
-        this.name = new StringBuilder().append('!').append(getTokenAcceptorId()).toString();
-    }
-    
-    public final String getTokenAcceptorId() {
-        return tokenAcceptor.id();
-    }
-    
-    @Override
-    public String getName() {
-        return name;
-    }
+    private String displayName;
+    private String shortDescription;
+    private String longDescription;
 
-    @Override
-    public boolean accepts(Token token) {
-        return tokenAcceptor.accepts(token);
-    }
-    
-    @Override
-    public String toString() {
-        return new StringBuilder()
-                .append(getName())
-                .append(super.toString())
+    private PropertyCategory() {
+        displayName = new StringBuilder()
+                .append(name().charAt(0))
+                .append(name().substring(1).toLowerCase())
                 .toString();
+        
+        shortDescription = new StringBuilder()
+                .append("Provides styling support for ")
+                .append(getDisplayName())
+                .append('.')
+                .toString();
+        
+        longDescription = shortDescription;
     }
 
-    @Override
-    public void accept(GrammarElementVisitor visitor) {
-        visitor.visit(this);
+    private PropertyCategory(String displayName, String shortDescription, String longDescription) {
+        this.displayName = displayName;
+        this.shortDescription = shortDescription;
+        this.longDescription = longDescription;
     }
-    
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getShortDescription() {
+        return shortDescription;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
+    }
 }
