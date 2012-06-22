@@ -163,6 +163,8 @@ public final class FormatToken {
         AFTER_STATEMENT,
         AFTER_PROPERTY,
         AFTER_CASE,
+        
+        BEFORE_OBJECT,
 
         // around binary operator
         BEFORE_BINARY_OPERATOR,

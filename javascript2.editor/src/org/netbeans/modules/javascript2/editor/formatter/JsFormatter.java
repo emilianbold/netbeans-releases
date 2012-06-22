@@ -557,8 +557,12 @@ public class JsFormatter implements Formatter {
         FormatToken nonVirtualNext = getNextNonVirtual(next);
         if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
             String nextText = nonVirtualNext.getText().toString();
-            if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)
-                    || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
+            if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
+                FormatToken previous = nonVirtualNext.previous();
+                if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
+                    return false;
+                }
+            } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
                 return false;
             }
         }

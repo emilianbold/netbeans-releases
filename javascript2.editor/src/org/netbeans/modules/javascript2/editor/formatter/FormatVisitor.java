@@ -341,6 +341,10 @@ public class FormatVisitor extends NodeVisitor {
             FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                FormatToken previous = formatToken.previous();
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
+                }
             }
 
             for (Node property : objectNode.getElements()) {
