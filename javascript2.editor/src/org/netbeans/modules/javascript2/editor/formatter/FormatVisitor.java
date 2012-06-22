@@ -357,7 +357,7 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             // put indentation mark after non white token preceeding curly bracket
-            formatToken = getPreviousNonWhiteToken(getFinish(objectNode),
+            formatToken = getPreviousNonWhiteToken(getFinish(objectNode) - 1,
                     getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
