@@ -72,6 +72,18 @@ public class C2CIssue {
     private final C2CRepository repository;
     private final PropertyChangeSupport support;
 
+    static final String LABEL_NAME_ID           = "c2c.issue.id";               // NOI18N
+    static final String LABEL_NAME_SEVERITY     = "c2c.issue.severity";         // NOI18N
+    static final String LABEL_NAME_TASK_TYPE    = "c2c.issue.task_type";       // NOI18N
+    static final String LABEL_NAME_PRIORITY     = "c2c.issue.priority";         // NOI18N
+    static final String LABEL_NAME_STATUS       = "c2c.issue.status";           // NOI18N
+    static final String LABEL_NAME_RESOLUTION   = "c2c.issue.resolution";       // NOI18N
+    static final String LABEL_NAME_PRODUCT      = "c2c.issue.product";          // NOI18N
+    static final String LABEL_NAME_COMPONENT    = "c2c.issue.component";        // NOI18N
+    static final String LABEL_NAME_VERSION      = "c2c.issue.version";          // NOI18N
+    static final String LABEL_NAME_MILESTONE    = "c2c.issue.milestone";        // NOI18N
+    static final String LABEL_NAME_MODIFIED     = "c2c.issue.modified";         // NOI18N 
+            
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
     
@@ -241,7 +253,11 @@ public class C2CIssue {
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
-    
+
+    C2CRepository getRepository() {
+        return repository;
+    }
+        
     /**************************************************************************
      * private
      **************************************************************************/

@@ -65,6 +65,7 @@ public class IssueField {
     public static final IssueField RESOLUTION = new IssueField(CfcTaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
     public static final IssueField SEVERITY = new IssueField(CfcTaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
     public static final IssueField VERSION = new IssueField(CfcTaskAttribute.VERSION, "LBL_VERSION"); // NOI18N
+    public static final IssueField TASK_TYPE = new IssueField(CfcTaskAttribute.TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
     
     public static final IssueField CREATED = new IssueField(CfcTaskAttribute.MODIFIED, "LBL_CREATED"); // NOI18N
     
