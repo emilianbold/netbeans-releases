@@ -46,8 +46,11 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 
@@ -63,6 +66,7 @@ public class C2CQuery {
     private final List<QueryNotifyListener> notifyListeners = new ArrayList<QueryNotifyListener>();
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
     private String name;
+    private long lastRefresh;
         
     public C2CQuery(C2CRepository repository) {
         this.repository = repository;
@@ -94,7 +98,7 @@ public class C2CQuery {
     }
 
     long getLastRefresh() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return lastRefresh;
     }
 
     public boolean contains(String iD) {
@@ -187,8 +191,44 @@ public class C2CQuery {
     }  
 
     public void refresh() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        fireStarted();
+        try {
+         
+            IRepositoryQuery query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), getDisplayName());
+            
+            System.out.println(" QUERY ");
+            
+        } finally {
+            fireFinished();
+            fireQueryIssuesChanged();
+            lastRefresh = System.currentTimeMillis();
+        }
     }
 
-    
+//    private Object issues;
+//    private class IssuesIdCollector extends TaskDataCollector {
+//        public IssuesIdCollector() {}
+//        @Override
+//        public void accept(TaskData taskData) {
+//            String id = C2CIssue.getID(taskData);
+//            issues.add(id);
+//        }
+//    };
+//    private class IssuesCollector extends TaskDataCollector {
+//        public IssuesCollector() {}
+//        @Override
+//        public void accept(TaskData taskData) {
+//            String id = C2CIssue.getID(taskData);
+//            getController().addProgressUnit(C2CIssue.getDisplayName(taskData));
+//            C2CIssue issue;
+//            try {
+//                IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
+//                issue = (C2CIssue) cache.setIssueData(id, taskData);
+//            } catch (IOException ex) {
+//                C2C.LOG.log(Level.SEVERE, null, ex);
+//                return;
+//            }
+//            fireNotifyData(issue); // XXX - !!! triggers getIssues()
+//        }
+//    };    
 }
