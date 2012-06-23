@@ -39,52 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.api.search.provider.impl;
-
-import java.net.URI;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.search.SearchRoot;
-import org.netbeans.api.search.SearchScopeOptions;
-import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.spi.search.SearchInfoDefinition;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.tasks.ui.treelist;
 
 /**
  *
- * @author jhavlin
+ * @author jpeska
  */
-public class DelegatingSearchInfo extends SearchInfo {
+public interface TreeListModelListener {
 
-    private SearchInfoDefinition delegate;
-
-    public DelegatingSearchInfo(SearchInfoDefinition delegate) {
-        this.delegate = delegate;
-    }
-
-    @Override
-    public List<SearchRoot> getSearchRoots() {
-        return delegate.getSearchRoots();
-    }
-
-    @Override
-    public Iterator<FileObject> createFilesToSearchIterator(
-            SearchScopeOptions options, SearchListener listener,
-            AtomicBoolean terminated) {
-        return delegate.filesToSearch(options, listener, terminated);
-    }
-
-    @Override
-    protected Iterator<URI> createUrisToSearchIterator(
-            SearchScopeOptions options, SearchListener listener,
-            AtomicBoolean terminated) {
-        return delegate.urisToSearch(options, listener, terminated);
-    }
-
-    @Override
-    public boolean canSearch() {
-        return delegate.canSearch();
-    }
+    void nodeExpanded(TreeListNode node);
 }

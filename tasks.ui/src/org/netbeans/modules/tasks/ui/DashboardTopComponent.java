@@ -68,6 +68,8 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
+import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
+import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
 
 /**
@@ -102,7 +104,7 @@ public final class DashboardTopComponent extends TopComponent {
     private DisplayTextTaskFilter displayTextTaskFilter = null;
     private CategoryNamePanel categoryNamePanel;
     private NotifyDescriptor categoryNameDialog;
-    private ListSelectionListener dashboardSelectionListener;
+    private DashboardSelectionListener dashboardSelectionListener;
     private Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
 
@@ -210,7 +212,9 @@ public final class DashboardTopComponent extends TopComponent {
         addComponentListener(componentAdapter);
         DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
         dashboard.addDashboardSelectionListener(dashboardSelectionListener);
+        dashboard.addModelListener(dashboardSelectionListener);
         refresher.setRefreshEnabled(true);
+        dashboardRefreshTime.restart();
         //load data after the component is displayed
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -226,7 +230,9 @@ public final class DashboardTopComponent extends TopComponent {
         RepositoryManager.getInstance().removePropertChangeListener(DashboardViewer.getInstance());
         DashboardSettings.getInstance().removePropertyChangedListener(DashboardViewer.getInstance());
         DashboardViewer.getInstance().removeDashboardSelectionListener(dashboardSelectionListener);
+        DashboardViewer.getInstance().removeModelListener(dashboardSelectionListener);
         refresher.setRefreshEnabled(false);
+        dashboardRefreshTime.stop();
         super.componentClosed();
     }
 
@@ -410,10 +416,19 @@ public final class DashboardTopComponent extends TopComponent {
         }
     }
 
-    private class DashboardSelectionListener implements ListSelectionListener {
+    private class DashboardSelectionListener implements ListSelectionListener, TreeListModelListener {
 
         @Override
         public void valueChanged(ListSelectionEvent e) {
+            dashboardBusy();
+        }
+
+        @Override
+        public void nodeExpanded(TreeListNode node) {
+            dashboardBusy();
+        }
+
+        private void dashboardBusy() {
             // dashboard selection changed, user is using the dashboard
             refresher.setDashboardBusy(true);
             dashboardRefreshTime.restart();
