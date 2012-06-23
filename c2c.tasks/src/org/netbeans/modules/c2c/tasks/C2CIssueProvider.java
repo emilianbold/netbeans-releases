@@ -56,67 +56,67 @@ public class C2CIssueProvider extends IssueProvider<C2CIssue> {
 
     @Override
     public String getDisplayName(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.getDisplayName();
     }
 
     @Override
     public String getTooltip(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.getTooltip();
     }
 
     @Override
     public String getID(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.getID();
     }
 
     @Override
     public String[] getSubtasks(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.getSubtasks();
     }
 
     @Override
     public String getSummary(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.getSummary();
     }
 
     @Override
     public boolean isNew(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.isNew();
     }
 
     @Override
     public boolean isFinished(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.isFinished();
     }
 
     @Override
     public boolean refresh(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.refresh();
     }
 
     @Override
     public void addComment(C2CIssue data, String comment, boolean closeAsFixed) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        data.addComment(comment, closeAsFixed);
     }
 
     @Override
     public void attachPatch(C2CIssue data, File file, String description) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        data.attachPatch(file, description);
     }
 
     @Override
     public BugtrackingController getController(C2CIssue data) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return data.getController();
     }
 
     @Override
     public void removePropertyChangeListener(C2CIssue data, PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        data.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(C2CIssue data, PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        data.addPropertyChangeListener(listener);
     }
     
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.c2c.tasks.issue;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -52,8 +53,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
@@ -76,6 +79,10 @@ public class C2CIssue {
         this.data = data;
         this.repository = repo;
         support = new PropertyChangeSupport(this);
+    }
+
+    public String getDisplayName() {
+        return getDisplayName(data);
     }
     
     /**
@@ -107,6 +114,10 @@ public class C2CIssue {
         return td.getTaskId();
     }
 
+    public String getTooltip() {
+        return getDisplayName();
+    }
+    
     /**
      * Returns the id from the given taskData or null if taskData.isNew()
      * @param taskData
@@ -190,6 +201,39 @@ public class C2CIssue {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    public String getSummary() {
+        return getFieldValue(IssueField.SUMMARY);
+    }
+
+    public boolean isNew() {
+        return data == null || data.isNew();
+    }
+
+    public boolean isFinished() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public boolean refresh() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        return refresh(getID(), false);
+    }
+
+    public void addComment(String comment, boolean closeAsFixed) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void attachPatch(File file, String description) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public BugtrackingController getController() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public String[] getSubtasks() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -294,4 +338,24 @@ public class C2CIssue {
     private void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
+
+    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        // XXX 
+        // XXX gettaskdata the same for bugzilla, jira, c2c, ...
+//        try {
+//            C2C.LOG.log(Level.FINE, "refreshing issue #{0}", id);
+//            TaskData td = C2CUtil.getTaskData(repository, id);
+//            if(td == null) {
+//                return false;
+//            }
+//            getRepository().getIssueCache().setIssueData(this, td); // XXX
+//            getRepository().ensureConfigurationUptodate(this);
+//            refreshViewData(afterSubmitRefresh);
+//        } catch (IOException ex) {
+//            C2C.LOG.log(Level.SEVERE, null, ex);
+//        }
+        return true;
+    }
+
 }
