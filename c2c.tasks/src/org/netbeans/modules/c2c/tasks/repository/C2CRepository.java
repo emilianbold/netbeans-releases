@@ -44,16 +44,20 @@ package org.netbeans.modules.c2c.tasks.repository;
 import java.awt.Image;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConnector;
 import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
+import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.netbeans.modules.c2c.tasks.util.MylynUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -70,6 +74,7 @@ public class C2CRepository {
     private C2CRepositoryController controller;
     private TaskRepository taskRepository;
     private Lookup lookup;
+    private Cache cache;
     
     public C2CRepository() {
         
@@ -159,6 +164,10 @@ public class C2CRepository {
         return info.getDisplayName();
     }
     
+    public String getUrl() {
+        return info.getUrl();
+    }
+    
     public Image getIcon() {
         return null;
     }
@@ -226,4 +235,58 @@ public class C2CRepository {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
+    public IssueCache<C2CIssue, TaskData> getIssueCache() {
+        if(cache == null) {
+            cache = new Cache();
+        }
+        return cache;
+    }
+
+    private class Cache extends IssueCache<C2CIssue, TaskData> {
+        Cache() {
+            super(
+                C2CRepository.this.getUrl(), 
+                new IssueAccessorImpl(), 
+                C2C.getInstance().getIssueProvider(), 
+                C2CUtil.getRepository(C2CRepository.this));
+        }
+    }
+
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<C2CIssue, TaskData> {
+        @Override
+        public C2CIssue createIssue(TaskData taskData) {
+            C2CIssue issue = new C2CIssue(taskData, C2CRepository.this);
+            return issue;
+        }
+        @Override
+        public void setIssueData(C2CIssue issue, TaskData taskData) {
+            assert issue != null && taskData != null;
+            ((C2CIssue)issue).setTaskData(taskData);
+        }
+        @Override
+        public String getRecentChanges(C2CIssue issue) {
+            assert issue != null;
+            return ((C2CIssue)issue).getRecentChanges();
+        }
+        @Override
+        public long getLastModified(C2CIssue issue) {
+            assert issue != null;
+            return ((C2CIssue)issue).getLastModify();
+        }
+        @Override
+        public long getCreated(C2CIssue issue) {
+            assert issue != null;
+            return ((C2CIssue)issue).getCreated();
+        }
+        @Override
+        public String getID(TaskData issueData) {
+            assert issueData != null;
+            return C2CIssue.getID(issueData);
+        }
+        @Override
+        public Map<String, String> getAttributes(C2CIssue issue) {
+            assert issue != null;
+            return ((C2CIssue)issue).getAttributes();
+        }
+    }    
 }
