@@ -40,8 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.issue;
+package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.junit.After;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -53,7 +54,7 @@ import static org.junit.Assert.*;
  */
 public class BugzillaIssueFinderTest extends NbTestCase {
 
-    private BugzillaIssueFinder issueFinder;
+    private SimpleIssueFinder issueFinder;
 
     public BugzillaIssueFinderTest(String name) {
         super(name);
@@ -75,7 +76,7 @@ public class BugzillaIssueFinderTest extends NbTestCase {
 
     @Test
     public void testGetIssueSpans() {
-        issueFinder = BugzillaIssueFinder.getTestInstance();
+        issueFinder = SimpleIssueFinder.getTestInstance();
 
         checkNoIssueSpansFound("");
         checkNoIssueSpansFound("bug");
@@ -243,7 +244,7 @@ public class BugzillaIssueFinderTest extends NbTestCase {
 
     @Test
     public void testGetIssueNumber() {
-        issueFinder = BugzillaIssueFinder.getTestInstance();
+        issueFinder = SimpleIssueFinder.getTestInstance();
 
         testGetIssueNumber("#123456", "123456");
         testGetIssueNumber("# 123456", "123456");
@@ -304,14 +305,14 @@ public class BugzillaIssueFinderTest extends NbTestCase {
 
     @Test
     public void testBug176091() {
-        issueFinder = BugzillaIssueFinder.getTestInstance();
+        issueFinder = SimpleIssueFinder.getTestInstance();
 
         checkIssueSpans("See issue 1446.", "issue 1446");
     }
 
     @Test
     public void testBug177290() {
-        issueFinder = BugzillaIssueFinder.getTestInstance();
+        issueFinder = SimpleIssueFinder.getTestInstance();
 
         checkIssueSpans(
                 "Seems like duplicate of 149393, thank you for report anyway.\n"
