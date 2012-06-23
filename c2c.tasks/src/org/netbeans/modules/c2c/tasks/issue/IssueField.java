@@ -53,8 +53,23 @@ import org.openide.util.NbBundle;
 public class IssueField {
     
     public static final IssueField SUMMARY = new IssueField(CfcTaskAttribute.SUMMARY, "LBL_SUMMARY"); // NOI18N
-    public static final IssueField MODIFIED = new IssueField(CfcTaskAttribute.MODIFIED, null); // NOI18N
+    public static final IssueField CC = new IssueField(CfcTaskAttribute.CC, "LBL_CC"); // NOI18N
+    public static final IssueField COMPONENT = new IssueField(CfcTaskAttribute.COMPONENT, "LBL_COMPONENT"); // NOI18N
+    public static final IssueField DESCRIPTION = new IssueField(CfcTaskAttribute.DESCRIPTION, "LBL_DESCRIPTION"); // NOI18N
+    public static final IssueField DUEDATE = new IssueField(CfcTaskAttribute.DUEDATE, "LBL_DUEDATE"); // NOI18N
+    public static final IssueField ITERATION = new IssueField(CfcTaskAttribute.ITERATION, "LBL_ITERATION"); // NOI18N
+    public static final IssueField MILESTONE = new IssueField(CfcTaskAttribute.MILESTONE, "LBL_MILESTONE"); // NOI18N
+    public static final IssueField PRIORITY = new IssueField(CfcTaskAttribute.PRIORITY, "LBL_PRIORITY"); // NOI18N
+    public static final IssueField PRODUCT = new IssueField(CfcTaskAttribute.PRODUCT, "LBL_PRODUCT"); // NOI18N
+    public static final IssueField STATUS = new IssueField(CfcTaskAttribute.STATUS, "LBL_STATUS"); // NOI18N
+    public static final IssueField RESOLUTION = new IssueField(CfcTaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
+    public static final IssueField SEVERITY = new IssueField(CfcTaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
+    public static final IssueField VERSION = new IssueField(CfcTaskAttribute.VERSION, "LBL_VERSION"); // NOI18N
+    
     public static final IssueField CREATED = new IssueField(CfcTaskAttribute.MODIFIED, "LBL_CREATED"); // NOI18N
+    
+    public static final IssueField NEWCC = new IssueField(CfcTaskAttribute.NEWCC, null); // NOI18N
+    public static final IssueField MODIFIED = new IssueField(CfcTaskAttribute.MODIFIED, null); // NOI18N
 
     private final CfcTaskAttribute attribute;
     private final String displayNameKey;
