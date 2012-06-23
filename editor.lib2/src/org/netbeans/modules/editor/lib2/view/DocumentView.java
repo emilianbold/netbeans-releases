@@ -385,7 +385,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     public double getY(int pViewIndex) {
-        return children.startVisualOffset(pViewIndex);
+        return children.getY(pViewIndex);
     }
 
     @Override
@@ -451,6 +451,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     
     void setAllocationHeight(float height) {
         allocation.height = height;
+        updateBaseY();
     }
 
     /**
@@ -519,6 +520,12 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         return false;
     }
 
+    void updateBaseY() {
+        children.setBaseY(op.asTextField
+                ? (float) Math.floor((allocation.height - preferredHeight) / 2.0f)
+                : 0f);
+    }
+            
     void markChildrenLayoutInvalid() {
         if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(ViewHierarchyImpl.SPAN_LOG,
@@ -743,11 +750,11 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 unlock();
             }
         }
-        return 0d;
+        return children.getBaseY();
     }
     
     public double modelToYNeedsLock(int offset) {
-        double retY = 0d;
+        double retY = children.getBaseY();
         op.checkViewsInited();
         if (op.isActive()) {
             int index = getViewIndex(offset);
@@ -770,7 +777,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 // covers only portion of document since offset == 0 should be covered and it falls into first pView.
                 int lastOffset = 0;
                 int lastIndex = 0;
-                double lastY = 0d;
+                double lastY = children.getBaseY();
                 for (int i = 0; i < offsets.length; i++) {
                     int offset = offsets[i];
                     double y;
