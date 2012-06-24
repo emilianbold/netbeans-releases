@@ -42,6 +42,7 @@
 package org.netbeans.api.search.provider;
 
 import java.io.File;
+import java.net.URI;
 import java.util.regex.Pattern;
 import org.netbeans.api.search.RegexpUtil;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -81,6 +82,14 @@ public abstract class FileNameMatcher {
     public abstract boolean pathMatches(FileObject fileObject);
 
     /**
+     * @param uri URI whose name or path should be matched.
+     * @return True if the URI matches required criteria, false otherwise.
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public abstract boolean pathMatches(URI uri);
+
+    /**
      * Create an appripriate matcher for specific search options.
      */
     public static FileNameMatcher create(SearchScopeOptions options) {
@@ -111,6 +120,11 @@ public abstract class FileNameMatcher {
         public boolean pathMatches(FileObject fileObject) {
             return true;
         }
+
+        @Override
+        public boolean pathMatches(URI uri) {
+            return true;
+        }
     }
 
     /**
@@ -130,9 +144,7 @@ public abstract class FileNameMatcher {
             this.extWithDotLen = ext.length() + 1;
         }
 
-        @Override
-        public boolean pathMatches(File file) {
-            String fileName = file.getName();
+        private boolean pathMatches(String fileName) {
             if (fileName == null || fileName.length() <= extWithDotLen) {
                 return false;
             }
@@ -141,9 +153,21 @@ public abstract class FileNameMatcher {
         }
 
         @Override
+        public boolean pathMatches(File file) {
+            String fileName = file.getName();
+            return pathMatches(fileName);
+        }
+
+        @Override
         public boolean pathMatches(FileObject fileObject) {
             String fileExt = fileObject.getExt();
             return fileExt != null && fileExt.equalsIgnoreCase(ext);
+        }
+
+        @Override
+        public boolean pathMatches(URI uri) {
+            String fileName = uri.getPath();
+            return pathMatches(fileName);
         }
     }
 
@@ -172,6 +196,11 @@ public abstract class FileNameMatcher {
         public boolean pathMatches(FileObject fileObject) {
             return pattern.matcher(fileObject.getPath()).find();
         }
+
+        @Override
+        public boolean pathMatches(URI uri) {
+            return pattern.matcher(uri.getPath()).find();
+        }
     }
 
     /**
@@ -198,6 +227,21 @@ public abstract class FileNameMatcher {
         @Override
         public boolean pathMatches(FileObject fileObject) {
             return pattern.matcher(fileObject.getNameExt()).matches();
+        }
+
+        @Override
+        public boolean pathMatches(URI uri) {
+            String path = uri.getPath();
+            int lastSeparator = path.lastIndexOf("\\");
+            if (lastSeparator == -1) {
+                lastSeparator = path.lastIndexOf("/");
+            }
+            if (lastSeparator == -1) {
+                return false;
+            } else {
+                String name = path.substring(lastSeparator + 1, path.length());
+                return pattern.matcher(name).matches();
+            }
         }
     }
 }
