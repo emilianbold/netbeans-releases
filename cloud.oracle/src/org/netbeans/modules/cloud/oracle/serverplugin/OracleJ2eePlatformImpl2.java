@@ -46,6 +46,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.ArrayList;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -61,6 +62,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.libs.oracle.cloud.api.WhiteListQuerySupport;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
@@ -115,7 +117,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
     public LibraryImplementation[] getLibraries() {
         LibraryImplementation libs[] = getOnPremiseServerClasspath();
         if (libs == null) {
-            libs = getJavaEELibrary();
+            libs = getJavaEELibrary(Collections.<ServerLibraryDependency>emptySet());
         }
         return libs;
     }
@@ -123,7 +125,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
     @Override
     public LibraryImplementation[] getLibraries(Set<ServerLibraryDependency> libraries) {
         if (dm.getOnPremiseServiceInstanceId() == null) {
-            return getLibraries();
+            return getJavaEELibrary(libraries);
         }
         try {
             J2eePlatform platform = Deployment.getDefault().getServerInstance(dm.getOnPremiseServiceInstanceId()).getJ2eePlatform();
@@ -134,7 +136,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
             // ignore
         }
         
-        return getLibraries();
+        return getJavaEELibrary(libraries);
     }
         
     private LibraryImplementation[] getOnPremiseServerClasspath() {
@@ -168,7 +170,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         return new LibraryImplementation[]{library};
     }
     
-    private LibraryImplementation[] getJavaEELibrary() {
+    private LibraryImplementation[] getJavaEELibrary(Set<ServerLibraryDependency> libraries) {
         Library l = LibraryManager.getDefault().getLibrary("javaee-api-5.0");
         
         LibraryImplementation library = new J2eeLibraryTypeProvider().createLibrary();
@@ -176,8 +178,26 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         // set its name
         library.setName("JavaEEAPI");
 
+        List<URL> cp = new ArrayList<URL>();
+        
+        for (ServerLibraryDependency dep : libraries) {
+            if (dep.getName().equals("jsf") && dep.getSpecificationVersion(). // NOI18N
+                    isAboveOrEqual(Version.fromDottedNotationWithFallback("2.0"))) { // NOI18N
+                Library jsf = LibraryManager.getDefault().getLibrary("jsf20"); // NOI18N
+                if (jsf != null) {
+                    cp.addAll(jsf.getContent("classpath")); // NOI18N
+                }
+            }
+        }
+        Library eclipselink = LibraryManager.getDefault().getLibrary("eclipselink"); // NOI18N
+        if ( eclipselink != null) {
+            cp.addAll(eclipselink.getContent("classpath")); // NOI18N
+        }
+        
+        cp.addAll(l.getContent("classpath")); // NOI18N
+        
         library.setContent(J2eeLibraryTypeProvider.
-                VOLUME_TYPE_CLASSPATH, l.getContent("classpath"));
+                VOLUME_TYPE_CLASSPATH, cp);
         
         return new LibraryImplementation[]{library};
     }
