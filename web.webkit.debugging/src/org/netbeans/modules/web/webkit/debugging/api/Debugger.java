@@ -379,13 +379,6 @@ public final class Debugger {
                         }
                     }
                     if (internalSuspend) {
-                        
-                        if (webkit.isNetBeansDOMChange()) {
-                            // ignore this DOM change:
-                            resume();
-                            return;
-                        }
-                        
                         final JSONArray callStack = (JSONArray)params.get("callFrames");
                         final boolean finalAttachDOMListeners = attachDOMListeners;
                         transport.getRequestProcessor().post(new Runnable() {

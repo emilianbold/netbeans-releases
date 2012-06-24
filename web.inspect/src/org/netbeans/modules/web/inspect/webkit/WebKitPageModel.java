@@ -337,15 +337,10 @@ public class WebKitPageModel extends PageModel {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    final String initScript = Files.getScript("initialization") // NOI18N
+                    String initScript = Files.getScript("initialization") // NOI18N
                         + "\nNetBeans.setSelectionMode("+selectionMode+");"; // NOI18N
-                    final RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
-                    webKit.runNetBeansDOMChanges(new Runnable() {
-                        @Override
-                        public void run() {
-                            webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
-                        }
-                    });
+                    RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
+                    webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
                     synchronized (WebKitPageModel.this) {
                         contentDocumentMap.put(contentDocument.getNodeId(), remote);
                     }

@@ -131,29 +131,6 @@ public class WebKitDebugging {
         return network;
     }
     
-    /**
-     * Any methods modifying DOM should be run via this method so that other
-     * code (for example Live HTML) can ignore them.
-     */
-    public void runNetBeansDOMChanges(Runnable runnable) {
-        internalDOMChangeInProgress = true;
-        try {
-             runnable.run();
-        } finally {
-            internalDOMChangeInProgress = false;
-        }
-    }
-
-    private boolean internalDOMChangeInProgress = false;
-
-    /**
-     * Has this DOM change was caused by internal NetBeans DOM manipulation?
-     * @return 
-     */
-    public boolean isNetBeansDOMChange() {
-        return internalDOMChangeInProgress;
-    }
-    
     // other parts of Remote WebKit Debugging like CSS, DOMDebugger, 
     // Inspector will be introduced here in time
     
