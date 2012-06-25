@@ -59,9 +59,9 @@ public class OracleInstanceManager {
 
     private static final String ORACLE_IP_NAMESPACE = "cloud.oracle"; // NOI18N
     
-    private static final String PREFIX = "org.netbeans.modules.cloud.oracle."; // NOI18N
-    private static final String USERNAME = "username"; // NOI18N
-    private static final String PASSWORD = "password"; // NOI18N
+    static final String PREFIX = "org.netbeans.modules.cloud.oracle."; // NOI18N
+    static final String USERNAME = "username"; // NOI18N
+    static final String PASSWORD = "password"; // NOI18N
     private static final String NAME = "name"; // NOI18N
     private static final String ADMIN_URL = "admin-url"; // NOI18N
     private static final String IDENTITY_DOMAIN = "identity-domain"; // NOI18N
@@ -165,27 +165,13 @@ public class OracleInstanceManager {
             String name = props.getString(NAME, null); // NOI18N
             assert name != null : "Instance without name";
             String adminURL = props.getString(ADMIN_URL, ""); // NOI18N
-            
-            char ch[] = Keyring.read(PREFIX+USERNAME+"."+name);
-            if (ch == null) {
-                LOG.log(Level.WARNING, "no username found for "+name);
-                ch = new char[]{' '};
-            }
-            String userName = new String(ch);
-            assert userName != null : "username is missing for "+name; // NOI18N
-            ch = Keyring.read(PREFIX+PASSWORD+"."+name);
-            if (ch == null) {
-                LOG.log(Level.WARNING, "no password found for "+name);
-                ch = new char[]{' '};
-            }
-            String password = new String(ch);
-            assert password != null : "password is missing for "+name; // NOI18N
+
             String identityDomain = props.getString(IDENTITY_DOMAIN, "undefined"); // NOI18N
             String javaServiceName = props.getString(JAVA_SERVICE_NAME, "undefined"); // NOI18N
             String databaseServiceName = props.getString(DATABASE_SERVICE_NAME, ""); // NOI18N
             String onPremise = props.getString(ON_PREMISE_SERVICE_INSTANCE_ID, null); // NOI18N
             String sdkFolder = CloudSDKHelper.getSDKFolder();
-            result.add(new OracleInstance(name, userName, password, adminURL, identityDomain, javaServiceName, databaseServiceName, onPremise, sdkFolder));
+            result.add(new OracleInstance(name, adminURL, identityDomain, javaServiceName, databaseServiceName, onPremise, sdkFolder));
         }
         return result;
     }
