@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -456,6 +457,9 @@ public final class ModuleDeleterImpl  {
     }
     
     private Set<String> readModuleFiles (Node version) {
+        if (version == null) {
+            return Collections.EMPTY_SET;
+        }
         Set<String> files = new HashSet<String> ();
         NodeList fileNodes = version.getChildNodes ();
         for (int i = 0; i < fileNodes.getLength (); i++) {
