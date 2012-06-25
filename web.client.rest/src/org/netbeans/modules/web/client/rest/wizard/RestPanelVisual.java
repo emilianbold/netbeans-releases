@@ -216,23 +216,21 @@ public final class RestPanelVisual extends JPanel  {
     }
 
     private String suggestJsName(  WizardDescriptor descriptor ) {
-        Project project = Templates.getProject(descriptor);
-        FileObject projectDirectory = project.getProjectDirectory();
-        FileObject js = projectDirectory.getFileObject("js");
+        FileObject targetFolder = Templates.getTargetFolder(descriptor);
         
         String suggestName = REST_CLIENT;          
         FileObject restClient = null;
         int count =0;
         String result = null;
         while( true ){
-            restClient = js.getFileObject(suggestName+JS);
+            restClient = targetFolder.getFileObject(suggestName+JS);
             if ( restClient == null){
                 result = suggestName;
                 break;
             }
             else {
                 count++;
-                suggestName = suggestName+count;
+                suggestName = REST_CLIENT+count;
             }
         }
         return result;
