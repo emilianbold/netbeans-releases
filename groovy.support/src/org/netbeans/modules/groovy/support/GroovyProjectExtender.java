@@ -149,6 +149,7 @@ public class GroovyProjectExtender implements GroovyFeature {
      * build script extension, not classpath, not excludes
      * @return true if build script is modified with groovy extendion
      */
+    @Override
     public boolean isGroovyEnabled() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
@@ -327,6 +328,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         try {
             return
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<EditableProperties>() {
+                @Override
                 public EditableProperties run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     EditableProperties ep = null;
@@ -352,6 +354,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     if (propertiesFo!=null) {
