@@ -297,11 +297,13 @@ public final class MainWindow {
                            switch (count) {
                                case 1 :
                                    DataObject dob = allItems.iterator().next().getInstance();
-                                   FileObject file = dob.getPrimaryFile();
-                                   File f = FileUtil.toFile(file);
-                                   if (f != null) {
-                                       frame.getRootPane().putClientProperty("Window.documentFile", f); //NOI18N
-                                       break;
+                                   if( null != dob ) {
+                                    FileObject file = dob.getPrimaryFile();
+                                    File f = FileUtil.toFile(file);
+                                    if (f != null) {
+                                        frame.getRootPane().putClientProperty("Window.documentFile", f); //NOI18N
+                                        break;
+                                    }
                                    }
                                    //Fall through
                                case 0 :
