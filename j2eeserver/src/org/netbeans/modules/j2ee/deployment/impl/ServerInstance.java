@@ -2018,7 +2018,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
             setServerState(ServerInstance.STATE_PROFILER_BLOCKING);
         } else if (profState == ProfilerSupport.STATE_PROFILING
                     || profState == ProfilerSupport.STATE_RUNNING) {
-            initCoTarget();
+            if (isReallyRunning()) {
+                initCoTarget();
+            }
             setServerState(ServerInstance.STATE_PROFILING);
         } else {
             setServerState(ServerInstance.STATE_STOPPED);
