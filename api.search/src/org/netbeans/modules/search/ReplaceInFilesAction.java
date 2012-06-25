@@ -49,7 +49,6 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 /**
  * The same as the {@link FindInFilesAction} except that this action asks for
@@ -69,11 +68,11 @@ public class ReplaceInFilesAction extends FindInFilesAction {
     static final long serialVersionUID = 4554342565076372612L;
 
     public ReplaceInFilesAction() {
-        super();
+        this(false);
     }
 
     protected ReplaceInFilesAction(boolean preferScopeSelection) {
-        super(preferScopeSelection);
+        super("LBL_Action_ReplaceInProjects", preferScopeSelection);    //NOI18N
     }
 
     @Override
@@ -86,12 +85,6 @@ public class ReplaceInFilesAction extends FindInFilesAction {
     @Override
     protected String iconResource() {
         return "org/openide/resources/actions/find.gif";    //PENDING   //NOI18N
-    }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(getClass(),
-                "LBL_Action_ReplaceInProjects"); //NOI18N
     }
 
     @Override
