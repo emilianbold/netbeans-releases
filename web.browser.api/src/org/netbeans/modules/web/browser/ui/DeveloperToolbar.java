@@ -43,13 +43,11 @@ package org.netbeans.modules.web.browser.ui;
 
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.spi.Resizable;
 import org.netbeans.modules.web.browser.spi.Zoomable;
@@ -134,6 +132,8 @@ public class DeveloperToolbar {
         });
         comboZoom.setEnabled( null != getLookup().lookup( Zoomable.class ) );
         bar.add( comboZoom );
+
+        initActions(bar);
     }
 
     private Lookup getLookup() {
@@ -253,6 +253,32 @@ public class DeveloperToolbar {
             resizable.autofit();
         } else {
             resizable.resize( width, height );
+        }
+    }
+
+    /**
+     * If any action in the toolbar has an ACCELERATOR_KEY value set it will be
+     * added to browser's TC input map.
+     */
+    private void initActions(JToolBar bar) {
+        final HtmlBrowserComponent tc = ( HtmlBrowserComponent ) SwingUtilities.getAncestorOfClass( HtmlBrowserComponent.class, panel );
+        if( null == tc ) {
+            return;
+        }
+        ActionMap am = tc.getActionMap();
+        InputMap im = tc.getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT );
+        for( Component c : bar.getComponents() ) {
+            if( c instanceof AbstractButton ) {
+                AbstractButton button = ( AbstractButton ) c;
+                Action a = button.getAction();
+                if( null == a || null == a.getValue( Action.ACCELERATOR_KEY ) 
+                        || null == a.getValue( Action.NAME ) )
+                    continue;
+                String accelerator = a.getValue( Action.ACCELERATOR_KEY ).toString();
+                Object name = a.getValue( Action.NAME );
+                am.put( name, a );
+                im.put( KeyStroke.getKeyStroke( accelerator), name );
+            }
         }
     }
 }
