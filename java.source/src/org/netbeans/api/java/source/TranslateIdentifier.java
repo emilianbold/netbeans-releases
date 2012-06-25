@@ -35,6 +35,7 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -109,6 +110,12 @@ class TranslateIdentifier extends TreePathScanner<Void, Void>{
         } else {
             return super.visitMemberSelect(node, p);
         }
+    }
+
+    @Override
+    public Void visitMethod(MethodTree node, Void p) {
+        if (info.getTreeUtilities().isSynthetic(/*should not be used:*/getCurrentPath().getCompilationUnit(), node)) return null;
+        return super.visitMethod(node, p);
     }
 
 }
