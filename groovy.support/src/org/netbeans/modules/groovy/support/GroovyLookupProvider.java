@@ -74,10 +74,7 @@ public class GroovyLookupProvider implements LookupProvider {
 
         @Override
         protected void projectOpened() {
-            GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
-            if (extender != null) {
-                extender.refreshBuildScript(true);
-            }
+            BuildScriptHelper.refreshBuildScript(project, true);
         }
 
         @Override
