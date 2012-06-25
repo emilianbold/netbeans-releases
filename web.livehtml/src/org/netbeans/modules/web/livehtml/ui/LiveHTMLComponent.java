@@ -109,22 +109,6 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
-    void go() {
-        assert fo != null;
-        assert !Model.isLiveHTMLEnabled(fo.toURL());
-        model = Model.enableLiveHTML(fo.toURL());
-        showRealContent();
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                // run notifyStart from non-AWT thread other it would get rescheduled out
-                // of AWT thread and run asynchronously and too late for loadFileInBrowser()
-                notifyStart(fo.toURL());
-                loadFileInBrowser();
-            }
-        });
-    }
-
     void go(String address) {
         URL url_ = null;
         try {
@@ -134,13 +118,12 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
             return;
         }
         final URL url = url_;
-        model = Model.enableLiveHTML(url);
+        model = Model.getModel(url, true);
         showRealContent();
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    notifyStart(url);
                     File f = File.createTempFile("livehtml", "dummy");
                     FileObject fo = FileUtil.toFileObject(f);
                     getPrivateBrowserSupport().load(url, fo);
@@ -153,52 +136,24 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
     
     private static BrowserSupport bs;
     private static BrowserSupport getPrivateBrowserSupport() {
-        if (bs == null) {
+        // there seems to be some problem in Chrome's WebKit Debugging protocol:
+        // if the same browser tab is reload with the same or different URL then
+        // frequnetly Chrome crashs - an internal dark blue error page is displayed
+        // in Chrome saying that something went wrong. For now let's not reuse the same
+        // tab but always open a new one. If no better solution is found then perhaps
+        // we could use Chrome's API to close old tab before opening a new one.
+        if (/*bs == null*/ true) {
             bs = BrowserSupport.create();
             bs.disablePageInspector();
+            bs.enabledLiveHTML();
         }
         return bs;
     }
     
-    private void notifyStart(URL url) {
-        LiveHTMLImpl impl = Lookup.getDefault().lookup(LiveHTMLImpl.class);
-        assert impl != null;
-        impl.fireStart(url, new Runnable() {
-            @Override
-            public void run() {
-                debuggerStopped();
-            }
-
-        });
-    }
-    
-    private void debuggerStopped() {
-        assert fo != null;
-        assert Model.isLiveHTMLEnabled(fo.toURL());
-        toolbar.liveHTMLWasStopped();
-    }
-    
-    void stop() {
-        if (fo != null) {
-            assert Model.isLiveHTMLEnabled(fo.toURL());
-            Model.releaseModel(fo.toURL());
-            LiveHTMLImpl impl = Lookup.getDefault().lookup(LiveHTMLImpl.class);
-            assert impl != null;
-            impl.fireStop(fo.toURL());
-        }
-    }
-
     void beautify() {
         beautify = !beautify;
         realContent.setBeautify(beautify);
         
     }
 
-    private void loadFileInBrowser() {
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (p == null) {
-            return;
-        }
-        p.getLookup().lookup(ActionProvider.class).invokeAction(ActionProvider.COMMAND_RUN_SINGLE, Lookups.singleton(fo));
-    }
 }

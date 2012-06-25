@@ -59,6 +59,7 @@ public class Network {
     private Callback callback;
     private WebKitDebugging webKit;
     private int numberOfClients = 0;
+    private boolean inLiveHTMLMode = false;
     
     public Network(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
@@ -73,6 +74,7 @@ public class Network {
             enabled = true;
             transport.sendBlockingCommand(new Command("Network.enable"));
         }
+        inLiveHTMLMode = webKit.getDebugger().isInLiveHTMLMode();
     }
 
     public void disable() {
@@ -97,7 +99,7 @@ public class Network {
     }
     
     private void recordDataEvent(long timeStamp, String id) {
-        assert LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL());
+        assert inLiveHTMLMode;
         // TODO: fetch request here as well
         String response = getReponseBody(id);
         LiveHTML.getDefault().storeDataEvent(transport.getConnectionURL(), timeStamp, response);
@@ -108,7 +110,7 @@ public class Network {
         @Override
         public void handleResponse(Response response) {
             if ("Network.responseReceived".equals(response.getMethod())) {
-                if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL()) && 
+                if (inLiveHTMLMode && 
                         "XHR".equals(response.getParams().get("type"))) {
                     final long timeStamp = System.currentTimeMillis();
                     final String id = (String)response.getParams().get("requestId");

@@ -56,45 +56,33 @@ import javax.swing.border.EmptyBorder;
  */
 public class LiveHTMLToolbar extends JToolBar implements ActionListener {
     
-    private JButton onOffButton;
+    private JButton goButton;
     private JButton beautifyButton;
     private JTextField address;
     private LiveHTMLComponent component;
-    private boolean onState = false;
 
-    public LiveHTMLToolbar(LiveHTMLComponent component, boolean showAddress) {
+    public LiveHTMLToolbar(LiveHTMLComponent component) {
         this.component = component;
         setOpaque(false);
         setFloatable(false);
         initContent();
-        address.setVisible(showAddress);
     }
 
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == onOffButton) {
-            onState = !onState;
-            updateButtonIcons();
-            if (onState) {
-                if (address.isVisible()) {
-                    component.go(address.getText());
-                } else {
-                    component.go();
-                }
-            } else {
-                component.stop();
-            }
+        if(e.getSource() == goButton) {
+            component.go(address.getText());
         } else if(e.getSource() == beautifyButton) {
             component.beautify();
         }
     }
 
     private void initContent() {
-        onOffButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
-        onOffButton.addActionListener(this);
-        onOffButton.setEnabled(true);
-        onOffButton.setBorder(new EmptyBorder(0, 5, 0, 5));
+        goButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
+        goButton.addActionListener(this);
+        goButton.setEnabled(true);
+        goButton.setBorder(new EmptyBorder(0, 5, 0, 5));
         
         beautifyButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/pretty.png"))); // NOI18N
         beautifyButton.addActionListener(this);
@@ -106,21 +94,8 @@ public class LiveHTMLToolbar extends JToolBar implements ActionListener {
         
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         add(address);
-        add(onOffButton); 
+        add(goButton); 
         add(beautifyButton);
     }
     
-    private void updateButtonIcons() {
-        if (onState) {
-            onOffButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/stop.png"))); // NOI18N
-        } else {
-            onOffButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
-        }
-    }
-
-    void liveHTMLWasStopped() {
-        onState = false;
-        updateButtonIcons();
-    }
-
 }

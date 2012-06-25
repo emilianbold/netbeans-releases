@@ -105,9 +105,9 @@ public class Model {
         return storageRoot;
     }
     
-    public static synchronized Model getModel(URL url) {
+    public static synchronized Model getModel(URL url, boolean forceNew) {
         Model model = cache.get(url);
-        if (model == null) {
+        if (model == null || forceNew) {
             File f = getChangesStorageRoot(getStorageRoot());
             //StringBuilder content = fetchFileContent(url);
             model = new Model(f, null/*content.toString()*/);
@@ -131,14 +131,6 @@ public class Model {
             store("content", l, initialContent);
             timestamps.add(Long.toString(l));
         }
-    }
-    
-    public static synchronized boolean isLiveHTMLEnabled(URL url) {
-        return cache.get(url) != null;
-    }
-    
-    public static Model enableLiveHTML(URL url) {
-        return getModel(url);
     }
     
     public void storeDocumentVersion(final long timestamp, final String content, final String stackTrace) {
@@ -240,6 +232,8 @@ public class Model {
             
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot parse "+root.getAbsolutePath()+" ["+timestamp+","+timestamps.get(total-1)+"]", t);
         }
     }
     
@@ -270,7 +264,9 @@ public class Model {
             ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
             ZipEntry entry = new ZipEntry(type);
             zos.putNextEntry(entry);
-            zos.write(content.getBytes(Charset.defaultCharset()), 0, content.length());
+            byte b[] = content.getBytes();
+            zos.write(b, 0, b.length);
+            zos.flush();
             zos.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -385,7 +381,7 @@ public class Model {
     }
 
     private void collectIndents(Element element, ArrayList<IndentChange> updates, int indent) {
-        if (indent != 0) {
+        if (indent != 0 && element.from() != -1) {
             updates.add(new IndentChange(element.from(), indent));
         }
         if (!(element instanceof Node)) {

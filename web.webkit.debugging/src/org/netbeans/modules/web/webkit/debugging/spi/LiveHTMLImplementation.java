@@ -50,11 +50,6 @@ import java.net.URL;
 public interface LiveHTMLImplementation {
 
     /**
-     * Is Live HTML enabled for this URL connection
-     */
-    boolean isEnabledFor(URL connectionURL);
-
-    /**
      * If Live HTML is enabled for the given URL connection then any new version of 
      * document should be recorded using this method.
      * 
@@ -77,16 +72,4 @@ public interface LiveHTMLImplementation {
      */
     void storeDataEvent(URL connectionURL, long timeStamp, String data);
 
-    void addListener(Listener l);
-    
-    void removeListener(Listener l);
-
-    /**
-     * Listener through which implementation of Live HTML can talk back 
-     * to WebKit Debugging protocol.
-     */
-    public static interface Listener {
-        void startRecordingChange(URL connectionURL, Runnable stopCallback);
-        void stopRecordingChange(URL connectionURL);
-    }
 }

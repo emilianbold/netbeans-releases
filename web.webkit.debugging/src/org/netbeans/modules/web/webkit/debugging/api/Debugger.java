@@ -79,10 +79,7 @@ public final class Debugger {
     private WebKitDebugging webkit;
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
-    private LiveHTMLImplementation.Listener liveHTMLListener;
-    private Boolean liveHTMLStopped = null;
-    private Runnable stopCallback;
-    private boolean ignoreFirstStopNotification = false;
+    private boolean inLiveHTMLMode = false;
 
     Debugger(TransportHelper transport, WebKitDebugging webkit) {
         this.transport = transport;
@@ -92,27 +89,31 @@ public final class Debugger {
     }
     
     public boolean enable() {
-        Response response = transport.sendBlockingCommand(new Command("Debugger.enable"));
-
-        liveHTMLListener = new LiveHTMLListener(this);
-        LiveHTML.getDefault().addListener(liveHTMLListener);
+        transport.sendBlockingCommand(new Command("Debugger.enable"));
 
         // always enable Page and Network; at the moment only Live HTML is using them
         // but I expect that soon it will be used somewhere else as well
         webkit.getPage().enable();
         webkit.getNetwork().enable();
         
-        if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL())) {
-            liveHTMLStopped  = Boolean.FALSE;
-            addEventBreakpoint("DOMContentLoaded");
-            addEventBreakpoint("load");
-        }
-        
-        // TODO: what will response contain if there was an error enabling debuggger in the page?
         enabled = true;
+        
         return true;
     }
 
+    public void enableDebuggerInLiveHTMLMode() {
+        enable();
+        
+        inLiveHTMLMode = true;
+        initDOMLister = true;
+        addEventBreakpoint("DOMContentLoaded");
+        addEventBreakpoint("load");
+    }
+
+    public boolean isInLiveHTMLMode() {
+        return inLiveHTMLMode;
+    }
+    
     public void disable() {
         assert enabled;
         webkit.getPage().disable();
@@ -209,7 +210,7 @@ public final class Debugger {
         }
         return res;
     }
-    
+
     /**
      * Debugger state listener.
      */
@@ -253,6 +254,10 @@ public final class Debugger {
     
     @SuppressWarnings("unchecked")    
     public Breakpoint addLineBreakpoint(String url, int lineNumber, int columnNumber) {
+        if (inLiveHTMLMode) {
+            // ignore line breakpoints when in Live HTML mode
+            return null;
+        }
         JSONObject params = new JSONObject();
         params.put("lineNumber", lineNumber);
         params.put("url", url.replaceAll("/", "\\/")); //  XXX: not sure why but using backslash is necesssary here
@@ -315,7 +320,7 @@ public final class Debugger {
     }
     
     private void recordDocumentChange(long timeStamp, JSONArray callStack, boolean attachDOMListeners) {
-        assert LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL());
+        assert inLiveHTMLMode;
         
         Node n = webkit.getDOM().getDocument();
         if (attachDOMListeners) {
@@ -329,26 +334,6 @@ public final class Debugger {
         resume();
     }
     
-    private void startRecordingLiveHTMLChange(Runnable stopCallback) {
-        if (liveHTMLStopped == Boolean.TRUE || liveHTMLStopped == null) {
-            liveHTMLStopped = Boolean.FALSE;
-            // set events breakpoint to init DOM breakpoint
-            initDOMLister = true;
-            addEventBreakpoint("DOMContentLoaded");
-            addEventBreakpoint("load");
-            this.stopCallback = stopCallback;
-            this.ignoreFirstStopNotification = true;
-        }
-    }
- 
-    private void stopRecordingLiveHTMLChange() {
-        // disable DOM breakpoint; the rest is handled by LiveHTML.getDefault().isEnabledFor() method
-        liveHTMLStopped = Boolean.TRUE;
-        stopCallback = null;
-        Node n = webkit.getDOM().getDocument();
-        removeDOMBreakpoint(n, Debugger.DOM_BREAKPOINT_SUBTREE);
-    }
- 
     private class Callback implements ResponseCallback {
 
         @Override
@@ -359,7 +344,7 @@ public final class Debugger {
             } else if ("Debugger.paused".equals(response.getMethod())) {
                 JSONObject params = (JSONObject)response.getResponse().get("params");
 
-                if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL())) {
+                if (inLiveHTMLMode) {
                     final long timestamp = System.currentTimeMillis();
                     final JSONObject data = (JSONObject)params.get("data");
 
@@ -379,13 +364,6 @@ public final class Debugger {
                         }
                     }
                     if (internalSuspend) {
-                        
-                        if (webkit.isNetBeansDOMChange()) {
-                            // ignore this DOM change:
-                            resume();
-                            return;
-                        }
-                        
                         final JSONArray callStack = (JSONArray)params.get("callFrames");
                         final boolean finalAttachDOMListeners = attachDOMListeners;
                         transport.getRequestProcessor().post(new Runnable() {
@@ -396,73 +374,13 @@ public final class Debugger {
                         });
                         return;
                     }
+                } else {
+                    notifyPaused((JSONArray)params.get("callFrames"), (String)params.get("reason"), (JSONObject)params.get("data"));
                 }
-                notifyPaused((JSONArray)params.get("callFrames"), (String)params.get("reason"), (JSONObject)params.get("data"));
             } else if ("Debugger.globalObjectCleared".equals(response.getMethod())) {
                 notifyReset();
-                // double check this is right event to notify that live HTML should stop:
-                if (LiveHTML.getDefault().isEnabledFor(transport.getConnectionURL())) {
-                    transport.getRequestProcessor().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (stopCallback != null) {
-                                if (ignoreFirstStopNotification) {
-                                    ignoreFirstStopNotification = false;
-                                } else {
-                                    stopCallback.run();
-                                    stopCallback = null;
-                                }
-                            }
-                            stopRecordingLiveHTMLChange();
-                        }
-                    });
-                }
             } else if ("Debugger.scriptParsed".equals(response.getMethod())) {
                 addScript(response.getParams());
-            }
-        }
-        
-    }
-    
-    private static class LiveHTMLListener implements LiveHTMLImplementation.Listener {
-
-        private Debugger debugger;
-
-        public LiveHTMLListener(Debugger debugger) {
-            this.debugger = debugger;
-        }
-        
-        @Override
-        public void startRecordingChange(URL connectionURL, final Runnable stopCallback) {
-            // this is here intentionally so that code does not run in AWT thread;
-            // however if even producer wants to make sure event handler was executed synchronously
-            // they can achieve that by firing event outside of AWT thread:
-            if (SwingUtilities.isEventDispatchThread()) {
-                debugger.transport.getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        debugger.startRecordingLiveHTMLChange(stopCallback);
-                    }
-                });
-            } else {
-                debugger.startRecordingLiveHTMLChange(stopCallback);
-            }
-        }
-        
-        @Override
-        public void stopRecordingChange(URL connectionURL) {
-            // this is here intentionally so that code does not run in AWT thread;
-            // however if even producer wants to make sure event handler was executed synchronously
-            // they can achieve that by firing event outside of AWT thread:
-            if (SwingUtilities.isEventDispatchThread()) {
-                debugger.transport.getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        debugger.stopRecordingLiveHTMLChange();
-                    }
-                });
-            } else {
-                debugger.stopRecordingLiveHTMLChange();
             }
         }
         

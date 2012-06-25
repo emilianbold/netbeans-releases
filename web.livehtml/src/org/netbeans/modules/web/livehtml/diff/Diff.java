@@ -612,6 +612,9 @@ public class Diff {
 
     private DiffElement findMovedElement(DiffElement removed, List<DiffElement> added) {
         for (DiffElement a : added) {
+            if (a.getChange() != DiffElement.ChangeType.ADDED) {
+                continue;
+            }
             if (compareTwoOpenTagsById(removed.getPreviousElement(), a.getCurrentElement())) {
                 return a;
             }
