@@ -54,7 +54,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.api.search.provider.impl.CompoundSearchIterator;
+import org.netbeans.api.search.provider.impl.AbstractCompoundIterator;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
@@ -112,10 +112,18 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
                 return searchInfoElements.get(0).getFilesToSearch(
                         options, listener, terminated).iterator();
             default:
-                return new CompoundSearchIterator(
+                return new AbstractCompoundIterator<SearchInfo, FileObject>(
                         searchInfoElements.toArray(
                         new SearchInfo[size]),
-                        options, listener, terminated);
+                        options, listener, terminated) {
+                    @Override
+                    protected Iterator<FileObject> getIteratorFor(
+                            SearchInfo element, SearchScopeOptions options,
+                            SearchListener listener, AtomicBoolean terminated) {
+                        return element.getFilesToSearch(
+                                options, listener, terminated).iterator();
+                    }
+                };
         }
     }
 

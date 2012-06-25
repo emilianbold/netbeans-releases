@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider;
 
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -95,6 +96,28 @@ public abstract class SearchInfo {
             @NonNull AtomicBoolean terminated);
 
     /**
+     * Create {@link Iterator} that iterates over all URIs in the search scope
+     * that comply with search options and search filters.
+     *
+     * @param options Custom options. This object encapsulates custom search
+     * filters, file name pattern and general search settings.
+     * @param listener Listener that is notified when some important event
+     * occurs during searching. Listener passed to {@link SearchComposition}
+     * should be used here.
+     * @param terminated Object that can be asked by the iterator whether the
+     * search has been terminated.
+     *
+     * @return Iterator over all URIs that comply with specified options (in
+     * the scope of this search info).
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    protected abstract @NonNull Iterator<URI> createUrisToSearchIterator(
+            @NonNull SearchScopeOptions options,
+            @NonNull SearchListener listener,
+            @NonNull AtomicBoolean terminated);
+
+    /**
      * Get {@link Iterable} that iterates over all files in the search scope
      * that comply with search options and search filters.
      *
@@ -131,6 +154,50 @@ public abstract class SearchInfo {
             @Override
             public Iterator<FileObject> iterator() {
                 return createFilesToSearchIterator(options, listener,
+                        terminated);
+            }
+        };
+    }
+
+    /**
+     * Get {@link Iterable} that iterates over all URIs in the search scope
+     * that comply with search options and search filters.
+     *
+     * @param options Custom options. This object encapsulates custom search
+     * filters, file name pattern and general search settings.
+     * @param listener Listener that is notified when some important event
+     * occurs during searching. Listener passed to {@link SearchComposition}
+     * should be used here.
+     * @param terminated Object that can be asked by the iterator whether
+     * the search has been terminated.
+     *
+     * <div class="nonnormative">
+     * <p>
+     *  This method can be used in for-each loops:
+     * </p>
+     * <pre>
+     * {@code
+     * for (URI uri: searchInfo.getUrisToSearch(opts,listnr,term) {
+     *   ResultType result = somehowCheckFileContentMatches(fo);
+     *   if (result != null) {
+     *     searchResultsDisplayer.addMatchingObject(result);
+     *   }
+     * }}
+     * </pre>
+     * </div>
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public final @NonNull Iterable<URI> getUrisToSearch(
+            @NonNull final SearchScopeOptions options,
+            @NonNull final SearchListener listener,
+            @NonNull final AtomicBoolean terminated) {
+
+        return new Iterable<URI>() {
+
+            @Override
+            public Iterator<URI> iterator() {
+                return createUrisToSearchIterator(options, listener,
                         terminated);
             }
         };
