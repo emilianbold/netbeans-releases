@@ -110,6 +110,7 @@ final class MessagesHandler extends StreamHandler {
     }
     
     private synchronized void doRotate() {
+        close();
         int n = files.length;
         if (files[n - 1].exists()) {
             files[n - 1].delete();
