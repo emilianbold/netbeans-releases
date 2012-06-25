@@ -45,11 +45,6 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.BufferedInputStream;
-import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
-import java.util.logging.Logger;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.xml.XMLUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -61,12 +56,17 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -78,7 +78,7 @@ import org.xml.sax.SAXException;
 
 /** Control if the module's file can be deleted and can delete them from disk.
  * <p> Deletes all files what are installed together with given module, info about
- * these files read from <code>update_tracking</code> file corresponed to the module.
+ * these files read from <code>update_tracking</code> file related to the module.
  * If this <code>update_tracking</code> doesn't exist the files cannot be deleted.
  * The Deleter waits until the module is enabled before start delete its files.
  *
@@ -91,7 +91,7 @@ public final class ModuleDeleterImpl  {
     private static final String ATTR_LAST = "last"; // NOI18N
     private static final String ATTR_FILE_NAME = "name"; // NOI18N
     
-    private Logger err = Logger.getLogger (ModuleDeleterImpl.class.getName ()); // NOI18N
+    private static final Logger err = Logger.getLogger (ModuleDeleterImpl.class.getName ()); // NOI18N
     
     private Set<File> storageFilesForDelete = null;
     
@@ -174,6 +174,7 @@ public final class ModuleDeleterImpl  {
         return getStorageFilesForDelete ();
     }
     
+    @SuppressWarnings("SleepWhileInLoop")
     public void delete (final ModuleInfo[] modules, ProgressHandle handle) throws IOException {
         storageFilesForDelete = null;
         if (modules == null) {
@@ -236,7 +237,7 @@ public final class ModuleDeleterImpl  {
     }
     
     private void removeControlModuleFile (ModuleInfo m, boolean markForDelete) throws IOException {
-        File configFile = null;
+        File configFile;
         while ((configFile = locateConfigFile (m)) != null && ! getStorageFilesForDelete ().contains (configFile)) {
             if (configFile != null && configFile.exists ()) {
                 //FileUtil.toFileObject (configFile).delete ();
@@ -279,7 +280,7 @@ public final class ModuleDeleterImpl  {
             
     private void removeModuleFiles (ModuleInfo m, boolean markForDelete) throws IOException {
         err.log (Level.FINE, "Entry removing files of module " + m);
-        File updateTracking = null;
+        File updateTracking;
         while ((updateTracking = Utilities.locateUpdateTracking (m)) != null && ! getStorageFilesForDelete ().contains (updateTracking)) {
             removeModuleFilesInCluster (m, updateTracking, markForDelete);
         }
@@ -387,7 +388,7 @@ public final class ModuleDeleterImpl  {
     
     private Node getModuleConfiguration (File moduleUpdateTracking) {
         Document document = null;
-        InputStream is=null;
+        InputStream is;
         try {
             is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
