@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,53 +34,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.lib.profiler.ui.cpu;
 
-package org.netbeans.modules.groovy.support;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.support.spi.GroovyFeature;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import javax.swing.JLabel;
+import org.netbeans.lib.profiler.results.cpu.CPUResultsDiff;
+import org.netbeans.lib.profiler.ui.components.table.DiffBarCellRenderer;
+import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
+import org.netbeans.lib.profiler.utils.StringUtils;
 
 /**
- * Temporary solution to have GSF indexing enabled on projects with only
- * Java classpath. It has 2 drawbacks:<br/>
- * - will not work in closed projects<br/>
- * - will not update GFS classpath on project source roots changes
- * 
- * @author Martin Adamek
+ *
+ * @author Jiri Sedlacek
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
-public class GsfClasspathHook extends ProjectOpenedHook {
-
-    private final Project project;
+public class DiffCCTDisplay extends CCTDisplay {
     
-    public GsfClasspathHook(Project project) {
-        this.project = project;
+    public DiffCCTDisplay(CPUResUserActionsHandler actionsHandler, boolean sampling) {
+        super(actionsHandler, sampling);
     }
     
-    @Override
-    protected void projectOpened() {
-        if (isGroovyEnabled()) {
-            //GroovyProjectExtender.registerGsfClassPath(project);
-        }
+    
+    protected boolean supportsReverseCallGraph() {
+        return false;
     }
 
-    @Override
-    protected void projectClosed() {
-        if (isGroovyEnabled()) {
-            //GroovyProjectExtender.unregisterGsfClassPath(project);
-        }
+    protected boolean supportsSubtreeCallGraph() {
+        return false;
+    }
+    
+    
+    protected Float getNodeTimeRel(long time, float percent) {
+        return new Float(time);
     }
 
-    private boolean isGroovyEnabled() {
-        GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
-        return groovyFeature == null ? false : groovyFeature.isGroovyEnabled();
+    protected String getNodeTime(long time, float percent) {
+        return getNodeSecondaryTime(time);
     }
 
+    protected String getNodeSecondaryTime(long time) {
+        return (time > 0 ? "+" : "") + StringUtils.mcsTimeToString(time) + " ms"; // NOI18N
+    }
+
+    protected String getNodeInvocations(int nCalls) {
+        return (nCalls > 0 ? "+" : "") + Integer.valueOf(nCalls).toString(); // NOI18N
+    }
+    
+    protected void initColumnsData() {
+        super.initColumnsData();
+        columnRenderers[2] = new LabelTableCellRenderer(JLabel.TRAILING);
+    }
+    
+    public void prepareResults() {
+        super.prepareResults();
+        long bound = ((CPUResultsDiff)snapshot).getBound(currentView);
+        columnRenderers[1] = new DiffBarCellRenderer(-bound, bound);
+        treeTable.getColumnModel().getColumn(1).setCellRenderer(columnRenderers[1]);
+    }
+    
 }

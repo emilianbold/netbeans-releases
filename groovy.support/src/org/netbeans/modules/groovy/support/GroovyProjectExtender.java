@@ -94,7 +94,6 @@ public class GroovyProjectExtender implements GroovyFeature {
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
 
     private final Project project;
-    //private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
 
     public GroovyProjectExtender(Project project) {
         this.project = project;
@@ -108,17 +107,11 @@ public class GroovyProjectExtender implements GroovyFeature {
      */
     public boolean enableGroovy() {
         boolean result = addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
-//        if (result) {
-//            gsfClassPath = registerGsfClassPath(project);
-//        }
         return result;
     }
 
     public boolean disableGroovy() {
         boolean result = removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
-//        if (result) {
-//            unregisterGsfClassPath();
-//        }
         return result;
     }
 
@@ -156,43 +149,11 @@ public class GroovyProjectExtender implements GroovyFeature {
      * build script extension, not classpath, not excludes
      * @return true if build script is modified with groovy extendion
      */
+    @Override
     public boolean isGroovyEnabled() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
     }
-
-//    static org.netbeans.modules.gsfpath.api.classpath.ClassPath registerGsfClassPath(Project project) {
-//        Sources sources = ProjectUtils.getSources(project);
-//        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-//        if (groups.length > 0) {
-//            FileObject[] roots = new FileObject[groups.length];
-//            for (int i = 0; i < groups.length; i++) {
-//                roots[i] = groups[i].getRootFolder();
-//            }
-//            org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath = ClassPathSupport.createClassPath(roots);
-//            GlobalPathRegistry.getDefault().register(
-//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
-//            return gsfClassPath;
-//        }
-//        return null;
-//    }
-
-//    private void unregisterGsfClassPath() {
-//        if (gsfClassPath != null) {
-//            GlobalPathRegistry.getDefault().unregister(
-//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
-//            gsfClassPath = null;
-//        }
-//    }
-
-//    static void unregisterGsfClassPath(Project project) {
-//        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
-//        if (extender != null) {
-//            extender.unregisterGsfClassPath();
-//        }
-//    }
 
     /**
      * Add groovy-all.jar on classpath
@@ -367,6 +328,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         try {
             return
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<EditableProperties>() {
+                @Override
                 public EditableProperties run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     EditableProperties ep = null;
@@ -392,6 +354,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     if (propertiesFo!=null) {

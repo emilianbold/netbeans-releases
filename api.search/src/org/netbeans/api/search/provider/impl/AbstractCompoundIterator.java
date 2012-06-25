@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.api.search.provider.impl;
 
@@ -47,20 +45,18 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchScopeOptions;
-import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
-import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Marian Petras
+ * @author jhavlin
  */
-public class CompoundSearchIterator extends AbstractFileObjectIterator {
+public abstract class AbstractCompoundIterator<E, T> implements Iterator<T> {
 
     /**
      *
      */
-    private final SearchInfo[] elements;
+    private final E[] elements;
     /**
      *
      */
@@ -68,11 +64,11 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
     /**
      *
      */
-    private Iterator<FileObject> elementIterator = null;
+    private Iterator<T> elementIterator = null;
     /**
      *
      */
-    private FileObject nextObject;
+    private T nextObject;
     /**
      *
      */
@@ -89,7 +85,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
      * @exception java.lang.IllegalArgumentException if the argument is
      * <code>null</code>
      */
-    public CompoundSearchIterator(SearchInfo[] elements,
+    public AbstractCompoundIterator(E[] elements,
             SearchScopeOptions options, SearchListener listener,
             AtomicBoolean terminated) {
 
@@ -126,7 +122,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
     /**
      */
     @Override
-    public FileObject next() {
+    public T next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
@@ -141,8 +137,8 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
         assert upToDate == false;
 
         if (elementIterator == null) {
-            elementIterator = elements[elementIndex = 0].getFilesToSearch(options,
-                    listener, terminated).iterator();
+            elementIterator = getIteratorFor(elements[elementIndex = 0], options,
+                    listener, terminated);
         }
 
         while (!elementIterator.hasNext()) {
@@ -151,8 +147,8 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
             if (++elementIndex == elements.length) {
                 break;
             }
-            elementIterator = elements[elementIndex].getFilesToSearch(options,
-                    listener, terminated).iterator();
+            elementIterator = getIteratorFor(elements[elementIndex], options,
+                    listener, terminated);
         }
 
         if (elementIndex < elements.length) {
@@ -164,4 +160,13 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
 
         upToDate = true;
     }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
+
+    protected abstract Iterator<T> getIteratorFor(E element,
+            SearchScopeOptions options, SearchListener listener,
+            AtomicBoolean terminated);
 }

@@ -105,6 +105,32 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="UriSupport">
+            <api name="api.search"/>
+            <summary>Support for URI-based searching</summary>
+            <version major="1" minor="1.4"/>
+            <date day="27" month="4" year="2012"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Previous versions of this API supported searching based on
+                    traversing of <code>FileObject</code>s only. In some cases
+                    (e.g. remote filesystems), working with
+                    <code>FileObjects</code> is too expensive and slow.
+                    This API change make it possible to work with
+                    <code>URI</code> objects as an alternative to
+                    <code>FileObjects</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.api.search" name="SearchRoot"/>
+            <class package="org.netbeans.api.search.provider" name="FileNameMatcher"/>
+            <class package="org.netbeans.api.search.provider" name="SearchFilter"/>
+            <class package="org.netbeans.api.search.provider" name="SearchInfo"/>
+            <class package="org.netbeans.api.search.provider" name="SearchListener"/>
+            <class package="org.netbeans.spi.search" name="SearchFilterDefinition"/>
+            <class package="org.netbeans.spi.search" name="SearchInfoDefinition"/>
+        </change>
         <change id="SearchPatternController">
             <api name="api.search"/>
             <summary>Added class

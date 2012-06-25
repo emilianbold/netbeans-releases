@@ -495,6 +495,7 @@ public final class AttachPanel extends TopComponent {
                     return;
                 }
                 checkValid();
+                chosenProcess();
             }
         });
 
@@ -544,12 +545,7 @@ public final class AttachPanel extends TopComponent {
                 }
                 controller.ok();
             }
-        } else {
-	    if (evt.getClickCount() == 1) {
-		// chosen process
-		chosenProcess();
-	    }
-	}
+        }
     }
 
     /*
