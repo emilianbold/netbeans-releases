@@ -64,8 +64,7 @@ public class GroovyXmlSavedHook extends ProjectXmlSavedHook {
     protected void projectXmlSaved() throws IOException {
         GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
         if (extender != null) {
-            extender.refreshBuildScript(false);
+            extender.refreshBuildScript(true);
         }
     }
-
 }
