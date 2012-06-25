@@ -56,6 +56,7 @@ import org.openide.loaders.DataObject;
 
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
@@ -245,10 +246,25 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
         return true;
     }
     
+    @NbBundle.Messages({
+        "LOG_NO_HOME=SceneBuilder home is not set",
+        "# {0} - SceneBuilder home path",
+        "LOG_HOME_INVALID=SceneBuilder home \"{0}\" is not valid. Please, repair the SceneBuilder installation or choose another one"
+    })
     private String getExecutablePath() {
         Home home = settings.getSelectedHome();
         if (home != null && home.isValid()) {
             return home.getLauncherPath();
+        } else {
+            if (home == null) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest(Bundle.LOG_NO_HOME());
+                }
+            } else {
+                if (LOG.isLoggable(Level.WARNING)) {
+                    LOG.log(Level.WARNING, Bundle.LOG_HOME_INVALID(home));
+                }
+            }
         }
         return null;
     }

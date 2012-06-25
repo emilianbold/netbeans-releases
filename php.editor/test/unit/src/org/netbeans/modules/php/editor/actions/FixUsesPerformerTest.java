@@ -112,6 +112,11 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
         performTest("new \\Foo\\Bar\\B^az(); //HERE", selections, true, options);
     }
 
+    public void testIssue214699() throws Exception {
+        String[] selections = new String[] {"\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
+        performTest("$a = new ClassName();^//HERE", selections);
+    }
+
     private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
