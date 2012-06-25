@@ -57,6 +57,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -64,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 
+@RandomlyFails
 public class DelayFSEventsTest extends NbTestCase implements FileChangeListener {
     Module myModule;
     File configDir;

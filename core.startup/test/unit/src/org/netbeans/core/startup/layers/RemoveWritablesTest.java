@@ -57,6 +57,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,6 +66,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Stanislav Aubrecht
  */
+@RandomlyFails
 public class RemoveWritablesTest extends NbTestCase {
     Module myModule;
     File configDir;
