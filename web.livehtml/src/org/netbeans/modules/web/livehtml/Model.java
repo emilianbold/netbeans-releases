@@ -379,7 +379,7 @@ public class Model {
     }
 
     private void collectIndents(Element element, ArrayList<IndentChange> updates, int indent) {
-        if (indent != 0) {
+        if (indent != 0 && element.from() != -1) {
             updates.add(new IndentChange(element.from(), indent));
         }
         if (!(element instanceof Node)) {
