@@ -52,6 +52,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.json.simple.JSONObject;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
@@ -580,7 +581,11 @@ public final class ExternalBrowserPlugin {
                 return;
             }
             transport.attach();
-            webkitDebugger.getDebugger().enable();
+            if (browserImpl.isLiveHTMLEnabled()) {
+                webkitDebugger.getDebugger().enableDebuggerInLiveHTMLMode();
+            } else {
+                webkitDebugger.getDebugger().enable();
+            }
             session = factory.createDebuggingSession(webkitDebugger);
             
             PageInspector inspector = PageInspector.getDefault();

@@ -105,9 +105,9 @@ public class Model {
         return storageRoot;
     }
     
-    public static synchronized Model getModel(URL url) {
+    public static synchronized Model getModel(URL url, boolean forceNew) {
         Model model = cache.get(url);
-        if (model == null) {
+        if (model == null || forceNew) {
             File f = getChangesStorageRoot(getStorageRoot());
             //StringBuilder content = fetchFileContent(url);
             model = new Model(f, null/*content.toString()*/);
@@ -131,14 +131,6 @@ public class Model {
             store("content", l, initialContent);
             timestamps.add(Long.toString(l));
         }
-    }
-    
-    public static synchronized boolean isLiveHTMLEnabled(URL url) {
-        return cache.get(url) != null;
-    }
-    
-    public static Model enableLiveHTML(URL url) {
-        return getModel(url);
     }
     
     public void storeDocumentVersion(final long timestamp, final String content, final String stackTrace) {

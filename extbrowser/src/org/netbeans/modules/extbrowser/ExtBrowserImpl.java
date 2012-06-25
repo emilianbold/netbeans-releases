@@ -91,6 +91,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     private boolean enhancedMode;
     
     private boolean disablePageInspector = false;
+    private boolean liveHTMLEnabled = false;
     
     private boolean running = false;
     
@@ -122,8 +123,17 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         this.disablePageInspector = true;
     }
 
+    @Override
+    public void enableLiveHTML() {
+        this.liveHTMLEnabled = true;
+    }
+    
     public boolean isDisablePageInspector() {
         return disablePageInspector;
+    }
+
+    public boolean isLiveHTMLEnabled() {
+        return liveHTMLEnabled;
     }
     
     private Lookup createLookup() {

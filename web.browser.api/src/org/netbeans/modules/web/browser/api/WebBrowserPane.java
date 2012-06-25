@@ -134,6 +134,13 @@ public final class WebBrowserPane {
         }
     }
     
+    public void enablePageInspector() {
+        assert impl instanceof EnhancedBrowser;
+        if ( impl instanceof EnhancedBrowser ){
+            ((EnhancedBrowser) impl).enableLiveHTML();
+        }
+    }
+    
     private synchronized HtmlBrowserComponent getTopComponent() {
         if (topComponent == null && createTopComponent) {
             devToolbar = DeveloperToolbar.create();

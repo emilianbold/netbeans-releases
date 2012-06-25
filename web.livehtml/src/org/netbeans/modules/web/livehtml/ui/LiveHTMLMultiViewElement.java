@@ -84,7 +84,7 @@ public class LiveHTMLMultiViewElement implements MultiViewElement {
     @Override
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
-            toolbar = new LiveHTMLToolbar(component, false);
+            toolbar = new LiveHTMLToolbar(component);
         }
         return toolbar;
     }

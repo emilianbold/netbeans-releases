@@ -127,6 +127,10 @@ public final class BrowserSupport {
         getWebBrowserPane().disablePageInspector();
     }
     
+    public void enabledLiveHTML() {
+        getWebBrowserPane().enablePageInspector();
+    }
+    
     private synchronized WebBrowserPane getWebBrowserPane() {
         if (pane == null) {
             if (browser == null) {
