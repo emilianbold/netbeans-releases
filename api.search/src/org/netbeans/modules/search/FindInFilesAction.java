@@ -113,12 +113,22 @@ public class FindInFilesAction extends CallableSystemAction {
     private static final String VAR_LAST_SEARCH_SCOPE_TYPE
                                 = "lastScopeType";                      //NOI18N
 
-    protected boolean preferScopeSelection = false;
+    private final String name;
+    protected final boolean preferScopeSelection;
 
     public FindInFilesAction() {
+        this(false);
     }
 
-    protected FindInFilesAction(boolean preferScopeSelection) {
+    private FindInFilesAction(boolean preferScopeSelection) {
+        this("LBL_Action_FindInProjects", preferScopeSelection);        //NOI18N
+    }
+
+    /**
+     * Constructor that initializes action name. See #214693.
+     */
+    protected FindInFilesAction(String nameKey, boolean preferScopeSelection) {
+        this.name = NbBundle.getMessage(getClass(), nameKey);
         this.preferScopeSelection = preferScopeSelection;
     }
 
@@ -199,8 +209,7 @@ public class FindInFilesAction extends CallableSystemAction {
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(getClass(),
-                "LBL_Action_FindInProjects"); //NOI18N
+        return name;
     }
 
     @Override

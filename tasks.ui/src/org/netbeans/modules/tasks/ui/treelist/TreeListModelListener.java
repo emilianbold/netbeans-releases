@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,53 +34,18 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.groovy.support;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.support.spi.GroovyFeature;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
+package org.netbeans.modules.tasks.ui.treelist;
 
 /**
- * Temporary solution to have GSF indexing enabled on projects with only
- * Java classpath. It has 2 drawbacks:<br/>
- * - will not work in closed projects<br/>
- * - will not update GFS classpath on project source roots changes
- * 
- * @author Martin Adamek
+ *
+ * @author jpeska
  */
-@ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-java-j2seproject")
-public class GsfClasspathHook extends ProjectOpenedHook {
+public interface TreeListModelListener {
 
-    private final Project project;
-    
-    public GsfClasspathHook(Project project) {
-        this.project = project;
-    }
-    
-    @Override
-    protected void projectOpened() {
-        if (isGroovyEnabled()) {
-            //GroovyProjectExtender.registerGsfClassPath(project);
-        }
-    }
-
-    @Override
-    protected void projectClosed() {
-        if (isGroovyEnabled()) {
-            //GroovyProjectExtender.unregisterGsfClassPath(project);
-        }
-    }
-
-    private boolean isGroovyEnabled() {
-        GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
-        return groovyFeature == null ? false : groovyFeature.isGroovyEnabled();
-    }
-
+    void nodeExpanded(TreeListNode node);
 }
