@@ -262,7 +262,9 @@ public class Model {
             ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
             ZipEntry entry = new ZipEntry(type);
             zos.putNextEntry(entry);
-            zos.write(content.getBytes(Charset.defaultCharset()), 0, content.length());
+            byte b[] = content.getBytes();
+            zos.write(b, 0, b.length);
+            zos.flush();
             zos.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
