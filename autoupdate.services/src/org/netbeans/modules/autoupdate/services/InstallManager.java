@@ -122,13 +122,9 @@ public class InstallManager extends InstalledFileLocator{
                 if (res == null) {
                     
                     // create UpdateTracking.EXTRA_CLUSTER_NAME
-                    res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
-                    if (res != null) {
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
-                    } else {
-                        // check writable installation
-                        res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
-                    }
+                    createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
+                    // check writable installation
+                    res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME, isGlobal, useUserdirAsFallback);
                     
                     // no new cluster was created => use userdir
                     res = res == null? getUserDir () : res;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.tasks.ui.treelist;
 
-package org.netbeans.modules.maven;
+/**
+ *
+ * @author jpeska
+ */
+public interface TreeListModelListener {
 
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.test.TestFileUtils;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataFolder;
-
-public class TemplateAttrProviderTest extends NbTestCase {
-
-    public TemplateAttrProviderTest(String name) {
-        super(name);
-    }
-
-    protected @Override void setUp() throws Exception {
-        clearWorkDir();
-    }
-
-    public void testAttributes() throws Exception {
-        FileObject d = FileUtil.toFileObject(getWorkDir());
-        TestFileUtils.writeFile(d, "pom.xml",
-"<project xmlns='http://maven.apache.org/POM/4.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd'>\n" +
-"    <modelVersion>4.0.0</modelVersion>\n" +
-"    <groupId>testgrp</groupId>\n" +
-"    <artifactId>testart</artifactId>\n" +
-"    <version>1.0</version>\n" +
-"    <name>Test</name>\n" +
-"    <licenses>\n" +
-"        <license>\n" +
-"            <name>Apache 2.0</name>\n" +
-"            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>\n" +
-"        </license>\n" +
-"    </licenses>\n" +
-"    <organization>\n" +
-"        <name>Yoyodyne Corp.</name>\n" +
-"    </organization>\n" +
-"</project>\n" +
-"");
-        assertEquals("{project={displayName=Test, encoding=..., license=apache20, name=testart, organization=Yoyodyne Corp.}}",
-                     ProjectManager.getDefault().findProject(d).getLookup().lookup(CreateFromTemplateAttributesProvider.class).attributesFor(null, DataFolder.findFolder(d), null).toString().replaceFirst("encoding=[^,]+", "encoding=..."));
-    }
-
+    void nodeExpanded(TreeListNode node);
 }
