@@ -232,6 +232,8 @@ public class Model {
             
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
+        } catch (Throwable t) {
+            throw new RuntimeException("Cannot parse "+root.getAbsolutePath()+" ["+timestamp+","+timestamps.get(total-1)+"]", t);
         }
     }
     
