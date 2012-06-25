@@ -823,8 +823,8 @@ public class ModuleManagerTest extends SetupHid {
         }
         ClassLoader l = new URLClassLoader(new URL[] {
             // Order should be irrelevant:
-            jar.toURI().toURL(),
-            ljar.toURI().toURL(),
+            Utilities.toURI(jar).toURL(),
+            Utilities.toURI(ljar).toURL(),
         });
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();
@@ -2029,7 +2029,7 @@ public class ModuleManagerTest extends SetupHid {
             File j1 = new File(jars, "simple-module.jar");
             File j2 = new File(jars, "depends-on-simple-module.jar");
             File j3 = new File(jars, "dep-on-two-modules.jar");
-            URLClassLoader l = new URLClassLoader(new URL[] {j1.toURI().toURL(), j2.toURI().toURL()});
+            URLClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(j1).toURL(), Utilities.toURI(j2).toURL()});
             Manifest mani1, mani2;
             JarFile j = new JarFile(j1);
             try {
@@ -2648,7 +2648,7 @@ public class ModuleManagerTest extends SetupHid {
         assertNotNull(modules);
         mgr.mutexPrivileged().enterWriteAccess();
         try {
-            ClassLoader l = new URLClassLoader(new URL[] {mod1JAR.toURI().toURL(), mod2JAR.toURI().toURL()});
+            ClassLoader l = new URLClassLoader(new URL[] {Utilities.toURI(mod1JAR).toURL(), Utilities.toURI(mod2JAR).toURL()});
             Module mod1 = mgr.createFixed(loadManifest(mod1JAR), null, l);
             mgr.enable(mod1);
             assertEquals(l, mod1.getClassLoader());

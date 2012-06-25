@@ -96,6 +96,7 @@ public class MavenProjectNode extends AbstractNode {
                     fireDisplayNameChange(null, getDisplayName());
                 } else if (ProjectInformation.PROP_ICON.equals(prop)) {
                     fireIconChange();
+                    fireOpenedIconChange();
                 }
             }
         });
@@ -118,7 +119,7 @@ public class MavenProjectNode extends AbstractNode {
     }
 
     public @Override String getName() {
-        return info.getName();
+        return project.getProjectDirectory().toURI().toString();
     }
 
     @Override

@@ -76,6 +76,7 @@ import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -90,9 +91,9 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
-import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -134,6 +135,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     private static final String EL_LIBRARIES = "libraries"; // NOI18N
     private static final String EL_DEFINITIONS = "definitions"; // NOI18N
     private static final String SFX_DISPLAY_NAME = "displayName";   //NOI18N
+    private static final String PROP_PREFIX = "prop-";  //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private AntProjectListener apl;
@@ -223,7 +225,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     public ProjectLibraryArea loadArea(URL location) {
         if (location.getProtocol().equals("file") && location.getPath().endsWith(".properties")) { // NOI18N
             try {
-                return new ProjectLibraryArea(new File(location.toURI()));
+                return new ProjectLibraryArea(Utilities.toFile(location.toURI()));
             } catch (URISyntaxException x) {
                 Exceptions.printStackTrace(x);
             }
@@ -367,7 +369,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 }
             }
         }
-        ProjectLibraryArea pla = loadArea(pli.mainPropertiesFile.toURI().toURL());
+        ProjectLibraryArea pla = loadArea(Utilities.toURI(pli.mainPropertiesFile).toURL());
         if (pla != null) {
         LP lp = getLibraries(pla);
         if (lp.libraries.remove(pli.name) != null) {
@@ -502,6 +504,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             String description = null;
             String displayName = null;
             Map<String,List<URI>> contents = new HashMap<String,List<URI>>();
+            Map<String,String> properties = new HashMap<String, String>();
             for (Map.Entry<String,String> subentry : entry.getValue().entrySet()) {
                 String k = subentry.getKey();
                 if (k.equals("type")) { // NOI18N
@@ -512,6 +515,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     description = subentry.getValue();
                 } else if (k.equals(SFX_DISPLAY_NAME)) {  //NOI18N
                     displayName = subentry.getValue();
+                } else if (k.startsWith(PROP_PREFIX)) {
+                    properties.put(k.substring(PROP_PREFIX.length()), subentry.getValue());  //NOI18N
                 } else {
                     final String[] path = sanitizeHttp(subentry.getKey(), PropertyUtils.tokenizePath(subentry.getValue()));
                     List<URI> volume = new ArrayList<URI>(path.length);
@@ -527,7 +532,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         File normalizedFile = FileUtil.normalizeFile(new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}", area.mainPropertiesFile.getParent())));
                         try {
                             URI u = LibrariesSupport.convertFilePathToURI(f);
-                            if (FileUtil.isArchiveFile(normalizedFile.toURI().toURL())) {
+                            if (FileUtil.isArchiveFile(Utilities.toURI(normalizedFile).toURL())) {
                                 u = appendJarFolder(u, jarFolder);
                             } else if (!u.getPath().endsWith("/")) {  // NOI18N
                                 u = new URI(u.toString() + "/");  // NOI18N
@@ -551,7 +556,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     name,
                     description,
                     displayName,
-                    contents));
+                    contents,
+                    properties));
         }
         return libs;
     }
@@ -647,18 +653,21 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
         final Collection<String> result = new ArrayList<String>();
         for (int i=0; i< entries.length; i++) {
-            if (("http".equals(entries[i]) || "https".equals(entries[i])) &&  //NOI18N
-                (i+1) < entries.length &&
-                entries[i+1].startsWith("//")) {  //NOI18N
-                    result.add(String.format("%s:%s",entries[i],entries[++i])); //NOI18N
-            } else {
-                result.add(entries[i]);
+            if (i < entries.length - 1 && entries[i].matches("https?")) {
+                // #212877: Definitions.getProperties already converted to \, so have entries=["http", "\\server\path\"]
+                String schemeSpecificPart = entries[i + 1].replace('\\', '/');
+                if (schemeSpecificPart.startsWith("//")) {
+                    result.add(entries[i] + ':' + schemeSpecificPart);
+                    i++;
+                    continue;
+                }
             }
+            result.add(entries[i]);
         }
         return result.toArray(new String[result.size()]);
     }
     
-    static final class ProjectLibraryImplementation implements LibraryImplementation2, NamedLibraryImplementation {
+    static final class ProjectLibraryImplementation implements LibraryImplementation2,LibraryImplementation3 {
 
         final File mainPropertiesFile, privatePropertiesFile;
         final String type;
@@ -666,6 +675,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         String description;
         String displayName;
         Map<String,List<URI>> contents;
+        private Map<String,String> properties;
         final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         static Field libraryImplField;
@@ -699,7 +709,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 String name,
                 final @NullAllowed String description,
                 final @NullAllowed String displayName,
-                Map<String,List<URI>> contents) {
+                final @NonNull Map<String,List<URI>> contents,
+                final @NonNull Map<String,String> properties) {
             this.mainPropertiesFile = mainPropertiesFile;
             this.privatePropertiesFile = privatePropertiesFile;
             this.type = type;
@@ -707,6 +718,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             this.description = description;
             this.displayName = displayName;
             this.contents = contents;
+            this.properties = properties;
         }
 
         public String getType() {
@@ -739,7 +751,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             List<URL> resolvedUrls = new ArrayList<URL>(uris.size());
             for (URI u : uris) {
                 try {
-                    resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(mainPropertiesFile.toURI().toURL(), u).toURL());
+                    resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(Utilities.toURI(mainPropertiesFile).toURL(), u).toURL());
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(ProjectLibraryProvider.class.getName()).log(Level.INFO, "#184304: " + u, ex);
                 }
@@ -854,7 +866,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             } catch (IOException x) {
                 throw new IllegalArgumentException(x);
             }
-            pcs.firePropertyChange(LibraryImplementation.PROP_CONTENT, oldDisplayName, displayName);
+            pcs.firePropertyChange(PROP_DISPLAY_NAME, oldDisplayName, displayName);
         }
 
         public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -868,6 +880,37 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         @Override
         public String toString() {
             return "ProjectLibraryImplementation[name=" + name + ",file=" + mainPropertiesFile + ",contents=" + contents + "]"; // NOI18N
+        }
+
+        @Override
+        public Map<String, String> getProperties() {
+            return Collections.<String,String>unmodifiableMap(properties);
+        }
+
+        @Override
+        public void setProperties(Map<String, String> properties) {
+            if (Utilities.compareObjects(this.properties, properties)) {
+                return;
+            }
+            final Map<String,String> oldProperties = this.properties;
+            this.properties = new HashMap<String, String>(properties);
+            try {
+                for (Map.Entry<String,String> e : this.properties.entrySet()) {
+                    final String key = String.format(
+                        "libs.%s.%s%s",    //NOI18N
+                        name,
+                        PROP_PREFIX,
+                        e.getKey());
+                    replaceProperty(
+                        mainPropertiesFile,
+                        false,
+                        key,
+                        e.getValue());
+                }
+            } catch (IOException x) {
+                throw new IllegalArgumentException(x);
+            }
+            pcs.firePropertyChange(PROP_PROPERTIES, oldProperties, this.properties);
         }
 
     }
@@ -919,7 +962,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         public URL getLocation() {
             try {
-                return mainPropertiesFile.toURI().toURL();
+                return Utilities.toURI(mainPropertiesFile).toURL();
             } catch (MalformedURLException x) {
                 throw new AssertionError(x);
             }
@@ -1085,7 +1128,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         Definitions defs = findDefinitions(helper);
         if (defs != null) {
             try {
-                return LibraryManager.forLocation(defs.mainPropertiesFile.toURI().toURL());
+                return LibraryManager.forLocation(Utilities.toURI(defs.mainPropertiesFile).toURL());
             } catch (MalformedURLException x) {
                 Exceptions.printStackTrace(x);
             }
@@ -1149,7 +1192,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      */
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
-        final File libBaseFolder = new File(URI.create(location.toExternalForm())).getParentFile();
+        final File libBaseFolder = Utilities.toFile(URI.create(location.toExternalForm())).getParentFile();
         FileObject sharedLibFolder = null;
         final Map<String, List<URI>> content = new HashMap<String, List<URI>>();
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
@@ -1178,7 +1221,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 URI u;
                 FileObject newFO;
                 String name;
-                if (CollocationQuery.areCollocated(libBaseFolder.toURI(), libEntryFO.toURI())) {
+                if (CollocationQuery.areCollocated(Utilities.toURI(libBaseFolder), libEntryFO.toURI())) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
                     newFO = libEntryFO;
@@ -1221,7 +1264,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         //No need to set displayName when it's same as name
                         displayName = null;
                     }
-                    return man.createURILibrary(lib.getType(), name, displayName, lib.getDescription(), content);
+                    return man.createURILibrary(lib.getType(), name, displayName, lib.getDescription(), content, lib.getProperties());
                 }
             });
         } catch (MutexException ex) {

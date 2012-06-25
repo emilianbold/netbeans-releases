@@ -42,7 +42,6 @@
 package org.netbeans.modules.autoupdate.pluginimporter;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -54,6 +53,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -190,18 +190,7 @@ public class Installer extends ModuleInstall {
         String user = System.getProperty ("netbeans.user"); // NOI18N
         File userDir = null;
         if (user != null) {
-            userDir = new File (user);
-            if (userDir.getPath ().startsWith ("\\\\")) { // NOI18N
-                // Do not use URI.normalize for UNC paths because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File)
-                try {
-                    userDir = userDir.getCanonicalFile ();
-                } catch (IOException ex) {
-                    // fallback when getCanonicalFile fails
-                    userDir = userDir.getAbsoluteFile ();
-                }
-            } else {
-                userDir = new File (userDir.toURI ().normalize ()).getAbsoluteFile ();
-            }
+            userDir = FileUtil.normalizeFile(new File(user));
         }
 
         return userDir;

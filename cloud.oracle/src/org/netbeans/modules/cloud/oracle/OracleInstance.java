@@ -47,8 +47,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -57,12 +55,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
-import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManagerConnectionFactory;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.ManagerException;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.*;
@@ -94,8 +92,19 @@ public class OracleInstance {
     private static final Logger LOG = Logger.getLogger(OracleInstance.class.getSimpleName());
     
     private final String name;
+    
+    /* GuardedBy(this) */
+    private boolean userLoaded;
+    
+    /* GuardedBy(this) */
     private String user;
+    
+    /* GuardedBy(this) */
+    private boolean passwordLoaded;
+    
+    /* GuardedBy(this) */
     private String password;
+    
     private String adminURL;
     private String identityDomain;
     private String javaServiceName;
@@ -109,14 +118,21 @@ public class OracleInstance {
     
     /* GuardedBy(this) */
     private OracleJ2EEInstance j2eeInstance;
+
+    public OracleInstance(String name, String user, String password, String adminURL, String identityDomain, 
+          String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
+          String sdkFolder) {
+        this(name, adminURL, identityDomain, javaServiceName, dbServiceName, onPremiseServerInstanceId, sdkFolder);
+        this.userLoaded = true;
+        this.user = user;
+        this.passwordLoaded = true;
+        this.password = password;
+    }
     
-    public OracleInstance(String name, String user, String password, 
-          String adminURL, String identityDomain, 
+    public OracleInstance(String name, String adminURL, String identityDomain, 
           String javaServiceName, String dbServiceName, String onPremiseServerInstanceId,
           String sdkFolder) {
         this.name = name;
-        this.user = user;
-        this.password = password;
         this.adminURL = adminURL;
         this.identityDomain = identityDomain;
         this.javaServiceName = javaServiceName;
@@ -138,11 +154,53 @@ public class OracleInstance {
     }
     
     public String getPassword() {
-        return password;
+        synchronized (this) {
+            if (passwordLoaded) {
+                return password;
+            }
+        }
+        
+        char[] ch = Keyring.read(OracleInstanceManager.PREFIX
+                + OracleInstanceManager.PASSWORD + "." + name);
+        if (ch == null) {
+            LOG.log(Level.WARNING, "no password found for "+name);
+            ch = new char[]{' '};
+        }
+        String passwd = new String(ch);
+        assert passwd != null : "password is missing for "+name; // NOI18N
+        
+        synchronized (this) {
+            if (!passwordLoaded) {
+                passwordLoaded = true;
+                password = passwd;
+            }
+            return password;
+        }
     }
 
     public String getUser() {
-        return user;
+        synchronized (this) {
+            if (userLoaded) {
+                return user;
+            }
+        }
+        
+        char ch[] = Keyring.read(OracleInstanceManager.PREFIX
+                + OracleInstanceManager.USERNAME + "." + name);
+        if (ch == null) {
+            LOG.log(Level.WARNING, "no username found for "+name);
+            ch = new char[]{' '};
+        }
+        String userName = new String(ch);
+        assert userName != null : "username is missing for "+name; // NOI18N
+        
+        synchronized (this) {
+            if (!userLoaded) {
+                userLoaded = true;
+                user = userName;
+            }
+            return user;
+        }
     }
 
     public String getAdminURL() {
@@ -189,8 +247,9 @@ public class OracleInstance {
     }
 
     public void setPassword(String password) {
-        this.password = password;
         synchronized (this) {
+            this.password = password;
+            this.passwordLoaded = true;
             if (j2eeInstance != null) {
                 j2eeInstance.getInstanceProperties().setProperty(
                                     InstanceProperties.PASSWORD_ATTR, password);
@@ -200,8 +259,9 @@ public class OracleInstance {
     }
 
     public void setUser(String user) {
-        this.user = user;
         synchronized (this) {
+            this.user = user;
+            this.userLoaded = true;
             if (j2eeInstance != null) {
                 j2eeInstance.getInstanceProperties().setProperty(
                                     InstanceProperties.USERNAME_ATTR, user);
@@ -240,7 +300,7 @@ public class OracleInstance {
     
     public synchronized ApplicationManager getApplicationManager() {
         if (platform == null) {
-            platform = createApplicationManager(adminURL, user, password, sdkFolder);
+            platform = createApplicationManager(adminURL, getUser(), getPassword(), sdkFolder);
         }
         return platform;
     }
@@ -256,7 +316,7 @@ public class OracleInstance {
     
     public void testConnection() throws ManagerException {
         assert !SwingUtilities.isEventDispatchThread();
-        getApplicationManager().listJobs();
+        getApplicationManager().listApplications(getIdentityDomain(), getJavaServiceName());
     }
     
     public OracleJ2EEInstance readJ2EEServerInstance() {

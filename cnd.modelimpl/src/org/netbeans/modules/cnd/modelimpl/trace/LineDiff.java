@@ -71,7 +71,7 @@ public final class LineDiff {
     boolean ignoreEmptyLines;
     int contextLines;
 
-    public static List<String> diff(List<CharSequence> first, List<CharSequence> second) {
+    public static List<String> diff(List<? extends CharSequence> first, List<? extends CharSequence> second) {
         LineDiff diff = new LineDiff(false);
         return diff.diffLines(first, second);
     }
@@ -125,7 +125,7 @@ public final class LineDiff {
         return contextLines;
     }
 
-    public List<String> diffLines(List<CharSequence> ref, List<CharSequence> pass) {
+    public List<String> diffLines(List<? extends CharSequence> ref, List<? extends CharSequence> pass) {
         CharSequence[] passLines = pass.toArray(new CharSequence[pass.size()]);
         CharSequence[] refLines = ref.toArray(new CharSequence[ref.size()]);
         //collect differences

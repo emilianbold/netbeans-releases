@@ -226,9 +226,12 @@ public final class GenerateJavadocAction extends TextAction {
 
     private void generateJavadoc(Document doc, Descriptor desc, Indent ie) throws BadLocationException {
         // skip javadoc header /** and tail */ since they were already generated
-        String content = desc.javadoc.substring(
-                "/**\n".length(),
-                desc.javadoc.length() - "\n*/\n".length());
+        String content = desc.javadoc;
+        
+        if(content.endsWith("\n")) {
+            content = content.substring(0, content.length() - "\n".length());
+        }
+        
         if (content.length() == 0) {
             return;
         }

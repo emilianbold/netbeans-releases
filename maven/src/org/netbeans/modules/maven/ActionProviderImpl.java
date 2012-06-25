@@ -173,7 +173,7 @@ public class ActionProviderImpl implements ActionProvider {
 
     private boolean usingJUnit4() { // SUREFIRE-724
         for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
-            if ("junit".equals(a.getGroupId()) && "junit".equals(a.getArtifactId())) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
                 String version = a.getVersion();
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
                     return true;
@@ -245,7 +245,7 @@ public class ActionProviderImpl implements ActionProvider {
             convertedAction = action;
         }
 
-        Lookup enhanced = new ProxyLookup(lookup, Lookups.fixed(replacements(convertedAction, lookup)));
+        Lookup enhanced = new ProxyLookup(lookup, Lookups.fixed(replacements(proj, convertedAction, lookup)));
         
         RunConfig rc = ActionToGoalUtils.createRunConfig(convertedAction, proj.getLookup().lookup(NbMavenProjectImpl.class), enhanced);
         if (rc == null) {
@@ -267,7 +267,7 @@ public class ActionProviderImpl implements ActionProvider {
         }
     }
 
-    private Map<String,String> replacements(String action, Lookup lookup) {
+    public static Map<String,String> replacements(Project proj, String action, Lookup lookup) {
         Map<String,String> replacements = new HashMap<String,String>();
         for (ReplaceTokenProvider prov : proj.getLookup().lookupAll(ReplaceTokenProvider.class)) {
             replacements.putAll(prov.createReplacements(action, lookup));
@@ -357,7 +357,7 @@ public class ActionProviderImpl implements ActionProvider {
         @Messages("TIT_Run_Maven=Run Maven")
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
-            Map<String,String> replacements = replacements((String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
+            Map<String,String> replacements = replacements(proj, (String) getValue(Action.NAME), /* is there ever a context? */Lookup.EMPTY);
             for (Map.Entry<String,String> entry : mapping.getProperties().entrySet()) {
                 entry.setValue(AbstractMavenActionsProvider.dynamicSubstitutions(replacements, entry.getValue()));
             }

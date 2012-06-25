@@ -65,6 +65,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.Phases;
@@ -72,6 +73,7 @@ import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.lexer.Token;
@@ -442,8 +444,8 @@ public class GroovyParser extends Parser {
         ClassPath cp = ClassPathSupport.createProxyClassPath(bootPath, compilePath, sourcePath);
 
         CompilerConfiguration configuration = new CompilerConfiguration();
-        GroovyClassLoader classLoader = new ParsingClassLoader(cp, configuration);
         final ClassNodeCache classNodeCache = ClassNodeCache.get();
+        final GroovyClassLoader classLoader = classNodeCache.createResolveLoader(cp, configuration);
         final GroovyClassLoader transformationLoader = classNodeCache.createTransformationLoader(cp,configuration);        
         ClasspathInfo cpInfo = ClasspathInfo.create(
                 // we should try to load everything by javac instead of classloader,
@@ -804,11 +806,15 @@ public class GroovyParser extends Parser {
 
     }
 
-    private static class ParsingClassLoader extends GroovyClassLoader {
+    static class ParsingClassLoader extends GroovyClassLoader {
 
+        private static final ClassNotFoundException CNF = new ClassNotFoundException();
+        
         private final CompilerConfiguration config;
 
         private final ClassPath path;
+        
+        private final ClassNodeCache cache;
 
         private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
 
@@ -825,27 +831,31 @@ public class GroovyParser extends Parser {
             }
         };
 
-        public ParsingClassLoader(ClassPath path, CompilerConfiguration config) {
+        public ParsingClassLoader(
+                @NonNull ClassPath path,
+                @NonNull CompilerConfiguration config,
+                @NonNull ClassNodeCache cache) {
             super(path.getClassLoader(true), config);
             this.config = config;
             this.path = path;
+            this.cache = cache;
         }
-
-//        @Override
-//        public Class loadClass(String name, boolean lookupScriptFiles,
-//                boolean preferClassOverScript, boolean resolve) throws ClassNotFoundException, CompilationFailedException {
-//
-//            boolean assertsEnabled = false;
-//            assert assertsEnabled = true;
-//            if (assertsEnabled) {
-//                Class clazz = super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
-//                assert false : "Class " + clazz + " loaded by GroovyClassLoader";
-//            }
-//
-//            // if it is a class (java or compiled groovy) it is resolved via java infr.
-//            // if it is groovy it is resolved with resource loader with compile unit
-//            throw new ClassNotFoundException();
-//        }
+        
+        @Override
+        public Class loadClass(
+                final String name,
+                final boolean lookupScriptFiles,
+                final boolean preferClassOverScript,
+                final boolean resolve) throws ClassNotFoundException, CompilationFailedException {
+            if (preferClassOverScript && !lookupScriptFiles) {
+                //Ideally throw CNF but we need to workaround fix of issue #206811
+                //which hurts performance.
+                if (cache.isNonExistent(name)) {
+                    throw CNF;
+                }
+            }
+            return super.loadClass(name, lookupScriptFiles, preferClassOverScript, resolve);
+        }
 
         @Override
         public GroovyResourceLoader getResourceLoader() {

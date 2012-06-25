@@ -62,7 +62,7 @@ public class PlatformInstallTest extends NbTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.emptyConfiguration().addTest(PlatformInstallTest.class).gui(false).enableModules("org.netbeans.modules.java.j2seplatform").suite();
+        return NbModuleSuite.createConfiguration(PlatformInstallTest.class).gui(false).enableModules("org.netbeans.modules.java.j2seplatform").suite();
     }
 
     public void testLookup () {

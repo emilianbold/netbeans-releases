@@ -52,6 +52,9 @@ import java.beans.PropertyChangeListener;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.openide.modules.ModuleInstall;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Registers the directory chooser in NetBeans.
@@ -70,9 +73,25 @@ public class Module extends ModuleInstall {
     private static final String FORCE_STANDARD_CHOOSER = "standard-file-chooser"; // NOI18N
 
     @Override public void restored() {
-        EventQueue.invokeLater(new Runnable() {
-            public @Override void run() {
-                install();
+        WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
+
+            @Override
+            public void beforeLoad (WindowSystemEvent event) {
+            }
+            @Override
+            public void afterLoad (WindowSystemEvent event) {
+                WindowManager.getDefault().removeWindowSystemListener(this);
+                EventQueue.invokeLater(new Runnable() {
+                    public @Override void run() {
+                        install();
+                    }
+                });
+            }
+            @Override
+            public void beforeSave (WindowSystemEvent event) {
+            }
+            @Override
+            public void afterSave (WindowSystemEvent event) {
             }
         });
     }

@@ -159,6 +159,7 @@ public class ProjectUtils {
      */
     public static boolean hasSubprojectCycles(final Project master, final Project candidate) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 return visit(new HashMap<Project,Boolean>(), master, master, candidate);
             }
@@ -233,26 +234,32 @@ public class ProjectUtils {
             this.p = p;
         }
         
+        @Override
         public String getName() {
             return p.getProjectDirectory().toURL().toExternalForm();
         }
         
+        @Override
         public String getDisplayName() {
             return p.getProjectDirectory().getNameExt();
         }
         
+        @Override
         public Icon getIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/projectapi/resources/empty.gif", false); // NOI18N
         }
         
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             // never changes
         }
         
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             // never changes
         }
         
+        @Override
         public Project getProject() {
             return p;
         }

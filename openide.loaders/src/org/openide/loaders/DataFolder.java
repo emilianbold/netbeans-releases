@@ -1488,7 +1488,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 }
                 try {
                     URI uri = new URI(s);
-                    File file = new File(uri);
+                    File file = Utilities.toFile(uri);
                     list.add( file );
                 } catch( java.net.URISyntaxException e ) {
                     // malformed URI

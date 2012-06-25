@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.php.project;
 
-import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -63,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -74,7 +74,6 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
@@ -84,7 +83,6 @@ import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.classpath.IncludePathClassPathProvider;
 import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.php.project.internalserver.InternalWebServer;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -146,7 +144,11 @@ import org.w3c.dom.Text;
     privateNamespace=PhpProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public final class PhpProject implements Project {
+
     static final Logger LOGGER = Logger.getLogger(PhpProject.class.getName());
+
+    @StaticResource
+    public static final String PROJECT_ICON = "org/netbeans/modules/php/project/ui/resources/phpProject.png"; // NOI18N
 
     final AntProjectHelper helper;
     final UpdateHelper updateHelper;
@@ -162,16 +164,13 @@ public final class PhpProject implements Project {
     // #165136
     // @GuardedBy("this")
     private FileObject sourcesDirectory;
-    // @GuardedBy("this")
-    private FileObject testsDirectory;
-    // @GuardedBy("this")
-    private FileObject seleniumDirectory;
     // ok to read it more times
     volatile FileObject webRootDirectory;
 
-    // try to restore missing test folders just once
-    volatile boolean testsDirectoryResolved = false;
-    volatile boolean seleniumDirectoryResolved = false;
+    // true if property src.dir does not exist
+    volatile boolean sourcesDirectoryInvalid = false;
+    // true if project is being deleted; do not warn about invalid sources then
+    private volatile boolean deleting;
 
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
@@ -309,12 +308,21 @@ public final class PhpProject implements Project {
     private FileObject resolveSourcesDirectory() {
         FileObject sourceDir = resolveDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderTemporaryToProjectDirectory"); // NOI18N
         if (sourceDir != null) {
+            sourcesDirectoryInvalid = false;
             return sourceDir;
+        }
+        if (deleting) {
+            // project is being deleted, temporarily return project directory (to avoid NPE)
+            return helper.getProjectDirectory();
         }
         // source dir not resolved?!
         String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
-        // #168390, #165494
-        if (srcDirProperty == null) {
+        // #168390, #165494, #213468
+        if (srcDirProperty == null && !sourcesDirectoryInvalid) {
+            sourcesDirectoryInvalid = true;
+            // inform user
+            warnInvalidSourcesDirectory();
+            // diagnostics
             FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             boolean projectPropsFound = projectProps != null;
 
@@ -351,71 +359,58 @@ public final class PhpProject implements Project {
                 buffer.append("\nnbproject exists: "); // NOI18N
                 buffer.append(nbprojectFound);
                 if (nbprojectFound) {
+                    buffer.append("\nnbproject valid: "); // NOI18N
+                    buffer.append(nbproject.isValid());
                     buffer.append("\nnbproject children: "); // NOI18N
                     buffer.append(Arrays.asList(nbproject.getChildren()));
                 }
             }
+            buffer.append("\nsource roots: "); // NOI18N
+            buffer.append(Arrays.asList(getSourceRoots().getRoots()));
+            buffer.append("\nsource roots - fired changes: "); // NOI18N
+            buffer.append(getSourceRoots().getFiredChanges());
             buffer.append("\nproperties (helper): "); // NOI18N
             buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
             buffer.append("\nproperties (evaluator): "); // NOI18N
             buffer.append(eval.getProperties());
-            throw new IllegalStateException(buffer.toString());
+            LOGGER.log(Level.WARNING, null, new IllegalStateException(buffer.toString()));
         }
         // temporarily return project directory (to avoid NPE)
         return helper.getProjectDirectory();
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "PhpProject.metadata.corrupted=<html><b>Project {0} has corrupted metadata</b>.<br><br>Repair manually \"src.dir\" property in <i>nbproject/project.properties</i> and reopen the project."
+    })
+    public void warnInvalidSourcesDirectory() {
+        warnUser(Bundle.PhpProject_metadata_corrupted(getName()));
+    }
+
+    public boolean isSourcesDirectoryInvalid() {
+        return sourcesDirectoryInvalid;
+    }
+
     /**
      * @return tests directory or <code>null</code>
      */
-    synchronized FileObject getTestsDirectory() {
-        if (testsDirectory == null) {
-            if (testsDirectoryResolved) {
-                return null;
-            }
-            testsDirectoryResolved = true;
-            testsDirectory = resolveDirectory(PhpProjectProperties.TEST_SRC_DIR, "MSG_TestsFolderTemporaryToProjectDirectory"); // NOI18N
+    FileObject getTestsDirectory() {
+        for (FileObject root : testRoots.getRoots()) {
+            // return the first one
+            return root;
         }
-        return testsDirectory;
-    }
-
-    synchronized void resetTestsDirectory() {
-        testsDirectory = null;
-        testsDirectoryResolved = false;
-        testRoots.fireChange();
-    }
-
-    synchronized void setTestsDirectory(FileObject testsDirectory) {
-        assert testsDirectory != null && testsDirectory.isValid();
-        this.testsDirectory = testsDirectory;
-        testsDirectoryResolved = false;
+        return null;
     }
 
     /**
      * @return selenium tests directory or <code>null</code>
      */
-    synchronized FileObject getSeleniumDirectory() {
-        if (seleniumDirectory == null) {
-            if (seleniumDirectoryResolved) {
-                return null;
-            }
-            seleniumDirectoryResolved = true;
-            seleniumDirectory = resolveDirectory(PhpProjectProperties.SELENIUM_SRC_DIR, "MSG_SeleniumFolderTemporaryToProjectDirectory"); // NOI18N
+    FileObject getSeleniumDirectory() {
+        for (FileObject root : seleniumRoots.getRoots()) {
+            // return the first one
+            return root;
         }
-        return seleniumDirectory;
-    }
-
-    synchronized void resetSeleniumDirectory() {
-        seleniumDirectory = null;
-        seleniumDirectoryResolved = false;
-        seleniumRoots.fireChange();
-    }
-
-    synchronized void setSeleniumDirectory(FileObject seleniumDirectory) {
-        assert this.seleniumDirectory == null : "Project selenium directory already set to " + this.seleniumDirectory;
-        assert seleniumDirectory != null && seleniumDirectory.isValid();
-        this.seleniumDirectory = seleniumDirectory;
-        seleniumDirectoryResolved = false;
+        return null;
     }
 
     private FileObject resolveDirectory(final String propertyName, final String messageKey) {
@@ -729,24 +724,13 @@ public final class PhpProject implements Project {
         ignoredFoldersChangeSupport.fireChange();
     }
 
+    void setDeleting() {
+        deleting = true;
+    }
+
     private final class Info implements ProjectInformation {
-        private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
 
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-
-        public Info() {
-            PhpProject.this.propertyChangeSupport.addPropertyChangeListener(PhpProject.PROP_FRAMEWORKS, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    firePropertyChange(ProjectInformation.PROP_ICON);
-                }
-            });
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener  listener) {
-            propertyChangeSupport.addPropertyChangeListener(listener);
-        }
 
         @Override
         public String getDisplayName() {
@@ -755,7 +739,7 @@ public final class PhpProject implements Project {
 
         @Override
         public Icon getIcon() {
-            return ImageUtilities.image2Icon(annotateImage(ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png"))); // NOI18N
+            return ImageUtilities.image2Icon(ImageUtilities.loadImage(PROJECT_ICON));
         }
 
         @Override
@@ -769,6 +753,11 @@ public final class PhpProject implements Project {
         }
 
         @Override
+        public void addPropertyChangeListener(PropertyChangeListener  listener) {
+            propertyChangeSupport.addPropertyChangeListener(listener);
+        }
+
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             propertyChangeSupport.removePropertyChangeListener(listener);
         }
@@ -777,23 +766,6 @@ public final class PhpProject implements Project {
             propertyChangeSupport.firePropertyChange(prop , null, null);
         }
 
-        private Image annotateImage(Image image) {
-            Image badged = image;
-            boolean first = true;
-            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
-                BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
-                if (badgeIcon != null) {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
-                    if (first) {
-                        badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
-                        first = false;
-                    }
-                } else {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE, frameworkProvider.getName()));
-                }
-            }
-            return badged;
-        }
     }
 
     private final class PhpOpenedHook extends ProjectOpenedHook {
@@ -875,16 +847,13 @@ public final class PhpProject implements Project {
         private void reinitFolders() {
             // #165494 - moved from projectClosed() to projectOpened()
             // clear references to ensure that all the dirs are read again
+            sourcesDirectoryInvalid = false;
             resetSourcesDirectory();
-            resetTestsDirectory();
-            resetSeleniumDirectory();
             webRootDirectory = null;
             resetIgnoredFolders();
 
             // #139159 - we need to hold sources FO to prevent gc
             getSourcesDirectory();
-            getTestsDirectory();
-            getSeleniumDirectory();
             getWebRootDirectory();
             getIgnoredFiles();
         }
@@ -946,13 +915,14 @@ public final class PhpProject implements Project {
             String propertyName = evt.getPropertyName();
             if (PhpProjectProperties.IGNORE_PATH.equals(propertyName)) {
                 fireIgnoredFilesChange();
-            } else if (PhpProjectProperties.TEST_SRC_DIR.equals(propertyName)) {
-                resetTestsDirectory();
             } else if (PhpProjectProperties.WEB_ROOT.equals(propertyName)) {
                 FileObject oldWebRoot = webRootDirectory;
                 webRootDirectory = null;
                 // useful since it fires changes with fileobjects -> client can better use it than "htdocs/web/" values
                 propertyChangeSupport.firePropertyChange(PROP_WEB_ROOT, oldWebRoot, getWebRootDirectory());
+            } else if (sourcesDirectoryInvalid || sourceRoots.getRoots().length == 0) {
+                // nb metadata corrupted -> maybe fixed?
+                sourcesDirectory = null;
             }
         }
     }

@@ -79,7 +79,7 @@ public class ProxyURLStreamHandlerFactoryTest extends NbTestCase {
             return;
         }
         File uncFile = new File("\\\\computerName\\sharedFolder\\a\\b\\c\\d.txt");
-        URI uri = uncFile.toURI();
+        URI uri = Utilities.toURI(uncFile);
         String expectedURI = "file:////computerName/sharedFolder/a/b/c/d.txt";
         assertEquals("Wrong URI from File.toURI.", expectedURI, uri.toString());
         URL url = uri.toURL();

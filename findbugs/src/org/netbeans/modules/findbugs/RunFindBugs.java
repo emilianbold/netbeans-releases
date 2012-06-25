@@ -57,6 +57,7 @@ import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import edu.umd.cs.findbugs.FieldAnnotation;
 import edu.umd.cs.findbugs.FindBugs2;
+import edu.umd.cs.findbugs.FindBugsProgress;
 import edu.umd.cs.findbugs.MethodAnnotation;
 import edu.umd.cs.findbugs.PackageMemberAnnotation;
 import edu.umd.cs.findbugs.Project;
@@ -64,13 +65,19 @@ import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.config.UserPreferences;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,6 +103,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -121,9 +129,9 @@ import org.openide.util.NbPreferences;
 public class RunFindBugs {
 
     public static final String PREFIX_FINDBUGS = "findbugs:";
-    private static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
+           static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
-    public static List<ErrorDescription> runFindBugs(CompilationInfo info, Preferences customSettings, String singleBug, FileObject sourceRoot, Iterable<? extends String> classNames, SigFilesValidator validator) {
+    public static List<ErrorDescription> runFindBugs(CompilationInfo info, Preferences customSettings, String singleBug, FileObject sourceRoot, Iterable<? extends String> classNames, FindBugsProgress progress, SigFilesValidator validator) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         try {
@@ -184,6 +192,10 @@ public class RunFindBugs {
             engine.setProject(p);
             engine.setNoClassOk(true);
             engine.setBugReporter(r);
+            
+            if (progress != null) {
+                engine.setProgressCallback(progress);
+            }
 
             boolean inEditor = validator != null;
             Preferences settings = customSettings != null ? customSettings : NbPreferences.forModule(RunFindBugs.class).node("global-settings");
@@ -208,6 +220,8 @@ public class RunFindBugs {
             
             engine.execute();
 
+            Map<FileObject, List<BugInstance>> file2Bugs = new HashMap<FileObject, List<BugInstance>>();
+            
             for (BugInstance b : r.getBugCollection().getCollection()) {
                 if (singleBug != null && !singleBug.equals(b.getBugPattern().getType())) continue;
                 if (singleBug == null && !settings.getBoolean(b.getBugPattern().getType(), customSettings == null && isEnabledByDefault(b.getBugPattern()))) {
@@ -220,19 +234,50 @@ public class RunFindBugs {
                 if (sourceLine != null) {
                     sourceFile = sourceRoot.getFileObject(sourceLine.getSourcePath());
 
-                    if (sourceFile != null && sourceLine.getStartLine() >= 0) {
-                        DataObject d = DataObject.find(sourceFile);
-                        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
-                        Document doc = ec.openDocument();
-                        LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, sourceLine.getStartLine(), null);
-
-                        result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, doc, sourceLine.getStartLine()));
-                    } else {
-                        if (sourceFile != null) {
-                            addByElementAnnotation(b, info, sourceFile, result, inEditor);
-                        } else {
-                            LOG.log(Level.WARNING, "{0}, location: {1}:{2}", new Object[]{b, sourceLine.getSourcePath(), sourceLine.getStartLine()});
+                    if (sourceFile != null) {
+                        List<BugInstance> bugs = file2Bugs.get(sourceFile);
+                        
+                        if (bugs == null) {
+                            file2Bugs.put(sourceFile, bugs = new ArrayList<BugInstance>());
                         }
+                        
+                        bugs.add(b);
+                    } else {
+                        LOG.log(Level.WARNING, "{0}, location: {1}:{2}", new Object[]{b, sourceLine.getSourcePath(), sourceLine.getStartLine()});
+                    }
+                }
+            }
+            
+            for (Entry<FileObject, List<BugInstance>> e : file2Bugs.entrySet()) {
+                int[] lineOffsets = null;
+                FileObject sourceFile = e.getKey();
+                DataObject d = DataObject.find(sourceFile);
+                EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+                Document doc = ec.getDocument();
+                JavaSource js = null;
+                
+                for (BugInstance b : e.getValue()) {
+                    SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
+
+                    if (sourceLine.getStartLine() >= 0) {
+                        LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, sourceLine.getStartLine(), null);
+                        
+                        if (doc != null) {
+                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, doc, sourceLine.getStartLine()));
+                        } else {
+                            if (lineOffsets == null) {
+                                lineOffsets = computeLineMap(sourceFile, FileEncodingQuery.getEncoding(sourceFile));
+                            }
+
+                            int edLine = 2 * (Math.min(sourceLine.getStartLine(), lineOffsets.length / 2) - 1);
+
+                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, sourceFile, lineOffsets[edLine], lineOffsets[edLine + 1]));
+                        }
+                    } else {
+                        if (js == null) {
+                            js = JavaSource.forFileObject(sourceFile);
+                        }
+                        addByElementAnnotation(b, info, sourceFile, js, result, inEditor);
                     }
                 }
             }
@@ -247,24 +292,24 @@ public class RunFindBugs {
         return result;
     }
 
-    private static void addByElementAnnotation(BugInstance b, CompilationInfo info, FileObject sourceFile, List<ErrorDescription> result, boolean globalPreferences) {
+    private static void addByElementAnnotation(BugInstance b, CompilationInfo info, FileObject sourceFile, JavaSource js, List<ErrorDescription> result, boolean globalPreferences) {
         int[] span = null;
         FieldAnnotation fieldAnnotation = b.getPrimaryField();
 
         if (fieldAnnotation != null) {
-            span = spanFor(info, sourceFile, fieldAnnotation);
+            span = spanFor(info, js, fieldAnnotation);
         }
 
         MethodAnnotation methodAnnotation = b.getPrimaryMethod();
 
         if ((span == null || span[0] == (-1)) && methodAnnotation != null) {
-            span = spanFor(info, sourceFile, methodAnnotation);
+            span = spanFor(info, js, methodAnnotation);
         }
 
         ClassAnnotation classAnnotation = b.getPrimaryClass();
 
         if ((span == null || span[0] == (-1)) && classAnnotation != null) {
-            span = spanFor(info, sourceFile, classAnnotation);
+            span = spanFor(info, js, classAnnotation);
         }
 
         if (span != null && span[0] != (-1)) {
@@ -273,7 +318,7 @@ public class RunFindBugs {
         }
     }
 
-    private static int[] spanFor(CompilationInfo info, FileObject sourceFile, final PackageMemberAnnotation annotation) {
+    private static int[] spanFor(CompilationInfo info, JavaSource js, final PackageMemberAnnotation annotation) {
         final int[] result = new int[] {-1, -1};
         class TaskImpl implements Task<CompilationInfo> {
             @Override public void run(final CompilationInfo parameter) {
@@ -364,7 +409,7 @@ public class RunFindBugs {
             convertor.run(info);
         } else {
             try {
-                JavaSource.forFileObject(sourceFile).runUserActionTask(new Task<CompilationController>() {
+                js.runUserActionTask(new Task<CompilationController>() {
                     @Override public void run(CompilationController parameter) throws Exception {
                         parameter.toPhase(Phase.RESOLVED); //XXX: ENTER should be enough in most cases, but not for anonymous innerclasses.
                         convertor.run(parameter);
@@ -482,6 +527,73 @@ public class RunFindBugs {
         if (f == null) return ;
 
         p.addAuxClasspathEntry(f.getAbsolutePath());
+    }
+    
+    static int[] computeLineMap(FileObject file, Charset decoder) {
+        Reader in = null;
+        List<Integer> lineLengthsTemp = new ArrayList<Integer>();
+        int currentOffset = 0;
+
+        lineLengthsTemp.add(0);
+        lineLengthsTemp.add(0);
+
+        try {
+            in = new InputStreamReader(file.getInputStream(), decoder);
+            
+            int read;
+            boolean wascr = false;
+            boolean lineStart = true;
+
+            while ((read = in.read()) != (-1)) {
+                currentOffset++;
+
+                switch (read) {
+                    case '\r':
+                        wascr = true;
+                        lineLengthsTemp.add(currentOffset);
+                        lineLengthsTemp.add(currentOffset);
+                        lineStart = true;
+                        break;
+                    case '\n':
+                        if (wascr) {
+                            wascr = false;
+                            break;
+                        }
+                        lineLengthsTemp.add(currentOffset);
+                        lineLengthsTemp.add(currentOffset);
+                        wascr = false;
+                        lineStart = true;
+                        break;
+                }
+                
+                if (lineStart && Character.isWhitespace(read)) {
+                    lineLengthsTemp.set(lineLengthsTemp.size() - 2, currentOffset);
+                    lineLengthsTemp.set(lineLengthsTemp.size() - 1, currentOffset);
+                } else if (!Character.isWhitespace(read)) {
+                    lineLengthsTemp.set(lineLengthsTemp.size() - 1, currentOffset);
+                    lineStart = false;
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        int[] lineOffsets = new int[lineLengthsTemp.size()];
+        int i = 0;
+
+        for (Integer o : lineLengthsTemp) {
+            lineOffsets[i++] = o;
+        }
+        
+        return lineOffsets;
     }
 
     interface SigFilesValidator {

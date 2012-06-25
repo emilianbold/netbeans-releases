@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor;
 
+import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 
 
@@ -60,6 +61,8 @@ public class EditorWarmUpTask implements Runnable{
 
     public void run() {
         AnnotationTypesFolder.getAnnotationTypesFolder(); //#57414
+        
+        EditorActionUtilities.getGlobalPreferences();
     }
 
 }

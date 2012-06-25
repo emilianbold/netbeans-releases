@@ -302,7 +302,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 if (resolver.isObjectVisible(startFile, obj)) {
                     visibleObjs.add(obj);
                     foundVisible = true;
-                    if(!CsmClassifierResolver.getDefault().isForwardClass(obj)) {
+                    if(!CsmClassifierResolver.getDefault().isForwardClassifier(obj)) {
                         enough = true;
                     }
                 }
@@ -849,7 +849,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
                 if (CsmKindUtilities.isFunction(obj)) {
                     fun = (CsmFunction) obj;
-                } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
+                } else if (CsmKindUtilities.isClassForwardDeclaration(obj) || CsmKindUtilities.isEnumForwardDeclaration(obj)) {
                     if (CsmKindUtilities.isTemplate(obj)) {
                         analyzeTemplates.add((CsmTemplate) obj);
                     }
@@ -914,6 +914,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         CsmDeclaration.Kind kinds[] = {
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION,
+            CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,

@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.libs.oracle.cloud
 OpenIDE-Module-Layer: org/netbeans/libs/oracle/cloud/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/oracle/cloud/Bundle.properties
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2

@@ -311,7 +311,7 @@ public final class ClassPath {
                     //todo: Ignore non file urls, we can try to url->fileobject->url
                     //if it becomes a file.
                     if ("file".equals(url.getProtocol())) { //NOI18N
-                        file = FileUtil.normalizeFile(new File(url.toURI()));
+                        file = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
                     }
                 } catch (IllegalArgumentException e) {
                     LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
@@ -800,7 +800,7 @@ public final class ClassPath {
                             } else {
                                 String fileState = null;
                                 try {
-                                    final File file = new File(this.url.toURI());
+                                    final File file = Utilities.toFile(this.url.toURI());
                                     fileState = "(exists: " + file.exists() +           //NOI18N
                                                 " file: " + file.isFile() +             //NOI18N
                                                 " directory: "+ file.isDirectory() +    //NOI18N
@@ -902,7 +902,12 @@ public final class ClassPath {
             }
             FileObject r = getRoot();
             if (r == null) {
-                throw new IllegalArgumentException("no root in " + url);
+                file.refresh();
+                if (!file.isValid()) {
+                    return false;
+                } else {
+                    throw new IllegalArgumentException("no root in " + url);
+                }
             }
             String path = FileUtil.getRelativePath(r, file);
             if (path == null) {

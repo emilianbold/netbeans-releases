@@ -931,7 +931,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                     String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                     Integer prior = definitionCountById.get(id);
                     definitionCountById.put(id, prior == null ? 1 : prior + 1);
-                } else if (!d.getPrimaryFile().hasExt("shadow")) {
+                } else if (!d.getPrimaryFile().hasExt("shadow") && !d.getPrimaryFile().hasExt("removed")) {
                     warnings.add("Anomalous file " + d);
                 } // else #172453: BrokenDataShadow, OK
             }
@@ -963,7 +963,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         FileObject libs = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries");
         if (libs != null) {
             for (FileObject lib : libs.getChildren()) {
-                Document doc = XMLUtil.parse(new InputSource(lib.toURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
+                Document doc = XMLUtil.parse(new InputSource(lib.toURL().toString()), false, true, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
                 NodeList nl = doc.getElementsByTagName("resource");
                 for (int i = 0; i < nl.getLength(); i++) {
                     Element resource = (Element) nl.item(i);

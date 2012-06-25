@@ -198,7 +198,7 @@ public final class ProgressHandleWrapper {
             actualSplit[i++] = TOTAL * (t / total);
         }
 
-        Logger.getLogger(ProgressHandleWrapper.class.getName()).log(Level.INFO, "Progress handle with split: {0}, actual times: {1}, actual split: {2}", new Object[] {Arrays.toString(parts), Arrays.toString(spentTime), Arrays.toString(actualSplit)});
+        Logger.getLogger(ProgressHandleWrapper.class.getName()).log(Level.FINE, "Progress handle with split: {0}, actual times: {1}, actual split: {2}", new Object[] {Arrays.toString(parts), Arrays.toString(spentTime), Arrays.toString(actualSplit)});
     }
 
     public static int[] prepareParts(int count) {

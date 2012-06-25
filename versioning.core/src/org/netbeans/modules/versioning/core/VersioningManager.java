@@ -203,6 +203,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
         @Override public String getMenuLabel() { throw new IllegalStateException(); }
         @Override public boolean accept(VCSContext ctx) { throw new IllegalStateException(); }
         @Override public VCSHistoryProvider getVCSHistoryProvider() {throw new IllegalStateException(); }
+        @Override public boolean isMetadataFile(VCSFileProxy file) { throw new IllegalStateException(); }
     };
     
     

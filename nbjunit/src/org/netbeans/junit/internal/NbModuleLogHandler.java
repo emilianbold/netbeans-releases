@@ -124,7 +124,7 @@ public final class NbModuleLogHandler extends Handler {
         if (txt != null && record.getParameters() != null) {
             txt = MessageFormat.format(txt, record.getParameters());
         }
-        sb.append(txt != null ? normalize(txt) : txt);
+        sb.append(txt);
         Throwable t = record.getThrown();
         if (t != null) {
             sb.append('\n');
@@ -139,8 +139,8 @@ public final class NbModuleLogHandler extends Handler {
     private static final List<String> hexes = new ArrayList<String>();
     private static final String integerToHexString = "[0-9a-fA-F]{5,8}";
     private static final Pattern hex = Pattern.compile("(?<=@(?:" + integerToHexString + ":)?)" + integerToHexString);
-    private static synchronized String normalize(String txt) {
-        Matcher m = hex.matcher(txt.replace(Manager.getWorkDirPath(), "WORKDIR"));
+    public static synchronized String normalize(StringBuffer txt, String workDirPath) {
+        Matcher m = hex.matcher(txt.toString().replace(workDirPath, "WORKDIR"));
         @SuppressWarnings("StringBufferMayBeStringBuilder")
         StringBuffer b = new StringBuffer();
         while (m.find()) {
@@ -202,7 +202,7 @@ public final class NbModuleLogHandler extends Handler {
     public void close() throws SecurityException {
     }
 
-    public static void checkFailures(TestCase test, TestResult res) {
+    public static void checkFailures(TestCase test, TestResult res, String workDirPath) {
         StringBuffer t = text;
         if (t == null) {
             return;
@@ -214,7 +214,7 @@ public final class NbModuleLogHandler extends Handler {
                 sb.append(msg);
                 sb.append(") and failOnException(").append(exc);
                 sb.append("). The following failures have been captured:\n");
-                sb.append(text);
+                sb.append(normalize(text, workDirPath));
                 res.addFailure(test, new AssertionFailedError(sb.toString()));
                 t.setLength(0);
             }
@@ -237,7 +237,7 @@ public final class NbModuleLogHandler extends Handler {
 
         @Override
         public void run(TestResult res) {
-            checkFailures(this, res);
+            checkFailures(this, res, /* XXX is this called? */Manager.getWorkDirPath());
         }
 
     }

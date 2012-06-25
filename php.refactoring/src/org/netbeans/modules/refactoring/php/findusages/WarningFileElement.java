@@ -38,6 +38,7 @@
 package org.netbeans.modules.refactoring.php.findusages;
 
 import javax.swing.text.Position.Bias;
+import org.netbeans.modules.refactoring.php.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
@@ -55,15 +56,15 @@ public class WarningFileElement implements RefactoringElementImplementation {
 
     private FileObject file;
     private PositionBounds bounds;
-    
+
     public WarningFileElement (FileObject file) {
         this.file = file;
         bounds = null;
     }
-    
+
     @Override
     public String getText() {
-        return NbBundle.getMessage(WarningFileElement.class, "MSG_FILE_IS_NOT_OPEN"); 
+        return NbBundle.getMessage(WarningFileElement.class, "MSG_FILE_IS_NOT_OPEN");
     }
 
     @Override
@@ -117,15 +118,15 @@ public class WarningFileElement implements RefactoringElementImplementation {
 
     @Override
     public void setStatus(int status) {
-        
+
     }
 
     @Override
-    public void openInEditor() {        
+    public void openInEditor() {
     }
 
     @Override
     public void showPreview() {
     }
-    
+
 }

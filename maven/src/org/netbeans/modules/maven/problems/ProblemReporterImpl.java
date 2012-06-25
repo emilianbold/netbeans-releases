@@ -96,22 +96,27 @@ import org.openide.util.lookup.Lookups;
  * @author mkleint
  */
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport> {
-    private static final String MISSINGJ2EE = "MISSINGJ2EE"; //NOI18N
+    private static final String MISSING_J2EE = "MISSINGJ2EE"; //NOI18N
+    private static final String MISSING_APISUPPORT = "MISSINGAPISUPPORT"; //NOI18N
+    private static final String MISSING_DEPENDENCY = "MISSING_DEPENDENCY";//NOI18N
+    private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
+    
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ProblemReporterImpl.class);
 
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final Set<ProblemReport> reports;
     private final Set<Artifact> missingArtifacts;
+    private final File projectPOMFile;
     private final RequestProcessor.Task reloadTask = RP.create(new Runnable() {
         @Override public void run() {
-            LOG.log(Level.FINE, "actually reloading {0}", nbproject.getPOMFile());
+            LOG.log(Level.FINE, "actually reloading {0}", projectPOMFile);
             nbproject.fireProjectReload();
         }
     });
     private final FileChangeListener fcl = new FileChangeAdapter() {
         @Override public void fileDataCreated(FileEvent fe) {
-            LOG.log(Level.FINE, "due to {0} scheduling reload of {1}", new Object[] {fe.getFile(), nbproject.getPOMFile()});
+            LOG.log(Level.FINE, "due to {0} scheduling reload of {1}", new Object[] {fe.getFile(), projectPOMFile});
             reloadTask.schedule(1000);
             File f = FileUtil.toFile(fe.getFile());
             if (f != null) {
@@ -126,7 +131,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private PropertyChangeListener listener = new PropertyChangeListener() {
         @Override public void propertyChange(PropertyChangeEvent evt) {
             if (ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
-                ProblemReport rep = getReportWithId(MISSINGJ2EE);
+                ProblemReport rep = getReportWithId(MISSING_J2EE);
                 if (rep != null) {
                     boolean hasj2ee = j2eeInfo != null && j2eeInfo.isEnabled();
                     if (hasj2ee) {
@@ -143,14 +148,19 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         reports = new TreeSet<ProblemReport>(this);
         missingArtifacts = new HashSet<Artifact>();
         nbproject = proj;
+        projectPOMFile = nbproject.getPOMFile();
     }
     
     public void addChangeListener(ChangeListener list) {
-        listeners.add(list);
+        synchronized (listeners) {
+            listeners.add(list);
+        }
     }
     
     public void removeChangeListener(ChangeListener list) {
-        listeners.remove(list);
+         synchronized (listeners) {
+             listeners.remove(list);
+         }
     }
     
     @Override public void addReport(ProblemReport report) {
@@ -180,8 +190,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     }
     
     private void fireChange() {
-        for (ChangeListener list : listeners) {
-            list.stateChanged(new ChangeEvent(this));
+        ArrayList<ChangeListener> list;
+        synchronized (listeners) {        
+            list = new ArrayList<ChangeListener>(listeners);
+        }
+        for (ChangeListener li : list) {
+            li.stateChanged(new ChangeEvent(this));
         }
     }
 
@@ -209,18 +223,18 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
      * and some problems encapsulate several missing artifacts.
      * @param a an artifact (scope permitted but ignored)
      */
-    public void addMissingArtifact(Artifact a) {
+    private void addMissingArtifact(Artifact a) {
         synchronized (reports) {
             a = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
             if (missingArtifacts.add(a)) {
                 File f = a.getFile();
-                LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
+                LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, projectPOMFile});
                 FileUtil.addFileChangeListener(fcl, FileUtil.normalizeFile(f));
             }
         }
     }
 
-    Set<Artifact> getMissingArtifacts() {
+    public Set<Artifact> getMissingArtifacts() {
         synchronized (reports) {
             return new TreeSet<Artifact>(missingArtifacts);
         }
@@ -251,7 +265,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             while (as.hasNext()) {
                 File f = as.next().getFile();
                 if (f != null) {
-                    LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, nbproject.getPOMFile()});
+                    LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, projectPOMFile});
                     FileUtil.removeFileChangeListener(fcl, FileUtil.normalizeFile(f));
                     if (f.isFile()) {
                         BatchProblemNotifier.resolved(f);
@@ -264,7 +278,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         if (hasAny) {
             fireChange();
         }
-        nbproject.getEmbedder().lookupComponent(PluginArtifactsCache.class).flush(); // helps with #195440
+        EmbedderFactory.getProjectEmbedder().lookupComponent(PluginArtifactsCache.class).flush(); // helps with #195440
     }
     
     @Override public int compare(ProblemReport o1, ProblemReport o2) {
@@ -298,7 +312,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "The most probable cause is that part of the general Platform development support is missing as well. "
             + "Please go to Tools/Plugins and install the plugins related to NetBeans development."
     })
-    public void doBaseProblemChecks(@NonNull MavenProject project) {
+    public void doIDEConfigChecks() {
         String packaging = nbproject.getProjectWatcher().getPackagingType();
         if (NbMavenProject.TYPE_WAR.equals(packaging) ||
             NbMavenProject.TYPE_EAR.equals(packaging) ||
@@ -308,12 +322,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             }
             boolean foundJ2ee = j2eeInfo != null && j2eeInfo.isEnabled();
             if (!foundJ2ee) {
-                if (!hasReportWithId(MISSINGJ2EE)) {
+                if (!hasReportWithId(MISSING_J2EE)) {
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
                         ERR_MissingJ2eeModule(),
                         MSG_MissingJ2eeModule(),
                         null);
-                    report.setId(MISSINGJ2EE);
+                    report.setId(MISSING_J2EE);
                     addReport(report);
                     if (j2eeInfo != null) {
                         j2eeInfo.addPropertyChangeListener(listener);
@@ -339,16 +353,11 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ERR_MissingApisupportModule(),
                     MSG_MissingApisupportModule(),
                     null);
+                report.setId(MISSING_APISUPPORT);
                 addReport(report);
             }
         }   
 
-        MavenProject parent = project;
-        while (parent != null) {
-            parent = checkParent(parent);
-        }
-
-        doArtifactChecks(project);
 
         // XXX undeclared Java platform
     }
@@ -363,7 +372,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
             + "The artifacts are:\n {0}"
     })
-    private void doArtifactChecks(@NonNull MavenProject project) {
+    public void doArtifactChecks(@NonNull MavenProject project) {
+        MavenProject parent = project;
+        while (parent != null) {
+            parent = checkParent(parent);
+        }
+        
         boolean missingNonSibling = false;
         List<Artifact> missingJars = new ArrayList<Artifact>();
         for (Artifact art : project.getArtifacts()) {
@@ -404,6 +418,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ERR_NonLocal(),
                     MSG_NonLocal(mess),
                     new SanityBuildAction(nbproject));
+            report.setId(MISSING_DEPENDENCY);
             addReport(report);
         }
     }
@@ -430,6 +445,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     ERR_NoParent(),
                     MSG_NoParent(art.getId()),
                     new SanityBuildAction(nbproject));
+            report.setId(MISSING_PARENT);
             addReport(report);
             addMissingArtifact(art);
         }
@@ -444,7 +460,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     })
     public void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
         for (Throwable e : res.getExceptions()) {
-            LOG.log(Level.FINE, "Error on loading project " + nbproject.getPOMFile(), e);
+            LOG.log(Level.FINE, "Error on loading project " + projectPOMFile, e);
             String msg = e.getMessage();
             if (e instanceof ArtifactResolutionException) { // XXX when does this occur?
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
@@ -466,16 +482,16 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                         if (mp.getException() instanceof UnresolvableModelException) {
                             // Probably obsoleted by ProblemReporterImpl.checkParent, but just in case:
                             UnresolvableModelException ume = (UnresolvableModelException) mp.getException();
-                            addMissingArtifact(nbproject.getEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
+                            addMissingArtifact(EmbedderFactory.getProjectEmbedder().createProjectArtifact(ume.getGroupId(), ume.getArtifactId(), ume.getVersion()));
                         } else if (mp.getException() instanceof PluginResolutionException) {
                             Plugin plugin = ((PluginResolutionException) mp.getException()).getPlugin();
                             // XXX this is not actually accurate; should rather pick out the ArtifactResolutionException & ArtifactNotFoundException inside
-                            addMissingArtifact(nbproject.getEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
+                            addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion(), "jar"));
                         }
                     }
                 }
             } else {
-                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + nbproject.getProjectDirectory(), e); //NOI18N
+                LOG.log(Level.INFO, "Exception thrown while loading maven project at " + projectPOMFile, e); //NOI18N
                 ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                         "Error reading project model", msg, null);
                 addReport(report);

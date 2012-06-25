@@ -48,10 +48,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
@@ -65,8 +65,8 @@ public class JSFResourceBundlesProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JSFResourceBundlesProvider.class.getName());
 
-    public static List<ResourceBundle> getResourceBundles(WebModule webModule) {
-       MetadataModel<JsfModel> model = JsfModelFactory.getModel(webModule);
+    public static List<ResourceBundle> getResourceBundles(Project project) {
+       MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
         if (model == null) {
             return Collections.emptyList();
         }
@@ -86,12 +86,12 @@ public class JSFResourceBundlesProvider {
                 }
             });
         } catch (MetadataModelException ex) {
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ex);
+            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + project, ex);
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ex);
+            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + project, ex);
         } catch (IllegalStateException ise) {
             // thrown from xdm (underlying the jsf model) when the model is broken
-            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + webModule, ise);
+            LOGGER.log(Level.INFO, "Failed to read resource bundles for " + project, ise);
         }
         return Collections.emptyList();
     }

@@ -53,6 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -94,7 +95,7 @@ public class SharabilityQueryImplTest extends NbTestCase {
     }
     
     private URI file(String path) {
-        return new File(scratchF, path.replace('/', File.separatorChar)).toURI();
+        return Utilities.toURI(new File(scratchF, path.replace('/', File.separatorChar)));
     }
     
     public void testBasicIncludesExcludes() throws Exception {

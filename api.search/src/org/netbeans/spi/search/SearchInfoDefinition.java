@@ -43,6 +43,7 @@
  */
 package org.netbeans.spi.search;
 
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -153,4 +154,52 @@ public abstract class SearchInfoDefinition {
      * @return List of search roots.
      */
     public abstract @NonNull List<SearchRoot> getSearchRoots();
+
+    /**
+     * Specifies which
+     * <code>URIs</code>s should be searched. The returned
+     * <code>Iterator</code> needn't implement method
+     * {@link java.util.Iterator#remove remove()} (i.e. it may throw
+     * <code>UnsupportedOperationException</code> instead of actual
+     * implementation).
+     *
+     * The default implementation uses internaly FileObject iterator returned by
+     * {@link #filesToSearch(SearchScopeOptions, SearchListener, AtomicBoolean)}
+     *
+     * @param options File name pattern, traversing options and custom filters.
+     * @param listener Listener that should be notified about important events
+     * and progress.
+     * @param terminated Object that can be asked whether the search has been
+     * terminated by the user.
+     * @return iterator which iterates over
+     * <code>FileObject</code>s to be searched
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public @NonNull
+    Iterator<URI> urisToSearch(
+            @NonNull SearchScopeOptions options,
+            @NonNull SearchListener listener,
+            @NonNull AtomicBoolean terminated) {
+
+        final Iterator<FileObject> inner = filesToSearch(options,
+                listener, terminated);
+        return new Iterator<URI>() {
+            @Override
+            public boolean hasNext() {
+                return inner.hasNext();
+            }
+
+            @Override
+            public URI next() {
+                FileObject next = inner.next();
+                return next == null ? null : next.toURI();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
 }

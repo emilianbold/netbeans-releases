@@ -79,6 +79,7 @@ public class MavenWebService implements WebServiceImplementation {
         this.prj = prj;
     }
 
+    @Override
     public String getIdentifier() {
         if (service.isServiceProvider()) {
             return service.getImplementationClass();
@@ -87,18 +88,22 @@ public class MavenWebService implements WebServiceImplementation {
         }
     }
 
+    @Override
     public boolean isServiceProvider() {
         return service.isServiceProvider();
     }
 
+    @Override
     public Type getServiceType() {
         return WebService.Type.SOAP;
     }
 
+    @Override
     public ServiceDescriptor getServiceDescriptor() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public Node createNode() {
         if (service.isServiceProvider()) {
             SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(

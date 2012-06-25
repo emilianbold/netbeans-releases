@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -59,6 +58,7 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import static org.netbeans.modules.maven.configurations.ConfigurationPersistenceUtils.*;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -68,7 +68,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 /**
  * WARNING: this class shall in no way use project.getLookup() as it's called
  * in the critical loop (getOriginalMavenproject
@@ -89,16 +88,6 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     private ProjectProfileHandler profileHandler;
     private PropertyChangeListener propertyChange;
 
-    static String NAMESPACE = "http://www.netbeans.org/ns/maven-config-data/1"; //NOI18N
-    static String ROOT = "config-data"; //NOI18N
-    static String ENABLED = "enabled"; //NOI18N
-    static String ACTIVATED = "activated"; //NOI18N
-    static String CONFIGURATIONS = "configurations"; //NOI18N
-    static String CONFIG = "configuration"; //NOI18N
-    static String PROPERTY = "property"; //NOI18N
-    static String PROPERTY_NAME_ATTR = "name"; //NOI18N
-    static String CONFIG_PROFILES_ATTR = "profiles"; //NOI18N
-    static String CONFIG_ID_ATTR = "id"; //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(M2ConfigProvider.class.getName(),10);
     
@@ -106,16 +95,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         project = proj;
         this.aux = aux;
         profileHandler = prof;
-        DEFAULT = M2Configuration.createDefault(project);
+        DEFAULT = M2Configuration.createDefault(project.getProjectDirectory());
         //read the active one..
-        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, false);
-        if (el != null) {
-            NodeList list = el.getElementsByTagNameNS(NAMESPACE, ACTIVATED);
-            if (list.getLength() > 0) {
-                Element enEl = (Element)list.item(0);
-                initialActive = enEl.getTextContent();
-            }
-        }
+        initialActive = readActiveConfigurationName(aux);
         
         active = DEFAULT;
         propertyChange = new PropertyChangeListener() {
@@ -153,7 +135,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             Runnable dothis = new Runnable() {
                     public @Override void run() {
                         M2Configuration _active;
-                        synchronized (this) {
+                        synchronized (M2ConfigProvider.this) {
                             _active = active;
                         }
                         try {
@@ -177,11 +159,11 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         }
         if (shared == null) {
             //read from auxconf
-            shared = readConfiguration(true);
+            shared = readConfigurations(aux, project.getProjectDirectory(), true);
         }
         if (nonshared == null) {
             //read from auxconf
-            nonshared = readConfiguration(false);
+            nonshared = readConfigurations(aux, project.getProjectDirectory(), false);
         }
         Collection<M2Configuration> toRet = new TreeSet<M2Configuration>();
         toRet.add(DEFAULT);
@@ -329,7 +311,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         SortedSet<M2Configuration> config = new TreeSet<M2Configuration>();
 //        config.add(DEFAULT);
         for (String prof : profs) {
-            M2Configuration c = new M2Configuration(prof, project);
+            M2Configuration c = new M2Configuration(prof, project.getProjectDirectory());
             c.setActivatedProfiles(Collections.singletonList(prof));
             config.add(c);
         }
@@ -356,44 +338,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         support.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
     }
     
-    private SortedSet<M2Configuration> readConfiguration(boolean shared) {
-        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
-        if (el != null) {
-            NodeList list = el.getElementsByTagNameNS(NAMESPACE, CONFIG);
-            if (list.getLength() > 0) {
-                SortedSet<M2Configuration> toRet = new TreeSet<M2Configuration>();
-                int len = list.getLength();
-                for (int i = 0; i < len; i++) {
-                    Element enEl = (Element)list.item(i);
-                    
-                    M2Configuration c = new M2Configuration(enEl.getAttribute(CONFIG_ID_ATTR), project);
-                    String profs = enEl.getAttribute(CONFIG_PROFILES_ATTR);
-                    if (profs != null) {
-                        String[] s = profs.split(" ");
-                        List<String> prf = new ArrayList<String>();
-                        for (String s2 : s) {
-                            if (s2.trim().length() > 0) {
-                                prf.add(s2.trim());
-                            }
-                        }
-                        c.setActivatedProfiles(prf);
-                    }
-                    NodeList ps = enEl.getElementsByTagName(PROPERTY);
-                    for (int y = 0; y < ps.getLength(); y++) {
-                        Element propEl = (Element) ps.item(y);
-                        String key = propEl.getAttribute(PROPERTY_NAME_ATTR);
-                        String value = propEl.getTextContent();
-                        if (key != null && value != null) {
-                            c.getProperties().put(key, value);
-                        }
-                    }
-                    toRet.add(c);
-                }
-                return toRet;
-            }
-        }
-        return new TreeSet<M2Configuration>();
-    }
+    
 
     public static void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value) {
         Element el = conf.getConfigurationFragment(ROOT, NAMESPACE, false);

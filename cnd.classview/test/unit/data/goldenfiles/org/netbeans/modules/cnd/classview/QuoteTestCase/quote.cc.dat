@@ -23,7 +23,7 @@ Customer / class_16.png
 	Customer(const string initName, int initDiscount) / constructors.png
 	GetDiscount() const / methods.png
 	GetName() const / methods.png
-	operator <<(ostream& , const Customer& ) / global_operator.png
+	operator <<(ostream&, const Customer&) / global_operator.png
 Direction / enumeration_16.png
 	down / enumeration_item_16.png
 	left / enumeration_item_16.png
@@ -82,7 +82,7 @@ Module / class_16.png
 	SetType(int type) / methods.png
 	SetUnits(int u) / methods.png
 	SetVendor(const char* v) / methods.png
-	operator <<(ostream& , const Module& ) / global_operator.png
+	operator <<(ostream&, const Module&) / global_operator.png
 	operator =(const Module& obj) / operator_public.png
 	~Module() / deconstructors.png
 Pair / typedef_16.png
@@ -97,12 +97,12 @@ System / class_16.png
 	GetSupportMetric() const / methods.png
 	System() / constructors.png
 	System(const System& obj) / constructors.png
-	operator <<(ostream& , const System& ) / global_operator.png
+	operator <<(ostream&, const System&) / global_operator.png
 Tangage / typedef_16.png
 	toDown / enumeration_item_16.png
 	toUp / enumeration_item_16.png
 DDD / global_variable.png
 main(int argc, char** argv) / global_function.png
-operator <<(ostream& , const Customer& ) / global_operator.png
-operator <<(ostream& , const Module& ) / global_operator.png
-operator <<(ostream& , const System& ) / global_operator.png
+operator <<(ostream&, const Customer&) / global_operator.png
+operator <<(ostream&, const Module&) / global_operator.png
+operator <<(ostream&, const System&) / global_operator.png

@@ -366,7 +366,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 completeKeyword("VALUES");  //NOI18N
                 break;
             case FROM:
-                completeKeyword("WHERE");  //NOI18N
+                completeKeyword("WHERE", "GROUP", "ORDER");  //NOI18N
                 // with join keywors
                 //completeKeyword("WHERE", "INNER", "OUTER", "LEFT", "JOIN", "ON");  //NOI18N
                 break;

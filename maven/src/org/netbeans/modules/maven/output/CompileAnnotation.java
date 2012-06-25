@@ -78,6 +78,7 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
     
     
     
+    @Override
     public void outputLineSelected(OutputEvent ev) {
         //           cookie.getLineSet().getCurrent(line).show(Line.SHOW_SHOW);
     }
@@ -85,6 +86,7 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
     /** Called when some sort of action is performed on a line.
      * @param ev the event describing the line
      */
+    @Override
     public void outputLineAction(OutputEvent ev) {
         FileUtil.refreshFor(clazzfile);
         FileObject file = FileUtil.toFileObject(clazzfile);
@@ -94,7 +96,7 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
         }
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
             if (ed != null && file == dob.getPrimaryFile()) {
                 if (lineNum == -1) {
                     ed.open();
@@ -144,6 +146,7 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
     /** Called when a line is cleared from the buffer of known lines.
      * @param ev the event describing the line
      */
+    @Override
     public void outputLineCleared(OutputEvent ev) {
 //        doDetach();
     }

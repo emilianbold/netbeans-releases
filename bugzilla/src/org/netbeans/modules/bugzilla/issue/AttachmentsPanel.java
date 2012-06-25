@@ -60,6 +60,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -70,6 +72,8 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
+import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,7 +86,9 @@ public class AttachmentsPanel extends JPanel {
     private List<AttachmentPanel> newAttachments;
     private JLabel noneLabel;
     private LinkButton createNewButton;
-    private JLabel dummyLabel = new JLabel();
+    private LinkButton attachLogFileButton;
+    private JLabel dummyCreateLabel = new JLabel();
+    private JLabel dummyAttachLabel = new JLabel();
     private Method maxMethod;
 
     public AttachmentsPanel() {
@@ -99,7 +105,13 @@ public class AttachmentsPanel extends JPanel {
         }
     }
 
-    void setAttachments(List<Attachment> attachments) {
+    void setAttachments(List<Attachment> attachments, boolean attachLogFile) {
+        
+        if(attachLogFile) {
+            attachLogFileButton = new LinkButton(new CreateNewAction(true));
+            attachLogFileButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AttachmentsPanel.class).getString("AttachmentPanels.attachLogFileButton.AccessibleContext.accessibleDescription")); // NOI18N            
+        }
+        
         hadNoAttachments = attachments.isEmpty();
         newAttachments = new LinkedList<AttachmentPanel>();
         removeAll();
@@ -111,16 +123,38 @@ public class AttachmentsPanel extends JPanel {
         GroupLayout.SequentialGroup newVerticalGroup = layout.createSequentialGroup();
 
         boolean noAttachments = hadNoAttachments;
-        horizontalGroup.addGroup(layout.createSequentialGroup()
+        
+        if(attachLogFileButton != null) {
+            SequentialGroup sg = layout.createSequentialGroup();
+            sg.addComponent(noneLabel)
+              .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+              .addComponent(noAttachments ? createNewButton : dummyCreateLabel)
+              .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+              .addComponent(noAttachments ? attachLogFileButton : dummyAttachLabel);
+            horizontalGroup.addGroup(sg);
+        } else {
+            horizontalGroup.addGroup(layout.createSequentialGroup()
             .addComponent(noneLabel)
             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(noAttachments ? createNewButton : dummyLabel));
-        verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-            .addComponent(noneLabel)
-            .addComponent(noAttachments ? createNewButton : dummyLabel));
-        dummyLabel.setVisible(false);
+            .addComponent(noAttachments ? createNewButton : dummyCreateLabel));
+        }
+        
+        if(attachLogFileButton != null) {
+            ParallelGroup pg = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+            pg.addComponent(noneLabel)
+              .addComponent(noAttachments ? createNewButton : dummyCreateLabel)
+              .addComponent(noAttachments ? attachLogFileButton : dummyAttachLabel);
+            verticalGroup.addGroup(pg);
+        } else {
+            verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addComponent(noneLabel)
+                .addComponent(noAttachments ? createNewButton : dummyCreateLabel));
+        }       
+        
+        dummyCreateLabel.setVisible(false);
+        dummyAttachLabel.setVisible(false);
         noneLabel.setVisible(noAttachments);
-        updateCreateNewButton(noAttachments);
+        updateButtonText(noAttachments);
         if (noAttachments) {
             // noneLabel + createNewButton
             verticalGroup.addGroup(newVerticalGroup);
@@ -245,15 +279,39 @@ public class AttachmentsPanel extends JPanel {
                 horizontalGroup.addComponent(p, 0, 0, groupWidth);
             }
         }
-        horizontalGroup.addGroup(layout.createSequentialGroup()
-                .addComponent(noAttachments ? dummyLabel : createNewButton)
+        
+        if(attachLogFileButton != null) {
+            SequentialGroup sg = layout.createSequentialGroup();
+            sg.addComponent(noAttachments ? dummyCreateLabel : createNewButton)
+              .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+              .addComponent(noAttachments ? dummyAttachLabel : attachLogFileButton)
+              .addGap(0, 0, Short.MAX_VALUE);
+            horizontalGroup.addGroup(sg);
+        } else {
+             horizontalGroup.addGroup(layout.createSequentialGroup()
+                .addComponent(noAttachments ? dummyCreateLabel : createNewButton)
                 .addGap(0, 0, Short.MAX_VALUE));
-        verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
-        verticalGroup.addComponent(noAttachments ? dummyLabel : createNewButton);
+        }        
+        
+        if(attachLogFileButton != null) {
+            ParallelGroup pg = layout.createParallelGroup(GroupLayout.Alignment.BASELINE);
+            pg.addComponent(noAttachments ? dummyCreateLabel : createNewButton)
+              .addComponent(noAttachments ? dummyAttachLabel : attachLogFileButton);
+            verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+            verticalGroup.addGroup(pg);
+        } else {
+            verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
+            verticalGroup.addComponent(noAttachments ? dummyCreateLabel : createNewButton);
+        }
         
         layout.setHorizontalGroup(horizontalGroup);
         layout.setVerticalGroup(verticalGroup);
+        
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
+        if(attachLogFileButton != null) {
+            ((CreateNewAction)attachLogFileButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
+        }
+        
         setLayout(layout);
     }
 
@@ -278,11 +336,16 @@ public class AttachmentsPanel extends JPanel {
         return menu;
     }
 
-    private void updateCreateNewButton(boolean noAttachments) {
-        String createNewButtonText = NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.createNewButton.text"); // NOI18N
-        createNewButton.setText(noAttachments ? ('('+createNewButtonText+')') : createNewButtonText);
+    private void updateButtonText(boolean noAttachments) {
+        String txt = NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.createNewButton.text"); // NOI18N
+        createNewButton.setText(noAttachments ? ('('+txt+')') : txt); // NOI18N
+        
+        if(attachLogFileButton != null) {
+            txt = NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.attachLogFileButton.text"); // NOI18N
+            attachLogFileButton.setText(noAttachments ? ('('+txt+')') : txt); // NOI18N
+        }
     }
-
+    
     private void makeBold(JLabel label) {
         Font font = label.getFont().deriveFont(Font.BOLD);
         label.setFont(font);
@@ -311,7 +374,7 @@ public class AttachmentsPanel extends JPanel {
                         // The last attachment deleted
                         noneLabel.setVisible(true);
                         switchHelper();
-                        updateCreateNewButton(true);
+                        updateButtonText(true);
                     }
                 }
             };
@@ -322,9 +385,15 @@ public class AttachmentsPanel extends JPanel {
     private void switchHelper() {
         JLabel temp = new JLabel();
         GroupLayout layout = (GroupLayout)getLayout();
-        layout.replace(dummyLabel, temp);
-        layout.replace(createNewButton, dummyLabel);
+        layout.replace(dummyCreateLabel, temp);
+        layout.replace(createNewButton, dummyCreateLabel);
         layout.replace(temp, createNewButton);
+        
+        if(attachLogFileButton != null) {
+            layout.replace(dummyAttachLabel, temp);
+            layout.replace(attachLogFileButton, dummyAttachLabel);
+            layout.replace(temp, attachLogFileButton);
+        }
     }
 
     List<AttachmentInfo> getNewAttachments() {
@@ -350,6 +419,16 @@ public class AttachmentsPanel extends JPanel {
     }
 
     class CreateNewAction extends AbstractAction {
+
+        private final boolean attachLogFile;
+        public CreateNewAction() {
+            attachLogFile = false;
+        }
+        
+        public CreateNewAction(boolean attachLogFile) {
+            this.attachLogFile = attachLogFile;
+        }
+        
         private GroupLayout.ParallelGroup horizontalGroup;
         private GroupLayout.SequentialGroup verticalGroup;
 
@@ -369,11 +448,19 @@ public class AttachmentsPanel extends JPanel {
             if (noneLabel.isVisible()) {
                 noneLabel.setVisible(false);
                 switchHelper();
-                updateCreateNewButton(false);
+                updateButtonText(false);
             }
             if (hadNoAttachments) {
                 attachment.addPropertyChangeListener(getDeletedListener());
             }
+            
+            if(attachLogFile) {
+                File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH); 
+                if(f.exists()) {
+                    attachment.setAttachment(f, NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE); // NOI18N
+                }
+            }
+            
             newAttachments.add(attachment);
             UIUtils.keepFocusedComponentVisible(attachment);
             revalidate();

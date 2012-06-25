@@ -107,11 +107,20 @@ public class ToggleBlockCommentAction extends BaseAction{
                     }
                     if (!newLine && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
                         processedHere = true;
-                        final int changeOffset = ts.offset() + ts.token().length();
-                        final boolean lineComment = (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT)
-                                || (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT);
-
-                        final int length = lineComment ? ts.offset() + ts.token().length() - changeOffset : 0;
+                        int possibleChangeOffset = ts.offset() + ts.token().length();
+                        int possibleWhitespaceLength = 0;
+                        boolean possibleLineComment = false;
+                        if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                            possibleLineComment = true;
+                        } else if (ts.token().id() == PHPTokenId.WHITESPACE) {
+                            possibleWhitespaceLength = ts.token().length();
+                            if (ts.moveNext() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                possibleLineComment = true;
+                            }
+                        }
+                        final boolean lineComment = possibleLineComment;
+                        final int changeOffset = lineComment ? possibleChangeOffset + possibleWhitespaceLength : possibleChangeOffset;
+                        final int length = lineComment ? ts.offset() + ts.token().length() + countForgoingWhitespaces(ts) - changeOffset : 0;
                         doc.runAtomic(new Runnable() {
 
                             public @Override
@@ -148,7 +157,22 @@ public class ToggleBlockCommentAction extends BaseAction{
         }
     }
 
-    private boolean isNewLineBeforeCaretOffset(final TokenSequence<PHPTokenId> ts, final int caretOffset) {
+    private static int countForgoingWhitespaces(final TokenSequence<PHPTokenId> tokenSequence) {
+        int result = 0;
+        tokenSequence.moveNext();
+        String commentedText = tokenSequence.token().text().toString();
+        for (int i = 0; i < commentedText.length(); i++) {
+            if (Character.isWhitespace(commentedText.charAt(i))) {
+                result++;
+            } else {
+                break;
+            }
+        }
+        tokenSequence.movePrevious();
+        return result;
+    }
+
+    private static boolean isNewLineBeforeCaretOffset(final TokenSequence<PHPTokenId> ts, final int caretOffset) {
         boolean result = false;
         int indexOfNewLine = ts.token().text().toString().indexOf("\n"); //NOI18N
         if (indexOfNewLine != -1) {

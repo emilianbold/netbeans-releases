@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.subversion.ui.wizards.repositorystep;
 
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -113,6 +116,8 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.add(repository.getPanel());
+            Dimension size = panel.getPreferredSize();
+            panel.setPreferredSize(new Dimension(size.width, size.height + new JLabel("A").getPreferredSize().height + new JButton("A").getPreferredSize().height + 20)); //NOI18N
             valid();
         }                        
         return panel;

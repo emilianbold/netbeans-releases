@@ -71,10 +71,12 @@ public class ModuleImpl implements Module {
         this.web = web;
     }
 
+    @Override
     public void setConnector(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getConnector() {
         return connector;
     }
@@ -87,10 +89,12 @@ public class ModuleImpl implements Module {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setEjb(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getEjb() {
         return ejb;
     }
@@ -103,10 +107,12 @@ public class ModuleImpl implements Module {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setJava(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getJava() {
         return car;
     }
@@ -119,22 +125,27 @@ public class ModuleImpl implements Module {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setWeb(Web value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public Web getWeb() {
         return web;
     }
 
+    @Override
     public Web newWeb() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setAltDd(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getAltDd() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
@@ -147,18 +158,22 @@ public class ModuleImpl implements Module {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void setId(String value) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public String getId() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
@@ -168,10 +183,12 @@ public class ModuleImpl implements Module {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public Object getValue(String propertyName) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public void write(java.io.OutputStream os) throws java.io.IOException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }

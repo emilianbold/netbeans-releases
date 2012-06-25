@@ -61,78 +61,23 @@ import org.openide.nodes.Node.PropertySet;
  */
 final class ProxyNode extends AbstractNode {
     private static final int MAX_NAMES = 2;
-    private Node[] original;
-    private ArrayList<Node.PropertySet[]> originalPropertySets;
+    private volatile Node[] original;
+    private volatile ArrayList<Node.PropertySet[]> originalPropertySets;
+    private NodeListener nl;
     private NodeListener pcl;
     String displayName = null;
     private String shortDescription = null;
 
-    ProxyNode(Node[] original) {
+    ProxyNode(Node... original) {
         super(Children.LEAF);
         this.original = original;
-        pcl = new NodeAdapter() {
-                    public void propertyChange(PropertyChangeEvent pce) {
-                        String nm = pce.getPropertyName();
-
-                        if (PROP_COOKIE.equals(nm)) {
-                            fireCookieChange();
-                        } else if (PROP_DISPLAY_NAME.equals(nm)) {
-                            displayName = null;
-                            fireDisplayNameChange((String) pce.getOldValue(), getDisplayName());
-                        } else if (PROP_ICON.equals(nm)) {
-                            fireIconChange();
-                        } else if (PROP_OPENED_ICON.equals(nm)) {
-                            fireOpenedIconChange();
-                        } else if (PROP_NAME.equals(nm)) {
-                            fireNameChange((String) pce.getOldValue(), getName());
-                        } else if (PROP_PROPERTY_SETS.equals(nm)) {
-                            PropertySet[] old = getPropertySets();
-                            setSheet(createSheet());
-                            firePropertySetsChange(old, getPropertySets());
-                        } else if (PROP_SHORT_DESCRIPTION.equals(nm)) {
-                            fireShortDescriptionChange((String) pce.getOldValue(), getShortDescription());
-                        } else if (PROP_LEAF.equals(nm)) {
-                            //Not interesting to property sheet
-                        } else if (PROP_PARENT_NODE.equals(nm)) {
-                            //Not interesting to property sheet
-                        } else {
-                            Node.PropertySet[] pss = getPropertySets();
-                            boolean exists = false;
-
-                            for (int i = 0; i < pss.length && !exists; i++) {
-                                Node.Property[] ps = pss[i].getProperties();
-
-                                for (int j = 0; j < ps.length && !exists; j++) {
-                                    if (ps[j].getName().equals(nm)) {
-                                        exists = true;
-                                    }
-                                }
-                            }
-                            if( exists ) {
-                                firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
-                            }
-                        }
-                    }
-
-                    public void nodeDestroyed(NodeEvent ev) {
-                        int idx = Arrays.asList(ProxyNode.this.original).indexOf((Node) ev.getSource());
-
-                        if (idx != -1) {
-                            HashSet<Node> set = new HashSet<Node>(Arrays.asList(ProxyNode.this.original));
-                            set.remove(ev.getSource());
-                            ProxyNode.this.original = set.toArray(new Node[0]);
-
-                            if (set.size() == 0) {
-                                ProxyNode.this.fireNodeDestroyed();
-                            }
-                        }
-                    }
-                };
+        nl = new NodeAdapterImpl(true);
+        pcl = new NodeAdapterImpl(false);
 
         for (int i = 0; i < original.length; i++) {
             original[i].addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(pcl, original[i]));
             original[i].addNodeListener(
-                org.openide.util.WeakListeners.create(NodeListener.class, pcl, original[i])
+                org.openide.util.WeakListeners.create(NodeListener.class, nl, original[i])
             );
         }
     }
@@ -211,15 +156,18 @@ final class ProxyNode extends AbstractNode {
         }
     }
     
-    private ArrayList<Node.PropertySet[]> getOriginalPropertySets() {
+    private ArrayList<Node.PropertySet[]> getOriginalPropertySets(Node[] forWhat) {
         if( null == originalPropertySets ) {
-            originalPropertySets = new ArrayList<Node.PropertySet[]>( original.length );
+            ArrayList<PropertySet[]> arr = new ArrayList<Node.PropertySet[]>( forWhat.length );
             
-            for( int i=0; i<original.length; i++) {	    
-                Node.PropertySet[] p = original[i].getPropertySets();
-                originalPropertySets.add( p );
+            for( int i=0; i<forWhat.length; i++) {	    
+                Node.PropertySet[] p = forWhat[i].getPropertySets();
+                arr.add( p );
             }
-            
+            if (original == forWhat) {
+                originalPropertySets = arr;
+            }
+            return arr;
         }
         return originalPropertySets;
     }
@@ -228,8 +176,9 @@ final class ProxyNode extends AbstractNode {
      * of properties in those tabs.
      */
     private Sheet.Set[] computePropertySets() {
-        if (original.length > 0) {
-            final ArrayList<PropertySet[]> ops = getOriginalPropertySets();
+        Node[] copy = original;
+        if (copy.length > 0) {
+            final ArrayList<PropertySet[]> ops = getOriginalPropertySets(copy);
             if (ops.isEmpty()) {
                 return new Sheet.Set[0];
             }
@@ -289,7 +238,7 @@ final class ProxyNode extends AbstractNode {
                         continue;
                     }
 
-                    ProxyProperty pp = createProxyProperty(p[j].getName(), res.getName());
+                    ProxyProperty pp = createProxyProperty(copy, p[j].getName(), res.getName());
                     res.put(pp);
                 }
 
@@ -305,11 +254,11 @@ final class ProxyNode extends AbstractNode {
     /** Finds properties in original with specified
      * name in all tabs and constructs a ProxyProperty instance.
      */
-    private ProxyProperty createProxyProperty(String propName, String setName) {
-        Node.Property[] arr = new Node.Property[original.length];
+    private ProxyProperty createProxyProperty(Node[] copy, String propName, String setName) {
+        Node.Property[] arr = new Node.Property[copy.length];
 
-        for (int i = 0; i < original.length; i++) {
-            Node.PropertySet[] p = getOriginalPropertySets().get(i);
+        for (int i = 0; i < copy.length; i++) {
+            Node.PropertySet[] p = getOriginalPropertySets(copy).get(i);
 
             for (int j = 0; j < p.length; j++) {
                 if (p[j].getName().equals(setName)) {
@@ -534,6 +483,83 @@ final class ProxyNode extends AbstractNode {
 
         public DifferentValuesException(String message) {
             super(message);
+        }
+    }
+
+    private class NodeAdapterImpl extends NodeAdapter {
+        private final boolean nodeListener;
+
+        public NodeAdapterImpl(boolean b) {
+            this.nodeListener = b;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            if (nodeListener) {
+                nodePropertyChange(pce);
+            } else {
+                realPropertyChange(pce);
+            }
+        }
+        
+        private void nodePropertyChange(PropertyChangeEvent pce) {
+            String nm = pce.getPropertyName();
+
+            if (PROP_COOKIE.equals(nm)) {
+                fireCookieChange();
+            } else if (PROP_DISPLAY_NAME.equals(nm)) {
+                displayName = null;
+                fireDisplayNameChange((String) pce.getOldValue(), getDisplayName());
+            } else if (PROP_ICON.equals(nm)) {
+                fireIconChange();
+            } else if (PROP_OPENED_ICON.equals(nm)) {
+                fireOpenedIconChange();
+            } else if (PROP_NAME.equals(nm)) {
+                fireNameChange((String) pce.getOldValue(), getName());
+            } else if (PROP_PROPERTY_SETS.equals(nm)) {
+                PropertySet[] old = getPropertySets();
+                setSheet(createSheet());
+                firePropertySetsChange(old, getPropertySets());
+            } else if (PROP_SHORT_DESCRIPTION.equals(nm)) {
+                fireShortDescriptionChange((String) pce.getOldValue(), getShortDescription());
+            } else if (PROP_LEAF.equals(nm)) {
+                //Not interesting to property sheet
+            } else if (PROP_PARENT_NODE.equals(nm)) {
+                //Not interesting to property sheet
+            }
+        }
+
+        public void nodeDestroyed(NodeEvent ev) {
+            int idx = Arrays.asList(ProxyNode.this.original).indexOf((Node) ev.getSource());
+
+            if (idx != -1) {
+                HashSet<Node> set = new HashSet<Node>(Arrays.asList(ProxyNode.this.original));
+                set.remove(ev.getSource());
+                ProxyNode.this.original = set.toArray(new Node[0]);
+
+                if (set.size() == 0) {
+                    ProxyNode.this.fireNodeDestroyed();
+                }
+            }
+        }
+
+        private void realPropertyChange(PropertyChangeEvent pce) {
+            String nm = pce.getPropertyName();
+            Node.PropertySet[] pss = getPropertySets();
+            boolean exists = false;
+
+            for (int i = 0; i < pss.length && !exists; i++) {
+                Node.Property[] ps = pss[i].getProperties();
+
+                for (int j = 0; j < ps.length && !exists; j++) {
+                    if (ps[j].getName().equals(nm)) {
+                        exists = true;
+                    }
+                }
+            }
+            if( exists ) {
+                firePropertyChange(pce.getPropertyName(), pce.getOldValue(), pce.getNewValue());
+            }
         }
     }
 }

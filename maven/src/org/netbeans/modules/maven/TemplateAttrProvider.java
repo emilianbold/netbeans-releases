@@ -124,7 +124,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         }
 
         ProjectInformation pi = ProjectUtils.getInformation(project);
-        values.put("name", pi.getName()); // NOI18N
+        values.put("name", mp.getArtifactId()); // NOI18N
         values.put("displayName", pi.getDisplayName()); // NOI18N
 
         if (values.size() > 0) {

@@ -64,6 +64,9 @@ import org.openide.util.NbBundle;
  */
 public class StartServer extends Task implements Deployment.Logger {
 
+    // default profiling timeout
+    private static final long DEFAULT_TIMEOUT = 300000; // in millis
+
     /**
      * Holds value of property debugmode.
      */
@@ -114,6 +117,17 @@ public class StartServer extends Task implements Deployment.Logger {
                     si.startDebug(ui);
                 } else if (profilemode) {
                     si.startProfile(false, ui);
+                    // TODO whole this thing would deserve a better solution
+                    long start = System.nanoTime();
+                    while (!si.isReallyRunning()
+                            && DEFAULT_TIMEOUT > ((System.nanoTime() - start) / 1000000)) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            // proceed to exit
+                        }
+                    }
                 } else {
                     si.start(ui);
                 }

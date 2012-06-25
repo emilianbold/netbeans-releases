@@ -61,7 +61,6 @@ import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
-import org.openide.cookies.EditCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -71,6 +70,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -156,7 +156,10 @@ public class MatchingObjectNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         if (!context) {
-            return new Action[] {new OpenNodeAction(), new CopyPathAction()};
+            return new Action[]{
+                        SystemAction.get(OpenMatchingObjectsAction.class),
+                        new CopyPathAction()
+                    };
         } else {
             return new Action[0];
         }
@@ -184,7 +187,7 @@ public class MatchingObjectNode extends AbstractNode {
 
     @Override
     public Action getPreferredAction() {
-        return new OpenNodeAction();
+        return SystemAction.get(OpenMatchingObjectsAction.class);
     }
 
     private void setValidOriginal() {
@@ -203,10 +206,11 @@ public class MatchingObjectNode extends AbstractNode {
             original.removeNodeListener(origNodeListener);
             origNodeListener = null;
         }
+        String oldDisplayName = original.getDisplayName();
         original = new AbstractNode(Children.LEAF);
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
-        fireDisplayNameChange(matchingObject.getDataObject().getName(),
+        fireDisplayNameChange(oldDisplayName,
                 matchingObject.getFileObject().getNameExt());
     }
 
@@ -316,22 +320,6 @@ public class MatchingObjectNode extends AbstractNode {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             setValidOriginal();
-        }
-    }
-
-    private class OpenNodeAction extends AbstractAction {
-
-        public OpenNodeAction() {
-            super(UiUtils.getText("LBL_EditAction"));                   //NOI18N
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            EditCookie editCookie = original.getLookup().lookup(
-                    EditCookie.class);
-            if (editCookie != null) {
-                editCookie.edit();
-            }
         }
     }
 

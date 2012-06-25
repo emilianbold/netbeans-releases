@@ -80,6 +80,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -269,7 +270,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         File home = new File (s);
         home = FileUtil.normalizeFile (home);
         
-        return home.toURI ().toURL ();
+        return Utilities.toURI (home).toURL ();
     }
 
     /** Finds file for a given node 

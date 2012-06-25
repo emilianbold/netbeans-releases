@@ -1,0 +1,14 @@
+Display text: <font color=#000000>const </font><b>SIZE</b><font color=#000000> = 3;</font>
+File name: Kitchen.php
+Name: SIZE
+Position: BEGIN: 74 END: 78
+
+Display text: <font color=#000000>return self::</font><b>SIZE</b><font color=#000000>;</font>
+File name: Kitchen.php
+Name: SIZE
+Position: BEGIN: 186 END: 190
+
+Display text: <font color=#000000>echo Kitchen::</font><b>SIZE</b><font color=#000000>;</font>
+File name: index.php
+Name: SIZE
+Position: BEGIN: 230 END: 234

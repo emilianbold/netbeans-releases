@@ -70,6 +70,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
     "DrillDownWindow_DrillDownCaption=DrillDown",
     "DrillDownWindow_DrillDownAccessDescr=High-level category view of where application spends time"
 })
+// TODO: should extend ProfilerTopComponent
 public final class DrillDownWindow extends TopComponent {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
     private static final String HELP_CTX_KEY = "DrillDownWindow.HelpCtx"; // NOI18N

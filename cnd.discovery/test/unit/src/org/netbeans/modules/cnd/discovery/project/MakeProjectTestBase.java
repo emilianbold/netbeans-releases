@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -84,6 +85,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -269,7 +271,8 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                     } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
                         return CndFileUtils.toFileObject(path);
                     } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
-                        return FileUtil.normalizeFile(new File(path));
+                        ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
+                        return new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(path, ee));
                     } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) {
                         return CompilerSetManager.get(getEE()).getDefaultCompilerSet();
                     } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) {

@@ -50,14 +50,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeExitStatus;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -284,16 +284,6 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public NativeFileSearch getNativeFileSearch() {
-            return new NativeFileSearch() {
-                @Override
-                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                    return Collections.<CharSequence>emptyList();
-                }
-            };
-        }
-
-        @Override
         public void addProjectItemsListener(NativeProjectItemsListener listener) {
             synchronized( listenersLock ) {
 		listeners.add(listener);
@@ -399,16 +389,6 @@ public final class NativeProjectProvider {
         }
 
         @Override
-	public NativeExitStatus execute(String executable, String[] env, String... args) {
-	    return null;
-        }
-
-        @Override
-        public String getPlatformName() {
-            return null;
-        }
-
-        @Override
         public void fireFilesPropertiesChanged() {
         }
     }    
@@ -500,7 +480,11 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            return NativeFileItem.LanguageFlavor.UNKNOWN;
+            if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
+                return NativeFileItem.LanguageFlavor.CPP11;
+            } else {
+                return NativeFileItem.LanguageFlavor.UNKNOWN;
+            }
         }
 
         @Override

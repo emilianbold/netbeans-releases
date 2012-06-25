@@ -110,6 +110,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="WithTermFrequencies">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>Index</code> with <code>Term</code> frequencies.</summary>
+    <version major="2" minor="13"/>
+    <date day="31" month="5" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>Index.WithTermFrequencies</code> index supporting the 
+            <code>Term</code> frequencies estimates. This <code>Index</code> can
+            be used to find out how many <code>Document</code>s contain given <code>Term</code>.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="Index"/>
+    <issue number="213215"/>
+  </change>
   <change id="IndexReaderInjection">
     <api name="LuceneSupport"/>
     <summary>Added <code>IndexReaderInjection</code> to allow <code>IndexReader</code> to be passed to convertors</summary>

@@ -86,7 +86,6 @@ public class Utilities {
     static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
     static final String BRIDGES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Bridges_Category");
     
-    private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
     
     private static final String ALLOW_SHOWING_BALLOON = "plugin.manager.allow.showing.balloon"; // NOI18N
@@ -118,7 +117,7 @@ public class Utilities {
                     res.add(cat);
                     names.add(catName);
                 }
-                String licenseId = el.getLicenseId();
+                String licenseId = el == null ? null : el.getLicenseId();
                 if (licenseId != null) {
                     if (licenseId.contains(",")) {
                         if (getAcceptedLicenseIds().addAll(Arrays.asList(licenseId.split(",")))) {
@@ -160,6 +159,9 @@ public class Utilities {
     }
     
     public static void storeAcceptedLicenseIDs() {
+        if (acceptedLicenseIDs == null) {
+            return ;
+        }
         StringBuilder sb = new StringBuilder();
         for(String licenseId : acceptedLicenseIDs) {
             sb.append(licenseId).append(",");
@@ -182,6 +184,7 @@ public class Utilities {
             
     public static List<UnitCategory> makeUpdateCategories (final List<UpdateUnit> units, boolean isNbms) {
         long start = System.currentTimeMillis();
+        Utilities.clearFirstClassModules();
         if (! isNbms && ! units.isEmpty ()) {
             List<UnitCategory> fcCats = makeFirstClassUpdateCategories ();
             if (! fcCats.isEmpty ()) {
@@ -764,13 +767,22 @@ public class Utilities {
         return System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
     }
     
+    private static String getFirstClassModuleNames() {
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
+        return p.get(PLUGIN_MANAGER_FIRST_CLASS_MODULES, "");
+    }
+
+    public static void clearFirstClassModules() {
+        first_class_modules = null;
+    }
+    
     public static Collection<String> getFirstClassModules () {
         if (first_class_modules != null) {
             return first_class_modules;
         }
         String names = getCustomFirstClassModules ();
         if (names == null || names.length () == 0) {
-            names = FIRST_CLASS_MODULES;
+            names = getFirstClassModuleNames();
         }
         first_class_modules = new HashSet<String> ();
         StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
@@ -954,5 +966,5 @@ public class Utilities {
     private static Preferences getPreferences () {
         return NbPreferences.forModule (Utilities.class);
     }
-    
+
 }

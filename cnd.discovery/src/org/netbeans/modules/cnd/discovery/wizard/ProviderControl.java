@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -62,10 +61,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty.PropertyKind;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.discovery.api.ProviderProperty.PropertyKind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -324,7 +324,7 @@ public class ProviderControl {
     }
     
     private void layout(JPanel panel){
-        GridBagConstraints gridBagConstraints = null;
+        GridBagConstraints gridBagConstraints;
         label.setLabelFor(field);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -423,7 +423,7 @@ public class ProviderControl {
     }
     
     private String getString(String key) {
-        return NbBundle.getBundle(ProviderControl.class).getString(key);
+        return NbBundle.getMessage(ProviderControl.class, key);
     }
     
     private class LogFileFilter extends javax.swing.filechooser.FileFilter {

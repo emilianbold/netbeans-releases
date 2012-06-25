@@ -18,15 +18,26 @@
         that is used to identify the artifact in a project's POM.
         An artifact can also have dependencies.
         The artifacts available to a project can be viewed under the Maven Repositories node in the Services window.</p>
-
-        <p>You can see the details about individual artifacts in the Artifact Viewer.
-            The Artifact Viewer displays details in the following tabs.</p>
+        
+        <p>You can right-click an artifact in the Projects window or the Services window 
+        to invoke a popup menu with commands for downloading the sources and Javadoc of an artifact,
+        finding usages and viewing artifact details.
+        You can use the Artifact Viewer to view details about individual artifacts.</p>
+            
+        <p><strong>To open the Artifact Viewer, perform either of the following steps.</strong></p>
+        <ul>
+            <li>In the Projects window, right-click an artifact under the Dependencies node and choose View Artifact Details.</li>
+            <li>In the Services window, expand the Maven Repositories node, right-click an artifact and choose View Details.</li>
+        </ul>
+            
+        <p>The Artifact Viewer displays details in the following tabs.</p>
         <ul>
             <li><strong>Basic.</strong> The Basic tab displays the artifacts coordinates and version details.</li>
             <li><strong>Project.</strong> The Project tab displays metadata contained in the artifact's POM
             such as the description of the artifact, the URL for the project and issue tracking and version control details.</li>
             <li><strong>Classpath.</strong> The Classpath tab displays the artifact's compilation, runtime and test dependencies.</li>
             <li><strong>Graph.</strong> The Graph tab displays a visualization of the artifact's primary and secondary dependencies.</li>
+            <li><strong>POM.</strong> The POM tab displays the <tt>pom.xml</tt> file of the artifact.</li>
         </ul>
 
         <p>The buttons in the toolbar of the Artifact Viewer enable you to perform the following tasks.</p>
@@ -43,14 +54,8 @@
             and specify a location for a local repository for the sources.</td></tr>
             <tr><td><img src="img/library.png" alt="Create Library"></td><td>Create Library.
             Click this to create a NetBeans library from the artifact.
-            The new library will be available in the Library Manager.</td></tr>
+            The new library will be available in the Ant Library Manager.</td></tr>
         </table>
-
-        <p><strong>To open the Artifact Viewer.</strong></p>
-        <ul>
-            <li>In the Projects window, right-click an artifact under the Dependencies node and choose View Artifact Details.</li>
-            <li>In the Services window, expand the Maven Repositories node, right-click an artifact and choose View Details.</li>
-        </ul>
 
 
         <h3>Visualizing Dependency Conflicts</h3>
@@ -60,10 +65,10 @@
         You can click on the suggestion icon to open a dialog box with a description of the conflict
         and options for resolving the conflict.</p>
 
-        <p><strong>To open the Graphs tab of the Artifact Viewer.</strong></p>
+        <p><strong>To open the graph view of dependencies, perform either of the following steps.</strong></p>
         <ul>
-            <li>Right-click the Dependencies node and choose Show Dependency Graph.</li>
-            <li>Right-click in the <tt>pom.xml</tt> editor and choose Show Dependency Graph.</li>
+            <li>Open the artifact in the Artifact Viewer and click the Graph tab .</li>
+            <li>Open the <tt>pom.xml</tt> file in the editor and click the Graph tab.</li>
         </ul>
 
 

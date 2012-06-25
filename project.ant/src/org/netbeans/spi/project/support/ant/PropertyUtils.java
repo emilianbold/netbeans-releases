@@ -81,6 +81,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Support for working with Ant properties and property files.
@@ -434,7 +435,7 @@ public class PropertyUtils {
             }
             b.append("../"); // NOI18N
         }
-        URI u = base.toURI().relativize(file.toURI());
+        URI u = Utilities.toURI(base).relativize(Utilities.toURI(file));
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {

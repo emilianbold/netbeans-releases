@@ -81,8 +81,8 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
         FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
         gtsrc.createData("Whatever.class");
-        assertEquals(Arrays.asList(src, gsrc), Arrays.asList(SourceForBinaryQuery.findSourceRoots(new URL(d.getURL(), "target/classes/")).getRoots()));
-        assertEquals(Arrays.asList(tsrc, gtsrc), Arrays.asList(SourceForBinaryQuery.findSourceRoots(new URL(d.getURL(), "target/test-classes/")).getRoots()));
+        assertEquals(Arrays.asList(src, gsrc), Arrays.asList(SourceForBinaryQuery.findSourceRoots(new URL(d.toURL(), "target/classes/")).getRoots()));
+        assertEquals(Arrays.asList(tsrc, gtsrc), Arrays.asList(SourceForBinaryQuery.findSourceRoots(new URL(d.toURL(), "target/test-classes/")).getRoots()));
     }
 
     public void testJarify() throws Exception {
@@ -102,7 +102,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
                 "<version>0</version>" +
                 "</project>");
         FileObject src = FileUtil.createFolder(d, "a/src/main/java");
-        SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(new URL(d.getURL(), "a/target/classes/"));
+        SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(new URL(d.toURL(), "a/target/classes/"));
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
         assertTrue(r.preferSources());
         TestFileUtils.writeFile(d,
@@ -115,7 +115,7 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
                 "<version>0</version>" +
                 "</project>");
         src = FileUtil.createFolder(d, "b/src/main/java");
-        r = SourceForBinaryQuery.findSourceRoots2(new URL(d.getURL(), "b/target/classes/"));
+        r = SourceForBinaryQuery.findSourceRoots2(new URL(d.toURL(), "b/target/classes/"));
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
         assertFalse(r.preferSources());
     }

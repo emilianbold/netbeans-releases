@@ -97,6 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -211,7 +212,7 @@ public class BuildArtifactMapperImpl {
             File f = FileUtil.archiveOrDirForURL(u);
 
             try {
-                if (FileUtil.isArchiveFile(f.toURI().toURL())) {
+                if (FileUtil.isArchiveFile(Utilities.toURI(f).toURL())) {
                     continue;
                 }
             
@@ -249,6 +250,10 @@ public class BuildArtifactMapperImpl {
             IndexingManager.getDefault().refreshIndexAndWait(sourceRoot, null);
         }
 
+        if (JavaIndex.getAttribute(sourceRoot, DIRTY_ROOT, null) != null) {
+            return false;
+        }
+        
         FileObject[][] sources = new FileObject[1][];
         
         if (!protectAgainstErrors(targetFolder, sources, context)) {
@@ -273,9 +278,10 @@ public class BuildArtifactMapperImpl {
 
         sources(targetFolder, sources);
 
-        for (FileObject sr : sources[0]) {
+        for (int i = sources[0].length - 1; i>=0; i--) {
+            final FileObject sr = sources[0][i];
             if (!cosActive) {
-                URL srURL = sr.getURL();
+                URL srURL = sr.toURL();
                 File index = JavaIndex.getClassFolder(srURL, true);
 
                 if (index == null) {
@@ -500,16 +506,10 @@ public class BuildArtifactMapperImpl {
 
     private static void copyRecursively(File source, File target) throws IOException {
         if (source.isDirectory()) {
-            if (!target.exists()) {
-                if (!target.mkdirs()) {
-                    throw new IOException("Cannot create folder: " + target.getAbsolutePath());
-                }
-            } else {
-                if (!target.isDirectory()) {
-                    throw new IOException("Cannot create folder: " + target.getAbsolutePath() + ", already exists as a file.");
-                }
+            if (target.exists() && !target.isDirectory()) {
+                throw new IOException("Cannot create folder: " + target.getAbsolutePath() + ", already exists as a file.");
             }
-            
+
             File[] listed = source.listFiles();
             
             if (listed == null) {
@@ -658,7 +658,7 @@ public class BuildArtifactMapperImpl {
             }
             b.append("../"); // NOI18N
         }
-        URI u = base.toURI().relativize(file.toURI());
+        URI u = Utilities.toURI(base).relativize(Utilities.toURI(file));
         assert !u.isAbsolute() : u + " from " + basedir + " and " + file + " with common root " + base;
         b.append(u.getPath());
         if (b.charAt(b.length() - 1) == '/') {

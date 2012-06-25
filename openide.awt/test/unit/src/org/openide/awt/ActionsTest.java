@@ -540,6 +540,48 @@ public class ActionsTest extends NbTestCase {
         } catch (IllegalArgumentException x) {/* OK */}
     }
     
+    public void testCheckPrioritiesOfIcons() {
+        AbstractAction aa = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        Icon icon = ImageUtilities.loadImageIcon("org/openide/awt/TestIcon_big.png", true);
+        aa.putValue(Action.SMALL_ICON, icon);
+        aa.putValue("iconBase", "org/openide/awt/data/testIcon.gif");
+        
+        JButton b = new JButton();
+        Actions.connect(b, aa);
+        
+        JMenuItem m = new JMenuItem();
+        Actions.connect(m, aa, false);
+        
+        
+        assertSame("Using the same icon (small" + icon, b.getIcon(), m.getIcon());
+    }
+
+    public void testCheckPrioritiesOfIconsWithStringSmallIcon() {
+        AbstractAction aa = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        Object icon = "org/openide/awt/TestIcon_big.png";
+        aa.putValue(Action.SMALL_ICON, icon);
+        aa.putValue("iconBase", "org/openide/awt/data/testIcon.gif");
+        
+        JButton b = new JButton();
+        Actions.connect(b, aa);
+        
+        JMenuItem m = new JMenuItem();
+        Actions.connect(m, aa, false);
+        
+        
+        assertSame("Using the same icon (small" + icon, b.getIcon(), m.getIcon());
+    }
+    
     @Override
     protected boolean runInEQ() {
         return true;

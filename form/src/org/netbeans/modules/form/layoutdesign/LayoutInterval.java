@@ -439,18 +439,6 @@ public final class LayoutInterval implements LayoutConstants {
         if (getParent() == interval) {
             throw new IllegalArgumentException("Cannot add parent as a sub-interval!"); // NOI18N
         }
-        if (interval.isComponent()) { // Issue 118562
-            LayoutComponent comp = interval.getComponent();
-            for (LayoutInterval subInterval : subIntervals) {
-                if (subInterval.isComponent() && comp.equals(subInterval.getComponent())) {
-                    if (System.getProperty("netbeans.ignore.issue118562") == null) { // NOI18N
-                        throw new IllegalArgumentException("Cannot add a component into a group twice!"); // NOI18N
-                    } else {
-                        return -1;
-                    }
-                }
-            }
-        }
         if (index < 0) {
             index = subIntervals.size();
         }
@@ -917,8 +905,17 @@ public final class LayoutInterval implements LayoutConstants {
         int max = interval.getMaximumSize();
         int pref = interval.getPreferredSize();
         assert interval.isGroup() || max != NOT_EXPLICITLY_DEFINED;
-        return (max != pref && max != USE_PREFERRED_SIZE)
-               || max == NOT_EXPLICITLY_DEFINED;
+        if ((max != pref && max != USE_PREFERRED_SIZE) || max == NOT_EXPLICITLY_DEFINED) {
+            if (interval.isComponent()) {
+                LayoutComponent comp = interval.getComponent();
+                int dimension = comp.getLayoutInterval(HORIZONTAL) == interval ? HORIZONTAL : VERTICAL;
+                if (comp.isLinkSized(dimension)) {
+                    return false; // components with linked size actually can't resize
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

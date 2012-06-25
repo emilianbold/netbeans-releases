@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
@@ -538,18 +539,23 @@ public class GeneratorUtils {
             InsertInfo[] ins = getInsertPositons(path, enclosingClass, InsertPoint.DEFAULT);
             final InsertInfo def = ins[0];
             final StringBuilder result = new StringBuilder();
+            final Document doc = path.getDocument();
+            CodeStyle codeStyle = CodeStyle.getDefault(doc);
+            DeclarationGenerator.Kind declKind = DeclarationGenerator.Kind.INLINE_DEFINITION;
+            if (codeStyle.getUseInlineKeyword()) {
+                declKind = DeclarationGenerator.Kind.INLINE_DEFINITION_MAKRED_INLINE;
+            }
             for (CsmField field : fields) {
                 if (type != GeneratorUtils.Kind.SETTERS_ONLY) {
                     result.append("\n"); // NOI18N
-                    result.append(DeclarationGenerator.createGetter(field, computeGetterName(field, isUpperCase), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                    result.append(DeclarationGenerator.createGetter(field, computeGetterName(field, isUpperCase), declKind));
                 }
                 if (type != GeneratorUtils.Kind.GETTERS_ONLY) {
                     result.append("\n"); // NOI18N
-                    result.append(DeclarationGenerator.createSetter(field, computeSetterName(field, isUpperCase), DeclarationGenerator.Kind.INLINE_DEFINITION));
+                    result.append(DeclarationGenerator.createSetter(field, computeSetterName(field, isUpperCase), declKind));
                 }
             }
             result.append("\n"); // NOI18N
-            final Document doc = path.getDocument();
             Runnable update = new Runnable() {
                 @Override
                 public void run() {

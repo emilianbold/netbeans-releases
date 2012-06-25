@@ -56,8 +56,9 @@ import org.openide.util.Exceptions;
  */
 @ProjectServiceProvider(service=PrerequisitesChecker.class, projectType="org-netbeans-modules-maven")
 public class BackwardCompatibilityWithMevenideChecker implements PrerequisitesChecker {
-    private static Logger LOG = Logger.getLogger(BackwardCompatibilityWithMevenideChecker.class.getName());
+    private static final Logger LOG = Logger.getLogger(BackwardCompatibilityWithMevenideChecker.class.getName());
 
+    @Override
     public boolean checkRunConfig(RunConfig config) {
         String[] gls = config.getGoals().toArray(new String[0]);
         boolean changed = false;

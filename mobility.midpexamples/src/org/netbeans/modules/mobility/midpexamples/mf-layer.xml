@@ -52,40 +52,10 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="403"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/midp.html"/>
-                    <file name="VDCustomComponents.zip" url="VDCustomComponents.zip">
-                        <attr name="position" intvalue="100"/>
-                        <attr name="template" boolvalue="true"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/VisualDesignerCustomComponents.html"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                        <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                        <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                    </file>
                     <file name="CurrencyConverter.zip" url="converter.zip">
                         <attr name="position" intvalue="200"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/converter.html"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                        <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                        <attr name="MicroEdition-Profile" stringvalue="MIDP-1.0"/>
-                    </file>
-                    <file name="GameBuilderDemo.zip" url="GameBuilderDemo.zip">
-                        <attr name="position" intvalue="300"/>
-                        <attr name="template" boolvalue="true"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/GameBuilderDemo.html"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>
-                        <attr name="MicroEdition-Configuration" stringvalue="CLDC-1.0"/>
-                        <attr name="MicroEdition-Profile" stringvalue="MIDP-2.0"/>
-                    </file>
-                    <file name="LocalizationDemo.zip" url="LocalizationDemo.zip">
-                        <attr name="position" intvalue="400"/>
-                        <attr name="template" boolvalue="true"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/descriptions/LocalizationDemo.html"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.midpexamples.Bundle"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/midpexamples/j2meProject.gif"/>
                         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.mobility.project.ui.wizard.SampleProjectIterator"/>

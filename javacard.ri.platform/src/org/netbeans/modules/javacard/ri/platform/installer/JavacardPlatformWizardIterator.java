@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.propdos.AntStyleResolvingProperties;
@@ -80,10 +81,11 @@ import org.netbeans.modules.propdos.AntStyleResolvingProperties;
 final class JavacardPlatformWizardIterator implements ProgressInstantiatingIterator<WizardDescriptor>, ChangeListener {
 
     private FileObject baseDir;
-    private DetectionPanel firstPanel;
-    private PropertiesPanel secondPanel;
     private String displayName;
     private PlatformInfo info;
+    private WizardDescriptor wizard;
+    private WizardDescriptor.FinishablePanel[] panels;
+    
     private static final String PROP_DISPLAY_NAME = "platformDisplayName"; //NOI18N
     private static final String PROP_INFO = "platformInfo"; //NOI18N
 
@@ -126,9 +128,9 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
 
     public Set instantiate(final ProgressHandle h) throws IOException {
         EditableProperties deviceSettingsFromWizard = null;
-        if (secondPanel != null && secondPanel.comp != null) {
+        if (panels[1] != null && ((PropertiesPanel)panels[1]).comp != null) {
             deviceSettingsFromWizard = new EditableProperties(true);
-            secondPanel.comp.write(new KeysAndValuesEditablePropsAdapter(deviceSettingsFromWizard));
+            ((PropertiesPanel)panels[1]).comp.write(new KeysAndValuesEditablePropsAdapter(deviceSettingsFromWizard));
         }
         RIPlatformFactory f = new RIPlatformFactory(info, deviceSettingsFromWizard,
                 baseDir, h, displayName);
@@ -140,31 +142,24 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
     }
 
     public void initialize(WizardDescriptor w) {
-        w.putProperty(PROP_DISPLAY_NAME, displayName);
+        this.wizard = w;
+        ix = 0;
+        panels = new WizardDescriptor.FinishablePanel[] {
+            new DetectionPanel(),
+            new PropertiesPanel(),
+        };
+        String[] strs = new String[panels.length];
+        for (int i = 0; i < strs.length; i++)
+            strs[i] = panels[i].getComponent().getName();
+        ((JComponent)panels[0].getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, strs); // NOI18N
     }
 
     public void uninitialize(WizardDescriptor w) {
-        String nm = (String) w.getProperty(PROP_DISPLAY_NAME);
-        if (nm != null) {
-            displayName = nm;
-            if (firstPanel != null) {
-                firstPanel.setDisplayName(nm);
-            }
-        }
-        firstPanel = null;
-        secondPanel = null;
+        panels = null;
     }
 
     public Panel<WizardDescriptor> current() {
-        if (firstPanel == null && ix == 0) {
-            firstPanel = new DetectionPanel();
-            firstPanel.addChangeListener(this);
-        }
-        if (secondPanel == null && ix == 1) {
-            secondPanel = new PropertiesPanel();
-            secondPanel.addChangeListener(this);
-        }
-        return ix == 0 ? firstPanel : secondPanel;
+        return panels[ix];
     }
 
     public String name() {
@@ -174,7 +169,7 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
     private int ix = 0;
 
     private boolean isRi() {
-        return firstPanel == null ? true : firstPanel.isRi;
+        return panels[0] == null ? true : ((DetectionPanel)panels[0]).isRi;
     }
 
     public boolean hasNext() {
@@ -209,6 +204,7 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
         }
         inChange = true;
         try {
+//            wizard.putProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(ix)); // NOI18N
             supp.fireChange();
         } finally {
             inChange = false;
@@ -224,6 +220,7 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
         private PlatformPanel createComponent() {
             if (comp == null) {
                 comp = new PlatformPanel(baseDir);
+                comp.setName(NbBundle.getMessage(DetectionPanel.class, "STEP_TITLE_VALIDATE_PLATFORM")); // NOI18N
             }
             return comp;
         }
@@ -236,27 +233,6 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
                 comp.addChangeListener(this);
                 comp.addPropertyChangeListener(this);
             }
-                String stepName = NbBundle.getMessage (JavacardPlatformWizardIterator.class,
-                        "STEP_TITLE_VALIDATE_PLATFORM");
-                if (isRi) {
-                    String nextStepName = NbBundle.getMessage (JavacardPlatformWizardIterator.class,
-                            "STEP_TITLE_DEFINE_DEVICE");
-                    comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new
-                        String[] { stepName, nextStepName }); //NOI18N
-                } else {
-                    comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new
-                        String[] { stepName }); //NOI18N
-                }
-
-                comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); //NOI18N
-                // Turn on numbering of all steps
-                comp.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); //NOI18N
-                // Turn on subtitle creation on each step
-                comp.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); //NOI18N
-                // Show steps on the left side with the image on the background
-                comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
-                // Turn on numbering of all steps
-                comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
             return comp;
         }
 
@@ -305,12 +281,6 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
             displayName = comp.getDisplayName();
         }
 
-        private void setDisplayName(String nm) {
-            if (comp != null) {
-                comp.setDisplayName(nm);
-            }
-        }
-
         public boolean isFinishPanel() {
             return true;
         }
@@ -328,6 +298,7 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
             if (comp == null) {
                 comp = new DevicePropertiesPanel();
                 comp.addChangeListener(this);
+                comp.setName(NbBundle.getMessage(PropertiesPanel.class, "STEP_TITLE_DEFINE_DEVICE")); // NOI18N
             }
             return comp;
         }

@@ -54,6 +54,7 @@ import java.beans.*;
 import javax.swing.undo.UndoableEdit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.lib.awtextra.AbsoluteLayout;
 
 import org.netbeans.modules.form.actions.TestAction;
 import org.netbeans.modules.form.menu.MenuEditLayer;
@@ -945,57 +946,83 @@ public class FormDesigner {
             if (topCont == null) {
                 topCont = topComp;
             }
-            // can't rely on minimum size of the container wrap - e.g. menu bar
-            // returns wrong min height
-            int wDiff = topComp.getWidth() - topCont.getWidth();
-            int hDiff = topComp.getHeight() - topCont.getHeight();
+            if (shouldAdjustDesignerSize(topCont)) {
+                // can't rely on minimum size of the container wrap - e.g. menu bar
+                // returns wrong min height
+                int wDiff = topComp.getWidth() - topCont.getWidth();
+                int hDiff = topComp.getHeight() - topCont.getHeight();
 
-            Dimension designerSize = new Dimension(getDesignerSize());
-            designerSize.width -= wDiff;
-            designerSize.height -= hDiff;
-            boolean corrected = false;
-            if (layoutDesigner != null && layoutDesigner.isPreferredSizeChanged()) {
-                Dimension prefSize = topCont.getPreferredSize();
-                if (designerSize.width != prefSize.width) {
-                    designerSize.width = prefSize.width;
-                    corrected = true;
-                }
-                if (designerSize.height != prefSize.height) {
-                    designerSize.height = prefSize.height;
-                    corrected = true;
-                }
-            } else {
-                Dimension minSize = topCont.getMinimumSize();
-                if (designerSize.width < minSize.width) {
-                    designerSize.width = minSize.width;
-                    corrected = true;
-                }
-                if (designerSize.height < minSize.height) {
-                    designerSize.height = minSize.height;
-                    corrected = true;
-                }
-            }
-
-            if (corrected) {
-                if (shouldHonorDesignerMinSize(topCont, designerSizeExplictlySet)) {
-                    designerSize.width += wDiff;
-                    designerSize.height += hDiff;
-
-                    // hack: we need the size correction in the undo/redo
-                    if (formModel.isCompoundEditInProgress()) {
-                        FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
-                        ev.setComponentAndContainer(topDesignComponent, null);
-                        ev.setProperty(PROP_DESIGNER_SIZE, getDesignerSize(), designerSize);
-                        formModel.addUndoableEdit(ev.getUndoableEdit());
+                Dimension designerSize = new Dimension(getDesignerSize());
+                designerSize.width -= wDiff;
+                designerSize.height -= hDiff;
+                boolean corrected = false;
+                if (layoutDesigner != null && layoutDesigner.isPreferredSizeChanged()
+                        && shouldHonorDesignerPrefSize(topCont)) {
+                    Dimension prefSize = topCont.getPreferredSize();
+                    if (designerSize.width != prefSize.width) {
+                        designerSize.width = prefSize.width;
+                        corrected = true;
                     }
-
-                    componentLayer.setDesignerSize(designerSize);
-                    storeDesignerSize(designerSize);
+                    if (designerSize.height != prefSize.height) {
+                        designerSize.height = prefSize.height;
+                        corrected = true;
+                    }
+                } else {
+                    Dimension minSize = topCont.getMinimumSize();
+                    if (designerSize.width < minSize.width) {
+                        designerSize.width = minSize.width;
+                        corrected = true;
+                    }
+                    if (designerSize.height < minSize.height) {
+                        designerSize.height = minSize.height;
+                        corrected = true;
+                    }
                 }
-            } else {
-                designerSizeExplictlySet = false;
+
+                if (corrected) {
+                    if (shouldHonorDesignerMinSize(topCont, designerSizeExplictlySet)) {
+                        designerSize.width += wDiff;
+                        designerSize.height += hDiff;
+
+                        // hack: we need the size correction in the undo/redo
+                        if (formModel.isCompoundEditInProgress()) {
+                            FormModelEvent ev = new FormModelEvent(formModel, FormModelEvent.SYNTHETIC_PROPERTY_CHANGED);
+                            ev.setComponentAndContainer(topDesignComponent, null);
+                            ev.setProperty(PROP_DESIGNER_SIZE, getDesignerSize(), designerSize);
+                            formModel.addUndoableEdit(ev.getUndoableEdit());
+                        }
+
+                        componentLayer.setDesignerSize(designerSize);
+                        storeDesignerSize(designerSize);
+                    }
+                } else {
+                    designerSizeExplictlySet = false;
+                }
             }
         }
+    }
+
+    private static boolean shouldAdjustDesignerSize(Component topComp) {
+        // Null and AbsolutLayout can't provide a reasonable preferred or
+        // minimum size, don't try to adjust the designer size according to them.
+        // (E.g. when reacting to a change in a subpanel with Free Design which
+        // is included in a top container with null layout.)
+        if (topComp instanceof Container) {
+            LayoutManager lm = ((Container)topComp).getLayout();
+            if (lm == null || lm instanceof AbsoluteLayout) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean shouldHonorDesignerPrefSize(Component topComp) {
+        // Hack for FlowLayout - don't let the designer follow the preferred size
+        // according to the layout. The designer has often different actual size
+        // and a change in a subpanel with Free Design should not cause the whole
+        // designer to resize.
+        return !(topComp instanceof Container)
+               || !(((Container)topComp).getLayout() instanceof FlowLayout);
     }
 
     private static boolean shouldHonorDesignerMinSize(Component topComp, boolean sizeSetExplicitly) {
@@ -2718,7 +2745,7 @@ public class FormDesigner {
                 code = (horizontal ? (leading ? "l" : "r") : (leading ? "u" : "d")); // NOI18N
             }
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, false));
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(iconResource, true));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_AlignAction_" + code)); // NOI18N
             setEnabled(false);
         }

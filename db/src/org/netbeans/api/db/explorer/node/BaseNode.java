@@ -42,6 +42,9 @@
 
 package org.netbeans.api.db.explorer.node;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,6 +64,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExTransferable;
 
 /**
  * This is the base class for all database explorer nodes.  It takes care of setting
@@ -132,6 +136,8 @@ public abstract class BaseNode extends AbstractNode {
     private final HashMap<String, Object> propMap = new HashMap<String, Object>();
 
     public boolean isRemoved = false;
+    private volatile boolean refreshing = false;
+    private volatile boolean firePropChangeAfterRefresh= false;
 
 
     /**
@@ -181,8 +187,28 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     public synchronized void refresh() {
+        refreshing = true;
         nodeRegistry.refresh();
         update();
+        if (firePropChangeAfterRefresh) {
+            firePropertySetsChange(null, null);
+            firePropChangeAfterRefresh = false;
+        }
+        refreshing = false;
+    }
+
+    /**
+     * Get current property sets. If the node is being refreshed at the moment,
+     * return an empty array. Workaround for #207306.
+     */
+    @Override
+    public PropertySet[] getPropertySets() {
+        if (!refreshing) {
+            return super.getPropertySets();
+        } else {
+            firePropChangeAfterRefresh = true;
+            return new PropertySet[0];
+        }
     }
 
     /**
@@ -379,7 +405,19 @@ public abstract class BaseNode extends AbstractNode {
 
     @Override
     public boolean canCopy() {
-        return false;
+        return true;
     }
 
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+        Transferable deflt = super.clipboardCopy();
+        ExTransferable added = ExTransferable.create(deflt);
+        added.put(new ExTransferable.Single(DataFlavor.stringFlavor) {
+            @Override
+            protected Object getData() {
+                return getDisplayName();
+            }
+        });
+        return added;
+    }
 }

@@ -1904,6 +1904,7 @@ class JavaCodeGenerator extends CodeGenerator {
         Writer writer = initCodeWriter.getWriter();
 
         RADVisualComponent[] comps = cont.getSubComponents();
+        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
 
         // layout code and adding sub-components
         generateEmptyLineIfNeeded(writer);
@@ -1913,7 +1914,11 @@ class JavaCodeGenerator extends CodeGenerator {
             SwingLayoutCodeGenerator.ComponentInfo info = new SwingLayoutCodeGenerator.ComponentInfo();
             info.id = subComp.getId();
             info.variableName = getExpressionJavaString(subComp.getCodeExpression(), ""); // NOI18N
-            info.component = (Component)subComp.getBeanInstance();
+            Object comp = formDesigner != null ? formDesigner.getComponent(subComp) : null;
+            if (!(comp instanceof Component)) {
+                comp = subComp.getBeanInstance();
+            }
+            info.component = (Component) comp;
             Node.Property minProp = subComp.getPropertyByName("minimumSize"); // NOI18N
             Node.Property prefProp = subComp.getPropertyByName("preferredSize"); // NOI18N
             Node.Property maxProp = subComp.getPropertyByName("maximumSize"); // NOI18N

@@ -102,7 +102,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.form.FormEditorSupport;
+import org.netbeans.modules.nbform.FormEditorSupport;
 import org.netbeans.modules.form.FormModelEvent;
 import org.netbeans.modules.form.FormModelListener;
 import org.openide.cookies.EditorCookie;
@@ -1362,11 +1362,11 @@ public class ActionManager {
     
     private FormModel getFormModel(final FileObject formfile) throws DataObjectNotFoundException {
         FormDataObject obj = (FormDataObject) FormDataObject.find(formfile);
-        if(!obj.getFormEditor().isOpened()) {
-            obj.getFormEditor().loadForm();
+        FormEditorSupport fes = (FormEditorSupport) obj.getFormEditorSupport();
+        if (!fes.isOpened()) {
+            fes.loadForm();
         }
-        FormModel mod = obj.getFormEditor().getFormModel();
-        return mod;
+        return fes.getFormModel();
     }
     
     private boolean hasFormFile(FileObject file) {

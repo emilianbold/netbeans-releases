@@ -109,7 +109,7 @@ public class PHPFormatterTemplateTest extends PHPCodeCompletionTestBase {
             DataObject dobj = DataObject.find(fo);
             assertNotNull(dobj);
 
-            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = (EditorCookie) dobj.getLookup().lookup(EditorCookie.class);
             assertNotNull(ec);
 
             return (BaseDocument) ec.openDocument();
@@ -429,6 +429,11 @@ public class PHPFormatterTemplateTest extends PHPCodeCompletionTestBase {
         options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
         options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/templates/issue198616.php", options, true);
+    }
+
+    public void testIssue187757() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/templates/issue187757.php", options, true);
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {

@@ -55,33 +55,31 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.MultiKeymap;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.search.SearchBar;
-import org.netbeans.modules.editor.search.SearchNbEditorKit;
-import org.netbeans.spi.editor.AbstractEditorAction;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 public class SearchComboBoxEditor implements ComboBoxEditor {
     private JScrollPane scrollPane;
     private JEditorPane editorPane;
     private Object oldValue;
+    private static JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
+    private static final Logger LOG = Logger.getLogger(SearchComboBoxEditor.class.getName());
     
     public SearchComboBoxEditor() {
         editorPane = new JEditorPane();
         changeToOneLineEditorPane(editorPane);
-        JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent(); //NOI18N
         
         Set<AWTKeyStroke> tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
+        LOG.log(Level.FINE, "Constructor - Reference Font: Name: {0}, Size: {1}\n", new Object[]{referenceTextField.getFont().getFontName(), referenceTextField.getFont().getSize()});
         editorPane.setFont(referenceTextField.getFont());
+        LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
         final Insets margin = referenceTextField.getMargin();
         final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
         
@@ -140,21 +138,22 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     }
     
     public static void changeToOneLineEditorPane(JEditorPane editorPane) {
+        editorPane.putClientProperty("AsTextField", Boolean.TRUE);
         editorPane.putClientProperty(
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N
         );
-        
+
         EditorKit kit = MimeLookup.getLookup(SearchNbEditorKit.SEARCHBAR_MIMETYPE).lookup(EditorKit.class);
         if (kit == null) {
             throw new IllegalArgumentException("No EditorKit for '" + SearchNbEditorKit.SEARCHBAR_MIMETYPE + "' mimetype."); //NOI18N
         }
         
         editorPane.setEditorKit(kit);
-        
+
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);        
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
-       
+        
         InputMap im = editorPane.getInputMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), NO_ACTION);
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), NO_ACTION);
@@ -179,7 +178,11 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                 }); 
         editorPane.setBorder (
             new EmptyBorder (0, 0, 0, 0)
-        );
+        );     
+        editorPane.setBackground(referenceTextField.getBackground());
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        editorPane.setFont(referenceTextField.getFont());
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
     }
 
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {

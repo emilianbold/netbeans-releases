@@ -160,13 +160,15 @@ made subject to such option by the copyright holder.
         </antcall>
     </target>
     
-    <target name="-profile-check">
-        <condition property="profiler.configured" if="netbeans.home">
+    <target name="-profile-check" if="netbeans.home">
+        <condition property="profiler.configured">
             <or>
                 <contains string="${osgi.run.args}" substring="-agentpath:" casesensitive="true"/>
                 <contains string="${osgi.run.args}" substring="-javaagent:" casesensitive="true"/>
                 <contains string="${osgi.run.args.extra}" substring="-agentpath:" casesensitive="true"/>
                 <contains string="${osgi.run.args.extra}" substring="-javaagent:" casesensitive="true"/>
+                <contains string="${run.args.ide}" substring="-agentpath:" casesensitive="true"/>
+                <contains string="${run.args.ide}" substring="-javaagent:" casesensitive="true"/>
             </or>
         </condition>
     </target>
@@ -175,6 +177,8 @@ made subject to such option by the copyright holder.
         <startprofiler/>
         <antcall target="run">
             <reference refid="cluster.path.id"/>
+            <param name="felix-sys-prop.org.osgi.framework.bootdelegation" value="org.netbeans.lib.profiler.*"/>
+            <param name="osgi.run.args.extra" value="${run.args.ide}"/>
         </antcall>
     </target>
     
@@ -197,7 +201,7 @@ made subject to such option by the copyright holder.
             </rootspath>
         </nbprofiledirect>
         <antcall target="run">
-            <param name="osgi.run.args.extra" value='"${profiler.jvmargs}"'/>
+            <param name="osgi.run.args.extra" value="${profiler.jvmargs}"/>
             <param name="felix-sys-prop.org.osgi.framework.bootdelegation" value="org.netbeans.lib.profiler.*"/>
             <reference refid="cluster.path.id"/>
         </antcall>

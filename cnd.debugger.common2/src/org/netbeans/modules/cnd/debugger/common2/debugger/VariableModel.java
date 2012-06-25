@@ -94,7 +94,7 @@ public abstract class VariableModel extends ModelListenerSupport
     implements TreeModel, ExtendedNodeModelFilter, TableModel, TreeExpansionModel, AsynchronousModelFilter {
 
     protected NativeDebugger debugger;
-
+    
     public Executor asynchronous(Executor original, AsynchronousModelFilter.CALL asynchCall, Object node) {
         // for now let's use synchronious model (in EDT)
         // TODO: NativeDebugger or ((Variable)node) should be responsible for providing Threading Model,
@@ -151,7 +151,9 @@ public abstract class VariableModel extends ModelListenerSupport
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
 	    return v.getVariableName();
-	} else {
+	} else if (node instanceof ShowMoreMessage) {
+            return  ((ShowMoreMessage) node).getMessage();
+        } else {
 	    throw new UnknownTypeException(node);
 	}
     }
@@ -294,7 +296,7 @@ public abstract class VariableModel extends ModelListenerSupport
         } if (node instanceof WatchModel.EmptyWatch) {
             ((WatchModel.EmptyWatch)node).setExpression(name);
             return;
-	} else if (node instanceof WatchVariable || node instanceof Watch) {
+        } else if (node instanceof WatchVariable || node instanceof Watch) {
             WatchVariable w = (WatchVariable) node;
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 
@@ -328,7 +330,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	if (node == ROOT) {
 	    return getIconBase(original, node) + ".gif";	// NOI18N
-        } else if (node instanceof WatchModel.EmptyWatch) {
+        } else if (node instanceof WatchModel.EmptyWatch || node instanceof ShowMoreMessage) {
             return null;
 	} else if (node instanceof WatchVariable || node instanceof Watch) {
             WatchVariable w = (WatchVariable) node;
@@ -359,7 +361,7 @@ public abstract class VariableModel extends ModelListenerSupport
 			return value.toString();
 		}
 	    else return null;
-	} else if (node instanceof WatchModel.EmptyWatch){
+	} else if (node instanceof WatchModel.EmptyWatch || node instanceof ShowMoreMessage){
             return "";
         } else {
 	    throw new UnknownTypeException(node);
@@ -666,5 +668,22 @@ public abstract class VariableModel extends ModelListenerSupport
 		var.postFormat(format);
 	    }
 	}
+    }
+    
+        
+    public static class ShowMoreMessage {
+        private final Variable v;
+        
+        public ShowMoreMessage(Variable v) {
+            this.v = v;
+        }
+        
+        public void getMore() {
+            v.getMoreChildren();
+        }
+        
+        public String getMessage() {
+            return Catalog.get("MSG_Show_More_Message"); // NOI18N
+        }
     }
 }

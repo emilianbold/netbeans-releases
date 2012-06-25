@@ -123,6 +123,7 @@ public final class FolderObj extends BaseFileObj {
         }
         
         FileObjectFactory factory = getFactory();
+        assert factory != null : "No factory for " + getPath() + " this: " + this;
         return factory.getValidFileObject(file, FileObjectFactory.Caller.GetFileObject);
     }
 

@@ -1,0 +1,802 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!-- Editors & translators, please, edit Overview.en.tmpl, not .html -->
+
+<html lang=en>
+ <head profile="http://microformats.org/profile/hcard">
+  <title>Cascading Style Sheets</title>
+  <meta content="W3C's overview of Web style sheets: CSS."
+  name=description>
+  <meta content="text/html; charset=utf-8" http-equiv=Content-Type>
+  <meta content="width=device-width" name=viewport>
+  <link href="w3c-2010/main" media="screen, handheld, projection, tv"
+  rel=stylesheet title=Main>
+  <link href=floatspan-n media="screen, handheld, projection, tv"
+  rel="alternate stylesheet" title=Cascade>
+  <link href=daily-color media="screen, handheld, projection, tv"
+  rel="alternate stylesheet" title=Cascade>
+  <link href=floatspan media="screen, handheld, projection, tv"
+  rel="alternate stylesheet" title="Cascade (older browsers)">
+  <link href=daily-color media="screen, handheld, projection, tv"
+  rel="alternate stylesheet" title="Cascade (older browsers)">
+  <link href=asymmetric media="screen, handheld, projection, tv"
+  rel="alternate stylesheet" title=Asymmetric>
+  <link href=draft media="screen, projection, tv"
+  rel="alternate stylesheet" title="Draft 3">
+  <link href=draft-rg media="screen, projection, tv"
+  rel="alternate stylesheet" title="Draft 2">
+  <link href=twocolumn-print media=print rel=stylesheet>
+  <link href="../../" rel=home title=W3C>
+  <link href="./" rel=top title=CSS>
+  <link href="./" rel=first title=CSS>
+  <link href="Planet/" rel=last title="The Future Of CSS (syndicator)">
+  <link href=current-work rel=chapter title=Roadmap>
+  <link href="../Examples/007/" rel=chapter title=Examples>
+  <link href="../../Consortium/activities" rel=bookmark
+  title=Activities>
+  <link href="../../TR/" rel=bookmark title="Tech. reports">
+  <link href="../../Consortium/Translation/" rel=bookmark
+  title=Translations>
+  <link href="../../Status" rel=bookmark title=Software>
+  <link href="../../Consortium/siteindex" rel=index
+  title="Site index">
+  <link href="http://search.w3.org/" rel=search title=Search>
+  <link href="../../Consortium/Legal/ipr-notice.html#Copyright"
+  rel=copyright title=Copyright>
+  <link href="mailto:bert@w3.org%20(Bert%20Bos)" rev=made>
+  <!-- HTML 3.2 -->
+  <link href="mailto:bert@w3.org%20(Bert%20Bos)" rel=author>
+  <!-- HTML 5 -->
+
+  <style media="screen, handheld, projection, tv" title=Cascade
+   type="text/css">
+   a[href="./"] {text-decoration: underline; opacity: 0.5}
+   p[lang] {font-style: italic}
+   li p[lang|=fr]:before {content: url(../flag-fr.png);
+    vertical-align: middle; margin-right: 0.33em}
+  </style>
+
+  <style media="screen, handheld, projection, tv" title=Main
+   type="text/css">
+   a[href="./"] {background: #EEE}
+   .status td:first-child + td + td + td,
+   .status th:first-child + th + th + th {display: none}
+  </style>
+  <link href="../" rel=up title="Style Sheets">
+  <link href=learning rel=next title="Learning CSS">
+  <link href=Overview.atom rel=alternate title="CSS news [Atom]"
+  type="application/atom+xml">
+  <link href=Overview.rss rel=alternate title="CSS news [RSS]"
+  type="application/rss+xml">
+  <link href="/blog/CSS/feed/atom" rel=alternate
+  title="CSS Working Group news" type="application/atom+xml">
+  <link href="http://www.web-styles.co.za/Style/CSS/index.html"
+  hreflang=af rel=alternate title="Afrikaans [2010-09-20]">
+  <link href="http://www.webstyles.ae.org/Style/CSS/index.html"
+  hreflang=ar rel=alternate
+  title="العربية [Arabic, 2009-08-26]">
+  <link href="http://www.opensourceinitiative.net/Style/CSS/"
+  hreflang=az rel=alternate
+  title="Azərbaycan [Azerbaijani, 2009-02-03]">
+  <link href=Overview.be.html hreflang=be rel=alternate
+  title="беларуская [Belarusian, 2010-10-25]">
+  <link href="http://dichev.com/Style/CSS/" hreflang=bg rel=alternate
+  title="Български [Bulgarian, 2008-08-14]">
+  <link href="http://www.webstyles-bengali.in/Style/CSS/index.html"
+  hreflang=bn rel=alternate
+  title="বাংলা [Bengali, 2009-07-03]">
+  <link href="http://www.catalan-webstyles.com/Style/CSS/index.html"
+  hreflang=ca rel=alternate title="Català [Catalan, 2010-09-20]">
+  <link href=Overview.cs.html hreflang=cs rel=alternate
+  title="Česky [Czech, 2008-12-15]">
+  <link href="http://www.x-web.org/w3c/css/" hreflang=da rel=alternate
+  title="Dansk [Danish, 2009-08-12]">
+  <link href="http://www.webmeister.at/Style/CSS/" hreflang=de
+  rel=alternate title="Deutsch [German, 2009-11-25]">
+  <link href="http://www.merbau.info/Style/CSS/" hreflang=el
+  rel=alternate title="Ελληνικά [Greek, 2008-01-13]">
+  <link href=Overview.en.html hreflang=en rel=alternate title=English>
+  <link
+  href="http://www.spanishtranslation.us/traducciones/css-styles.htm"
+  hreflang=es rel=alternate title="Español [Spanish, 2009-09-24]">
+  <link href="http://buildingblocksjava.com/ee/Style/CSS.htm"
+  hreflang=et rel=alternate title="Eesti [Estonian, 2009-07-03]">
+  <link href="http://www.farsibuddy.com/w3c/style/css/" hreflang=fa
+  rel=alternate title="فارسی [Persian, 2010-05-01]">
+  <link href="http://www.webstyles-finnish.info/Style/CSS/" hreflang=fi
+  rel=alternate title="Suomi [Finnish, 2009-02-03]">
+  <link href=Overview.fr.html hreflang=fr rel=alternate
+  title="Français [French, 2009-02-28]">
+  <link href="http://www.webstyles-hebrew.com/Style/CSS/index.html"
+  hreflang=he rel=alternate title="עברית [Hebrew, 2009-08-17]">
+  <link href="http://www.webstyles.in/Style/CSS/index.html" hreflang=hi
+  rel=alternate title="हिन्दी [Hindi, 2009-08-11]">
+  <link
+  href="http://www.mindgems.com/w3c/Style/CSS/Cascading%20Style%20Sheets.htm"
+  hreflang=hr rel=alternate title="Hrvatski [Croatian, 2009-08-04]">
+  <link href="http://www.hungarian-webstyles.com/Style/CSS/index.html"
+  hreflang=hu rel=alternate title="Magyar [Hungarian, 2010-09-20]">
+  <link href="http://www.idebagus.com/w3/Style/CSS" hreflang=id
+  rel=alternate title="Bahasa Indonesia [Indonesian, 2007-11-09]">
+  <link href="http://w3iceland.com/style/CSS/" hreflang=is
+  rel=alternate title="Íslenska [Icelandic, 2009-11-23]">
+  <link href="http://www.web-styles.it/Style/CSS/" hreflang=it
+  rel=alternate title="Italiano [Italian, 2009-02-03]">
+  <link href="http://www.a2ztutorial.com/Style/CSS/" hreflang=ja
+  rel=alternate title="日本語 [Japanese, 2008-02-14]">
+  <link href="http://www.gew3.org/Style/CSS/" hreflang=ka rel=alternate
+  title="ქართული [Georgian, 2009-01-23]">
+  <link href="http://www.kazaja.com/Style/CSS/" hreflang=kk
+  rel=alternate title="Қазақша [Kazakh, 2008-01-15]">
+  <link href="http://www.webstyles.kr/Style/CSS/index.html" hreflang=ko
+  rel=alternate title="한국어 [Korean, 2009-08-13]">
+  <link href="http://www.hitechlog.com/Style/CSS/" hreflang=ky
+  rel=alternate title="Кыргыз [Kirghiz, 2008-07-04]">
+  <link href="http://www.css-styles.lt/Style/CSS/" hreflang=lt
+  rel=alternate title="Lietuvių [Lithuanian, 2009-08-15]">
+  <link href="http://www.reviews4u.org/Style/CSS/" hreflang=lv
+  rel=alternate title="Latviešu [Latvian, 2007-11-09]">
+  <link href="http://www.macedonia-travels.com/w3c/Style/CSS/"
+  hreflang=mk rel=alternate
+  title="Македонски [Macedonian, 2010-03-01]">
+  <link href="http://allsport-video.ru/Style/CSS/css.htm" hreflang=mt
+  rel=alternate title="Malti [Maltese, 2010-09-28]">
+  <link href="http://www.bjornenki.com/articles/w3_style_css"
+  hreflang=nb rel=alternate
+  title="Norsk [Norwegian Bokmål, 2009-01-23]">
+  <link href=Overview.nl.html hreflang=nl rel=alternate
+  title="Nederlands [Dutch, 2009-03-02]">
+  <link href=Overview.pl.html hreflang=pl rel=alternate
+  title="Polski [Polish, 2010-11-08]">
+  <link href="http://www.webstyles-portuguese.info/Style/CSS/"
+  hreflang=pt rel=alternate
+  title="Português [Portuguese, 2009-02-03]">
+  <link href="http://www.reviewzcenter.com/Style/CSS/" hreflang=ro
+  rel=alternate title="Română [Romanian, 2008-01-14]">
+  <link href=Overview.ru.html hreflang=ru rel=alternate
+  title="Русский [Russian, 2010-10-16]">
+  <link href="http://australianism.ru/style/CSS/" hreflang=sk
+  rel=alternate title="Slovenčina [Slovak, 2009-11-30]">
+  <link href="http://websteradvice.com/AlbanCSS.html" hreflang=sq
+  rel=alternate title="Shqip [Albanian, 2008-12-15]">
+  <link href="http://websteradvice.com/SerbianCSS.html"
+  hreflang=sr-cyrl rel=alternate
+  title="Српски [Serbian, 2007-07-20]">
+  <link href="http://www.webstyles-swedish.info/Style/CSS/" hreflang=sv
+  rel=alternate title="Svenska [Swedish, 2009-02-03]">
+  <link href=Overview.tg.html hreflang=tg rel=alternate
+  title="Тоҷикӣ [Tajik, 2010-12-04]">
+  <link href="http://www.codingbasic.com/style/css.html" hreflang=th
+  rel=alternate title="ไทย [Thai, 2010-04-20]">
+  <link href="http://tl.tz8.de/style-css.html" hreflang=tl
+  rel=alternate title="Tagalog [2008-11-04]">
+  <link href="http://www.dailycss.com/Style/CSS/" hreflang=tr
+  rel=alternate title="Türkçe [Turkish, 2009-01-29]">
+  <link href="http://www.tatarw3.com/Style/CSS/" hreflang=tt
+  rel=alternate title="татарча [Tatar, 2007-01-11]">
+  <link href=Overview.uk.html hreflang=uk rel=alternate
+  title="Українська [Ukrainian, 2010-10-29]">
+  <link href="http://www.uzbek-webstyles.com/Style/CSS/index.html"
+  hreflang=uz rel=alternate title="Ўзбек [Uzbek, 2010-09-20]">
+  <link href="http://www.asiatranslate.org/w3/style-vi/css/"
+  hreflang=vi rel=alternate
+  title="Tiếng Việt [Vietnamese, 2010-03-31]">
+  <link href="http://www.webstyles-chinese.info/Style/CSS/"
+  hreflang=zh-hans rel=alternate
+  title="简体中文 [Chinese (simplified), 2009-02-03]">
+  <link
+  href="http://www.certifiedchinesetranslation.com/openaccess/CSS.html"
+  hreflang=zh-hant rel=alternate
+  title="繁體中文 [Chinese (traditional), 2009-02-18]">
+
+ <body class=portal>
+  <div class=section id=language>
+   <p><a href="#translations">Languages</a>
+  </div>
+
+  <h1><em>Cascading Style Sheets</em> home page</h1>
+
+  <div class=section id=summary>
+   <h2>What is CSS?</h2>
+
+   <p>Cascading Style Sheets (CSS) is a simple mechanism for adding
+    style (e.g., fonts, colors, spacing) to Web documents.
+
+   <p>These pages contain information on how to <a href=learning>learn
+    and use CSS</a> and on available <a href=software>software.</a>
+    They also contain news from the <a href=members>CSS working
+    group.</a>
+
+   <div class=aside>
+    <h3>High­lights</h3>
+
+    <ul>
+     <li><a href="../../TR/CSS">The <cite>“CSS Snapshot”</cite>
+      (latest: 2010) lists the parts that are ready for
+      implementers</a>
+
+     <li><a href="../../2011/05/css-pr">Press release for <cite>“CSS
+      Level 2 Rev. 1,”</cite> <cite>“CSS Color”</cite> and
+      <cite>“A MathML For CSS Profile”</cite></a>
+    </ul>
+   </div>
+  </div>
+
+  <div class=section id=news>
+   <h2>News</h2>
+
+   <p class=feed><a href=Overview.atom><img
+    alt="(Also available as    Atom news feed.)" src="w3c-2010/feed"
+    title="News feed"></a>
+
+   <ul class=dated>
+    <li id=m44 lang=en><span class=updated
+     title=2012-05-26><span>26</span> May 2012</span> <a
+     href="http://learnboost.github.com/stylus/">Stylus</a> is a CSS
+     preprocessor, providing a shorter syntax, macros, mathematical
+     functions, etc.
+
+    <li id=n106 lang=en><span class=updated title=2012-05-03><span>
+     3</span> May 2012</span> Updated Working Draft of <a
+     href="../../TR/2012/WD-css3-regions-20120503/" rel=details><cite
+     class=notranslate lang=en>CSS Regions Module Level 3</cite></a>
+
+    <li id=n105 lang=en><span class=updated title=2012-05-03><span>
+     3</span> May 2012</span> Updated Working Draft of <a
+     href="../../TR/2012/WD-css3-exclusions-20120503/"
+     rel=details><cite class=notranslate lang=en>CSS Writing Modes
+     Module Level 3</cite></a>
+
+    <li id=n104 lang=en><span class=updated title=2012-05-01><span>
+     1</span> May 2012</span> Updated Working Draft of <a
+     href="../../TR/2012/WD-css3-writing-modes-20120501/"
+     rel=details><cite class=notranslate lang=en>CSS Writing Modes
+     Module Level 3</cite></a>
+
+    <li id=n103 lang=en><span class=updated
+     title=2012-04-26><span>26</span> Apr 2012</span> W3C members have
+     until May 23 to review the Proposed Recommendation of <a
+     href="../../TR/2012/PR-css3-mediaqueries-20120426/"
+     rel=details><cite class=notranslate lang=en>Media
+     Queries.</cite></a>
+   </ul>
+
+   <p class=stb>For more news, see our syndicator <a
+    href="Planet/">“The Future of Style.”</a>
+
+   <p class=more><a
+    href="mailto:bert@w3.org?subject=For%20news%20section%20of%20CSS%20page">
+    Suggest a link</a>
+  </div>
+
+  <div class=section id=roadmap>
+   <h2>Stan­dards &amp; drafts</h2>
+
+   <p class=feed><a href=current-work.atom><img
+    alt="(Also available    as Atom news feed.)" src="w3c-2010/feed"
+    title="New publications feed"></a>
+
+   <p>Some of the specifications and drafts by the <a href=members> CSS
+    Working Group:</a> <!--
+   <table class=status lang=en>
+    <thead>
+     <tr><th scope=col>Date<th scope=col>Title<th scope=col>Sta­tus
+    <tbody id=completed>
+     <tr><th colspan=3 scope=rowgroup>Com­pleted work
+
+     <!- - include roadmap-compl - ->
+
+    <tbody id=high-prio>
+     <tr><th colspan=3 scope=rowgroup>Ex­per­i­men­tal
+       spec­i­fi­ca­tions
+
+     <!- - include roadmap-high - ->
+
+   </table>
+   -->
+    
+
+   <table class=status>
+    <tbody id=completed>
+     <tr>
+      <th scope=rowgroup>Com­pleted work
+
+      <th scope=col>Sta­tus
+
+      <th scope=col>Up­com­ing
+
+      <th scope=col>Notes
+
+      <th scope=col><abbr title=Summary>ℹ⃝</abbr>
+
+     <tr>
+      <td id=css-2010> <a class=notranslate href="/TR/css-2010"
+       lang=en>CSS Snapshot 2010</a>
+
+      <td class=note> <a class=notranslate href="/TR/css-2010"
+       lang=en>NOTE</a>
+
+      <td> –
+
+      <td> <a href="http://www.w3.org/TR/CSS">Latest stable CSS</a>
+
+      <td> <a href="specs#css-2010"
+       title="Summary of CSS Snapshot 2010">ℹ⃝</a>
+
+     <tr>
+      <td id=beijing> <a class=notranslate href="/TR/css-beijing"
+       lang=en>CSS Snapshot 2007</a>
+
+      <td class=note> <a class=notranslate href="/TR/css-beijing"
+       lang=en>NOTE</a>
+
+      <td> –
+
+      <td>
+
+      <td> <a href="specs#beijing"
+       title="Summary of CSS Snapshot 2007">ℹ⃝</a>
+
+     <tr>
+      <td id=color> <a class=notranslate href="/TR/css3-color"
+       lang=en>CSS Color Level 3</a>
+
+      <td class=rec> <a class=notranslate href="/TR/css3-color"
+       lang=en>REC</a>
+
+      <td class=rec> <a class=notranslate
+       href="http://dev.w3.org/csswg/css3-color/" lang=en>REC</a>
+
+      <td> See <a
+       href="http://www.w3.org/Style/2011/REC-css3-color-20110607-errata.html">Errata</a>
+       
+
+      <td> <a href="specs#color"
+       title="Summary of CSS Color Level 3">ℹ⃝</a>
+
+     <tr>
+      <td id=namespace> <a class=notranslate href="/TR/css3-namespace"
+       lang=en>CSS Namespaces</a>
+
+      <td class=rec> <a class=notranslate href="/TR/css3-namespace"
+       lang=en>REC</a>
+
+      <td class=rec> <a class=notranslate
+       href="http://dev.w3.org/csswg/css3-namespace/" lang=en>REC</a>
+
+      <td>
+
+      <td> <a href="specs#namespace"
+       title="Summary of CSS Namespaces">ℹ⃝</a>
+
+     <tr>
+      <td id=selectors> <a class=notranslate href="/TR/selectors"
+       lang=en>Selectors Level 3</a>
+
+      <td class=rec> <a class=notranslate href="/TR/selectors"
+       lang=en>REC</a>
+
+      <td class=rec> <a class=notranslate
+       href="http://dev.w3.org/csswg/selectors3/" lang=en>REC</a>
+
+      <td>
+
+      <td> <a href="specs#selectors"
+       title="Summary of Selectors Level 3">ℹ⃝</a>
+
+     <tr>
+      <td id=css21> <a class=notranslate href="/TR/CSS2" lang=en>CSS
+       Level 2 Revision 1</a>
+
+      <td class=rec> <a class=notranslate href="/TR/CSS2"
+       lang=en>REC</a>
+
+      <td class=rec> REC
+
+      <td> See <a
+       href="http://www.w3.org/Style/css2-updates/REC-CSS2-20110607-errata.html">Errata</a>
+       
+
+      <td> <a href="specs#css21"
+       title="Summary of CSS Level 2 Revision 1">ℹ⃝</a>
+
+     <tr>
+      <td id=css1> <a class=notranslate href="/TR/CSS1" lang=en>CSS
+       Level 1</a>
+
+      <td class=rec> <a class=notranslate href="/TR/CSS1"
+       lang=en>REC</a>
+
+      <td> –
+
+      <td> Unmaintained, see <a href="/TR/CSS/#css1">Snapshot</a>
+
+      <td> <a class=notranslate href="/TR/2008/REC-CSS1-20080411/"
+       lang=en title="Summary of CSS Level 1">ℹ⃝</a>
+
+    <tbody id=high-prio>
+     <tr>
+      <th scope=rowgroup>Stable drafts
+
+      <th scope=col>Sta­tus
+
+      <th scope=col>Up­com­ing
+
+      <th scope=col>Notes
+
+      <th scope=col><abbr title=Summary>ℹ⃝</abbr>
+
+     <tr>
+      <td id=mediaqueries> <a class=notranslate
+       href="/TR/css3-mediaqueries" lang=en>Media Queries</a>
+
+      <td class=pr> <a class=notranslate href="/TR/css3-mediaqueries"
+       lang=en>PR</a>
+
+      <td class=rec> <a class=notranslate
+       href="http://dev.w3.org/csswg/css3-mediaqueries/"
+       lang=en>REC</a>
+
+      <td>
+
+      <td> <a href="specs#mediaqueries"
+       title="Summary of Media Queries">ℹ⃝</a>
+
+     <tr>
+      <td id=style-attr> <a class=notranslate href="/TR/css-style-attr"
+       lang=en>CSS Style Attributes</a>
+
+      <td class=cr> <a class=notranslate href="/TR/css-style-attr"
+       lang=en>CR</a>
+
+      <td class=pr> <a
+       href="http://dev.w3.org/csswg/css-style-attr/">PR</a>
+
+      <td>
+
+      <td> <a href="specs#style-attr"
+       title="Summary of CSS Style Attributes">ℹ⃝</a>
+   </table>
+
+   <p class=more><a href=current-work>More »</a>
+  </div>
+
+  <div class=section id=wg-news>
+   <h2>Working group news</h2>
+
+   <p class=feed><a href="/blog/CSS/feed/atom"><img
+    alt="(Also    available as Atom news feed.)" src="w3c-2010/feed"
+    title="CSS WG news feed"></a>
+
+   <p>The <a href=members>working group</a> regularly publishes reports
+    on its <a href="/blog/CSS">blog;</a> here are the most recent:
+
+   <ul>
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/19/resolutions-36/">Minutes
+     and Resolutions Hamburg F2F May 2012: Miscellaneous</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/19/resolutions-35/">Minutes
+     and Resolutions Hamburg F2F May 2012: Text Layout and
+     Typography</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/19/resolutions-37/">Minutes
+     and Resolutions Hamburg F2F May 2012: Shaping and Paging Flows</a>
+     
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/19/resolutions-34/">Minutes
+     and Resolutions Hamburg F2F May 2012: Layout, Values and Units</a>
+     
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/18/resolutions-33/">Minutes
+     and Resolutions Hamburg F2F May 2012: Flexbox</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/03/css-regions-level-3-updated/">CSS
+     Regions Level 3 Updated</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/03/css-exclusions-and-shapes-level-3-updated/">CSS
+     Exclusions and Shapes Level 3 Updated</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/02/minutes-and-resolutions-telcon-2012-05-02/">Minutes
+     and resolutions telcon 2012-05-02</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/05/02/css3-writing-modes-update/">CSS
+     Writing Modes Level 3 Updated</a>
+
+    <li lang=en><a
+     href="http://www.w3.org/blog/CSS/2012/04/27/css3-media-queries-reaches-proposed-recommendation/">CSS3
+     Media Queries reaches Proposed Recommendation</a>
+   </ul>
+
+   <div class=figure>
+    <p><img alt="[Photo: group photo in Lyon, France]"
+     src=csswg-2010.jpg>
+
+    <p>A part of the CSS WG in November 2010. (Photo: Bert Bos /
+     Anthony Grasso)
+   </div>
+
+   <p class=more><a href="/blog/CSS">More »</a>
+  </div>
+
+  <div class=section id=join>
+   <h2>Join­ing the dis­cus­sion</h2>
+
+   <p>The <a href="http://lists.w3.org/Archives/Public/www-style/">
+    &lt;www-style@w3.org&gt; mailing list</a> is the place for
+    discussing the further development of CSS. (The <a href=members>CSS
+    working group</a> also uses that list for most discussions.)
+    Everybody can <a
+    href="mailto:www-style-request@w3.org?subject=subscribe">
+    subscribe</a> (or <a
+    href="mailto:www-style-request@w3.org?subject=unsubscribe">
+    unsubscribe,</a> or see <a href="../../Mail/Request">
+    instructions.</a>)
+
+   <p>If you work for a <a href="../../Consortium/Member/List">W3C
+    member organization,</a> you can also join the working group.
+
+   <p class=more><a href="current-work#contribute">More »</a>
+  </div>
+
+  <div class=section id=software>
+   <h2>Soft­ware</h2>
+
+   <p class=feed><a href=software.atom><img
+    alt="(Also available as    Atom news feed.)" src="w3c-2010/feed"
+    title="Software news feed"></a>
+
+   <p>Nearly all <a href="software#browsers">browsers</a> nowadays
+    support CSS and many <a href="software#other">other
+    applications</a> do, too. To write CSS, you don't need more than a
+    text editor, but there are many <a
+    href="software#editors">tools</a> available that make it even
+    easier.
+
+   <p>Of course, all software has bugs, even after several updates. And
+    some programs are further ahead implementing the <a
+    href=current-work>latest CSS modules</a> than others. Various sites
+    describe <a href="software#support">bugs and work-arounds</a>.
+
+   <p class=more><a href=software>More »</a>
+  </div>
+
+  <div class=section id=learning>
+   <h2>Learn­ing CSS</h2>
+
+   <p class=feed><a href=learning.atom><img
+    alt="(Also available as Atom news feed.)" src="w3c-2010/feed"
+    title="New articles feed"></a>
+
+   <p>For beginners, <a href="../Examples/011/firstcss"><cite>Starting
+    with HTML + CSS</cite></a> teaches how to create a style sheet. For
+    a quick introduction to CSS, try <a
+    href="../LieBos2e/enter/">chapter 2</a> of <a
+    href="learning#LieBos1999"><cite>Lie &amp; Bos</cite></a> or <a
+    href="../../MarkUp/Guide/Style">Dave Raggett's intro to CSS</a>. Or
+    see examples of <a href="../styling-XML">styling XML</a> and <a
+    href="../Examples/007/">CSS tips &amp; tricks</a>.
+
+   <p>Another page also has some <a href="learning#books">books,</a> <a
+    href="learning#fora">mailing lists</a> and similar fora, and links
+    to <a href="learning#secondary">other directories.</a>
+
+   <p>The history of CSS is described in <a
+    href="../LieBos2e/history/">chapter 20</a> of the book <a
+    href="http://www.awprofessional.com/bookstore/product.asp?isbn=0321193121&amp;rl=1">
+    <cite class=notranslate lang=en>Cascading Style Sheets, designing
+    for the Web,</cite></a> by Håkon Wium Lie and Bert Bos (2nd ed.,
+    1999, Addison Wesley, ISBN 0-201-59625-3)
+
+   <p class=more><a href=learning>More »</a>
+  </div>
+
+  <div class=section id=related>
+   <h2>Re­lated</h2>
+
+   <dl>
+    <dt><a href="http://jigsaw.w3.org/css-validator/">The CSS
+     validator</a>
+
+    <dd>Checks the syntax (and more) of style sheets.
+
+    <dt><a href="../../StyleSheets/Core/">Core Style Sheets</a>
+
+    <dd>A set of simple style sheets designed when browsers'
+     compatibility was a bigger problem than today, but still useful.
+
+    <dt><a href="../../TR/WCAG10-CSS-TECHS/"><cite class=notranslate
+     lang=en>CSS Techniques for Web Content Accessibility
+     Guidelines 1.0</cite></a>
+
+    <dd>A note about the role of CSS in making pages accessible.
+
+    <dt><a href="SAC/">SAC: The Simple API for CSS</a>
+
+    <dd>An interface between CSS parsers and CSS processors.
+
+    <dt><a href="../XSL/">XSL (Extensible Stylesheet Language)</a>
+
+    <dd>XSL and CSS share many features, but XSL is focused on complex
+     layout tasks, especially for print.
+
+    <dt><a href="../../TR/mathml-for-css/">A MathML for CSS profile</a>
+     
+
+    <dd>Describes a subset of MathML that can be reasonably formatted
+     with just CSS level 2
+   </dl>
+  </div>
+
+  <div class=section id=banner>
+   <h2>Site navigation</h2>
+
+   <form action="../../Help/search">
+    <ul>
+     <li class=home><a href="http://www.w3.org/" rel=home><img alt=W3C
+      src="http://www.w3.org/Icons/w3c_home"></a>
+
+     <li><a href="./" rel=bookmark title="CSS home page">CSS home</a>
+
+     <li><a href=learning rel=bookmark>Learn &amp; use</a>
+
+     <li><a href=software rel=bookmark>Soft­ware</a>
+
+     <li><a href=current-work rel=bookmark
+      title="Participate in the development of the CSS standard">Par­tic­i­pate
+      / <span title="All specifications and drafts">drafts</span></a>
+
+     <li class=search><input accesskey=E id=inputField maxlength=255
+      name=q size=10><button accesskey=G name=sa type=submit><img
+      alt=Search src="../../2008/site/images/search-button"
+      title=Search></button>
+    </ul>
+   </form>
+  </div>
+
+  <div class=section id=endmatter>
+   <address class=vcard><img alt="" class=photo
+    src="../../People/Bos/bert3-small.jpg"> <a class="fn url"
+    href="../../People/Bos/">Bert Bos</a>, <span class=role>style
+    activity lead</span> <br>
+    <small><a href="/Consortium/Legal/ipr-notice#Copyright"
+    rel=Copyright>Copyright</a> © 1994-2011 <a href="/"><acronym
+    title="World Wide Web Consortium">W3C</acronym><sup>®</sup></a></small></address>
+
+   <p><a href="http://www.w3.org/Style/CSS/Buttons"><img
+    alt="Made with CSS!" class=button
+    src="http://www.w3.org/Style/CSS/Buttons/mwcts"></a> <a
+    href="http://jigsaw.w3.org/css-validator/check/referer"><img
+    alt="Valid CSS!" class=button
+    src="http://jigsaw.w3.org/css-validator/images/vcss-blue"></a> Last
+    updated Sat 26 May 2012 05:18:04 PM CEST
+  </div>
+
+  <div class=section id=translations>
+   <h2>Languages</h2>
+
+   <p> <a href="http://www.web-styles.co.za/Style/CSS/index.html"
+    hreflang=af rel=alternate title=2010-09-20>Afrikaans</a> <a
+    href="http://www.webstyles.ae.org/Style/CSS/index.html" hreflang=ar
+    rel=alternate title="Arabic, 2009-08-26">العربية</a> <a
+    href="http://www.opensourceinitiative.net/Style/CSS/" hreflang=az
+    rel=alternate title="Azerbaijani, 2009-02-03">Azərbaycan</a> <a
+    href=Overview.be.html hreflang=be rel=alternate
+    title="Belarusian, 2010-10-25">беларуская</a> <a
+    href="http://dichev.com/Style/CSS/" hreflang=bg rel=alternate
+    title="Bulgarian, 2008-08-14">Български</a> <a
+    href="http://www.webstyles-bengali.in/Style/CSS/index.html"
+    hreflang=bn rel=alternate
+    title="Bengali, 2009-07-03">বাংলা</a> <a
+    href="http://www.catalan-webstyles.com/Style/CSS/index.html"
+    hreflang=ca rel=alternate title="Catalan, 2010-09-20">Català</a>
+    <a href=Overview.cs.html hreflang=cs rel=alternate
+    title="Czech, 2008-12-15">Česky</a> <a
+    href="http://www.x-web.org/w3c/css/" hreflang=da rel=alternate
+    title="Danish, 2009-08-12">Dansk</a> <a
+    href="http://www.webmeister.at/Style/CSS/" hreflang=de
+    rel=alternate title="German, 2009-11-25">Deutsch</a> <a
+    href="http://www.merbau.info/Style/CSS/" hreflang=el rel=alternate
+    title="Greek, 2008-01-13">Ελληνικά</a> <a
+    href=Overview.en.html hreflang=en rel=alternate>English</a> <a
+    href="http://www.spanishtranslation.us/traducciones/css-styles.htm"
+    hreflang=es rel=alternate title="Spanish, 2009-09-24">Español</a>
+    <a href="http://buildingblocksjava.com/ee/Style/CSS.htm"
+    hreflang=et rel=alternate title="Estonian, 2009-07-03">Eesti</a> <a
+    href="http://www.farsibuddy.com/w3c/style/css/" hreflang=fa
+    rel=alternate title="Persian, 2010-05-01">فارسی</a> <a
+    href="http://www.webstyles-finnish.info/Style/CSS/" hreflang=fi
+    rel=alternate title="Finnish, 2009-02-03">Suomi</a> <a
+    href=Overview.fr.html hreflang=fr rel=alternate
+    title="French, 2009-02-28">Français</a> <a
+    href="http://www.webstyles-hebrew.com/Style/CSS/index.html"
+    hreflang=he rel=alternate title="Hebrew, 2009-08-17">עברית</a>
+    <a href="http://www.webstyles.in/Style/CSS/index.html" hreflang=hi
+    rel=alternate title="Hindi, 2009-08-11">हिन्दी</a> <a
+    href="http://www.mindgems.com/w3c/Style/CSS/Cascading%20Style%20Sheets.htm"
+    hreflang=hr rel=alternate title="Croatian, 2009-08-04">Hrvatski</a>
+    <a href="http://www.hungarian-webstyles.com/Style/CSS/index.html"
+    hreflang=hu rel=alternate title="Hungarian, 2010-09-20">Magyar</a>
+    <a href="http://www.idebagus.com/w3/Style/CSS" hreflang=id
+    rel=alternate title="Indonesian, 2007-11-09">Bahasa Indonesia</a>
+    <a href="http://w3iceland.com/style/CSS/" hreflang=is rel=alternate
+    title="Icelandic, 2009-11-23">Íslenska</a> <a
+    href="http://www.web-styles.it/Style/CSS/" hreflang=it
+    rel=alternate title="Italian, 2009-02-03">Italiano</a> <a
+    href="http://www.a2ztutorial.com/Style/CSS/" hreflang=ja
+    rel=alternate title="Japanese, 2008-02-14">日本語</a> <a
+    href="http://www.gew3.org/Style/CSS/" hreflang=ka rel=alternate
+    title="Georgian, 2009-01-23">ქართული</a> <a
+    href="http://www.kazaja.com/Style/CSS/" hreflang=kk rel=alternate
+    title="Kazakh, 2008-01-15">Қазақша</a> <a
+    href="http://www.webstyles.kr/Style/CSS/index.html" hreflang=ko
+    rel=alternate title="Korean, 2009-08-13">한국어</a> <a
+    href="http://www.hitechlog.com/Style/CSS/" hreflang=ky
+    rel=alternate title="Kirghiz, 2008-07-04">Кыргыз</a> <a
+    href="http://www.css-styles.lt/Style/CSS/" hreflang=lt
+    rel=alternate title="Lithuanian, 2009-08-15">Lietuvių</a> <a
+    href="http://www.reviews4u.org/Style/CSS/" hreflang=lv
+    rel=alternate title="Latvian, 2007-11-09">Latviešu</a> <a
+    href="http://www.macedonia-travels.com/w3c/Style/CSS/" hreflang=mk
+    rel=alternate
+    title="Macedonian, 2010-03-01">Македонски</a> <a
+    href="http://allsport-video.ru/Style/CSS/css.htm" hreflang=mt
+    rel=alternate title="Maltese, 2010-09-28">Malti</a> <a
+    href="http://www.bjornenki.com/articles/w3_style_css" hreflang=nb
+    rel=alternate title="Norwegian Bokmål, 2009-01-23">Norsk</a> <a
+    href=Overview.nl.html hreflang=nl rel=alternate
+    title="Dutch, 2009-03-02">Nederlands</a> <a href=Overview.pl.html
+    hreflang=pl rel=alternate title="Polish, 2010-11-08">Polski</a> <a
+    href="http://www.webstyles-portuguese.info/Style/CSS/" hreflang=pt
+    rel=alternate title="Portuguese, 2009-02-03">Português</a> <a
+    href="http://www.reviewzcenter.com/Style/CSS/" hreflang=ro
+    rel=alternate title="Romanian, 2008-01-14">Română</a> <a
+    href=Overview.ru.html hreflang=ru rel=alternate
+    title="Russian, 2010-10-16">Русский</a> <a
+    href="http://australianism.ru/style/CSS/" hreflang=sk rel=alternate
+    title="Slovak, 2009-11-30">Slovenčina</a> <a
+    href="http://websteradvice.com/AlbanCSS.html" hreflang=sq
+    rel=alternate title="Albanian, 2008-12-15">Shqip</a> <a
+    href="http://websteradvice.com/SerbianCSS.html" hreflang=sr-cyrl
+    rel=alternate title="Serbian, 2007-07-20">Српски</a> <a
+    href="http://www.webstyles-swedish.info/Style/CSS/" hreflang=sv
+    rel=alternate title="Swedish, 2009-02-03">Svenska</a> <a
+    href=Overview.tg.html hreflang=tg rel=alternate
+    title="Tajik, 2010-12-04">Тоҷикӣ</a> <a
+    href="http://www.codingbasic.com/style/css.html" hreflang=th
+    rel=alternate title="Thai, 2010-04-20">ไทย</a> <a
+    href="http://tl.tz8.de/style-css.html" hreflang=tl rel=alternate
+    title=2008-11-04>Tagalog</a> <a
+    href="http://www.dailycss.com/Style/CSS/" hreflang=tr rel=alternate
+    title="Turkish, 2009-01-29">Türkçe</a> <a
+    href="http://www.tatarw3.com/Style/CSS/" hreflang=tt rel=alternate
+    title="Tatar, 2007-01-11">татарча</a> <a
+    href=Overview.uk.html hreflang=uk rel=alternate
+    title="Ukrainian, 2010-10-29">Українська</a> <a
+    href="http://www.uzbek-webstyles.com/Style/CSS/index.html"
+    hreflang=uz rel=alternate title="Uzbek, 2010-09-20">Ўзбек</a>
+    <a href="http://www.asiatranslate.org/w3/style-vi/css/" hreflang=vi
+    rel=alternate title="Vietnamese, 2010-03-31">Tiếng Việt</a> <a
+    href="http://www.webstyles-chinese.info/Style/CSS/"
+    hreflang=zh-hans rel=alternate
+    title="Chinese (simplified), 2009-02-03">简体中文</a> <a
+    href="http://www.certifiedchinesetranslation.com/openaccess/CSS.html"
+    hreflang=zh-hant rel=alternate
+    title="Chinese (traditional), 2009-02-18">繁體中文</a>
+
+   <p><a href="/Style/CSS/translating">About the translations</a>
+  </div>
+  <!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-indent-step:1
+sgml-basic-offset:1
+End:
+-->

@@ -75,7 +75,7 @@ public class JsfUtils {
     /**
      * Creates an OffsetRange of source document offsets for given embedded offsets.
      */
-    public static OffsetRange createOffsetRange(Snapshot snapshot, String documentText, int embeddedOffsetFrom, int embeddedOffsetTo) {
+    public static OffsetRange createOffsetRange(Snapshot snapshot, CharSequence documentText, int embeddedOffsetFrom, int embeddedOffsetTo) {
 
         int originalFrom = 0;
         int originalTo = documentText.length();
