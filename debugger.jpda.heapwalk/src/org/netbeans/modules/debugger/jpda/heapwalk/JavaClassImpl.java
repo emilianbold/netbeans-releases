@@ -259,4 +259,9 @@ public class JavaClassImpl implements JavaClass {
         return className.hashCode() + 1024;
     }
 
+    @Override
+    public long getRetainedSizeByClass() {
+        return -1;
+    }
+
 }
