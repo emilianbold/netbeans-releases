@@ -16,6 +16,11 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>com.tasktop.c2c.server.scm.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.tasktop.c2c.server.wiki.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
