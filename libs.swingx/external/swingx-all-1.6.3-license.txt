@@ -1,5 +1,5 @@
 Name: SwingX
-Version: 0.9.5
+Version: 1.6.3
 OSR: Sun
 
 Copyright (c) 2005-2006 Sun Microsystems, Inc., 4150 Network Circle, Santa
