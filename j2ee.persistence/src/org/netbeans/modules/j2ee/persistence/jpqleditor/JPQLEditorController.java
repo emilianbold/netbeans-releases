@@ -158,7 +158,7 @@ public class JPQLEditorController {
         editorTopComponent.requestActive();
         editorTopComponent.setFocusToEditor();
 
-        editorTopComponent.fillHibernateConfigurations(activatedNodes);
+        editorTopComponent.fillPersistenceConfigurations(activatedNodes);
     }
 
 //    public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,

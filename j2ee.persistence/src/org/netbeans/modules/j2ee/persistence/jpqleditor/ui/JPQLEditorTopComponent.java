@@ -87,6 +87,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
@@ -118,7 +120,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/j2ee/persistence/jpqleditor/ui/resources/queryEditor16X16.png"; //NOI18N
     private Logger logger = Logger.getLogger(JPQLEditorTopComponent.class.getName());
-    private HashMap<String, FileObject> hibernateConfigMap = new HashMap<String, FileObject>();
+    private PUDataObject puObject;
+    private HashMap<String, PersistenceUnit> puConfigMap = new HashMap<String, PersistenceUnit>();
     private static List<Integer> windowCounts = new ArrayList<Integer>();
     private Integer thisWindowCount = new Integer(0);
     private JPQLEditorController controller = null;
@@ -298,18 +301,18 @@ public final class JPQLEditorTopComponent extends TopComponent {
                 if (jpqlEditor.getText().trim().equals("")) {
                     return;
                 }
-                if (jpaConfigurationComboBox.getSelectedItem() == null) {
-                    logger.info("hibernate configuration combo box is empty.");
+                if (puComboBox.getSelectedItem() == null) {
+                    logger.info("persistence unit selection combo box is empty.");
                     return;
                 }
-                FileObject selectedConfigObject = hibernateConfigMap.get(
-                        jpaConfigurationComboBox.getSelectedItem().toString());
+                PersistenceUnit selectedConfigObject = puConfigMap.get(
+                        puComboBox.getSelectedItem().toString());
 
                 if (Thread.interrupted() || isSqlTranslationProcessDone) {
                     return;    // Cancel the task
                 }
                 if (selectedConfigObject != null) {
-                    Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
+                    //Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
 //                    env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
 //                    if (env == null) {
                         logger.warning("HiberEnv is not found in enclosing project.");
@@ -425,11 +428,12 @@ public final class JPQLEditorTopComponent extends TopComponent {
         }
     }
 
-    public void fillHibernateConfigurations(Node[] activatedNodes) {
+    public void fillPersistenceConfigurations(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         DataObject dO = node.getCookie(DataObject.class);
+        puObject = null;
         if (dO instanceof PUDataObject) {
-            
+            puObject = (PUDataObject) dO;
             dO.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -449,32 +453,17 @@ public final class JPQLEditorTopComponent extends TopComponent {
             });
             
             Project enclosingProject = FileOwnerQuery.getOwner(dO.getPrimaryFile());
-//            env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-//            if (env == null) {
-//                logger.warning("HiberEnv is not found in enclosing project.");
-//                return;
-//            }
-//            List<FileObject> configFileObjects = env.getAllHibernateConfigFileObjects();
-//            for (FileObject configFileObject : configFileObjects) {
-//                try {
-//                    PUDataObject PUDataObject = (PUDataObject) DataObject.find(configFileObject);
-//                    String configName = PUDataObject.getHibernateConfiguration().getSessionFactory().getAttributeValue("name"); //NOI18N
-//                    if (configName == null || configName.equals("")) {
-//                        configName = configFileObject.getName();
-//                    }
-//                    hibernateConfigMap.put(configName, configFileObject);
-//                } catch (DataObjectNotFoundException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-            jpaConfigurationComboBox.setModel(new DefaultComboBoxModel(hibernateConfigMap.keySet().toArray()));
-//            HibernateConfiguration config = ((PUDataObject) dO).getHibernateConfiguration();
-//            String selectedConfigName = config.getSessionFactory().getAttributeValue("name"); //NOI18N
-//            if (selectedConfigName == null || selectedConfigName.equals("")) {
-//                selectedConfigName = dO.getPrimaryFile().getName();
-//            }
-//            jpaConfigurationComboBox.setSelectedItem(selectedConfigName);
-
+            Persistence persistence = puObject.getPersistence();
+            if (persistence == null) {
+                logger.warning("corrupted persistence.xml in enclosing project.");
+            } else if(persistence.getPersistenceUnit().length > 0) {
+                for (PersistenceUnit unit : persistence.getPersistenceUnit()) {
+                        String configName = unit.getName(); //NOI18N
+                        puConfigMap.put(configName, unit);
+                }
+                puComboBox.setModel(new DefaultComboBoxModel(puConfigMap.keySet().toArray()));
+                puComboBox.setSelectedIndex(0);
+            }
         } else {
             //TODO Don't know whether this case will actually arise..
         }
@@ -546,7 +535,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
                 errorTextArea.append(
-                        removeHibernateModuleCodelines(sWriter.toString()));
+                        removePersistenceModuleCodelines(sWriter.toString()));
 
             }
 
@@ -629,12 +618,12 @@ public final class JPQLEditorTopComponent extends TopComponent {
         }
     }
 
-    private String removeHibernateModuleCodelines(String exceptionTrace) {
+    private String removePersistenceModuleCodelines(String exceptionTrace) {
         StringTokenizer tokenizer = new StringTokenizer(exceptionTrace, "\n");
         StringBuilder filteredExceptionTrace = new StringBuilder();
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (!token.contains("org.netbeans.modules.hibernate")) {
+            if (!token.contains("org.netbeans.modules.j2ee.persistence")) {
                 filteredExceptionTrace.append(token).append("\n");
             }
         }
@@ -651,7 +640,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
 
         toolBar = new javax.swing.JToolBar();
         sessionLabel = new javax.swing.JLabel();
-        jpaConfigurationComboBox = new javax.swing.JComboBox();
+        puComboBox = new javax.swing.JComboBox();
         toolbarSeparator = new javax.swing.JToolBar.Separator();
         runJPQLButton = new javax.swing.JButton();
         toolbarSeparator1 = new javax.swing.JToolBar.Separator();
@@ -691,7 +680,7 @@ public final class JPQLEditorTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(sessionLabel, org.openide.util.NbBundle.getMessage(JPQLEditorTopComponent.class, "JPQLEditorTopComponent.sessionLabel.text")); // NOI18N
         toolBar.add(sessionLabel);
 
-        toolBar.add(jpaConfigurationComboBox);
+        toolBar.add(puComboBox);
         toolBar.add(toolbarSeparator);
 
         runJPQLButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/j2ee/persistence/jpqleditor/ui/resources/run_jpql_query_16.png"))); // NOI18N
@@ -923,7 +912,7 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         setStatus(NbBundle.getMessage(JPQLEditorTopComponent.class, "emptyQuery"));
         return;
     }
-    if (jpaConfigurationComboBox.getSelectedItem() == null) {
+    if (puComboBox.getSelectedItem() == null) {
         logger.info("hibernate configuration combo box is empty.");
         switchToResultView();
         setStatus(NbBundle.getMessage(JPQLEditorTopComponent.class, "emptyConfiguration"));
@@ -933,7 +922,7 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     try {
         ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runJPQLButtonActionPerformed
                 NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));//GEN-LAST:event_runJPQLButtonActionPerformed
-            FileObject selectedConfigFile = (FileObject) hibernateConfigMap.get(jpaConfigurationComboBox.getSelectedItem());
+            FileObject selectedConfigFile = (FileObject) puConfigMap.get(puComboBox.getSelectedItem());
             ph.start(100);
             controller.executeJPQLQuery(jpqlEditor.getText(),
                     selectedConfigFile,
@@ -951,8 +940,8 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JComboBox jpaConfigurationComboBox;
     private javax.swing.JEditorPane jpqlEditor;
+    private javax.swing.JComboBox puComboBox;
     private javax.swing.JPanel resultContainerPanel;
     private javax.swing.JToggleButton resultToggleButton;
     private javax.swing.JPanel resultsOrErrorPanel;
