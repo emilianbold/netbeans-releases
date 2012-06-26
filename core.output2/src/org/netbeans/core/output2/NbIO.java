@@ -430,7 +430,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     }
 
     Color getColor(IOColors.OutputType type) {
-        return ioColors != null ? ioColors.getColor(type) : AbstractLines.DEF_COLORS[type.ordinal()];
+        return ioColors != null ? ioColors.getColor(type) : AbstractLines.getDefColors()[type.ordinal()];
     }
 
     private class IOTabImpl extends IOTab {
@@ -521,7 +521,7 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         @Override
         protected Color getColor(OutputType type) {
-            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : AbstractLines.DEF_COLORS[type.ordinal()];
+            return clrs[type.ordinal()] != null ? clrs[type.ordinal()] : AbstractLines.getDefColors()[type.ordinal()];
         }
 
         @Override

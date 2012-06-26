@@ -44,6 +44,12 @@
 
 package org.netbeans.swing.plaf;
 
+import java.awt.Color;
+import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.text.AttributeSet;
+
 /** Look and feel customizations interface.
  * For various look and feels, there is a need to customize colors,
  * borders etc. to provide 'native-like' UI.
@@ -77,6 +83,115 @@ public abstract class LFCustoms {
     private Object[] appKeysAndValues = null;
     private Object[] guaranteedKeysAndValues = null;
     protected static final String WORKPLACE_FILL = "nb_workplace_fill"; //NOI18N
+
+    /** convert color
+     * @since 1.27
+     *  @return hexadecimal value */
+    public static String getHexString(int color) {
+            String result = Integer.toHexString(color).toUpperCase();
+            if (result.length() == 1) {
+                    return '0'+result;
+            }
+            return result;
+    }
+
+    /** cached window text  foreground color as html code */
+    private static String textFgColorHTML = "";
+
+    /** @return  window text foreground color as html code
+     * @since 1.27
+     */
+    public static String getTextFgColorHTML() {
+        synchronized(LFCustoms.class) {
+            if (textFgColorHTML.isEmpty()) {
+                    Object o = UIManager.getLookAndFeel().getDefaults().get("windowText");
+                    if (o instanceof ColorUIResource) {
+                            ColorUIResource resource = (ColorUIResource)o;
+                            textFgColorHTML = "<font color=#" + getHexString(resource.getRed()) + getHexString(resource.getGreen()) + getHexString(resource.getBlue())+">";
+                    } else {
+                            textFgColorHTML = "<font color=#000000>";
+                            Logger.getLogger(LFCustoms.class.getName()).warning("BUG: getTextFgColorHTML: color isn't available");
+                    }
+            }
+            return textFgColorHTML;
+        }
+    }
+
+    /** cached window text foreground color */
+    private static Color textFgColor = null;
+
+    /** @return window text foreground color
+     * @since 1.27
+     */
+    public static Color getTextFgColor() {
+        synchronized(LFCustoms.class) {
+            if (textFgColor == null) {
+                Object o = UIManager.getLookAndFeel().getDefaults().get("windowText");
+                if (o instanceof ColorUIResource) {
+                    textFgColor = (Color) o;
+                } else {
+                    textFgColor = Color.BLACK;
+                    Logger.getLogger(LFCustoms.class.getName()).warning("BUG: getTextFgColor: color isn't available");
+                }
+            }
+            return textFgColor;
+        }
+    }
+
+    /** shift color value */
+    private static final int shiftValue = 64;
+
+    /** convert color component
+     * @return brighter  color component
+     * @since 1.27
+     */
+    private static int brighter (int color) {
+            int result = color + shiftValue;
+            if (result > 255) {
+                    return 255;
+            } else {
+                    return result;
+            }
+    }
+
+    /** convert color component
+     *  @return  darker  color component
+     * @since 1.27
+     */
+    private static int darker(int color) {
+            int result = color - shiftValue;
+            if (result < 0) {
+                    return 0;
+            } else {
+                    return result;
+            }
+    }
+
+    /** convert color to brighter one if window foreground text color is bright color
+     * or convert color to darker one if window foreground text color is dark color
+     * @return converted color
+     * @since 1.27
+     */
+    public static Color shiftColor(Color color) {
+        Color textFgColor = getTextFgColor();
+        if ((textFgColor.getRed() > 127) || (textFgColor.getGreen() > 127) || (textFgColor.getBlue() > 127)) {
+            return new Color(brighter(color.getRed()), brighter(color.getGreen()), brighter(color.getBlue()));
+        }
+        return new Color(darker(color.getRed()), darker(color.getGreen()), darker(color.getBlue()));
+    }
+
+    /** get foreground text color from AttributeSet
+     *  or get window foreground text color if AttributeSet doesn't define foreground text color
+     * @return  foreground text color
+     * @since 1.27
+     */
+    public static Color getForeground(AttributeSet a) {
+        Color fg = (Color) a.getAttribute(javax.swing.text.StyleConstants.Foreground);
+        if (fg == null) {
+            fg = getTextFgColor();
+        }
+        return fg;
+    }
 
     //TODO: A nice idea would be to replace these classes with XML files - minor rewrite of NbTheme to do it
 
