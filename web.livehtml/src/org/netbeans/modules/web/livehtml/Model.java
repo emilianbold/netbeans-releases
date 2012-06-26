@@ -171,11 +171,12 @@ public class Model {
         }
     }
     
-    public void storeDataEvent(long timestamp, String data) {
+    public void storeDataEvent(long timestamp, String data, String request, String mime) {
+        String dd = "Request "+request +" produced "+mime+" data:\n" + data;
         if (dataToStore == null) {
-            dataToStore = data;
+            dataToStore = dd;
         } else {
-            dataToStore += "\n\n"+data;
+            dataToStore += "\n\n"+dd;
         }
     }
     

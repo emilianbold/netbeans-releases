@@ -64,8 +64,8 @@ public class LiveHTMLImpl implements LiveHTMLImplementation {
     }
     
     @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data) {
-        Model.getModel(connectionURL, false).storeDataEvent(timeStamp, data);
+    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
+        Model.getModel(connectionURL, false).storeDataEvent(timeStamp, data, request, mime);
     }
 
 }
