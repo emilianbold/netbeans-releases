@@ -55,13 +55,19 @@ public interface LiveHTMLImplementation {
      * 
      * @param connectionURL URL connection
      * @param timeStamp a timestamp, eg. System.currentTimeMillis();
-     * @param content HTML document image
+     * @param content HTML document image before call described by the given callStack was executed
      * @param callStack JSON array (serialized into String) containing individual call frames;
      *   single callframe has following attributes: lineNumber(type:Number), 
      *   columnNumber(type:Number), function(type:String), script(type:String)
      */
-    void storeDocumentVersion(URL connectionURL, long timeStamp, String content, String callStack);
+    void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack);
 
+    /**
+     * This method follows {@link #storeDocumentVersionBeforeChange} and sends version of document after code
+     * change happened in the document.
+     */
+    void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content);
+    
     /**
      * If Live HTML is enabled for the given URL connection then any data received from
      * server should be recoded using this method.

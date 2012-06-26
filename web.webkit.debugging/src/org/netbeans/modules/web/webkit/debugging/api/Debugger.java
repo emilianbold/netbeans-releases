@@ -80,6 +80,7 @@ public final class Debugger {
     private List<CallFrame> currentCallStack = new ArrayList<CallFrame>();
     private List<Breakpoint> currentBreakpoints = new ArrayList<Breakpoint>();
     private boolean inLiveHTMLMode = false;
+    private RequestProcessor.Task latestSnapshotTask;    
 
     Debugger(TransportHelper transport, WebKitDebugging webkit) {
         this.transport = transport;
@@ -103,6 +104,13 @@ public final class Debugger {
 
     public void enableDebuggerInLiveHTMLMode() {
         enable();
+        
+        latestSnapshotTask = transport.getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run() {
+                recordDocumentChange(System.currentTimeMillis(), null, false, false);
+            }
+        });
         
         inLiveHTMLMode = true;
         initDOMLister = true;
@@ -319,7 +327,7 @@ public final class Debugger {
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeEventListenerBreakpoint", params));
     }
     
-    private void recordDocumentChange(long timeStamp, JSONArray callStack, boolean attachDOMListeners) {
+    private void recordDocumentChange(long timeStamp, JSONArray callStack, boolean attachDOMListeners, boolean realChange) {
         assert inLiveHTMLMode;
         
         Node n = webkit.getDOM().getDocument();
@@ -329,9 +337,16 @@ public final class Debugger {
             removeEventBreakpoint("load");
         }
         String content = webkit.getDOM().getNodeHTML(n);
-        JSONArray callStack2 = normalizeStackTrace(callStack);
-        LiveHTML.getDefault().storeDocumentVersion(transport.getConnectionURL(), timeStamp, content, callStack2.toJSONString());
-        resume();
+        JSONArray callStack2 = callStack != null ? normalizeStackTrace(callStack) : null;
+        if (realChange) {
+            LiveHTML.getDefault().storeDocumentVersionBeforeChange(transport.getConnectionURL(), 
+                    timeStamp, content, callStack2 != null ? callStack2.toJSONString() : null);
+            resume();
+            latestSnapshotTask.schedule(345);
+        } else {
+            LiveHTML.getDefault().storeDocumentVersionAfterChange(transport.getConnectionURL(), 
+                    timeStamp, content);
+        }
     }
     
     private class Callback implements ResponseCallback {
@@ -369,7 +384,7 @@ public final class Debugger {
                         transport.getRequestProcessor().post(new Runnable() {
                             @Override
                             public void run() {
-                                recordDocumentChange(timestamp, callStack, finalAttachDOMListeners);
+                                recordDocumentChange(timestamp, callStack, finalAttachDOMListeners, true);
                             }
                         });
                         return;

@@ -54,10 +54,15 @@ import org.openide.windows.TopComponent;
 public class LiveHTMLImpl implements LiveHTMLImplementation {
 
     @Override
-    public void storeDocumentVersion(URL connectionURL, long timeStamp, String content, String callStack) {
-        Model.getModel(connectionURL, false).storeDocumentVersion(timeStamp, content, callStack);
+    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
+        Model.getModel(connectionURL, false).storeDocumentVersion(timeStamp, content, callStack, true);
     }
 
+    @Override
+    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
+        Model.getModel(connectionURL, false).storeDocumentVersion(timeStamp, content, null, false);
+    }
+    
     @Override
     public void storeDataEvent(URL connectionURL, long timeStamp, String data) {
         Model.getModel(connectionURL, false).storeDataEvent(timeStamp, data);
