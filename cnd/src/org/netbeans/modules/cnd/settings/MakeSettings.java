@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.settings;
 import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
@@ -143,8 +144,12 @@ public class MakeSettings extends SharedClassObject {
                 putProperty(PROP_DEFAULT_BUILD_DIR, dir, true);
             }
         } else {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    getString("MSG_RelBuildPath")));    //NOI18N
+            String message = getString("MSG_RelBuildPath"); //NOI18N
+            if (CndUtils.isStandalone()) {
+                System.err.println(message);
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }
 

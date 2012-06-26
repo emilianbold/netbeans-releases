@@ -180,7 +180,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             Logger.getInstance().log(Level.FINE, "", ex); // NOI18N
         } finally {
             if (status != 0) {
-                if (!Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                if (!Boolean.getBoolean("nativeexecution.mode.unittest") && !"true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N)
                     NotifyDescriptor dd =
                             new NotifyDescriptor.Message(NbBundle.getMessage(SPSRemoteImpl.class, "TaskPrivilegesSupport_GrantPrivileges_Failed"));
                     DialogDisplayer.getDefault().notify(dd);
