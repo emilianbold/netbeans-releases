@@ -135,6 +135,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         AntTargetExecutor.Env execenv = new AntTargetExecutor.Env();
         Properties props = execenv.getProperties();
         props.putAll(antProps);
+        props.put("nb.wait.for.caches", "true");
         execenv.setProperties(props);
 
         return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
