@@ -2258,6 +2258,9 @@ public class EditorContextImpl extends EditorContext {
                                 tp = tp.getParentPath();
                                 if (tp == null) break;
                                 tree = tp.getLeaf();
+                                if (tree.getKind() == Tree.Kind.METHOD) {
+                                    break; // We're inside a method, do not search for fields here.
+                                }
                             }
                         }
                         if (tree.getKind() == Tree.Kind.VARIABLE) {
