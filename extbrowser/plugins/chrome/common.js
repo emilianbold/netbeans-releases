@@ -411,7 +411,10 @@ NetBeans_Presets.getPreset = function(preset) {
     return this._preset;
 }
 // get all presets
-NetBeans_Presets.getPresets = function() {
+NetBeans_Presets.getPresets = function(copy) {
+    if (copy) {
+        return this._loadPresets();
+    }
     if (this._presets == null) {
         this._presets = this._loadPresets();
     }

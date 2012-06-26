@@ -159,7 +159,7 @@ NetBeans_PresetMenu._resizePage = function(width, height) {
 }
 // show preset customizer
 NetBeans_PresetMenu._showPresetCustomizer = function() {
-    console.log('showing preset customizer...');
+    chrome.tabs.create({'url': 'options.html'});
     this.hide();
 }
 
