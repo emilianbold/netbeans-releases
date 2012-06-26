@@ -5277,7 +5277,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        
+        @ServiceProvider(service=IndexingBridge.Ordering.class)
         public static final class IndexingBridgeImpl extends IndexingBridge.Ordering {
             @Override
             protected void enterProtectedMode() {
