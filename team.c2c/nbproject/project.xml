@@ -95,7 +95,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.team.c2c.ui</friend>
+                <package>org.netbeans.modules.team.c2c.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
