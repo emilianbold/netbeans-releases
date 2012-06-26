@@ -103,7 +103,7 @@ import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.Lookup;
-
+import org.netbeans.swing.plaf.LFCustoms;
 /**
  *
  * @author  Vladimir Voskresensky
@@ -122,8 +122,7 @@ public abstract class CsmResultItem implements CompletionItem {
     protected int selectionEndOffset = -1;
     protected int substituteOffset = -1;
     CsmObject associatedObject;
-    private static final Color KEYWORD_COLOR = Color.gray;
-    private static final Color TYPE_COLOR = Color.black;
+    private static final Color KEYWORD_COLOR = Color.lightGray;
     private int priority;
     private SubstitutionHint hint;
 
@@ -147,7 +146,7 @@ public abstract class CsmResultItem implements CompletionItem {
     }
     
     protected static Color getTypeColor(CsmType type) {
-        return type.isBuiltInBased(false) ? KEYWORD_COLOR : TYPE_COLOR;
+        return type.isBuiltInBased(false) ? LFCustoms.shiftColor(KEYWORD_COLOR) : LFCustoms.getTextFgColor();
     }
 
     public void setSubstituteOffset(int substituteOffset) {
@@ -981,11 +980,11 @@ public abstract class CsmResultItem implements CompletionItem {
                 if (type == null) {
                     // only var args parameters could have null types
                     assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
-                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString(), true, LFCustoms.shiftColor(KEYWORD_COLOR))); //NOI18N
                     varArgIndex = i;
                 } else {
                     String typeName = getTypeName(type, instantiateTypes);
-                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString(), false, LFCustoms.getTextFgColor() /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
             }
