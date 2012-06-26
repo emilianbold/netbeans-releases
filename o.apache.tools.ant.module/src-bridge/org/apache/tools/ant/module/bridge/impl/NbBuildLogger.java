@@ -193,13 +193,18 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.interestingOutputCallback = interestingOutputCallback;
         this.handle = handle;
         LOG.log(Level.FINE, "---- Initializing build of {0} \"{1}\" at verbosity {2} ----", new Object[] {origScript, displayName, verbosity});
-        enterProtectedMode();
+        enterProtectedMode(isCompileOnSave(properties));
     }
 
-    private void enterProtectedMode() {
+    //where
+    private static boolean isCompileOnSave(final Map<String,String> properties) {
+        return "true".equals(properties.get("nb.wait.for.caches")); //NOI18N
+    }
+
+    private void enterProtectedMode(final boolean waitForScan) {
         synchronized (protectedModeLock) {
             if (protectedMode == null) {
-                protectedMode = IndexingBridge.getDefault().protectedMode();
+                protectedMode = IndexingBridge.getDefault().protectedMode(waitForScan);
             }
         }
     }
@@ -225,7 +230,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         }
         if (running) {
             handle.switchToIndeterminate();
-            enterProtectedMode();
+            enterProtectedMode(false);
             sleepTask.schedule(SLEEP_DELAY);
         }
     }
