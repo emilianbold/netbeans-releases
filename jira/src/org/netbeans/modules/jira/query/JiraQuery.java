@@ -272,6 +272,7 @@ public class JiraQuery {
 
     public void setSaved(boolean saved) {
         this.saved = saved;
+        fireQuerySaved();
     }
 
     public boolean isSaved() {
