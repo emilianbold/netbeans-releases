@@ -398,6 +398,8 @@ class TranslateIdentifier implements TreeVisitor<Tree, Boolean> {
     }
 
     public Tree visitMethod(MethodTree node, Boolean p) {
+        if (unit != null && info.getTreeUtilities().isSynthetic(/*should not be used:*/unit, node)) return node;
+
         BlockTree body = (BlockTree) translateTree(node.getBody());
         Tree defaultValue = translateTree(node.getDefaultValue());
         List<? extends VariableTree> parameters = translateTree(node.getParameters());
