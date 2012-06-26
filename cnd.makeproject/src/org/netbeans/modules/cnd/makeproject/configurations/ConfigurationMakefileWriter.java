@@ -212,7 +212,7 @@ public class ConfigurationMakefileWriter {
             }
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
             final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
-            if (CndUtils.isUnitTestMode()) {
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 new Exception(msg).printStackTrace(System.err);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
