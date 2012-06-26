@@ -42,22 +42,25 @@
 
 package org.netbeans.modules.team.c2c;
 
+import org.netbeans.modules.team.c2c.api.CloudClient;
+import org.netbeans.modules.team.c2c.api.ClientFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
+import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
+import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.PasswordAuthentication;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.eclipse.mylyn.commons.net.WebLocation;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
 /**
@@ -73,7 +76,6 @@ public class C2CClientTest extends NbTestCase  {
     private static String uname;
     private static String passw;
     private static String proxy;
-    private ClassPathXmlApplicationContext context;
     
     public C2CClientTest(String arg0) {
         super(arg0);
@@ -107,15 +109,16 @@ public class C2CClientTest extends NbTestCase  {
     
     public void testGetUserInfo () throws Exception {
         CloudClient client = getClient();
-        Profile currentProfile = client.getCurrentProfile();
-        assertNotNull(currentProfile.getFirstName());
-        assertNotNull(currentProfile.getLastName());
+        Profile currentClient = client.getCurrentProfile();
+        assertNotNull(currentClient.getFirstName());
+        assertNotNull(currentClient.getLastName());
+        assertNotNull(currentClient.getEmail());
+        assertEquals(uname, currentClient.getUsername());
     }
     
     public void testGetMyProjects () throws Exception {
         CloudClient client = getClient();
-        Profile currentProfile = client.getCurrentProfile();
-        List<Project> projects = client.getProjects(currentProfile.getId());
+        List<Project> projects = client.getMyProjects();
         assertNotNull(projects);
         assertFalse(projects.isEmpty());
         // anagram game should be there
@@ -136,6 +139,24 @@ public class C2CClientTest extends NbTestCase  {
         assertEquals("anagramgame", project.getIdentifier());
     }
     
+    public void testSearchProjects () throws Exception {
+        CloudClient client = getClient();
+        for (String pattern : new String[] { "netbeans", "anagram", "anagramgame", "NetBeans PROJECT" }) {
+            List<Project> projects = client.searchProjects(pattern);
+            assertNotNull(projects);
+            assertFalse(projects.isEmpty());
+            // anagram game should be there
+            Project anagramGameProject = null;
+            for (Project p : projects) {
+                if ("anagramgame".equals(p.getIdentifier())) {
+                    anagramGameProject = p;
+                    break;
+                }
+            }
+            assertNotNull(anagramGameProject);
+        }
+    }
+
     public void testGetProjectServices () throws Exception {
         CloudClient client = getClient();
         Project project = client.getProjectById("anagramgame");
@@ -162,11 +183,40 @@ public class C2CClientTest extends NbTestCase  {
         assertFalse(client.isWatchingProject(projectIdent));
     }
     
+    public void testGetRecentActivities () throws Exception {
+        CloudClient client = getClient();
+        Project project = client.getProjectById("anagramgame");
+        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project);
+        assertNotNull(shortActivities);
+        assertTrue(shortActivities.size() > 0);
+        List<ProjectActivity> activities = client.getRecentActivities(project);
+        assertNotNull(activities);
+        assertTrue(activities.size() > 0);
+        // is it the same??
+        for (int i = 0; i < shortActivities.size(); ++i) {
+            ProjectActivity a1 = shortActivities.get(i);
+            ProjectActivity a2 = activities.get(i);
+            assertEquals(a1.getActivityDate(), a2.getActivityDate());
+            assertEquals(a1.getProjectIdentifier(), a2.getProjectIdentifier());
+            assertEquals(a1.getClass(), a2.getClass());
+            if (a1 instanceof TaskActivity) {
+                assertActivity((TaskActivity) a1, (TaskActivity) a2);
+            }
+        }
+    }
+
     private CloudClient getClient () {
-        return ClientFactory.getInstance().getClient(new WebLocation("https://q.tasktop.com/", 
-                uname, 
-                passw, 
-                new ClientFactory.ProxyProvider()));
+        return ClientFactory.getInstance().getClient("https://q.tasktop.com/",
+                new PasswordAuthentication(uname, passw.toCharArray()));
+    }
+
+    private void assertActivity (TaskActivity a1, TaskActivity a2) {
+        com.tasktop.c2c.server.tasks.domain.TaskActivity ta1 = a1.getActivity();
+        com.tasktop.c2c.server.tasks.domain.TaskActivity ta2 = a2.getActivity();
+        assertEquals(ta1.getActivityDate(), ta2.getActivityDate());
+        assertEquals(ta1.getActivityType(), ta2.getActivityType());
+        assertEquals(ta1.getAuthor().getRealname(), ta2.getAuthor().getRealname());
+        assertEquals(ta1.getDescription(), ta2.getDescription());
     }
 
 }

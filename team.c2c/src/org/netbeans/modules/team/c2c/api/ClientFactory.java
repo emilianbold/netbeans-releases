@@ -39,10 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c;
+package org.netbeans.modules.team.c2c.api;
 
 import com.tasktop.c2c.client.commons.client.CredentialsInjector;
+import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
@@ -50,8 +52,8 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import org.eclipse.core.net.proxy.IProxyData;
-import org.eclipse.mylyn.commons.net.AbstractWebLocation;
 import org.eclipse.mylyn.commons.net.IProxyProvider;
+import org.eclipse.mylyn.commons.net.WebLocation;
 import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
 import org.netbeans.api.keyring.Keyring;
 import org.openide.util.NetworkSettings;
@@ -62,10 +64,10 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author ondra
  */
-public class ClientFactory {
+public final class ClientFactory {
 
     private static ClientFactory instance;
-    private ClassPathXmlApplicationContext context;
+    private ClassPathXmlApplicationContext appContext;
     
     private ClientFactory () {
         
@@ -78,15 +80,16 @@ public class ClientFactory {
         return instance;
     }
     
-    public CloudClient getClient (AbstractWebLocation location) {
-        // TODO eliminate:
-        // com.tasktop.c2c.client.commons.client.EclipseCommonsClientHttpRequestFactorySource
-        // CredentialsInjector
-        ClassPathXmlApplicationContext profileContext = getContext();
-        ProfileWebServiceClient client = profileContext.getBean(ProfileWebServiceClient.class);
-        RestTemplate template = (RestTemplate)getContext().getBean(RestTemplate.class);
-        CredentialsInjector.configureRestTemplate(location, template);
-        return new CloudClient(client, location);
+    public CloudClient getClient (String url, PasswordAuthentication auth) {
+        WebLocation location = new WebLocation(url, 
+                auth.getUserName(), 
+                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
+                new ClientFactory.ProxyProvider());
+        ClassPathXmlApplicationContext context = getContext();
+        ProfileWebServiceClient profileClient = context.getBean(ProfileWebServiceClient.class);
+        ActivityServiceClient activityClient = context.getBean(ActivityServiceClient.class);
+        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
+        return new CloudClient(profileClient, activityClient, location);
     }
     
     private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
@@ -98,15 +101,15 @@ public class ClientFactory {
     }
 
     private ClassPathXmlApplicationContext getContext () {
-        if (context == null) {
-            context = createContext(new String[] { 
+        if (appContext == null) {
+            appContext = createContext(new String[] { 
                 "org/netbeans/modules/team/c2c/applicationContext-activityServiceForClient.xml", 
                 "org/netbeans/modules/team/c2c/applicationContext-profileServiceForClient.xml" }, Thread.currentThread().getContextClassLoader());
         }
-        return context;
+        return appContext;
     }
     
-    public static class ProxyProvider implements IProxyProvider {
+    private static class ProxyProvider implements IProxyProvider {
 
 	@Override
 	public Proxy getProxyForHost(String host, String proxyType) {

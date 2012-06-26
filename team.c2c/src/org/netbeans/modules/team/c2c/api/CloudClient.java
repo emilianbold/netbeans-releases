@@ -39,12 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c;
+package org.netbeans.modules.team.c2c.api;
 
 import com.tasktop.c2c.server.common.service.domain.QueryRequest;
+import com.tasktop.c2c.server.common.service.domain.QueryResult;
+import com.tasktop.c2c.server.common.service.web.AbstractRestServiceClient;
+import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
+import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
+import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import java.util.Collections;
 import java.util.List;
@@ -62,12 +67,14 @@ import org.springframework.security.core.userdetails.User;
  * @author ondra
  */
 public final class CloudClient {
-    private final ProfileWebServiceClient delegate;
+    private final ProfileWebServiceClient profileClient;
     private static final String PROFILE_SERVICE = "alm/api"; //NOI18N
     private final AbstractWebLocation location;
+    private final ActivityServiceClient activityClient;
 
-    CloudClient (ProfileWebServiceClient client, AbstractWebLocation location) {
-        this.delegate = client;
+    CloudClient (ProfileWebServiceClient profileClient, ActivityServiceClient activityClient, AbstractWebLocation location) {
+        this.profileClient = profileClient;
+        this.activityClient = activityClient;
         this.location = location;
     }
 
@@ -75,59 +82,90 @@ public final class CloudClient {
         return run(new Callable<Profile> () {
             @Override
             public Profile call () throws Exception {
-                return delegate.getCurrentProfile();
+                return profileClient.getCurrentProfile();
             }
-        }, PROFILE_SERVICE);
+        }, profileClient, PROFILE_SERVICE);
     }
 
     public Project getProjectById (final String projectId) throws CloudException {
         return run(new Callable<Project> () {
             @Override
             public Project call () throws Exception {
-                return delegate.getProjectByIdentifier(projectId);
+                return profileClient.getProjectByIdentifier(projectId);
             }
-        }, PROFILE_SERVICE);
+        }, profileClient, PROFILE_SERVICE);
     }
 
-    public List<Project> getProjects (final Long profileId) throws CloudException {
+    public List<Project> getMyProjects () throws CloudException {
         return run(new Callable<List<Project>> () {
             @Override
             public List<Project> call () throws Exception {
-                return delegate.getProjects(profileId);
+                ProjectsQuery query = new ProjectsQuery(ProjectRelationship.MEMBER, null);
+                QueryResult<Project> res = profileClient.findProjects(query);
+                return res.getResultPage();
             }
-        }, PROFILE_SERVICE);
+        }, profileClient, PROFILE_SERVICE);
     }
 
     public boolean isWatchingProject (final String projectId) throws CloudException {
         return Boolean.TRUE.equals(run(new Callable<Boolean> () {
             @Override
             public Boolean call () throws Exception {
-                return delegate.isWatchingProject(projectId);
+                return profileClient.isWatchingProject(projectId);
             }
-        }, PROFILE_SERVICE));
+        }, profileClient, PROFILE_SERVICE));
+    }
+
+    public List<Project> searchProjects (final String pattern) throws CloudException {
+        return run(new Callable<List<Project>> () {
+            @Override
+            public List<Project> call () throws Exception {
+                ProjectsQuery query = new ProjectsQuery(pattern, new QueryRequest());
+                QueryResult<Project> res = profileClient.findProjects(query);
+                return res.getResultPage();
+            }
+        }, profileClient, PROFILE_SERVICE);
     }
 
     public void unwatchProject (final String projectId) throws CloudException {
         run(new Callable<Void> () {
             @Override
             public Void call () throws Exception {
-                delegate.unwatchProject(projectId);
+                profileClient.unwatchProject(projectId);
                 return null;
             }
-        }, PROFILE_SERVICE);
+        }, profileClient, PROFILE_SERVICE);
     }
 
     public void watchProject (final String projectId) throws CloudException {
         run(new Callable<Void> () {
             @Override
             public Void call () throws Exception {
-                delegate.watchProject(projectId);
+                profileClient.watchProject(projectId);
                 return null;
             }
-        }, PROFILE_SERVICE);
+        }, profileClient, PROFILE_SERVICE);
     }
 
-    private <T> T run (Callable<T> callable, String service) throws CloudException {
+    public List<ProjectActivity> getRecentActivities (final Project project) throws CloudException {
+        return run(new Callable<List<ProjectActivity>> () {
+            @Override
+            public List<ProjectActivity> call () throws Exception {
+                return activityClient.getRecentActivity(project.getIdentifier());
+            }
+        }, activityClient, PROFILE_SERVICE);
+    }
+
+    public List<ProjectActivity> getRecentShortActivities (final Project project) throws CloudException {
+        return run(new Callable<List<ProjectActivity>> () {
+            @Override
+            public List<ProjectActivity> call () throws Exception {
+                return activityClient.getShortActivityList(project.getIdentifier());
+            }
+        }, activityClient, PROFILE_SERVICE);
+    }
+
+    private <T> T run (Callable<T> callable, AbstractRestServiceClient client, String service) throws CloudException {
         try {
             Authentication auth = null;
             AuthenticationCredentials credentials = location.getCredentials(AuthenticationType.REPOSITORY);
@@ -138,10 +176,10 @@ public final class CloudClient {
             }
             SecurityContextHolder.getContext().setAuthentication(auth);
             try {
-                delegate.setBaseUrl(location.getUrl() + service);
+                client.setBaseUrl(location.getUrl() + service);
                 return callable.call();
             } finally {
-                delegate.setBaseUrl(location.getUrl());
+                client.setBaseUrl(location.getUrl());
                 SecurityContextHolder.getContext().setAuthentication(null);
             }
         } catch (Exception ex) {
