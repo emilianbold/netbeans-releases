@@ -105,7 +105,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
      * @see org.openide.WizardDescriptor.Iterator#current()
      */
     @Override
-    public Panel current() {
+    public Panel<WizardDescriptor> current() {
         return myPanels[myIndex];
     }
 
@@ -114,7 +114,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
      */
     @Override
     public boolean hasNext() {
-        return false;
+        return myIndex<myPanels.length-1;
     }
 
     /* (non-Javadoc)
@@ -171,9 +171,12 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myRestPanel = new RestPanel( descriptor );
         Project project = Templates.getProject( descriptor );
         Sources sources = ProjectUtils.getSources(project);
+        
         myPanels = new WizardDescriptor.Panel[]{
                 Templates.buildSimpleTargetChooser(project, 
-                sources.getSourceGroups(Sources.TYPE_GENERIC)).bottomPanel(myRestPanel).create() };
+                sources.getSourceGroups(Sources.TYPE_GENERIC)).
+                    bottomPanel(myRestPanel).create(), new HtmlPanel( descriptor )
+                    };
     }
     
     /* (non-Javadoc)
@@ -212,6 +215,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         JSClientGenerator generator = JSClientGenerator.create( description );
         generator.generate( jsFile);
+
         return null;
     }
 
