@@ -298,6 +298,7 @@ NetBeans.tabUpdated = function(tab) {
         } else if (status === this.STATUS_MANAGED) {
             // Navigation in a managed tab => send "urlchange" message
             this.sendUrlChangeMessage(tab.id, tab.url);
+            this.showPageIcon(tab.id);
         }
     }
 }
@@ -317,4 +318,110 @@ NetBeans.tabRemoved = function(tabId) {
         // Remove the tab from the set of managed tabs (if it was there)
         delete this.managedTabs[tabId];
     }
+}
+
+/**
+ * Class representing window preset.
+ *
+ * Internal presets cannot be removed.
+ */
+function NetBeans_Preset(type, title, width, height, toolbar, internal) {
+    // type
+    this.type = type;
+    // title
+    this.title = title;
+    // width (in px)
+    this.width = width;
+    // height (in px)
+    this.height = height;
+    // show in toolbar
+    this.toolbar = toolbar;
+    // internal or not?
+    this.internal = internal;
+}
+// preset type for Desktops
+NetBeans_Preset.DESKTOP = {
+    ident: 'DESKTOP',
+    title: 'Desktop' // XXX i18n
+};
+// preset type for Netbooks
+NetBeans_Preset.NETBOOK = {
+    ident: 'NETBOOK',
+    title: 'Netbook'
+};
+// preset type for Tablets (Landscape)
+NetBeans_Preset.TABLET_LANDSCAPE = {
+    ident: 'TABLET_LANDSCAPE',
+    title: 'Tablet Landscape'
+};
+// preset type for Tablets (Portrait)
+NetBeans_Preset.TABLET_PORTRAIT = {
+    ident: 'TABLET_PORTRAIT',
+    title: 'Tablet Portrait'
+};
+// preset type for Smartphones  (Landscape)
+NetBeans_Preset.SMARTPHONE_LANDSCAPE = {
+    ident: 'SMARTPHONE_LANDSCAPE',
+    title: 'Smartphone Landscape'
+};
+// preset type for Smartphones  (Portrait)
+NetBeans_Preset.SMARTPHONE_PORTRAIT = {
+    ident: 'SMARTPHONE_PORTRAIT',
+    title: 'Smartphone Portrait'
+};
+// get a list of all preset types
+NetBeans_Preset.allTypes = function() {
+    return [
+        NetBeans_Preset.DESKTOP,
+        NetBeans_Preset.NETBOOK,
+        NetBeans_Preset.TABLET_LANDSCAPE,
+        NetBeans_Preset.TABLET_PORTRAIT,
+        NetBeans_Preset.SMARTPHONE_LANDSCAPE,
+        NetBeans_Preset.SMARTPHONE_PORTRAIT
+    ];
+}
+// get preset type for the given ident, or null if not found
+NetBeans_Preset.typeForIdent = function(ident) {
+    var allTypes = NetBeans_Preset.allTypes();
+    for (i in allTypes) {
+        if (allTypes[i].ident == ident) {
+            return allTypes[i];
+        }
+    }
+    return null;
+}
+
+/**
+ * Window presets manager.
+ */
+var NetBeans_Presets = {};
+// all presets
+NetBeans_Presets._presets = null;
+// active/current preset
+NetBeans_Presets._preset = null;
+NetBeans_Presets.getPreset = function(preset) {
+    if (preset == undefined) {
+        return this._preset;
+    }
+    var tmp = this.getPresets()[preset];
+    if (tmp == undefined) {
+        return null;
+    }
+    this._preset = tmp;
+    return this._preset;
+}
+// get all presets
+NetBeans_Presets.getPresets = function(copy) {
+    if (copy) {
+        return this._loadPresets();
+    }
+    if (this._presets == null) {
+        this._presets = this._loadPresets();
+    }
+    return this._presets;
+}
+// set (and save) new presets
+NetBeans_Presets.setPresets = function(presets) {
+    this._presets = presets;
+    this._savePresets();
 }
