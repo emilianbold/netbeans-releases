@@ -97,6 +97,7 @@ public class Model {
     private RequestProcessor RP = new RequestProcessor("Live HTML Model", 1);
     
     static boolean isUnitTesting = false;
+    private boolean lastChangeWasNotReal = false;
             
     private static synchronized File getStorageRoot() {
         if (storageRoot == null) {
@@ -133,20 +134,32 @@ public class Model {
         }
     }
     
-    public void storeDocumentVersion(final long timestamp, final String content, final String stackTrace) {
+    public void storeDocumentVersion(final long timestamp, final String content, final String stackTrace, final boolean realChange) {
+        assert (realChange ? true : !lastChangeWasNotReal) : "reject multiple consequent changes which are not realChange";
+        if (lastChangeWasNotReal && realChange) {
+            // forget about last change and replace it with the change coming:
+            timestamps.remove(timestamps.size()-1);
+            lastChangeWasNotReal = false;
+        }
         final String data = dataToStore;
-        dataToStore = null;
+        if (realChange) {
+            dataToStore = null;
+        } else {
+            lastChangeWasNotReal = true;
+        }
         Runnable r = new Runnable() {
             @Override
             public void run() {
                 store("content", timestamp, content);
-                store("stacktrace", timestamp, stackTrace);
-                if (data != null) {
-                    store("data", timestamp, data);
+                if (realChange) {
+                    store("stacktrace", timestamp, stackTrace);
+                    if (data != null) {
+                        store("data", timestamp, data);
+                    }
                 }
                 int total = timestamps.size();
                 if (total > 0) {
-                    parse(content, timestamp);
+                    parse(content, timestamp, realChange);
                 }
                 addTimeStamp(timestamp);
             }
@@ -207,7 +220,7 @@ public class Model {
         return rev;
     }
     
-    private void parse(String content, long timestamp) {
+    private void parse(String content, long timestamp, boolean realChange) {
         int total = timestamps.size();
         StringBuilder previousContent = read("content", timestamps.get(total-1));
         HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.getDefaultVersion());
@@ -228,7 +241,9 @@ public class Model {
             store("bdiff", timestamp, Change.encodeToJSON(beautifiedChanges));
             store("bcontent", timestamp, beautifiedContent.toString());
             
-            lastDiff = d;
+            if (realChange) {
+                lastDiff = d;
+            }
             
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
