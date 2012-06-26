@@ -146,12 +146,7 @@ public abstract class LFCustoms {
      * @since 1.27
      */
     private static int brighter (int color) {
-            int result = color + shiftValue;
-            if (result > 255) {
-                    return 255;
-            } else {
-                    return result;
-            }
+        return Math.min(color + shiftValue, 255);
     }
 
     /** convert color component
@@ -159,12 +154,7 @@ public abstract class LFCustoms {
      * @since 1.27
      */
     private static int darker(int color) {
-            int result = color - shiftValue;
-            if (result < 0) {
-                    return 0;
-            } else {
-                    return result;
-            }
+        return Math.max( color - shiftValue, 0 );
     }
 
     /** convert color to brighter one if window foreground text color is bright color
@@ -173,8 +163,8 @@ public abstract class LFCustoms {
      * @since 1.27
      */
     public static Color shiftColor(Color color) {
-        Color textFgColor = getTextFgColor();
-        if ((textFgColor.getRed() > 127) || (textFgColor.getGreen() > 127) || (textFgColor.getBlue() > 127)) {
+        Color textColor = getTextFgColor();
+        if ((textColor.getRed() > 127) || (textColor.getGreen() > 127) || (textColor.getBlue() > 127)) {
             return new Color(brighter(color.getRed()), brighter(color.getGreen()), brighter(color.getBlue()));
         }
         return new Color(darker(color.getRed()), darker(color.getGreen()), darker(color.getBlue()));
