@@ -3045,7 +3045,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         return unitIncrement;
     }
 
-    private static final String CURRENT_NB_VERSION = "7.2";                     // NOI18N
+    private static final String CURRENT_NB_VERSION = "7.3";                     // NOI18N
     private String getCurrentNetBeansVersion() {        
         String version = parseProductVersion(getProductVersionValue());        
         if(version != null) {
