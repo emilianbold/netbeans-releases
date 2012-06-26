@@ -63,7 +63,8 @@ fi
 ###################################################################
 
 if [ -n $BUILD_ID ]; then
-    mkdir -p $DIST_SERVER2/${BUILD_ID}
+    mkdir -p $DIST_SERVER2/${BUILD_ID}/zip
+    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
     cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/ml/*  $DIST_SERVER2/${BUILD_ID}
     cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
@@ -97,7 +98,8 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 if [ -n $BUILD_ID ]; then
-    mkdir -p $DIST_SERVER2/${BUILD_ID}
+    mkdir -p $DIST_SERVER2/${BUILD_ID}/zip
+    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
     cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
     cp -rp $DIST/ml/*  $DIST_SERVER2/${BUILD_ID}
     cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
