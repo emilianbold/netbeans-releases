@@ -43,7 +43,9 @@ package org.netbeans.modules.c2c.tasks;
 
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 
 /**
@@ -79,5 +81,11 @@ public class C2CConnector extends BugtrackingConnector {
                     C2C.getInstance().getQueryProvider(), 
                     C2C.getInstance().getIssueProvider());
     }
+
+    @Override
+    public IssueFinder getIssueFinder() {
+        return SimpleIssueFinder.getInstance();
+    }
+    
     
 }

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.issue;
+package org.netbeans.modules.bugtracking.util;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -53,17 +53,17 @@ import org.openide.ErrorManager;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public class BugzillaIssueFinder extends IssueFinder {
+public class SimpleIssueFinder extends IssueFinder {
     
-    private static BugzillaIssueFinder instance;
+    private static SimpleIssueFinder instance;
     
     private static final int[] EMPTY_INT_ARR = new int[0];
 
-    private BugzillaIssueFinder() {}
+    private SimpleIssueFinder() {}
     
-    public synchronized static BugzillaIssueFinder getInstance() {
+    public synchronized static SimpleIssueFinder getInstance() {
         if(instance == null) {
-            instance = new BugzillaIssueFinder();
+            instance = new SimpleIssueFinder();
         }
         return instance;
     }
@@ -96,8 +96,8 @@ public class BugzillaIssueFinder extends IssueFinder {
         return new Impl();
     }
 
-    static BugzillaIssueFinder getTestInstance() {
-        return new BugzillaIssueFinder();
+    static SimpleIssueFinder getTestInstance() {
+        return new SimpleIssueFinder();
     }
 
     //--------------------------------------------------------------------------
