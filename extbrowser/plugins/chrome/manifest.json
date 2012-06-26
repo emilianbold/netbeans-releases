@@ -45,6 +45,12 @@
 
   "background_page": "main.html",
 
+  "page_action": {
+    "default_icon": "netbeans16.png",
+    "default_title": "Open NetBeans actions",
+    "default_popup": "popup.html"
+  },
+
   "permissions": [
     "tabs",
     "<all_urls>",
