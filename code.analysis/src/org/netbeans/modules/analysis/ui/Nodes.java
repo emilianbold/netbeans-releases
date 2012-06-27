@@ -350,14 +350,27 @@ public class Nodes {
             }
         }
         
-        final Wrapper[] w = new Wrapper[1];
+        Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> foundNodes = resolveFileNodes(lvp, lvc, view, errors);
 
-        w[0] = new Wrapper(view, warnings, resolveFileNodes(lvp, lvc, w[0], view, errors));
+        if (foundNodes == null) {
+            final Node viewNode = view;
+            AbstractNode pnsNode = new AbstractNode(Children.LEAF) {
+                @Override public Image getIcon(int type) {
+                    return viewNode.getIcon(type);
+                }
+                @Override public Image getOpenedIcon(int type) {
+                    return viewNode.getOpenedIcon(type);
+                }
+            };
+            pnsNode.setDisplayName(NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName()));
 
-        return w[0];
+            return pnsNode;
+        }
+        
+        return new Wrapper(view, warnings, foundNodes);
     }
 
-    private static Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, LogicalViewCache lvc, Wrapper w, final Node view, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+    private static Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, LogicalViewCache lvc, final Node view, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
         Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = new HashMap<Node, Map<AnalyzerFactory, List<ErrorDescription>>>();
 
         for (FileObject file : errors.keySet()) {
@@ -372,11 +385,7 @@ public class Nodes {
             }
 
             if (foundChild == null) {
-                w.displayName = NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName());
-                w.htmlDisplayName = view.getHtmlDisplayName() != null ? NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getHtmlDisplayName()) : null;
-                w.fireDisplayNameChange();
-
-                return Collections.emptyMap();
+                return null;
             }
 
             fileNodes.put(foundChild, eds);

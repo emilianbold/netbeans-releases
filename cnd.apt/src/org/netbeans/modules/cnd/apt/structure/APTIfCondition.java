@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,48 +35,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Author: Tomas Holy
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.apt.structure;
 
-#ifndef _APPLAUNCHER_H
-#define	_APPLAUNCHER_H
+import org.netbeans.modules.cnd.antlr.TokenStream;
 
-#include <string>
-#include <windows.h>
-
-#include "../../ide/launcher/windows/nblauncher.h"
-
-class AppLauncher : public NbLauncher {
-
-    static const char *OPT_DEFAULT_USER_DIR;
-    static const char *OPT_DEFAULT_CACHE_DIR;
-    static const char *OPT_DEFAULT_OPTIONS;
-    static const char *OPT_EXTRA_CLUSTERS;
-    static const char *OPT_JDK_HOME;
-    static const char *APPNAME_TOKEN;
-    static const char *REG_APPDATA_NAME;
-
-public:
-    AppLauncher();
-    virtual ~AppLauncher();
-
-protected:
-    virtual bool initBaseNames();
-    virtual const char * getAppName();
-    virtual void addSpecificOptions(CmdArgs &args);
-    virtual void adjustHeapSize();
-    virtual bool findUserDir(const char *str);
-    virtual bool findCacheDir(const char *str);
-    virtual const char * getDefUserDirOptName();
-    virtual const char * getDefCacheDirOptName();
-    virtual const char * getDefOptionsOptName();
-    virtual const char * getExtraClustersOptName();
-    virtual const char * getJdkHomeOptName();
-    virtual const char * getCurrentDir();
-
-private:
-    AppLauncher(const AppLauncher& orig);
-};
-
-#endif	/* _NBLAUNCHER_H */
-
+/**
+ * condition based preprocessor directives (i.e. #if/#elif).
+ * @author Vladimir Voskresensky
+ */
+public interface APTIfCondition extends APT {
+    TokenStream getCondition();
+}
