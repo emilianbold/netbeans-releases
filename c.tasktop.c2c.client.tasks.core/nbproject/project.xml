@@ -6,6 +6,16 @@
             <code-name-base>com.tasktop.c2c.client.tasks.core</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.eclipse.equinox.common</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.apache.commons.lang</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.eclipse.core.runtime</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -22,6 +32,11 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.commons.workbench</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
