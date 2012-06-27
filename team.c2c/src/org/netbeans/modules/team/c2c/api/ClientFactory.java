@@ -43,6 +43,7 @@ package org.netbeans.modules.team.c2c.api;
 
 import com.tasktop.c2c.client.commons.client.CredentialsInjector;
 import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
+import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
@@ -80,7 +81,7 @@ public final class ClientFactory {
         return instance;
     }
     
-    public CloudClient getClient (String url, PasswordAuthentication auth) {
+    public CloudClient createClient (String url, PasswordAuthentication auth) {
         WebLocation location = new WebLocation(url, 
                 auth.getUserName(), 
                 auth.getPassword() == null ? "" : new String(auth.getPassword()), 
@@ -88,8 +89,9 @@ public final class ClientFactory {
         ClassPathXmlApplicationContext context = getContext();
         ProfileWebServiceClient profileClient = context.getBean(ProfileWebServiceClient.class);
         ActivityServiceClient activityClient = context.getBean(ActivityServiceClient.class);
+        HudsonServiceClient hudsonClient = context.getBean(HudsonServiceClient.class);
         CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
-        return new CloudClient(profileClient, activityClient, location);
+        return new CloudClient(profileClient, activityClient, hudsonClient, location);
     }
     
     private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
@@ -103,8 +105,7 @@ public final class ClientFactory {
     private ClassPathXmlApplicationContext getContext () {
         if (appContext == null) {
             appContext = createContext(new String[] { 
-                "org/netbeans/modules/team/c2c/applicationContext-activityServiceForClient.xml", 
-                "org/netbeans/modules/team/c2c/applicationContext-profileServiceForClient.xml" }, Thread.currentThread().getContextClassLoader());
+                "org/netbeans/modules/team/c2c/defs-clients.xml" }, Thread.currentThread().getContextClassLoader());
         }
         return appContext;
     }

@@ -47,6 +47,10 @@ import org.netbeans.modules.team.c2c.api.ClientFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
+import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
+import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
+import com.tasktop.c2c.server.profile.domain.build.JobDetails;
+import com.tasktop.c2c.server.profile.domain.build.JobSummary;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
@@ -167,6 +171,7 @@ public class C2CClientTest extends NbTestCase  {
         for (ProjectService s : services) {
             if (expectedServices.remove(s.getServiceType())) {
                 assertNotNull(s.getUrl());
+                assertTrue(s.getServiceType().name(), s.isAvailable());
             }
         }
         assertTrue(expectedServices.isEmpty());
@@ -186,7 +191,7 @@ public class C2CClientTest extends NbTestCase  {
     public void testGetRecentActivities () throws Exception {
         CloudClient client = getClient();
         Project project = client.getProjectById("anagramgame");
-        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project);
+        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
         assertNotNull(shortActivities);
         assertTrue(shortActivities.size() > 0);
         List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
@@ -204,9 +209,36 @@ public class C2CClientTest extends NbTestCase  {
             }
         }
     }
+    
+    public void testGetHudsonStatus () throws Exception {
+        CloudClient client = getClient();
+        Project project = client.getProjectById("c2c");
+        HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
+        assertNotNull(status);
+        assertTrue(status.getJobs().size() > 0);
+        for (JobSummary summary : status.getJobs()) {
+            JobDetails details = client.getJobDetails("c2c", summary.getName());
+            assertNotNull(details);
+            assertEquals(summary.getName(), details.getName());
+            assertEquals(summary.getColor(), details.getColor());
+            assertEquals(summary.getUrl(), details.getUrl());
+            assertNull(summary.getBuilds());
+            assertTrue(details.getBuilds().size() > 0);
+        }
+    }
+    
+    public void testGetBuildDetails () throws Exception {
+        CloudClient client = getClient();
+        Project project = client.getProjectById("c2c");
+        HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
+        assertNotNull(status);
+        assertTrue(status.getJobs().size() > 0);
+        BuildDetails details = client.getBuildDetails("c2c", "Code2Cloud Server - Nightly", 168);
+        assertNotNull(details);
+    }
 
     private CloudClient getClient () {
-        return ClientFactory.getInstance().getClient("https://q.tasktop.com/",
+        return ClientFactory.getInstance().createClient("https://q.tasktop.com/",
                 new PasswordAuthentication(uname, passw.toCharArray()));
     }
 

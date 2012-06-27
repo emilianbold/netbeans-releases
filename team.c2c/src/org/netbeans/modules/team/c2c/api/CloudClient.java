@@ -45,11 +45,15 @@ import com.tasktop.c2c.server.common.service.domain.QueryRequest;
 import com.tasktop.c2c.server.common.service.domain.QueryResult;
 import com.tasktop.c2c.server.common.service.web.AbstractRestServiceClient;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
+import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
+import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
+import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
 import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
 import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
+import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import java.util.Collections;
 import java.util.List;
@@ -69,12 +73,18 @@ import org.springframework.security.core.userdetails.User;
 public final class CloudClient {
     private final ProfileWebServiceClient profileClient;
     private static final String PROFILE_SERVICE = "alm/api"; //NOI18N
+    private static final String HUDSON_SERVICE = "alm/s/%s/hudson"; //NOI18N
     private final AbstractWebLocation location;
     private final ActivityServiceClient activityClient;
+    private final HudsonServiceClient hudsonClient;
 
-    CloudClient (ProfileWebServiceClient profileClient, ActivityServiceClient activityClient, AbstractWebLocation location) {
+    CloudClient (ProfileWebServiceClient profileClient,
+            ActivityServiceClient activityClient,
+            HudsonServiceClient hudsonClient,
+            AbstractWebLocation location) {
         this.profileClient = profileClient;
         this.activityClient = activityClient;
+        this.hudsonClient = hudsonClient;
         this.location = location;
     }
 
@@ -156,13 +166,40 @@ public final class CloudClient {
         }, activityClient, PROFILE_SERVICE);
     }
 
-    public List<ProjectActivity> getRecentShortActivities (final Project project) throws CloudException {
+    public List<ProjectActivity> getRecentShortActivities (final String projectId) throws CloudException {
         return run(new Callable<List<ProjectActivity>> () {
             @Override
             public List<ProjectActivity> call () throws Exception {
-                return activityClient.getShortActivityList(project.getIdentifier());
+                return activityClient.getShortActivityList(projectId);
             }
         }, activityClient, PROFILE_SERVICE);
+    }
+
+    public HudsonStatus getHudsonStatus (String projectId) throws CloudException {
+        return run(new Callable<HudsonStatus> () {
+            @Override
+            public HudsonStatus call () throws Exception {
+                return hudsonClient.getStatus();
+            }
+        }, hudsonClient, buildHudsonUrl(HUDSON_SERVICE, projectId));
+    }
+
+    public JobDetails getJobDetails (String projectId, final String jobName) throws CloudException {
+        return run(new Callable<JobDetails> () {
+            @Override
+            public JobDetails call () throws Exception {
+                return hudsonClient.getJobDetails(jobName);
+            }
+        }, hudsonClient, buildHudsonUrl(HUDSON_SERVICE, projectId));
+    }
+
+    public BuildDetails getBuildDetails (String projectId, final String jobName, final int buildNumber) throws CloudException {
+        return run(new Callable<BuildDetails> () {
+            @Override
+            public BuildDetails call () throws Exception {
+                return hudsonClient.getBuildDetails(jobName, buildNumber);
+            }
+        }, hudsonClient, buildHudsonUrl(HUDSON_SERVICE, projectId));
     }
 
     private <T> T run (Callable<T> callable, AbstractRestServiceClient client, String service) throws CloudException {
@@ -187,4 +224,7 @@ public final class CloudClient {
         }
     }
     
+    private static String buildHudsonUrl (String urlTemplate, String projectName) {
+        return String.format(urlTemplate, projectName);
+    }
 }
