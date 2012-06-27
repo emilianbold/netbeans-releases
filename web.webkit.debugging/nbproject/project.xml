@@ -56,6 +56,7 @@
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <friend>org.netbeans.modules.web.livehtml</friend>
                 <package>org.netbeans.modules.web.webkit.debugging.api</package>
+                <package>org.netbeans.modules.web.webkit.debugging.api.css</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.debugger</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.dom</package>
                 <package>org.netbeans.modules.web.webkit.debugging.spi</package>
