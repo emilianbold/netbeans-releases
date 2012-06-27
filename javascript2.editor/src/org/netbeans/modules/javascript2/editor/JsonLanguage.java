@@ -66,7 +66,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
         extension={ "json" },
         displayName="#JsonResolver",
         mimeType=JsTokenId.JSON_MIME_TYPE,
-        position=200
+        position=195
     )
     @NbBundle.Messages("JsonResolver=JSON Files")
     @MultiViewElement.Registration(displayName = "#LBL_JsonEditorTab",
