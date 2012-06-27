@@ -280,7 +280,7 @@ public class CssModuleSupport {
     }
     
     public static Collection<Property> getProperties(FileObject file) {
-        return getProperties(isJavaFxCssFile(file));
+        return getProperties(!isJavaFxCssFile(file));
     }
     
     public static Collection<Property> getProperties(FeatureContext featureContext) {
