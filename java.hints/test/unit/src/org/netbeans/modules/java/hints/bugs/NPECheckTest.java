@@ -259,6 +259,12 @@ public class NPECheckTest extends NbTestCase {
                             "0:56-0:59:verifier:ERR_POSSIBLENULL_TO_NON_NULL_ARG");
     }
     
+    public void testParameter3() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; class Test {private void test(int i) {ttt(null, t());} private void ttt(@NullAllowed String na, @NotNull String s){} private @CheckForNull String t() {return \"\";} } @interface NotNull {} @interface CheckForNull {} @interface NullAllowed {}",
+                            "0:62-0:65:verifier:ERR_POSSIBLENULL_TO_NON_NULL_ARG");
+    }
+    
     public void testNoMultipleReports1() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

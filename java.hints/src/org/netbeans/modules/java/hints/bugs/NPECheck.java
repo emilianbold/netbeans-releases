@@ -145,6 +145,7 @@ public class NPECheck {
                         break;
                 }
             }
+            index++;
         }
         
         return result;
