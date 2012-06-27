@@ -120,7 +120,7 @@ public class JsDocPrinter {
                 sb.append("<td>").append(namedParam.getParamDescription()).append("</td>");
                 sb.append("</tr>");
             }
-            sb.append("</p>");
+            sb.append("</table>");
             return sb.toString();
         }
         return "";
@@ -139,7 +139,7 @@ public class JsDocPrinter {
                 sb.append("<td>").append(param.getParamDescription()).append("</td>");
                 sb.append("</tr>");
             }
-            sb.append("</p>");
+            sb.append("</table>");
             return sb.toString();
         }
         return "";
